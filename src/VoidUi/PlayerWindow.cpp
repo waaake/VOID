@@ -1,0 +1,152 @@
+/* STD */
+#include <string>
+
+/* Qt */
+#include <QLayout>
+#include <QMenuBar>
+#include <QIcon>
+#include <QStyle>
+#include <QValidator>
+#include <QFileDialog>
+
+/* Internal */
+#include "PlayerWindow.h"
+
+VOID_NAMESPACE_OPEN
+
+VoidMainWindow::VoidMainWindow(QWidget* parent)
+    : QMainWindow(parent)
+    , m_ImageSequence()
+{
+    // m_ImSequence = new VoidImageSequence;
+
+    /* Build the UI */
+    Build();
+
+    /* Set the window title */
+    setWindowTitle("VOID");
+
+    /* Connect Signals -> Slots */
+    Connect();
+}
+
+VoidMainWindow::~VoidMainWindow()
+{
+    delete m_Player;
+    // delete m_ImSequence;
+}
+
+QSize VoidMainWindow::sizeHint() const
+{
+    return QSize(1280, 720);
+}
+
+void VoidMainWindow::showEvent(QShowEvent* event)
+{
+    /* Set Default dock size */
+    resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
+}
+
+void VoidMainWindow::Build()
+{   
+    /* Base */
+    QWidget* baseWidget = new QWidget;
+    QVBoxLayout* layout = new QVBoxLayout(baseWidget);
+
+    /* Player */
+    m_Player = new Player();
+
+    /* Add to the base layout */
+    // layout->addWidget(m_Player);
+
+    /* Media Lister Widget */
+    m_MediaLister = new VoidMediaLister;
+
+    /* Docker */
+    m_Docker = new VoidDocker("Viewer", this);
+    m_Docker->SetClosable(false);
+    //m_Docker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    m_MListDocker = new VoidDocker("Media", this);
+    //m_MListDocker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    /* Set the central widget */
+    //setCentralWidget(baseWidget);
+    //setCentralWidget(m_Docker);
+    addDockWidget(Qt::RightDockWidgetArea, m_Docker);
+    addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
+
+    /* Add to docker */
+    m_Docker->setWidget(m_Player);
+    m_MListDocker->setWidget(m_MediaLister);
+
+    /* The way how dock widgets appear as default */
+    /* Dock Widgets */
+    m_DockList << m_Docker << m_MListDocker;
+    /* Default Size Corresponding to each of the dock widget */
+    m_DockSizes << 980 << 300;
+    // resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
+    // m_MListDocker->resize(300, m_MListDocker->height());
+
+    /* Menubar */
+    QMenuBar* menuBar = new QMenuBar;
+
+    m_FileMenu = new QMenu("File", menuBar);
+    m_OpenAction = new QAction("Open...", m_FileMenu);
+    m_ClearAction = new QAction("Clear", m_FileMenu);
+    m_CloseAction = new QAction("Close Player", m_FileMenu);
+    m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
+
+    m_FileMenu->addAction(m_OpenAction);
+    m_FileMenu->addAction(m_ClearAction);
+    m_FileMenu->addAction(m_CloseAction);
+
+    menuBar->addMenu(m_FileMenu);
+
+    setMenuBar(menuBar);
+}
+
+void VoidMainWindow::Connect()
+{
+    /* Menu Actions */
+    connect(m_CloseAction, SIGNAL(triggered()), this, SLOT(close()));
+    connect(m_OpenAction, SIGNAL(triggered()), this, SLOT(Load()));
+
+    connect(m_ClearAction, SIGNAL(triggered()), m_Player, SLOT(Clear()));
+
+    /* Media Lister */
+    connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetSequence);
+}
+
+// Slots
+void VoidMainWindow::Load()
+{
+    QFileDialog f;
+    f.exec();
+
+    /* Read the directory from the FileDialog */
+    std::string p = f.directory().absolutePath().toStdString();
+
+    /* Update the sequence from the path */
+    m_ImageSequence.Read(p);
+
+    /* Set the sequence on the Player */
+    m_Player->Load(m_ImageSequence);
+
+    /* Add the media on the Media Lister */
+    m_MediaLister->AddMedia(m_ImageSequence);
+}
+
+void VoidMainWindow::SetSequence(const VoidImageSequence& sequence)
+{
+    /* Clear the player */
+    m_Player->Clear();
+
+    /* Update the sequence */
+    m_ImageSequence = sequence;
+
+    /* Set the sequence on the Player */
+    m_Player->Load(m_ImageSequence);
+}
+
+VOID_NAMESPACE_CLOSE
