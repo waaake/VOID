@@ -4,7 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # Build results
-[_Bb]uild
+_[Bb]uild
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
@@ -65,7 +65,7 @@ Generated\ Files/
 # !tools/packages.config
 
 # VS Code files for those working on multiple tools
-.vscode/*
+.vscode
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
