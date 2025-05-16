@@ -9,8 +9,10 @@
 
 int main(int argc, char* argv[])
 {
+    #ifdef VOID_ENABLE_LOGGING
     /* Initialise the Logger */
     VOID_NAMESPACE::Logger::Init();
+    #endif
 
     QApplication app(argc, argv);
 

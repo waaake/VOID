@@ -38,5 +38,4 @@ VOID_NAMESPACE_CLOSE
 #define VOID_LOG_CRITICAL(...)
 #endif
 
-
 #endif // _VOID_LOGGING_H

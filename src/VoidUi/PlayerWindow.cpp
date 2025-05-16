@@ -123,6 +123,7 @@ void VoidMainWindow::Connect()
 void VoidMainWindow::Load()
 {
     QFileDialog f;
+    /* In case the dialog was not accepted */
     if (f.exec() != QFileDialog::Accepted)
     {
         VOID_LOG_INFO("User Cancelled Opening.");
