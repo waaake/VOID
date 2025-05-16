@@ -6,7 +6,6 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
-#include <iostream>
 
 /* Internal */
 #include "Definition.h"

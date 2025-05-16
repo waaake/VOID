@@ -21,5 +21,14 @@ endif()
 find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
+# Used for Logging
+find_package(spdlog QUIET)
+
+# Definitions
+# Enable Logging if we have spdlog present and we're on the debug build
+if (spdlog_FOUND AND CMAKE_BUILD_TYPE STREQUAL "debug")
+    add_definitions(-DVOID_ENABLE_LOGGING)
+endif()
+
 # Add the VOID Source
 add_subdirectory(src)

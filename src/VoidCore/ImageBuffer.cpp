@@ -1,10 +1,10 @@
 /* STD */
 #include <filesystem>
-#include <iostream>
 #include <chrono>
 
 /* Internal */
 #include "ImageBuffer.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -172,7 +172,7 @@ void VoidImageSequence::Read(const std::string& path)
     std::chrono::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
 
-    std::cout << "Time Taken to Load : " << duration.count() << std::endl;
+    VOID_LOG_INFO("Time Taken to Load : {0}", duration.count());
 }
 
 int VoidImageSequence::FirstFrame() const

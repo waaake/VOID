@@ -4,7 +4,6 @@
 /* Internal */
 #include "Renderer.h"
 
-// #include <iostream>
 #include <chrono>
 
 VOID_NAMESPACE_OPEN
