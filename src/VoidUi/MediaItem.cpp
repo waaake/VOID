@@ -42,25 +42,14 @@ VoidMediaItem::~VoidMediaItem()
 {
 }
 
+void VoidMediaItem::mousePressEvent(QMouseEvent* event)
+{
+    emit clicked(this);
+}
+
 void VoidMediaItem::mouseDoubleClickEvent(QMouseEvent* event)
 {
     emit doubleClicked(this);
-}
-
-void VoidMediaItem::focusInEvent(QFocusEvent* event)
-{
-    m_Selected = true;
-
-    /* Set Stylesheet for Selected Item */
-    setStyleSheet(m_SelectedSS.c_str());
-}
-
-void VoidMediaItem::focusOutEvent(QFocusEvent* event)
-{
-    m_Selected = false;
-
-    /* Apply default stylesheet */
-    setStyleSheet(m_DefaultSS.c_str());
 }
 
 void VoidMediaItem::Build()
@@ -163,6 +152,24 @@ void VoidMediaItem::SetPlaying(bool play)
         );
     else
         m_PlayLabel->setPixmap(QPixmap(""));
+}
+
+void VoidMediaItem::SetSelected(bool selected)
+{
+    /* Update the selection state */
+    m_Selected = selected;
+
+    /* Update the color corresponding to the selection */
+    if (m_Selected)
+    {
+        /* Set Stylesheet for Selected Item */
+        setStyleSheet(m_SelectedSS.c_str());
+    }
+    else
+    {
+        /* Apply default stylesheet */
+        setStyleSheet(m_DefaultSS.c_str());
+    }
 }
 
 void VoidMediaItem::Update()

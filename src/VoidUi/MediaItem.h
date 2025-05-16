@@ -34,7 +34,11 @@ public:
     /* Sets the Playing state on the Media */
     void SetPlaying(bool play);
 
+    /* Sets the selection state on the media item */
+    void SetSelected(bool selected);
+
 signals:
+    void clicked(VoidMediaItem*);
     void doubleClicked(VoidMediaItem*);
 
 private: /* Methods */
@@ -60,9 +64,8 @@ private: /* Methods */
     QPixmap GetThumbnail() const;
 
 protected:
+    void mousePressEvent(QMouseEvent* event) override;
     void mouseDoubleClickEvent(QMouseEvent* event) override;
-    void focusInEvent(QFocusEvent* event) override;
-    void focusOutEvent(QFocusEvent* event) override;
 
 private: /* Members */
     /* State for the widget selection */
