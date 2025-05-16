@@ -32,11 +32,20 @@ public:
 signals:
     void mediaChanged(const VoidImageSequence& sequence);
 
+protected: /* Methods */
+    void mousePressEvent(QMouseEvent* event) override;
+
 private: /* Methods */
     void Build();
 
     /* Clears the play state of the item which was last playing, if any */
     void ClearPlaying();
+
+    /* Clears the selected item(s), if any */
+    void ClearSelection();
+    
+    /* Changes the selection state of the media item(s) */
+    void SelectItem(VoidMediaItem* item);
 
     /*
      * Changes the state of the media items being played to the provided item
@@ -54,6 +63,9 @@ private: /* Members */
     
     /* Holds the media item which is currently playing */
     VoidMediaItem* m_CurrentPlaying;
+
+    /* Holds the media item which is currently selected */
+    VoidMediaItem* m_CurrentSelectedItem;
 
 };
 

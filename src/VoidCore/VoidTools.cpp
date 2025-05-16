@@ -32,6 +32,6 @@ namespace Tools {
         return -1;
     }
 
-}
+} // namespace Tools
 
 VOID_NAMESPACE_CLOSE

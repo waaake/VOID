@@ -1,3 +1,6 @@
+/* Qt */
+#include <QMouseEvent>
+
 /* Internal */
 #include "MediaLister.h"
 
@@ -25,6 +28,13 @@ QSize VoidMediaLister::sizeHint() const
     return QSize(300, 720);
 }
 
+void VoidMediaLister::mousePressEvent(QMouseEvent* event)
+{
+    /* If the Media Lister is clicked by holding Alt key -> Clear any selected media */
+    if (event->button() == Qt::LeftButton && event->modifiers() & Qt::AltModifier)
+        ClearSelection();
+}
+
 void VoidMediaLister::Build()
 {
     /* Base */
@@ -49,7 +59,21 @@ void VoidMediaLister::Build()
 void VoidMediaLister::ClearPlaying()
 {
     if (m_CurrentPlaying)
+    {
         m_CurrentPlaying->SetPlaying(false);
+        /* Reset the current playing item */
+        m_CurrentPlaying = nullptr;
+    }
+}
+
+void VoidMediaLister::ClearSelection()
+{
+    if (m_CurrentSelectedItem)
+    {
+        m_CurrentSelectedItem->SetSelected(false);
+        /* Reset the current selected item */
+        m_CurrentSelectedItem = nullptr;
+    }
 }
 
 void VoidMediaLister::AddMedia(const VoidImageSequence& media)
@@ -58,6 +82,7 @@ void VoidMediaLister::AddMedia(const VoidImageSequence& media)
     VoidMediaItem* mediaItem = new VoidMediaItem(media);
 
     /* Connect signal */
+    connect(mediaItem, &VoidMediaItem::clicked, this, &VoidMediaLister::SelectItem);
     connect(mediaItem, &VoidMediaItem::doubleClicked, this, &VoidMediaLister::ChangeMedia);
 
     /* Add to the internal array holding all media items */
@@ -72,10 +97,34 @@ void VoidMediaLister::AddMedia(const VoidImageSequence& media)
     /* Set Playing state */
     m_CurrentPlaying = mediaItem;
     mediaItem->SetPlaying(true);
+
+    /* Set Selection on this item */
+    SelectItem(mediaItem);
+}
+
+void VoidMediaLister::SelectItem(VoidMediaItem* item)
+{
+    /* Don't have to do anything when the sender is the currently selected media */
+    if (item == m_CurrentSelectedItem)
+        return;
+    
+    /* Clear any existing selection */
+    ClearSelection();
+
+    /* Update the current selection */
+    m_CurrentSelectedItem = item;
+    item->SetSelected(true);
 }
 
 void VoidMediaLister::ChangeMedia(VoidMediaItem* item)
 {
+    /* 
+     * Ignore if the currently playing item is the sender
+     * Doesn't makes sense start playing the same item again and again when constantly clicking
+     */
+    if (item == m_CurrentPlaying)
+        return;
+
     /* Clear the existing playing media */
     ClearPlaying();
     /* set the playing state for the media that has been double clicked on, i.e. changed to */
