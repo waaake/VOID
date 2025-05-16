@@ -4,5 +4,6 @@ add_library(
     SHARED
     ImageBuffer.cpp
     ImageData.cpp
+    Logging.cpp
     VoidTools.cpp
 )

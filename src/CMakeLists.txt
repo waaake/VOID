@@ -23,7 +23,16 @@ target_include_directories(
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../extern
-)
+    )
+
+# Logging
+if (spdlog_FOUND)
+    target_include_directories(
+        VoidCore
+        PRIVATE
+        ${spdlog_INCLUDE_DIRS}
+    )
+endif()
 
 # Main Executable
 add_executable(

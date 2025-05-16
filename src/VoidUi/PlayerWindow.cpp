@@ -11,6 +11,7 @@
 
 /* Internal */
 #include "PlayerWindow.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -122,7 +123,12 @@ void VoidMainWindow::Connect()
 void VoidMainWindow::Load()
 {
     QFileDialog f;
-    f.exec();
+    /* In case the dialog was not accepted */
+    if (f.exec() != QFileDialog::Accepted)
+    {
+        VOID_LOG_INFO("User Cancelled Opening.");
+        return;
+    }
 
     /* Read the directory from the FileDialog */
     std::string p = f.directory().absolutePath().toStdString();
