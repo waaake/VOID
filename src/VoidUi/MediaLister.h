@@ -31,9 +31,12 @@ public:
 
 signals:
     void mediaChanged(const VoidImageSequence& sequence);
+    void mediaDropped(const std::string& path);
 
 protected: /* Methods */
     void mousePressEvent(QMouseEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 private: /* Methods */
     void Build();

@@ -26,6 +26,9 @@ public:
 
     virtual QSize sizeHint() const override;
 
+    /* Reads Media Directory and Loads Media onto the components */
+    void ReadDirectory(const std::string& path);
+
 private: /* Methods */
     void Build();
     void Connect();

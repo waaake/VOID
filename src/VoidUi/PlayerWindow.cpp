@@ -7,9 +7,9 @@
 #include <QIcon>
 #include <QStyle>
 #include <QValidator>
-#include <QFileDialog>
 
 /* Internal */
+#include "Browser.h"
 #include "PlayerWindow.h"
 #include "VoidCore/Logging.h"
 
@@ -117,30 +117,35 @@ void VoidMainWindow::Connect()
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetSequence);
+    connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ReadDirectory);
 }
 
-// Slots
-void VoidMainWindow::Load()
+void VoidMainWindow::ReadDirectory(const std::string& path)
 {
-    QFileDialog f;
-    /* In case the dialog was not accepted */
-    if (f.exec() != QFileDialog::Accepted)
-    {
-        VOID_LOG_INFO("User Cancelled Opening.");
-        return;
-    }
-
-    /* Read the directory from the FileDialog */
-    std::string p = f.directory().absolutePath().toStdString();
-
     /* Update the sequence from the path */
-    m_ImageSequence.Read(p);
+    m_ImageSequence.Read(path);
 
     /* Set the sequence on the Player */
     m_Player->Load(m_ImageSequence);
 
     /* Add the media on the Media Lister */
     m_MediaLister->AddMedia(m_ImageSequence);
+}
+
+// Slots
+void VoidMainWindow::Load()
+{
+    VoidMediaBrowser mediaBrowser;
+
+    /* In case the dialog was not accepted */
+    if (!mediaBrowser.Browse())
+    {
+        VOID_LOG_INFO("User Cancelled Browsing.");
+        return;
+    }
+
+    /* Read the directory from the FileDialog */
+    ReadDirectory(mediaBrowser.GetDirectory());
 }
 
 void VoidMainWindow::SetSequence(const VoidImageSequence& sequence)

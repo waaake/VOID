@@ -1,6 +1,7 @@
 /* STD */
 #include <sstream>
 #include <algorithm>
+#include <vector>
 
 /* Internal */
 #include "Definition.h"
