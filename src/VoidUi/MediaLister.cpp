@@ -121,7 +121,7 @@ void VoidMediaLister::ClearSelection()
     }
 }
 
-void VoidMediaLister::AddMedia(const VoidImageSequence& media)
+void VoidMediaLister::AddMedia(const Media& media)
 {
     /* Construct a Media Item from the provided media */
     VoidMediaItem* mediaItem = new VoidMediaItem(media);
@@ -177,7 +177,7 @@ void VoidMediaLister::ChangeMedia(VoidMediaItem* item)
     item->SetPlaying(true);
 
     /* Finally emit that the media has been changed */
-    emit mediaChanged(item->GetMedia());
+    emit mediaChanged(item->Clip());
 }
 
 VOID_NAMESPACE_CLOSE

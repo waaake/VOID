@@ -30,7 +30,6 @@ void Frame::Read(const std::string& path)
     m_Path = path;
 
     std::filesystem::path filepath(path);
-    // m_BasePath = filepath.parent_path().string();
 
     std::string filename = filepath.filename().string();
 
@@ -71,10 +70,18 @@ bool Frame::ValidFrame(const std::string& framestring) const
 
 bool Frame::IsMovie() const
 {
-    const std::string* it = std::find(std::begin(m_MovieTypes), std::end(m_MovieTypes), m_Extension);
+    const std::string* it = std::find(std::begin(m_MovieFormats), std::end(m_MovieFormats), m_Extension);
 
     /* true if the extension is in set of movie types */
-    return it != std::end(m_MovieTypes);
+    return it != std::end(m_MovieFormats);
+}
+
+bool Frame::IsImage() const
+{
+    const std::string* it = std::find(std::begin(m_ImageFormats), std::end(m_ImageFormats), m_Extension);
+
+    /* true if the extension is in set of Image types */
+    return it != std::end(m_ImageFormats);
 }
 
 VoidImageData* Frame::ImageData()
@@ -83,10 +90,19 @@ VoidImageData* Frame::ImageData()
      * If the frame data has not yet been fetched
      * Read the frame data and return the pointer to the data
      */
-    if (m_ImageData->Empty())
-        m_ImageData->Read(m_Path);
+    Cache();
 
     return m_ImageData;
+}
+
+void Frame::Cache()
+{
+    /* Read and load the image data onto the memory */
+    if (m_ImageData->Empty())
+    {
+        m_ImageData->Read(m_Path);
+        VOID_LOG_INFO("Cached Frame: {0}", m_Framenum);
+    }
 }
 
 Media::Media()
@@ -97,7 +113,6 @@ Media::Media()
     , m_LastFrame(-1)
     , m_Type(Type::UNDEFINED)
 {
-
 }
 
 Media::Media(const std::string& path)
@@ -161,6 +176,14 @@ void Media::Read(const std::string& path)
                 break;
             }
             
+            /* 
+             * Check if the frame is a sequence or an image
+             * If it is not an image at this point, meaning this file is something we can ignore
+             * And proceed checking on other files
+             */
+            if (!f.IsImage())
+                continue;
+
             /* Update internal structures with the frame information */
             m_Mediaframes[f.Framenumber()] = f;
             m_Framenumbers.push_back(f.Framenumber());
@@ -180,6 +203,15 @@ void Media::Read(const std::string& path)
 void Media::ProcessMovie(const std::string& path)
 {
 
+}
+
+void Media::Cache()
+{
+    /* For all the frames in the media frames */
+    for (std::pair<int, Frame> it: m_Mediaframes)
+    {
+        it.second.Cache();
+    }
 }
 
 VOID_NAMESPACE_CLOSE

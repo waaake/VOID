@@ -31,9 +31,12 @@ public:
     inline int Framenumber() const { return m_Framenum; }
 
     bool IsMovie() const;
+    bool IsImage() const;
 
     /* Returns the Pointer to the ImageData */
     VoidImageData* ImageData();
+
+    inline void Cache();
 
 private: /* Members */
     std::string m_Path;
@@ -43,14 +46,14 @@ private: /* Members */
 
     VoidImageData* m_ImageData;
 
-    std::string m_ImageTypes[4] = {
+    std::string m_ImageFormats[4] = {
         "png",
         "jpg",
         "jpeg",
         "exr",
     };
 
-    std::string m_MovieTypes[4] = {
+    std::string m_MovieFormats[4] = {
         "mov",
         "mp4",
         "mxf",
@@ -88,13 +91,39 @@ public:
 
     /* Getters */
     inline std::string Path() const { return m_Path; }
-    inline std::string Name() const { return m_Name; }
-    inline std::string Extension () const { return m_Extension; }
+    inline std::string Name() const { return m_Mediaframes.at(FirstFrame()).Name(); }
+    inline std::string Extension() const { return m_Mediaframes.at(FirstFrame()).Extension(); }
     inline Media::Type MediaType() const { return m_Type; }
-    inline bool Valid() const { return m_Type != Type::NON_MEDIA; }
+
+    // inline bool Valid() const { return m_Type != Type::NON_MEDIA; }
 
     int FirstFrame() const;
     int LastFrame() const;
+
+    Frame GetFrame(const int frame) const { return m_Mediaframes.at(frame); }
+
+    Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
+    Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
+
+    VoidImageData* Image(const int frame) { return m_Mediaframes.at(frame).ImageData(); }
+
+    VoidImageData* FirstImage() { return Image(FirstFrame()); }
+    VoidImageData* LastImage() { return Image(LastFrame()); }
+
+    inline double Framerate() const { return 24.0; }
+    inline bool Empty() const { return m_Mediaframes.empty(); }
+    /*
+     * A Media can be considered invalid if it is empty
+     * Any valid media will have atleast one frame
+     */
+    inline bool Valid() const { return Empty(); }
+
+    /*
+     * Caches all frames of the Media onto memory
+     * This method is CPU intensive function and should be called from a separate thread
+     * to allow this function to run parallelly to other elements
+     */
+    void Cache();
 
 private: /* Members */
     std::string m_Path;

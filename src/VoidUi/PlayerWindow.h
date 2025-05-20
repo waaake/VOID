@@ -12,7 +12,7 @@
 #include "Docker.h"
 #include "MediaLister.h"
 #include "PlayerWidget.h"
-#include "VoidCore/ImageBuffer.h"
+#include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -35,6 +35,9 @@ private: /* Methods */
 
 protected:
     void showEvent(QShowEvent* event) override;
+    
+    /* Caches the Media if Caching is allowed */
+    void CacheLookAhead();
 
 private: /* Members */
     VoidDocker* m_Docker;
@@ -51,13 +54,15 @@ private: /* Members */
     QAction* m_ClearAction;
     QAction* m_CloseAction;
 
+    /* State determining whether to cache the current media upfront or not */
+    bool m_CacheMedia;
+
     /* Image Sequence */
-    // VoidImageSequence* m_ImSequence;
-    VoidImageSequence m_ImageSequence;
+    Media m_Media;
 
 public slots:
     void Load();
-    void SetSequence(const VoidImageSequence& sequence);
+    void SetMedia(const Media& media);
 };
 
 VOID_NAMESPACE_CLOSE

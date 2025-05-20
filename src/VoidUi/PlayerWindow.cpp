@@ -1,5 +1,6 @@
 /* STD */
 #include <string>
+#include <thread>
 
 /* Qt */
 #include <QLayout>
@@ -17,10 +18,9 @@ VOID_NAMESPACE_OPEN
 
 VoidMainWindow::VoidMainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , m_ImageSequence()
+    , m_CacheMedia(false)
+    , m_Media()
 {
-    // m_ImSequence = new VoidImageSequence;
-
     /* Build the UI */
     Build();
 
@@ -33,8 +33,7 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
 
 VoidMainWindow::~VoidMainWindow()
 {
-    delete m_Player;
-    // delete m_ImSequence;
+    m_Player->deleteLater();
 }
 
 QSize VoidMainWindow::sizeHint() const
@@ -94,6 +93,7 @@ void VoidMainWindow::Build()
 
     m_FileMenu = new QMenu("File", menuBar);
     m_OpenAction = new QAction("Open...", m_FileMenu);
+    m_OpenAction->setShortcut(QKeySequence("Ctrl+O"));
     m_ClearAction = new QAction("Clear", m_FileMenu);
     m_CloseAction = new QAction("Close Player", m_FileMenu);
     m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
@@ -116,20 +116,39 @@ void VoidMainWindow::Connect()
     connect(m_ClearAction, SIGNAL(triggered()), m_Player, SLOT(Clear()));
 
     /* Media Lister */
-    connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetSequence);
+    connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
     connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ReadDirectory);
+}
+
+void VoidMainWindow::CacheLookAhead()
+{
+    /* Check if we're supposed to cache look ahead for the media */
+    if (m_CacheMedia)
+    {
+        /*
+         * Get the current media to cache frames on a thread
+         * Any frame which gets clicked on, in the timeslider caches the frame if not cached
+         * meanwhile this cache continues on
+         */
+        std::thread t(&Media::Cache, m_Media);
+        /* Detach so that this continues on irrespective of the scope of the function */
+        t.detach();    
+    }
 }
 
 void VoidMainWindow::ReadDirectory(const std::string& path)
 {
-    /* Update the sequence from the path */
-    m_ImageSequence.Read(path);
+    /* Update the media from the path */
+    m_Media.Read(path);
+
+    /* Cache */
+    CacheLookAhead();
 
     /* Set the sequence on the Player */
-    m_Player->Load(m_ImageSequence);
+    m_Player->Load(m_Media);
 
     /* Add the media on the Media Lister */
-    m_MediaLister->AddMedia(m_ImageSequence);
+    m_MediaLister->AddMedia(m_Media);
 }
 
 // Slots
@@ -148,16 +167,16 @@ void VoidMainWindow::Load()
     ReadDirectory(mediaBrowser.GetDirectory());
 }
 
-void VoidMainWindow::SetSequence(const VoidImageSequence& sequence)
+void VoidMainWindow::SetMedia(const Media& media)
 {
     /* Clear the player */
     m_Player->Clear();
 
     /* Update the sequence */
-    m_ImageSequence = sequence;
+    m_Media = media;
 
     /* Set the sequence on the Player */
-    m_Player->Load(m_ImageSequence);
+    m_Player->Load(m_Media);
 }
 
 VOID_NAMESPACE_CLOSE

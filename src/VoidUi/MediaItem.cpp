@@ -25,11 +25,11 @@ const std::string VoidMediaItem::m_SelectedSS = "\
             }\
         ";
 
-VoidMediaItem::VoidMediaItem(const VoidImageSequence& media, QWidget* parent)
+VoidMediaItem::VoidMediaItem(const Media& media, QWidget* parent)
     : QFrame(parent)
     , m_Selected(false)
     , m_Playing(false)
-    , m_Media(media)
+    , m_Clip(media)
 {
     /* Build the layout */
     Build();
@@ -109,28 +109,28 @@ void VoidMediaItem::Setup()
 
 std::string VoidMediaItem::GetFramerate() const
 {
-    return Tools::to_trimmed_string(m_Media.Framerate()) + "fps";
+    return Tools::to_trimmed_string(m_Clip.Framerate()) + "fps";
 }
 
 std::string VoidMediaItem::GetRange() const
 {
-    return std::to_string(m_Media.FirstFrame()) + "-" + std::to_string(m_Media.LastFrame());
+    return std::to_string(m_Clip.FirstFrame()) + "-" + std::to_string(m_Clip.LastFrame());
 }
 
 std::string VoidMediaItem::GetName() const
 {
-    return m_Media.Name();
+    return m_Clip.Name();
 }
 
 std::string VoidMediaItem::GetType() const
 {
-    return m_Media.Type();
+    return m_Clip.Extension();
 }
 
 QPixmap VoidMediaItem::GetThumbnail() const
 {   
     /* Resize the Frame to a thumbnail size */
-    QImage scaled = QImage(m_Media.FirstImage().FullPath().c_str()).scaled(
+    QImage scaled = QImage(m_Clip.FirstFrameData().Path().c_str()).scaled(
             THUMBNAIL_SIZE, THUMBNAIL_SIZE, Qt::KeepAspectRatio
         );
 
