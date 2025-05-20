@@ -39,6 +39,9 @@ protected:
     /* Caches the Media if Caching is allowed */
     void CacheLookAhead();
 
+    /* Clears ahe cache for the media */
+    void ClearLookAheadCache();
+
 private: /* Members */
     VoidDocker* m_Docker;
     VoidDocker* m_MListDocker;
@@ -52,6 +55,7 @@ private: /* Members */
     QMenu* m_FileMenu;
     QAction* m_OpenAction;
     QAction* m_ClearAction;
+    QAction* m_ClearCacheAction;
     QAction* m_CloseAction;
 
     /* State determining whether to cache the current media upfront or not */

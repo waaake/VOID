@@ -123,6 +123,9 @@ void VoidMediaLister::ClearSelection()
 
 void VoidMediaLister::AddMedia(const Media& media)
 {
+    /* Clear existing playing media */
+    ClearPlaying();
+
     /* Construct a Media Item from the provided media */
     VoidMediaItem* mediaItem = new VoidMediaItem(media);
 
@@ -135,9 +138,6 @@ void VoidMediaLister::AddMedia(const Media& media)
 
     /* Add the Media Item to the Media Lister Scroll Widget */
     m_ScrollLayout->addWidget(mediaItem);
-
-    /* Clear existing playing media */
-    ClearPlaying();
     
     /* Set Playing state */
     m_CurrentPlaying = mediaItem;

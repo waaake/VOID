@@ -37,6 +37,7 @@ public:
     VoidImageData* ImageData();
 
     inline void Cache();
+    inline void ClearCache();
 
 private: /* Members */
     std::string m_Path;
@@ -116,7 +117,7 @@ public:
      * A Media can be considered invalid if it is empty
      * Any valid media will have atleast one frame
      */
-    inline bool Valid() const { return Empty(); }
+    inline bool Valid() const { return !Empty(); }
 
     /*
      * Caches all frames of the Media onto memory
@@ -124,6 +125,11 @@ public:
      * to allow this function to run parallelly to other elements
      */
     void Cache();
+
+    /*
+     * Clears the cache for all the frames of the Media
+     */
+    void ClearCache();
 
 private: /* Members */
     std::string m_Path;

@@ -32,4 +32,14 @@ void VoidImageData::Read(const std::string& path)
     m_Data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
 }
 
+void VoidImageData::Free()
+{
+    if (m_Data)
+    {
+        /* Just calls free on the internal data */
+        stbi_image_free(m_Data);
+        m_Data = nullptr;
+    }
+}
+
 VOID_NAMESPACE_CLOSE

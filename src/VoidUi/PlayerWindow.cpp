@@ -95,11 +95,13 @@ void VoidMainWindow::Build()
     m_OpenAction = new QAction("Open...", m_FileMenu);
     m_OpenAction->setShortcut(QKeySequence("Ctrl+O"));
     m_ClearAction = new QAction("Clear", m_FileMenu);
+    m_ClearCacheAction = new QAction("Clear Cache", m_FileMenu);
     m_CloseAction = new QAction("Close Player", m_FileMenu);
     m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
 
     m_FileMenu->addAction(m_OpenAction);
     m_FileMenu->addAction(m_ClearAction);
+    m_FileMenu->addAction(m_ClearCacheAction);
     m_FileMenu->addAction(m_CloseAction);
 
     menuBar->addMenu(m_FileMenu);
@@ -114,6 +116,7 @@ void VoidMainWindow::Connect()
     connect(m_OpenAction, SIGNAL(triggered()), this, SLOT(Load()));
 
     connect(m_ClearAction, SIGNAL(triggered()), m_Player, SLOT(Clear()));
+    connect(m_ClearCacheAction, &QAction::triggered, this, &VoidMainWindow::ClearLookAheadCache);
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
@@ -133,6 +136,15 @@ void VoidMainWindow::CacheLookAhead()
         std::thread t(&Media::Cache, m_Media);
         /* Detach so that this continues on irrespective of the scope of the function */
         t.detach();    
+    }
+}
+
+void VoidMainWindow::ClearLookAheadCache()
+{
+    /* Clear any data from the memory which was cached to improve playback */
+    if (m_Media.Valid())
+    {
+        m_Media.ClearCache();
     }
 }
 

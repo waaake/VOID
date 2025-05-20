@@ -105,6 +105,15 @@ void Frame::Cache()
     }
 }
 
+void Frame::ClearCache()
+{
+    if (!m_ImageData->Empty())
+    {
+        m_ImageData->Free();
+        VOID_LOG_INFO("Cleared Frame Cache: {0}", m_Framenum);
+    }
+}
+
 Media::Media()
     : m_Path("")
     , m_Extension("")
@@ -210,7 +219,18 @@ void Media::Cache()
     /* For all the frames in the media frames */
     for (std::pair<int, Frame> it: m_Mediaframes)
     {
+        /* Cache the Frame */
         it.second.Cache();
+    }
+}
+
+void Media::ClearCache()
+{
+    /* For all the frames in the media frames */
+    for (std::pair<int, Frame> it: m_Mediaframes)
+    {
+        /* Clear the Data for the Frame from the memory */
+        it.second.ClearCache();
     }
 }
 
