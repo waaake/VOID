@@ -1,8 +1,16 @@
+/* STD */
+#include <filesystem>
+
 /* Qt */
 #include <QMouseEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QUrl>
 
 /* Internal */
 #include "MediaLister.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -11,7 +19,11 @@ VoidMediaLister::VoidMediaLister(QWidget* parent)
     /* Build Layout */
     Build();
 
+    /* Size Policy */
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+    /* Accept drops */
+    setAcceptDrops(true);
 }
 
 VoidMediaLister::~VoidMediaLister()
@@ -35,6 +47,35 @@ void VoidMediaLister::mousePressEvent(QMouseEvent* event)
         ClearSelection();
 }
 
+void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
+{
+    /* Check if we have urls in the mime data */
+    if (event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void VoidMediaLister::dropEvent(QDropEvent* event)
+{
+    /* Fetch all the urls which have been dropped */
+    QList<QUrl> urls = event->mimeData()->urls();
+
+    for (const QUrl& url : urls)
+    {
+        std::string path = url.toLocalFile().toStdString();
+
+        /* Check if the path is a directory and emit the signal with the path if it is */
+        if (std::filesystem::is_directory(path))
+        {
+            VOID_LOG_INFO("Dropped Media Directory: {0}", path);
+
+            /* Emit the media dropped signal */
+            emit mediaDropped(path);
+        }
+    }
+}
+
 void VoidMediaLister::Build()
 {
     /* Base */
@@ -45,6 +86,10 @@ void VoidMediaLister::Build()
     m_Scrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     /* Give this ScrollWidget a Vertical Layout */
     m_ScrollLayout = new QVBoxLayout(m_Scrollwidget);
+
+    /* Spacing */
+    m_ScrollLayout->setSpacing(2);
+    m_ScrollLayout->setContentsMargins(4, 2, 4, 2);
 
     /* Create a Scroll area that will be incharge of scrolling its conents */
     m_ScollArea = new QScrollArea;
@@ -76,8 +121,11 @@ void VoidMediaLister::ClearSelection()
     }
 }
 
-void VoidMediaLister::AddMedia(const VoidImageSequence& media)
+void VoidMediaLister::AddMedia(const Media& media)
 {
+    /* Clear existing playing media */
+    ClearPlaying();
+
     /* Construct a Media Item from the provided media */
     VoidMediaItem* mediaItem = new VoidMediaItem(media);
 
@@ -90,9 +138,6 @@ void VoidMediaLister::AddMedia(const VoidImageSequence& media)
 
     /* Add the Media Item to the Media Lister Scroll Widget */
     m_ScrollLayout->addWidget(mediaItem);
-
-    /* Clear existing playing media */
-    ClearPlaying();
     
     /* Set Playing state */
     m_CurrentPlaying = mediaItem;
@@ -132,7 +177,7 @@ void VoidMediaLister::ChangeMedia(VoidMediaItem* item)
     item->SetPlaying(true);
 
     /* Finally emit that the media has been changed */
-    emit mediaChanged(item->GetMedia());
+    emit mediaChanged(item->Clip());
 }
 
 VOID_NAMESPACE_CLOSE

@@ -2,8 +2,8 @@
 add_library(
     VoidCore
     SHARED
-    ImageBuffer.cpp
     ImageData.cpp
     Logging.cpp
+    Media.cpp
     VoidTools.cpp
 )

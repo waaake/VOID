@@ -89,8 +89,11 @@ void Timeslider::Build()
 	m_TimeDisplay->setFixedWidth(60);
 	m_TimeDisplay->setAlignment(Qt::AlignCenter);
 
+	/* Framerate */
 	m_FramerateBox = new QComboBox;
 	m_FramerateBox->setEditable(true);
+	/* Setup the Focus policy to only accept focus when clicked on */
+	m_FramerateBox->setFocusPolicy(Qt::ClickFocus);
 
 	/* Add to options layout */
 	/* Layout spacing */

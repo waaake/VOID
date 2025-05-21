@@ -8,7 +8,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidCore/ImageBuffer.h"
+#include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -17,7 +17,7 @@ class VoidMediaItem : public QFrame
     Q_OBJECT
 
 public:
-    VoidMediaItem(const VoidImageSequence& media, QWidget* parent = nullptr);
+    VoidMediaItem(const Media& media, QWidget* parent = nullptr);
     virtual ~VoidMediaItem();
 
     void Update();
@@ -26,7 +26,7 @@ public:
     bool Selected() const { return m_Selected; }
     
     /* Returns the Media associated with the Item */
-    VoidImageSequence GetMedia() const { return m_Media; }
+    Media Clip() const { return m_Clip; }
 
     /* Returns whether the item is being played/displayed/rendered on the renderer */
     bool Playing() const { return m_Playing; }
@@ -74,7 +74,7 @@ private: /* Members */
     bool m_Playing;
 
     /* Media */
-    VoidImageSequence m_Media;
+    Media m_Clip;
 
     /* Layouts */
     QHBoxLayout* m_Layout;

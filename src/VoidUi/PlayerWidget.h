@@ -7,7 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Timeslider.h"
-#include "VoidCore/ImageBuffer.h"
+#include "VoidCore/Media.h"
 #include "VoidRenderer/Renderer.h"
 
 VOID_NAMESPACE_OPEN
@@ -20,7 +20,9 @@ public:
     Player(QWidget* parent = nullptr);
     virtual ~Player();
 
-    void Load(const VoidImageSequence& sequence);
+    /* Loads Playable Media on the Player */
+    void Load(const Media& media);
+    /* Set a frame on the player based on the media */
     void SetFrame(int frame);
 
 public slots:
@@ -35,7 +37,7 @@ private:  /* Members */
     Timeslider* m_Timeslider;
 
     /* Media to be rendered */
-    VoidImageSequence m_Sequence;
+    Media m_Media;
 };
 
 VOID_NAMESPACE_CLOSE

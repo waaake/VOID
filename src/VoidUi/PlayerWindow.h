@@ -12,7 +12,7 @@
 #include "Docker.h"
 #include "MediaLister.h"
 #include "PlayerWidget.h"
-#include "VoidCore/ImageBuffer.h"
+#include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -26,12 +26,27 @@ public:
 
     virtual QSize sizeHint() const override;
 
+    /* Reads Media Directory and Loads Media onto the components */
+    void ReadDirectory(const std::string& path);
+
 private: /* Methods */
     void Build();
     void Connect();
 
 protected:
     void showEvent(QShowEvent* event) override;
+    
+    /* Caches the Media if Caching is allowed */
+    void CacheLookAhead();
+
+    /* Clears ahe cache for the media */
+    void ClearLookAheadCache();
+
+    /*
+     * Toggles the Caching behaviour for the media
+     * Should the media be cache upfront?
+     */
+    void ToggleLookAheadCache(const bool toggle);
 
 private: /* Members */
     VoidDocker* m_Docker;
@@ -43,18 +58,29 @@ private: /* Members */
     VoidMediaLister* m_MediaLister;
 
     /* Window Menu */
+    /* File Menu */
     QMenu* m_FileMenu;
     QAction* m_OpenAction;
     QAction* m_ClearAction;
     QAction* m_CloseAction;
+    
+    /* Playback Menu */
+    QMenu* m_PlaybackMenu;
+    QAction* m_EnableCacheAction;
+    QAction* m_DisableCacheAction;
+    QAction* m_StopCacheAction;
+    QAction* m_ClearCacheAction;
+    QAction* m_ResumeCacheAction;
+
+    /* State determining whether to cache the current media upfront or not */
+    bool m_CacheMedia;
 
     /* Image Sequence */
-    // VoidImageSequence* m_ImSequence;
-    VoidImageSequence m_ImageSequence;
+    Media m_Media;
 
 public slots:
     void Load();
-    void SetSequence(const VoidImageSequence& sequence);
+    void SetMedia(const Media& media);
 };
 
 VOID_NAMESPACE_CLOSE

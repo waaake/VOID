@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 
     VOID_NAMESPACE::VoidMainWindow* imager = new voidplayer::VoidMainWindow;
 
-    VOID_LOG_INFO("VOID App initialised.");
+    VOID_LOG_INFO("App initialised.");
 
     /* Set Application icon */
     QImage icon("images/VOID_Logo.svg");
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 
     app.exec();
 
-    VOID_LOG_INFO("VOID App Terminated.");
+    VOID_LOG_INFO("App Terminated.");
 
     /* Delete from the heap */
     delete imager;

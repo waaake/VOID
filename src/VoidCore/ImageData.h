@@ -43,6 +43,8 @@ public:
     unsigned char* Data() const { return m_Data; }
 
     bool Empty() const { return !(m_Data); }
+
+    void Free();
 };
 
 VOID_NAMESPACE_CLOSE

@@ -136,9 +136,9 @@ void VoidRenderer::Clear()
     ClearFrame();
 
     /*
-        * Trigger a Re-paint
-        * This will draw nothing but just clears COLOR and DEPTH
-        */
+     * Trigger a Re-paint
+     * This will draw nothing but just clears COLOR and DEPTH
+     */
     update();
 }
 

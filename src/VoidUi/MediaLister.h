@@ -24,16 +24,19 @@ public:
     virtual ~VoidMediaLister();
 
     /* Adds a Media Item to the List of widgets based on the provided Media */
-    void AddMedia(const VoidImageSequence& media);
+    void AddMedia(const Media& media);
 
     /* Override the default size of the widget */
     QSize sizeHint() const override;
 
 signals:
-    void mediaChanged(const VoidImageSequence& sequence);
+    void mediaChanged(const Media& media);
+    void mediaDropped(const std::string& path);
 
 protected: /* Methods */
     void mousePressEvent(QMouseEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 private: /* Methods */
     void Build();

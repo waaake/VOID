@@ -8,7 +8,7 @@ VOID_NAMESPACE_OPEN
 
 Player::Player(QWidget* parent)
     : QWidget(parent)
-    , m_Sequence()
+    , m_Media()
 {
     /* Build the layout */
     Build();
@@ -53,7 +53,7 @@ void Player::Build()
 void Player::Clear()
 {
     /* Clear the sequence */
-    m_Sequence = VoidImageSequence();
+    m_Media = Media();
 
     /*
      * Update the time range to be 0-1 ??
@@ -63,26 +63,26 @@ void Player::Clear()
     m_Renderer->Clear();
 }
 
-void Player::Load(const VoidImageSequence& sequence)
+void Player::Load(const Media& media)
 {
-    m_Sequence = sequence;
+    m_Media = media;
 
     /* Once we have the image sequence,
      * First update the timeslider range,
      */
-    m_Timeslider->SetRange(m_Sequence.FirstFrame(), m_Sequence.LastFrame());
+    m_Timeslider->SetRange(m_Media.FirstFrame(), m_Media.LastFrame());
     /* Then set the First Image on the Player */
-    m_Renderer->Render(m_Sequence.FirstImage().GetImageData());
+    m_Renderer->Render(m_Media.FirstImage());
 }
 
 void Player::SetFrame(int frame)
 {
     /* Ensure we have a valid sequence to process before setting the frame */
-    if (m_Sequence.Empty())
+    if (m_Media.Empty())
         return;
 
     /* Read the image for the frame from the sequence and set it on the player */
-    m_Renderer->Render(m_Sequence.GetImage(frame).GetImageData());
+    m_Renderer->Render(m_Media.Image(frame));
 }
 
 VOID_NAMESPACE_CLOSE
