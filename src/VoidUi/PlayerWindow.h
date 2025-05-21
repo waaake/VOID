@@ -42,6 +42,12 @@ protected:
     /* Clears ahe cache for the media */
     void ClearLookAheadCache();
 
+    /*
+     * Toggles the Caching behaviour for the media
+     * Should the media be cache upfront?
+     */
+    void ToggleLookAheadCache(const bool toggle);
+
 private: /* Members */
     VoidDocker* m_Docker;
     VoidDocker* m_MListDocker;
@@ -52,11 +58,19 @@ private: /* Members */
     VoidMediaLister* m_MediaLister;
 
     /* Window Menu */
+    /* File Menu */
     QMenu* m_FileMenu;
     QAction* m_OpenAction;
     QAction* m_ClearAction;
-    QAction* m_ClearCacheAction;
     QAction* m_CloseAction;
+    
+    /* Playback Menu */
+    QMenu* m_PlaybackMenu;
+    QAction* m_EnableCacheAction;
+    QAction* m_DisableCacheAction;
+    QAction* m_StopCacheAction;
+    QAction* m_ClearCacheAction;
+    QAction* m_ResumeCacheAction;
 
     /* State determining whether to cache the current media upfront or not */
     bool m_CacheMedia;

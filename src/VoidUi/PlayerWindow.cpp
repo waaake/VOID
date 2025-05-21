@@ -1,6 +1,7 @@
 /* STD */
 #include <string>
 #include <thread>
+#include <future>
 
 /* Qt */
 #include <QLayout>
@@ -48,7 +49,7 @@ void VoidMainWindow::showEvent(QShowEvent* event)
 }
 
 void VoidMainWindow::Build()
-{   
+{
     /* Base */
     QWidget* baseWidget = new QWidget;
     QVBoxLayout* layout = new QVBoxLayout(baseWidget);
@@ -91,32 +92,59 @@ void VoidMainWindow::Build()
     /* Menubar */
     QMenuBar* menuBar = new QMenuBar;
 
+    /* File Menu {{{ */
     m_FileMenu = new QMenu("File", menuBar);
+
     m_OpenAction = new QAction("Open...", m_FileMenu);
     m_OpenAction->setShortcut(QKeySequence("Ctrl+O"));
     m_ClearAction = new QAction("Clear", m_FileMenu);
-    m_ClearCacheAction = new QAction("Clear Cache", m_FileMenu);
     m_CloseAction = new QAction("Close Player", m_FileMenu);
     m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
 
     m_FileMenu->addAction(m_OpenAction);
     m_FileMenu->addAction(m_ClearAction);
-    m_FileMenu->addAction(m_ClearCacheAction);
     m_FileMenu->addAction(m_CloseAction);
+    /* }}} */
 
+    /* Playback Menu {{{ */
+    m_PlaybackMenu = new QMenu("Playback", menuBar);
+
+    m_EnableCacheAction = new QAction("Enable Look Ahead Caching", m_PlaybackMenu);
+    m_DisableCacheAction = new QAction("Disable Look Ahead Caching", m_PlaybackMenu);
+    m_StopCacheAction = new QAction("Stop Caching Media", m_PlaybackMenu);
+    m_ResumeCacheAction = new QAction("Resume Caching Media", m_PlaybackMenu);
+    m_ClearCacheAction = new QAction("Clear Cache", m_PlaybackMenu);
+
+    m_PlaybackMenu->addAction(m_EnableCacheAction);
+    m_PlaybackMenu->addAction(m_DisableCacheAction);
+    m_PlaybackMenu->addAction(m_StopCacheAction);
+    m_PlaybackMenu->addAction(m_ResumeCacheAction);
+    m_PlaybackMenu->addAction(m_ClearCacheAction);
+    /* }}} */
+
+    /* Add to the Menubar */
     menuBar->addMenu(m_FileMenu);
+    menuBar->addMenu(m_PlaybackMenu);
 
+    /* Set Menubar on the parent window */
     setMenuBar(menuBar);
 }
 
 void VoidMainWindow::Connect()
 {
     /* Menu Actions */
+    /* File Menu {{{ */
     connect(m_CloseAction, SIGNAL(triggered()), this, SLOT(close()));
     connect(m_OpenAction, SIGNAL(triggered()), this, SLOT(Load()));
-
     connect(m_ClearAction, SIGNAL(triggered()), m_Player, SLOT(Clear()));
+    /* }}} */
+
+    /* Playback Menu {{{ */
+    connect(m_EnableCacheAction, &QAction::triggered, this, [this](){ ToggleLookAheadCache(true); });
+    connect(m_DisableCacheAction, &QAction::triggered, this, [this](){ ToggleLookAheadCache(false); });
+    connect(m_StopCacheAction, &QAction::triggered, this, [this](){ m_Media.StopCaching(); });
     connect(m_ClearCacheAction, &QAction::triggered, this, &VoidMainWindow::ClearLookAheadCache);
+    /* }}} */
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
@@ -125,8 +153,11 @@ void VoidMainWindow::Connect()
 
 void VoidMainWindow::CacheLookAhead()
 {
-    /* Check if we're supposed to cache look ahead for the media */
-    if (m_CacheMedia)
+    /*
+     * Check if we're supposed to cache look ahead for the media
+     * and if we're not already caching the media
+     */
+    if (m_CacheMedia & !m_Media.Caching())
     {
         /*
          * Get the current media to cache frames on a thread
@@ -134,8 +165,13 @@ void VoidMainWindow::CacheLookAhead()
          * meanwhile this cache continues on
          */
         std::thread t(&Media::Cache, m_Media);
+        /* TODO: Replace with threadpool */
+        /*
+        * This shouldn't be all bad here but we can still have issues if the media is caching and
+        * it was changed, at the moment, we can always call stop caching before chaning media
+        */
         /* Detach so that this continues on irrespective of the scope of the function */
-        t.detach();    
+        t.detach();
     }
 }
 
@@ -146,6 +182,19 @@ void VoidMainWindow::ClearLookAheadCache()
     {
         m_Media.ClearCache();
     }
+}
+
+void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
+{
+    /* Update the State for Caching media */
+    m_CacheMedia = toggle;
+
+    /*
+     * Since there is no explicit user-option provided to begin cache
+     * Calling CacheLookAhead here to begin the cache if CacheMedia was set to 1
+     * Setting CacheMedia to 0, should not clear any existing cache so this case should suffice it
+     */
+    CacheLookAhead();
 }
 
 void VoidMainWindow::ReadDirectory(const std::string& path)

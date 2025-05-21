@@ -131,6 +131,12 @@ public:
      */
     void ClearCache();
 
+    /* Stops caching if the cache process is ongoing */
+    void StopCaching();
+
+    /* Returns whether the Cache process is ongoing */
+    inline bool Caching() const { return m_StopCaching; }
+
 private: /* Members */
     std::string m_Path;
     std::string m_Extension;
@@ -139,7 +145,17 @@ private: /* Members */
 
     Type m_Type;
 
+    /* State determining that caching is currently ongoing */
+    bool m_Caching;
+    /*
+     * This variable controls when the caching operation needs to be stopped
+     * If set to True and if the caching process was active
+     */
+    bool m_StopCaching;
+
+    /* Arrays to hold the media Frames for the type of media */
     std::unordered_map<int, Frame> m_Mediaframes;
+    /* Array to hold the frame numbers for the frames which have been read */
     std::vector<int> m_Framenumbers;
 
 private: /* Methods */
