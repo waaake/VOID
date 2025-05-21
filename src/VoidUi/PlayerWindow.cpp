@@ -1,7 +1,6 @@
 /* STD */
 #include <string>
 #include <thread>
-#include <future>
 
 /* Qt */
 #include <QLayout>

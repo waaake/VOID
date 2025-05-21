@@ -82,7 +82,6 @@ void Player::SetFrame(int frame)
         return;
 
     /* Read the image for the frame from the sequence and set it on the player */
-    // m_Renderer->Render(m_Sequence.GetImage(frame).GetImageData());
     m_Renderer->Render(m_Media.Image(frame));
 }
 
