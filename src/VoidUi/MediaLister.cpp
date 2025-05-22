@@ -15,6 +15,8 @@
 VOID_NAMESPACE_OPEN
 
 VoidMediaLister::VoidMediaLister(QWidget* parent)
+    : m_CurrentPlaying(nullptr)
+    , m_CurrentSelectedItem(nullptr)
 {
     /* Build Layout */
     Build();
