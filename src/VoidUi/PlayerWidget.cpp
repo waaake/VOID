@@ -24,7 +24,7 @@ Player::~Player()
 void Player::Connect()
 {
     /* Timeslider - TimeChange -> Player - SetFrame */
-    connect(m_Timeslider, &Timeslider::TimeChanged, this, &Player::SetFrame);
+    connect(m_Timeline, &Timeline::TimeChanged, this, &Player::SetFrame);
 }
 
 void Player::Build()
@@ -34,7 +34,7 @@ void Player::Build()
 
     /* Instantiate widgets */
     m_Renderer = new VoidRenderer(this);
-    m_Timeslider = new Timeslider(this);
+    m_Timeline = new Timeline(this);
 
     /*
      * The way how this renderer will be setup in UI is
@@ -43,11 +43,11 @@ void Player::Build()
      * Then comes the Timeslider which holds any controls for playback
      */
     layout->addWidget(m_Renderer);
-    layout->addWidget(m_Timeslider);
+    layout->addWidget(m_Timeline);
 
     /* Spacing */
     layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setContentsMargins(0, 0, 0, 2);
 }
 
 void Player::Clear()
@@ -59,7 +59,7 @@ void Player::Clear()
      * Update the time range to be 0-1 ??
      * Clear the data from the player
      */
-    m_Timeslider->SetRange(0, 0);
+    m_Timeline->SetRange(0, 0);
     m_Renderer->Clear();
 }
 
@@ -70,7 +70,9 @@ void Player::Load(const Media& media)
     /* Once we have the image sequence,
      * First update the timeslider range,
      */
-    m_Timeslider->SetRange(m_Media.FirstFrame(), m_Media.LastFrame());
+    m_Timeline->SetRange(m_Media.FirstFrame(), m_Media.LastFrame());
+    /* Clear any cached frame markings from the timeline */
+    m_Timeline->ClearCachedFrames();
     /* Then set the First Image on the Player */
     m_Renderer->Render(m_Media.FirstImage());
 }

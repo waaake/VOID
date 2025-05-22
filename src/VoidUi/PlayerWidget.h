@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "Timeslider.h"
+#include "Timeline.h"
 #include "VoidCore/Media.h"
 #include "VoidRenderer/Renderer.h"
 
@@ -34,7 +34,7 @@ private:  /* Methods */
 
 private:  /* Members */
     VoidRenderer* m_Renderer;
-    Timeslider* m_Timeslider;
+    Timeline* m_Timeline;
 
     /* Media to be rendered */
     Media m_Media;

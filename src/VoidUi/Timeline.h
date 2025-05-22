@@ -1,5 +1,8 @@
-#ifndef _VOID_TIMESLIDER_H
-#define _VOID_TIMESLIDER_H
+#ifndef _VOID_TIMELINE_H
+#define _VOID_TIMELINE_H
+
+/* STD */
+#include <vector>
 
 /* Qt */
 #include <QWidget>
@@ -14,7 +17,37 @@
 
 VOID_NAMESPACE_OPEN
 
-class Timeslider : public QWidget
+class Timeslider : public QSlider
+{
+public:
+	Timeslider(Qt::Orientation orientation, QWidget *parent = nullptr);
+
+	virtual ~Timeslider();
+
+	void AddCacheFrame(int frame);
+	void ClearCachedFrames();
+
+protected:
+	void enterEvent(QEvent* event) override;
+	void leaveEvent(QEvent* event) override;
+	void mouseMoveEvent(QMouseEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseReleaseEvent(QMouseEvent* event) override;
+	void paintEvent(QPaintEvent* event) override;
+
+private: /* Methods */
+	void UpdateHovered(int xpos);
+
+private: /* Members */
+	bool m_Focussed;
+	int m_HovXPos;
+	int m_HoveredFrame;
+
+	/* Stores any frame that have been marked as Cached for the timeslider */
+	std::vector<int> m_CachedFrames;
+};
+
+class Timeline : public QWidget
 {
 	Q_OBJECT
 
@@ -26,17 +59,16 @@ private: /* Members */
 	QPushButton* m_BackwardButton;
 	QPushButton* m_PrevFrameButton;
 	QPushButton* m_StartFrameButton;
-				
+
 	QPushButton* m_StopButton;
 
-	QSlider* m_Timeslider;
+	/* Internal timeslider */
+	Timeslider* m_Timeslider;
 
 	QLineEdit* m_TimeDisplay;
 	QComboBox* m_FramerateBox;
 
 	QDoubleValidator* m_DoubleValidator;
-
-	// VoidEvents e;
 
 	QTimer* m_ForwardsTimer;
 	QTimer* m_BackwardsTimer;
@@ -50,8 +82,8 @@ public:
 	};
 
 public:
-	Timeslider(QWidget* parent = nullptr);
-	virtual ~Timeslider();
+	Timeline(QWidget* parent = nullptr);
+	virtual ~Timeline();
 
 	/* Getters */
 	double Framerate() const;
@@ -69,9 +101,11 @@ public:
 	void SetMinimum(const int frame);
 	void SetRange(const int min, const int max);
 
+	void AddCacheFrame(int frame) { m_Timeslider->AddCacheFrame(frame); }
+	void ClearCachedFrames() { m_Timeslider->ClearCachedFrames(); }
+
 private: /* Methods */
 	void Build();
-	void Stylize();
 	void Connect();
 	void Setup();
 
@@ -94,4 +128,4 @@ private: /* Methods */
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_TIMESLIDER_H
+#endif // _VOID_TIMELINE_H

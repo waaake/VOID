@@ -9,7 +9,7 @@ add_library(
     MediaItem.cpp
     PlayerWidget.cpp
     PlayerWindow.cpp
-    Timeslider.cpp
+    Timeline.cpp
     VoidStyle.cpp
 )
 
