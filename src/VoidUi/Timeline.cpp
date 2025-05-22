@@ -37,8 +37,6 @@ Timeslider::Timeslider(Qt::Orientation orientation, QWidget *parent)
 	, m_HovXPos(0)
 	, m_HoveredFrame(0)
 {
-	connect(this, &QSlider::valueChanged, this, &Timeslider::AddCacheFrame);
-
 	/* Fixed height */
 	setFixedHeight(SL_HEIGHT);
 
