@@ -42,12 +42,12 @@ public:
      * Eventually making their way onto the CPython exposed API for void python API
      */
     inline void PlayForwards() { m_Timeline->PlayForwards(); }
-	inline void PlayBackwards() { m_Timeline->PlayBackwards(); }
+    inline void PlayBackwards() { m_Timeline->PlayBackwards(); }
 
-	inline void Stop() { m_Timeline->Stop(); }
+    inline void Stop() { m_Timeline->Stop(); }
 
-	inline void NextFrame() { m_Timeline->NextFrame(); }
-	inline void PreviousFrame() { m_Timeline->PreviousFrame(); }
+    inline void NextFrame() { m_Timeline->NextFrame(); }
+    inline void PreviousFrame() { m_Timeline->PreviousFrame(); }
 
     inline void MoveToStart() { m_Timeline->MoveToStart(); }
     inline void MoveToEnd() { m_Timeline->MoveToEnd(); }
