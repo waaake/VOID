@@ -2,6 +2,7 @@
 add_library(
     VoidUi
     SHARED
+    About.cpp
     Browser.cpp
     Docker.cpp
     Events.h
