@@ -98,8 +98,17 @@ public:
 
     // inline bool Valid() const { return m_Type != Type::NON_MEDIA; }
 
-    int FirstFrame() const;
-    int LastFrame() const;
+    inline int FirstFrame() const { return m_FirstFrame; }
+    inline int LastFrame() const { return m_LastFrame; }
+
+    inline int Duration() const { return (LastFrame() - FirstFrame()) + 1; }
+
+    /*
+     * Returns whether a given frame falls in the range of Media
+     * i.e. between the first and the last frame of media
+     * Any frame missing does not matter as this method only returns whether a frame is in the range or not
+     */
+    [[nodiscard]] inline bool InRange(const int frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
 
     Frame GetFrame(const int frame) const { return m_Mediaframes.at(frame); }
 
@@ -160,6 +169,9 @@ private: /* Members */
 
 private: /* Methods */
     void ProcessMovie(const std::string& path);
+
+    /* Updates the internal range based on the read frames */
+    void UpdateRange();
 
 };
 

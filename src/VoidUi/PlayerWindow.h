@@ -12,6 +12,8 @@
 #include "Docker.h"
 #include "MediaLister.h"
 #include "PlayerWidget.h"
+#include "Sequence.h"
+#include "Track.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
@@ -27,7 +29,7 @@ public:
     virtual QSize sizeHint() const override;
 
     /* Reads Media Directory and Loads Media onto the components */
-    void ReadDirectory(const std::string& path);
+    void ImportMedia(const std::string& path);
 
 private: /* Methods */
     void Build();
@@ -71,6 +73,13 @@ private: /* Members */
     QAction* m_StopCacheAction;
     QAction* m_ClearCacheAction;
     QAction* m_ResumeCacheAction;
+    QAction* m_PlayForwardsAction;
+    QAction* m_StopPlayingAction;
+    QAction* m_PlayBackwardsAction;
+    QAction* m_ForwardsAction;
+    QAction* m_BackwardsAction;
+    QAction* m_EndFrameAction;
+    QAction* m_StartFrameAction;
 
     /* State determining whether to cache the current media upfront or not */
     bool m_CacheMedia;
@@ -78,9 +87,17 @@ private: /* Members */
     /* Image Sequence */
     Media m_Media;
 
+    /* Playback Sequence holding Media entities internally */
+    SharedPlaybackSequence m_Sequence;
+    /* The track which gets used on the Sequence */
+    SharedPlaybackTrack m_Track;
+
 public slots:
     void Load();
+    /* Clears and sets the provided media on the player */
     void SetMedia(const Media& media);
+    /* Adds media onto the existing track */
+    void AddMedia(const Media& media);
 };
 
 VOID_NAMESPACE_CLOSE
