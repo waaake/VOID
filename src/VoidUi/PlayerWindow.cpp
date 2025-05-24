@@ -21,6 +21,13 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
     , m_CacheMedia(false)
     , m_Media()
 {
+    /* The default playback sequence */
+    m_Sequence = std::make_shared<PlaybackSequence>();
+    m_Track = std::make_shared<PlaybackTrack>(m_Sequence.get());
+
+    /* Update the sequence with this track */
+    m_Sequence->AddVideoTrack(m_Track);
+
     /* Build the UI */
     Build();
 
@@ -96,7 +103,9 @@ void VoidMainWindow::Build()
 
     m_OpenAction = new QAction("Open...", m_FileMenu);
     m_OpenAction->setShortcut(QKeySequence("Ctrl+O"));
+
     m_ClearAction = new QAction("Clear", m_FileMenu);
+
     m_CloseAction = new QAction("Close Player", m_FileMenu);
     m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
 
@@ -114,11 +123,45 @@ void VoidMainWindow::Build()
     m_ResumeCacheAction = new QAction("Resume Caching Media", m_PlaybackMenu);
     m_ClearCacheAction = new QAction("Clear Cache", m_PlaybackMenu);
 
+    m_PlayForwardsAction = new QAction("Play Forwards", m_PlaybackMenu);
+    m_PlayForwardsAction->setShortcut(QKeySequence(Qt::Key_L));
+
+    m_StopPlayingAction = new QAction("Stop Playing", m_PlaybackMenu);
+    m_StopPlayingAction->setShortcut(QKeySequence(Qt::Key_K));
+
+    m_PlayBackwardsAction = new QAction("Play Backwards", m_PlaybackMenu);
+    m_PlayBackwardsAction->setShortcut(QKeySequence(Qt::Key_J));
+
+    m_ForwardsAction = new QAction("Go to Next Frame", m_PlaybackMenu);
+    m_ForwardsAction->setShortcut(QKeySequence(Qt::Key_Period));
+
+    m_BackwardsAction = new QAction("Go to Previous Frame", m_PlaybackMenu);
+    m_BackwardsAction->setShortcut(QKeySequence(Qt::Key_Comma));
+
+    m_EndFrameAction = new QAction("Go to End", m_PlaybackMenu);
+    m_EndFrameAction->setShortcut(QKeySequence(Qt::Key_PageDown));
+
+    m_StartFrameAction = new QAction("Go to Start", m_PlaybackMenu);
+    m_StartFrameAction->setShortcut(QKeySequence(Qt::Key_PageUp));
+
+    /* Playback Cache Actions */
     m_PlaybackMenu->addAction(m_EnableCacheAction);
     m_PlaybackMenu->addAction(m_DisableCacheAction);
     m_PlaybackMenu->addAction(m_StopCacheAction);
     m_PlaybackMenu->addAction(m_ResumeCacheAction);
     m_PlaybackMenu->addAction(m_ClearCacheAction);
+
+    /* -------------------------------- */
+    m_PlaybackMenu->insertSeparator(m_PlayForwardsAction);
+
+    /* Playback Actions */
+    m_PlaybackMenu->addAction(m_PlayForwardsAction);
+    m_PlaybackMenu->addAction(m_PlayBackwardsAction);
+    m_PlaybackMenu->addAction(m_StopPlayingAction);
+    m_PlaybackMenu->addAction(m_ForwardsAction);
+    m_PlaybackMenu->addAction(m_BackwardsAction);
+    m_PlaybackMenu->addAction(m_StartFrameAction);
+    m_PlaybackMenu->addAction(m_EndFrameAction);
     /* }}} */
 
     /* Add to the Menubar */
@@ -143,11 +186,22 @@ void VoidMainWindow::Connect()
     connect(m_DisableCacheAction, &QAction::triggered, this, [this](){ ToggleLookAheadCache(false); });
     connect(m_StopCacheAction, &QAction::triggered, this, [this](){ m_Media.StopCaching(); });
     connect(m_ClearCacheAction, &QAction::triggered, this, &VoidMainWindow::ClearLookAheadCache);
+
+    connect(m_PlayForwardsAction, &QAction::triggered, m_Player, &Player::PlayForwards);
+    connect(m_PlayBackwardsAction, &QAction::triggered, m_Player, &Player::PlayBackwards);
+    connect(m_StopPlayingAction, &QAction::triggered, m_Player, &Player::Stop);
+    connect(m_ForwardsAction, &QAction::triggered, m_Player, &Player::NextFrame);
+    connect(m_BackwardsAction, &QAction::triggered, m_Player, &Player::PreviousFrame);
+    connect(m_StartFrameAction, &QAction::triggered, m_Player, &Player::MoveToStart);
+    connect(m_EndFrameAction, &QAction::triggered, m_Player, &Player::MoveToEnd);
     /* }}} */
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
-    connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ReadDirectory);
+    connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ImportMedia);
+
+    /* Sequence */
+    connect(m_Sequence.get(), &PlaybackSequence::rangeChanged, m_Player, &Player::SetRange);
 }
 
 void VoidMainWindow::CacheLookAhead()
@@ -196,7 +250,7 @@ void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
     CacheLookAhead();
 }
 
-void VoidMainWindow::ReadDirectory(const std::string& path)
+void VoidMainWindow::ImportMedia(const std::string& path)
 {
     /* Update the media from the path */
     m_Media.Read(path);
@@ -204,8 +258,15 @@ void VoidMainWindow::ReadDirectory(const std::string& path)
     /* Cache */
     CacheLookAhead();
 
+    /* Add Media to the track after Clearing the existing contents */
+    m_Track->Clear();
+
+    // /* Set the start frame from the media in this case */
+    // m_Track->SetStartFrame(m_Media.FirstFrame());
+    m_Track->AddMedia(m_Media);
+
     /* Set the sequence on the Player */
-    m_Player->Load(m_Media);
+    m_Player->Load(m_Sequence);
 
     /* Add the media on the Media Lister */
     m_MediaLister->AddMedia(m_Media);
@@ -224,7 +285,7 @@ void VoidMainWindow::Load()
     }
 
     /* Read the directory from the FileDialog */
-    ReadDirectory(mediaBrowser.GetDirectory());
+    ImportMedia(mediaBrowser.GetDirectory());
 }
 
 void VoidMainWindow::SetMedia(const Media& media)
@@ -232,11 +293,23 @@ void VoidMainWindow::SetMedia(const Media& media)
     /* Clear the player */
     m_Player->Clear();
 
-    /* Update the sequence */
+    /* Update the media */
     m_Media = media;
 
     /* Set the sequence on the Player */
     m_Player->Load(m_Media);
+}
+
+void VoidMainWindow::AddMedia(const Media& media)
+{
+    /* Clear the player */
+    m_Player->Clear();
+
+    /* Add Media to the track */
+    m_Track->AddMedia(media);
+
+    /* Set the sequence on the Player */
+    m_Player->Load(m_Sequence);
 }
 
 VOID_NAMESPACE_CLOSE

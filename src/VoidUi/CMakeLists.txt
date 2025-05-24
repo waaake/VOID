@@ -9,7 +9,10 @@ add_library(
     MediaItem.cpp
     PlayerWidget.cpp
     PlayerWindow.cpp
+    Sequence.cpp
     Timeline.cpp
+    Track.cpp
+    TrackItem.cpp
     VoidStyle.cpp
 )
 

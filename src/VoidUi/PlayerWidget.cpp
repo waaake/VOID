@@ -9,7 +9,12 @@ VOID_NAMESPACE_OPEN
 Player::Player(QWidget* parent)
     : QWidget(parent)
     , m_Media()
+    , m_PlaySequence(false)
 {
+    /* Init the Sequence and empty ImageData */
+    m_Sequence = std::make_shared<PlaybackSequence>();
+    m_Image = new VoidImageData;
+
     /* Build the layout */
     Build();
 
@@ -19,6 +24,11 @@ Player::Player(QWidget* parent)
 
 Player::~Player()
 {
+    if (m_Image && !m_Image->Empty())
+    {
+        m_Image->Free();
+        delete m_Image;
+    }
 }
 
 void Player::Connect()
@@ -67,6 +77,12 @@ void Player::Load(const Media& media)
 {
     m_Media = media;
 
+    /* 
+     * Media is set on the Player
+     * The play state should represent that
+     */
+    m_PlaySequence = false;
+
     /* Once we have the image sequence,
      * First update the timeslider range,
      */
@@ -77,9 +93,60 @@ void Player::Load(const Media& media)
     m_Renderer->Render(m_Media.FirstImage());
 }
 
+void Player::Load(const SharedPlaybackSequence& sequence)
+{
+    /* 
+     * Now that we have loaded a Sequence, the very first thing
+     * is to update the play state to now play the Sequence
+     */
+    m_PlaySequence = true;
+
+    /* Update the sequence to point at the provided sequence shared pointer */
+    m_Sequence = sequence;
+
+    /* Once we have the image sequence,
+     * First update the timeslider range,
+     */
+    m_Timeline->SetRange(m_Sequence->StartFrame(), m_Sequence->EndFrame());
+    /* Clear any cached frame markings from the timeline */
+    m_Timeline->ClearCachedFrames();
+    
+    /* Render the current frame from the seqeunce */
+    SetSequenceFrame(m_Timeline->Frame());
+
+    VOID_LOG_INFO("SEQUENCE SET: Range: {0}--{1}", m_Sequence->StartFrame(), m_Sequence->EndFrame());
+}
+
 void Player::SetFrame(int frame)
 {
-    /* Ensure we have a valid sequence to process before setting the frame */
+    /* 
+     * Check what do we want to play
+     * if play sequence is not set to true, which means the media was set latest on the player
+     */
+    if (m_PlaySequence)
+        return SetSequenceFrame(frame);
+    
+    return SetMediaFrame(frame);
+}
+
+void Player::SetSequenceFrame(int frame)
+{
+    /* Ensure We have Valid sequence with media to process before setting the frame */
+    if (m_Sequence->IsEmpty())
+        return;
+
+    /* 
+     * Update the internal pointer with the frame data from the media of the sequence
+     * The method returns a boolean value indicating whether the frame had data or not
+     * Accordingly, the frame gets set if it has some data
+     */
+    if (m_Sequence->GetImage(frame, m_Image))
+        m_Renderer->Render(m_Image);
+}
+
+void Player::SetMediaFrame(int frame)
+{
+    /* Ensure we have a valid media to process before setting the frame */
     if (m_Media.Empty())
         return;
 

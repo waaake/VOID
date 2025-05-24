@@ -17,6 +17,9 @@
 
 VOID_NAMESPACE_OPEN
 
+/* Forward Declaration for PlayerWidget class */
+class Player;
+
 class Timeslider : public QSlider
 {
 public:
@@ -86,10 +89,10 @@ public:
 	virtual ~Timeline();
 
 	/* Getters */
-	double Framerate() const;
-	int Frame() const;
-	int Minimum() const;
-	int Maximum() const;
+	inline double Framerate() const { return m_FramerateBox->currentText().toDouble(); }
+	inline int Frame() const { return m_Timeslider->value(); }
+	inline int Minimum() const { return m_Timeslider->minimum(); }
+	inline int Maximum() const { return m_Timeslider->maximum(); }
 
 	/* Setters */
 	void SetFramerate(const double rate);
@@ -97,14 +100,18 @@ public:
 
 	void SetFrame(const int frame);
 
-	void SetMaximum(const int frame);
-	void SetMinimum(const int frame);
+	inline void SetMaximum(const int frame) { m_Timeslider->setMaximum(frame); }
+	inline void SetMinimum(const int frame) { m_Timeslider->setMinimum(frame); }
+
 	void SetRange(const int min, const int max);
 
-	void AddCacheFrame(int frame) { m_Timeslider->AddCacheFrame(frame); }
-	void ClearCachedFrames() { m_Timeslider->ClearCachedFrames(); }
+	inline void AddCacheFrame(int frame) { m_Timeslider->AddCacheFrame(frame); }
+	inline void ClearCachedFrames() { m_Timeslider->ClearCachedFrames(); }
 
-private: /* Methods */
+	/* Friendly classes */
+	friend class Player;
+
+protected: /* Methods */
 	void Build();
 	void Connect();
 	void Setup();
@@ -119,7 +126,10 @@ private: /* Methods */
 	void NextFrame();
 	void PreviousFrame();
 
-	signals:
+	inline void MoveToStart() { m_Timeslider->setValue(m_Timeslider->minimum()); }
+	inline void MoveToEnd() { m_Timeslider->setValue(m_Timeslider->maximum()); }
+
+signals:
 	void Played(const PlayState& type = PlayState::FORWARDS);
 	void PlayedForwards();
 	void PlayedBackwards();

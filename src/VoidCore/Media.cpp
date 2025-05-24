@@ -135,32 +135,35 @@ Media::~Media()
 {
 }
 
-int Media::FirstFrame() const
+void Media::UpdateRange()
 {
-    std::vector<int>::const_iterator it = std::min_element(m_Framenumbers.begin(), m_Framenumbers.end());
+    /* Process First Frame {{{ */
+    std::vector<int>::const_iterator fit = std::min_element(m_Framenumbers.begin(), m_Framenumbers.end());
 
-    /* Return the minimum value from the framenumbers set */
-    if (it != m_Framenumbers.end())
+    if (fit != m_Framenumbers.end())
     {
-        return *it;
+        /* Return the minimum value from the framenumbers set */
+        m_FirstFrame = *fit;
     }
-
-    /* No frames to process */
-    return -1;
-}
-
-int Media::LastFrame() const
-{
-    std::vector<int>::const_iterator it = std::max_element(m_Framenumbers.begin(), m_Framenumbers.end());
-
-    /* Return the maximum value from the framenumbers set */
-    if (it != m_Framenumbers.end())
+    else /* No frames to process */
     {
-        return *it;
+        m_FirstFrame = -1;
     }
+    /* }}} */
 
-    /* No frames to process */
-    return -1;
+    /* Process Last Frame {{{ */
+    std::vector<int>::const_iterator lit = std::max_element(m_Framenumbers.begin(), m_Framenumbers.end());
+
+    if (lit != m_Framenumbers.end())
+    {
+        /* Return the maximum value from the framenumbers set */
+        m_LastFrame = *lit;
+    }
+    else /* No frames to process */
+    {
+        m_LastFrame = -1;
+    }
+    /* }}} */
 }
 
 void Media::Read(const std::string& path)
@@ -207,6 +210,11 @@ void Media::Read(const std::string& path)
 
     std::chrono::time_point end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
+
+    /*
+     * Update the frame range as we have read any of the media present in the given path
+     */
+    UpdateRange();
 
     VOID_LOG_INFO("Time Taken to Load : {0}", duration.count());
 }

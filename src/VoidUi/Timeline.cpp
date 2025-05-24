@@ -344,8 +344,8 @@ void Timeline::Connect()
 	connect(m_NextFrameButton, &QPushButton::clicked, this, &Timeline::NextFrame);
 	connect(m_PrevFrameButton, &QPushButton::clicked, this, &Timeline::PreviousFrame);
 
-	connect(m_EndFrameButton, &QPushButton::clicked, this, [this]() { m_Timeslider->setValue(m_Timeslider->maximum()); });
-	connect(m_StartFrameButton, &QPushButton::clicked, this, [this]() { m_Timeslider->setValue(m_Timeslider->minimum()); });
+	connect(m_StartFrameButton, &QPushButton::clicked, this, &Timeline::MoveToStart);
+	connect(m_EndFrameButton, &QPushButton::clicked, this, &Timeline::MoveToEnd);
 }
 
 void Timeline::Setup()
@@ -380,27 +380,6 @@ void Timeline::Setup()
 	setFixedHeight(50);
 }
 
-double Timeline::Framerate() const
-{
-	// Fetch the current value from Framerate box
-	return m_FramerateBox->currentText().toDouble();
-}
-
-int Timeline::Frame() const
-{
-	return m_Timeslider->value();
-}
-
-int Timeline::Minimum() const
-{
-	return m_Timeslider->minimum();
-}
-
-int Timeline::Maximum() const
-{
-	return m_Timeslider->maximum();
-}
-
 void Timeline::SetFramerate(const double rate)
 {
 	m_FramerateBox->setCurrentText(std::to_string(rate).c_str());
@@ -423,16 +402,6 @@ void Timeline::TimeUpdated(const int time)
 	emit TimeChanged(time);
 }
 
-void Timeline::SetMaximum(const int frame)
-{
-	m_Timeslider->setMaximum(frame);
-}
-
-void Timeline::SetMinimum(const int frame)
-{
-	m_Timeslider->setMinimum(frame);
-}
-
 void Timeline::SetRange(const int min, const int max)
 {
 	m_Timeslider->setRange(min, max);
@@ -440,11 +409,17 @@ void Timeline::SetRange(const int min, const int max)
 
 void Timeline::PlayForwards()
 {
+	/* Stop Before we start the timer */
+	Stop();
+
 	m_ForwardsTimer->start(1000 / Framerate());
 }
 
 void Timeline::PlayBackwards()
 {
+	/* Stop Before we start the timer */
+	Stop();
+
 	m_BackwardsTimer->start(1000 / Framerate());
 }
 
