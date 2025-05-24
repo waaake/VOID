@@ -164,9 +164,18 @@ void VoidMainWindow::Build()
     m_PlaybackMenu->addAction(m_EndFrameAction);
     /* }}} */
 
+    /* Help Menu {{{ */
+    m_HelpMenu = new QMenu("Help", menuBar);
+
+    m_AboutAction = new QAction("About VOID");
+
+    m_HelpMenu->addAction(m_AboutAction);
+    /* }}} */
+
     /* Add to the Menubar */
     menuBar->addMenu(m_FileMenu);
     menuBar->addMenu(m_PlaybackMenu);
+    menuBar->addMenu(m_HelpMenu);
 
     /* Set Menubar on the parent window */
     setMenuBar(menuBar);
@@ -194,6 +203,10 @@ void VoidMainWindow::Connect()
     connect(m_BackwardsAction, &QAction::triggered, m_Player, &Player::PreviousFrame);
     connect(m_StartFrameAction, &QAction::triggered, m_Player, &Player::MoveToStart);
     connect(m_EndFrameAction, &QAction::triggered, m_Player, &Player::MoveToEnd);
+    /* }}} */
+
+    /* Help Menu {{{ */
+    connect(m_AboutAction, &QAction::triggered, this, [this]() { AboutVoid(this).exec(); });
     /* }}} */
 
     /* Media Lister */

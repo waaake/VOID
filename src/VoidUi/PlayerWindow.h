@@ -8,6 +8,7 @@
 #include <QList>
 
 /* Internal */
+#include "About.h"
 #include "Definition.h"
 #include "Docker.h"
 #include "MediaLister.h"
@@ -80,6 +81,10 @@ private: /* Members */
     QAction* m_BackwardsAction;
     QAction* m_EndFrameAction;
     QAction* m_StartFrameAction;
+
+    /* Help Menu */
+    QMenu* m_HelpMenu;
+    QAction* m_AboutAction;
 
     /* State determining whether to cache the current media upfront or not */
     bool m_CacheMedia;
