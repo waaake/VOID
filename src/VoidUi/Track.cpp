@@ -99,7 +99,7 @@ void PlaybackTrack::SetRange(int start, int end)
     emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
-bool PlaybackTrack::GetImage(const int frame, VoidImageData* image) const
+bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
 {
     for (SharedTrackItem item: m_TrackItems)
     {
@@ -115,6 +115,12 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image) const
              * Copy the data of the VoidImageData* which we'll update for anyone to access
              */
             std::memcpy(image, item->GetMedia().Image(f), sizeof(VoidImageData));
+
+            /*
+             * Once the Pointer data is copied ->
+             * emit the frameCached signal to indicate that this frame data is now available on the Media Class
+             */
+            emit frameCached(frame);
 
             /* The memory address of the provided pointer has been updated with the data from the media */
             return true;

@@ -30,6 +30,9 @@ public:
     /* Set a frame on the player based on the media */
     void SetFrame(int frame);
 
+    /* Mark a frame on the timeline as cached */
+    inline void AddCacheFrame(int frame) { m_Timeline->AddCacheFrame(frame); }
+
     /* Set Range on the timeline */
     inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }
 

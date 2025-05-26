@@ -31,6 +31,9 @@ public:
 
     /* Reads Media Directory and Loads Media onto the components */
     void ImportMedia(const std::string& path);
+    void PlayMedia(const std::vector<Media>& items);
+
+    SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
 
 private: /* Methods */
     void Build();

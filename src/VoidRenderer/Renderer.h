@@ -10,6 +10,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "RendererStatus.h"
 #include "VoidCore/ImageData.h"
 
 VOID_NAMESPACE_OPEN
@@ -22,12 +23,7 @@ private: /* Members */
     std::string m_Path;
 
 public:
-    VoidRenderer(QWidget* parent = nullptr)
-        : QOpenGLWidget(parent)
-        , m_Texture(nullptr)
-        , m_ImageData(nullptr)
-    {
-    }
+    VoidRenderer(QWidget* parent = nullptr);
 
     virtual ~VoidRenderer();
 
@@ -40,7 +36,14 @@ protected:
     virtual void paintGL() override;
     virtual void resizeGL(int w, int h) override;
 
+    virtual void resizeEvent(QResizeEvent* event) override;
+    virtual void mouseMoveEvent(QMouseEvent* event) override;
+
     void ClearFrame();
+
+private: /* Members */
+    RendererStatusBar* m_RenderStatus;
+
 };
 
 VOID_NAMESPACE_CLOSE
