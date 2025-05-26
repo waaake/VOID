@@ -3,7 +3,6 @@
 
 /* STD */
 #include <vector>
-#include <memory>
 
 /* Qt */
 #include <QAction>
