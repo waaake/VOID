@@ -146,6 +146,10 @@ public:
     /* Returns whether the Cache process is ongoing */
     inline bool Caching() const { return m_StopCaching; }
 
+    /* Allow iterating over the Media frames */
+    inline std::unordered_map<int, Frame>::iterator begin() { return m_Mediaframes.begin(); }
+    inline std::unordered_map<int, Frame>::iterator end() { return m_Mediaframes.end(); }
+
 private: /* Members */
     std::string m_Path;
     std::string m_Extension;

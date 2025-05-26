@@ -39,6 +39,7 @@ public:
 
 signals:
     void clicked(VoidMediaItem*);
+    void selected(VoidMediaItem*, bool);
     void doubleClicked(VoidMediaItem*);
 
 private: /* Methods */
@@ -66,6 +67,7 @@ private: /* Methods */
 protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
 
 private: /* Members */
     /* State for the widget selection */
@@ -91,10 +93,6 @@ private: /* Members */
     QLabel* m_PlayLabel;
 
     QLabel* m_Thumbnail;
-
-    /* Stylesheet */
-    static const std::string m_DefaultSS;
-    static const std::string m_SelectedSS;
 };
 
 VOID_NAMESPACE_CLOSE

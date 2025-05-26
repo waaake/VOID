@@ -43,6 +43,12 @@ public:
 
     void SetRange(int start, int end);
 
+    /* 
+     * Caches media frames
+     * emits frameCached for each of them emitted
+     */
+    void Cache();
+
     /* Getters */
     inline int GetOffset() const { return m_Offset; }
     inline Media GetMedia() const { return m_Media; }
@@ -68,6 +74,13 @@ signals: /* Signals denoting Actions in the TrackItem */
      * includes the start and end frame of the track item
      */
     void rangeChanged(int start, int end);
+
+    /*
+     * Emitted when a frame is cached
+     * The cache could happen when the media cache operation is run continuously on a thread
+     * Or if the frame is queried by the viewport
+     */
+    void frameCached(int frame);
 
 protected: /* Members */
     Media m_Media;

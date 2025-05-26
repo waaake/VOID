@@ -3,6 +3,7 @@ add_library(
     VoidRenderer
     SHARED
     Renderer.cpp
+    RendererStatus.cpp
 )
 
 # Link to this library

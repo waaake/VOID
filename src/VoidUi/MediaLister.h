@@ -5,6 +5,8 @@
 #include <vector>
 
 /* Qt */
+#include <QAction>
+#include <QPushButton>
 #include <QWidget>
 #include <QScrollArea>
 #include <QLayout>
@@ -31,15 +33,24 @@ public:
 
 signals:
     void mediaChanged(const Media& media);
+    /* For a bunch of media is set to be played */
+    void playlistChanged(const std::vector<Media>& media);
     void mediaDropped(const std::string& path);
 
 protected: /* Methods */
     void mousePressEvent(QMouseEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 private: /* Methods */
     void Build();
+
+    /* Setup how the default UI elements appear */
+    void Setup();
+
+    /* Connects Signals across the componets of the widget */
+    void Connect();
 
     /* Clears the play state of the item which was last playing, if any */
     void ClearPlaying();
@@ -48,7 +59,7 @@ private: /* Methods */
     void ClearSelection();
     
     /* Changes the selection state of the media item(s) */
-    void SelectItem(VoidMediaItem* item);
+    void SelectItem(VoidMediaItem* item, bool clear = true);
 
     /*
      * Changes the state of the media items being played to the provided item
@@ -56,19 +67,30 @@ private: /* Methods */
      */
     void ChangeMedia(VoidMediaItem* item);
 
+    void AddSelectionToSequence();
+    void RemoveSelectedMedia();
+
 private: /* Members */
     QWidget* m_Scrollwidget;
     QScrollArea* m_ScollArea;
     QVBoxLayout* m_layout;
     QVBoxLayout* m_ScrollLayout;
+    QHBoxLayout* m_OptionsLayout;
+
+    /* Options */
+    QPushButton* m_DeleteButton;
+
+    /* Context Menu */
+    QAction* m_PlayAction;
+    QAction* m_RemoveAction;
 
     std::vector<VoidMediaItem*> m_MediaItems;
     
     /* Holds the media item which is currently playing */
-    VoidMediaItem* m_CurrentPlaying;
+    std::vector<VoidMediaItem*> m_CurrentPlaying;
 
     /* Holds the media item which is currently selected */
-    VoidMediaItem* m_CurrentSelectedItem;
+    std::vector<VoidMediaItem*> m_CurrentSelected;
 
 };
 

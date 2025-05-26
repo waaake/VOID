@@ -45,7 +45,7 @@ VoidMainWindow::~VoidMainWindow()
 
 QSize VoidMainWindow::sizeHint() const
 {
-    return QSize(1280, 720);
+    return QSize(1280, 760);
 }
 
 void VoidMainWindow::showEvent(QShowEvent* event)
@@ -67,7 +67,7 @@ void VoidMainWindow::Build()
     // layout->addWidget(m_Player);
 
     /* Media Lister Widget */
-    m_MediaLister = new VoidMediaLister;
+    m_MediaLister = new VoidMediaLister(this);
 
     /* Docker */
     m_Docker = new VoidDocker("Viewer", this);
@@ -164,6 +164,23 @@ void VoidMainWindow::Build()
     m_PlaybackMenu->addAction(m_EndFrameAction);
     /* }}} */
 
+    /* Viewer Contols Menu {{{ */
+    m_ViewerMenu = new QMenu("Viewer", menuBar);
+
+    m_ZoomInAction = new QAction("Zoom In");
+    m_ZoomInAction->setShortcut(QKeySequence(Qt::Key_Plus));
+
+    m_ZoomOutAction = new QAction("Zoom Out");
+    m_ZoomOutAction->setShortcut(QKeySequence(Qt::Key_Minus));
+
+    m_ZoomToFitAction = new QAction("Zoom to Fit");
+    m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
+
+    m_ViewerMenu->addAction(m_ZoomInAction);
+    m_ViewerMenu->addAction(m_ZoomOutAction);
+    m_ViewerMenu->addAction(m_ZoomToFitAction);
+    /* }}} */
+
     /* Help Menu {{{ */
     m_HelpMenu = new QMenu("Help", menuBar);
 
@@ -175,6 +192,7 @@ void VoidMainWindow::Build()
     /* Add to the Menubar */
     menuBar->addMenu(m_FileMenu);
     menuBar->addMenu(m_PlaybackMenu);
+    menuBar->addMenu(m_ViewerMenu);
     menuBar->addMenu(m_HelpMenu);
 
     /* Set Menubar on the parent window */
@@ -205,6 +223,12 @@ void VoidMainWindow::Connect()
     connect(m_EndFrameAction, &QAction::triggered, m_Player, &Player::MoveToEnd);
     /* }}} */
 
+    /* Viewer Menu {{{ */
+    connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
+    connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
+    connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
+    /* }}} */
+
     /* Help Menu {{{ */
     connect(m_AboutAction, &QAction::triggered, this, [this]() { AboutVoid(this).exec(); });
     /* }}} */
@@ -212,9 +236,14 @@ void VoidMainWindow::Connect()
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
     connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ImportMedia);
+    connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
 
     /* Sequence */
     connect(m_Sequence.get(), &PlaybackSequence::rangeChanged, m_Player, &Player::SetRange);
+
+    /* Track */
+    connect(m_Track.get(), &PlaybackTrack::frameCached, m_Player, &Player::AddCacheFrame);
+    connect(m_Track.get(), &PlaybackTrack::cacheCleared, m_Player, &Player::ClearCachedFrames);
 }
 
 void VoidMainWindow::CacheLookAhead()
@@ -230,7 +259,7 @@ void VoidMainWindow::CacheLookAhead()
          * Any frame which gets clicked on, in the timeslider caches the frame if not cached
          * meanwhile this cache continues on
          */
-        std::thread t(&Media::Cache, m_Media);
+        std::thread t(&PlaybackTrack::Cache, m_Track.get());
         /* TODO: Replace with threadpool */
         /*
         * This shouldn't be all bad here but we can still have issues if the media is caching and
@@ -248,6 +277,9 @@ void VoidMainWindow::ClearLookAheadCache()
     {
         m_Media.ClearCache();
     }
+
+    /* Clear Cache from the track */
+    m_Track->ClearCache();
 }
 
 void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
@@ -320,6 +352,24 @@ void VoidMainWindow::AddMedia(const Media& media)
 
     /* Add Media to the track */
     m_Track->AddMedia(media);
+
+    /* Set the sequence on the Player */
+    m_Player->Load(m_Sequence);
+}
+
+void VoidMainWindow::PlayMedia(const std::vector<Media>& media)
+{
+    /* Clear the player */
+    m_Player->Clear();
+
+    /* Clear the track */
+    m_Track->Clear();
+
+    for (Media m: media)
+    {
+        /* Add Media to the track */
+        m_Track->AddMedia(m);
+    }
 
     /* Set the sequence on the Player */
     m_Player->Load(m_Sequence);

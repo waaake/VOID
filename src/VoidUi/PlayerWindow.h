@@ -31,6 +31,9 @@ public:
 
     /* Reads Media Directory and Loads Media onto the components */
     void ImportMedia(const std::string& path);
+    void PlayMedia(const std::vector<Media>& items);
+
+    SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
 
 private: /* Methods */
     void Build();
@@ -81,6 +84,12 @@ private: /* Members */
     QAction* m_BackwardsAction;
     QAction* m_EndFrameAction;
     QAction* m_StartFrameAction;
+
+    /* Viewer Menu */
+    QMenu* m_ViewerMenu;
+    QAction* m_ZoomInAction;
+    QAction* m_ZoomOutAction;
+    QAction* m_ZoomToFitAction;
 
     /* Help Menu */
     QMenu* m_HelpMenu;

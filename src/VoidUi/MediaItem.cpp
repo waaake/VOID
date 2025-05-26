@@ -1,29 +1,17 @@
 /* Qt */
 #include <QStyle>
+#include <QPainter>
+#include <QMouseEvent>
 
 /* Internal */
 #include "MediaItem.h"
+#include "VoidStyle.h"
 #include "VoidCore/VoidTools.h"
 
 static const int THUMBNAIL_SIZE = 60;
 static const int ICON_SIZE = 20;
 
 VOID_NAMESPACE_OPEN
-
-/* Stylesheets */
-const std::string VoidMediaItem::m_DefaultSS = "\
-            QFrame {\
-                background-color: #80C3D5;\
-                color: #000000;\
-            }\
-        ";
-
-const std::string VoidMediaItem::m_SelectedSS = "\
-            QFrame {\
-                background-color: #DAE589;\
-                color: #000000;\
-            }\
-        ";
 
 VoidMediaItem::VoidMediaItem(const Media& media, QWidget* parent)
     : QFrame(parent)
@@ -44,12 +32,52 @@ VoidMediaItem::~VoidMediaItem()
 
 void VoidMediaItem::mousePressEvent(QMouseEvent* event)
 {
-    emit clicked(this);
+    /* The clicked signal and selected signal gets emitted when the Mouse Left Click Happens */
+    if (event->button() == Qt::LeftButton)
+    {
+        /* Emit that this item was clicked on */
+        emit clicked(this);
+    
+        /* This holds the value as to if any other selection needs to be retained or not */
+        bool clear = event->modifiers() & Qt::ControlModifier || event->modifiers() & Qt::ShiftModifier ? false : true;
+        
+        /* Emit that the item has been selected */
+        emit selected(this, clear);
+    }
 }
 
 void VoidMediaItem::mouseDoubleClickEvent(QMouseEvent* event)
 {
     emit doubleClicked(this);
+}
+
+void VoidMediaItem::paintEvent(QPaintEvent* event)
+{
+    /* Painter */
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    /* Default colors */
+    QColor leftIndicator = m_Playing ? VOID_PURPLE_COLOR : VOID_GRAY_COLOR;
+    QColor selectionIndicator = m_Selected ? VOID_BLUE_COLOR : VOID_DARK_BG_COLOR;
+
+    /* Gradient */
+    QLinearGradient gradient(0, 0, width(), 0);
+    gradient.setColorAt(0, VOID_DARK_BG_COLOR);
+    gradient.setColorAt(1, m_Selected ? VOID_DARK_BLUE_COLOR : VOID_DARK_BG_COLOR);
+    
+    /* Draw the Background */
+    painter.setBrush(gradient);
+    painter.setPen(Qt::NoPen);
+    painter.drawRect(rect());
+
+    /* Draw the Left indicator rect */
+    painter.setBrush(leftIndicator);
+    painter.drawRect(0, 0, 6, height());
+
+    /* Draw the right indicator rect */
+    painter.setBrush(selectionIndicator);
+    painter.drawRect(width() - 4, 0, 4, height());
 }
 
 void VoidMediaItem::Build()
@@ -67,8 +95,6 @@ void VoidMediaItem::Build()
     m_FramerateLabel = new QLabel;
     m_RangeLabel = new QLabel;
     m_TypeLabel = new QLabel;
-    m_PlayLabel = new QLabel;
-
     m_Thumbnail = new QLabel;
 
     /* Add to the Layout */
@@ -79,8 +105,6 @@ void VoidMediaItem::Build()
     m_IntTpLayout->addWidget(m_NameLabel);
     m_IntTpLayout->insertStretch(1, 1);
     m_IntTpLayout->addWidget(m_TypeLabel);
-
-    m_IconLayout->addWidget(m_PlayLabel);
 
     m_RtLayout->addLayout(m_IntTpLayout);
     m_RtLayout->addLayout(m_IntBtLayout);
@@ -94,9 +118,6 @@ void VoidMediaItem::Setup()
 {
     /* Update the values from the media */
     Update();
-
-    /* How the widget looks */
-    setStyleSheet(m_DefaultSS.c_str());
 
     /* Fixed Height */
     setFixedHeight(60);
@@ -142,16 +163,8 @@ void VoidMediaItem::SetPlaying(bool play)
     /* Update the play state */
     m_Playing = play;
 
-    QStyle* s = style();
-
-    if (m_Playing)
-        m_PlayLabel->setPixmap(s->standardPixmap(
-            s->SP_MediaPlay).scaled(
-                ICON_SIZE, ICON_SIZE, Qt::KeepAspectRatio
-            )
-        );
-    else
-        m_PlayLabel->setPixmap(QPixmap(""));
+    /* Repaint */
+    update();
 }
 
 void VoidMediaItem::SetSelected(bool selected)
@@ -159,17 +172,8 @@ void VoidMediaItem::SetSelected(bool selected)
     /* Update the selection state */
     m_Selected = selected;
 
-    /* Update the color corresponding to the selection */
-    if (m_Selected)
-    {
-        /* Set Stylesheet for Selected Item */
-        setStyleSheet(m_SelectedSS.c_str());
-    }
-    else
-    {
-        /* Apply default stylesheet */
-        setStyleSheet(m_DefaultSS.c_str());
-    }
+    /* Repaint */
+    update();
 }
 
 void VoidMediaItem::Update()

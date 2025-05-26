@@ -44,4 +44,17 @@ void TrackItem::SetRange(int start, int end)
     m_EndFrame = end;
 }
 
+void TrackItem::Cache()
+{
+    /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
+    for (std::pair<const int, Frame>& it: m_Media)
+    {
+        /* Cache the data for the frame */
+        it.second.Cache();
+
+        /* Emit the frame - the offset for the track item */
+        emit frameCached(it.first - m_Offset);
+    }
+}
+
 VOID_NAMESPACE_CLOSE

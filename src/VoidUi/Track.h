@@ -48,6 +48,15 @@ public:
     /* Clears the Playback Track */
     void Clear();
 
+    /* 
+     * Caches all frames of any media on the track
+     * emits frameCached for every frame that has been cached
+     */
+    void Cache();
+
+    /* Clears all cache from internal media and emits cacheCleared */
+    void ClearCache();
+
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }
@@ -59,7 +68,11 @@ public:
      * for the provided frame in the timeline
      * Returns a Bool value to give back a status as to indicate whether the frame exists or not
      */
-    bool GetImage(const int frame, VoidImageData* image) const;
+    /* 
+     * This function is marked non-const as we're emitting a signal from the function itself 
+     * TODO: investigate a better way to handle the signal of frameCached
+     */
+    bool GetImage(const int frame, VoidImageData* image);
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
     inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
@@ -84,6 +97,16 @@ signals: /* Signals Denoting actions in the Track */
      * includes the start and end frame of the track
      */
     void rangeChanged(int start, int end);
+
+    /*
+     * Emitted when a frame is cached
+     * The cache could happen when the media cache operation is run continuously on a thread
+     * Or if the frame is queried by the viewport
+     */
+    void frameCached(int frame);
+    
+    /* Emitted when the cache of all items' media has been cleared internally */
+    void cacheCleared();
 
 protected: /* Members */
     

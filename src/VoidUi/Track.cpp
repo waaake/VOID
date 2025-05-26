@@ -56,6 +56,9 @@ void PlaybackTrack::AddMedia(const Media& media)
                                         this
                                     );
 
+    /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
+    connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
+
     /*
      * When the media gets added, it always gets added towards the right side which means the start frame
      * would never change in this case and only would result in a change in the last frame
@@ -99,7 +102,7 @@ void PlaybackTrack::SetRange(int start, int end)
     emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
-bool PlaybackTrack::GetImage(const int frame, VoidImageData* image) const
+bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
 {
     for (SharedTrackItem item: m_TrackItems)
     {
@@ -116,6 +119,12 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image) const
              */
             std::memcpy(image, item->GetMedia().Image(f), sizeof(VoidImageData));
 
+            /*
+             * Once the Pointer data is copied ->
+             * emit the frameCached signal to indicate that this frame data is now available on the Media Class
+             */
+            emit frameCached(frame);
+
             /* The memory address of the provided pointer has been updated with the data from the media */
             return true;
         }
@@ -123,6 +132,29 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image) const
 
     /* The provided frame from the timeline does not have any trackitem/media on it */
     return false;
+}
+
+void PlaybackTrack::Cache()
+{
+    /* For each of the track item in the underlying array -> Cache the item's media */
+    for (SharedTrackItem item: m_TrackItems)
+    {
+        /* This emits the frameCached signal for each frame that has been cached */
+        item->Cache();
+    }
+}
+
+void PlaybackTrack::ClearCache()
+{
+    /* Clear cache for each items' media */
+    for (SharedTrackItem item: m_TrackItems)
+    {
+        /* Clear Cache */
+        item->GetMedia().ClearCache();
+    }
+
+    /* Once all media has been rid of cache -> emit the cacheCleared signal */
+    emit cacheCleared();
 }
 
 VOID_NAMESPACE_CLOSE
