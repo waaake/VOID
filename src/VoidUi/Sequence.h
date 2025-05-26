@@ -40,6 +40,7 @@ public:
     inline int EndFrame() const { return m_EndFrame; }
 
     inline bool IsEmpty() const { return m_VideoTracks.empty() && m_AudioTracks.empty(); }
+    inline SharedPlaybackTrack FirstVideoTrack() const { return m_VideoTracks.front(); }
 
     bool HasMedia() const;
 

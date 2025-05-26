@@ -67,7 +67,7 @@ void VoidMainWindow::Build()
     // layout->addWidget(m_Player);
 
     /* Media Lister Widget */
-    m_MediaLister = new VoidMediaLister;
+    m_MediaLister = new VoidMediaLister(this);
 
     /* Docker */
     m_Docker = new VoidDocker("Viewer", this);
@@ -212,9 +212,13 @@ void VoidMainWindow::Connect()
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
     connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ImportMedia);
+    connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
 
     /* Sequence */
     connect(m_Sequence.get(), &PlaybackSequence::rangeChanged, m_Player, &Player::SetRange);
+
+    /* Track */
+    connect(m_Track.get(), &PlaybackTrack::frameCached, m_Player, &Player::AddCacheFrame);
 }
 
 void VoidMainWindow::CacheLookAhead()
@@ -320,6 +324,24 @@ void VoidMainWindow::AddMedia(const Media& media)
 
     /* Add Media to the track */
     m_Track->AddMedia(media);
+
+    /* Set the sequence on the Player */
+    m_Player->Load(m_Sequence);
+}
+
+void VoidMainWindow::PlayMedia(const std::vector<Media>& media)
+{
+    /* Clear the player */
+    m_Player->Clear();
+
+    /* Clear the track */
+    m_Track->Clear();
+
+    for (Media m: media)
+    {
+        /* Add Media to the track */
+        m_Track->AddMedia(m);
+    }
 
     /* Set the sequence on the Player */
     m_Player->Load(m_Sequence);

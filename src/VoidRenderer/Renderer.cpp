@@ -1,12 +1,27 @@
 /* System */
 // #include <GL/gl.h>
+/* Qt */
+#include <QMouseEvent>
 
 /* Internal */
 #include "Renderer.h"
+#include "VoidCore/Logging.h"
 
 #include <chrono>
 
 VOID_NAMESPACE_OPEN
+
+VoidRenderer::VoidRenderer(QWidget* parent)
+    : QOpenGLWidget(parent)
+    , m_Texture(nullptr)
+    , m_ImageData(nullptr)
+{
+    /* Add Render StatusBar */
+    m_RenderStatus = new RendererStatusBar(this);
+
+    /* Enable to track mouse movements */
+    setMouseTracking(true);
+}
 
 VoidRenderer::~VoidRenderer()
 {
@@ -15,6 +30,10 @@ VoidRenderer::~VoidRenderer()
         m_Texture->destroy();
         delete m_Texture;
     }
+
+    /* Delete the Render Status bar */
+    m_RenderStatus->deleteLater();
+    m_RenderStatus = nullptr;
 }
 
 void VoidRenderer::initializeGL()
@@ -50,6 +69,9 @@ void VoidRenderer::paintGL()
             double widgetAspect = double(width()) / double(height());
             double imageAspect = double(m_ImageData->Width()) / double((m_ImageData->Height() ? m_ImageData->Height() : 1));
 
+            /* Update the value on the Status bar */
+            m_RenderStatus->SetRenderResolution(m_ImageData->Width(), m_ImageData->Height());
+
             double factor = widgetAspect / imageAspect;
 
             glBegin(GL_QUADS);
@@ -76,7 +98,46 @@ void VoidRenderer::paintGL()
 
 void VoidRenderer::resizeGL(int w, int h)
 {
+    /* Adjust the viewport size */
     glViewport(0, 0, w, h);
+}
+
+void VoidRenderer::resizeEvent(QResizeEvent* event)
+{
+    /* Base Resize */
+    QOpenGLWidget::resizeEvent(event);
+
+    /* Ensure that the status bar always stays at the bottom of the Renderer */
+    m_RenderStatus->move(0, height() - m_RenderStatus->height());
+    m_RenderStatus->setFixedWidth(width());
+}
+
+void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
+{
+    /* Fetch the mouse position */
+    int x = event->x();
+    int y = event->y();
+
+    /* Update the X and Y Coordinates for the mouse movements */
+    m_RenderStatus->SetMouseCoordinates(x, y);
+
+    /* Fetch color values at the given point */
+    float pixels[4]; /* R G B A*/
+
+    /*
+     * TODO: FIX the issue with offset in value
+     * Currently there is an offset with which pixel values are read
+     * The underlying issue is that we have a dock widget and the left side dock is shriking this widget
+     * But then the glViewport(x, y, w, h) call is not happenning correctly causing the pixel values to get offset
+     * 
+     * Fix is to play without the left dock, but is not very important at this point in development
+     * We can come back to this at a later stage to figure out how Qt is handling the calls and come up with a fix accordingly
+     */
+
+    glReadPixels(x, height() - y, 1, 1, GL_RGBA, GL_FLOAT, pixels);
+
+    /* Update the Pixel values on the Renderer Status bar */
+    m_RenderStatus->SetColourValues(pixels[0], pixels[1], pixels[2], pixels[3]);
 }
 
 // void VoidRenderer::Load(const std::string& path)
