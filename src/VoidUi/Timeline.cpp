@@ -137,7 +137,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	painter.drawRect(0, 0, width(), height());
 
 	/* Position Handle */
-	int hpos = width() * (value() - minimum()) / (maximum() - minimum());
+	int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
 	painter.setBrush(SL_HANDLE_COLOR);
 	painter.drawRect(hpos - uwidth / 2, 0, uwidth, height());
 	/* }}} */

@@ -85,6 +85,12 @@ private: /* Members */
     QAction* m_EndFrameAction;
     QAction* m_StartFrameAction;
 
+    /* Viewer Menu */
+    QMenu* m_ViewerMenu;
+    QAction* m_ZoomInAction;
+    QAction* m_ZoomOutAction;
+    QAction* m_ZoomToFitAction;
+
     /* Help Menu */
     QMenu* m_HelpMenu;
     QAction* m_AboutAction;

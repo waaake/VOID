@@ -4,6 +4,7 @@ add_library(
     SHARED
     About.cpp
     Browser.cpp
+    ControlBar.cpp
     Docker.cpp
     Events.h
     MediaLister.cpp
