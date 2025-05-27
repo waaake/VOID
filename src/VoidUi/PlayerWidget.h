@@ -5,6 +5,7 @@
 #include <QWidget>
 
 /* Internal */
+#include "ControlBar.h"
 #include "Definition.h"
 #include "Timeline.h"
 #include "Sequence.h"
@@ -29,6 +30,11 @@ public:
 
     /* Set a frame on the player based on the media */
     void SetFrame(int frame);
+
+    /* Zoom on the Viewport */
+    inline void ZoomIn() { m_Renderer->ZoomIn(); }
+    inline void ZoomOut() { m_Renderer->ZoomOut(); }
+    inline void ZoomToFit() { m_Renderer->ZoomToFit(); }
 
     /* Mark a frame on the timeline as cached */
     inline void AddCacheFrame(int frame) { m_Timeline->AddCacheFrame(frame); }
@@ -71,6 +77,12 @@ private:  /* Methods */
 private:  /* Members */
     VoidRenderer* m_Renderer;
     Timeline* m_Timeline;
+
+    /* 
+     * The control bar provides users tools to play around with the viewer 
+     * Providing tweak controls and how the viewer behaves
+     */
+    ControlBar* m_ControlBar;
 
     /* Media to be rendered */
     Media m_Media;

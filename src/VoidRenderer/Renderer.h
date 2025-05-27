@@ -30,6 +30,11 @@ public:
     void Render(VoidImageData* data);
     void Play();
     void Clear();
+
+    void ZoomIn(float factor = 1.1f);
+    void ZoomOut(float factor = 0.9f);
+    void ZoomToFit();
+    void UpdateZoom(float zoom);
     
 protected:
     virtual void initializeGL() override;
@@ -39,11 +44,17 @@ protected:
     virtual void resizeEvent(QResizeEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
 
+    virtual void wheelEvent(QWheelEvent* event) override;
+
     void ClearFrame();
 
 private: /* Members */
     RendererStatusBar* m_RenderStatus;
 
+    /* Zoom Factor/Level on the Renderer */
+    float m_ZoomFactor;
+    /* Zoom at specific coords */
+    float m_TranslateX, m_TranslateY;
 };
 
 VOID_NAMESPACE_CLOSE

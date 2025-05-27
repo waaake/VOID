@@ -45,7 +45,7 @@ VoidMainWindow::~VoidMainWindow()
 
 QSize VoidMainWindow::sizeHint() const
 {
-    return QSize(1280, 720);
+    return QSize(1280, 760);
 }
 
 void VoidMainWindow::showEvent(QShowEvent* event)
@@ -164,6 +164,23 @@ void VoidMainWindow::Build()
     m_PlaybackMenu->addAction(m_EndFrameAction);
     /* }}} */
 
+    /* Viewer Contols Menu {{{ */
+    m_ViewerMenu = new QMenu("Viewer", menuBar);
+
+    m_ZoomInAction = new QAction("Zoom In");
+    m_ZoomInAction->setShortcut(QKeySequence(Qt::Key_Plus));
+
+    m_ZoomOutAction = new QAction("Zoom Out");
+    m_ZoomOutAction->setShortcut(QKeySequence(Qt::Key_Minus));
+
+    m_ZoomToFitAction = new QAction("Zoom to Fit");
+    m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
+
+    m_ViewerMenu->addAction(m_ZoomInAction);
+    m_ViewerMenu->addAction(m_ZoomOutAction);
+    m_ViewerMenu->addAction(m_ZoomToFitAction);
+    /* }}} */
+
     /* Help Menu {{{ */
     m_HelpMenu = new QMenu("Help", menuBar);
 
@@ -175,6 +192,7 @@ void VoidMainWindow::Build()
     /* Add to the Menubar */
     menuBar->addMenu(m_FileMenu);
     menuBar->addMenu(m_PlaybackMenu);
+    menuBar->addMenu(m_ViewerMenu);
     menuBar->addMenu(m_HelpMenu);
 
     /* Set Menubar on the parent window */
@@ -203,6 +221,12 @@ void VoidMainWindow::Connect()
     connect(m_BackwardsAction, &QAction::triggered, m_Player, &Player::PreviousFrame);
     connect(m_StartFrameAction, &QAction::triggered, m_Player, &Player::MoveToStart);
     connect(m_EndFrameAction, &QAction::triggered, m_Player, &Player::MoveToEnd);
+    /* }}} */
+
+    /* Viewer Menu {{{ */
+    connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
+    connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
+    connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
     /* }}} */
 
     /* Help Menu {{{ */

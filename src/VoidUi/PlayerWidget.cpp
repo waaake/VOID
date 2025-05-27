@@ -35,6 +35,9 @@ void Player::Connect()
 {
     /* Timeslider - TimeChange -> Player - SetFrame */
     connect(m_Timeline, &Timeline::TimeChanged, this, &Player::SetFrame);
+
+    /* ControlBar - ZoomChange -> Renderer - UpdateZoom */
+    connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::UpdateZoom);
 }
 
 void Player::Build()
@@ -43,6 +46,7 @@ void Player::Build()
     QVBoxLayout* layout = new QVBoxLayout(this);
 
     /* Instantiate widgets */
+    m_ControlBar = new ControlBar(this);
     m_Renderer = new VoidRenderer(this);
     m_Timeline = new Timeline(this);
 
@@ -52,6 +56,7 @@ void Player::Build()
      * The second Row/section will be the one which holds the Renderer
      * Then comes the Timeslider which holds any controls for playback
      */
+    layout->addWidget(m_ControlBar);
     layout->addWidget(m_Renderer);
     layout->addWidget(m_Timeline);
 
