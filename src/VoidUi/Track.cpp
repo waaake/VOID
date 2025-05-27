@@ -56,6 +56,9 @@ void PlaybackTrack::AddMedia(const Media& media)
                                         this
                                     );
 
+    /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
+    connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
+
     /*
      * When the media gets added, it always gets added towards the right side which means the start frame
      * would never change in this case and only would result in a change in the last frame
@@ -129,6 +132,29 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
 
     /* The provided frame from the timeline does not have any trackitem/media on it */
     return false;
+}
+
+void PlaybackTrack::Cache()
+{
+    /* For each of the track item in the underlying array -> Cache the item's media */
+    for (SharedTrackItem item: m_TrackItems)
+    {
+        /* This emits the frameCached signal for each frame that has been cached */
+        item->Cache();
+    }
+}
+
+void PlaybackTrack::ClearCache()
+{
+    /* Clear cache for each items' media */
+    for (SharedTrackItem item: m_TrackItems)
+    {
+        /* Clear Cache */
+        item->GetMedia().ClearCache();
+    }
+
+    /* Once all media has been rid of cache -> emit the cacheCleared signal */
+    emit cacheCleared();
 }
 
 VOID_NAMESPACE_CLOSE
