@@ -210,12 +210,18 @@ void Timeslider::AddCacheFrame(int frame)
 	{
 		m_CachedFrames.push_back(frame);
 	}
+
+	/* Repaint after a frame has been cached to redraw the cache line */
+	update();
 }
 
 void Timeslider::ClearCachedFrames()
 {
 	/* Clears the contents of the cached frames */
 	m_CachedFrames.clear();
+
+	/* Repaint after the cache frames have been cleared */
+	update();
 }
 
 Timeline::Timeline(QWidget* parent)

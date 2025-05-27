@@ -48,6 +48,15 @@ public:
     /* Clears the Playback Track */
     void Clear();
 
+    /* 
+     * Caches all frames of any media on the track
+     * emits frameCached for every frame that has been cached
+     */
+    void Cache();
+
+    /* Clears all cache from internal media and emits cacheCleared */
+    void ClearCache();
+
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }
@@ -96,6 +105,8 @@ signals: /* Signals Denoting actions in the Track */
      */
     void frameCached(int frame);
 
+    /* Emitted when the cache of all items' media has been cleared internally */
+    void cacheCleared();
 protected: /* Members */
     
     /* Holds the Media which have been added to the Track */

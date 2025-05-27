@@ -38,6 +38,7 @@ public:
 
     /* Mark a frame on the timeline as cached */
     inline void AddCacheFrame(int frame) { m_Timeline->AddCacheFrame(frame); }
+    inline void ClearCachedFrames() { m_Timeline->ClearCachedFrames(); }
 
     /* Set Range on the timeline */
     inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }

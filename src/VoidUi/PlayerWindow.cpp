@@ -243,6 +243,7 @@ void VoidMainWindow::Connect()
 
     /* Track */
     connect(m_Track.get(), &PlaybackTrack::frameCached, m_Player, &Player::AddCacheFrame);
+    connect(m_Track.get(), &PlaybackTrack::cacheCleared, m_Player, &Player::ClearCachedFrames);
 }
 
 void VoidMainWindow::CacheLookAhead()
@@ -258,7 +259,7 @@ void VoidMainWindow::CacheLookAhead()
          * Any frame which gets clicked on, in the timeslider caches the frame if not cached
          * meanwhile this cache continues on
          */
-        std::thread t(&Media::Cache, m_Media);
+        std::thread t(&PlaybackTrack::Cache, m_Track.get());
         /* TODO: Replace with threadpool */
         /*
         * This shouldn't be all bad here but we can still have issues if the media is caching and
@@ -276,6 +277,9 @@ void VoidMainWindow::ClearLookAheadCache()
     {
         m_Media.ClearCache();
     }
+
+    /* Clear Cache from the track */
+    m_Track->ClearCache();
 }
 
 void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
