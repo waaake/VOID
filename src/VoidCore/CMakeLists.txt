@@ -7,3 +7,10 @@ add_library(
     Media.cpp
     VoidTools.cpp
 )
+
+# Link to this library
+target_link_libraries(
+    VoidCore
+    PRIVATE
+    OpenImageIO::OpenImageIO
+)

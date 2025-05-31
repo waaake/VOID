@@ -77,7 +77,9 @@ void VoidRenderer::paintGL()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_ImageData->Width(), m_ImageData->Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_ImageData->Data());
+        /* Use the appropriate format */
+        int format = m_ImageData->Channels() == 3 ? GL_RGB : GL_RGBA;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, m_ImageData->Width(), m_ImageData->Height(), 0, format, GL_UNSIGNED_BYTE, m_ImageData->Data());
 
         if (texture)
         {   
@@ -162,8 +164,8 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
 void VoidRenderer::wheelEvent(QWheelEvent* event)
 {
     /* Normalize to OpenGL Coords */
-    m_TranslateX = (2.f * event->position().x() / width()) - 1.f;
-    m_TranslateY = 1.f - (2.f * event->position().y() / height());
+    m_TranslateX = (2.f * event->pos().x() / width()) - 1.f;
+    m_TranslateY = 1.f - (2.f * event->pos().y() / height());
 
     if (event->angleDelta().y() > 0)
     {

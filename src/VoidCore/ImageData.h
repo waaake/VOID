@@ -3,29 +3,36 @@
 
 /* STD*/
 #include <string>
+#include <vector>
 
-/* extern */
-#include "../extern/stb_image.h"
+/* OpenImageIO */
+#include <OpenImageIO/imageio.h>
 
 /* Internal */
 #include "Definition.h"
+#include "Logging.h"
 
 VOID_NAMESPACE_OPEN
 
 class VoidImageData
 {
-private:
-    /* Image data */
+private: /* Members */
+    /* Image Specification Data */
     int m_Width, m_Height;
     int m_Channels;
 
-    unsigned char* m_Data;
+    /* Indicating that the Image data has not yet been read */
+    bool m_Empty;
 
+    std::vector<unsigned char> m_Pixels;
+
+    /* The frame path */
     std::string m_Filepath;
 
 public:
     VoidImageData();
     VoidImageData(const std::string& path);
+
     virtual ~VoidImageData();
 
     /* Accessors */
@@ -35,16 +42,14 @@ public:
      */
     void Read(const std::string& path);
 
-    int Width() const { return m_Width; }
-    int Height() const { return m_Height; }
+    inline int Width() const { return m_Width; }
+    inline int Height() const { return m_Height; }
+    inline int Channels() const { return m_Channels; }
 
-    int Channels() const { return m_Channels; }
-    
-    unsigned char* Data() const { return m_Data; }
+    inline const unsigned char* Data() const { return m_Pixels.data(); }
 
-    bool Empty() const { return !(m_Data); }
-
-    void Free();
+    inline bool Empty() const { return m_Empty; }
+    inline void Free() { m_Pixels.clear(); };
 };
 
 VOID_NAMESPACE_CLOSE

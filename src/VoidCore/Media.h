@@ -36,8 +36,9 @@ public:
     /* Returns the Pointer to the ImageData */
     VoidImageData* ImageData();
 
-    inline void Cache();
-    inline void ClearCache();
+    /* Frame Caches */
+    void Cache();
+    void ClearCache();
 
 private: /* Members */
     std::string m_Path;
@@ -47,11 +48,15 @@ private: /* Members */
 
     VoidImageData* m_ImageData;
 
-    std::string m_ImageFormats[4] = {
-        "png",
+    std::string m_ImageFormats[8] = {
+        "bmp",
+        "dpx",
+        "exr",
         "jpg",
         "jpeg",
-        "exr",
+        "png",
+        "tiff",
+        "tga"
     };
 
     std::string m_MovieFormats[4] = {

@@ -27,7 +27,12 @@ Player::~Player()
     if (m_Image && !m_Image->Empty())
     {
         m_Image->Free();
-        delete m_Image;
+        /* 
+         * TODO: Check why can't we delete this pointer ?? 
+         * Mostly due to memcpy
+         * Could use copy constructor or copy assignment ?
+         */
+        // delete m_Image;
     }
 }
 
