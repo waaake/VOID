@@ -22,7 +22,7 @@ target_include_directories(
     PUBLIC
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../extern
+    ${OpenImageIO_INCLUDE_DIRS}
     )
 
 # Logging
@@ -38,7 +38,6 @@ endif()
 add_executable(
     VOID
     Application.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../extern/stb_image.cpp
 )
 
 # Finally Linking to our executable

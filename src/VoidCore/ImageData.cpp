@@ -1,5 +1,6 @@
 /* Internal */
 #include "ImageData.h"
+#include "Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -7,7 +8,7 @@ VoidImageData::VoidImageData()
     : m_Width(0)
     , m_Height(0)
     , m_Channels(0)
-    , m_Data(nullptr)
+    , m_Empty(true)
 {
 }
 
@@ -18,28 +19,53 @@ VoidImageData::VoidImageData(const std::string& path)
 
 VoidImageData::~VoidImageData()
 {
-    if (m_Data)
-    {
-        // delete m_Data;
-        // m_Data = nullptr;
-        // stbi_image_free(m_Data);
-    }
+    /* Flush out any data from the vector */
+    Free();
 }
 
 void VoidImageData::Read(const std::string& path)
 {
-    /* Load the data from the provided image */
-    m_Data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
-}
+    std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(path);
 
-void VoidImageData::Free()
-{
-    if (m_Data)
+    if (!input)
     {
-        /* Just calls free on the internal data */
-        stbi_image_free(m_Data);
-        m_Data = nullptr;
+        VOID_LOG_INFO("Unable to load image. Path: {0}", path);
+
+        /* Log the original error from OpenImageIO */
+        VOID_LOG_ERROR(OIIO::geterror());
+        return;
     }
+
+    /* 
+     * As we have the image read
+     * Get the ImageSpecs from it
+     */
+    const OIIO::ImageSpec spec = input->spec();
+
+    /* Update the specs */
+    m_Width = spec.width;
+    m_Height = spec.height;
+    m_Channels = spec.nchannels;
+
+    VOID_LOG_INFO("OIIOImage ( Width: {0}, Height: {1}, Channels: {2})", m_Width, m_Height, m_Channels);
+
+    /* And since we're here and able to read the image -> update the internal state that the image has been read */
+    m_Empty = false;
+
+    /* Read requisites */
+    int subimage = 0;
+    int miplevel = 0;
+    /* Channels to read from - to */
+    int chbegin = 0, chend = m_Channels;
+
+    /* Resize the Pixels */
+    m_Pixels.resize(m_Width * m_Height * m_Channels);
+
+    /* Read the image pixels */
+    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, m_Pixels.data());
+
+    /* Close the image after reading */
+    input->close();
 }
 
 VOID_NAMESPACE_CLOSE
