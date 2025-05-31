@@ -23,6 +23,8 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
 # Core Readers
 find_package(OpenImageIO REQUIRED)
+find_package(OpenEXR REQUIRED)
+find_package(Imath REQUIRED)
 
 # Used for Logging
 find_package(spdlog QUIET)

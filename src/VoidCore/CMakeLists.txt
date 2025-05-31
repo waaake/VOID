@@ -12,5 +12,7 @@ add_library(
 target_link_libraries(
     VoidCore
     PRIVATE
+    Imath::Imath
+    OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
 )
