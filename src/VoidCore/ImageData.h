@@ -49,7 +49,22 @@ public:
     inline const unsigned char* Data() const { return m_Pixels.data(); }
 
     inline bool Empty() const { return m_Empty; }
-    inline void Free() { m_Pixels.clear(); };
+
+    /*
+     * Clears the underlying buffer of any data which was read
+     * Updates the internal state of being empty
+     */
+    inline void Free()
+    {
+        /* Clear the pixel buffer */
+        m_Pixels.clear();
+
+        /* Mark the state as empty */
+        m_Empty = true;
+    };
+
+private: /* Methods */
+    void ReadFromEXR(const std::string& path);
 };
 
 VOID_NAMESPACE_CLOSE
