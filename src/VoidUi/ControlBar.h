@@ -2,6 +2,7 @@
 #define _VOID_VIEWER_CONTROL_BAR_H
 
 /* Qt */
+#include <QComboBox>
 #include <QLayout>
 #include <QPushButton>
 #include <QSlider>
@@ -48,6 +49,7 @@ public:
 
 signals:
     void zoomChanged(float factor);
+    void missingFrameHandlerChanged(int handler);
 
 private: /* Members */
     /* Base Layout */
@@ -57,6 +59,9 @@ private: /* Members */
     QPushButton* m_ZoomInButton;
     QPushButton* m_ZoomOutButton;
     ControlSlider* m_ZoomSlider;
+
+    /* Missing Frame Handler */
+    QComboBox* m_MissingFrameCombo;
 
 private: /* Methods */
     void Build();

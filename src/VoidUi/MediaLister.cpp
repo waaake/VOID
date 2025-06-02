@@ -141,6 +141,12 @@ void VoidMediaLister::Build()
     /* Add to the base Layout */
     m_layout->addLayout(m_OptionsLayout);
     m_layout->addWidget(m_ScollArea);
+
+    /* Spacing */
+    int left, top, right, bottom;
+    m_layout->getContentsMargins(&left, &top, &right, &bottom);
+    /* Only adjust the right side spacing to make it cleaner against the viewer */
+    m_layout->setContentsMargins(left, top, 0, bottom);
 }
 
 void VoidMediaLister::Setup()

@@ -19,6 +19,18 @@ class Player : public QWidget
     Q_OBJECT
 
 public:
+    /* Reprents how to handle missing frame */
+    enum class MissingFrameHandler : short
+    {
+        /* An error is displayed on the Viewport */
+        ERROR,
+        /* Nothing is displayed on the viewport */
+        BLACK_FRAME,
+        /* Continue to display the last frame on the viewport */
+        NEAREST
+    };
+
+public:
     Player(QWidget* parent = nullptr);
     virtual ~Player();
 
@@ -30,6 +42,20 @@ public:
 
     /* Set a frame on the player based on the media */
     void SetFrame(int frame);
+
+    /*
+     * Updates the Handler for Missing frame
+     * Setting the behaviour for when a missing frame is set
+     */
+    inline void SetMissingFrameHandler(int handler)
+    {
+        /* Update the missing frame handler */
+        m_MFrameHandler = static_cast<MissingFrameHandler>(handler);
+        /* And Refresh the viewport */
+        Refresh();
+    }
+
+    inline void Refresh() { SetFrame(m_Timeline->Frame()); }
 
     /* Zoom on the Viewport */
     inline void ZoomIn() { m_Renderer->ZoomIn(); }
@@ -44,7 +70,7 @@ public:
     inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }
 
     /*
-     * Timeline Controls: 
+     * Timeline Controls:
      * Below methods expose the functionality from the timeline
      * These are required to be able to govern the play state or set any frame according
      * to the current timeline state
@@ -72,6 +98,9 @@ private:  /* Methods */
     /* Loads the frame from the underlying sequence */
     void SetSequenceFrame(int frame);
 
+    /* Load the frame from a given track item from the sequence/track */
+    void SetTrackItemFrame(SharedTrackItem item, const int frame);
+
     /* Loads the frame from the media in the player */
     void SetMediaFrame(int frame);
 
@@ -79,8 +108,8 @@ private:  /* Members */
     VoidRenderer* m_Renderer;
     Timeline* m_Timeline;
 
-    /* 
-     * The control bar provides users tools to play around with the viewer 
+    /*
+     * The control bar provides users tools to play around with the viewer
      * Providing tweak controls and how the viewer behaves
      */
     ControlBar* m_ControlBar;
@@ -91,18 +120,15 @@ private:  /* Members */
     /* Sequence to be rendered */
     SharedPlaybackSequence m_Sequence;
 
-    /* 
-     * Default VoidImageData* which can be used to read data from the Sequence
-     * This pointer would get updated with data for each frame and then Render it
-     */
-    VoidImageData* m_Image;
-
     /*
      * This boolean reprents the state of playing on the Player
      * Is the Player looking at reading the Sequence of Media(s)
      * Or is the Player looking at playing the Media (which is default)
      */
     bool m_PlaySequence;
+
+    /* Holds the Mode of representing Missing Frames */
+    MissingFrameHandler m_MFrameHandler;
 };
 
 VOID_NAMESPACE_CLOSE

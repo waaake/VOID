@@ -115,6 +115,13 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
         if (item->GetMedia().InRange(f))
         {
             /*
+             * Check for a case where the frame lies in the range of media but is still not available to read
+             * Reason could be that it is missing
+             */
+            if (!item->GetMedia().Contains(f))
+                return false;
+
+            /*
              * Copy the data of the VoidImageData* which we'll update for anyone to access
              */
             std::memcpy(image, item->GetMedia().Image(f), sizeof(VoidImageData));
@@ -132,6 +139,26 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
 
     /* The provided frame from the timeline does not have any trackitem/media on it */
     return false;
+}
+
+SharedTrackItem PlaybackTrack::GetTrackItem(const int frame) const
+{
+    for (SharedTrackItem item: m_TrackItems)
+    {
+        /*
+         * Check whether the current frame + the offset on the trackItem
+         * exists in the range of the Media, if so update the pointer to the data with the
+         * data from the Media and we can return true indicating a frame is successfully found
+         */
+        int f = frame + item->GetOffset();
+        if (item->GetMedia().InRange(f))
+        {
+            return item;
+        }
+    }
+
+    /* The provided frame from the timeline does not have any trackitem/media on it */
+    return nullptr;
 }
 
 void PlaybackTrack::Cache()

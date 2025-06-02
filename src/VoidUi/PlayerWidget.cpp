@@ -10,10 +10,10 @@ Player::Player(QWidget* parent)
     : QWidget(parent)
     , m_Media()
     , m_PlaySequence(false)
+    , m_MFrameHandler(MissingFrameHandler::BLACK_FRAME)
 {
     /* Init the Sequence and empty ImageData */
     m_Sequence = std::make_shared<PlaybackSequence>();
-    m_Image = new VoidImageData;
 
     /* Build the layout */
     Build();
@@ -24,16 +24,6 @@ Player::Player(QWidget* parent)
 
 Player::~Player()
 {
-    if (m_Image && !m_Image->Empty())
-    {
-        m_Image->Free();
-        /* 
-         * TODO: Check why can't we delete this pointer ?? 
-         * Mostly due to memcpy
-         * Could use copy constructor or copy assignment ?
-         */
-        // delete m_Image;
-    }
 }
 
 void Player::Connect()
@@ -43,6 +33,8 @@ void Player::Connect()
 
     /* ControlBar - ZoomChange -> Renderer - UpdateZoom */
     connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::UpdateZoom);
+    /* ControlBar - MissingFrameHandler Change -> Player - SetMissingFrameHandler */
+    connect(m_ControlBar, &ControlBar::missingFrameHandlerChanged, this, &Player::SetMissingFrameHandler);
 }
 
 void Player::Build()
@@ -145,13 +137,58 @@ void Player::SetSequenceFrame(int frame)
     if (m_Sequence->IsEmpty())
         return;
 
-    /* 
-     * Update the internal pointer with the frame data from the media of the sequence
-     * The method returns a boolean value indicating whether the frame had data or not
-     * Accordingly, the frame gets set if it has some data
+    /* Try to get the trackItem at a given frame in the current sequence */
+    /*
+     * Instead of fetching the image data directly from the sequence, fetch the trackItem at any given point
+     * This for the time being (till we have a best case O(1) for finding a track item at any given available)
+     * is a better approach as the nearest frame logic causes a recursion which could end up looping over the same entity
+     * Multiple times in order to find the media first, then it's nearest frame and then the image data for that frame which is very costly
      */
-    if (m_Sequence->GetImage(frame, m_Image))
-        m_Renderer->Render(m_Image);
+    SharedTrackItem item = m_Sequence->GetTrackItem(frame);
+
+    if (item)
+        SetTrackItemFrame(item, frame);
+}
+
+void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
+{
+    /* 
+     * This GetImage itself runs a check if Media.Contains(frame) as it has to offset values internally
+     * based on where the trackitem is present in the sequence
+     */
+    VoidImageData* data = item->GetImage(frame);
+
+    /* A standard frame which is available for any trackitem/media */
+    if (data)
+    {
+        m_Renderer->Render(data);
+    }
+    else
+    {
+        /* 
+         * This maybe a case where the given frame does not exist for the track item
+         * What happens next is based on how the missing frame handler is set
+         */
+        switch(m_MFrameHandler)
+        {
+            /* Show only black frame on the viewer */
+            case MissingFrameHandler::BLACK_FRAME:
+                m_Renderer->Clear();
+                break;
+            case MissingFrameHandler::ERROR:
+                m_Renderer->Clear();
+                m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
+                break;
+            case MissingFrameHandler::NEAREST:
+                /* 
+                 * Recursively call the method but with the nearest available frame
+                 * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
+                 * to read and render on the renderer
+                 */
+                SetTrackItemFrame(item, item->NearestFrame(frame));
+                break;
+        }
+    }
 }
 
 void Player::SetMediaFrame(int frame)
@@ -160,8 +197,42 @@ void Player::SetMediaFrame(int frame)
     if (m_Media.Empty())
         return;
 
-    /* Read the image for the frame from the sequence and set it on the player */
-    m_Renderer->Render(m_Media.Image(frame));
+    /* 
+     * If the frame does not have any data, this could mean that the frame is missing
+     * if the provided frame is in range of the Media
+     * How such a case is handled is based on the MissingFrameHandler
+     * This determines what to do when a frame data is not available
+     * 
+     * ERROR: Display an error on the Viewport stating the frame is not available.
+     * BLACK_FRAME: Display a black frame instead of anything else. No error is displayed.
+     * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
+     */
+    if (m_Media.Contains(frame))
+    {
+        /* Read the image for the frame from the sequence and set it on the player */
+        m_Renderer->Render(m_Media.Image(frame));
+    }
+    else
+    {
+        switch(m_MFrameHandler)
+        {
+            case MissingFrameHandler::BLACK_FRAME:
+                m_Renderer->Clear();
+                break;
+            case MissingFrameHandler::ERROR:
+                m_Renderer->Clear();
+                m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
+                break;
+            case MissingFrameHandler::NEAREST:
+                /* 
+                 * Recursively call the method but with the nearest available frame
+                 * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
+                 * to read and render on the renderer
+                 */
+                SetMediaFrame(m_Media.NearestFrame(frame));
+                break;
+        }
+    }
 }
 
 VOID_NAMESPACE_CLOSE
