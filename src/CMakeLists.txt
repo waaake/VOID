@@ -10,7 +10,7 @@ add_subdirectory(VoidUi)
 # Depends on Qt
 target_include_directories(
     VoidUi
-    PUBLIC
+    PRIVATE
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${Qt5Widgets_INCLUDE_DIRS}
@@ -43,6 +43,7 @@ add_executable(
 # Finally Linking to our executable
 target_link_libraries(
     VOID
+    PRIVATE
     VoidCore
     VoidRenderer
     VoidUi

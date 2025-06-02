@@ -21,6 +21,7 @@ add_library(
 # Link to this library
 target_link_libraries(
     VoidUi
+    PRIVATE
     VoidCore
     VoidRenderer
     Qt5::Widgets
