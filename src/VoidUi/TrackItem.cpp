@@ -57,4 +57,21 @@ void TrackItem::Cache()
     }
 }
 
+VoidImageData* TrackItem::GetImage(const int frame)
+{
+    /* Update the frame value with the offset so that we match the original media range */
+    int f = frame + m_Offset;
+
+    if (m_Media.Contains(f))
+    {
+        /* Emit that the frame from the timeline was cached -- in case it was not before */
+        emit frameCached(frame);
+
+        return m_Media.Image(f);
+    }
+
+    /* The provided frame is not present in the Media */
+    return nullptr;
+}
+
 VOID_NAMESPACE_CLOSE

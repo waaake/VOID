@@ -35,6 +35,18 @@ public:
     void ZoomOut(float factor = 0.9f);
     void ZoomToFit();
     void UpdateZoom(float zoom);
+
+    /*
+     * Set a Message to be displayed on the Renderer
+     * Mostly gets used to show error messages if anything is not working/available
+     */
+    inline void SetMessage(const std::string& message)
+    {
+        /* Update the display label */
+        m_DisplayLabel->setText(message.c_str());
+        /* And make it visible */
+        m_DisplayLabel->setVisible(true);
+    }
     
 protected:
     virtual void initializeGL() override;
@@ -50,6 +62,7 @@ protected:
 
 private: /* Members */
     RendererStatusBar* m_RenderStatus;
+    RendererDisplayLabel* m_DisplayLabel;
 
     /* Zoom Factor/Level on the Renderer */
     float m_ZoomFactor;

@@ -74,6 +74,9 @@ void ControlBar::Build()
     /* Main Layout */
     m_Layout = new QHBoxLayout(this);
 
+    /* Missing Frame Handler */
+    m_MissingFrameCombo = new QComboBox;
+
     /* Zoom Controls */
     m_ZoomInButton = new QPushButton();
     m_ZoomInButton->setIcon(QIcon("resources/icons/icon_zoom_in.svg"));
@@ -86,6 +89,8 @@ void ControlBar::Build()
     m_ZoomSlider = new ControlSlider(Qt::Horizontal);
 
     /* Add to the main layout */
+    m_Layout->addWidget(m_MissingFrameCombo);
+
     m_Layout->addStretch(1);
 
     m_Layout->addWidget(m_ZoomOutButton);
@@ -97,6 +102,11 @@ void ControlBar::Setup()
 {
     /* Widget has a Fixed height */
     setFixedHeight(40);
+
+    /* Missing Frame Handler */
+    m_MissingFrameCombo->addItems({"Error", "Black Frame", "Nearest"});
+    /* Default to Using Black frame */
+    m_MissingFrameCombo->setCurrentIndex(1);
 
     /*
      * Zoom Slider
@@ -117,6 +127,16 @@ void ControlBar::Setup()
 
 void ControlBar::Connect()
 {
+    /* Missing Frame */
+    connect(
+        m_MissingFrameCombo,
+        /* Invoke the signal taking int as the arg */
+        static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        this,
+        [this](int index) { emit missingFrameHandlerChanged(index); }
+    );
+
+    /* Zoom */
     connect(m_ZoomSlider, &QSlider::valueChanged, this, &ControlBar::UpdateZoom);
     connect(m_ZoomInButton, &QPushButton::clicked, this, &ControlBar::ZoomIn);
     connect(m_ZoomOutButton, &QPushButton::clicked, this, &ControlBar::ZoomOut);
@@ -129,14 +149,14 @@ float ControlBar::MapToZoom(int value)
      * The range of the ZoomSlider is from 1 -> 100
      * This method maps the values from that range into 0.1f - 1.f - 12.8f
      * Where 1 from the Slider is mapped as 0.1f and 50 as 1.f, 100 as 12.8f
-     * 
+     *
      * To ensure the second half of the slider also has similar precision as the first half
      * We use logarithmic scaling
      */
 
     if (value <= 50)
         return 0.1f + (value / 50.f) * (1.f - 0.1f);
-    
+
     /* Second half of the slider */
     float normalized = (value - 50) / 50.f;
     /* Base 10 */
@@ -149,7 +169,7 @@ int ControlBar::MapFromZoom(float zoom)
     /* This casts the value into slider range of 1 - 50 */
     if (zoom <= 1.f)
         return static_cast<int>((zoom - 0.1f) / (1.f - 0.1f) * 50);
-    
+
     /* Casts the value into slider range of 51 - 100 */
     return 50 + static_cast<int>(50 * (std::log10(zoom)- std::log10(1.f)) / std::log10(12.8) - std::log10(1.f));
 }

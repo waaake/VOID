@@ -74,6 +74,12 @@ public:
      */
     bool GetImage(const int frame, VoidImageData* image);
 
+    /*
+     * From the track, return the track item which is present at a given frame in the timeline
+     * Returns nullptr if there is no trackitem at the given timeframe
+     */
+    SharedTrackItem GetTrackItem(const int frame) const;
+
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
     inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
 

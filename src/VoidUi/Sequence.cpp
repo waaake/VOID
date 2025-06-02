@@ -136,13 +136,29 @@ bool PlaybackSequence::GetImage(const int frame, VoidImageData* image) const
      * The sequence always returns back the data from the track which is at the top of the stack
      * Meaning bottom of (last added to) the underlying video tracks
      */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty())
+    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
     {
         return m_VideoTracks.back()->GetImage(frame, image);
     }
 
     /* Either the sequence is empty or the Video Track is empty */
     return false;
+}
+
+SharedTrackItem PlaybackSequence::GetTrackItem(const int frame) const
+{
+    /*
+     * When the Sequence is asked for an image for a given frame
+     * The sequence always returns back the data from the track which is at the top of the stack
+     * Meaning bottom of (last added to) the underlying video tracks
+     */
+    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
+    {
+        return m_VideoTracks.back()->GetTrackItem(frame);
+    }
+
+    /* There is nothing in the sequence */
+    return nullptr;
 }
 
 VOID_NAMESPACE_CLOSE

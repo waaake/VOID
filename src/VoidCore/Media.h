@@ -115,6 +115,19 @@ public:
      */
     [[nodiscard]] inline bool InRange(const int frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
 
+    /* 
+     * Returns whether a given frame is available to read
+     * There could be a scenario where the given frame is in the range of first - last but is not available
+     * and is referred to as the missing frame.
+     */
+    [[nodiscard]] inline bool Contains(const int frame) const { return m_Mediaframes.find(frame) != m_Mediaframes.end(); }
+
+    /*
+     * Based on the available frames, returns the frame which is just lower than the provided frame
+     * This is used when the current frame is not available but we want the neartest frame to be used in it's place
+     */
+    int NearestFrame(const int frame) const;
+
     Frame GetFrame(const int frame) const { return m_Mediaframes.at(frame); }
 
     Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }

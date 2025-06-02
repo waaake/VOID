@@ -54,6 +54,8 @@ public:
      */
     bool GetImage(const int frame, VoidImageData* image) const;
 
+    SharedTrackItem GetTrackItem(const int frame) const;
+
 signals: /* Signals denoting actions in the seqeuence */
     void trackAdded();
     void cleared();
