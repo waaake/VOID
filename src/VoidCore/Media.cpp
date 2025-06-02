@@ -137,33 +137,30 @@ Media::~Media()
 
 void Media::UpdateRange()
 {
-    /* Process First Frame {{{ */
-    std::vector<int>::const_iterator fit = std::min_element(m_Framenumbers.begin(), m_Framenumbers.end());
+    /* Sort the Updated frames vector */
+    std::sort(m_Framenumbers.begin(), m_Framenumbers.end());
 
-    if (fit != m_Framenumbers.end())
-    {
-        /* Return the minimum value from the framenumbers set */
-        m_FirstFrame = *fit;
-    }
-    else /* No frames to process */
-    {
-        m_FirstFrame = -1;
-    }
-    /* }}} */
+    /* Update the first and last frame after the framenumbers have been sorted */
+    m_FirstFrame = m_Framenumbers.front();
+    m_LastFrame = m_Framenumbers.back();
+}
 
-    /* Process Last Frame {{{ */
-    std::vector<int>::const_iterator lit = std::max_element(m_Framenumbers.begin(), m_Framenumbers.end());
+int Media::NearestFrame(const int frame) const
+{
+    /* We need the lower bound of the given frame available in the vector */
+    auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
 
-    if (lit != m_Framenumbers.end())
+    if (it != m_Framenumbers.end())
     {
-        /* Return the maximum value from the framenumbers set */
-        m_LastFrame = *lit;
+        /* Return the value at the iter after moving it back */
+        return *(--it);
     }
-    else /* No frames to process */
-    {
-        m_LastFrame = -1;
-    }
-    /* }}} */
+
+    /* 
+     * As the provided frame is lower than the first frame,
+     * The most natural nearest frame to it is the first frame
+     */
+    return m_FirstFrame;
 }
 
 void Media::Read(const std::string& path)
