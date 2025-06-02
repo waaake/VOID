@@ -6,6 +6,7 @@
 
 VOID_NAMESPACE_OPEN
 
+/* Color Widget {{{ */
 ColorWidget::ColorWidget(QWidget* parent)
     : QWidget(parent)
     , m_CurrentColor(Qt::black)
@@ -27,7 +28,54 @@ void ColorWidget::SetColor(const QColor& color)
     /* Repaint */
     update();
 }
+/* }}} */
 
+/* Renderer Diplay Label {{{ */
+RendererDisplayLabel::RendererDisplayLabel(QWidget* parent)
+    : QLabel(parent)
+{
+    Setup();
+}
+
+RendererDisplayLabel::RendererDisplayLabel(const std::string& text, QWidget* parent)
+    : QLabel(text.c_str(), parent)
+{
+    Setup();
+}
+
+void RendererDisplayLabel::paintEvent(QPaintEvent* event)
+{
+    /* Default Draw */
+    QLabel::paintEvent(event);
+
+    /* Painter to draw */
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    /* Add Rounded Border */
+    painter.setPen(QPen(Qt::black, 6));
+    painter.drawRoundedRect(rect().adjusted(-3, -3, 3, 3), 10, 10);
+}
+
+void RendererDisplayLabel::Setup()
+{
+    /* Setup how the Label and text appears */
+    QPalette palette;
+    /* Setup background */
+    palette.setColor(QPalette::Window, Qt::darkGray);
+    /* Text */
+    palette.setColor(QPalette::WindowText, Qt::black);
+    
+    setAutoFillBackground(true);
+    setPalette(palette);
+
+    /* Font Face */
+    QFont font("Arial", 20, QFont::Light);
+    setFont(font);
+}
+/* }}} */
+
+/* RendererStatusBar {{{ */
 RendererStatusBar::RendererStatusBar(QWidget* parent)
     : QWidget(parent)
 {
@@ -133,5 +181,6 @@ void RendererStatusBar::SetColourValues(const float r, const float g, const floa
     /* Update color preview */
     m_ColorPreview->SetColor(QColor(r * 255, g * 255, b * 255, a * 255));
 }
+/* }}} */
 
 VOID_NAMESPACE_CLOSE

@@ -24,6 +24,9 @@ VoidRenderer::VoidRenderer(QWidget* parent)
 {
     /* Add Render StatusBar */
     m_RenderStatus = new RendererStatusBar(this);
+    /* Message display */
+    m_DisplayLabel = new RendererDisplayLabel(this);
+    m_DisplayLabel->setVisible(false);
 
     /* Enable to track mouse movements */
     setMouseTracking(true);
@@ -40,6 +43,10 @@ VoidRenderer::~VoidRenderer()
     /* Delete the Render Status bar */
     m_RenderStatus->deleteLater();
     m_RenderStatus = nullptr;
+
+    /* Delete the Error Label */
+    m_DisplayLabel->deleteLater();
+    m_DisplayLabel = nullptr;
 }
 
 void VoidRenderer::initializeGL()
@@ -127,6 +134,9 @@ void VoidRenderer::resizeEvent(QResizeEvent* event)
 {
     /* Base Resize */
     QOpenGLWidget::resizeEvent(event);
+
+    /* The Label has to have a certain gap from the edges */
+    m_DisplayLabel->move(10, 10);
 
     /* Ensure that the status bar always stays at the bottom of the Renderer */
     m_RenderStatus->move(0, height() - m_RenderStatus->height());
@@ -229,6 +239,8 @@ void VoidRenderer::Render(VoidImageData* data)
 
     /* Update the image data */
     m_ImageData = data;
+    /* Hide the Error Label */
+    m_DisplayLabel->setVisible(false);
 
     /* Trigger a Re-paint */
     update();
@@ -245,6 +257,8 @@ void VoidRenderer::Clear()
     m_ImageData = nullptr;
     /* Clear the frame */
     ClearFrame();
+    /* Hide the Error Label */
+    m_DisplayLabel->setVisible(false);
 
     /*
      * Trigger a Re-paint

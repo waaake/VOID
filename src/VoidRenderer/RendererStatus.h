@@ -26,6 +26,19 @@ private: /* Members */
 
 };
 
+class RendererDisplayLabel : public QLabel
+{
+public:
+    RendererDisplayLabel(QWidget* parent = nullptr);
+    RendererDisplayLabel(const std::string& text, QWidget* parent = nullptr);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+
+private:
+    void Setup();
+};
+
 class RendererStatusBar : public QWidget
 {
     Q_OBJECT
