@@ -53,8 +53,24 @@ public:
     inline int GetOffset() const { return m_Offset; }
     inline Media GetMedia() const { return m_Media; }
 
+    /*
+     * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
+     */
+    VoidImageData* GetImage(const int frame);
+
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }
+
+    /*
+     * Returns the nearest frame of a given frame from the media in TrackItem space
+     * This means that the output frame is negated with the offset of the track item
+     * E.g. Media's nearest frame for 1003 is 1001 and the offset of the Track Item is 1001
+     * Hence for frame 3, the nearest frame is 0 by adding offset and querying media for nearest frame and
+     * then negating back the offset
+     * 
+     * TODO: See if we can improve our logic to get a frame value or Image Data directly?
+     */
+    inline int NearestFrame(const int frame) const { return m_Media.NearestFrame(frame + m_Offset) - m_Offset; }
 
     /* TODO: Cache the First frame and last frame for Media in that class */
     inline int MediaFirstFrame() const { return m_Media.FirstFrame(); }
