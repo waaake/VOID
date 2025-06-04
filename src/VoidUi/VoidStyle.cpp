@@ -72,6 +72,7 @@ void VoidDark::polish(QPalette& palette)
     palette.setColor(QPalette::Link, QColor(42, 130, 218));
     palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
     palette.setColor(QPalette::HighlightedText, Qt::black);
+    palette.setColor(QPalette::Dark, QColor(20, 20, 20));
 }
 
 

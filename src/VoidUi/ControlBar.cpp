@@ -2,6 +2,7 @@
 #include <cmath>
 
 /* Qt */
+#include <QMouseEvent>
 #include <QPainter>
 
 /* Internal */
@@ -69,33 +70,46 @@ ControlBar::~ControlBar()
 {
 }
 
+void ControlBar::paintEvent(QPaintEvent* event)
+{
+    /* Default painting */
+    QWidget::paintEvent(event);
+
+    /* Create a Painter to draw the border */
+    QPainter painter(this);
+
+    /* Set Draw requisites */
+    painter.setPen(QPen(Qt::black, 2));
+
+    /* Draw the border */
+    painter.drawLine(0, 0, width(), 0);
+}
+
 void ControlBar::Build()
 {
     /* Main Layout */
     m_Layout = new QHBoxLayout(this);
 
     /* Missing Frame Handler */
-    m_MissingFrameCombo = new QComboBox;
+    m_MissingFrameLayout = new QHBoxLayout;
+    m_MissingFrameLabel = new QLabel;
+    m_MissingFrameLabel->setPixmap(QPixmap("resources/icons/icon_missing_frame.svg"));
+    m_MissingFrameCombo = new ControlCombo;
+
+    m_MissingFrameLayout->setSpacing(0);
+    m_MissingFrameLayout->addWidget(m_MissingFrameLabel);
+    m_MissingFrameLayout->addWidget(m_MissingFrameCombo);
 
     /* Zoom Controls */
-    m_ZoomInButton = new QPushButton();
-    m_ZoomInButton->setIcon(QIcon("resources/icons/icon_zoom_in.svg"));
-    m_ZoomInButton->setFixedWidth(26);
 
-    m_ZoomOutButton = new QPushButton();
-    m_ZoomOutButton->setFixedWidth(26);
-    m_ZoomOutButton->setIcon(QIcon("resources/icons/icon_zoom_out.svg"));
-
-    m_ZoomSlider = new ControlSlider(Qt::Horizontal);
+    m_Zoomer = new ControlSpinner();
 
     /* Add to the main layout */
-    m_Layout->addWidget(m_MissingFrameCombo);
+    m_Layout->addLayout(m_MissingFrameLayout);
 
     m_Layout->addStretch(1);
 
-    m_Layout->addWidget(m_ZoomOutButton);
-    m_Layout->addWidget(m_ZoomSlider);
-    m_Layout->addWidget(m_ZoomInButton);
+    m_Layout->addWidget(m_Zoomer);
 }
 
 void ControlBar::Setup()
@@ -115,14 +129,11 @@ void ControlBar::Setup()
      * We would want to map the value from slider onto the zoom range
      * And also from zoom range to slider value
      */
-    m_ZoomSlider->setMinimum(1);
-    m_ZoomSlider->setMaximum(100);
-    m_ZoomSlider->setPageStep(1);
+    m_Zoomer->setMinimum(1);
+    m_Zoomer->setMaximum(100);
 
     /* 50 acts as the mid way for the slider which gets mapped to a zoom of 1.f */
-    m_ZoomSlider->setValue(50);
-
-    m_ZoomSlider->setMinimumWidth(150);
+    m_Zoomer->setValue(50);
 }
 
 void ControlBar::Connect()
@@ -137,9 +148,7 @@ void ControlBar::Connect()
     );
 
     /* Zoom */
-    connect(m_ZoomSlider, &QSlider::valueChanged, this, &ControlBar::UpdateZoom);
-    connect(m_ZoomInButton, &QPushButton::clicked, this, &ControlBar::ZoomIn);
-    connect(m_ZoomOutButton, &QPushButton::clicked, this, &ControlBar::ZoomOut);
+    connect(m_Zoomer, static_cast<void (QSpinBox::* )(int)>(&QSpinBox::valueChanged), this, &ControlBar::UpdateZoom);
 }
 
 float ControlBar::MapToZoom(int value)
@@ -177,13 +186,13 @@ int ControlBar::MapFromZoom(float zoom)
 void ControlBar::SetFromZoom(float zoom)
 {
     /* Block Signals */
-    bool blocked = m_ZoomSlider->blockSignals(true);
+    bool blocked = m_Zoomer->blockSignals(true);
 
     /* Cast the zoom to the slider space */
-    m_ZoomSlider->setValue(MapFromZoom(zoom));
+    m_Zoomer->setValue(MapFromZoom(zoom));
 
     /* Unblock signals */
-    m_ZoomSlider->blockSignals(blocked);
+    m_Zoomer->blockSignals(blocked);
 }
 
 VOID_NAMESPACE_CLOSE

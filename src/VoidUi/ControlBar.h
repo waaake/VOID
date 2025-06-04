@@ -4,11 +4,11 @@
 /* Qt */
 #include <QComboBox>
 #include <QLayout>
-#include <QPushButton>
-#include <QSlider>
+#include <QSpinBox>
 #include <QWidget>
 
 /* Internal */
+#include "ControlScroller.h"
 #include "Definition.h"
 #include "VoidCore/Logging.h"
 
@@ -51,17 +51,21 @@ signals:
     void zoomChanged(float factor);
     void missingFrameHandlerChanged(int handler);
 
+protected:
+    void paintEvent(QPaintEvent* event) override;
+
 private: /* Members */
     /* Base Layout */
     QHBoxLayout* m_Layout;
 
     /* Zoom Controls */
-    QPushButton* m_ZoomInButton;
-    QPushButton* m_ZoomOutButton;
-    ControlSlider* m_ZoomSlider;
+    ControlSpinner* m_Zoomer;
 
     /* Missing Frame Handler */
-    QComboBox* m_MissingFrameCombo;
+    /* TODO: This is temporarily here till we have a place for settings/preferences defined */
+    QLabel* m_MissingFrameLabel;
+    ControlCombo* m_MissingFrameCombo;
+    QHBoxLayout* m_MissingFrameLayout;
 
 private: /* Methods */
     void Build();
@@ -69,8 +73,8 @@ private: /* Methods */
     void Connect();
 
     /* Zoom Updates */
-    inline void ZoomIn() { m_ZoomSlider->setValue(m_ZoomSlider->value() + ZOOM_STEP); }
-    inline void ZoomOut() { m_ZoomSlider->setValue(m_ZoomSlider->value() - ZOOM_STEP); }
+    inline void ZoomIn() { m_Zoomer->setValue(m_Zoomer->value() + ZOOM_STEP); }
+    inline void ZoomOut() { m_Zoomer->setValue(m_Zoomer->value() - ZOOM_STEP); }
 
     /* 
      * Emits the zoomChanged signal with the value from zoom slider normalized to viewport zoom
