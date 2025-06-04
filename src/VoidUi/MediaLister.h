@@ -38,6 +38,7 @@ signals:
     void mediaDropped(const std::string& path);
 
 protected: /* Methods */
+    void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;

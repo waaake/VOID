@@ -5,6 +5,7 @@ add_library(
     About.cpp
     Browser.cpp
     ControlBar.cpp
+    ControlScroller.cpp
     Docker.cpp
     Events.h
     MediaLister.cpp

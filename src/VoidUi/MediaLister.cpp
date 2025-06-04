@@ -101,6 +101,18 @@ void VoidMediaLister::contextMenuEvent(QContextMenuEvent* event)
     contextMenu.exec(event->globalPos());
 }
 
+void VoidMediaLister::paintEvent(QPaintEvent* event)
+{
+    /* Standard draw for everything */
+    QWidget::paintEvent(event);
+
+    /* Create a Painter to draw the border */
+    QPainter painter(this);
+    painter.setPen(QPen(Qt::black, 2));
+    /* Draw the border with the painter */
+    painter.drawLine(0, 0, width() + 5, 0);
+}
+
 void VoidMediaLister::Build()
 {
     /* Menu Actions */
