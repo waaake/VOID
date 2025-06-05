@@ -1,0 +1,55 @@
+#ifndef _VOID_FRAMELESS_WINDOW_H
+#define _VOID_FRAMELESS_WINDOW_H
+
+/* Qt */
+#include <QMainWindow>
+
+/* Internal */
+#include "Definition.h"
+
+VOID_NAMESPACE_OPEN
+
+class FramelessWindow : public QMainWindow
+{
+public:
+    FramelessWindow(QWidget* parent = nullptr);
+
+protected:
+    /* 
+     * Overriding the mouse movements and triggers 
+     * to allow for the base widget functionality like resizing
+     * or dragging from the top title bar
+     */
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+
+private: /* enum */
+    /* Different Type of possible resizing operations */
+    enum class ResizeType: short
+    {
+        /* Nothing is being resized */
+        None,
+
+        /* Possible types of resize operations */
+        TopLeft,
+        Top,
+        TopRight,
+        Right,
+        BottomRight,
+        Bottom,
+        BottomLeft,
+        Left,
+    };
+
+private: /* members */
+    ResizeType m_Resize;
+    QPoint m_LastPos;
+
+    bool m_Dragging;
+
+};
+
+VOID_NAMESPACE_CLOSE
+
+#endif // _VOID_FRAMELESS_WINDOW_H

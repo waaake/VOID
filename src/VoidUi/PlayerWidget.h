@@ -23,7 +23,7 @@ public:
     enum class MissingFrameHandler : short
     {
         /* An error is displayed on the Viewport */
-        ERROR,
+        ERROR_FRAME,
         /* Nothing is displayed on the viewport */
         BLACK_FRAME,
         /* Continue to display the last frame on the viewport */

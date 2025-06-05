@@ -8,12 +8,14 @@ add_library(
     ControlScroller.cpp
     Docker.cpp
     Events.h
+    FramelessWindow.cpp
     MediaLister.cpp
     MediaItem.cpp
     PlayerWidget.cpp
     PlayerWindow.cpp
     Sequence.cpp
     Timeline.cpp
+    TitleBar.cpp
     Track.cpp
     TrackItem.cpp
     VoidStyle.cpp

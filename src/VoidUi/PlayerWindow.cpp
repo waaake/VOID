@@ -3,9 +3,10 @@
 #include <thread>
 
 /* Qt */
+#include <QApplication>
 #include <QLayout>
-#include <QMenuBar>
 #include <QIcon>
+#include <QPainter>
 #include <QStyle>
 #include <QValidator>
 
@@ -16,8 +17,56 @@
 
 VOID_NAMESPACE_OPEN
 
-VoidMainWindow::VoidMainWindow(QWidget* parent)
+/* Docker Window {{{ */
+
+DockerWindow::DockerWindow(QWidget* parent)
     : QMainWindow(parent)
+{
+    /* Build the Docker */
+    Build();
+}
+
+DockerWindow::~DockerWindow()
+{
+    m_Player->deleteLater();
+}
+
+void DockerWindow::Build()
+{
+    /* Player */
+    m_Player = new Player();
+
+    /* Media Lister Widget */
+    m_MediaLister = new VoidMediaLister(this);
+
+    /* Docker */
+    m_Docker = new VoidDocker("Viewer", this);
+    m_Docker->SetClosable(false);
+    //m_Docker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    m_MListDocker = new VoidDocker("Media", this);
+    //m_MListDocker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    /* Set the central widget */
+    addDockWidget(Qt::RightDockWidgetArea, m_Docker);
+    addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
+
+    m_Docker->setWidget(m_Player);
+    m_MListDocker->setWidget(m_MediaLister);
+
+    m_MListDocker->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+
+    /* The way how dock widgets appear as default */
+    /* Dock Widgets */
+    m_DockList << m_Docker << m_MListDocker;
+    /* Default Size Corresponding to each of the dock widget */
+    m_DockSizes << 980 << 300;
+}
+
+/* }}} */
+
+VoidMainWindow::VoidMainWindow(QWidget* parent)
+    : FramelessWindow(parent)
     , m_CacheMedia(false)
     , m_Media()
 {
@@ -40,7 +89,6 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
 
 VoidMainWindow::~VoidMainWindow()
 {
-    m_Player->deleteLater();
 }
 
 QSize VoidMainWindow::sizeHint() const
@@ -51,52 +99,43 @@ QSize VoidMainWindow::sizeHint() const
 void VoidMainWindow::showEvent(QShowEvent* event)
 {
     /* Set Default dock size */
-    resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
+    // resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
 }
 
 void VoidMainWindow::Build()
 {
-    /* Base */
+    /* Base Frameless widget */
     QWidget* baseWidget = new QWidget;
+    /* Base Layout to which first layer gets added*/
     QVBoxLayout* layout = new QVBoxLayout(baseWidget);
 
-    /* Player */
-    m_Player = new Player();
+    /* Don't want any extra margins */
+    layout->setContentsMargins(2, 0, 2, 2);
 
-    /* Add to the base layout */
-    // layout->addWidget(m_Player);
+    /* 
+     * The Main title bar for the Void Window 
+     * This will act as a drop-in replacement for the standard TitleBar OS specific
+     */
+    m_TitleBar = new VoidTitleBar(this);
+    layout->addWidget(m_TitleBar, 0, Qt::AlignTop);
 
-    /* Media Lister Widget */
-    m_MediaLister = new VoidMediaLister(this);
+    /*
+     * This is the internal window holding all of the components inside 
+     * and is a docker window where components could be docked/undocked and moved
+     * All of the internal components like player, media list, timeline etc. would exist here
+     */
+    m_InternalDocker = new DockerWindow(this);
+    layout->addWidget(m_InternalDocker);
 
-    /* Docker */
-    m_Docker = new VoidDocker("Viewer", this);
-    m_Docker->SetClosable(false);
-    //m_Docker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-
-    m_MListDocker = new VoidDocker("Media", this);
-    //m_MListDocker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    /* Fetch the Player and Media Lister from the internal Docker */
+    m_Player = m_InternalDocker->GetPlayer();
+    m_MediaLister = m_InternalDocker->MediaLister();
 
     /* Set the central widget */
-    //setCentralWidget(baseWidget);
-    //setCentralWidget(m_Docker);
-    addDockWidget(Qt::RightDockWidgetArea, m_Docker);
-    addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
+    setCentralWidget(baseWidget);
 
-    /* Add to docker */
-    m_Docker->setWidget(m_Player);
-    m_MListDocker->setWidget(m_MediaLister);
-
-    /* The way how dock widgets appear as default */
-    /* Dock Widgets */
-    m_DockList << m_Docker << m_MListDocker;
-    /* Default Size Corresponding to each of the dock widget */
-    m_DockSizes << 980 << 300;
-    // resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
-    // m_MListDocker->resize(300, m_MListDocker->height());
-
-    /* Menubar */
-    QMenuBar* menuBar = new QMenuBar;
+    /* Menubar from the TitleBar */
+    QMenuBar* menuBar = m_TitleBar->MenuBar();
 
     /* File Menu {{{ */
     m_FileMenu = new QMenu("File", menuBar);
@@ -194,13 +233,15 @@ void VoidMainWindow::Build()
     menuBar->addMenu(m_PlaybackMenu);
     menuBar->addMenu(m_ViewerMenu);
     menuBar->addMenu(m_HelpMenu);
-
-    /* Set Menubar on the parent window */
-    setMenuBar(menuBar);
 }
 
 void VoidMainWindow::Connect()
 {
+    /* Title Bar Actions */
+    connect(m_TitleBar, &VoidTitleBar::requestMinimize, this, &QWidget::showMinimized);
+    connect(m_TitleBar, &VoidTitleBar::requestMaximizeRestore, this, [this]() { isMaximized() ? showNormal() : showMaximized(); });
+    connect(m_TitleBar, &VoidTitleBar::requestClose, this, &QWidget::close);
+
     /* Menu Actions */
     /* File Menu {{{ */
     connect(m_CloseAction, SIGNAL(triggered()), this, SLOT(close()));

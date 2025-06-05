@@ -11,15 +11,44 @@
 #include "About.h"
 #include "Definition.h"
 #include "Docker.h"
+#include "FramelessWindow.h"
 #include "MediaLister.h"
 #include "PlayerWidget.h"
 #include "Sequence.h"
+#include "TitleBar.h"
 #include "Track.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
 
-class VoidMainWindow : public QMainWindow
+class DockerWindow : public QMainWindow
+{
+public:
+    explicit DockerWindow(QWidget* parent = nullptr);
+    virtual ~DockerWindow();
+
+    /* Component Getters */
+    /* Returns the Pointer to Player Widget */
+    Player* GetPlayer() const { return m_Player; }
+    /* Returns the Pointer to the Media Lister Widget */
+    VoidMediaLister* MediaLister() const { return m_MediaLister; }
+
+private: /* Members */
+    VoidDocker* m_Docker;
+    VoidDocker* m_MListDocker;
+    QList<QDockWidget*> m_DockList;
+    QList<int> m_DockSizes;
+
+    /* VOID Components */
+    Player* m_Player;
+    VoidMediaLister* m_MediaLister;
+
+private: /* Methods */
+    void Build();
+
+};
+
+class VoidMainWindow : public FramelessWindow
 {
     Q_OBJECT
 
@@ -55,15 +84,16 @@ protected:
     void ToggleLookAheadCache(const bool toggle);
 
 private: /* Members */
-    VoidDocker* m_Docker;
-    VoidDocker* m_MListDocker;
-    QList<QDockWidget*> m_DockList;
-    QList<int> m_DockSizes;
-
     Player* m_Player;
     VoidMediaLister* m_MediaLister;
 
+    DockerWindow* m_InternalDocker;
+
+    VoidTitleBar* m_TitleBar;
+
     /* Window Menu */
+    QLabel* m_VoidMenuIcon;
+
     /* File Menu */
     QMenu* m_FileMenu;
     QAction* m_OpenAction;

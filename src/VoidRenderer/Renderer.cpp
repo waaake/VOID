@@ -7,8 +7,6 @@
 #include "Renderer.h"
 #include "VoidCore/Logging.h"
 
-#include <chrono>
-
 static const float MAX_ZOOM = 12.8;
 static const float MIN_ZOOM = 0.1;
 
