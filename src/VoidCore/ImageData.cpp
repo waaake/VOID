@@ -4,7 +4,7 @@
  * unresolved external symbol imath_half_to_float_table
  * The declaration of imath_half_to_float_table picks up the extern from the extern "C"
  */
-# define IMATH_HALF_NO_LOOKUP_TABLE
+#define IMATH_HALF_NO_LOOKUP_TABLE
 #endif
 
 /* OpenEXR */

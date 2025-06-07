@@ -3,7 +3,6 @@
 #include <thread>
 
 /* Qt */
-#include <QApplication>
 #include <QLayout>
 #include <QIcon>
 #include <QPainter>
@@ -45,7 +44,6 @@ void DockerWindow::Build()
     /* Docker */
     m_Docker = new VoidDocker("Viewer", this);
     m_Docker->SetClosable(false);
-    //m_Docker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
     m_MListDocker = new VoidDocker("Media", this);
 
@@ -65,6 +63,29 @@ void DockerWindow::Build()
 
     /* Resize Default docks */
     resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
+}
+
+void DockerWindow::ToggleDock(VoidDocker* dock, const bool state, const Qt::DockWidgetArea& area)
+{
+    /* Set the visibility of the component */
+    dock->setVisible(state);
+
+    /* And redock to said area */
+    if (state)
+    {
+        addDockWidget(area, dock);
+    }
+}
+
+void DockerWindow::ToggleComponent(const Component& component, const bool state)
+{
+    switch (component)
+    {
+        case Component::MediaLister:
+            /* Setup the Dock */
+            ToggleDock(m_MListDocker, state, Qt::LeftDockWidgetArea);
+            break;
+    }
 }
 
 /* }}} */
@@ -224,6 +245,16 @@ void VoidMainWindow::Build()
     m_ViewerMenu->addAction(m_ZoomToFitAction);
     /* }}} */
 
+    /* Window Menu {{{ */
+    m_WindowMenu = new QMenu("Window", menuBar);
+
+    /* All Window/Component Menu Actions are checkable */
+    m_MediaListerAction = new QAction("Media List", m_WindowMenu);
+    m_MediaListerAction->setCheckable(true);
+
+    m_WindowMenu->addAction(m_MediaListerAction);
+    /* }}} */
+
     /* Help Menu {{{ */
     m_HelpMenu = new QMenu("Help", menuBar);
 
@@ -236,6 +267,7 @@ void VoidMainWindow::Build()
     menuBar->addMenu(m_FileMenu);
     menuBar->addMenu(m_PlaybackMenu);
     menuBar->addMenu(m_ViewerMenu);
+    menuBar->addMenu(m_WindowMenu);
     menuBar->addMenu(m_HelpMenu);
 }
 
@@ -272,6 +304,9 @@ void VoidMainWindow::Connect()
     connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
     connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
     connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
+    /* }}} */
+
+    connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });
     /* }}} */
 
     /* Help Menu {{{ */

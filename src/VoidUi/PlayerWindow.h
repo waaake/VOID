@@ -23,6 +23,12 @@ VOID_NAMESPACE_OPEN
 
 class DockerWindow : public QMainWindow
 {
+public: /* Enum */
+    enum class Component
+    {
+        MediaLister,
+    };
+
 public:
     explicit DockerWindow(QWidget* parent = nullptr);
     virtual ~DockerWindow();
@@ -32,6 +38,8 @@ public:
     Player* GetPlayer() const { return m_Player; }
     /* Returns the Pointer to the Media Lister Widget */
     VoidMediaLister* MediaLister() const { return m_MediaLister; }
+
+    void ToggleComponent(const Component& component, const bool state);
 
 private: /* Members */
     VoidDocker* m_Docker;
@@ -45,6 +53,7 @@ private: /* Members */
 
 private: /* Methods */
     void Build();
+    void ToggleDock(VoidDocker* dock, const bool state, const Qt::DockWidgetArea& area);
 
 };
 
@@ -120,6 +129,10 @@ private: /* Members */
     QAction* m_ZoomInAction;
     QAction* m_ZoomOutAction;
     QAction* m_ZoomToFitAction;
+
+    /* Window Menu */
+    QMenu* m_WindowMenu;
+    QAction* m_MediaListerAction;
 
     /* Help Menu */
     QMenu* m_HelpMenu;

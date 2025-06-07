@@ -198,7 +198,6 @@ void FramelessWindow::mouseReleaseEvent(QMouseEvent* event)
         /* Reset Dragging */
         m_Dragging = false;
     }
-
 }
 
 VOID_NAMESPACE_CLOSE
