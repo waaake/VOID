@@ -24,6 +24,9 @@ DockerWindow::DockerWindow(QWidget* parent)
 {
     /* Build the Docker */
     Build();
+    
+    /* Set Docking options */
+    setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks);
 }
 
 DockerWindow::~DockerWindow()
@@ -45,22 +48,23 @@ void DockerWindow::Build()
     //m_Docker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
     m_MListDocker = new VoidDocker("Media", this);
-    //m_MListDocker->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    /* Update widgets for the docks */
+    m_Docker->setWidget(m_Player);
+    m_MListDocker->setWidget(m_MediaLister);
 
     /* Set the central widget */
     addDockWidget(Qt::RightDockWidgetArea, m_Docker);
     addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
-
-    m_Docker->setWidget(m_Player);
-    m_MListDocker->setWidget(m_MediaLister);
-
-    m_MListDocker->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
     /* The way how dock widgets appear as default */
     /* Dock Widgets */
     m_DockList << m_Docker << m_MListDocker;
     /* Default Size Corresponding to each of the dock widget */
     m_DockSizes << 980 << 300;
+
+    /* Resize Default docks */
+    resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
 }
 
 /* }}} */
