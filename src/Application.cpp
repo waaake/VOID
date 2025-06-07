@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     /* Set Application icon */
     QImage icon("images/VOID_Logo.svg");
 
-    app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(48, 48, Qt::KeepAspectRatio))));
+    app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation))));
 
     app.setStyle(new VOID_NAMESPACE::VoidDark());
 

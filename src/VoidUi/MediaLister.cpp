@@ -110,7 +110,7 @@ void VoidMediaLister::paintEvent(QPaintEvent* event)
     QPainter painter(this);
     painter.setPen(QPen(Qt::black, 2));
     /* Draw the border with the painter */
-    painter.drawLine(0, 0, width() + 5, 0);
+    painter.drawLine(0, 0, width(), 0);
 }
 
 void VoidMediaLister::Build()

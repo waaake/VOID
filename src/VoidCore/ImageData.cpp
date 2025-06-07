@@ -1,3 +1,12 @@
+#ifdef _WIN32
+/* https://github.com/AcademySoftwareFoundation/Imath/issues/212 
+ * This needs to be declared else we get unresolved symbol from imath library
+ * unresolved external symbol imath_half_to_float_table
+ * The declaration of imath_half_to_float_table picks up the extern from the extern "C"
+ */
+#define IMATH_HALF_NO_LOOKUP_TABLE
+#endif
+
 /* OpenEXR */
 #include <OpenEXR/ImfRgbaFile.h>
 #include <OpenEXR/ImfArray.h>

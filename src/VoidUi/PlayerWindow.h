@@ -11,15 +11,53 @@
 #include "About.h"
 #include "Definition.h"
 #include "Docker.h"
+#include "FramelessWindow.h"
 #include "MediaLister.h"
 #include "PlayerWidget.h"
 #include "Sequence.h"
+#include "TitleBar.h"
 #include "Track.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
 
-class VoidMainWindow : public QMainWindow
+class DockerWindow : public QMainWindow
+{
+public: /* Enum */
+    enum class Component
+    {
+        MediaLister,
+    };
+
+public:
+    explicit DockerWindow(QWidget* parent = nullptr);
+    virtual ~DockerWindow();
+
+    /* Component Getters */
+    /* Returns the Pointer to Player Widget */
+    Player* GetPlayer() const { return m_Player; }
+    /* Returns the Pointer to the Media Lister Widget */
+    VoidMediaLister* MediaLister() const { return m_MediaLister; }
+
+    void ToggleComponent(const Component& component, const bool state);
+
+private: /* Members */
+    VoidDocker* m_Docker;
+    VoidDocker* m_MListDocker;
+    QList<QDockWidget*> m_DockList;
+    QList<int> m_DockSizes;
+
+    /* VOID Components */
+    Player* m_Player;
+    VoidMediaLister* m_MediaLister;
+
+private: /* Methods */
+    void Build();
+    void ToggleDock(VoidDocker* dock, const bool state, const Qt::DockWidgetArea& area);
+
+};
+
+class VoidMainWindow : public FramelessWindow
 {
     Q_OBJECT
 
@@ -41,7 +79,7 @@ private: /* Methods */
 
 protected:
     void showEvent(QShowEvent* event) override;
-    
+
     /* Caches the Media if Caching is allowed */
     void CacheLookAhead();
 
@@ -55,15 +93,16 @@ protected:
     void ToggleLookAheadCache(const bool toggle);
 
 private: /* Members */
-    VoidDocker* m_Docker;
-    VoidDocker* m_MListDocker;
-    QList<QDockWidget*> m_DockList;
-    QList<int> m_DockSizes;
-
     Player* m_Player;
     VoidMediaLister* m_MediaLister;
 
+    DockerWindow* m_InternalDocker;
+
+    VoidTitleBar* m_TitleBar;
+
     /* Window Menu */
+    QLabel* m_VoidMenuIcon;
+
     /* File Menu */
     QMenu* m_FileMenu;
     QAction* m_OpenAction;
@@ -90,6 +129,10 @@ private: /* Members */
     QAction* m_ZoomInAction;
     QAction* m_ZoomOutAction;
     QAction* m_ZoomToFitAction;
+
+    /* Window Menu */
+    QMenu* m_WindowMenu;
+    QAction* m_MediaListerAction;
 
     /* Help Menu */
     QMenu* m_HelpMenu;

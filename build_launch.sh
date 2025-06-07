@@ -5,6 +5,7 @@
 # CLEAR: Use --clear when we need to clear the build directory before building again
 DEBUG=false
 CLEAR=false
+BUILD_ONLY=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in 
@@ -14,6 +15,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --clear)
             CLEAR=true
+            shift
+            ;;
+        --build_only)
+            BUILD_ONLY=true
             shift
             ;;
         *)
@@ -29,6 +34,11 @@ mkdir -p _build -v
 # Clear only if we want a clean build
 if [ "$CLEAR" == true ]; then
     rm -rf _build/* -v
+fi
+
+if [ "$BUILD_ONLY" == true ]; then
+    cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build
+    exit 0
 fi
 
 # Run cmake on the source dir for building in the _build directory

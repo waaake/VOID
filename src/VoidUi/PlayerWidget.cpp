@@ -175,7 +175,7 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
             case MissingFrameHandler::BLACK_FRAME:
                 m_Renderer->Clear();
                 break;
-            case MissingFrameHandler::ERROR:
+            case MissingFrameHandler::ERROR_FRAME:
                 m_Renderer->Clear();
                 m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
                 break;
@@ -219,7 +219,7 @@ void Player::SetMediaFrame(int frame)
             case MissingFrameHandler::BLACK_FRAME:
                 m_Renderer->Clear();
                 break;
-            case MissingFrameHandler::ERROR:
+            case MissingFrameHandler::ERROR_FRAME:
                 m_Renderer->Clear();
                 m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
                 break;
