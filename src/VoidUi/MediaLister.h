@@ -26,15 +26,15 @@ public:
     virtual ~VoidMediaLister();
 
     /* Adds a Media Item to the List of widgets based on the provided Media */
-    void AddMedia(const Media& media);
+    void AddMedia(const SharedMediaClip& media);
 
     /* Override the default size of the widget */
     QSize sizeHint() const override;
 
 signals:
-    void mediaChanged(const Media& media);
+    void mediaChanged(const SharedMediaClip& media);
     /* For a bunch of media is set to be played */
-    void playlistChanged(const std::vector<Media>& media);
+    void playlistChanged(const std::vector<SharedMediaClip>& media);
     void mediaDropped(const std::string& path);
 
 protected: /* Methods */

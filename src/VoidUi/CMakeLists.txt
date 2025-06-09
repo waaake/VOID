@@ -9,6 +9,7 @@ add_library(
     Docker.cpp
     Events.h
     FramelessWindow.cpp
+    MediaClip.cpp
     MediaLister.cpp
     MediaItem.cpp
     PlayerWidget.cpp

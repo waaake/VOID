@@ -133,7 +133,7 @@ public:
     Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
     Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
 
-    VoidImageData* Image(const int frame) { return m_Mediaframes.at(frame).ImageData(); }
+    inline VoidImageData* Image(const int frame) { return m_Mediaframes.at(frame).ImageData(); }
 
     VoidImageData* FirstImage() { return Image(FirstFrame()); }
     VoidImageData* LastImage() { return Image(LastFrame()); }

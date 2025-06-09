@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "MediaClip.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
@@ -17,7 +18,7 @@ class VoidMediaItem : public QFrame
     Q_OBJECT
 
 public:
-    VoidMediaItem(const Media& media, QWidget* parent = nullptr);
+    VoidMediaItem(const SharedMediaClip& media, QWidget* parent = nullptr);
     virtual ~VoidMediaItem();
 
     void Update();
@@ -26,7 +27,7 @@ public:
     bool Selected() const { return m_Selected; }
     
     /* Returns the Media associated with the Item */
-    Media Clip() const { return m_Clip; }
+    SharedMediaClip Clip() const { return m_Clip; }
 
     /* Returns whether the item is being played/displayed/rendered on the renderer */
     bool Playing() const { return m_Playing; }
@@ -76,7 +77,15 @@ private: /* Members */
     bool m_Playing;
 
     /* Media */
-    Media m_Clip;
+    SharedMediaClip m_Clip;
+
+    /* 
+     * The Color Associated with the Clip 
+     * This is determined by the track, this clip is associated with
+     * The clip could just be without a track and can then use a default color
+     * Else this color will be read and updated from the track
+     */
+    QColor m_AssociatedColor;
 
     /* Layouts */
     QHBoxLayout* m_Layout;

@@ -332,14 +332,25 @@ void VoidMainWindow::CacheLookAhead()
      * Check if we're supposed to cache look ahead for the media
      * and if we're not already caching the media
      */
-    if (m_CacheMedia & !m_Media.Caching())
+    if (m_CacheMedia)
     {
+        std::thread t;
+
+        /* Grab the Active Media Clip, if that's set on the Player */
+        SharedMediaClip clip = m_Player->ActiveMediaClip();
+        
         /*
          * Get the current media to cache frames on a thread
          * Any frame which gets clicked on, in the timeslider caches the frame if not cached
          * meanwhile this cache continues on
          */
-        std::thread t(&PlaybackTrack::Cache, m_Track.get());
+        if (clip)
+            t = std::thread(&MediaClip::Cache, clip.get());
+        else
+            t = std::thread(&PlaybackTrack::Cache, m_Track.get());
+        
+        // std::thread t(&PlaybackTrack::Cache, m_Track.get());
+        
         /* TODO: Replace with threadpool */
         /*
         * This shouldn't be all bad here but we can still have issues if the media is caching and
@@ -388,13 +399,19 @@ void VoidMainWindow::ImportMedia(const std::string& path)
 
     // /* Set the start frame from the media in this case */
     // m_Track->SetStartFrame(m_Media.FirstFrame());
-    m_Track->AddMedia(m_Media);
+    SharedMediaClip clip = std::make_shared<MediaClip>(m_Media);
+    // m_MediaClip = std::make_shared<MediaClip>(m_Media);
+
+    /* Connect frameCached - Timeline::AddCacheFrame*/
+    ConnectMediaClipToTimeline(clip);
+
+    m_Track->AddMedia(clip);
 
     /* Set the sequence on the Player */
     m_Player->Load(m_Sequence);
 
     /* Add the media on the Media Lister */
-    m_MediaLister->AddMedia(m_Media);
+    m_MediaLister->AddMedia(clip);
 }
 
 // Slots
@@ -413,19 +430,16 @@ void VoidMainWindow::Load()
     ImportMedia(mediaBrowser.GetDirectory());
 }
 
-void VoidMainWindow::SetMedia(const Media& media)
+void VoidMainWindow::SetMedia(const SharedMediaClip& media)
 {
     /* Clear the player */
     m_Player->Clear();
 
-    /* Update the media */
-    m_Media = media;
-
-    /* Set the sequence on the Player */
-    m_Player->Load(m_Media);
+    /* Set the Clip on the player */
+    m_Player->Load(media);
 }
 
-void VoidMainWindow::AddMedia(const Media& media)
+void VoidMainWindow::AddMedia(const SharedMediaClip& media)
 {
     /* Clear the player */
     m_Player->Clear();
@@ -437,7 +451,7 @@ void VoidMainWindow::AddMedia(const Media& media)
     m_Player->Load(m_Sequence);
 }
 
-void VoidMainWindow::PlayMedia(const std::vector<Media>& media)
+void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
 {
     /* Clear the player */
     m_Player->Clear();
@@ -445,7 +459,7 @@ void VoidMainWindow::PlayMedia(const std::vector<Media>& media)
     /* Clear the track */
     m_Track->Clear();
 
-    for (Media m: media)
+    for (SharedMediaClip m: media)
     {
         /* Add Media to the track */
         m_Track->AddMedia(m);

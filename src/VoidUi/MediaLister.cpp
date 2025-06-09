@@ -207,7 +207,7 @@ void VoidMediaLister::ClearSelection()
     m_CurrentSelected.clear();
 }
 
-void VoidMediaLister::AddMedia(const Media& media)
+void VoidMediaLister::AddMedia(const SharedMediaClip& media)
 {
     /* Clear existing playing media */
     ClearPlaying();
@@ -269,7 +269,7 @@ void VoidMediaLister::ChangeMedia(VoidMediaItem* item)
 
 void VoidMediaLister::AddSelectionToSequence()
 {
-    std::vector<Media> m;
+    std::vector<SharedMediaClip> m;
     /* Already aware of the amount of items which are to be copied */
     m.reserve(m_CurrentSelected.size());
 

@@ -7,6 +7,7 @@
 /* Internal */
 #include "ControlBar.h"
 #include "Definition.h"
+#include "MediaClip.h"
 #include "Timeline.h"
 #include "Sequence.h"
 #include "VoidCore/Media.h"
@@ -34,8 +35,19 @@ public:
     Player(QWidget* parent = nullptr);
     virtual ~Player();
 
-    /* Loads Playable Media on the Player */
-    void Load(const Media& media);
+    /* Getters */
+    inline SharedMediaClip ActiveMediaClip() const
+    { 
+        /* Since the sequence is currently being played -- This does not have an active media clip element */
+        if (m_PlaySequence)
+            return nullptr;
+        
+        /* Return the active media clip */
+        return m_MediaClip;
+    }
+
+    /* Loads a Playable Media (clip) on the Player */
+    void Load(const SharedMediaClip& media);
 
     /* Load a Sequence to be played on the Player */
     void Load(const SharedPlaybackSequence& sequence);
@@ -114,8 +126,8 @@ private:  /* Members */
      */
     ControlBar* m_ControlBar;
 
-    /* Media to be rendered */
-    Media m_Media;
+    /* Media Clip to be played/rendered */
+    SharedMediaClip m_MediaClip;
 
     /* Sequence to be rendered */
     SharedPlaybackSequence m_Sequence;

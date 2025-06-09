@@ -12,6 +12,7 @@
 #include "Definition.h"
 #include "Docker.h"
 #include "FramelessWindow.h"
+#include "MediaClip.h"
 #include "MediaLister.h"
 #include "PlayerWidget.h"
 #include "Sequence.h"
@@ -69,13 +70,21 @@ public:
 
     /* Reads Media Directory and Loads Media onto the components */
     void ImportMedia(const std::string& path);
-    void PlayMedia(const std::vector<Media>& items);
+    void PlayMedia(const std::vector<SharedMediaClip>& items);
 
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
 
 private: /* Methods */
     void Build();
     void Connect();
+    
+    /*
+     * Connects the signals from SharedMediaClip (i.e. shared_ptr for MediaClip)
+     */
+    inline void ConnectMediaClipToTimeline(const SharedMediaClip& clip)
+    {
+        connect(clip.get(), &MediaClip::frameCached, m_Player, &Player::AddCacheFrame);
+    }
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -152,9 +161,9 @@ private: /* Members */
 public slots:
     void Load();
     /* Clears and sets the provided media on the player */
-    void SetMedia(const Media& media);
+    void SetMedia(const SharedMediaClip& media);
     /* Adds media onto the existing track */
-    void AddMedia(const Media& media);
+    void AddMedia(const SharedMediaClip& media);
 };
 
 VOID_NAMESPACE_CLOSE
