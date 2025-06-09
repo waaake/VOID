@@ -8,12 +8,12 @@ VOID_NAMESPACE_OPEN
 
 Player::Player(QWidget* parent)
     : QWidget(parent)
-    , m_Media()
     , m_PlaySequence(false)
     , m_MFrameHandler(MissingFrameHandler::BLACK_FRAME)
 {
     /* Init the Sequence and empty ImageData */
     m_Sequence = std::make_shared<PlaybackSequence>();
+    m_MediaClip = std::make_shared<MediaClip>();
 
     /* Build the layout */
     Build();
@@ -64,9 +64,6 @@ void Player::Build()
 
 void Player::Clear()
 {
-    /* Clear the sequence */
-    m_Media = Media();
-
     /*
      * Update the time range to be 0-1 ??
      * Clear the data from the player
@@ -75,9 +72,9 @@ void Player::Clear()
     m_Renderer->Clear();
 }
 
-void Player::Load(const Media& media)
+void Player::Load(const SharedMediaClip& media)
 {
-    m_Media = media;
+    m_MediaClip = media;
 
     /* 
      * Media is set on the Player
@@ -88,11 +85,11 @@ void Player::Load(const Media& media)
     /* Once we have the image sequence,
      * First update the timeslider range,
      */
-    m_Timeline->SetRange(m_Media.FirstFrame(), m_Media.LastFrame());
+    m_Timeline->SetRange(m_MediaClip->FirstFrame(), m_MediaClip->LastFrame());
     /* Clear any cached frame markings from the timeline */
     m_Timeline->ClearCachedFrames();
     /* Then set the First Image on the Player */
-    m_Renderer->Render(m_Media.FirstImage());
+    m_Renderer->Render(m_MediaClip->FirstImage());
 }
 
 void Player::Load(const SharedPlaybackSequence& sequence)
@@ -194,7 +191,7 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
 void Player::SetMediaFrame(int frame)
 {
     /* Ensure we have a valid media to process before setting the frame */
-    if (m_Media.Empty())
+    if (m_MediaClip->Empty())
         return;
 
     /* 
@@ -207,10 +204,10 @@ void Player::SetMediaFrame(int frame)
      * BLACK_FRAME: Display a black frame instead of anything else. No error is displayed.
      * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
      */
-    if (m_Media.Contains(frame))
+    if (m_MediaClip->Contains(frame))
     {
         /* Read the image for the frame from the sequence and set it on the player */
-        m_Renderer->Render(m_Media.Image(frame));
+        m_Renderer->Render(m_MediaClip->Image(frame));
     }
     else
     {
@@ -229,7 +226,7 @@ void Player::SetMediaFrame(int frame)
                  * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
                  * to read and render on the renderer
                  */
-                SetMediaFrame(m_Media.NearestFrame(frame));
+                SetMediaFrame(m_MediaClip->NearestFrame(frame));
                 break;
         }
     }

@@ -10,6 +10,7 @@ PlaybackTrack::PlaybackTrack(QObject* parent)
     : QObject(parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
+    , m_Color(130, 110, 190)    /* Default Purple */
 {
 }
 
@@ -17,7 +18,7 @@ PlaybackTrack::~PlaybackTrack()
 {
 }
 
-void PlaybackTrack::SetMedia(const Media& media)
+void PlaybackTrack::SetMedia(const SharedMediaClip& media)
 {
     /* Block any signals till the operation has been completed */
     bool b = blockSignals(true);
@@ -36,13 +37,13 @@ void PlaybackTrack::SetMedia(const Media& media)
     AddMedia(media);
 }
 
-void PlaybackTrack::AddMedia(const Media& media)
+void PlaybackTrack::AddMedia(const SharedMediaClip& media)
 {
     /* Calculate the offset for reaching the first frame of media in the given timeline */
-    int offset = media.FirstFrame() - (m_StartFrame + m_EndFrame);
+    int offset = media->FirstFrame() - (m_StartFrame + m_EndFrame);
 
     /* Update the last frame of the Track */
-    m_EndFrame = (m_EndFrame + media.Duration()) - 1;
+    m_EndFrame = (m_EndFrame + media->Duration()) - 1;
 
     /* Construct the trackItem with the given media */
     /*
@@ -50,12 +51,15 @@ void PlaybackTrack::AddMedia(const Media& media)
      */
     SharedTrackItem trackItem = std::make_shared<TrackItem>(
                                         media,
-                                        media.FirstFrame() - offset,
-                                        media.LastFrame() - offset,
+                                        media->FirstFrame() - offset,
+                                        media->LastFrame() - offset,
                                         offset,
                                         this
                                     );
 
+    /* Set a Color on the underlying media Clip that it has been associated with this track */
+    trackItem->SetColor(m_Color);
+    
     /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
     connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
 
@@ -112,19 +116,19 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
          * data from the Media and we can return true indicating a frame is successfully found
          */
         int f = frame + item->GetOffset();
-        if (item->GetMedia().InRange(f))
+        if (item->GetMedia()->InRange(f))
         {
             /*
              * Check for a case where the frame lies in the range of media but is still not available to read
              * Reason could be that it is missing
              */
-            if (!item->GetMedia().Contains(f))
+            if (!item->GetMedia()->Contains(f))
                 return false;
 
             /*
              * Copy the data of the VoidImageData* which we'll update for anyone to access
              */
-            std::memcpy(image, item->GetMedia().Image(f), sizeof(VoidImageData));
+            std::memcpy(image, item->GetMedia()->Image(f), sizeof(VoidImageData));
 
             /*
              * Once the Pointer data is copied ->
@@ -151,7 +155,7 @@ SharedTrackItem PlaybackTrack::GetTrackItem(const int frame) const
          * data from the Media and we can return true indicating a frame is successfully found
          */
         int f = frame + item->GetOffset();
-        if (item->GetMedia().InRange(f))
+        if (item->GetMedia()->InRange(f))
         {
             return item;
         }
@@ -177,7 +181,7 @@ void PlaybackTrack::ClearCache()
     for (SharedTrackItem item: m_TrackItems)
     {
         /* Clear Cache */
-        item->GetMedia().ClearCache();
+        item->GetMedia()->ClearCache();
     }
 
     /* Once all media has been rid of cache -> emit the cacheCleared signal */

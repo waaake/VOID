@@ -11,7 +11,7 @@ TrackItem::TrackItem(QObject* parent)
 {
 }
 
-TrackItem::TrackItem(const Media& media, int start, int end, int offset, QObject* parent)
+TrackItem::TrackItem(const SharedMediaClip& media, int start, int end, int offset, QObject* parent)
     : QObject(parent)
     , m_Media(media)
     , m_Offset(offset)
@@ -24,7 +24,7 @@ TrackItem::~TrackItem()
 {
 }
 
-void TrackItem::SetMedia(const Media& media, int offset)
+void TrackItem::SetMedia(const SharedMediaClip& media, int offset)
 {
     /* Update the underlying media and relevant offset */
     m_Media = media;
@@ -47,7 +47,7 @@ void TrackItem::SetRange(int start, int end)
 void TrackItem::Cache()
 {
     /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
-    for (std::pair<const int, Frame>& it: m_Media)
+    for (std::pair<const int, Frame>& it: m_Media->GetMedia())
     {
         /* Cache the data for the frame */
         it.second.Cache();
@@ -62,12 +62,12 @@ VoidImageData* TrackItem::GetImage(const int frame)
     /* Update the frame value with the offset so that we match the original media range */
     int f = frame + m_Offset;
 
-    if (m_Media.Contains(f))
+    if (m_Media->Contains(f))
     {
         /* Emit that the frame from the timeline was cached -- in case it was not before */
         emit frameCached(frame);
 
-        return m_Media.Image(f);
+        return m_Media->Image(f);
     }
 
     /* The provided frame is not present in the Media */

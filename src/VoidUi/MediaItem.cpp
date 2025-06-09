@@ -13,17 +13,22 @@ static const int ICON_SIZE = 20;
 
 VOID_NAMESPACE_OPEN
 
-VoidMediaItem::VoidMediaItem(const Media& media, QWidget* parent)
+VoidMediaItem::VoidMediaItem(const SharedMediaClip& media, QWidget* parent)
     : QFrame(parent)
     , m_Selected(false)
     , m_Playing(false)
     , m_Clip(media)
+    , m_AssociatedColor(VOID_PURPLE_COLOR)
 {
     /* Build the layout */
     Build();
 
     /* Setup the UI */
     Setup();
+
+    /* TODO: Check if we actually need this on the clip -- Maybe we do? */
+    /* Fetch the associated color from the clip based on what track it's associated with */
+    connect(m_Clip.get(), &MediaClip::updated, this, [this]() { m_AssociatedColor = m_Clip->Color(); update(); });
 }
 
 VoidMediaItem::~VoidMediaItem()
@@ -58,7 +63,7 @@ void VoidMediaItem::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     /* Default colors */
-    QColor leftIndicator = m_Playing ? VOID_PURPLE_COLOR : VOID_GRAY_COLOR;
+    QColor leftIndicator = m_Playing ? m_AssociatedColor : VOID_GRAY_COLOR;
     QColor selectionIndicator = m_Selected ? VOID_BLUE_COLOR : VOID_DARK_BG_COLOR;
 
     /* Gradient */
@@ -130,28 +135,28 @@ void VoidMediaItem::Setup()
 
 std::string VoidMediaItem::GetFramerate() const
 {
-    return Tools::to_trimmed_string(m_Clip.Framerate()) + "fps";
+    return Tools::to_trimmed_string(m_Clip->Framerate()) + "fps";
 }
 
 std::string VoidMediaItem::GetRange() const
 {
-    return std::to_string(m_Clip.FirstFrame()) + "-" + std::to_string(m_Clip.LastFrame());
+    return std::to_string(m_Clip->FirstFrame()) + "-" + std::to_string(m_Clip->LastFrame());
 }
 
 std::string VoidMediaItem::GetName() const
 {
-    return m_Clip.Name();
+    return m_Clip->Name();
 }
 
 std::string VoidMediaItem::GetType() const
 {
-    return m_Clip.Extension();
+    return m_Clip->Extension();
 }
 
 QPixmap VoidMediaItem::GetThumbnail() const
 {   
     /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-    const VoidImageData* im = m_Clip.FirstFrameData().ImageData();
+    const VoidImageData* im = m_Clip->FirstFrameData().ImageData();
     QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
 
     /* Resize the Frame to a thumbnail size */

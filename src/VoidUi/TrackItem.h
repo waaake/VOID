@@ -6,10 +6,11 @@
 
 /* Qt */
 #include <QObject>
+#include <QColor>
 
 /* Internal */
 #include "Definition.h"
-#include "VoidCore/Media.h"
+#include "MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -25,7 +26,7 @@ class TrackItem : public QObject
 
 public:
     TrackItem(QObject* parent = nullptr);
-    TrackItem(const Media& media, int start, int end, int offset = 0, QObject* parent = nullptr);
+    TrackItem(const SharedMediaClip& media, int start, int end, int offset = 0, QObject* parent = nullptr);
 
     virtual ~TrackItem();
 
@@ -39,9 +40,11 @@ public:
      * TrackItem Range: 1 - 10
      * Offset: 1000
      */
-    void SetMedia(const Media& media, int offset = 0);
+    void SetMedia(const SharedMediaClip& media, int offset = 0);
 
     void SetRange(int start, int end);
+
+    inline void SetColor(const QColor& color) { m_Media->SetColor(color); }
 
     /* 
      * Caches media frames
@@ -51,7 +54,7 @@ public:
 
     /* Getters */
     inline int GetOffset() const { return m_Offset; }
-    inline Media GetMedia() const { return m_Media; }
+    inline SharedMediaClip GetMedia() const { return m_Media; }
 
     /*
      * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
@@ -70,14 +73,16 @@ public:
      * 
      * TODO: See if we can improve our logic to get a frame value or Image Data directly?
      */
-    inline int NearestFrame(const int frame) const { return m_Media.NearestFrame(frame + m_Offset) - m_Offset; }
+    inline int NearestFrame(const int frame) const { return m_Media->NearestFrame(frame + m_Offset) - m_Offset; }
 
     /* TODO: Cache the First frame and last frame for Media in that class */
-    inline int MediaFirstFrame() const { return m_Media.FirstFrame(); }
-    inline int MediaLastFrame() const { return m_Media.LastFrame(); }
+    inline int MediaFirstFrame() const { return m_Media->FirstFrame(); }
+    inline int MediaLastFrame() const { return m_Media->LastFrame(); }
 
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
     inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
+
+    inline QColor Color() const { return m_Media->Color(); }
 
 signals: /* Signals denoting Actions in the TrackItem */
     void mediaChanged();
@@ -99,7 +104,7 @@ signals: /* Signals denoting Actions in the TrackItem */
     void frameCached(int frame);
 
 protected: /* Members */
-    Media m_Media;
+    SharedMediaClip m_Media;
     int m_Offset;
 
     int m_StartFrame;
