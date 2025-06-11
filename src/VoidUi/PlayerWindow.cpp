@@ -23,7 +23,7 @@ DockerWindow::DockerWindow(QWidget* parent)
 {
     /* Build the Docker */
     Build();
-    
+
     /* Set Docking options */
     setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks);
 }
@@ -137,15 +137,15 @@ void VoidMainWindow::Build()
     /* Don't want any extra margins */
     layout->setContentsMargins(2, 0, 2, 2);
 
-    /* 
-     * The Main title bar for the Void Window 
+    /*
+     * The Main title bar for the Void Window
      * This will act as a drop-in replacement for the standard TitleBar OS specific
      */
     m_TitleBar = new VoidTitleBar(this);
     layout->addWidget(m_TitleBar, 0, Qt::AlignTop);
 
     /*
-     * This is the internal window holding all of the components inside 
+     * This is the internal window holding all of the components inside
      * and is a docker window where components could be docked/undocked and moved
      * All of the internal components like player, media list, timeline etc. would exist here
      */
@@ -240,9 +240,20 @@ void VoidMainWindow::Build()
     m_ZoomToFitAction = new QAction("Zoom to Fit");
     m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
 
+    /* Temporary */
+    m_SetViewBufferA = new QAction("Set Viewer Buffer A");
+    m_SetViewBufferB = new QAction("Set Viewer Buffer B");
+
     m_ViewerMenu->addAction(m_ZoomInAction);
     m_ViewerMenu->addAction(m_ZoomOutAction);
     m_ViewerMenu->addAction(m_ZoomToFitAction);
+
+    /* -------------------------------- */
+    m_ViewerMenu->insertSeparator(m_SetViewBufferA);
+
+    m_ViewerMenu->addAction(m_SetViewBufferA);
+    m_ViewerMenu->addAction(m_SetViewBufferB);
+
     /* }}} */
 
     /* Window Menu {{{ */
@@ -304,6 +315,9 @@ void VoidMainWindow::Connect()
     connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
     connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
     connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
+
+    connect(m_SetViewBufferA, &QAction::triggered, this, [this]() { m_Player->SetViewBuffer(Player::PlayerViewBuffer::A); });
+    connect(m_SetViewBufferB, &QAction::triggered, this, [this]() { m_Player->SetViewBuffer(Player::PlayerViewBuffer::B); });
     /* }}} */
 
     connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });
@@ -338,7 +352,7 @@ void VoidMainWindow::CacheLookAhead()
 
         /* Grab the Active Media Clip, if that's set on the Player */
         SharedMediaClip clip = m_Player->ActiveMediaClip();
-        
+
         /*
          * Get the current media to cache frames on a thread
          * Any frame which gets clicked on, in the timeslider caches the frame if not cached
@@ -348,9 +362,7 @@ void VoidMainWindow::CacheLookAhead()
             t = std::thread(&MediaClip::Cache, clip.get());
         else
             t = std::thread(&PlaybackTrack::Cache, m_Track.get());
-        
-        // std::thread t(&PlaybackTrack::Cache, m_Track.get());
-        
+
         /* TODO: Replace with threadpool */
         /*
         * This shouldn't be all bad here but we can still have issues if the media is caching and
@@ -394,23 +406,18 @@ void VoidMainWindow::ImportMedia(const std::string& path)
     /* Cache */
     CacheLookAhead();
 
-    /* Add Media to the track after Clearing the existing contents */
-    m_Track->Clear();
-
     // /* Set the start frame from the media in this case */
     // m_Track->SetStartFrame(m_Media.FirstFrame());
     SharedMediaClip clip = std::make_shared<MediaClip>(m_Media);
-    // m_MediaClip = std::make_shared<MediaClip>(m_Media);
 
     /* Connect frameCached - Timeline::AddCacheFrame*/
     ConnectMediaClipToTimeline(clip);
 
-    m_Track->AddMedia(clip);
+    /* Load the clip on the player */
+    m_Player->Load(clip);
 
-    /* Set the sequence on the Player */
-    m_Player->Load(m_Sequence);
 
-    /* Add the media on the Media Lister */
+    /* Add the media clip on the Media Lister */
     m_MediaLister->AddMedia(clip);
 }
 

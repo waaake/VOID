@@ -47,7 +47,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
     /* Connect the signal from the underlying pointer to the Track to updating the range of the sequence */
     connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
 
-    /*
+    /**
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
@@ -65,7 +65,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
     /* Update the Audio tracks with the provided new track */
     m_AudioTracks.push_back(track);
 
-    /*
+    /**
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
@@ -80,7 +80,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 
 void PlaybackSequence::UpdateRange(int start, int end)
 {
-    /*
+    /**
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided start) gets set as the start frame
      * and the maximum frame (existing or the provided end) gets set as the end frame
@@ -103,7 +103,7 @@ void PlaybackSequence::UpdateRange(int start, int end)
 
 bool PlaybackSequence::HasMedia() const
 {
-    /*
+    /**
      * A sequence can be said empty if there are no tracks on it
      * But the same seqeunce can have track(s) but no media in them
      * This means that the sequence is not empty but has no media on it to be played
@@ -131,7 +131,7 @@ bool PlaybackSequence::HasMedia() const
 
 bool PlaybackSequence::GetImage(const int frame, VoidImageData* image) const
 {
-    /*
+    /**
      * When the Sequence is asked for an image for a given frame
      * The sequence always returns back the data from the track which is at the top of the stack
      * Meaning bottom of (last added to) the underlying video tracks
@@ -145,9 +145,25 @@ bool PlaybackSequence::GetImage(const int frame, VoidImageData* image) const
     return false;
 }
 
+SharedPlaybackTrack PlaybackSequence::ActiveVideoTrack() const
+{
+    for (auto it = m_VideoTracks.rbegin(); it != m_VideoTracks.rend(); ++it)
+    {
+        /**
+         * Check if the iterated upon track Active?
+         * Meaning its both enabled and visible, if found -> return it
+         */
+        if ((*it)->Active())
+            return *it;
+    }
+
+    /* None of the tracks of the sequence are active or there are no tracks at all */
+    return nullptr;
+}
+
 SharedTrackItem PlaybackSequence::GetTrackItem(const int frame) const
 {
-    /*
+    /**
      * When the Sequence is asked for an image for a given frame
      * The sequence always returns back the data from the track which is at the top of the stack
      * Meaning bottom of (last added to) the underlying video tracks

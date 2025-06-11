@@ -47,12 +47,17 @@ public:
     /* Update the range of the Sequence */
     void SetRange(int start, int end);
 
-    /*
+    /**
      * Update the Provided Pointer to VoidImageData with the data of the Media if it exists
      * for the provided frame in the timeline
      * Returns a Bool value to give back a status as to indicate whether the frame exists or not
      */
     bool GetImage(const int frame, VoidImageData* image) const;
+
+    /**
+     * Returns the last track that is active
+     */
+    SharedPlaybackTrack ActiveVideoTrack() const;
 
     SharedTrackItem GetTrackItem(const int frame) const;
 
@@ -63,7 +68,7 @@ signals: /* Signals denoting actions in the seqeuence */
     /* This signal denotes that something in the sequence was changed/modified i.e. updated */
     void updated();
 
-    /*
+    /**
      * Emitted when the time range of the sequence has changed
      * includes the start and end frame of the sequence
      */
@@ -79,7 +84,7 @@ protected: /* Members */
     int m_StartFrame, m_EndFrame;
 
 private: /* Methods */
-    /*
+    /**
      * This method is responsible for updating the range of the sequence based on
      * any changes that have been made to underlying tracks of whose range has been updated
      * This method checks the current start and end frame and then evaluates the min and max of

@@ -161,7 +161,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	int range = maximum() - minimum();
 
 	/* Number of frames to be drawn */
-	int number = range / SL_MARKING_STEP;
+	int number = std::max(range / SL_MARKING_STEP, 1);	// ensure that we don't divide by zero
 
 	/* Step here would give the step based on the number of markings are being generated */
 	int step = range / number;
