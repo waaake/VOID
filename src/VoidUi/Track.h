@@ -76,18 +76,26 @@ public:
     /* Returns the Color associated with the Track */
     inline QColor Color() const { return m_Color; }
 
-    /*
+    /**
      * Update the Provided Pointer to VoidImageData with the data of the Media if it exists
      * for the provided frame in the timeline
      * Returns a Bool value to give back a status as to indicate whether the frame exists or not
      */
-    /*
+    /**
      * This function is marked non-const as we're emitting a signal from the function itself
      * TODO: investigate a better way to handle the signal of frameCached
      */
     bool GetImage(const int frame, VoidImageData* image);
 
-    /*
+    /**
+     * Describes whether a track is active for playback or taking in elements with menu options
+     */
+    [[nodiscard]] inline bool Active() const { return m_Visible && m_Enabled; }
+
+    inline bool Visible() const { return m_Visible; }
+    inline bool Enabled() const { return m_Enabled; }
+
+    /**
      * From the track, return the track item which is present at a given frame in the timeline
      * Returns nullptr if there is no trackitem at the given timeframe
      */
@@ -98,7 +106,7 @@ public:
 
     /* Setters */
 
-    /*
+    /**
      * The track's range is always defined by the track items in it
      * The only thing which can/should be changed of a track is the starting frame
      */
@@ -111,13 +119,13 @@ signals: /* Signals Denoting actions in the Track */
     /* This signal denotes that something in the track was changed/modified i.e. updated */
     void updated();
 
-    /*
+    /**
      * Emitted when the time range of the track has changed
      * includes the start and end frame of the track
      */
     void rangeChanged(int start, int end);
 
-    /*
+    /**
      * Emitted when a frame is cached
      * The cache could happen when the media cache operation is run continuously on a thread
      * Or if the frame is queried by the viewport
@@ -131,6 +139,11 @@ protected: /* Members */
     std::vector<SharedTrackItem> m_TrackItems;
 
     int m_StartFrame, m_EndFrame;
+
+    /* State whether the track is visible */
+    bool m_Visible;
+    /* State whether the track is enabled */
+    bool m_Enabled;
 
     /* The color associated with the track */
     QColor m_Color;

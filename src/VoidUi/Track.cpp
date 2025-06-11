@@ -10,6 +10,8 @@ PlaybackTrack::PlaybackTrack(QObject* parent)
     : QObject(parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
+    , m_Visible(true)
+    , m_Enabled(true)
     , m_Color(130, 110, 190)    /* Default Purple */
 {
 }
@@ -29,7 +31,7 @@ void PlaybackTrack::SetMedia(const SharedMediaClip& media)
     /* Unblock signals */
     blockSignals(b);
 
-    /*
+    /**
      * When the media gets added, the update and rangeChanged signals are emitted accordingly
      * hence this operation is being performed after the signals have been unblocked and we'll
      * let the other method handle the signals for this operation
@@ -63,14 +65,14 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
     /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
     connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
 
-    /*
+    /**
      * When the media gets added, it always gets added towards the right side which means the start frame
      * would never change in this case and only would result in a change in the last frame
      * which gets calculated based on previous last frame
      */
     m_TrackItems.push_back(trackItem);
 
-    /*
+    /**
      * Since the media is getting added to the start frame should just remain the same,
      * while the updated end frame along with the original start should get emitted to notify others
      */
@@ -79,7 +81,7 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
 
 void PlaybackTrack::Clear()
 {
-    /*
+    /**
      * Clearing a Track means we are getting rid of all the media that has
      * been added to the track first, once the media is cleared from the store
      * the range of the track needs to be reset to the default range of 0 - 0
@@ -110,7 +112,7 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
 {
     for (SharedTrackItem item: m_TrackItems)
     {
-        /*
+        /**
          * Check whether the current frame + the offset on the trackItem
          * exists in the range of the Media, if so update the pointer to the data with the
          * data from the Media and we can return true indicating a frame is successfully found
@@ -118,19 +120,19 @@ bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
         int f = frame + item->GetOffset();
         if (item->GetMedia()->InRange(f))
         {
-            /*
+            /**
              * Check for a case where the frame lies in the range of media but is still not available to read
              * Reason could be that it is missing
              */
             if (!item->GetMedia()->Contains(f))
                 return false;
 
-            /*
+            /**
              * Copy the data of the VoidImageData* which we'll update for anyone to access
              */
             std::memcpy(image, item->GetMedia()->Image(f), sizeof(VoidImageData));
 
-            /*
+            /**
              * Once the Pointer data is copied ->
              * emit the frameCached signal to indicate that this frame data is now available on the Media Class
              */
@@ -149,7 +151,7 @@ SharedTrackItem PlaybackTrack::GetTrackItem(const int frame) const
 {
     for (SharedTrackItem item: m_TrackItems)
     {
-        /*
+        /**
          * Check whether the current frame + the offset on the trackItem
          * exists in the range of the Media, if so update the pointer to the data with the
          * data from the Media and we can return true indicating a frame is successfully found

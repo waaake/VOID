@@ -138,6 +138,9 @@ private: /* Members */
     QAction* m_ZoomInAction;
     QAction* m_ZoomOutAction;
     QAction* m_ZoomToFitAction;
+    /* TODO: Remove this when we have our viewer buffer selector on the Viewer */
+    QAction* m_SetViewBufferA;
+    QAction* m_SetViewBufferB;
 
     /* Window Menu */
     QMenu* m_WindowMenu;

@@ -10,6 +10,7 @@
 #include "MediaClip.h"
 #include "Timeline.h"
 #include "Sequence.h"
+#include "ViewerBuffer.h"
 #include "VoidCore/Media.h"
 #include "VoidRenderer/Renderer.h"
 
@@ -31,6 +32,18 @@ public:
         NEAREST
     };
 
+    /**
+     * Enum decribing which viewer buffer is currently active and can be used to set an
+     * active viewer buffer for the 
+     */
+    enum class PlayerViewBuffer
+    {
+        /* Relates to ViewerBuffer A */
+        A,
+        /* Relates to ViewerBuffer B */
+        B
+    };
+
 public:
     Player(QWidget* parent = nullptr);
     virtual ~Player();
@@ -38,16 +51,23 @@ public:
     /* Getters */
     inline SharedMediaClip ActiveMediaClip() const
     { 
-        /* Since the sequence is currently being played -- This does not have an active media clip element */
-        if (m_PlaySequence)
-            return nullptr;
-        
-        /* Return the active media clip */
-        return m_MediaClip;
+        /**
+         * Check if the current playing component is a clip, if so -> return the clip from the ViewerBuffer
+         */
+        if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Clip)
+            return m_ActiveViewBuffer->GetMediaClip();
+
+        /* Not Currently playing a clip -> return nullptr instead */
+        return nullptr;
     }
+
+    inline SharedPlaybackTrack GetTrack() const { return m_ActiveViewBuffer->GetTrack(); }
 
     /* Loads a Playable Media (clip) on the Player */
     void Load(const SharedMediaClip& media);
+
+    /* Loads a Playable Track on the Player */
+    void Load(const SharedPlaybackTrack& track);
 
     /* Load a Sequence to be played on the Player */
     void Load(const SharedPlaybackSequence& sequence);
@@ -55,7 +75,7 @@ public:
     /* Set a frame on the player based on the media */
     void SetFrame(int frame);
 
-    /*
+    /**
      * Updates the Handler for Missing frame
      * Setting the behaviour for when a missing frame is set
      */
@@ -66,6 +86,11 @@ public:
         /* And Refresh the viewport */
         Refresh();
     }
+
+    /**
+     * Sets the provided viewer buffer on the player
+     */
+    void SetViewBuffer(const PlayerViewBuffer& buffer);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
 
@@ -81,7 +106,7 @@ public:
     /* Set Range on the timeline */
     inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }
 
-    /*
+    /**
      * Timeline Controls:
      * Below methods expose the functionality from the timeline
      * These are required to be able to govern the play state or set any frame according
@@ -110,6 +135,9 @@ private:  /* Methods */
     /* Loads the frame from the underlying sequence */
     void SetSequenceFrame(int frame);
 
+    /* Load the frame from a the buffer's track */
+    void SetTrackFrame(int frame);
+
     /* Load the frame from a given track item from the sequence/track */
     void SetTrackItemFrame(SharedTrackItem item, const int frame);
 
@@ -120,24 +148,22 @@ private:  /* Members */
     VoidRenderer* m_Renderer;
     Timeline* m_Timeline;
 
-    /*
+    /**
      * The control bar provides users tools to play around with the viewer
      * Providing tweak controls and how the viewer behaves
      */
     ControlBar* m_ControlBar;
 
-    /* Media Clip to be played/rendered */
-    SharedMediaClip m_MediaClip;
-
-    /* Sequence to be rendered */
-    SharedPlaybackSequence m_Sequence;
-
-    /*
-     * This boolean reprents the state of playing on the Player
-     * Is the Player looking at reading the Sequence of Media(s)
-     * Or is the Player looking at playing the Media (which is default)
+    /**
+     * Playable Governing Component
+     * Describes what is currently playing and provides information about the entity
+     * Like the timerange
      */
-    bool m_PlaySequence;
+    ViewerBuffer* m_ViewBufferA;
+    ViewerBuffer* m_ViewBufferB;
+
+    /* Describes the view buffer that is currently active and all information is queried from it */
+    ViewerBuffer* m_ActiveViewBuffer;
 
     /* Holds the Mode of representing Missing Frames */
     MissingFrameHandler m_MFrameHandler;

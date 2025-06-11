@@ -18,7 +18,7 @@ VoidMediaItem::VoidMediaItem(const SharedMediaClip& media, QWidget* parent)
     , m_Selected(false)
     , m_Playing(false)
     , m_Clip(media)
-    , m_AssociatedColor(VOID_PURPLE_COLOR)
+    , m_AssociatedColor(media->Color())
 {
     /* Build the layout */
     Build();

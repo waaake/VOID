@@ -19,6 +19,7 @@ add_library(
     TitleBar.cpp
     Track.cpp
     TrackItem.cpp
+    ViewerBuffer.cpp
     VoidStyle.cpp
 )
 
