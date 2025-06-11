@@ -7,13 +7,14 @@
 VOID_NAMESPACE_OPEN
 
 PlaybackTrack::PlaybackTrack(QObject* parent)
-    : QObject(parent)
+    : VoidObject(parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
     , m_Visible(true)
     , m_Enabled(true)
     , m_Color(130, 110, 190)    /* Default Purple */
 {
+    VOID_LOG_INFO("Track Created: {0}", Vuid());
 }
 
 PlaybackTrack::~PlaybackTrack()

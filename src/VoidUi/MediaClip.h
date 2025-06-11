@@ -10,6 +10,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObject.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
@@ -18,7 +19,7 @@ VOID_NAMESPACE_OPEN
 class MediaClip;
 typedef std::shared_ptr<MediaClip> SharedMediaClip;
 
-class MediaClip : public QObject
+class MediaClip : public VoidObject
 {
     Q_OBJECT
 

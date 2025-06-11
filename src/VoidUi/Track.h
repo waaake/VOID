@@ -12,6 +12,7 @@
 /* Internal */
 #include "Definition.h"
 #include "TrackItem.h"
+#include "VoidObject.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
@@ -26,7 +27,7 @@ class PlaybackTrack;
  */
 typedef std::shared_ptr<PlaybackTrack> SharedPlaybackTrack;
 
-class PlaybackTrack : public QObject
+class PlaybackTrack : public VoidObject
 {
     Q_OBJECT
 

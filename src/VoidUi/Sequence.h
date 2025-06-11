@@ -11,6 +11,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Track.h"
+#include "VoidObject.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
@@ -20,12 +21,12 @@ class PlaybackSequence;
 
 typedef std::shared_ptr<PlaybackSequence> SharedPlaybackSequence;
 
-class PlaybackSequence : public QObject
+class PlaybackSequence : public VoidObject
 {
     Q_OBJECT
 
 public:
-    PlaybackSequence();
+    PlaybackSequence(QObject* parent = nullptr);
 
     virtual ~PlaybackSequence();
 

@@ -6,10 +6,12 @@
 
 VOID_NAMESPACE_OPEN
 
-PlaybackSequence::PlaybackSequence()
-    : m_StartFrame(0)
+PlaybackSequence::PlaybackSequence(QObject* parent)
+    : VoidObject(parent)
+    , m_StartFrame(0)
     , m_EndFrame(0)
 {
+    VOID_LOG_INFO("Sequence Created: {0}", Vuid());
 }
 
 PlaybackSequence::~PlaybackSequence()
