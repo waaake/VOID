@@ -144,6 +144,14 @@ private:  /* Methods */
     /* Loads the frame from the media in the player */
     void SetMediaFrame(int frame);
 
+    /**
+     * Connects the signals from SharedMediaClip (i.e. shared_ptr for MediaClip)
+     */
+    inline void ConnectMediaClipToTimeline(const SharedMediaClip& clip)
+    {
+        connect(clip.get(), &MediaClip::frameCached, this, &Player::AddCacheFrame);
+    }
+
 private:  /* Members */
     VoidRenderer* m_Renderer;
     Timeline* m_Timeline;

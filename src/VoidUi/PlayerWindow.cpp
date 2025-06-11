@@ -410,12 +410,8 @@ void VoidMainWindow::ImportMedia(const std::string& path)
     // m_Track->SetStartFrame(m_Media.FirstFrame());
     SharedMediaClip clip = std::make_shared<MediaClip>(m_Media);
 
-    /* Connect frameCached - Timeline::AddCacheFrame*/
-    ConnectMediaClipToTimeline(clip);
-
     /* Load the clip on the player */
     m_Player->Load(clip);
-
 
     /* Add the media clip on the Media Lister */
     m_MediaLister->AddMedia(clip);
