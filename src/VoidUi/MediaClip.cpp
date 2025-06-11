@@ -4,12 +4,13 @@
 VOID_NAMESPACE_OPEN
 
 MediaClip::MediaClip(QObject* parent)
-    : QObject(parent)
+    : VoidObject(parent)
 {
+    VOID_LOG_INFO("Clip Created: {0}", Vuid());
 }
 
 MediaClip::MediaClip(const Media& media, QObject* parent)
-    : QObject(parent)
+    : VoidObject(parent)
     , m_Media(media)
 {
 }

@@ -4,20 +4,22 @@
 VOID_NAMESPACE_OPEN
 
 TrackItem::TrackItem(QObject* parent)
-    : QObject(parent)
+    : VoidObject(parent)
     , m_Offset(0)
     , m_StartFrame(0)
     , m_EndFrame(0)
 {
+    VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
 
 TrackItem::TrackItem(const SharedMediaClip& media, int start, int end, int offset, QObject* parent)
-    : QObject(parent)
+    : VoidObject(parent)
     , m_Media(media)
     , m_Offset(offset)
     , m_StartFrame(start)
     , m_EndFrame(end)
 {
+    VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
 
 TrackItem::~TrackItem()
