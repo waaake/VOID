@@ -95,6 +95,9 @@ void Player::Load(const SharedMediaClip& media)
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
 
+    /* Viewer Buffer - Clip -> Player - Add Cache Frame */
+    ConnectMediaClipToTimeline(media);
+
     /**
      * Once we have the image sequence,
      * First update the timeslider range,

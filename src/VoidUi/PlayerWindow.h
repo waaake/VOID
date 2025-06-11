@@ -77,14 +77,6 @@ public:
 private: /* Methods */
     void Build();
     void Connect();
-    
-    /*
-     * Connects the signals from SharedMediaClip (i.e. shared_ptr for MediaClip)
-     */
-    inline void ConnectMediaClipToTimeline(const SharedMediaClip& clip)
-    {
-        connect(clip.get(), &MediaClip::frameCached, m_Player, &Player::AddCacheFrame);
-    }
 
 protected:
     void showEvent(QShowEvent* event) override;

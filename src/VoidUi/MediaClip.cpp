@@ -13,6 +13,7 @@ MediaClip::MediaClip(const Media& media, QObject* parent)
     : VoidObject(parent)
     , m_Media(media)
 {
+    VOID_LOG_INFO("Clip Created: {0}", Vuid());
 }
 
 MediaClip::~MediaClip()
