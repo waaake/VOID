@@ -24,13 +24,15 @@ void FramelessWindow::mousePressEvent(QMouseEvent* event)
     /* Window geometry */
     QRect window = geometry();
 
+    int xpos = event->position().x();
+
     /* TODO: Add all types of resize operations */
-    if (event->x() > window.width() - RESIZE_MARGIN && event->y() > window.height() - RESIZE_MARGIN)    /* Bottom Right */
+    if (xpos > window.width() - RESIZE_MARGIN && event->y() > window.height() - RESIZE_MARGIN)    /* Bottom Right */
     {
         m_Resize = ResizeType::BottomRight;
         m_LastPos = event->globalPos();
     }
-    else if (event->x() < RESIZE_MARGIN && event->y() > window.height() - RESIZE_MARGIN)                /* Bottom Left */
+    else if (xpos < RESIZE_MARGIN && event->y() > window.height() - RESIZE_MARGIN)                /* Bottom Left */
     {
         m_Resize = ResizeType::BottomLeft;
         m_LastPos = event->globalPos();
@@ -40,17 +42,17 @@ void FramelessWindow::mousePressEvent(QMouseEvent* event)
         m_Resize = ResizeType::Bottom;
         m_LastPos = event->globalPos();
     }
-    else if (event->x() > window.width() - RESIZE_MARGIN)                                               /* Right */
+    else if (xpos > window.width() - RESIZE_MARGIN)                                               /* Right */
     {
         m_Resize = ResizeType::Right;
         m_LastPos = event->globalPos();
     }
-    else if (event->x() < RESIZE_MARGIN && event->y() < RESIZE_MARGIN)                                  /* Top Left */
+    else if (xpos < RESIZE_MARGIN && event->y() < RESIZE_MARGIN)                                  /* Top Left */
     {
         m_Resize = ResizeType::TopLeft;
         m_LastPos = event->globalPos();
     }
-    else if (event->x() < RESIZE_MARGIN)                                                                /* Left */
+    else if (xpos < RESIZE_MARGIN)                                                                /* Left */
     {
         m_Resize = ResizeType::Left;
         m_LastPos = event->globalPos();

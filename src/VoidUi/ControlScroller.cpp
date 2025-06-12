@@ -95,19 +95,21 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
 void ControlSpinner::mousePressEvent(QMouseEvent* event)
 {
     /* Save the last mouse x pos*/
-    m_LastX = event->x();
+    m_LastX = event->position().x();
 }
 
 void ControlSpinner::mouseMoveEvent(QMouseEvent* event)
 {
     /* Get the delta of how much the mouse has moved since the click */
-    int delta = event->x() - m_LastX;
+    int delta = event->position().x() - m_LastX;
 
     /* 
      * If the delta is above the threshold -> we can modify the value 
      * The real threshold can also be altered by pressing in shift
-     */   
-    if (std::abs(delta) > (event->modifiers() & Qt::ShiftModifier) ? m_Threshold / 10 : m_Threshold)
+     */
+    // int threshold = ;
+    // if (std::abs(delta) > (event->modifiers() & Qt::ShiftModifier) ? m_Threshold / 10 : m_Threshold)
+    if (std::abs(delta) > m_Threshold)
     {
         /* Check which side the delta has been */
         if (delta > 0)
@@ -122,11 +124,15 @@ void ControlSpinner::mouseMoveEvent(QMouseEvent* event)
         }
 
         /* Update the last mouse x */
-        m_LastX = event->x();
+        m_LastX = event->position().x();
     }
 }
 
+#if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
+void ControlSpinner::enterEvent(QEnterEvent* event)
+#else
 void ControlSpinner::enterEvent(QEvent* event)
+#endif
 {
     /* Set Cursor Override */
     setCursor(Qt::SizeHorCursor);

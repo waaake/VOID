@@ -29,7 +29,8 @@ target_link_libraries(
     PRIVATE
     VoidCore
     VoidRenderer
-    Qt5::Widgets
-    Qt5::Core
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::OpenGLWidgets
     OpenGL::GL
 )

@@ -18,7 +18,7 @@ add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
 # Core Depends on Qt5 | OpenGL
 # Ensure we have atleast both of them present
-find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core OpenGLWidgets)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
 # Core Readers

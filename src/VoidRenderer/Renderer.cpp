@@ -144,8 +144,8 @@ void VoidRenderer::resizeEvent(QResizeEvent* event)
 void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
 {
     /* Fetch the mouse position */
-    int x = event->x();
-    int y = event->y();
+    int x = event->position().x();
+    int y = event->position().y();
 
     /* Update the X and Y Coordinates for the mouse movements */
     m_RenderStatus->SetMouseCoordinates(x, y);
@@ -172,8 +172,8 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
 void VoidRenderer::wheelEvent(QWheelEvent* event)
 {
     /* Normalize to OpenGL Coords */
-    m_TranslateX = (2.f * event->pos().x() / width()) - 1.f;
-    m_TranslateY = 1.f - (2.f * event->pos().y() / height());
+    m_TranslateX = (2.f * event->position().x() / width()) - 1.f;
+    m_TranslateY = 1.f - (2.f * event->position().y() / height());
 
     if (event->angleDelta().y() > 0)
     {

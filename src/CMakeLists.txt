@@ -13,8 +13,9 @@ target_include_directories(
     PRIVATE
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5Core_INCLUDE_DIRS}
+    ${Qt6Widgets_INCLUDE_DIRS}
+    ${Qt6Core_INCLUDE_DIRS}
+    ${Qt6OpenGLWidgets_INCLUDE_DIRS}
 )
 
 target_include_directories(
@@ -34,6 +35,8 @@ if (spdlog_FOUND)
     )
 endif()
 
+include_directories(${Qt6OpenGLWidgets_INCLUDE_DIRS})
+
 # Main Executable
 add_executable(
     VOID
@@ -47,7 +50,8 @@ target_link_libraries(
     VoidCore
     VoidRenderer
     VoidUi
-    Qt5::Widgets
-    Qt5::Core
+    Qt6::Widgets
+    Qt6::Core
+    Qt6::OpenGLWidgets
     OpenGL::GL
 )

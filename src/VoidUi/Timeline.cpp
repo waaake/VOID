@@ -48,7 +48,11 @@ Timeslider::~Timeslider()
 {
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void Timeslider::enterEvent(QEnterEvent* event)
+#else
 void Timeslider::enterEvent(QEvent* event)
+#endif
 {
 	m_Focussed = true;
 }

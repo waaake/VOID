@@ -37,8 +37,13 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
 
     /* Setup the Cursor Override */
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent* event) override;
+    #else
     void enterEvent(QEvent* event) override;
+    #endif
     void leaveEvent(QEvent* event) override;
+
 
 private: /* Members */
     /* Denotes the Last Mouse X Position */
