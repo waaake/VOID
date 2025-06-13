@@ -13,7 +13,7 @@
 #include <QTimer>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -31,7 +31,7 @@ public:
 	void ClearCachedFrames();
 
 protected:
-	void enterEvent(QEvent* event) override;
+	void enterEvent(EnterEvent* event) override;
 	void leaveEvent(QEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
 	void mousePressEvent(QMouseEvent* event) override;

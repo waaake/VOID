@@ -16,9 +16,29 @@ endif()
 # USE CXX11 ABI
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
-# Core Depends on Qt5 | OpenGL
+# Core Depends on Qt5/Qt6 | OpenGL
+# Supporting both Qt5 and Qt6 at the moment as they are mostly compatible with minor changes
+# If we're at a point where the backwards compatibility is too much of a hassle, we could then drop support for qt5 but
+# for now we're good
+
 # Ensure we have atleast both of them present
-find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
+# Find qt6 first
+find_package(Qt6 QUIET COMPONENTS Widgets Core OpenGLWidgets)
+if (Qt6_FOUND)
+    set(QT_MAJOR_VERSION 6)
+    add_library(Qt::Core ALIAS Qt6::Core)
+    add_library(Qt::Widgets ALIAS Qt6::Widgets)
+    add_library(Qt::OpenGLWidgets ALIAS Qt6::OpenGLWidgets)
+else()
+    find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
+
+    # Message to indicate we're falling back
+    message(STATUS "Qt6 not found. Falling back to Qt5.")
+
+    set(QT_MAJOR_VERSION 5)
+    add_library(Qt::Core ALIAS Qt5::Core)
+    add_library(Qt::Widgets ALIAS Qt5::Widgets)
+endif()
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
 # Core Readers

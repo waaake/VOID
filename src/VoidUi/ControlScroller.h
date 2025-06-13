@@ -12,7 +12,7 @@
 #include <QWidget>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -37,7 +37,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
 
     /* Setup the Cursor Override */
-    void enterEvent(QEvent* event) override;
+    void enterEvent(EnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
 
 private: /* Members */

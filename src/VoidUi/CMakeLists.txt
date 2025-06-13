@@ -30,7 +30,12 @@ target_link_libraries(
     PRIVATE
     VoidCore
     VoidRenderer
-    Qt5::Widgets
-    Qt5::Core
+    Qt::Widgets
+    Qt::Core
     OpenGL::GL
 )
+
+# Qt6 needs OpenGLWidgets be included/linked separately
+if (QT_MAJOR_VERSION EQUAL 6)
+    target_link_libraries(VoidUi PRIVATE Qt::OpenGLWidgets)
+endif()
