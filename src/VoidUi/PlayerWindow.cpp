@@ -240,20 +240,9 @@ void VoidMainWindow::Build()
     m_ZoomToFitAction = new QAction("Zoom to Fit");
     m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
 
-    /* Temporary */
-    m_SetViewBufferA = new QAction("Set Viewer Buffer A");
-    m_SetViewBufferB = new QAction("Set Viewer Buffer B");
-
     m_ViewerMenu->addAction(m_ZoomInAction);
     m_ViewerMenu->addAction(m_ZoomOutAction);
     m_ViewerMenu->addAction(m_ZoomToFitAction);
-
-    /* -------------------------------- */
-    m_ViewerMenu->insertSeparator(m_SetViewBufferA);
-
-    m_ViewerMenu->addAction(m_SetViewBufferA);
-    m_ViewerMenu->addAction(m_SetViewBufferB);
-
     /* }}} */
 
     /* Window Menu {{{ */
@@ -315,9 +304,6 @@ void VoidMainWindow::Connect()
     connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
     connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
     connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
-
-    connect(m_SetViewBufferA, &QAction::triggered, this, [this]() { m_Player->SetViewBuffer(Player::PlayerViewBuffer::A); });
-    connect(m_SetViewBufferB, &QAction::triggered, this, [this]() { m_Player->SetViewBuffer(Player::PlayerViewBuffer::B); });
     /* }}} */
 
     connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });

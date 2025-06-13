@@ -8,6 +8,7 @@
 #include <QWidget>
 
 /* Internal */
+#include "BufferSwitch.h"
 #include "ControlScroller.h"
 #include "Definition.h"
 #include "VoidCore/Logging.h"
@@ -35,7 +36,7 @@ class ControlBar : public QWidget
     Q_OBJECT
 
 public:
-    ControlBar(QWidget* parent = nullptr);
+    ControlBar(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent = nullptr);
     virtual ~ControlBar();
 
     /*
@@ -50,6 +51,7 @@ public:
 signals:
     void zoomChanged(float factor);
     void missingFrameHandlerChanged(int handler);
+    void viewerBufferSwitched(const PlayerViewBuffer&);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -66,6 +68,13 @@ private: /* Members */
     QLabel* m_MissingFrameLabel;
     ControlCombo* m_MissingFrameCombo;
     QHBoxLayout* m_MissingFrameLayout;
+
+    /* Viewer Buffers */
+    ViewerBuffer* m_ViewerBufferA;
+    ViewerBuffer* m_ViewerBufferB;
+    
+    /* Viewer Buffer Switch */
+    BufferSwitch* m_BufferSwitch;
 
 private: /* Methods */
     void Build();

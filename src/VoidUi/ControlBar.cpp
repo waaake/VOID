@@ -53,8 +53,10 @@ void ControlSlider::paintEvent(QPaintEvent* event)
     /* }}} */
 }
 
-ControlBar::ControlBar(QWidget* parent)
+ControlBar::ControlBar(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent)
     : QWidget(parent)
+    , m_ViewerBufferA(A)
+    , m_ViewerBufferB(B)
 {
     /* Build UI */
     Build();
@@ -100,15 +102,20 @@ void ControlBar::Build()
     m_MissingFrameLayout->addWidget(m_MissingFrameLabel);
     m_MissingFrameLayout->addWidget(m_MissingFrameCombo);
 
+    /* Viewer Buffer Controls */
+    m_BufferSwitch = new BufferSwitch(m_ViewerBufferA, m_ViewerBufferB);
+
     /* Zoom Controls */
 
     m_Zoomer = new ControlSpinner();
 
     /* Add to the main layout */
     m_Layout->addLayout(m_MissingFrameLayout);
-
+    /* Spacer */
     m_Layout->addStretch(1);
-
+    m_Layout->addWidget(m_BufferSwitch);
+    /* Spacer */
+    m_Layout->addStretch(1);
     m_Layout->addWidget(m_Zoomer);
 }
 
@@ -149,6 +156,9 @@ void ControlBar::Connect()
 
     /* Zoom */
     connect(m_Zoomer, static_cast<void (QSpinBox::* )(int)>(&QSpinBox::valueChanged), this, &ControlBar::UpdateZoom);
+
+    /* Viewer Buffer Switch */
+    connect(m_BufferSwitch, &BufferSwitch::switched, this, &ControlBar::viewerBufferSwitched);
 }
 
 float ControlBar::MapToZoom(int value)

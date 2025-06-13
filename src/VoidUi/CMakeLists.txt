@@ -4,6 +4,7 @@ add_library(
     SHARED
     About.cpp
     Browser.cpp
+    BufferSwitch.cpp
     ControlBar.cpp
     ControlScroller.cpp
     Docker.cpp

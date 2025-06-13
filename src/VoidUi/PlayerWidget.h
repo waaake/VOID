@@ -32,18 +32,6 @@ public:
         NEAREST
     };
 
-    /**
-     * Enum decribing which viewer buffer is currently active and can be used to set an
-     * active viewer buffer for the 
-     */
-    enum class PlayerViewBuffer
-    {
-        /* Relates to ViewerBuffer A */
-        A,
-        /* Relates to ViewerBuffer B */
-        B
-    };
-
 public:
     Player(QWidget* parent = nullptr);
     virtual ~Player();
