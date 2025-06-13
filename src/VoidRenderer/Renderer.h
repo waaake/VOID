@@ -9,7 +9,7 @@
 #include <QOpenGLShaderProgram>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "RendererStatus.h"
 #include "VoidCore/ImageData.h"
 

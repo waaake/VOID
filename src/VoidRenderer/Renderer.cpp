@@ -144,8 +144,13 @@ void VoidRenderer::resizeEvent(QResizeEvent* event)
 void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
 {
     /* Fetch the mouse position */
+    #if _Qt6    /* Qt6 Compat */
+    int x = event->position.x();
+    int y = event->position.y();
+    #else
     int x = event->x();
     int y = event->y();
+    #endif
 
     /* Update the X and Y Coordinates for the mouse movements */
     m_RenderStatus->SetMouseCoordinates(x, y);

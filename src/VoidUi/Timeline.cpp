@@ -48,7 +48,7 @@ Timeslider::~Timeslider()
 {
 }
 
-void Timeslider::enterEvent(QEvent* event)
+void Timeslider::enterEvent(EnterEvent* event)
 {
 	m_Focussed = true;
 }

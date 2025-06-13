@@ -13,8 +13,8 @@ target_include_directories(
     PRIVATE
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5Core_INCLUDE_DIRS}
+    ${Q5Widgets_INCLUDE_DIRS}
+    ${QtCore_INCLUDE_DIRS}
 )
 
 target_include_directories(
@@ -23,7 +23,7 @@ target_include_directories(
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${OpenImageIO_INCLUDE_DIRS}
-    )
+)
 
 # Logging
 if (spdlog_FOUND)
@@ -32,6 +32,12 @@ if (spdlog_FOUND)
         PRIVATE
         ${spdlog_INCLUDE_DIRS}
     )
+endif()
+
+# Globals
+# Qt6 needs OpenGLWidgets be included/linked separately
+if (QT_MAJOR_VERSION EQUAL 6)
+    include_directories(${QtOpenGLWidgets_INCLUDE_DIRS})
 endif()
 
 # Main Executable
@@ -47,7 +53,12 @@ target_link_libraries(
     VoidCore
     VoidRenderer
     VoidUi
-    Qt5::Widgets
-    Qt5::Core
+    Qt::Widgets
+    Qt::Core
     OpenGL::GL
 )
+
+# Qt6 needs OpenGLWidgets be included/linked separately
+if (QT_MAJOR_VERSION EQUAL 6)
+    target_link_libraries(VOID PRIVATE Qt::OpenGLWidgets)
+endif()
