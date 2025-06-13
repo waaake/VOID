@@ -13,7 +13,7 @@ target_include_directories(
     PRIVATE
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Q5Widgets_INCLUDE_DIRS}
+    ${QtWidgets_INCLUDE_DIRS}
     ${QtCore_INCLUDE_DIRS}
 )
 
