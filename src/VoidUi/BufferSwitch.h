@@ -4,8 +4,6 @@
 /* Qt */
 #include <QLayout>
 #include <QFrame>
-// #include <QLabel>
-// #include <QLineEdit>
 
 /* Internal */
 #include "Definition.h"

@@ -82,14 +82,9 @@ void BufferSwitch::Build()
     m_Layout->setSpacing(0);
 
     m_BufferA = new BufferPage(m_ViewerBufferA, PlayerViewBuffer::A);
-    // m_BufferA->SetName("A");
-    // m_BufferA->SetActive(true);
-
     m_BufferB = new BufferPage(m_ViewerBufferB, PlayerViewBuffer::B);
-    // m_BufferB->SetColor(QColor(70, 180, 220));
-    // m_BufferB->SetName("B");
-    // m_BufferB->SetActive(false);
 
+    /* Add to the Control Layout */
     m_Layout->addWidget(m_BufferA);
     m_Layout->addWidget(m_BufferB);
 }
