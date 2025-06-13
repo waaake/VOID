@@ -13,6 +13,20 @@
 
 VOID_NAMESPACE_OPEN
 
+/**
+ * Enum decribing which viewer buffer is currently active and can be used to set an
+ * active viewer buffer for the 
+ */
+enum class PlayerViewBuffer
+{
+    /* Relates to ViewerBuffer A */
+    A,
+    /* Relates to ViewerBuffer B */
+    B
+
+    /* In Future the Buffer type may also include Compare buffers like switch/swipe and others. */
+};
+
 class ViewerBuffer : public QObject
 {
     Q_OBJECT
@@ -33,6 +47,7 @@ public: /* Enums */
     };
 
 public:
+    ViewerBuffer(const std::string& name, QObject* parent = nullptr);
     ViewerBuffer(QObject* parent = nullptr);
     ~ViewerBuffer();
 
@@ -78,13 +93,33 @@ public:
     inline SharedPlaybackSequence GetSequence() const { return m_Sequence; }
 
     /**
+     * Active state of the Viewer Buffer
+     */
+    [[nodiscard]] inline bool Active() const { return m_Active; }
+    inline void SetActive(const bool active) { m_Active = active; emit updated();}
+
+    /**
+     * Name of the viewer buffer
+     */
+    inline std::string Name() const { return m_Name; }
+    inline void SetName(const std::string& name) { m_Name = name; }
+
+    /**
+     * Color Associtated with the viewer buffer to indicate its reference across the UI
+     */
+    inline QColor Color() const { return m_Color; }
+    void SetColor(const QColor& color);
+
+    /**
      * Set a playable component on the Buffer
      */
     void Set(const SharedMediaClip& media);
     void Set(const SharedPlaybackTrack& track);
     void Set(const SharedPlaybackSequence& sequence);
 
-    void SetColor(const QColor& color);
+signals:
+    /* The updated signal is emitted when the viewer buffer receives a change */
+    void updated();
 
 private: /* Members */
     /**
@@ -101,8 +136,17 @@ private: /* Members */
     /* Frame range of the playing component */
     int m_Startframe, m_Endframe;
 
+    /* Name of the Viewer Buffer */
+    std::string m_Name;
+
     /* Color associated with the Buffer to indicate where possible */
     QColor m_Color;
+
+    /** 
+     * Represents the state of the Buffer
+     * Whether the buffer is active or not at the moment
+     */
+    bool m_Active;
 
 };
 

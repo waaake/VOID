@@ -3,15 +3,22 @@
 
 VOID_NAMESPACE_OPEN
 
-ViewerBuffer::ViewerBuffer(QObject* parent)
+ViewerBuffer::ViewerBuffer(const std::string& name, QObject* parent)
     : QObject(parent)
     , m_Clip(std::make_shared<MediaClip>())
     , m_Track(std::make_shared<PlaybackTrack>())
     , m_Sequence(std::make_shared<PlaybackSequence>())
     , m_PlayingComponent(PlayableComponent::Clip)
     , m_Startframe(0)
-    , m_Endframe(1)
+    , m_Endframe(100)
+    , m_Name(name)
     , m_Color(130, 110, 190)    // Purple
+    , m_Active(false)
+{
+}
+
+ViewerBuffer::ViewerBuffer(QObject* parent)
+    : ViewerBuffer("", parent)
 {
 }
 
