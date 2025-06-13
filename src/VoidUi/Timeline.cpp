@@ -274,8 +274,13 @@ void Timeline::Build()
 	m_BackwardButton = new QPushButton();
 
 	/* Reversed Play icon for backward button */
+	#if _QT6 		/* Qt6 Compat */
+	QPixmap p = s->standardPixmap(s->SP_MediaPlay);
+	QImage backImg(p.toImage().flipped(Qt::Horizontal));
+	#else
 	QPixmap p = s->standardPixmap(s->SP_MediaPlay);
 	QImage backImg(p.toImage().mirrored(true, false));
+	#endif
 	m_BackwardButton->setIcon(QIcon(QPixmap::fromImage(backImg)));
 	m_BackwardButton->setFixedWidth(BUTTON_WIDTH);
 

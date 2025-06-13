@@ -94,7 +94,7 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
 
 void ControlSpinner::mousePressEvent(QMouseEvent* event)
 {
-    #if _Qt6 /* Qt6 Compat */
+    #if _QT6 /* Qt6 Compat */
     /* Save the last mouse x pos */
     m_LastX = event->position().x();
     #else

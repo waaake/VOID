@@ -33,7 +33,7 @@ public:
     VoidImageData();
     VoidImageData(const std::string& path);
 
-    virtual ~VoidImageData();
+    ~VoidImageData();
 
     /* Accessors */
     /*

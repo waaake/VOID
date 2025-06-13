@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # First thing is to create the directory _build
-mkdir -p _build -v
+mkdir -pv _build
 
 
 # Clear only if we want a clean build

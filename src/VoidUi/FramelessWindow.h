@@ -5,7 +5,7 @@
 #include <QMainWindow>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -44,7 +44,7 @@ private: /* enum */
 
 private: /* members */
     ResizeType m_Resize;
-    QPoint m_LastPos;
+    Point m_LastPos;
 
     bool m_Dragging;
 
