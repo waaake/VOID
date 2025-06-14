@@ -21,7 +21,7 @@ add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 option(USE_FRAMED_WINDOW "Enable using Framed Window borders, which is native themed." OFF)
 
 # Mac has it turned on by default unless we don't want it there as well
-if(APPLE AND NOT DEFINED USE_FRAMED_WINDOW)
+if(APPLE)
     set(USE_FRAMED_WINDOW ON)
 endif()
 
