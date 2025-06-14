@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.7.0)
 
 project(VOID VERSION 0.0.1 LANGUAGES CXX)
 
@@ -9,12 +9,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
 
-if (CMAKE_VERSION VERSION_LESS "3.7.0")
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-endif()
-
 # USE CXX11 ABI
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
+
+# An explicit option to allow compiling the GUI frameless or with Window borders
+# it's a debate about whether the feature should be inbuilt and an option to switch to either
+# but the frameless way at the moment does not look really nice in mac when mac pulls the menubar away and we're
+# only left with the icon on the left side and window buttons on the right
+# for now, let's have it enabled on compile if we need it or not, later this might change and we have a full frameless
+# or a framed window
+option(USE_FRAMED_WINDOW "Enable using Framed Window borders, which is native themed." OFF)
+
+# Mac has it turned on by default unless we don't want it there as well
+if(APPLE)
+    set(USE_FRAMED_WINDOW ON)
+endif()
+
+# Add Definition for the code to use the flag
+if (USE_FRAMED_WINDOW)
+    message(STATUS "Compiling with Framed Window")
+    add_compile_definitions(USE_FRAMED_WINDOW)
+endif()
 
 # Core Depends on Qt5/Qt6 | OpenGL
 # Supporting both Qt5 and Qt6 at the moment as they are mostly compatible with minor changes

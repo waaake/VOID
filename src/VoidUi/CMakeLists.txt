@@ -9,7 +9,7 @@ add_library(
     ControlScroller.cpp
     Docker.cpp
     Events.h
-    FramelessWindow.cpp
+    BaseWindow.cpp
     MediaClip.cpp
     MediaLister.cpp
     MediaItem.cpp

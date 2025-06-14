@@ -11,7 +11,7 @@
 #include "About.h"
 #include "Definition.h"
 #include "Docker.h"
-#include "FramelessWindow.h"
+#include "BaseWindow.h"
 #include "MediaClip.h"
 #include "MediaLister.h"
 #include "PlayerWidget.h"
@@ -58,7 +58,7 @@ private: /* Methods */
 
 };
 
-class VoidMainWindow : public FramelessWindow
+class VoidMainWindow : public BaseWindow
 {
     Q_OBJECT
 

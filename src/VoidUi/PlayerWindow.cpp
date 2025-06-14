@@ -91,7 +91,7 @@ void DockerWindow::ToggleComponent(const Component& component, const bool state)
 /* }}} */
 
 VoidMainWindow::VoidMainWindow(QWidget* parent)
-    : FramelessWindow(parent)
+    : BaseWindow(parent)
     , m_CacheMedia(false)
     , m_Media()
 {
@@ -137,12 +137,14 @@ void VoidMainWindow::Build()
     /* Don't want any extra margins */
     layout->setContentsMargins(2, 0, 2, 2);
 
+    #ifndef USE_FRAMED_WINDOW       /* Not Using Framed window */
     /*
      * The Main title bar for the Void Window
      * This will act as a drop-in replacement for the standard TitleBar OS specific
      */
     m_TitleBar = new VoidTitleBar(this);
     layout->addWidget(m_TitleBar, 0, Qt::AlignTop);
+    #endif // USE_FRAMED_WINDOW
 
     /*
      * This is the internal window holding all of the components inside
@@ -159,8 +161,18 @@ void VoidMainWindow::Build()
     /* Set the central widget */
     setCentralWidget(baseWidget);
 
+    /**
+     * If we're using Framed window which means the menu bar now has to be part of the
+     * Window as a menu bar
+     * Else we use the custom defined menubar from the TitleBar
+     */
+    #ifdef USE_FRAMED_WINDOW
+    QMenuBar* menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
+    #else
     /* Menubar from the TitleBar */
     QMenuBar* menuBar = m_TitleBar->MenuBar();
+    #endif // USE_FRAMED_WINDOW
 
     /* File Menu {{{ */
     m_FileMenu = new QMenu("File", menuBar);
@@ -273,10 +285,12 @@ void VoidMainWindow::Build()
 
 void VoidMainWindow::Connect()
 {
+    #ifndef USE_FRAMED_WINDOW   /* Not using Framed window */
     /* Title Bar Actions */
     connect(m_TitleBar, &VoidTitleBar::requestMinimize, this, &QWidget::showMinimized);
     connect(m_TitleBar, &VoidTitleBar::requestMaximizeRestore, this, [this]() { isMaximized() ? showNormal() : showMaximized(); });
     connect(m_TitleBar, &VoidTitleBar::requestClose, this, &QWidget::close);
+    #endif  // USE_FRAMED_WINDOW
 
     /* Menu Actions */
     /* File Menu {{{ */

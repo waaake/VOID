@@ -9,10 +9,17 @@
 
 VOID_NAMESPACE_OPEN
 
-class FramelessWindow : public QMainWindow
+#ifdef USE_FRAMED_WINDOW
+class BaseWindow : public QMainWindow
 {
 public:
-    FramelessWindow(QWidget* parent = nullptr);
+    BaseWindow(QWidget* parent = nullptr) : QMainWindow(parent) {}
+};
+#else
+class BaseWindow : public QMainWindow
+{
+public:
+    BaseWindow(QWidget* parent = nullptr);
 
 protected:
     /* 
@@ -49,6 +56,7 @@ private: /* members */
     bool m_Dragging;
 
 };
+#endif // USE_FRAMED_WINDOW
 
 VOID_NAMESPACE_CLOSE
 
