@@ -37,7 +37,7 @@ if [ "$CLEAR" == true ]; then
 fi
 
 if [ "$BUILD_ONLY" == true ]; then
-    cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build
+    cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build -j$(nproc)
     exit 0
 fi
 
@@ -51,8 +51,8 @@ fi
 # Release build does not include logging
 if [[ "$DEBUG" == true ]]; then
     echo -e "\n\n\nRunning with GDB\n\n\n"
-    cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build && gdb -ex run --args ./_build/src/VOID
+    cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build -j$(nproc) && gdb -ex run --args ./_build/src/VOID
 else
-    cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build && ./_build/src/VOID
+    cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build -j$(nproc) && ./_build/src/VOID
 fi
 
