@@ -158,7 +158,7 @@ void VoidMediaLister::Build()
     int left, top, right, bottom;
     m_layout->getContentsMargins(&left, &top, &right, &bottom);
     /* Only adjust the right side spacing to make it cleaner against the viewer */
-    m_layout->setContentsMargins(left, top, 0, bottom);
+    m_layout->setContentsMargins(0, top, 0, 2);
 }
 
 void VoidMediaLister::Setup()

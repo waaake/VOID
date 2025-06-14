@@ -2,15 +2,18 @@
 #include <QMouseEvent>
 
 /* Internal */
-#include "FramelessWindow.h"
+#include "BaseWindow.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
+/* If we're not using framed window -> Going for the custom frameless base */
+#ifndef USE_FRAMED_WINDOW
+
 static const int RESIZE_MARGIN = 10;
 static const int TITLEBAR_MARGIN = 40;
 
-FramelessWindow::FramelessWindow(QWidget* parent)
+BaseWindow::BaseWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_Resize(ResizeType::None)
     , m_Dragging(false)
@@ -19,8 +22,8 @@ FramelessWindow::FramelessWindow(QWidget* parent)
     setWindowFlags(Qt::FramelessWindowHint);
 }
 
-#if _QT6 /* Qt 6 Compatible */
-void FramelessWindow::mousePressEvent(QMouseEvent* event)
+#if _QT6        /* Qt 6 Compat */
+void BaseWindow::mousePressEvent(QMouseEvent* event)
 {
     /* Window geometry */
     QRect window = geometry();
@@ -29,44 +32,44 @@ void FramelessWindow::mousePressEvent(QMouseEvent* event)
     Point pos = event->position();
 
     /* TODO: Add all types of resize operations */
-    if (pos.x() > window.width() - RESIZE_MARGIN && pos.y() > window.height() - RESIZE_MARGIN)    /* Bottom Right */
+    if (pos.x() > window.width() - RESIZE_MARGIN && pos.y() > window.height() - RESIZE_MARGIN)   /* Bottom Right */
     {
         m_Resize = ResizeType::BottomRight;
         m_LastPos = event->globalPosition();
     }
-    else if (pos.x() < RESIZE_MARGIN && pos.y() > window.height() - RESIZE_MARGIN)                /* Bottom Left */
+    else if (pos.x() < RESIZE_MARGIN && pos.y() > window.height() - RESIZE_MARGIN)               /* Bottom Left */
     {
         m_Resize = ResizeType::BottomLeft;
         m_LastPos = event->globalPosition();
     }
-    else if (pos.y() > window.height() - RESIZE_MARGIN)                                        /* Bottom */
+    else if (pos.y() > window.height() - RESIZE_MARGIN)                                          /* Bottom */
     {
         m_Resize = ResizeType::Bottom;
         m_LastPos = event->globalPosition();
     }
-    else if (pos.x() > window.width() - RESIZE_MARGIN)                                               /* Right */
+    else if (pos.x() > window.width() - RESIZE_MARGIN)                                           /* Right */
     {
         m_Resize = ResizeType::Right;
         m_LastPos = event->globalPosition();
     }
-    else if (pos.x() < RESIZE_MARGIN && pos.y() < RESIZE_MARGIN)                                  /* Top Left */
+    else if (pos.x() < RESIZE_MARGIN && pos.y() < RESIZE_MARGIN)                                 /* Top Left */
     {
         m_Resize = ResizeType::TopLeft;
         m_LastPos = event->globalPosition();
     }
-    else if (pos.x() < RESIZE_MARGIN)                                                                /* Left */
+    else if (pos.x() < RESIZE_MARGIN)                                                            /* Left */
     {
         m_Resize = ResizeType::Left;
         m_LastPos = event->globalPosition();
     }
-    else if (event->position().y() < TITLEBAR_MARGIN)                                             /* Title Bar Drag Operation */
+    else if (event->position().y() < TITLEBAR_MARGIN)                                            /* Title Bar Drag Operation */
     {
         m_Dragging = true;
         m_LastPos = event->globalPosition();
     }
 }
 
-void FramelessWindow::mouseMoveEvent(QMouseEvent* event)
+void BaseWindow::mouseMoveEvent(QMouseEvent* event)
 {
     /* Window DRAGGING {{{ */
     if (m_Dragging)
@@ -189,7 +192,7 @@ void FramelessWindow::mouseMoveEvent(QMouseEvent* event)
     /* }}} */
 }
 #else
-void FramelessWindow::mousePressEvent(QMouseEvent* event)
+void BaseWindow::mousePressEvent(QMouseEvent* event)
 {
     /* Window geometry */
     QRect window = geometry();
@@ -208,12 +211,12 @@ void FramelessWindow::mousePressEvent(QMouseEvent* event)
         m_Resize = ResizeType::BottomLeft;
         m_LastPos = event->globalPos();
     }
-    else if (pos.y() > window.height() - RESIZE_MARGIN)                                        /* Bottom */
+    else if (pos.y() > window.height() - RESIZE_MARGIN)                                           /* Bottom */
     {
         m_Resize = ResizeType::Bottom;
         m_LastPos = event->globalPos();
     }
-    else if (pos.x() > window.width() - RESIZE_MARGIN)                                               /* Right */
+    else if (pos.x() > window.width() - RESIZE_MARGIN)                                            /* Right */
     {
         m_Resize = ResizeType::Right;
         m_LastPos = event->globalPos();
@@ -223,19 +226,19 @@ void FramelessWindow::mousePressEvent(QMouseEvent* event)
         m_Resize = ResizeType::TopLeft;
         m_LastPos = event->globalPos();
     }
-    else if (pos.x() < RESIZE_MARGIN)                                                                /* Left */
+    else if (pos.x() < RESIZE_MARGIN)                                                             /* Left */
     {
         m_Resize = ResizeType::Left;
         m_LastPos = event->globalPos();
     }
-    else if (event->pos().y() < TITLEBAR_MARGIN)                                             /* Title Bar Drag Operation */
+    else if (event->pos().y() < TITLEBAR_MARGIN)                                                 /* Title Bar Drag Operation */
     {
         m_Dragging = true;
         m_LastPos = event->globalPos();
     }
 }
 
-void FramelessWindow::mouseMoveEvent(QMouseEvent* event)
+void BaseWindow::mouseMoveEvent(QMouseEvent* event)
 {
     /* Window DRAGGING {{{ */
     if (m_Dragging)
@@ -357,9 +360,9 @@ void FramelessWindow::mouseMoveEvent(QMouseEvent* event)
     }
     /* }}} */
 }
-#endif
+#endif  // _QT6
 
-void FramelessWindow::mouseReleaseEvent(QMouseEvent* event)
+void BaseWindow::mouseReleaseEvent(QMouseEvent* event)
 {
     if (m_Resize != ResizeType::None)
     {
@@ -373,5 +376,7 @@ void FramelessWindow::mouseReleaseEvent(QMouseEvent* event)
         m_Dragging = false;
     }
 }
+
+#endif // USE_FRAMED_WINDOW
 
 VOID_NAMESPACE_CLOSE
