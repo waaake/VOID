@@ -52,6 +52,12 @@ public:
     void ZoomToFit();
     void UpdateZoom(float zoom);
 
+    /**
+     * Adjusts the Exposure of the Viewer
+     */
+    void SetExposure(float exposure);
+    void SetGamma(float gamma);
+
     /*
      * Set a Message to be displayed on the Renderer
      * Mostly gets used to show error messages if anything is not working/available
@@ -87,6 +93,13 @@ private: /* Members */
      * Element or the index buffer object
      */
     unsigned int VAO, VBO, EBO;
+
+    /**
+     * Viewer Adjustments
+     * Exposure
+     * Gamma
+     */
+    float m_Exposure, m_Gamma;
 
     RendererStatusBar* m_RenderStatus;
     RendererDisplayLabel* m_DisplayLabel;

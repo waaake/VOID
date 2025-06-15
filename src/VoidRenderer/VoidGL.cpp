@@ -22,15 +22,37 @@ void main() {
 }
 )";
 
+// static const std::string fragmentShaderSrc = R"(
+// #version 330 core
+// in vec2 TexCoord;
+// out vec4 FragColor;
+
+// uniform sampler2D uTexture;
+
+// void main() {
+//     FragColor = texture(uTexture, TexCoord);
+// }
+// )";
+
 static const std::string fragmentShaderSrc = R"(
 #version 330 core
 in vec2 TexCoord;
 out vec4 FragColor;
 
-uniform sampler2D uTexture;
+uniform sampler2D inputTexture;
+uniform float exposure;
+uniform float gamma;
 
 void main() {
-    FragColor = texture(uTexture, TexCoord);
+    vec4 color = texture(inputTexture, TexCoord);
+
+    // Apply exposure adjustment
+    color.rgb = vec3(1.0) - exp(-color.rgb * exposure);
+
+    // Apply gamma correction
+    color.rgb = pow(color.rgb, vec3(1.0 / gamma));
+
+    FragColor = color;
 }
 )";
 
