@@ -21,6 +21,9 @@ Player::Player(QWidget* parent)
     m_ActiveViewBuffer = m_ViewBufferA;
     m_ViewBufferA->SetActive(true);
 
+    /* Setup the OpenGL Profile before the OpenGL Context is initialised */
+    VoidShader::SetProfile();
+
     /* Build the layout */
     Build();
 

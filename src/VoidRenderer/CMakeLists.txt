@@ -4,6 +4,7 @@ add_library(
     SHARED
     Renderer.cpp
     RendererStatus.cpp
+    VoidGL.cpp
 )
 
 target_include_directories(
@@ -12,6 +13,7 @@ target_include_directories(
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${QtWidgets_INCLUDE_DIRS}
+    ${glm_INCLUDE_DIRS}
 )
 
 # Link to this library
@@ -21,6 +23,7 @@ target_link_libraries(
     VoidCore
     Qt::Widgets
     OpenGL::GL
+    glm::glm
 )
 
 # Qt6 needs OpenGLWidgets be included/linked separately

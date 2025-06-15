@@ -56,6 +56,9 @@ else()
 endif()
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 
+# GL Maths
+find_package(glm REQUIRED)
+
 # Core Readers
 find_package(OpenImageIO REQUIRED)
 find_package(OpenEXR REQUIRED)
