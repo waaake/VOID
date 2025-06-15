@@ -1,6 +1,13 @@
 #ifndef _VOID_RENDERER_H
 #define _VOID_RENDERER_H
 
+#define GL_GLEXT_PROTOTYPES
+
+/* glm */
+#include <glm/glm.hpp>
+#include <glm/vec4.hpp>
+#include <glm/vec2.hpp>
+
 /* Qt */
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
@@ -12,10 +19,11 @@
 #include "QDefinition.h"
 #include "RendererStatus.h"
 #include "VoidCore/ImageData.h"
+#include "VoidGL.h"
 
 VOID_NAMESPACE_OPEN
 
-class VoidRenderer : public QOpenGLWidget, protected QOpenGLFunctions
+class VoidRenderer : public QOpenGLWidget, protected VoidShader
 {
 private: /* Members */
     QOpenGLTexture* m_Texture;
@@ -25,7 +33,7 @@ private: /* Members */
 public:
     VoidRenderer(QWidget* parent = nullptr);
 
-    virtual ~VoidRenderer();
+    ~VoidRenderer();
 
     void Render(VoidImageData* data);
     void Play();
@@ -54,6 +62,8 @@ protected:
     virtual void resizeGL(int w, int h) override;
 
     virtual void resizeEvent(QResizeEvent* event) override;
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
 
     virtual void wheelEvent(QWheelEvent* event) override;
@@ -61,6 +71,18 @@ protected:
     void ClearFrame();
 
 private: /* Members */
+    /* Shader Manager */
+    // VoidShader* m_Shader;
+
+    /** 
+     * Array and Buffer objects
+     * 
+     * Vertex array Object
+     * Vertex Buffer Object
+     * Element or the index buffer object
+     */
+    unsigned int VAO, VBO, EBO;
+
     RendererStatusBar* m_RenderStatus;
     RendererDisplayLabel* m_DisplayLabel;
 
@@ -68,6 +90,13 @@ private: /* Members */
     float m_ZoomFactor;
     /* Zoom at specific coords */
     float m_TranslateX, m_TranslateY;
+
+    bool m_Pressed;
+
+    /* Panning */
+    glm::vec2 m_Pan;
+    QPoint m_LastMouse;
+
 };
 
 VOID_NAMESPACE_CLOSE

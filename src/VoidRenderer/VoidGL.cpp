@@ -1,0 +1,94 @@
+/* Internal */
+#include "VoidGL.h"
+
+VOID_NAMESPACE_OPEN
+
+/**
+ * These are our base shaders which we'll use to render out images (for now)
+ * onto our renderer window
+ */
+
+static const std::string vertexShaderSrc = R"(
+#version 330 core
+layout(location = 0) in vec2 position;
+layout(location = 1) in vec2 v_TexCoord;
+
+uniform mat4 uMVP;
+out vec2 TexCoord;
+
+void main() {
+    gl_Position = uMVP * vec4(position, 0.0, 1.0);
+    TexCoord = v_TexCoord;
+}
+)";
+
+static const std::string fragmentShaderSrc = R"(
+#version 330 core
+in vec2 TexCoord;
+out vec4 FragColor;
+
+uniform sampler2D uTexture;
+
+void main() {
+    FragColor = texture(uTexture, TexCoord);
+}
+)";
+
+
+VoidShader::VoidShader()
+{
+    /* Construct a program to be used */
+    m_Shader = new QOpenGLShaderProgram;
+}
+
+VoidShader::~VoidShader()
+{
+    m_Shader->deleteLater();
+}
+
+void VoidShader::Initialize()
+{
+    /* Initialize the base openGL context */
+    initializeOpenGLFunctions();
+
+    /* Load the shaders */
+    LoadShaders();
+}
+
+bool VoidShader::LoadShaders()
+{
+    /* Compile Vertex Shader */
+    m_Shader->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
+
+    /* Compile Fragment Shader */
+    m_Shader->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc.c_str());
+
+    /* If we're not able to link the shaders */
+    if (!m_Shader->link())
+    {
+        /* Log the error and return the status as false */
+        VOID_LOG_ERROR("Shader Linking Failed: {0}", m_Shader->log().toStdString());
+        return false;
+    }
+
+    /* We're all goood */
+    VOID_LOG_INFO("Shaders Loaded.");
+    return true;
+}
+
+void VoidShader::SetProfile()
+{
+    /**
+     * As we're going to use Modern OpenGL
+     * We'd like to use the Core Profile
+     * Setup OpenGL Core Profile
+     */
+    QSurfaceFormat format;
+    format.setVersion(3, 3);    // This is so that our shader gets compiled and linked version 330 core for OpenGL 3.3
+    format.setProfile(QSurfaceFormat::CoreProfile);
+
+    /* Set the adjusted profile */
+    QSurfaceFormat::setDefaultFormat(format);
+}
+
+VOID_NAMESPACE_CLOSE
