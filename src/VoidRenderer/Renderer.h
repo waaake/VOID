@@ -79,9 +79,6 @@ protected:
     void ClearFrame();
 
 private: /* Members */
-    /* Shader Manager */
-    // VoidShader* m_Shader;
-
     /** 
      * Array and Buffer objects
      * 
@@ -103,7 +100,7 @@ private: /* Members */
 
     /* Panning */
     glm::vec2 m_Pan;
-    QPoint m_LastMouse;
+    Point m_LastMouse;
 
 };
 
