@@ -127,16 +127,12 @@ void ControlBar::Build()
 
     /* Add to the main layout */
     m_Layout->addLayout(m_MissingFrameLayout);
-    /* ---------- Separator ---------- */
-    m_Layout->addWidget(Separator());
+
     m_Layout->addWidget(m_ExposureLabel);
     m_Layout->addWidget(m_ExposureController);
-    /* ---------- Separator ---------- */
-    m_Layout->addWidget(Separator());
+
     m_Layout->addWidget(m_GammaLabel);
     m_Layout->addWidget(m_GammaController);
-    /* ---------- Separator ---------- */
-    m_Layout->addWidget(Separator());
     /* Spacer */
     m_Layout->addStretch(1);
     m_Layout->addWidget(m_BufferSwitch);
