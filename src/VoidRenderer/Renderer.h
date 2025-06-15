@@ -1,6 +1,14 @@
 #ifndef _VOID_RENDERER_H
 #define _VOID_RENDERER_H
 
+/**
+ * We're interested in functions like glVertexAttribPointer, glGenVertexArrays
+ * and other similar functions from modernOpenGL
+ * 
+ * One way to use them is to use glew (OpenGL Extension Wrangler) to have the function pointers
+ * available
+ * This however needs to be tested on other operating systems like Windows and MacOS
+ */
 #define GL_GLEXT_PROTOTYPES
 
 /* glm */

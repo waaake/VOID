@@ -84,6 +84,10 @@ void VoidShader::SetProfile()
      * Setup OpenGL Core Profile
      */
     QSurfaceFormat format;
+    /**
+     * The reason we're going for 3,3 is that whatever we need is available in 3,3 there isn't too much of a benefit
+     * going up? maybe we do it later?
+     */
     format.setVersion(3, 3);    // This is so that our shader gets compiled and linked version 330 core for OpenGL 3.3
     format.setProfile(QSurfaceFormat::CoreProfile);
 
