@@ -400,8 +400,15 @@ void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
 
 void VoidMainWindow::ImportMedia(const std::string& path)
 {
-    /* Update the media from the path */
-    m_Media.Read(path);
+    /* Create the media from the path */
+    m_Media = Media(path);
+
+    /* Check if the media is valid */
+    if (m_Media.Empty())
+    {
+        VOID_LOG_INFO("Invalid Media.");
+        return;
+    }
 
     /* Cache */
     CacheLookAhead();
