@@ -137,6 +137,10 @@ Media::~Media()
 
 void Media::UpdateRange()
 {
+    /* Check if we have any frames to arrange */
+    if (m_Framenumbers.empty())
+        return;
+
     /* Sort the Updated frames vector */
     std::sort(m_Framenumbers.begin(), m_Framenumbers.end());
 
