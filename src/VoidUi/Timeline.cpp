@@ -260,12 +260,6 @@ void Timeslider::UpdateHovered(int xpos)
 
 void Timeslider::SetUserFirstframe(int frame)
 {
-	/* Reset the user last if the current frame is more than that */
-	if (m_UserEndframe && (frame > m_UserEndframe))
-	{
-		m_UserStartframe = maximum();
-	}
-
 	/* Set the user defined first frame */
 	m_UserStartframe = frame;
 
@@ -275,12 +269,6 @@ void Timeslider::SetUserFirstframe(int frame)
 
 void Timeslider::SetUserEndframe(int frame)
 {
-	/* Reset the user first if the current frame is less than that */
-	if (m_UserStartframe && (frame < m_UserStartframe))
-	{
-		m_UserStartframe = minimum();
-	}
-
 	/* Set the user defined last frame */
 	m_UserEndframe = frame;
 
@@ -366,6 +354,7 @@ Timeline::Timeline(QWidget* parent)
 	: QWidget(parent)
 	, m_Start(0)
 	, m_End(0)
+	, m_LoopType(LoopType::LoopInfinitely)
 {
 	/* Build the layout of the widget */
 	Build();
@@ -598,6 +587,15 @@ void Timeline::ResetRange()
 
 void Timeline::SetUserFirstframe(int frame)
 {
+	/* Check if the end frame is lesser than the provided start frame */
+	if (m_Timeslider->m_UserEndframe && (frame > m_Timeslider->m_UserEndframe))
+	{
+		/* If so -> Reset the end frame */
+		m_Timeslider->m_UserEndframe = 0;
+		/* Update internal end frame */
+		m_End = m_Timeslider->maximum();
+	}
+
 	/* Update the first user frame on the timeslider */
 	m_Timeslider->SetUserFirstframe(frame);
 
@@ -607,6 +605,15 @@ void Timeline::SetUserFirstframe(int frame)
 
 void Timeline::SetUserEndframe(int frame)
 {
+	/* Check if the start frame is greater than the provided end frame */
+	if (m_Timeslider->m_UserStartframe && (frame < m_Timeslider->m_UserStartframe))
+	{
+		/* If so -> Reset the start frame */
+		m_Timeslider->m_UserStartframe = 0;
+		/* Update internal start frame */
+		m_Start = m_Timeslider->minimum();
+	}
+
 	/* Update the last user frame on the timeslider */
 	m_Timeslider->SetUserEndframe(frame);
 
@@ -692,6 +699,70 @@ void Timeline::PreviousFrame()
 		m_Timeslider->setValue(currentFrame - 1);
 }
 
+void Timeline::PlayNextFrame()
+{
+	int currentFrame = m_Timeslider->value();
+
+	if (currentFrame < m_End)
+	{
+		m_Timeslider->setValue(currentFrame + 1);
+	}
+	else
+	{
+		/**
+		 * This is effectively the end of the timeline
+		 * What happens next depends on the loop type
+		 */
+		if (m_LoopType == LoopType::PlayOnce)
+		{
+			/* Stop Playing now and return */
+			Stop();
+			return;
+		}
+		else if (m_LoopType == LoopType::PingPong)
+		{
+			/* We're in a Ping Pong Mode so start playing backwards if we're here */
+			PlayBackwards();
+			return;
+		}
+
+		/* Else we set the first frame on the timeline and let it continue till the user decides to stop, or close the player :D */
+		m_Timeslider->setValue(m_Start);
+	}
+}
+
+void Timeline::PlayPreviousFrame()
+{
+	int currentFrame = m_Timeslider->value();
+
+	if (currentFrame == m_Start)
+	{
+		/**
+		 * This is effectively the start of the timeline (since we're playing backwards)
+		 * What happens next depends on the loop type
+		 */
+		if (m_LoopType == LoopType::PlayOnce)
+		{
+			/* Stop Playing now and return */
+			Stop();
+			return;
+		}
+		else if (m_LoopType == LoopType::PingPong)
+		{
+			/* We're in a Ping Pong Mode so start playing forwards if we're here */
+			PlayForwards();
+			return;
+		}
+	
+		/* Else we set the last frame on the timeline and let it continue till the user decides to stop, or close the player :D */
+		m_Timeslider->setValue(m_End);
+	}
+	else
+	{
+		m_Timeslider->setValue(currentFrame - 1);
+	}
+}
+
 void Timeline::Play(const Timeline::PlayState& state)
 {
 	/* Check if the current playhead is in playable range */
@@ -707,11 +778,11 @@ void Timeline::Play(const Timeline::PlayState& state)
 	/* once the playhead is placed correctly -> We can begin playing */
 	if (state == Timeline::PlayState::FORWARDS)
 	{
-		NextFrame();
+		PlayNextFrame();
 	}
 	else if (state == Timeline::PlayState::BACKWARDS)
 	{
-		PreviousFrame();
+		PlayPreviousFrame();
 	}
 }
 

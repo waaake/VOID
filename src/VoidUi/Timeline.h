@@ -86,11 +86,35 @@ private: /* Members */
 	int m_UserStartframe;
 	/* The User set Maximum Frame for playback */
 	int m_UserEndframe;
+
+	/* Friends */
+	friend class Timeline;
 };
 
 class Timeline : public QWidget
 {
 	Q_OBJECT
+
+public:
+	enum class PlayState : short
+	{
+		STOPPED,
+		FORWARDS,
+		BACKWARDS
+	};
+
+	/**
+	 * A play loop defines what happens when we reach the end of the timeline/media/clip/sequence
+	 * Should we continue from beginning? LoopInfinitely
+	 * Should we stop? PlayOnce
+	 * Should we start going backwards if we're at the end and go forwards once we're in the beginning? PingPong
+	 */
+	enum class LoopType : short
+	{
+		LoopInfinitely,
+		PlayOnce,
+		PingPong
+	};
 
 private: /* Members */
 	QPushButton* m_ForwardButton;
@@ -125,13 +149,8 @@ private: /* Members */
 	 */
 	int m_Start, m_End;
 
-public:
-	enum class PlayState : short
-	{
-		STOPPED,
-		FORWARDS,
-		BACKWARDS
-	};
+	/* Loop mode for playback */
+	LoopType m_LoopType;
 
 public:
 	Timeline(QWidget* parent = nullptr);
@@ -186,6 +205,9 @@ protected: /* Methods */
 
 	void NextFrame();
 	void PreviousFrame();
+
+	void PlayNextFrame();
+	void PlayPreviousFrame();
 
 	inline void MoveToStart() { m_Timeslider->setValue(m_Timeslider->Minimum()); }
 	inline void MoveToEnd() { m_Timeslider->setValue(m_Timeslider->Maximum()); }
