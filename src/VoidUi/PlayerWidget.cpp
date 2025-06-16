@@ -98,6 +98,7 @@ void Player::Clear()
      * Update the time range to be 0-1 ??
      * Clear the data from the player
      */
+    m_Timeline->ResetRange();
     m_Timeline->SetRange(0, 0);
     m_Renderer->Clear();
 }

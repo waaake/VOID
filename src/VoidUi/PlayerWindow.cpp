@@ -220,6 +220,15 @@ void VoidMainWindow::Build()
     m_StartFrameAction = new QAction("Go to Start", m_PlaybackMenu);
     m_StartFrameAction->setShortcut(QKeySequence(Qt::Key_PageUp));
 
+    m_SetInFrameAction = new QAction("Set In Frame", m_PlaybackMenu);
+    m_SetInFrameAction->setShortcut(QKeySequence(Qt::Key_BracketLeft));
+
+    m_SetOutFrameAction = new QAction("Set Out Frame", m_PlaybackMenu);
+    m_SetOutFrameAction->setShortcut(QKeySequence(Qt::Key_BracketRight));
+
+    m_ResetRangeAction = new QAction("Reset In/Out Frames", m_PlaybackMenu);
+    m_ResetRangeAction->setShortcut(QKeySequence(Qt::Key_Backslash));
+
     /* Playback Cache Actions */
     m_PlaybackMenu->addAction(m_EnableCacheAction);
     m_PlaybackMenu->addAction(m_DisableCacheAction);
@@ -238,6 +247,13 @@ void VoidMainWindow::Build()
     m_PlaybackMenu->addAction(m_BackwardsAction);
     m_PlaybackMenu->addAction(m_StartFrameAction);
     m_PlaybackMenu->addAction(m_EndFrameAction);
+
+    /* -------------------------------- */
+    m_PlaybackMenu->insertSeparator(m_SetInFrameAction);
+
+    m_PlaybackMenu->addAction(m_SetInFrameAction);
+    m_PlaybackMenu->addAction(m_SetOutFrameAction);
+    m_PlaybackMenu->addAction(m_ResetRangeAction);
     /* }}} */
 
     /* Viewer Contols Menu {{{ */
@@ -312,6 +328,9 @@ void VoidMainWindow::Connect()
     connect(m_BackwardsAction, &QAction::triggered, m_Player, &Player::PreviousFrame);
     connect(m_StartFrameAction, &QAction::triggered, m_Player, &Player::MoveToStart);
     connect(m_EndFrameAction, &QAction::triggered, m_Player, &Player::MoveToEnd);
+    connect(m_SetInFrameAction, &QAction::triggered, m_Player, &Player::ResetInFrame);
+    connect(m_SetOutFrameAction, &QAction::triggered, m_Player, &Player::ResetOutFrame);
+    connect(m_ResetRangeAction, &QAction::triggered, m_Player, &Player::ResetRange);
     /* }}} */
 
     /* Viewer Menu {{{ */

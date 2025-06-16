@@ -113,6 +113,18 @@ public:
     inline void MoveToStart() { m_Timeline->MoveToStart(); }
     inline void MoveToEnd() { m_Timeline->MoveToEnd(); }
 
+    inline void SetUserFirstframe(int frame) { m_Timeline->SetUserFirstframe(frame); }
+    inline void SetUserEndframe(int frame) { m_Timeline->SetUserEndframe(frame); }
+
+    /**
+     * (Re)sets the In and out framing of the Timeslider
+     * Calling it once sets the frame as in/out frame (User-In/User-Out)
+     * Calling it the next time on the same frame Resets the in/out frame (User-In/User-Out)
+     */
+    inline void ResetInFrame() { m_Timeline->ResetInFrame(); }
+    inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
+    inline void ResetRange() { m_Timeline->ResetRange(); }
+
 public slots:
     void Clear();
 
