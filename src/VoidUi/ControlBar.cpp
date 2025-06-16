@@ -119,8 +119,12 @@ void ControlBar::Build()
     /* Viewer Controls */
     m_ExposureLabel = new QLabel("E");
     m_ExposureController = new ControlDoubleSpinner();
+
     m_GammaLabel = new QLabel(QStringLiteral("γ"));
     m_GammaController = new ControlDoubleSpinner();
+
+    m_GainLabel = new QLabel("f/");
+    m_GainController = new ControlDoubleSpinner();
 
     /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
@@ -133,6 +137,9 @@ void ControlBar::Build()
 
     m_Layout->addWidget(m_GammaLabel);
     m_Layout->addWidget(m_GammaController);
+
+    m_Layout->addWidget(m_GainLabel);
+    m_Layout->addWidget(m_GainController);
     /* Spacer */
     m_Layout->addStretch(1);
     m_Layout->addWidget(m_BufferSwitch);
@@ -174,6 +181,17 @@ void ControlBar::Setup()
     m_GammaController->setValue(1.f);
 
     /**
+     * Gain Controller
+     */
+    m_GainController->setMinimum(0.5f);
+    m_GainController->setMaximum(3.f);
+    m_GainController->setSingleStep(0.1f);
+    m_GainController->setDecimals(1);
+
+    /* Default */
+    m_GainController->setValue(1.f);
+
+    /**
      * Zoom Slider
      * QSlider operates only on a Linear Scale
      * But since the zoom requires values ranging from 0.1f to 12.8f
@@ -204,6 +222,7 @@ void ControlBar::Connect()
     /* Viewer Controls Exposure | Gamma */
     connect(m_ExposureController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::exposureChanged);
     connect(m_GammaController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::gammaChanged);
+    connect(m_GainController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::gainChanged);
 
     /* Viewer Buffer Switch */
     connect(m_BufferSwitch, &BufferSwitch::switched, this, &ControlBar::viewerBufferSwitched);

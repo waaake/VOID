@@ -49,9 +49,10 @@ public:
     void SetFromZoom(float zoom);
 
 signals:
-    void zoomChanged(float factor);
-    void exposureChanged(float exposure);
-    void gammaChanged(float gamma);
+    void zoomChanged(const float factor);
+    void exposureChanged(const float exposure);
+    void gammaChanged(const float gamma);
+    void gainChanged(const float gain);
     void missingFrameHandlerChanged(int handler);
     void viewerBufferSwitched(const PlayerViewBuffer&);
 
@@ -66,11 +67,14 @@ private: /* Members */
      * Viewer Properties
      * Exposure
      * Gamma
+     * Gain
      */
     QLabel* m_ExposureLabel;
     ControlDoubleSpinner* m_ExposureController;
     QLabel* m_GammaLabel;
     ControlDoubleSpinner* m_GammaController;
+    QLabel* m_GainLabel;
+    ControlDoubleSpinner* m_GainController;
 
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;

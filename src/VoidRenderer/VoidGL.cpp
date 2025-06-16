@@ -22,29 +22,23 @@ void main() {
 }
 )";
 
-// static const std::string fragmentShaderSrc = R"(
-// #version 330 core
-// in vec2 TexCoord;
-// out vec4 FragColor;
-
-// uniform sampler2D uTexture;
-
-// void main() {
-//     FragColor = texture(uTexture, TexCoord);
-// }
-// )";
-
 static const std::string fragmentShaderSrc = R"(
 #version 330 core
 in vec2 TexCoord;
 out vec4 FragColor;
 
-uniform sampler2D inputTexture;
+uniform sampler2D uTexture;
+
+// Viewer Proprties
 uniform float exposure;
 uniform float gamma;
+uniform float gain;
 
 void main() {
-    vec4 color = texture(inputTexture, TexCoord);
+    vec4 color = texture(uTexture, TexCoord);
+
+    // Apply linear gain multiplier
+    color.rgb *= gain;
 
     // Apply exposure adjustment
     color.rgb = vec3(1.0) - exp(-color.rgb * exposure);

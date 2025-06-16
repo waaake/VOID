@@ -59,6 +59,8 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::exposureChanged, m_Renderer, &VoidRenderer::SetExposure);
     /* ControlBar - GammaChange -> Renderer - SetGamma */
     connect(m_ControlBar, &ControlBar::gammaChanged, m_Renderer, &VoidRenderer::SetGamma);
+    /* ControlBar - GainChange -> Renderer - SetGain */
+    connect(m_ControlBar, &ControlBar::gainChanged, m_Renderer, &VoidRenderer::SetGain);
     /* ControlBar - MissingFrameHandler Change -> Player - SetMissingFrameHandler */
     connect(m_ControlBar, &ControlBar::missingFrameHandlerChanged, this, &Player::SetMissingFrameHandler);
     /* ControlBar - Viewer Buffer Switched -> Player - Set View Buffer */

@@ -207,7 +207,7 @@ void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
     /* Text */
     painter.setPen(QColor(210, 210, 210));
     /* Show fixed point number with 1 decimal precision */
-    painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignCenter, QString::number(value(), 'f', 1));
+    painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignLeft | Qt::AlignVCenter, QString::number(value(), 'f', 1));
 
     /* Draw Arrows */
     QPoint arrowCenter(width() - 8, height() / 2);
