@@ -49,7 +49,10 @@ public:
     void SetFromZoom(float zoom);
 
 signals:
-    void zoomChanged(float factor);
+    void zoomChanged(const float factor);
+    void exposureChanged(const float exposure);
+    void gammaChanged(const float gamma);
+    void gainChanged(const float gain);
     void missingFrameHandlerChanged(int handler);
     void viewerBufferSwitched(const PlayerViewBuffer&);
 
@@ -59,6 +62,19 @@ protected:
 private: /* Members */
     /* Base Layout */
     QHBoxLayout* m_Layout;
+
+    /**
+     * Viewer Properties
+     * Exposure
+     * Gamma
+     * Gain
+     */
+    QLabel* m_ExposureLabel;
+    ControlDoubleSpinner* m_ExposureController;
+    QLabel* m_GammaLabel;
+    ControlDoubleSpinner* m_GammaController;
+    QLabel* m_GainLabel;
+    ControlDoubleSpinner* m_GainController;
 
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;
@@ -80,6 +96,12 @@ private: /* Methods */
     void Build();
     void Setup();
     void Connect();
+
+    /**
+     * Returns a Vertical Separator to be added to the Layout
+     * This separator is a way to separate Tool controllers
+     */
+    QFrame* Separator();
 
     /* Zoom Updates */
     inline void ZoomIn() { m_Zoomer->setValue(m_Zoomer->value() + ZOOM_STEP); }

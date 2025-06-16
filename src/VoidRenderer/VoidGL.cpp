@@ -29,8 +29,24 @@ out vec4 FragColor;
 
 uniform sampler2D uTexture;
 
+// Viewer Proprties
+uniform float exposure;
+uniform float gamma;
+uniform float gain;
+
 void main() {
-    FragColor = texture(uTexture, TexCoord);
+    vec4 color = texture(uTexture, TexCoord);
+
+    // Apply linear gain multiplier
+    color.rgb *= gain;
+
+    // Apply exposure adjustment
+    color.rgb = vec3(1.0) - exp(-color.rgb * exposure);
+
+    // Apply gamma correction
+    color.rgb = pow(color.rgb, vec3(1.0 / gamma));
+
+    FragColor = color;
 }
 )";
 

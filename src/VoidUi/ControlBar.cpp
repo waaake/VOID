@@ -87,6 +87,17 @@ void ControlBar::paintEvent(QPaintEvent* event)
     painter.drawLine(0, 0, width(), 0);
 }
 
+QFrame* ControlBar::Separator()
+{
+    QFrame* separator = new QFrame;
+    separator->setFrameShape(QFrame::VLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    separator->setLineWidth(0);
+    separator->setMidLineWidth(2);
+
+    return separator;
+}
+
 void ControlBar::Build()
 {
     /* Main Layout */
@@ -105,12 +116,30 @@ void ControlBar::Build()
     /* Viewer Buffer Controls */
     m_BufferSwitch = new BufferSwitch(m_ViewerBufferA, m_ViewerBufferB);
 
-    /* Zoom Controls */
+    /* Viewer Controls */
+    m_ExposureLabel = new QLabel("E");
+    m_ExposureController = new ControlDoubleSpinner();
 
+    m_GammaLabel = new QLabel(QStringLiteral("γ"));
+    m_GammaController = new ControlDoubleSpinner();
+
+    m_GainLabel = new QLabel("f/");
+    m_GainController = new ControlDoubleSpinner();
+
+    /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
 
     /* Add to the main layout */
     m_Layout->addLayout(m_MissingFrameLayout);
+
+    m_Layout->addWidget(m_ExposureLabel);
+    m_Layout->addWidget(m_ExposureController);
+
+    m_Layout->addWidget(m_GammaLabel);
+    m_Layout->addWidget(m_GammaController);
+
+    m_Layout->addWidget(m_GainLabel);
+    m_Layout->addWidget(m_GainController);
     /* Spacer */
     m_Layout->addStretch(1);
     m_Layout->addWidget(m_BufferSwitch);
@@ -129,7 +158,40 @@ void ControlBar::Setup()
     /* Default to Using Black frame */
     m_MissingFrameCombo->setCurrentIndex(1);
 
-    /*
+    /**
+     * Exposure Controller
+     */
+    m_ExposureController->setMinimum(0.5f);
+    m_ExposureController->setMaximum(2.f);
+    m_ExposureController->setSingleStep(0.1f);
+    m_ExposureController->setDecimals(1);
+
+    /* Default */
+    m_ExposureController->setValue(1.f);
+
+    /**
+     * Gamma Controller
+     */
+    m_GammaController->setMinimum(1.f);
+    m_GammaController->setMaximum(3.f);
+    m_GammaController->setSingleStep(0.1f);
+    m_GammaController->setDecimals(1);
+
+    /* Default */
+    m_GammaController->setValue(1.f);
+
+    /**
+     * Gain Controller
+     */
+    m_GainController->setMinimum(0.5f);
+    m_GainController->setMaximum(3.f);
+    m_GainController->setSingleStep(0.1f);
+    m_GainController->setDecimals(1);
+
+    /* Default */
+    m_GainController->setValue(1.f);
+
+    /**
      * Zoom Slider
      * QSlider operates only on a Linear Scale
      * But since the zoom requires values ranging from 0.1f to 12.8f
@@ -156,6 +218,11 @@ void ControlBar::Connect()
 
     /* Zoom */
     connect(m_Zoomer, static_cast<void (QSpinBox::* )(int)>(&QSpinBox::valueChanged), this, &ControlBar::UpdateZoom);
+
+    /* Viewer Controls Exposure | Gamma */
+    connect(m_ExposureController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::exposureChanged);
+    connect(m_GammaController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::gammaChanged);
+    connect(m_GainController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::gainChanged);
 
     /* Viewer Buffer Switch */
     connect(m_BufferSwitch, &BufferSwitch::switched, this, &ControlBar::viewerBufferSwitched);

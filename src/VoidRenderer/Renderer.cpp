@@ -22,6 +22,9 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     : QOpenGLWidget(parent)
     , m_Texture(nullptr)
     , m_ImageData(nullptr)
+    , m_Exposure(1.f)
+    , m_Gamma(1.f)
+    , m_Gain(1.f)
     , m_ZoomFactor(1.f)
     , m_TranslateX(0.f)
     , m_TranslateY(0.f)
@@ -182,11 +185,22 @@ void VoidRenderer::paintGL()
         GLuint projLoc = glGetUniformLocation(ProgramId(), "uMVP");
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(mvp));
 
+        /* Update the viewer properties to the shader */
+        SetUniform("exposure", m_Exposure);
+        SetUniform("gamma", m_Gamma);
+        /** 
+         * Gain is the linear multiplier to amplify brigtness
+         * Can be used befor or after exposure or gamma correction
+         */
+        SetUniform("gain", m_Gain);
+
+        /* Bind texture */
         glBindTexture(GL_TEXTURE_2D, texture);
+        /* And the Vertex Array */
         glBindVertexArray(VAO);
 
         /**
-         * Draw triangles as bound int the Index buffer as defined earlier
+         * Draw triangles as bound in the Index buffer as defined earlier
          *  3 ___ 2
          *   |  /|
          *   | / |
@@ -457,11 +471,32 @@ void VoidRenderer::ZoomToFit()
     update();
 }
 
-void VoidRenderer::UpdateZoom(float zoom)
+void VoidRenderer::UpdateZoom(const float zoom)
 {
     m_ZoomFactor = zoom;
 
     /* Repaint */
+    update();
+}
+
+void VoidRenderer::SetExposure(const float exposure)
+{
+    m_Exposure = exposure;
+    /* Redraw the texture */
+    update();
+}
+
+void VoidRenderer::SetGamma(const float gamma)
+{
+    m_Gamma = gamma;
+    /* Redraw the texture */
+    update();
+}
+
+void VoidRenderer::SetGain(const float gain)
+{
+    m_Gain = gain;
+    /* Redraw the texture */
     update();
 }
 

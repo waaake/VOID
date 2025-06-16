@@ -50,7 +50,14 @@ public:
     void ZoomIn(float factor = 1.1f);
     void ZoomOut(float factor = 0.9f);
     void ZoomToFit();
-    void UpdateZoom(float zoom);
+    void UpdateZoom(const float zoom);
+
+    /**
+     * Adjusts the Exposure of the Viewer
+     */
+    void SetExposure(const float exposure);
+    void SetGamma(const float gamma);
+    void SetGain(const float gain);
 
     /*
      * Set a Message to be displayed on the Renderer
@@ -87,6 +94,14 @@ private: /* Members */
      * Element or the index buffer object
      */
     unsigned int VAO, VBO, EBO;
+
+    /**
+     * Viewer Adjustments
+     * Exposure
+     * Gamma
+     * Gain
+     */
+    float m_Exposure, m_Gamma, m_Gain;
 
     RendererStatusBar* m_RenderStatus;
     RendererDisplayLabel* m_DisplayLabel;
