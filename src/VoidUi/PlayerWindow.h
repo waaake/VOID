@@ -87,7 +87,7 @@ protected:
     /* Clears ahe cache for the media */
     void ClearLookAheadCache();
 
-    /*
+    /**
      * Toggles the Caching behaviour for the media
      * Should the media be cache upfront?
      */
@@ -124,6 +124,9 @@ private: /* Members */
     QAction* m_BackwardsAction;
     QAction* m_EndFrameAction;
     QAction* m_StartFrameAction;
+    QAction* m_SetInFrameAction;
+    QAction* m_SetOutFrameAction;
+    QAction* m_ResetRangeAction;
 
     /* Viewer Menu */
     QMenu* m_ViewerMenu;

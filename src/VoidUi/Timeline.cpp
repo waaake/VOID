@@ -36,6 +36,8 @@ Timeslider::Timeslider(Qt::Orientation orientation, QWidget *parent)
 	, m_Focussed(false)
 	, m_HovXPos(0)
 	, m_HoveredFrame(0)
+	, m_UserStartframe(0)
+	, m_UserEndframe(0)
 {
 	/* Fixed height */
 	setFixedHeight(SL_HEIGHT);
@@ -83,7 +85,7 @@ void Timeslider::mouseMoveEvent(QMouseEvent* event)
 void Timeslider::mousePressEvent(QMouseEvent* event)
 {
 	m_Focussed = false;
-	
+
 	/* Fetch the value from postion of the mouse press */
 	int value = QStyle::sliderValueFromPosition(
 					minimum(),
@@ -95,7 +97,7 @@ void Timeslider::mousePressEvent(QMouseEvent* event)
 
 				/* Set the value on the slider */
 				setValue(value);
-				
+
 	/* Allow dragging behaviour */
 	QSlider::mousePressEvent(event);
 
@@ -126,6 +128,9 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	/* Painter to draw components for the Timeslider */
 	QPainter painter(this);
 
+	/* Pos for Framing User Defined Frame */
+	int startpos = 0, endpos = 0;
+
 	/* Width of each unit value represented in the slider */
 	double uwidth = double(width()) / (maximum() - minimum());
 
@@ -134,12 +139,45 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	painter.setBrush(QBrush(QColor(30, 30, 30)));
 
 	/* Base track color */
-	painter.drawRect(0, 0, width(), height());
+	painter.fillRect(rect(), Qt::black);
+
+	/**
+	 * This rect will have a slightly lighter shade to indicate playing range
+	 * This range is obviously affected by the user defined in-out set
+	 * making the overall playable range more prominent and visible to the user
+	 */
+	QRect r(rect());
+
+	/* Draw In and Out Frames with Red if they have been defined {{{ */
+	if (m_UserStartframe)
+	{
+		/* Position */
+		startpos = (m_UserStartframe - minimum()) * uwidth;
+
+		r.setLeft(startpos);
+	}
+
+	if (m_UserEndframe)
+	{
+		/* Position */
+		endpos = (m_UserEndframe - minimum()) * uwidth;
+
+		/* Set the right most position */
+		r.setRight(endpos);
+	}
+	/* }}} */
+
+	// painter.drawRect(r);
+	painter.fillRect(r, QColor(30, 30, 30));
 
 	/* Position Handle */
 	int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
 	painter.setBrush(SL_HANDLE_COLOR);
-	painter.drawRect(hpos - uwidth / 2, 0, uwidth, height());
+
+	/* The position handle should have a minimum width */
+	int hwidth = std::max(uwidth, 4.0);
+
+	painter.drawRect(hpos - hwidth / 2, 0, hwidth, height());
 	/* }}} */
 
 	/* Painter for drawing the Cached frame {{{ */
@@ -173,6 +211,28 @@ void Timeslider::paintEvent(QPaintEvent* event)
 		painter.drawLine(pos, height() - 10, pos, height());
 	}
 
+	/* Draw In and Out Frames with Red if they have been defined {{{ */
+	if (startpos)
+	{
+		/* Draw a Line to indicate that this is a marked frame */
+		painter.setPen(QPen(QColor(200, 75, 60), 2));
+		painter.drawLine(startpos, 0, startpos, height());
+
+		/* Draw Text to indicate the frame */
+		painter.drawText(startpos + 4, height() / 2, QString::number(m_UserStartframe));
+	}
+
+	if (endpos)
+	{
+		/* Draw a Line to indicate that this is a marked frame */
+		painter.setPen(QPen(QColor(200, 75, 60), 2));
+		painter.drawLine(endpos, 0, endpos, height());
+
+		/* Draw Text to indicate the frame */
+		painter.drawText(endpos + 4, height() / 2, QString::number(m_UserEndframe));
+	}
+	/* }}} */
+
 	/* This is the part where we draw the focussed frame on the timeslider when mouse is hovered {{{ */
 	if (m_Focussed)
 	{
@@ -187,7 +247,7 @@ void Timeslider::UpdateHovered(int xpos)
 {
 	/* Set the Hovered position based on the x position of the event click */
 	m_HovXPos = xpos;
-	
+
 	/* Fetch the slider value based on the position */
 	m_HoveredFrame = QStyle::sliderValueFromPosition(
 						minimum(),
@@ -196,6 +256,84 @@ void Timeslider::UpdateHovered(int xpos)
 						width(),
 						orientation() == Qt::Vertical
 					);
+}
+
+void Timeslider::SetUserFirstframe(int frame)
+{
+	/* Reset the user last if the current frame is more than that */
+	if (m_UserEndframe && (frame > m_UserEndframe))
+	{
+		m_UserStartframe = maximum();
+	}
+
+	/* Set the user defined first frame */
+	m_UserStartframe = frame;
+
+	/* Repaint the timeslider -- for any denotions of the frame */
+	update();
+}
+
+void Timeslider::SetUserEndframe(int frame)
+{
+	/* Reset the user first if the current frame is less than that */
+	if (m_UserStartframe && (frame < m_UserStartframe))
+	{
+		m_UserStartframe = minimum();
+	}
+
+	/* Set the user defined last frame */
+	m_UserEndframe = frame;
+
+	/* Repaint the timeslider -- for any denotions of the frame */
+	update();
+}
+
+void Timeslider::ResetRange()
+{
+	/* Reset the frames */
+	m_UserStartframe = 0;
+	m_UserEndframe = 0;
+
+	/* Repaint the timeslider -- for clearing any denotions of the frame */
+	update();
+}
+
+void Timeslider::ResetStartFrame()
+{
+	/* Reset the start frame */
+	m_UserStartframe = 0;
+
+	/* Repaint the timeslider -- for clearing any denotions of the frame */
+	update();
+}
+
+void Timeslider::ResetEndFrame()
+{
+	/* Reset the end frame */
+	m_UserEndframe = 0;
+
+	/* Repaint the timeslider -- for clearing any denotions of the frame */
+	update();
+}
+
+int Timeslider::Minimum()
+{
+	/* If a user start frame is defined -> return that */
+	if (m_UserStartframe)
+		return m_UserStartframe;
+
+	/* Else return the base minimum frame */
+	return minimum();
+}
+
+int Timeslider::Maximum()
+{
+	/* If a user end frame is defined -> return that */
+	if (m_UserEndframe)
+		return m_UserEndframe;
+
+	/* Else return the base maximum frame */
+	return maximum();
 }
 
 void Timeslider::AddCacheFrame(int frame)
@@ -226,6 +364,8 @@ void Timeslider::ClearCachedFrames()
 
 Timeline::Timeline(QWidget* parent)
 	: QWidget(parent)
+	, m_Start(0)
+	, m_End(0)
 {
 	/* Build the layout of the widget */
 	Build();
@@ -297,6 +437,13 @@ void Timeline::Build()
 	m_StopButton->setIcon(s->standardIcon(s->SP_MediaStop));
 	m_StopButton->setFixedWidth(BUTTON_WIDTH);
 
+	/* In - Out Framing */
+	m_InFrameButton = new QPushButton("I");
+	m_InFrameButton->setFixedWidth(BUTTON_WIDTH);
+
+	m_OutFrameButton = new QPushButton("O");
+	m_OutFrameButton->setFixedWidth(BUTTON_WIDTH);
+
 	/* Timing */
 	m_TimeDisplay = new QLineEdit;
 	m_TimeDisplay->setReadOnly(true);
@@ -321,6 +468,7 @@ void Timeline::Build()
 	optionsLayout->insertStretch(3, 1);
 
 	/* Buttons */
+	optionsLayout->addWidget(m_InFrameButton);
 	optionsLayout->addWidget(m_StartFrameButton);
 	optionsLayout->addWidget(m_PrevFrameButton);
 	optionsLayout->addWidget(m_BackwardButton);
@@ -328,6 +476,7 @@ void Timeline::Build()
 	optionsLayout->addWidget(m_ForwardButton);
 	optionsLayout->addWidget(m_NextFrameButton);
 	optionsLayout->addWidget(m_EndFrameButton);
+	optionsLayout->addWidget(m_OutFrameButton);
 
 	/* Timeslider */
 	m_Timeslider = new Timeslider(Qt::Horizontal);
@@ -357,6 +506,9 @@ void Timeline::Connect()
 
 	connect(m_StartFrameButton, &QPushButton::clicked, this, &Timeline::MoveToStart);
 	connect(m_EndFrameButton, &QPushButton::clicked, this, &Timeline::MoveToEnd);
+
+	connect(m_InFrameButton, &QPushButton::clicked, this, &Timeline::ResetInFrame);
+	connect(m_OutFrameButton, &QPushButton::clicked, this, &Timeline::ResetOutFrame);
 }
 
 void Timeline::Setup()
@@ -389,6 +541,10 @@ void Timeline::Setup()
 
 	/* Fixed Height for the timeslider panel */
 	setFixedHeight(50);
+
+	/* Update the internal range */
+	m_Start = m_Timeslider->minimum();
+	m_End = m_Timeslider->maximum();
 }
 
 void Timeline::SetFramerate(const double rate)
@@ -415,7 +571,83 @@ void Timeline::TimeUpdated(const int time)
 
 void Timeline::SetRange(const int min, const int max)
 {
+	/* Reset any user defined range for the timeslider */
+	m_Timeslider->ResetRange();
+
+	/* Update timeslider range */
 	m_Timeslider->setRange(min, max);
+
+	/* Update internal range */
+	m_Start = min;
+	m_End = max;
+}
+
+void Timeline::ResetRange()
+{
+	/* Reset the range for the timeslider */
+	m_Timeslider->ResetRange();
+
+	/**
+	 * And update the internal range to now refer those values
+	 * At this point the timeslider does not have any user defined values
+	 * So we could just query the base minimum and maximum values from it
+	 */
+	m_Start = m_Timeslider->minimum();
+	m_End = m_Timeslider->maximum();
+}
+
+void Timeline::SetUserFirstframe(int frame)
+{
+	/* Update the first user frame on the timeslider */
+	m_Timeslider->SetUserFirstframe(frame);
+
+	/* Update the start frame */
+	m_Start = frame;
+}
+
+void Timeline::SetUserEndframe(int frame)
+{
+	/* Update the last user frame on the timeslider */
+	m_Timeslider->SetUserEndframe(frame);
+
+	/* Update the end frame */
+	m_End = frame;
+}
+
+void Timeline::ResetInFrame()
+{
+	/* Fetch the current frame */
+	int frame = Frame();
+
+	/* Check if it's already our start frame */
+	if (frame == m_Start)
+	{
+		m_Timeslider->ResetStartFrame();
+		m_Start = m_Timeslider->minimum();
+	}
+	else
+	{
+		/* Update the Start frame with the current frame */
+		SetUserFirstframe(frame);
+	}
+}
+
+void Timeline::ResetOutFrame()
+{
+	/* Fetch the current frame */
+	int frame = Frame();
+
+	/* Check if it's already our end frame */
+	if (frame == m_End)
+	{
+		m_Timeslider->ResetEndFrame();
+		m_End = m_Timeslider->maximum();
+	}
+	else
+	{
+		/* Update the End frame with the current frame */
+		SetUserEndframe(frame);
+	}
 }
 
 void Timeline::PlayForwards()
@@ -444,24 +676,35 @@ void Timeline::NextFrame()
 {
 	int currentFrame = m_Timeslider->value();
 
-	if (currentFrame < m_Timeslider->maximum())
+	if (currentFrame < m_End)
 		m_Timeslider->setValue(currentFrame + 1);
 	else
-		m_Timeslider->setValue(m_Timeslider->minimum());
+		m_Timeslider->setValue(m_Start);
 }
 
 void Timeline::PreviousFrame()
 {
 	int currentFrame = m_Timeslider->value();
 
-	if (currentFrame == m_Timeslider->minimum())
-		m_Timeslider->setValue(m_Timeslider->maximum());
+	if (currentFrame == m_Start)
+		m_Timeslider->setValue(m_End);
 	else
 		m_Timeslider->setValue(currentFrame - 1);
 }
 
 void Timeline::Play(const Timeline::PlayState& state)
 {
+	/* Check if the current playhead is in playable range */
+	if (!m_Timeslider->InRange(m_Timeslider->value()))
+	{
+		/**
+		 * Move the playhead to the beginning of the playable range
+		 * Ideally the Internal start should always have the playable range on it
+		 */
+		m_Timeslider->setValue(m_Start);
+	}
+
+	/* once the playhead is placed correctly -> We can begin playing */
 	if (state == Timeline::PlayState::FORWARDS)
 	{
 		NextFrame();
