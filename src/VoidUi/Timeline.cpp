@@ -373,6 +373,8 @@ LoopTypeButton::LoopTypeButton(QWidget* parent)
 
 LoopTypeButton::~LoopTypeButton()
 {
+	/* Delete the Menu and all it's children */
+	m_Menu->deleteLater();
 }
 
 void LoopTypeButton::SetLoopType(const LoopType& looptype)
