@@ -15,6 +15,7 @@
 
 /* Internal */
 #include "QDefinition.h"
+#include "QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -161,8 +162,8 @@ private: /* Members */
 	QPushButton* m_StartFrameButton;
 
 	/* Sets the user defined in and out */
-	QPushButton* m_InFrameButton;
-	QPushButton* m_OutFrameButton;
+	ToggleStatePushButton* m_InFrameButton;
+	ToggleStatePushButton* m_OutFrameButton;
 
 	/* Loop State Button - Indicates the current playback loop type */
 	LoopTypeButton* m_LoopTypeButton;

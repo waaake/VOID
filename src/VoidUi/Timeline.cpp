@@ -491,10 +491,10 @@ void Timeline::Build()
 	m_StopButton->setFixedWidth(BUTTON_WIDTH);
 
 	/* In - Out Framing */
-	m_InFrameButton = new QPushButton("I");
+	m_InFrameButton = new ToggleStatePushButton("I");
 	m_InFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 
-	m_OutFrameButton = new QPushButton("O");
+	m_OutFrameButton = new ToggleStatePushButton("O");
 	m_OutFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 
 	/* Loop Type Button */
@@ -659,6 +659,10 @@ void Timeline::ResetRange()
 	 */
 	m_Start = m_Timeslider->minimum();
 	m_End = m_Timeslider->maximum();
+
+	/* Reset the Toggle button state */
+	m_InFrameButton->Toggle(false);
+	m_OutFrameButton->Toggle(false);
 }
 
 void Timeline::SetUserFirstframe(int frame)
@@ -713,6 +717,9 @@ void Timeline::ResetInFrame()
 		/* Update the Start frame with the current frame */
 		SetUserFirstframe(frame);
 	}
+
+	/* If the User start frame has been set -> Reflect the same on the Toggle Push button */
+	m_InFrameButton->Toggle(static_cast<bool>(m_Timeslider->m_UserStartframe));
 }
 
 void Timeline::ResetOutFrame()
@@ -731,6 +738,9 @@ void Timeline::ResetOutFrame()
 		/* Update the End frame with the current frame */
 		SetUserEndframe(frame);
 	}
+
+	/* If the User end frame has been set -> Reflect the same on the Toggle Push button */
+	m_OutFrameButton->Toggle(static_cast<bool>(m_Timeslider->m_UserEndframe));
 }
 
 void Timeline::PlayForwards()
