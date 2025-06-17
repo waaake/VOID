@@ -3,6 +3,7 @@
 
 /* STD */
 #include <vector>
+#include <unordered_map>
 
 /* Qt */
 #include <QWidget>
@@ -19,6 +20,20 @@ VOID_NAMESPACE_OPEN
 
 /* Forward Declaration for PlayerWidget class */
 class Player;
+
+/**
+ * A play loop defines what happens when we reach the end of the timeline/media/clip/sequence
+ * Should we continue from beginning? LoopInfinitely
+ * Should we stop? PlayOnce
+ * Should we start going backwards if we're at the end and go forwards once we're in the beginning? PingPong
+ */
+enum class LoopType : short
+{
+	LoopInfinitely,
+	PlayOnce,
+	PingPong
+};
+
 
 class Timeslider : public QSlider
 {
@@ -91,6 +106,39 @@ private: /* Members */
 	friend class Timeline;
 };
 
+struct LoopState
+{
+	std::string text, icon;	
+};
+
+class LoopTypeButton : public QPushButton
+{
+	Q_OBJECT
+
+public:
+	LoopTypeButton(QWidget* parent = nullptr);
+	~LoopTypeButton();
+
+	/**
+	 * Set the Loop Type for playback
+	 */
+	void SetLoopType(const LoopType& looptype);
+
+signals:
+	void loopTypeChanged(const LoopType&);
+
+private: /* Members */
+	LoopType m_LoopType;
+	std::unordered_map<LoopType, LoopState> m_LoopState;
+
+	QMenu* m_Menu;
+
+private: /* Methods */
+	void Build();
+	inline void Update() { setIcon(QIcon(m_LoopState.at(m_LoopType).icon.c_str())); }
+
+};
+
 class Timeline : public QWidget
 {
 	Q_OBJECT
@@ -101,19 +149,6 @@ public:
 		STOPPED,
 		FORWARDS,
 		BACKWARDS
-	};
-
-	/**
-	 * A play loop defines what happens when we reach the end of the timeline/media/clip/sequence
-	 * Should we continue from beginning? LoopInfinitely
-	 * Should we stop? PlayOnce
-	 * Should we start going backwards if we're at the end and go forwards once we're in the beginning? PingPong
-	 */
-	enum class LoopType : short
-	{
-		LoopInfinitely,
-		PlayOnce,
-		PingPong
 	};
 
 private: /* Members */
@@ -128,6 +163,9 @@ private: /* Members */
 	/* Sets the user defined in and out */
 	QPushButton* m_InFrameButton;
 	QPushButton* m_OutFrameButton;
+
+	/* Loop State Button - Indicates the current playback loop type */
+	LoopTypeButton* m_LoopTypeButton;
 
 	QPushButton* m_StopButton;
 
