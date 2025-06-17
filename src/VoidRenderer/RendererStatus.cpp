@@ -1,3 +1,6 @@
+/* STD */
+#include <sstream>
+
 /* Qt */
 #include <QPainter>
 
@@ -156,12 +159,11 @@ void RendererStatusBar::Build()
 
 void RendererStatusBar::SetRenderResolution(const int width, const int height)
 {
-    QString resolution = std::to_string(width).c_str();
-    resolution += " x ";
-    resolution += std::to_string(height).c_str();
+    std::stringstream ss; 
+    ss << std::to_string(width) << " x " << std::to_string(height);
 
     /* Update the Resolution display */
-    m_ResolutionValue->setText(resolution);
+    m_ResolutionValue->setText(ss.str().c_str());
 }
 
 void RendererStatusBar::SetMouseCoordinates(const int x, const int y)

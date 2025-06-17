@@ -402,16 +402,24 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
 
 void VoidRenderer::Render(VoidImageData* data)
 {
-    if (m_Texture)
-    {
-        delete m_Texture;
-        m_Texture = nullptr;
-    }
+    // if (m_Texture)
+    // {
+    //     delete m_Texture;
+    //     m_Texture = nullptr;
+    // }
 
     /* Update the image data */
     m_ImageData = data;
     /* Hide the Error Label */
     m_DisplayLabel->setVisible(false);
+
+    /**
+     * Update the render resolution 
+     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
+     * So constantly redrawing this is just too ineffecient
+     */
+    if (m_ImageData)
+        m_RenderStatus->SetRenderResolution(m_ImageData->Width(), m_ImageData->Height());
 
     /* Trigger a Re-paint */
     update();
