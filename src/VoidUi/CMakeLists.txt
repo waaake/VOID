@@ -22,6 +22,7 @@ add_library(
     TrackItem.cpp
     ViewerBuffer.cpp
     VoidStyle.cpp
+    QExtensions/PushButton.cpp
 )
 
 # Link to this library

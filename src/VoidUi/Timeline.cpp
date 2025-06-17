@@ -8,11 +8,14 @@
 #include <QIcon>
 #include <QMouseEvent>
 #include <QLayout>
+#include <QMenu>
 #include <QPainter>
 #include <QStyle>
 #include <QValidator>
 
 static const int BUTTON_WIDTH = 30;
+static const int SMALL_BUTTON_WIDTH = 20;
+static const int MEDIUM_BUTTON_WIDTH = 40;
 
 /* Timeslider Markings Step */
 static const int SL_MARKING_STEP = 5;
@@ -350,6 +353,68 @@ void Timeslider::ClearCachedFrames()
 	update();
 }
 
+/* Loop Type Button {{{ */
+
+LoopTypeButton::LoopTypeButton(QWidget* parent)
+	: QPushButton(parent)
+	, m_LoopType(LoopType::LoopInfinitely)
+{
+	/* Update Loop States to be used on the button */
+	m_LoopState[LoopType::LoopInfinitely] = {"Loop Infinitely", "resources/icons/icon_repeat.svg"};
+	m_LoopState[LoopType::PingPong] = {"Bounce", "resources/icons/icon_bounce.svg"};
+	m_LoopState[LoopType::PlayOnce] = {"Play Once", "resources/icons/icon_arrow_right.svg"};
+
+	/* Update to set the state on the button */
+	Build();
+
+	/* No Visible borders */
+	setFlat(true);
+}
+
+LoopTypeButton::~LoopTypeButton()
+{
+	/* Delete the Menu and all it's children */
+	m_Menu->deleteLater();
+}
+
+void LoopTypeButton::SetLoopType(const LoopType& looptype)
+{
+	/* Update Loop state */
+	m_LoopType = looptype;
+
+	/* Reset Icon */
+	Update();
+
+	/* Emit that the loop type has been changed */
+	emit loopTypeChanged(looptype);
+}
+
+void LoopTypeButton::Build()
+{
+	/* Update the state on the button */
+	Update();
+
+	/* Add menu for Loop Type Selection */
+	m_Menu = new QMenu(this);
+
+	for (std::pair<LoopType, LoopState> entry: m_LoopState)
+	{
+		/* Action for the menu */
+		QAction* action = new QAction(entry.second.text.c_str(), m_Menu);
+
+		/* Connect the action to set the Loop State */
+		connect(action, &QAction::triggered, this, [this, entry]() { SetLoopType(entry.first); });
+
+		/* Add to the Menu */
+		m_Menu->addAction(action);
+	}
+
+	/* Set the Menu on the button */
+	setMenu(m_Menu);
+}
+
+/* }}} */
+
 Timeline::Timeline(QWidget* parent)
 	: QWidget(parent)
 	, m_Start(0)
@@ -383,6 +448,7 @@ void Timeline::Build()
 	/* Base Layout */
 	QVBoxLayout* layout = new QVBoxLayout(this);
 	QHBoxLayout* optionsLayout = new QHBoxLayout;
+	QHBoxLayout* playoptsLayout = new QHBoxLayout;
 
 	QStyle* s = style();
 
@@ -427,11 +493,15 @@ void Timeline::Build()
 	m_StopButton->setFixedWidth(BUTTON_WIDTH);
 
 	/* In - Out Framing */
-	m_InFrameButton = new QPushButton("I");
-	m_InFrameButton->setFixedWidth(BUTTON_WIDTH);
+	m_InFrameButton = new ToggleStatePushButton("I");
+	m_InFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 
-	m_OutFrameButton = new QPushButton("O");
-	m_OutFrameButton->setFixedWidth(BUTTON_WIDTH);
+	m_OutFrameButton = new ToggleStatePushButton("O");
+	m_OutFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
+
+	/* Loop Type Button */
+	m_LoopTypeButton = new LoopTypeButton;
+	m_LoopTypeButton->setFixedWidth(MEDIUM_BUTTON_WIDTH);
 
 	/* Timing */
 	m_TimeDisplay = new QLineEdit;
@@ -448,7 +518,8 @@ void Timeline::Build()
 
 	/* Add to options layout */
 	/* Layout spacing */
-	optionsLayout->setSpacing(0);
+	optionsLayout->setSpacing(10);
+	playoptsLayout->setSpacing(0);
 
 	optionsLayout->addWidget(m_FramerateBox);
 	optionsLayout->insertStretch(1, 1);
@@ -457,14 +528,19 @@ void Timeline::Build()
 	optionsLayout->insertStretch(3, 1);
 
 	/* Buttons */
+	optionsLayout->addWidget(m_LoopTypeButton);
 	optionsLayout->addWidget(m_InFrameButton);
-	optionsLayout->addWidget(m_StartFrameButton);
-	optionsLayout->addWidget(m_PrevFrameButton);
-	optionsLayout->addWidget(m_BackwardButton);
-	optionsLayout->addWidget(m_StopButton);
-	optionsLayout->addWidget(m_ForwardButton);
-	optionsLayout->addWidget(m_NextFrameButton);
-	optionsLayout->addWidget(m_EndFrameButton);
+
+	playoptsLayout->addWidget(m_StartFrameButton);
+	playoptsLayout->addWidget(m_PrevFrameButton);
+	playoptsLayout->addWidget(m_BackwardButton);
+	playoptsLayout->addWidget(m_StopButton);
+	playoptsLayout->addWidget(m_ForwardButton);
+	playoptsLayout->addWidget(m_NextFrameButton);
+	playoptsLayout->addWidget(m_EndFrameButton);
+
+	optionsLayout->addLayout(playoptsLayout);
+
 	optionsLayout->addWidget(m_OutFrameButton);
 
 	/* Timeslider */
@@ -498,6 +574,8 @@ void Timeline::Connect()
 
 	connect(m_InFrameButton, &QPushButton::clicked, this, &Timeline::ResetInFrame);
 	connect(m_OutFrameButton, &QPushButton::clicked, this, &Timeline::ResetOutFrame);
+
+	connect(m_LoopTypeButton, &LoopTypeButton::loopTypeChanged, this, [this](const LoopType& looptype) { m_LoopType = looptype; });
 }
 
 void Timeline::Setup()
@@ -583,6 +661,10 @@ void Timeline::ResetRange()
 	 */
 	m_Start = m_Timeslider->minimum();
 	m_End = m_Timeslider->maximum();
+
+	/* Reset the Toggle button state */
+	m_InFrameButton->Toggle(false);
+	m_OutFrameButton->Toggle(false);
 }
 
 void Timeline::SetUserFirstframe(int frame)
@@ -637,6 +719,9 @@ void Timeline::ResetInFrame()
 		/* Update the Start frame with the current frame */
 		SetUserFirstframe(frame);
 	}
+
+	/* If the User start frame has been set -> Reflect the same on the Toggle Push button */
+	m_InFrameButton->Toggle(static_cast<bool>(m_Timeslider->m_UserStartframe));
 }
 
 void Timeline::ResetOutFrame()
@@ -655,6 +740,9 @@ void Timeline::ResetOutFrame()
 		/* Update the End frame with the current frame */
 		SetUserEndframe(frame);
 	}
+
+	/* If the User end frame has been set -> Reflect the same on the Toggle Push button */
+	m_OutFrameButton->Toggle(static_cast<bool>(m_Timeslider->m_UserEndframe));
 }
 
 void Timeline::PlayForwards()
