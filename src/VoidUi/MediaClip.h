@@ -89,7 +89,7 @@ public:
      * i.e. between the first and the last frame of media
      * Any frame missing does not matter as this method only returns whether a frame is in the range or not
      */
-    [[nodiscard]] inline bool InRange(const int frame) const { return m_Media.InRange(frame); }
+    [[nodiscard]] inline bool HasFrame(const int frame) const { return m_Media.HasFrame(frame); }
 
     /* 
      * Returns whether a given frame is available to read

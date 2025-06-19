@@ -40,6 +40,9 @@ void ViewerBuffer::Set(const SharedMediaClip& media)
     /* Update frame range */
     m_Startframe = m_Clip->FirstFrame();
     m_Endframe = m_Clip->LastFrame();
+
+    /* Refresh to clear any underlying caches */
+    Refresh();
 }
 
 void ViewerBuffer::Set(const SharedPlaybackTrack& track)
@@ -56,6 +59,9 @@ void ViewerBuffer::Set(const SharedPlaybackTrack& track)
     /* Update frame range */
     m_Startframe = m_Track->StartFrame();
     m_Endframe = m_Track->EndFrame();
+
+    /* Refresh to clear any underlying caches */
+    Refresh();
 }
 
 void ViewerBuffer::Set(const SharedPlaybackSequence& sequence)
@@ -69,6 +75,9 @@ void ViewerBuffer::Set(const SharedPlaybackSequence& sequence)
     /* Update frame range */
     m_Startframe = m_Sequence->StartFrame();
     m_Endframe = m_Sequence->EndFrame();
+
+    /* Refresh to clear any underlying caches */
+    Refresh();
 }
 
 void ViewerBuffer::SetColor(const QColor& color)
@@ -111,6 +120,46 @@ SharedPlaybackTrack ViewerBuffer::ActiveTrack() const
     }
 
     return nullptr;
+}
+
+void ViewerBuffer::Refresh()
+{
+    /* Clear any cached item */
+    m_CachedTrackItem = nullptr;
+}
+
+SharedTrackItem ViewerBuffer::ItemFromSequence(const int frame)
+{
+    /**
+     * Check if we have a cached track item present -> return that
+     * if the cached track item is not preset or if the item does not have the requested frame
+     * request for a track item from the track at the frame, cache it and return back
+     */
+    if (!m_CachedTrackItem || !m_CachedTrackItem->HasFrame(frame))
+    {
+        /* Cache the item from the Sequence */
+        m_CachedTrackItem = m_Sequence->GetTrackItem(frame);
+    }
+
+    /* Return what has been cached */
+    return m_CachedTrackItem;
+}
+
+SharedTrackItem ViewerBuffer::ItemFromTrack(const int frame)
+{
+    /**
+     * Check if we have a cached track item present -> return that
+     * if the cached track item is not preset or if the item does not have the requested frame
+     * request for a track item from the track at the frame, cache it and return back
+     */
+    if (!m_CachedTrackItem || !m_CachedTrackItem->HasFrame(frame))
+    {
+        /* Cache the item from the track */
+        m_CachedTrackItem = m_Track->GetTrackItem(frame);
+    }
+
+    /* Return what has been cached */
+    return m_CachedTrackItem;
 }
 
 VOID_NAMESPACE_CLOSE

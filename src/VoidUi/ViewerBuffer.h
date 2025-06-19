@@ -67,14 +67,14 @@ public:
     /**
      * Returns a track item at a given frame
      */
-    inline SharedTrackItem TrackItem(const int frame) const
+    inline SharedTrackItem TrackItem(const int frame)
     {
         /* Return from the sequence if that is currently playing */
         if (m_PlayingComponent == PlayableComponent::Sequence)
-            return m_Sequence->GetTrackItem(frame);
+            return ItemFromSequence(frame);
 
-        /* Else return from the track */
-        return m_Track->GetTrackItem(frame);
+        /* Else return the TrackItem from track */
+        return ItemFromTrack(frame);
     }
 
     /**
@@ -111,6 +111,11 @@ public:
     void SetColor(const QColor& color);
 
     /**
+     * Refreshes any underlying caches and updates internals
+     */
+    void Refresh();
+
+    /**
      * Set a playable component on the Buffer
      */
     void Set(const SharedMediaClip& media);
@@ -130,6 +135,16 @@ private: /* Members */
     SharedPlaybackTrack m_Track;
     SharedPlaybackSequence m_Sequence;
 
+    /**
+     * At any point this buffer maintains a cached track item which makes the query to get the track item
+     * at a given frame much less complex in terms of time
+     * The reasoning is, when a standard play operation happens, it happnes sequentially
+     * and a track item at any given frame, if queried can last upto some frames ahead of it (till it's range supports)
+     * so the next query to the underlying struct only happens when this cached track item is out of frames based on the
+     * requested frame and then returned item is then cached till a frame is requested outside and so on...
+     */
+    SharedTrackItem m_CachedTrackItem;
+
     /* Currently playing component */
     PlayableComponent m_PlayingComponent;
 
@@ -147,6 +162,15 @@ private: /* Members */
      * Whether the buffer is active or not at the moment
      */
     bool m_Active;
+
+private: /* Methods */
+    /**
+     * Returns a track item from the track or sequence at a given frame
+     * The item returned from the entity is then cached locally on the class to reduce the operations to try and find
+     * a track item for the next frame (unless the frame is out of items' bounds)
+     */
+    SharedTrackItem ItemFromTrack(const int frame);
+    SharedTrackItem ItemFromSequence(const int frame);
 
 };
 
