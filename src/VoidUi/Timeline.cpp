@@ -639,7 +639,7 @@ void Timeline::TimeUpdated(const int time)
 void Timeline::SetRange(const int min, const int max)
 {
 	/* Reset any user defined range for the timeslider */
-	m_Timeslider->ResetRange();
+	ResetRange();
 
 	/* Update timeslider range */
 	m_Timeslider->setRange(min, max);
