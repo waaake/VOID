@@ -227,6 +227,7 @@ protected: /* Members */
     TrackMap m_Items;
 
     int m_StartFrame, m_EndFrame;
+    int m_Duration;
 
     /* State whether the track is visible */
     bool m_Visible;
@@ -237,7 +238,7 @@ protected: /* Members */
     QColor m_Color;
 
 protected: /* Methods */
-    void SetRange(int start, int end);
+    void SetRange(int start, int end, const bool inclusive = true);
 };
 
 VOID_NAMESPACE_CLOSE

@@ -85,6 +85,7 @@ PlaybackTrack::PlaybackTrack(QObject* parent)
     : VoidObject(parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
+    , m_Duration(0)
     , m_Visible(true)
     , m_Enabled(true)
     , m_Color(130, 110, 190)    /* Default Purple */
@@ -118,10 +119,13 @@ void PlaybackTrack::SetMedia(const SharedMediaClip& media)
 void PlaybackTrack::AddMedia(const SharedMediaClip& media)
 {
     /* Calculate the offset for reaching the first frame of media in the given timeline */
-    int offset = media->FirstFrame() - (m_StartFrame + m_EndFrame);
+    int offset = media->FirstFrame() - m_Duration;
 
+    /* Update the duration of the track */
+    m_Duration = m_Duration + media->Duration();
+    
     /* Update the last frame of the Track */
-    m_EndFrame = (m_EndFrame + media->Duration()) - 1;
+    m_EndFrame = m_Duration - 1;
 
     /* Construct the trackItem with the given media */
     /*
@@ -168,17 +172,29 @@ void PlaybackTrack::Clear()
     m_Items.Clear();
 
     /* This emits the rangeChanged signal */
-    SetRange(0, 0);
+    SetRange(0, 0, false);
 
     /* Emit the cleared signal to denote that the track has been cleared of any medias */
     emit cleared();
 }
 
-void PlaybackTrack::SetRange(int start, int end)
+void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
 {
     /* Update the internal frames */
     m_StartFrame = start;
     m_EndFrame = end;
+
+    /**
+     * If inclusive is true we include the last frame in duration calculation
+     * 
+     * so if my start frame is 1001
+     * and my end frame is 1010
+     * if we're not inclusive my duration is 
+     * 1010 - 1001 = 9 frames
+     * but if we're inclusive of the last frame then the duration becomes
+     * (1010 - 1001) + 1 = 10 frames
+     */
+    m_Duration = (end - start) + static_cast<int>(inclusive); // inclusive is bool so will be casted 0 or 1
 
     /* Emit the signal the the range has been modified */
     emit rangeChanged(m_StartFrame, m_EndFrame);
