@@ -55,6 +55,8 @@ void DockerWindow::Build()
     addDockWidget(Qt::RightDockWidgetArea, m_Docker);
     addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
 
+    splitDockWidget(m_MListDocker, m_Docker, Qt::Horizontal);
+
     /* The way how dock widgets appear as default */
     /* Dock Widgets */
     m_DockList << m_Docker << m_MListDocker;
@@ -119,12 +121,6 @@ VoidMainWindow::~VoidMainWindow()
 QSize VoidMainWindow::sizeHint() const
 {
     return QSize(1280, 760);
-}
-
-void VoidMainWindow::showEvent(QShowEvent* event)
-{
-    /* Set Default dock size */
-    // resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
 }
 
 void VoidMainWindow::Build()

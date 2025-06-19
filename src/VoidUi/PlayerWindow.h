@@ -79,8 +79,6 @@ private: /* Methods */
     void Connect();
 
 protected:
-    void showEvent(QShowEvent* event) override;
-
     /* Caches the Media if Caching is allowed */
     void CacheLookAhead();
 
