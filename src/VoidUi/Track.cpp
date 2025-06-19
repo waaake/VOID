@@ -1,10 +1,85 @@
 /* STD */
 #include <cstring> /* For using std::memcpy */
+#include <algorithm> /* For std::find and std::lower_bound */
 
 /* Internal */
 #include "Track.h"
 
 VOID_NAMESPACE_OPEN
+
+/* Track Map {[{ */
+
+void TrackMap::Add(const SharedTrackItem& item)
+{
+    /**
+     * The mapping is saved based on the first frame
+     * There cannot be a scenario where one track can have multiple track items
+     * at the same frame
+     */
+    m_Items[item->StartFrame()] = item;
+
+    /* Add the same frame to the vector */
+    m_Frames.push_back(item->StartFrame());
+}
+
+void TrackMap::Remove(const SharedTrackItem& item)
+{
+    /* Remove the item from the underlying structs */
+    m_Items.erase(item->StartFrame());
+
+    /* Remove item from the vector */
+    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), item->StartFrame());
+
+    /* If the frame exists -> remove it */
+    if (it != m_Frames.end())
+        m_Frames.erase(it);
+}
+
+void TrackMap::Clear()
+{
+    /* Clears the underlying structures */
+    m_Frames.clear();
+    m_Items.clear();
+}
+
+SharedTrackItem TrackMap::At(const int frame) const
+{
+    /**
+     * To get the item at any given frame
+     * We first check if we're already in a best case scenario and there is a track item already
+     * which starts at this frame
+     */
+    if (m_Items.find(frame) != m_Items.end())
+        return m_Items.at(frame);
+    
+    /**
+     * If we were not able to find the item directly at the given frame
+     * then find the nearest lower frame which is available in the underlying struct
+     * This would allow us to get a track item which starts at a frame which is just lower than the current
+     * provided frame
+     */
+    auto it = std::lower_bound(m_Frames.begin(), m_Frames.end(), frame);
+
+    /* if we're at the first index, this means that there is no frame lower than the asked frame in the struct */
+    if (it == m_Frames.begin())
+        return nullptr;
+    
+    /**
+     * Now that we have a lower bound frame available, that means we have a track item available
+     * But to see if the track item is the correct one, it depends on whether the requested frame is available 
+     * within the track item's frame bounds
+     */
+    SharedTrackItem item = m_Items.at(*(--it));
+
+    /* The frame (with the offset applied back to match the media range) is in range of the item's media */
+    if (item->HasFrame(frame))
+        return item;
+
+    /* There wasn't any track item at the requested frame */
+    return nullptr;
+}
+
+/* }}} */
 
 PlaybackTrack::PlaybackTrack(QObject* parent)
     : VoidObject(parent)
@@ -71,7 +146,7 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
      * would never change in this case and only would result in a change in the last frame
      * which gets calculated based on previous last frame
      */
-    m_TrackItems.push_back(trackItem);
+    m_Items.Add(trackItem);
 
     /**
      * Since the media is getting added to the start frame should just remain the same,
@@ -90,7 +165,7 @@ void PlaybackTrack::Clear()
      * After both of the operations are performed we emit rangeChanged and updated signal
      * to any listeners
      */
-    m_TrackItems.clear();
+    m_Items.Clear();
 
     /* This emits the rangeChanged signal */
     SetRange(0, 0);
@@ -111,67 +186,35 @@ void PlaybackTrack::SetRange(int start, int end)
 
 bool PlaybackTrack::GetImage(const int frame, VoidImageData* image)
 {
-    for (SharedTrackItem item: m_TrackItems)
+    SharedTrackItem item = m_Items.At(frame);
+
+    if (item)
     {
-        /**
-         * Check whether the current frame + the offset on the trackItem
-         * exists in the range of the Media, if so update the pointer to the data with the
-         * data from the Media and we can return true indicating a frame is successfully found
-         */
+        /* The Frame with the offset from the TrackItem applied back to match the media range */
         int f = frame + item->GetOffset();
-        if (item->GetMedia()->InRange(f))
-        {
-            /**
-             * Check for a case where the frame lies in the range of media but is still not available to read
-             * Reason could be that it is missing
-             */
-            if (!item->GetMedia()->Contains(f))
-                return false;
+        /**
+         * Copy the data of the VoidImageData* which we'll update for anyone to access
+         */
+        std::memcpy(image, item->GetMedia()->Image(f), sizeof(VoidImageData));
 
-            /**
-             * Copy the data of the VoidImageData* which we'll update for anyone to access
-             */
-            std::memcpy(image, item->GetMedia()->Image(f), sizeof(VoidImageData));
+        /**
+         * Once the Pointer data is copied ->
+         * emit the frameCached signal to indicate that this frame data is now available on the Media Class
+         */
+        emit frameCached(frame);
 
-            /**
-             * Once the Pointer data is copied ->
-             * emit the frameCached signal to indicate that this frame data is now available on the Media Class
-             */
-            emit frameCached(frame);
-
-            /* The memory address of the provided pointer has been updated with the data from the media */
-            return true;
-        }
+        /* The memory address of the provided pointer has been updated with the data from the media */
+        return true;
     }
 
     /* The provided frame from the timeline does not have any trackitem/media on it */
     return false;
 }
 
-SharedTrackItem PlaybackTrack::GetTrackItem(const int frame) const
-{
-    for (SharedTrackItem item: m_TrackItems)
-    {
-        /**
-         * Check whether the current frame + the offset on the trackItem
-         * exists in the range of the Media, if so update the pointer to the data with the
-         * data from the Media and we can return true indicating a frame is successfully found
-         */
-        int f = frame + item->GetOffset();
-        if (item->GetMedia()->InRange(f))
-        {
-            return item;
-        }
-    }
-
-    /* The provided frame from the timeline does not have any trackitem/media on it */
-    return nullptr;
-}
-
 void PlaybackTrack::Cache()
 {
     /* For each of the track item in the underlying array -> Cache the item's media */
-    for (SharedTrackItem item: m_TrackItems)
+    for (SharedTrackItem& item: m_Items)
     {
         /* This emits the frameCached signal for each frame that has been cached */
         item->Cache();
@@ -181,7 +224,7 @@ void PlaybackTrack::Cache()
 void PlaybackTrack::ClearCache()
 {
     /* Clear cache for each items' media */
-    for (SharedTrackItem item: m_TrackItems)
+    for (SharedTrackItem& item: m_Items)
     {
         /* Clear Cache */
         item->GetMedia()->ClearCache();

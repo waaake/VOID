@@ -1,8 +1,8 @@
-/* Internal */
-#include "PlayerWidget.h"
-
 /* Qt */
 #include <QLayout>
+
+/* Internal */
+#include "PlayerWidget.h"
 
 VOID_NAMESPACE_OPEN
 

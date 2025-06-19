@@ -31,7 +31,7 @@ public:
 
     virtual ~TrackItem();
 
-    /*
+    /**
      * Update the media on the track item
      * Offset corresponds to the offet in the framerange as when compared against the original range
      * of the media. 
@@ -47,7 +47,7 @@ public:
 
     inline void SetColor(const QColor& color) { m_Media->SetColor(color); }
 
-    /* 
+    /** 
      * Caches media frames
      * emits frameCached for each of them emitted
      */
@@ -57,7 +57,7 @@ public:
     inline int GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
 
-    /*
+    /**
      * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
      */
     VoidImageData* GetImage(const int frame);
@@ -65,7 +65,15 @@ public:
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }
 
-    /*
+    /**
+     * Returns whether the given frame is in range of the underlying media
+     * Applies the offset of the track item's range back to check against the media
+     * 
+     * TODO: Consider handle frames when they are implemented.
+     */
+    inline bool HasFrame(const int frame) const { return m_Media->HasFrame(frame + m_Offset); }
+
+    /**
      * Returns the nearest frame of a given frame from the media in TrackItem space
      * This means that the output frame is negated with the offset of the track item
      * E.g. Media's nearest frame for 1003 is 1001 and the offset of the Track Item is 1001
@@ -91,13 +99,13 @@ signals: /* Signals denoting Actions in the TrackItem */
     /* This signal denotes that something in the track item was changed/modified i.e. updated */
     void updated();
 
-    /*
+    /**
      * Emitted when the time range of the track item has changed
      * includes the start and end frame of the track item
      */
     void rangeChanged(int start, int end);
 
-    /*
+    /**
      * Emitted when a frame is cached
      * The cache could happen when the media cache operation is run continuously on a thread
      * Or if the frame is queried by the viewport
