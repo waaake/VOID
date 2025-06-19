@@ -67,14 +67,8 @@ AboutVoid::~AboutVoid()
     /* Delete the layouts after we have deleted the widgets */
     m_ButtonLayout->deleteLater();
     delete m_ButtonLayout;
-    m_AuthorLayout->deleteLater();
-    delete m_AuthorLayout;
-    m_ContactLayout->deleteLater();
-    delete m_ContactLayout;
-    m_VersionLayout->deleteLater();
-    delete m_VersionLayout;
-    m_GithubLayout->deleteLater();
-    delete m_GithubLayout;
+    m_DetailsLayout->deleteLater();
+    delete m_DetailsLayout;
     /* Delete the main layout at last*/
     m_Layout->deleteLater();
     delete m_Layout;
@@ -121,6 +115,12 @@ void AboutVoid::Build()
     m_AuthorHeader->setFont(header);
     m_Author = new QLabel(AUTHOR);
 
+    /**
+     * Set Stretch on the label
+     * Setting this even on only one text makes the entire grid follow 
+     */
+    m_Author->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
     m_ContactHeader = new QLabel("Contact: ");
     m_ContactHeader->setFont(header);
     m_Contact = new QLabel(CONTACT);
@@ -134,26 +134,19 @@ void AboutVoid::Build()
     m_Github = new QLabel(GITHUB);
 
     /* Add to details layouts */
-    m_AuthorLayout = new QHBoxLayout;
-    m_ContactLayout = new QHBoxLayout;
-    m_VersionLayout = new QHBoxLayout;
-    m_GithubLayout = new QHBoxLayout;
+    m_DetailsLayout = new QGridLayout;
 
-    m_AuthorLayout->addWidget(m_AuthorHeader);
-    m_AuthorLayout->addWidget(m_Author);
-    m_AuthorLayout->addStretch(1);
+    m_DetailsLayout->addWidget(m_AuthorHeader, 0, 0, Qt::AlignLeft);
+    m_DetailsLayout->addWidget(m_Author, 0, 1);
 
-    m_ContactLayout->addWidget(m_ContactHeader);
-    m_ContactLayout->addWidget(m_Contact);
-    m_ContactLayout->addStretch(1);
+    m_DetailsLayout->addWidget(m_ContactHeader, 1, 0, Qt::AlignLeft);
+    m_DetailsLayout->addWidget(m_Contact, 1, 1);
 
-    m_VersionLayout->addWidget(m_VersionHeader);
-    m_VersionLayout->addWidget(m_Version);
-    m_VersionLayout->addStretch(1);
+    m_DetailsLayout->addWidget(m_VersionHeader, 2, 0, Qt::AlignLeft);
+    m_DetailsLayout->addWidget(m_Version, 2, 1);
 
-    m_GithubLayout->addWidget(m_GithubHeader);
-    m_GithubLayout->addWidget(m_Github);
-    m_GithubLayout->addStretch(1);
+    m_DetailsLayout->addWidget(m_GithubHeader, 3, 0, Qt::AlignLeft);
+    m_DetailsLayout->addWidget(m_Github, 3, 1);
 
     /* --------------------------------------------- */
     m_ButtonSeparator = new QFrame;
@@ -178,10 +171,7 @@ void AboutVoid::Build()
     /* Spacing */
     m_Layout->addStretch(1);
 
-    m_Layout->addLayout(m_AuthorLayout);
-    m_Layout->addLayout(m_ContactLayout);
-    m_Layout->addLayout(m_VersionLayout);
-    m_Layout->addLayout(m_GithubLayout);
+    m_Layout->addLayout(m_DetailsLayout);
 
     /* Spacing */
     m_Layout->addStretch(1);

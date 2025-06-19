@@ -28,11 +28,8 @@ private: /* Members */
     QVBoxLayout* m_Layout;
     QHBoxLayout* m_ButtonLayout;
 
-    /* Internal Layouts for Details */
-    QHBoxLayout* m_AuthorLayout;
-    QHBoxLayout* m_ContactLayout;
-    QHBoxLayout* m_VersionLayout;
-    QHBoxLayout* m_GithubLayout;
+    /* Internal Layout for Details */
+    QGridLayout* m_DetailsLayout;
 
     /* Separators */
     QFrame* m_LogoSeparator;
