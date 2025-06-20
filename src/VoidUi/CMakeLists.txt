@@ -25,12 +25,17 @@ add_library(
     QExtensions/PushButton.cpp
 )
 
+target_link_libraries(
+    VoidUi
+    PUBLIC
+    VoidCore
+    VoidRenderer
+)
+
 # Link to this library
 target_link_libraries(
     VoidUi
     PRIVATE
-    VoidCore
-    VoidRenderer
     Qt::Widgets
     Qt::Core
     OpenGL::GL

@@ -58,7 +58,24 @@ target_link_libraries(
     OpenGL::GL
 )
 
+# Qt5 Resources
+if (QT_MAJOR_VERSION EQUAL 5)
+    qt5_add_resources(RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../resources/qrc/resources.qrc)
+    target_sources(VOID PRIVATE ${RESOURCES})
+endif()
+
 # Qt6 needs OpenGLWidgets be included/linked separately
 if (QT_MAJOR_VERSION EQUAL 6)
     target_link_libraries(VOID PRIVATE Qt::OpenGLWidgets)
+    qt_add_resources(VOID "resources" FILES ${CMAKE_CURRENT_SOURCE_DIR}/../resources/qrc/resources.qrc)
 endif()
+
+# Install Libraries and Binaries
+install(TARGETS VoidCore VoidRenderer VoidUi LIBRARY DESTINATION lib)
+
+# RPATH
+# Look above in lib dir
+set_target_properties(VoidUi PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
+set_target_properties(VOID PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
+
+install(TARGETS VOID RUNTIME DESTINATION bin)

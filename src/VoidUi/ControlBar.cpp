@@ -106,7 +106,7 @@ void ControlBar::Build()
     /* Missing Frame Handler */
     m_MissingFrameLayout = new QHBoxLayout;
     m_MissingFrameLabel = new QLabel;
-    m_MissingFrameLabel->setPixmap(QPixmap("resources/icons/icon_missing_frame.svg"));
+    m_MissingFrameLabel->setPixmap(QPixmap(":resources/icons/icon_missing_frame.svg"));
     m_MissingFrameCombo = new ControlCombo;
 
     m_MissingFrameLayout->setSpacing(0);

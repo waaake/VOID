@@ -1,0 +1,19 @@
+<!DOCTYPE RCC>
+<RCC>
+    <!-- Resources -->
+    <qresource prefix="/resources">
+        <file>../../images/VOID_Logo.svg</file>
+        <file>../../images/VOID_Logo_900x200.png</file>
+        <file>../icons/icon_arrow_right.svg</file>
+        <file>../icons/icon_bounce.svg</file>
+        <file>../icons/icon_close.svg</file>
+        <file>../icons/icon_delete.svg</file>
+        <file>../icons/icon_maximize.svg</file>
+        <file>../icons/icon_minimize.svg</file>
+        <file>../icons/icon_missing_frame.svg</file>
+        <file>../icons/icon_repeat.svg</file>
+        <file>../icons/icon_restore.svg</file>
+        <file>../icons/icon_zoom_in.svg</file>
+        <file>../icons/icon_zoom_out.svg</file>
+    </qresource>
+</RCC>
