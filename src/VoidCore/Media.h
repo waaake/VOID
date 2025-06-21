@@ -13,7 +13,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class Frame
+class VOID_API Frame
 {
 public:
     Frame();
@@ -71,7 +71,7 @@ private: /* Methods */
 
 };
 
-class Media
+class VOID_API Media
 {
 public: /* Enums */
     enum class Type

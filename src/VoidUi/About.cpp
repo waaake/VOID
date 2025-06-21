@@ -81,7 +81,7 @@ void AboutVoid::Build()
 
     /* VOID Logo */
     m_VoidLabel = new QLabel;
-    QImage logo("images/VOID_Logo_900x200.png");
+    QImage logo(":resources/images/VOID_Logo_900x200.png");
     m_VoidLabel->setPixmap(QPixmap::fromImage(logo.scaledToWidth(400, Qt::SmoothTransformation)));
 
     /* --------------------------------------------- */

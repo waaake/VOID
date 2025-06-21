@@ -360,9 +360,9 @@ LoopTypeButton::LoopTypeButton(QWidget* parent)
 	, m_LoopType(LoopType::LoopInfinitely)
 {
 	/* Update Loop States to be used on the button */
-	m_LoopState[LoopType::LoopInfinitely] = {"Loop Infinitely", "resources/icons/icon_repeat.svg"};
-	m_LoopState[LoopType::PingPong] = {"Bounce", "resources/icons/icon_bounce.svg"};
-	m_LoopState[LoopType::PlayOnce] = {"Play Once", "resources/icons/icon_arrow_right.svg"};
+	m_LoopState[LoopType::LoopInfinitely] = {"Loop Infinitely", ":resources/icons/icon_repeat.svg"};
+	m_LoopState[LoopType::PingPong] = {"Bounce", ":resources/icons/icon_bounce.svg"};
+	m_LoopState[LoopType::PlayOnce] = {"Play Once", ":resources/icons/icon_arrow_right.svg"};
 
 	/* Update to set the state on the button */
 	Build();

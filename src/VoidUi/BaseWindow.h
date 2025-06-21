@@ -10,13 +10,13 @@
 VOID_NAMESPACE_OPEN
 
 #ifdef USE_FRAMED_WINDOW
-class BaseWindow : public QMainWindow
+class VOID_API BaseWindow : public QMainWindow
 {
 public:
     BaseWindow(QWidget* parent = nullptr) : QMainWindow(parent) {}
 };
 #else
-class BaseWindow : public QMainWindow
+class VOID_API BaseWindow : public QMainWindow
 {
 public:
     BaseWindow(QWidget* parent = nullptr);

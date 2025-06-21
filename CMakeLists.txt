@@ -54,7 +54,12 @@ else()
     add_library(Qt::Core ALIAS Qt5::Core)
     add_library(Qt::Widgets ALIAS Qt5::Widgets)
 endif()
+
+# GL
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
+
+# GL Functions
+find_package(GLEW REQUIRED)
 
 # GL Maths
 find_package(glm REQUIRED)
