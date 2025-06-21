@@ -10,6 +10,7 @@ add_library(
     ImageData.cpp
     Logging.cpp
     Media.cpp
+    Timecode.cpp
     VoidTools.cpp
 )
 

@@ -16,6 +16,7 @@
 /* Internal */
 #include "QDefinition.h"
 #include "QExtensions/PushButton.h"
+#include "VoidCore/Timecode.h"
 
 VOID_NAMESPACE_OPEN
 
