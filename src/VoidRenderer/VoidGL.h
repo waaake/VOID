@@ -1,8 +1,10 @@
 #ifndef _VOID_GL_H
 #define _VOID_GL_H
 
+/* glew */
+#include <GL/glew.h>
+
 /* Qt */
-#include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 
 /* Internal */
@@ -11,7 +13,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidShader : protected QOpenGLFunctions
+class VoidShader
 {
 public:
     VoidShader();
@@ -49,7 +51,7 @@ public:
      * This needs to be invoked before the context is initialized
      * That means it should get invoked before we create the instance of the VoidRenderer.
      */
-    static void SetProfile();
+    VOID_API static void SetProfile();
 
 private:
     QOpenGLShaderProgram* m_Shader;

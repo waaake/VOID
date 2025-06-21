@@ -1,3 +1,6 @@
+/* Qt */
+#include <QSurfaceFormat>
+
 /* Internal */
 #include "VoidGL.h"
 
@@ -64,8 +67,16 @@ VoidShader::~VoidShader()
 
 void VoidShader::Initialize()
 {
-    /* Initialize the base openGL context */
-    initializeOpenGLFunctions();
+    /* Try and Initialize Glew */
+    unsigned int status = glewInit();
+
+    if (status != GLEW_OK)
+    {
+        VOID_LOG_ERROR("GLEW init Failed: {0}", reinterpret_cast<const char*>(glewGetErrorString(status)));
+    }
+
+    /* All good for GL and GLEW */
+    VOID_LOG_INFO("GLEW Initialized.");
 
     /* Load the shaders */
     LoadShaders();

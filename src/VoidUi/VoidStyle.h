@@ -20,7 +20,7 @@ const QColor VOID_BLUE_COLOR = {30, 210, 200};
 
 const QColor VOID_PURPLE_COLOR = {130, 110, 190};
 
-class VoidDark : public QProxyStyle
+class VOID_API VoidDark : public QProxyStyle
 {
 public:
     VoidDark();

@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     VOID_LOG_INFO("Imager initialised.");
 
     /* Set Application icon */
-    QImage icon("images/VOID_Logo.svg");
+    QImage icon(":resources/images/VOID_Logo.svg");
 
     app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation))));
 

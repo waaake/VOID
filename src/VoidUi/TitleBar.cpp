@@ -50,7 +50,7 @@ void VoidTitleBar::Build()
     m_LeftLayout = new QHBoxLayout(m_LeftCorner);
 
     m_VoidLabel = new QLabel;
-    QPixmap voidPixmap("images/VOID_Logo.svg");
+    QPixmap voidPixmap(":resources/images/VOID_Logo.svg");
     m_VoidLabel->setPixmap(voidPixmap.scaled(26, 26, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     m_LeftLayout->addWidget(m_VoidLabel);
@@ -64,17 +64,17 @@ void VoidTitleBar::Build()
     m_MinimizeButton = new QPushButton();
     m_MinimizeButton->setFixedSize(18, 18);
     m_MinimizeButton->setFlat(true);
-    m_MinimizeButton->setIcon(QIcon("resources/icons/icon_minimize.svg"));
+    m_MinimizeButton->setIcon(QIcon(":resources/icons/icon_minimize.svg"));
 
     m_MaximizeButton = new QPushButton();
     m_MaximizeButton->setFixedSize(18, 18);
     m_MaximizeButton->setFlat(true);
-    m_MaximizeButton->setIcon(QIcon("resources/icons/icon_restore.svg"));
+    m_MaximizeButton->setIcon(QIcon(":resources/icons/icon_restore.svg"));
 
     m_CloseButton = new QPushButton();
     m_CloseButton->setFixedSize(18, 18);
     m_CloseButton->setFlat(true);
-    m_CloseButton->setIcon(QIcon("resources/icons/icon_close.svg"));
+    m_CloseButton->setIcon(QIcon(":resources/icons/icon_close.svg"));
 
     /* Add to Layout */
     m_RightLayout->addWidget(m_MinimizeButton, 0, Qt::AlignTop);

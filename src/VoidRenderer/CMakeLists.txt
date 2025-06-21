@@ -24,9 +24,13 @@ target_link_libraries(
     Qt::Widgets
     OpenGL::GL
     glm::glm
+    GLEW::GLEW
 )
 
 # Qt6 needs OpenGLWidgets be included/linked separately
 if (QT_MAJOR_VERSION EQUAL 6)
     target_link_libraries(VoidRenderer PRIVATE Qt::OpenGLWidgets)
 endif()
+
+# Export symbols for windows
+target_compile_definitions(VoidRenderer PRIVATE VOID_LIB)

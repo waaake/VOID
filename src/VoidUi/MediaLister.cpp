@@ -125,7 +125,7 @@ void VoidMediaLister::Build()
     /* Options {{{ */
     m_OptionsLayout = new QHBoxLayout;
     m_DeleteButton = new QPushButton;
-    m_DeleteButton->setIcon(QIcon("resources/icons/icon_delete.svg"));
+    m_DeleteButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
     m_DeleteButton->setFixedWidth(26);
 
     m_OptionsLayout->addStretch(1);
