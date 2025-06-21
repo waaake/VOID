@@ -13,6 +13,8 @@
 #include <QStyle>
 #include <QValidator>
 
+#include <VoidCore/Logging.h>
+
 static const int BUTTON_WIDTH = 30;
 static const int SMALL_BUTTON_WIDTH = 20;
 static const int MEDIUM_BUTTON_WIDTH = 40;
@@ -239,6 +241,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	/* This is the part where we draw the focussed frame on the timeslider when mouse is hovered {{{ */
 	if (m_Focussed)
 	{
+		VOID_LOG_INFO("Frame: {0} -- Timecode: {1}", m_HoveredFrame, VoidTC::TimecodeString(m_HoveredFrame, 24));
 		/* Draw the frame number */
 		painter.setPen(SL_FRAME_COLOR);
 		painter.drawText(m_HovXPos - uwidth / 2, height() / 2, QString::number(m_HoveredFrame));

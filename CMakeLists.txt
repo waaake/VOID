@@ -12,6 +12,16 @@ set(CMAKE_AUTOMOC ON)
 # USE CXX11 ABI
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
+# Add compile options for instruction set sse4.1
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-msse4.1)
+endif() # MSVC enables this by default for 64 bit builds
+
+# Compile options for arm64 neon (apple m series chipset)
+if (APPLE)
+    set(CMAKE_OSX_ARCHITECTURES arm64)
+endif()
+
 # An explicit option to allow compiling the GUI frameless or with Window borders
 # it's a debate about whether the feature should be inbuilt and an option to switch to either
 # but the frameless way at the moment does not look really nice in mac when mac pulls the menubar away and we're
@@ -21,7 +31,7 @@ add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 option(USE_FRAMED_WINDOW "Enable using Framed Window borders, which is native themed." OFF)
 
 # Mac has it turned on by default unless we don't want it there as well
-if(APPLE)
+if (APPLE)
     set(USE_FRAMED_WINDOW ON)
 endif()
 
