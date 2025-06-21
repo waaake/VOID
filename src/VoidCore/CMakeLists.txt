@@ -27,3 +27,6 @@ target_link_libraries(
     OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
 )
+
+# Export symbols for windows
+target_compile_definitions(VoidCore PRIVATE VOID_LIB)

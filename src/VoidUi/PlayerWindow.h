@@ -58,7 +58,7 @@ private: /* Methods */
 
 };
 
-class VoidMainWindow : public BaseWindow
+class VOID_API VoidMainWindow : public BaseWindow
 {
     Q_OBJECT
 

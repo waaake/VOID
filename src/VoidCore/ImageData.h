@@ -14,7 +14,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidImageData
+class VOID_API VoidImageData
 {
 private: /* Members */
     /* Image Specification Data */
