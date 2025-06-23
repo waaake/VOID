@@ -49,7 +49,15 @@ public:
     inline QColor Color() const { return m_Color; }
 
     /* Overloading Base Media functions to allow frameCached be emit */
-    inline VoidImageData* Image(const int frame)
+    // inline VoidImageData* Image(const int frame)
+    // { 
+    //     /* Emit that the frame was cached */
+    //     emit frameCached(frame);
+
+    //     /* Return the frame data from media */
+    //     return m_Media.Image(frame);
+    // }
+    inline SharedPixBlock Image(const int frame)
     { 
         /* Emit that the frame was cached */
         emit frameCached(frame);
@@ -66,7 +74,7 @@ public:
     void Cache()
     {
         /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
-        for (std::pair<const int, Frame>& it: m_Media)
+        for (std::pair<const int, ImageFrame>& it: m_Media)
         {
             /* Cache the data for the frame */
             it.second.Cache();
@@ -104,11 +112,14 @@ public:
      */
     inline int NearestFrame(const int frame) const { return m_Media.NearestFrame(frame); };
 
-    inline Frame FirstFrameData() const { return m_Media.FirstFrameData(); }
-    inline Frame LastFrameData() const { return m_Media.LastFrameData(); }
+    // inline Frame FirstFrameData() const { return m_Media.FirstFrameData(); }
+    // inline Frame LastFrameData() const { return m_Media.LastFrameData(); }
 
-    inline VoidImageData* FirstImage() { return Image(FirstFrame()); }
-    inline VoidImageData* LastImage() { return Image(LastFrame()); }
+    // inline VoidImageData* FirstImage() { return Image(FirstFrame()); }
+    // inline VoidImageData* LastImage() { return Image(LastFrame()); }
+    inline SharedPixBlock FirstImage() { return Image(FirstFrame()); }
+    inline SharedPixBlock LastImage() { return Image(LastFrame()); }
+
 
     inline double Framerate() const { return m_Media.Framerate(); }
     inline bool Empty() const { return m_Media.Empty(); }

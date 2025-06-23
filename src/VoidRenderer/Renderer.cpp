@@ -22,6 +22,7 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     : QOpenGLWidget(parent)
     , m_Texture(nullptr)
     , m_ImageData(nullptr)
+    , m_Image(nullptr)
     , m_Exposure(1.f)
     , m_Gamma(1.f)
     , m_Gain(1.f)
@@ -122,7 +123,7 @@ void VoidRenderer::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (m_ImageData && m_ImageData->Data())
+    if (m_Image && !m_Image->Empty())
     {
         /* Texture ID */
         unsigned int texture;
@@ -142,10 +143,13 @@ void VoidRenderer::paintGL()
         /**
          * Load the image data onto the Texture 2D
          */
-        /* Use the appropriate format */
-        int format = m_ImageData->Channels() == 3 ? GL_RGB : GL_RGBA;
+        // /* Use the appropriate format */
+        // int format = m_ImageData->Channels() == 3 ? GL_RGB : GL_RGBA;
+        // /* Specify the 2D texture image to be read by the vertex and fragment shaders */
+        // glTexImage2D(GL_TEXTURE_2D, 0, format, m_ImageData->Width(), m_ImageData->Height(), 0, format, GL_UNSIGNED_BYTE, m_ImageData->Data());
+
         /* Specify the 2D texture image to be read by the vertex and fragment shaders */
-        glTexImage2D(GL_TEXTURE_2D, 0, format, m_ImageData->Width(), m_ImageData->Height(), 0, format, GL_UNSIGNED_BYTE, m_ImageData->Data());
+        glTexImage2D(GL_TEXTURE_2D, 0, m_Image->GLFormat(), m_Image->Width(), m_Image->Height(), 0, m_Image->GLFormat(), m_Image->GLType(), m_Image->Pixels());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -155,7 +159,7 @@ void VoidRenderer::paintGL()
          * And the aspect of the image being rendered
          */
         float viewAspect = float(width()) / float(height());
-        float imageAspect = float(m_ImageData->Width()) / float((m_ImageData->Height() ? m_ImageData->Height() : 1));
+        float imageAspect = float(m_Image->Width()) / float((m_Image->Height() ? m_Image->Height() : 1));
 
         /* Find the overall scale of the image */
         glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
@@ -425,6 +429,31 @@ void VoidRenderer::Render(VoidImageData* data)
     update();
 }
 
+void VoidRenderer::Render(SharedPixBlock data)
+{
+    // if (m_Texture)
+    // {
+    //     delete m_Texture;
+    //     m_Texture = nullptr;
+    // }
+
+    /* Update the image data */
+    m_Image = data;
+    /* Hide the Error Label */
+    m_DisplayLabel->setVisible(false);
+
+    /**
+     * Update the render resolution 
+     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
+     * So constantly redrawing this is just too ineffecient
+     */
+    if (m_Image)
+        m_RenderStatus->SetRenderResolution(m_Image->Width(), m_Image->Height());
+
+    /* Trigger a Re-paint */
+    update();
+}
+
 void VoidRenderer::Play()
 {
 
@@ -434,6 +463,7 @@ void VoidRenderer::Clear()
 {
     /* Delete the reference to the Image Data */
     m_ImageData = nullptr;
+    m_Image = nullptr;
     /* Clear the frame */
     ClearFrame();
     /* Hide the Error Label */

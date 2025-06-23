@@ -215,7 +215,8 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
      * This GetImage itself runs a check if Media.Contains(frame) as it has to offset values internally
      * based on where the trackitem is present in the sequence
      */
-    VoidImageData* data = item->GetImage(frame);
+    // VoidImageData* data = item->GetImage(frame);
+    SharedPixBlock data = item->GetImage(frame);
 
     /* A standard frame which is available for any trackitem/media */
     if (data)

@@ -162,4 +162,17 @@ SharedTrackItem ViewerBuffer::ItemFromTrack(const int frame)
     return m_CachedTrackItem;
 }
 
+void ViewerBuffer::ClearCache()
+{
+    /**
+     * Clear cache from all the entities internal to the buffer which exist
+     * like a track and the media clip
+     */
+    if (m_Clip)
+        m_Clip->ClearCache();
+    
+    if (m_Track)
+        m_Track->ClearCache();
+}
+
 VOID_NAMESPACE_CLOSE

@@ -122,6 +122,11 @@ public:
     void Set(const SharedPlaybackTrack& track);
     void Set(const SharedPlaybackSequence& sequence);
 
+    /**
+     * Clears Cache from the Active Media Entity
+     */
+    void ClearCache();
+
 signals:
     /* The updated signal is emitted when the viewer buffer receives a change */
     void updated();

@@ -391,13 +391,14 @@ void VoidMainWindow::CacheLookAhead()
 void VoidMainWindow::ClearLookAheadCache()
 {
     /* Clear any data from the memory which was cached to improve playback */
-    if (m_Media.Valid())
-    {
-        m_Media.ClearCache();
-    }
+    m_Player->ClearCache();
+    // if (m_Media.Valid())
+    // {
+    //     m_Media.ClearCache();
+    // }
 
-    /* Clear Cache from the track */
-    m_Track->ClearCache();
+    // /* Clear Cache from the track */
+    // m_Track->ClearCache();
 }
 
 void VoidMainWindow::ToggleLookAheadCache(const bool toggle)

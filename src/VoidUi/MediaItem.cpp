@@ -156,11 +156,12 @@ std::string VoidMediaItem::GetType() const
 QPixmap VoidMediaItem::GetThumbnail() const
 {   
     /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-    const VoidImageData* im = m_Clip->FirstFrameData().ImageData();
+    // const VoidImageData* im = m_Clip->FirstFrameData().ImageData();
+    const SharedPixBlock im = m_Clip->FirstImage();
     QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
 
     /* Resize the Frame to a thumbnail size */
-    QImage scaled = QImage(im->Data(), im->Width(), im->Height(), format).scaled(
+    QImage scaled = QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format).scaled(
             THUMBNAIL_SIZE, THUMBNAIL_SIZE, Qt::KeepAspectRatio
         );
 

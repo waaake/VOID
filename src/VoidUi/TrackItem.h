@@ -60,7 +60,8 @@ public:
     /**
      * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
      */
-    VoidImageData* GetImage(const int frame);
+    // VoidImageData* GetImage(const int frame);
+    SharedPixBlock GetImage(const int frame);
 
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }

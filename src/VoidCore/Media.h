@@ -8,10 +8,89 @@
 
 /* Internal */
 #include "Definition.h"
+#include "FormatForge.h"
 #include "ImageData.h"
 #include "Logging.h"
 
 VOID_NAMESPACE_OPEN
+
+
+class VOID_API MediaFrame
+{
+public: /* Enums */
+    enum class Kind
+    {
+        ImageSequence,
+        Movie
+    };
+
+public:
+    virtual ~MediaFrame() {}
+
+    /**
+     * Returns information about the Current frame
+     */
+    virtual inline std::string Path() const { return m_Path; };
+    virtual inline std::string Name() const { return m_Name; };
+    virtual inline std::string Extension() const { return m_Extension; };
+    virtual inline int Framenumber() const { return m_Framenumber; };
+    
+    virtual inline Kind MediaType() const = 0;
+
+    /**
+     * Pixel Block holding all pixel information for the frame
+     */
+    virtual SharedPixBlock Image() = 0;
+    
+    /**
+     * Internal Cache for Image
+     */
+    virtual void Cache() = 0;
+    virtual void ClearCache() = 0;
+
+protected: /* Members */
+    std::string m_Path;
+    std::string m_Name;
+    std::string m_Extension;
+    int m_Framenumber;
+
+    SharedPixBlock m_Pixels;
+};
+
+class VOID_API ImageFrame : public MediaFrame
+{
+public:
+    ImageFrame();
+    ImageFrame(const std::string& path);
+    virtual ~ImageFrame();
+
+    /**
+     * Returns information about the Current frame
+     */
+    virtual inline Kind MediaType() const override { return Kind::ImageSequence; }
+
+    /**
+     * Pixel Block holding all pixel information for the frame
+     */
+    virtual SharedPixBlock Image() override;
+    
+    /**
+     * Internal Cache for Image
+     */
+    virtual void Cache() override;
+    virtual void ClearCache() override;
+
+private: /* Methods */
+    /**
+     * Updates all internal data like name, framenumber, extension by parsing the frame path
+     */
+    void Update();
+    /**
+     * Returns true if a string is a frame number (i.e. it has only digits in it)
+     */
+    bool ValidFrame(const std::string& framestring) const;
+
+};
 
 class VOID_API Frame
 {
@@ -128,15 +207,21 @@ public:
      */
     int NearestFrame(const int frame) const;
 
-    Frame GetFrame(const int frame) const { return m_Mediaframes.at(frame); }
+    // Frame GetFrame(const int frame) const { return m_Mediaframes.at(frame); }
 
-    Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
-    Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
+    // Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
+    // Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
 
-    inline VoidImageData* Image(const int frame) { return m_Mediaframes.at(frame).ImageData(); }
+    // inline VoidImageData* Image(const int frame) { return m_Mediaframes.at(frame).ImageData(); }
+    // ImageFrame GetFrame(const int frame) const { return m_Mediaframes.at(frame); }
 
-    VoidImageData* FirstImage() { return Image(FirstFrame()); }
-    VoidImageData* LastImage() { return Image(LastFrame()); }
+    inline SharedPixBlock Image(const int frame) { return m_Mediaframes.at(frame).Image(); }
+
+    inline SharedPixBlock FirstImage() { return Image(FirstFrame()); }
+    inline SharedPixBlock LastImage() { return Image(LastFrame()); }
+
+    // VoidImageData* FirstImage() { return Image(FirstFrame()); }
+    // VoidImageData* LastImage() { return Image(LastFrame()); }
 
     inline double Framerate() const { return 24.0; }
     inline bool Empty() const { return m_Mediaframes.empty(); }
@@ -165,8 +250,8 @@ public:
     inline bool Caching() const { return m_StopCaching; }
 
     /* Allow iterating over the Media frames */
-    inline std::unordered_map<int, Frame>::iterator begin() { return m_Mediaframes.begin(); }
-    inline std::unordered_map<int, Frame>::iterator end() { return m_Mediaframes.end(); }
+    inline std::unordered_map<int, ImageFrame>::iterator begin() { return m_Mediaframes.begin(); }
+    inline std::unordered_map<int, ImageFrame>::iterator end() { return m_Mediaframes.end(); }
 
 private: /* Members */
     std::string m_Path;
@@ -185,7 +270,8 @@ private: /* Members */
     bool m_StopCaching;
 
     /* Arrays to hold the media Frames for the type of media */
-    std::unordered_map<int, Frame> m_Mediaframes;
+    // std::unordered_map<int, Frame> m_Mediaframes;
+    std::unordered_map<int, ImageFrame> m_Mediaframes;
     /* Array to hold the frame numbers for the frames which have been read */
     std::vector<int> m_Framenumbers;
 
@@ -194,6 +280,13 @@ private: /* Methods */
 
     /* Updates the internal range based on the read frames */
     void UpdateRange();
+
+    /**
+     * Returns the file extension for a file without .
+     * std::filesystem::path::extension returns path with a .
+     * and this one gets rid of it
+     */
+    std::string FileExtension(const std::filesystem::path& path);
 
 };
 

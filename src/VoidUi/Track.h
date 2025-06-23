@@ -164,16 +164,16 @@ public:
     /* Returns the Color associated with the Track */
     inline QColor Color() const { return m_Color; }
 
-    /**
-     * Update the Provided Pointer to VoidImageData with the data of the Media if it exists
-     * for the provided frame in the timeline
-     * Returns a Bool value to give back a status as to indicate whether the frame exists or not
-     */
-    /**
-     * This function is marked non-const as we're emitting a signal from the function itself
-     * TODO: investigate a better way to handle the signal of frameCached
-     */
-    bool GetImage(const int frame, VoidImageData* image);
+    // /**
+    //  * Update the Provided Pointer to VoidImageData with the data of the Media if it exists
+    //  * for the provided frame in the timeline
+    //  * Returns a Bool value to give back a status as to indicate whether the frame exists or not
+    //  */
+    // /**
+    //  * This function is marked non-const as we're emitting a signal from the function itself
+    //  * TODO: investigate a better way to handle the signal of frameCached
+    //  */
+    // bool GetImage(const int frame, VoidImageData* image);
 
     /**
      * Describes whether a track is active for playback or taking in elements with menu options

@@ -48,12 +48,12 @@ public:
     /* Update the range of the Sequence */
     void SetRange(int start, int end);
 
-    /**
-     * Update the Provided Pointer to VoidImageData with the data of the Media if it exists
-     * for the provided frame in the timeline
-     * Returns a Bool value to give back a status as to indicate whether the frame exists or not
-     */
-    bool GetImage(const int frame, VoidImageData* image) const;
+    // /**
+    //  * Update the Provided Pointer to VoidImageData with the data of the Media if it exists
+    //  * for the provided frame in the timeline
+    //  * Returns a Bool value to give back a status as to indicate whether the frame exists or not
+    //  */
+    // bool GetImage(const int frame, VoidImageData* image) const;
 
     /**
      * Returns the last track that is active
