@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidCore/MediaFilesystem.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -23,7 +24,8 @@ public:
      */
     [[nodiscard]] bool Browse();     
 
-    inline std::string GetDirectory() { return directory().absolutePath().toStdString(); }
+    inline std::string GetDirectory() const { return directory().absolutePath().toStdString(); }
+    MediaStruct GetMediaStruct() const;
 };
 
 VOID_NAMESPACE_CLOSE

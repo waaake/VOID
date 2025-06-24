@@ -128,6 +128,16 @@ void ViewerBuffer::Refresh()
     m_CachedTrackItem = nullptr;
 }
 
+void ViewerBuffer::ClearCache()
+{
+    /* Clear Cache from the playing components */
+    if (m_Clip)
+        m_Clip->ClearCache();
+    
+    if (m_Track)
+        m_Track->ClearCache();
+}
+
 SharedTrackItem ViewerBuffer::ItemFromSequence(const int frame)
 {
     /**

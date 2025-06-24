@@ -116,6 +116,11 @@ public:
     void Refresh();
 
     /**
+     * Clears any cache from underlying components
+     */
+    void ClearCache();
+
+    /**
      * Set a playable component on the Buffer
      */
     void Set(const SharedMediaClip& media);
