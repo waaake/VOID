@@ -69,7 +69,11 @@ public:
     virtual QSize sizeHint() const override;
 
     /* Reads Media Directory and Loads Media onto the components */
-    void ImportMedia(const std::string& path);
+    void ImportMedia(const MediaStruct& mstruct);
+    /**
+     * Allows all the media in a directory to be imported into the player
+     */
+    void ImportDirectory(const std::string& path);
     void PlayMedia(const std::vector<SharedMediaClip>& items);
 
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }

@@ -10,6 +10,7 @@
 #include "Definition.h"
 #include "ImageData.h"
 #include "Logging.h"
+#include "MediaFilesystem.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -17,21 +18,17 @@ class VOID_API Frame
 {
 public:
     Frame();
-    Frame(const std::string& path);
+    explicit Frame(const MEntry& e);
 
-    virtual ~Frame();
+    ~Frame();
 
-    /* Reads the provided image frame */
-    void Read(const std::string& path);
+    void Set(const MEntry& e);
 
     /* Getters */
-    inline std::string Path() const { return m_Path; }
-    inline std::string Name() const { return m_Name; }
-    inline std::string Extension() const { return m_Extension; }
-    inline int Framenumber() const { return m_Framenum; }
-
-    bool IsMovie() const;
-    bool IsImage() const;
+    inline std::string Path() const { return m_MediaEntry.Fullpath(); }
+    inline std::string Name() const { return m_MediaEntry.Name(); }
+    inline std::string Extension() const { return m_MediaEntry.Extension(); }
+    inline int Framenumber() const { return m_MediaEntry.Framenumber(); }
 
     /* Returns the Pointer to the ImageData */
     VoidImageData* ImageData();
@@ -41,33 +38,8 @@ public:
     void ClearCache();
 
 private: /* Members */
-    std::string m_Path;
-    std::string m_Name;
-    std::string m_Extension;
-    int m_Framenum;
-
+    MEntry m_MediaEntry;
     VoidImageData* m_ImageData;
-
-    std::string m_ImageFormats[8] = {
-        "bmp",
-        "dpx",
-        "exr",
-        "jpg",
-        "jpeg",
-        "png",
-        "tiff",
-        "tga"
-    };
-
-    std::string m_MovieFormats[4] = {
-        "mov",
-        "mp4",
-        "mxf",
-        "mkv"
-    };
-
-private: /* Methods */
-    bool ValidFrame(const std::string& framestring) const;
 
 };
 
@@ -84,21 +56,21 @@ public: /* Enums */
 
 public:
     Media();
-    Media(const std::string& path);
+    Media(const MediaStruct& mstruct);
 
     virtual ~Media();
 
-    /*
-     * Reads a given directory for files
-     * If the file type (extension) is one of the valid types to be considered
-     * as a media, then internal arrays are populated with frame data
+    /**
+     * Reads a MediaStructure to update the internals based on the
+     * entries in the structure
      */
-    void Read(const std::string& path);
+    void Read(const MediaStruct& mstruct);
 
     /* Getters */
-    inline std::string Path() const { return m_Path; }
-    inline std::string Name() const { return m_Mediaframes.at(FirstFrame()).Name(); }
-    inline std::string Extension() const { return m_Mediaframes.at(FirstFrame()).Extension(); }
+    inline std::string Path() const { return m_MediaStruct.Basepath(); }
+    inline std::string Name() const { return m_MediaStruct.Name(); }
+    inline std::string Extension() const { return m_MediaStruct.Extension(); }
+
     inline Media::Type MediaType() const { return m_Type; }
 
     // inline bool Valid() const { return m_Type != Type::NON_MEDIA; }
@@ -146,6 +118,13 @@ public:
      */
     inline bool Valid() const { return !Empty(); }
 
+    inline void Clear()
+    {
+        /* Clear underlying structs */
+        m_Framenumbers.clear();
+        m_Mediaframes.clear();
+    }
+
     /*
      * Caches all frames of the Media onto memory
      * This method is CPU intensive function and should be called from a separate thread
@@ -169,9 +148,11 @@ public:
     inline std::unordered_map<int, Frame>::iterator end() { return m_Mediaframes.end(); }
 
 private: /* Members */
-    std::string m_Path;
-    std::string m_Extension;
-    std::string m_Name;
+    /**
+     * The Media structure for the Media
+     */
+    MediaStruct m_MediaStruct;
+
     int m_FirstFrame, m_LastFrame;
 
     Type m_Type;
@@ -190,7 +171,7 @@ private: /* Members */
     std::vector<int> m_Framenumbers;
 
 private: /* Methods */
-    void ProcessMovie(const std::string& path);
+    void ProcessMovie(const MediaStruct& mstruct);
 
     /* Updates the internal range based on the read frames */
     void UpdateRange();

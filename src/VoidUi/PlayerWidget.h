@@ -81,6 +81,7 @@ public:
     void SetViewBuffer(const PlayerViewBuffer& buffer);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
+    inline void ClearCache() { m_ActiveViewBuffer->ClearCache(); }
 
     /* Zoom on the Viewport */
     inline void ZoomIn() { m_Renderer->ZoomIn(); }

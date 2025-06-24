@@ -306,9 +306,9 @@ void VoidMainWindow::Connect()
 
     /* Menu Actions */
     /* File Menu {{{ */
-    connect(m_CloseAction, SIGNAL(triggered()), this, SLOT(close()));
-    connect(m_OpenAction, SIGNAL(triggered()), this, SLOT(Load()));
-    connect(m_ClearAction, SIGNAL(triggered()), m_Player, SLOT(Clear()));
+    connect(m_CloseAction, &QAction::triggered, this, &VoidMainWindow::close);
+    connect(m_OpenAction, &QAction::triggered, this, &VoidMainWindow::Load);
+    connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
     /* Playback Menu {{{ */
@@ -344,7 +344,7 @@ void VoidMainWindow::Connect()
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
-    connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ImportMedia);
+    connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ImportDirectory);
     connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
 
     /* Sequence */
@@ -391,13 +391,7 @@ void VoidMainWindow::CacheLookAhead()
 void VoidMainWindow::ClearLookAheadCache()
 {
     /* Clear any data from the memory which was cached to improve playback */
-    if (m_Media.Valid())
-    {
-        m_Media.ClearCache();
-    }
-
-    /* Clear Cache from the track */
-    m_Track->ClearCache();
+    m_Player->ClearCache();
 }
 
 void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
@@ -413,10 +407,22 @@ void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
     CacheLookAhead();
 }
 
-void VoidMainWindow::ImportMedia(const std::string& path)
+void VoidMainWindow::ImportMedia(const MediaStruct& mstruct)
 {
+    if (mstruct.Empty())
+    {
+        VOID_LOG_INFO("Invalid Media");
+        return;
+    }
+
+    if (!mstruct.ValidMedia())
+    {
+        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
+        return;
+    }
+
     /* Create the media from the path */
-    m_Media = Media(path);
+    m_Media = Media(mstruct);
 
     /* Check if the media is valid */
     if (m_Media.Empty())
@@ -439,6 +445,18 @@ void VoidMainWindow::ImportMedia(const std::string& path)
     m_MediaLister->AddMedia(clip);
 }
 
+void VoidMainWindow::ImportDirectory(const std::string& path)
+{
+    std::vector<MediaStruct> medias = MediaFS().FromDirectory(path);
+
+    /**
+     * Import all the media struct retrived from the Filesystem 
+     * the ImportMedia function itself validates if the item is not a valid media and logs information
+     */
+    for (const MediaStruct& m: medias)
+        ImportMedia(m);
+}
+
 // Slots
 void VoidMainWindow::Load()
 {
@@ -452,7 +470,7 @@ void VoidMainWindow::Load()
     }
 
     /* Read the directory from the FileDialog */
-    ImportMedia(mediaBrowser.GetDirectory());
+    ImportMedia(mediaBrowser.GetMediaStruct());
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)

@@ -7,81 +7,19 @@
 VOID_NAMESPACE_OPEN
 
 Frame::Frame()
-    : m_Path("")
-    , m_Name("")
-    , m_Extension("")
-    , m_Framenum(0)
 {
     m_ImageData = new VoidImageData;
 }
 
-Frame::Frame(const std::string& path)
+Frame::Frame(const MEntry& e)
+    : m_MediaEntry(e)
 {
     m_ImageData = new VoidImageData;
-    Read(path);
 }
 
 Frame::~Frame()
 {
-}
-
-void Frame::Read(const std::string& path)
-{
-    m_Path = path;
-
-    std::filesystem::path filepath(path);
-
-    std::string filename = filepath.filename().string();
-
-    size_t lastDot = filename.find_last_of(".");
-    std::string remaining = filename.substr(0, lastDot);
-
-    m_Extension = filename.substr(lastDot + 1);
-
-    lastDot = remaining.find_last_of(".");
-    std::string framestring = remaining.substr(lastDot + 1);
-
-    /* Image is a sequence or atleast follows a sequential naming convention */
-    if (ValidFrame(framestring))
-    {
-        m_Framenum = std::stoi(framestring);
-        m_Name = remaining.substr(0, lastDot);
-    }
-    else /* In case we don't have an image sequence, just a standard image */
-    {
-        m_Name = remaining;
-    }
-}
-
-bool Frame::ValidFrame(const std::string& framestring) const
-{
-    if (framestring.empty())
-        return false;
-
-    for (char c: framestring)
-    {
-        if (!std::isdigit(c))
-            return false;
-    }
-
-    /* Valid frame */
-    return true;
-}
-
-bool Frame::IsMovie() const
-{
-    const std::string* it = std::find(std::begin(m_MovieFormats), std::end(m_MovieFormats), m_Extension);
-
-    /* true if the extension is in set of movie types */
-    return it != std::end(m_MovieFormats);
-}
-
-bool Frame::IsImage() const
-{
-    const std::string* it = std::find(std::begin(m_ImageFormats), std::end(m_ImageFormats), m_Extension);
-
-    /* true if the extension is in set of Image types */
-    return it != std::end(m_ImageFormats);
+    // delete m_ImageData;
 }
 
 VoidImageData* Frame::ImageData()
@@ -100,8 +38,8 @@ void Frame::Cache()
     /* Read and load the image data onto the memory */
     if (m_ImageData->Empty())
     {
-        m_ImageData->Read(m_Path);
-        VOID_LOG_INFO("Cached Frame: {0}", m_Framenum);
+        m_ImageData->Read(m_MediaEntry.Fullpath());
+        VOID_LOG_INFO("Cached Frame: {0}", m_MediaEntry.Framenumber());
     }
 }
 
@@ -110,15 +48,12 @@ void Frame::ClearCache()
     if (!m_ImageData->Empty())
     {
         m_ImageData->Free();
-        VOID_LOG_INFO("Cleared Frame Cache: {0}", m_Framenum);
+        VOID_LOG_INFO("Cleared Frame Cache: {0}", m_MediaEntry.Framenumber());
     }
 }
 
 Media::Media()
-    : m_Path("")
-    , m_Extension("")
-    , m_Name("")
-    , m_FirstFrame(-1)
+    : m_FirstFrame(-1)
     , m_LastFrame(-1)
     , m_Type(Type::UNDEFINED)
     , m_Caching(false)
@@ -126,9 +61,9 @@ Media::Media()
 {
 }
 
-Media::Media(const std::string& path)
+Media::Media(const MediaStruct& mstruct)
 {
-    Read(path);
+    Read(mstruct);
 }
 
 Media::~Media()
@@ -167,60 +102,32 @@ int Media::NearestFrame(const int frame) const
     return m_FirstFrame;
 }
 
-void Media::Read(const std::string& path)
+void Media::Read(const MediaStruct& mstruct)
 {
-    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+    /* Update the underlying struct */
+    m_MediaStruct = mstruct;
 
-    /* Update the base path */
-    m_Path = path;
-
-    try
+    /* If it is a movie -> process it as one */
+    if (mstruct.Type() == MediaType::Movie)
     {
-        for (std::filesystem::directory_entry entry: std::filesystem::directory_iterator(path))
-        {
-            Frame f(entry.path().string());
-
-            /*
-             * If it is a Movie
-             * Process it like a movie where we can read it's frame information using FFMPEG API
-             * Else Continue adding frames from the current directory_entry iterator
-             */
-            if (f.IsMovie())
-            {
-                ProcessMovie(f.Path());
-                break;
-            }
-            
-            /* 
-             * Check if the frame is a sequence or an image
-             * If it is not an image at this point, meaning this file is something we can ignore
-             * And proceed checking on other files
-             */
-            if (!f.IsImage())
-                continue;
-
-            /* Update internal structures with the frame information */
-            m_Mediaframes[f.Framenumber()] = f;
-            m_Framenumbers.push_back(f.Framenumber());
-        }
-    }
-    catch (const std::filesystem::filesystem_error& e)
-    {
-        VOID_LOG_ERROR(e.what());
+        return ProcessMovie(mstruct);
     }
 
-    std::chrono::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
+    /* Iterate over the struct's internal Media Entry */
+    for (const MEntry& e: mstruct)
+    {
+        /* Update internal structures with the frame information */
+        m_Mediaframes[e.Framenumber()] = Frame(e);
+        m_Framenumbers.push_back(e.Framenumber());
+    }
 
     /*
      * Update the frame range as we have read any of the media present in the given path
      */
     UpdateRange();
-
-    VOID_LOG_INFO("Time Taken to Load : {0}", duration.count());
 }
 
-void Media::ProcessMovie(const std::string& path)
+void Media::ProcessMovie(const MediaStruct& mstruct)
 {
 
 }
