@@ -35,6 +35,7 @@ MEntry::MEntry()
     , m_Name("")
     , m_Extension("")
     , m_Framenumber(0)
+    , m_SingleFile(false)
 {
 }
 
@@ -82,6 +83,8 @@ void MEntry::Parse(const std::string& path)
     else /* In case we don't have an image sequence, just a standard image */
     {
         m_Name = remaining;
+        /* Update the state so we know it is a single file */
+        m_SingleFile = true;
     }
 }
 
@@ -213,6 +216,15 @@ std::string MediaStruct::FirstPath() const
     return m_Entries.begin()->second.Fullpath();
 }
 
+bool MediaStruct::IsSingleFile() const
+{
+    /* Empty container */
+    if (m_Entries.empty())
+        return false;
+
+    return m_Entries.begin()->second.IsSingleFile();
+}
+
 void MediaStruct::Add(const MEntry& entry)
 {
     /* Add the provided entry */
@@ -250,8 +262,9 @@ MediaStruct MediaStruct::FromFile(const std::string& filepath)
     /**
      * If the type of the media is Movie or any other then we can just return the current MediaStruct from here
      * considering a movie or audio is a container on it's own and does not depend on other containers
+     * Also consider if the entry does not have a frame seqeunce number like #### or %03d or %04d something similar
      */
-    if (m.Type() != MediaType::Image)
+    if (m.Type() != MediaType::Image || m.IsSingleFile())
         return m;
 
     std::chrono::time_point start = std::chrono::high_resolution_clock::now();
