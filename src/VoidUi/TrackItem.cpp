@@ -59,7 +59,7 @@ void TrackItem::Cache()
     }
 }
 
-VoidImageData* TrackItem::GetImage(const int frame)
+SharedPixels TrackItem::GetImage(const int frame)
 {
     /* Update the frame value with the offset so that we match the original media range */
     int f = frame + m_Offset;

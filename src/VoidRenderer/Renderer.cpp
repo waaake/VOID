@@ -122,7 +122,7 @@ void VoidRenderer::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (m_ImageData && m_ImageData->Data())
+    if (m_ImageData && !m_ImageData->Empty())
     {
         /* Texture ID */
         unsigned int texture;
@@ -142,10 +142,7 @@ void VoidRenderer::paintGL()
         /**
          * Load the image data onto the Texture 2D
          */
-        /* Use the appropriate format */
-        int format = m_ImageData->Channels() == 3 ? GL_RGB : GL_RGBA;
-        /* Specify the 2D texture image to be read by the vertex and fragment shaders */
-        glTexImage2D(GL_TEXTURE_2D, 0, format, m_ImageData->Width(), m_ImageData->Height(), 0, format, GL_UNSIGNED_BYTE, m_ImageData->Data());
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageData->GLFormat(), m_ImageData->Width(), m_ImageData->Height(), 0, m_ImageData->GLFormat(), m_ImageData->GLType(), m_ImageData->Pixels());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -400,14 +397,8 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
 //     update();
 // }
 
-void VoidRenderer::Render(VoidImageData* data)
+void VoidRenderer::Render(SharedPixels data)
 {
-    // if (m_Texture)
-    // {
-    //     delete m_Texture;
-    //     m_Texture = nullptr;
-    // }
-
     /* Update the image data */
     m_ImageData = data;
     /* Hide the Error Label */
