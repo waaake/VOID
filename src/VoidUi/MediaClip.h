@@ -49,7 +49,7 @@ public:
     inline QColor Color() const { return m_Color; }
 
     /* Overloading Base Media functions to allow frameCached be emit */
-    inline VoidImageData* Image(const int frame)
+    inline SharedPixels Image(const int frame)
     { 
         /* Emit that the frame was cached */
         emit frameCached(frame);
@@ -107,8 +107,8 @@ public:
     inline Frame FirstFrameData() const { return m_Media.FirstFrameData(); }
     inline Frame LastFrameData() const { return m_Media.LastFrameData(); }
 
-    inline VoidImageData* FirstImage() { return Image(FirstFrame()); }
-    inline VoidImageData* LastImage() { return Image(LastFrame()); }
+    inline SharedPixels FirstImage() { return Image(FirstFrame()); }
+    inline SharedPixels LastImage() { return Image(LastFrame()); }
 
     inline double Framerate() const { return m_Media.Framerate(); }
     inline bool Empty() const { return m_Media.Empty(); }

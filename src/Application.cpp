@@ -3,9 +3,14 @@
 
 /* Internal */
 #include "Definition.h"
+/* LOGGING */
 #include "VoidCore/Logging.h"
+/* Main Window for player */
 #include "VoidUi/PlayerWindow.h"
+/* Theme */
 #include "VoidUi/VoidStyle.h"
+/* Reader Registration */
+#include "VoidCore/Readers/Registration.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,6 +26,9 @@ int main(int argc, char* argv[])
     VOID_NAMESPACE::VoidMainWindow* imager = new voidplayer::VoidMainWindow;
 
     VOID_LOG_INFO("Imager initialised.");
+
+    /* Register Media Readers */
+    VOID_NAMESPACE::RegisterReaders();
 
     /* Set Application icon */
     QImage icon(":resources/images/VOID_Logo.svg");

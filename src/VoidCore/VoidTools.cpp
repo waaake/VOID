@@ -17,6 +17,18 @@ namespace Tools {
         return ss.str();
     }
 
+    std::string to_lower(const std::string& in)
+    {
+        /* Copy */
+        std::string copied = in;
+
+        /* Update the copied string */
+        to_lower(copied);
+
+        /* And return the transformed copied string*/
+        return copied;
+    }
+
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value)
     {

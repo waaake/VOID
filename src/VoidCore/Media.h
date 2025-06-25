@@ -8,6 +8,8 @@
 
 /* Internal */
 #include "Definition.h"
+#include "FormatForge.h"
+#include "PixReader.h"
 #include "ImageData.h"
 #include "Logging.h"
 #include "MediaFilesystem.h"
@@ -19,6 +21,7 @@ class VOID_API Frame
 public:
     Frame();
     explicit Frame(const MEntry& e);
+    Frame(const MEntry& e, int frame);
 
     ~Frame();
 
@@ -28,10 +31,10 @@ public:
     inline std::string Path() const { return m_MediaEntry.Fullpath(); }
     inline std::string Name() const { return m_MediaEntry.Name(); }
     inline std::string Extension() const { return m_MediaEntry.Extension(); }
-    inline int Framenumber() const { return m_MediaEntry.Framenumber(); }
+    inline int Framenumber() const { return m_Framenumber; }
 
     /* Returns the Pointer to the ImageData */
-    VoidImageData* ImageData();
+    SharedPixels Image();
 
     /* Frame Caches */
     void Cache();
@@ -39,7 +42,10 @@ public:
 
 private: /* Members */
     MEntry m_MediaEntry;
-    VoidImageData* m_ImageData;
+    SharedPixels m_ImageData;
+
+    /* Internally associated framenumer */
+    int m_Framenumber;
 
 };
 
@@ -105,10 +111,10 @@ public:
     Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
     Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
 
-    inline VoidImageData* Image(const int frame) { return m_Mediaframes.at(frame).ImageData(); }
+    inline SharedPixels Image(const int frame) { return m_Mediaframes.at(frame).Image(); }
 
-    VoidImageData* FirstImage() { return Image(FirstFrame()); }
-    VoidImageData* LastImage() { return Image(LastFrame()); }
+    SharedPixels FirstImage() { return Image(FirstFrame()); }
+    SharedPixels LastImage() { return Image(LastFrame()); }
 
     inline double Framerate() const { return 24.0; }
     inline bool Empty() const { return m_Mediaframes.empty(); }

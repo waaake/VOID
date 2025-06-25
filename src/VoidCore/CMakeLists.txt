@@ -6,12 +6,15 @@ find_package(Boost REQUIRED)
 add_library(
     VoidCore
     SHARED
+    FormatForge.cpp
     Identity.h
     ImageData.cpp
     Logging.cpp
     Media.cpp
     MediaFilesystem.cpp
     VoidTools.cpp
+    # Media Readers
+    Readers/OIIOReader.cpp
 )
 
 target_include_directories(

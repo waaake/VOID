@@ -8,21 +8,34 @@ VOID_NAMESPACE_OPEN
 
 Frame::Frame()
 {
-    m_ImageData = new VoidImageData;
+    m_ImageData = nullptr;
 }
 
 Frame::Frame(const MEntry& e)
-    : m_MediaEntry(e)
+    : Frame(e, e.Framenumber())
 {
-    m_ImageData = new VoidImageData;
+}
+
+Frame::Frame(const MEntry& e, int frame)
+    : m_MediaEntry(e)
+    , m_Framenumber(frame)
+{
+    /**
+     * Since we have the Media Entry, we can now get the PixReader for the media type
+     */
+    m_ImageData = std::move(Forge::Instance().GetImageReader(m_MediaEntry.Extension()));
 }
 
 Frame::~Frame()
 {
-    // delete m_ImageData;
+    // if (m_ImageData)
+    // {
+    //     delete m_ImageData;
+    //     m_ImageData = nullptr;
+    // }
 }
 
-VoidImageData* Frame::ImageData()
+SharedPixels Frame::Image()
 {
     /*
      * If the frame data has not yet been fetched
@@ -38,7 +51,7 @@ void Frame::Cache()
     /* Read and load the image data onto the memory */
     if (m_ImageData->Empty())
     {
-        m_ImageData->Read(m_MediaEntry.Fullpath());
+        m_ImageData->Read(m_MediaEntry.Fullpath(), m_Framenumber);
         VOID_LOG_INFO("Cached Frame: {0}", m_MediaEntry.Framenumber());
     }
 }
@@ -47,7 +60,7 @@ void Frame::ClearCache()
 {
     if (!m_ImageData->Empty())
     {
-        m_ImageData->Free();
+        m_ImageData->Clear();
         VOID_LOG_INFO("Cleared Frame Cache: {0}", m_MediaEntry.Framenumber());
     }
 }
@@ -106,6 +119,16 @@ void Media::Read(const MediaStruct& mstruct)
 {
     /* Update the underlying struct */
     m_MediaStruct = mstruct;
+
+    /**
+     * Check if we have a Plugin reader for the file format
+     * If not -> we can't proceed
+     */
+    if (!Forge::Instance().GetImageReader(mstruct.Extension()))
+    {
+        VOID_LOG_WARN("No Media Reader found for type {0}", mstruct.Extension());
+        return;
+    }
 
     /* If it is a movie -> process it as one */
     if (mstruct.Type() == MediaType::Movie)

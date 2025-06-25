@@ -16,9 +16,9 @@
 #include <QOpenGLShaderProgram>
 
 /* Internal */
+#include "PixReader.h"
 #include "QDefinition.h"
 #include "RendererStatus.h"
-#include "VoidCore/ImageData.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -26,7 +26,7 @@ class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
 {
 private: /* Members */
     QOpenGLTexture* m_Texture;
-    VoidImageData* m_ImageData;
+    SharedPixels m_ImageData;
     std::string m_Path;
 
 public:
@@ -34,7 +34,7 @@ public:
 
     ~VoidRenderer();
 
-    void Render(VoidImageData* data);
+    void Render(SharedPixels data);
     void Play();
     void Clear();
 
