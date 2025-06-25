@@ -53,6 +53,12 @@ public:
     inline std::string Name() const { return m_Name; }
     inline std::string Extension() const { return m_Extension; }
     inline int Framenumber() const { return m_Framenumber; }
+    
+    /**
+     * Returns True if the Media does not have a frame number on it to denote that this
+     * file is a separate single entity
+     */
+    [[nodiscard]] inline bool IsSingleFile() const { return m_SingleFile; }
 
     /**
      * Validates and returns true if the other entry is similar to this
@@ -75,9 +81,15 @@ private: /* Members */
     std::string m_Name;
     std::string m_Extension;
 
-    /* Not All files would have this
+    /**
+     *  Not All files would have this
      */
     int m_Framenumber;
+
+    /**
+     * Media is a single file and only has frame sequences
+     */
+    bool m_SingleFile;
 
 private: /* Methods */
     /**
@@ -200,6 +212,7 @@ public:
     std::string Basepath() const;
 
     std::string FirstPath() const;
+    [[nodiscard]] bool IsSingleFile() const;
 
     /**
      * Returns whether the media struct is currently empty
