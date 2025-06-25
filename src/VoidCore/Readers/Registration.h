@@ -10,6 +10,7 @@
 #include "Definition.h"
 #include "FormatForge.h"
 #include "OIIOReader.h"
+#include "OpenEXRReader.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -30,6 +31,14 @@ struct OIIOReaderPlugin
          * 
          * TODO: have a thought about this again at a later stage to see if we can do something better than this
          */
+        /* Targa */
+        Forge::Instance().RegisterImageReader("tga", []() { return std::make_unique<OIIOPixReader>(); });
+
+        /* tiff */
+        Forge::Instance().RegisterImageReader("tiff", []() { return std::make_unique<OIIOPixReader>(); });
+
+        /* dpx */
+        Forge::Instance().RegisterImageReader("dpx", []() { return std::make_unique<OIIOPixReader>(); });
 
         /* PNG */
         Forge::Instance().RegisterImageReader("png", []() { return std::make_unique<OIIOPixReader>(); });
@@ -46,6 +55,28 @@ struct OIIOReaderPlugin
     }
 };
 
+struct OpenEXRReaderPlugin
+{
+    OpenEXRReaderPlugin()
+    {
+        /**
+         * OIIO Image Reader supports a Bunch of Image formats
+         * Adding all of them
+         */
+
+        /**
+         * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
+         * We could go for a tolower but the case might have unnecessary copies going for each extension
+         * and for each of the frame that's from the source which looks too expensive at the moment
+         * 
+         * TODO: have a thought about this again at a later stage to see if we can do something better than this
+         */
+
+        /* PNG */
+        Forge::Instance().RegisterImageReader("exr", []() { return std::make_unique<OpenEXRReader>(); });
+    }
+};
+
 /**
  * Register Inbuilt Media Readers
  * TODO: This needs to be change when we have a plugin manager to look at directories and load built
@@ -56,6 +87,9 @@ VOID_API void RegisterReaders()
 {
     /* Register OIIO Reader */
     OIIOReaderPlugin o;
+
+    /* Register OpenEXR Reader */
+    OpenEXRReaderPlugin openx;
 }
 
 VOID_NAMESPACE_CLOSE

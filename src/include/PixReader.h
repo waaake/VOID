@@ -2,6 +2,7 @@
 #define _VOID_PIX_READER_H
 
 /* STD */
+#include <memory>
 #include <string>
 
 /* Internal */

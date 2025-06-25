@@ -15,6 +15,7 @@ add_library(
     VoidTools.cpp
     # Media Readers
     Readers/OIIOReader.cpp
+    Readers/OpenEXRReader.cpp
 )
 
 target_include_directories(
