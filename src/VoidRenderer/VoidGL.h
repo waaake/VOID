@@ -35,6 +35,7 @@ public:
      * Sets Uniform value on the shader program
      */
     inline void SetUniform(const std::string& name, float value) { m_Shader->setUniformValue(name.c_str(), value); }
+    inline void SetUniform(const std::string& name, int value) { m_Shader->setUniformValue(name.c_str(), value); }
     inline void SetUniform(const std::string& name, const QMatrix4x4& value) { m_Shader->setUniformValue(name.c_str(), value); }
 
     /**

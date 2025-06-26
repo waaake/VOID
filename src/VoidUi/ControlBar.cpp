@@ -126,26 +126,45 @@ void ControlBar::Build()
     m_GainLabel = new QLabel("f/");
     m_GainController = new ControlDoubleSpinner();
 
+    m_ChannelModeController = new ControlCombo();
+
     /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
 
-    /* Add to the main layout */
-    m_Layout->addLayout(m_MissingFrameLayout);
+    /* The Left Side Widget */
+    m_LeftControls = new QWidget();
+    m_LeftLayout = new QHBoxLayout(m_LeftControls);
+    m_LeftLayout->setContentsMargins(0, 0, 0, 0);
 
-    m_Layout->addWidget(m_ExposureLabel);
-    m_Layout->addWidget(m_ExposureController);
+    /* Right Side Widget */
+    m_RightControls = new QWidget();
+    m_RightLayout = new QHBoxLayout(m_RightControls);
+    m_RightLayout->setContentsMargins(0, 0, 0, 0);
 
-    m_Layout->addWidget(m_GammaLabel);
-    m_Layout->addWidget(m_GammaController);
+    /* Add to Left Controls */
+    m_LeftLayout->addLayout(m_MissingFrameLayout);
+    m_LeftLayout->addWidget(m_ChannelModeController);
+    m_LeftLayout->addWidget(m_ExposureLabel);
+    m_LeftLayout->addWidget(m_ExposureController);
+    m_LeftLayout->addWidget(m_GammaLabel);
+    m_LeftLayout->addWidget(m_GammaController);
+    m_LeftLayout->addWidget(m_GainLabel);
+    m_LeftLayout->addWidget(m_GainController);
 
-    m_Layout->addWidget(m_GainLabel);
-    m_Layout->addWidget(m_GainController);
-    /* Spacer */
-    m_Layout->addStretch(1);
+    /* And a spacer at the end */
+    m_LeftLayout->addStretch(1);
+
+    /* Add to the Right Layout */
+    /* Spacer from the left side */
+    m_RightLayout->addStretch(1);
+    m_RightLayout->addWidget(m_Zoomer);
+
+    /* Add the left side controls */
+    m_Layout->addWidget(m_LeftControls);
+    /* The Buffer switch in the middle */
     m_Layout->addWidget(m_BufferSwitch);
-    /* Spacer */
-    m_Layout->addStretch(1);
-    m_Layout->addWidget(m_Zoomer);
+    /* And the Right side controls */
+    m_Layout->addWidget(m_RightControls);
 }
 
 void ControlBar::Setup()
@@ -157,6 +176,12 @@ void ControlBar::Setup()
     m_MissingFrameCombo->addItems({"Error", "Black Frame", "Nearest"});
     /* Default to Using Black frame */
     m_MissingFrameCombo->setCurrentIndex(1);
+
+    /**
+     * Channels controller
+     */
+    m_ChannelModeController->addItems({"R", "G", "B", "Alpha", "RGB", "RGBA"});
+    m_ChannelModeController->setCurrentIndex(5);
 
     /**
      * Exposure Controller
@@ -223,6 +248,9 @@ void ControlBar::Connect()
     connect(m_ExposureController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::exposureChanged);
     connect(m_GammaController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::gammaChanged);
     connect(m_GainController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::gainChanged);
+
+    /* Channel Mode controller */
+    connect(m_ChannelModeController, &QComboBox::currentIndexChanged, this, &ControlBar::channelModeChanged);
 
     /* Viewer Buffer Switch */
     connect(m_BufferSwitch, &BufferSwitch::switched, this, &ControlBar::viewerBufferSwitched);

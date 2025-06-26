@@ -55,6 +55,7 @@ signals:
     void gainChanged(const float gain);
     void missingFrameHandlerChanged(int handler);
     void viewerBufferSwitched(const PlayerViewBuffer&);
+    void channelModeChanged(const int);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -76,6 +77,11 @@ private: /* Members */
     QLabel* m_GainLabel;
     ControlDoubleSpinner* m_GainController;
 
+    /**
+     * Set/Update channels on the viewer
+     */
+    ControlCombo* m_ChannelModeController;
+
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;
 
@@ -91,6 +97,16 @@ private: /* Members */
     
     /* Viewer Buffer Switch */
     BufferSwitch* m_BufferSwitch;
+
+    /**
+     * In order to keep the ViewerBuffer selector always in the center,
+     * the best approach is just to use left and right widgets with spacer internally
+     */
+    QWidget* m_LeftControls;
+    QWidget* m_RightControls;
+
+    QHBoxLayout* m_LeftLayout;
+    QHBoxLayout* m_RightLayout;
 
 private: /* Methods */
     void Build();
