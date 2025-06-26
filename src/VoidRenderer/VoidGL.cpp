@@ -37,6 +37,9 @@ uniform float exposure;
 uniform float gamma;
 uniform float gain;
 
+// Channels to display
+uniform int channelMode;
+
 void main() {
     vec4 color = texture(uTexture, TexCoord);
 
@@ -49,7 +52,29 @@ void main() {
     // Apply gamma correction
     color.rgb = pow(color.rgb, vec3(1.0 / gamma));
 
-    FragColor = color;
+    // Render a channel based on the color
+    // 0 = R; 1 = G; 2 = B; 3 = A; 4 = RGB; 5 = RGBA (All)
+    switch (channelMode)
+    {
+        case 0: // Red Channels only 
+            FragColor = vec4(color.r, color.r, color.r, 1.f);
+            break;
+        case 1: // Green Channels only
+            FragColor = vec4(color.g, color.g, color.g, 1.f);
+            break;
+        case 2: // Blue Channels only
+            FragColor = vec4(color.b, color.b, color.b, 1.f);
+            break;
+        case 3: // Only Alpha
+            FragColor = vec4(color.a, color.a, color.a, 1.f);
+            break;
+        case 4: // RGB without alpha
+            FragColor = vec4(color.rgb, 1.f);
+            break;
+        case 5:
+        default: // Show all channels -- default
+            FragColor = color;
+    }
 }
 )";
 

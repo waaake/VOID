@@ -25,6 +25,7 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     , m_Exposure(1.f)
     , m_Gamma(1.f)
     , m_Gain(1.f)
+    , m_ChannelMode(ChannelMode::RGBA)
     , m_ZoomFactor(1.f)
     , m_TranslateX(0.f)
     , m_TranslateY(0.f)
@@ -190,6 +191,11 @@ void VoidRenderer::paintGL()
          * Can be used befor or after exposure or gamma correction
          */
         SetUniform("gain", m_Gain);
+
+        /**
+         * Update the channels to be displayed on the renderer
+         */
+        SetUniform("channelMode", static_cast<int>(m_ChannelMode));
 
         /* Bind texture */
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -495,6 +501,15 @@ void VoidRenderer::SetGamma(const float gamma)
 void VoidRenderer::SetGain(const float gain)
 {
     m_Gain = gain;
+    /* Redraw the texture */
+    update();
+}
+
+void VoidRenderer::SetChannelMode(int mode)
+{
+    /* Update the channel mode for the Renderer */
+    m_ChannelMode = static_cast<ChannelMode>(mode);
+
     /* Redraw the texture */
     update();
 }

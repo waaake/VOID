@@ -24,6 +24,18 @@ VOID_NAMESPACE_OPEN
 
 class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
 {
+public: /* Enums */
+
+    enum class ChannelMode : int
+    {
+        RED,    // Show the Red Channel
+        GREEN,  // The Green channel
+        BLUE,   // The Blue channel
+        ALPHA,  // Alpha Channel
+        RGB,    // RGB Channels leaving alpha out
+        RGBA    // RGBA or all channels mostly
+    };
+
 private: /* Members */
     QOpenGLTexture* m_Texture;
     SharedPixels m_ImageData;
@@ -49,6 +61,11 @@ public:
     void SetExposure(const float exposure);
     void SetGamma(const float gamma);
     void SetGain(const float gain);
+
+    /**
+     * Set the channels to be displayed on the Viewer
+     */
+    void SetChannelMode(int mode);
 
     /*
      * Set a Message to be displayed on the Renderer
@@ -93,6 +110,9 @@ private: /* Members */
      * Gain
      */
     float m_Exposure, m_Gamma, m_Gain;
+
+    /* Channels to display on the viewport */
+    ChannelMode m_ChannelMode;
 
     RendererStatusBar* m_RenderStatus;
     RendererDisplayLabel* m_DisplayLabel;
