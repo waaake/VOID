@@ -18,4 +18,7 @@
 #define VOID_API __attribute__((visibility("default")))
 #endif // defined(_WIN32) || defined(__CYGWIN__)
 
+/* type definitions */
+typedef int64_t v_frame_t; // Represents a frame number or something to hold a frame duration
+
 #endif // _VOID_BASIC_DEFINITIONS_H

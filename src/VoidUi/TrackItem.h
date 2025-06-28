@@ -27,7 +27,7 @@ class TrackItem : public VoidObject
 
 public:
     TrackItem(QObject* parent = nullptr);
-    TrackItem(const SharedMediaClip& media, int start, int end, int offset = 0, QObject* parent = nullptr);
+    TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset = 0, QObject* parent = nullptr);
 
     virtual ~TrackItem();
 
@@ -41,9 +41,9 @@ public:
      * TrackItem Range: 1 - 10
      * Offset: 1000
      */
-    void SetMedia(const SharedMediaClip& media, int offset = 0);
+    void SetMedia(const SharedMediaClip& media, v_frame_t offset = 0);
 
-    void SetRange(int start, int end);
+    void SetRange(v_frame_t start, v_frame_t end);
 
     inline void SetColor(const QColor& color) { m_Media->SetColor(color); }
 
@@ -54,16 +54,16 @@ public:
     void Cache();
 
     /* Getters */
-    inline int GetOffset() const { return m_Offset; }
+    inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
 
     /**
      * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
      */
-    SharedPixels GetImage(const int frame);
+    SharedPixels GetImage(const v_frame_t frame);
 
-    inline int StartFrame() const { return m_StartFrame; }
-    inline int EndFrame() const { return m_EndFrame; }
+    inline v_frame_t StartFrame() const { return m_StartFrame; }
+    inline v_frame_t EndFrame() const { return m_EndFrame; }
 
     /**
      * Returns whether the given frame is in range of the underlying media
@@ -71,7 +71,7 @@ public:
      * 
      * TODO: Consider handle frames when they are implemented.
      */
-    inline bool HasFrame(const int frame) const { return m_Media->HasFrame(frame + m_Offset); }
+    inline bool HasFrame(const v_frame_t frame) const { return m_Media->HasFrame(frame + m_Offset); }
 
     /**
      * Returns the nearest frame of a given frame from the media in TrackItem space
@@ -82,11 +82,11 @@ public:
      * 
      * TODO: See if we can improve our logic to get a frame value or Image Data directly?
      */
-    inline int NearestFrame(const int frame) const { return m_Media->NearestFrame(frame + m_Offset) - m_Offset; }
+    inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media->NearestFrame(frame + m_Offset) - m_Offset; }
 
     /* TODO: Cache the First frame and last frame for Media in that class */
-    inline int MediaFirstFrame() const { return m_Media->FirstFrame(); }
-    inline int MediaLastFrame() const { return m_Media->LastFrame(); }
+    inline v_frame_t MediaFirstFrame() const { return m_Media->FirstFrame(); }
+    inline v_frame_t MediaLastFrame() const { return m_Media->LastFrame(); }
 
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
     inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
@@ -103,21 +103,21 @@ signals: /* Signals denoting Actions in the TrackItem */
      * Emitted when the time range of the track item has changed
      * includes the start and end frame of the track item
      */
-    void rangeChanged(int start, int end);
+    void rangeChanged(v_frame_t start, v_frame_t end);
 
     /**
      * Emitted when a frame is cached
      * The cache could happen when the media cache operation is run continuously on a thread
      * Or if the frame is queried by the viewport
      */
-    void frameCached(int frame);
+    void frameCached(v_frame_t frame);
 
 protected: /* Members */
     SharedMediaClip m_Media;
-    int m_Offset;
+    v_frame_t m_Offset;
 
-    int m_StartFrame;
-    int m_EndFrame;
+    v_frame_t m_StartFrame;
+    v_frame_t m_EndFrame;
 };
 
 VOID_NAMESPACE_CLOSE

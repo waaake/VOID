@@ -16,12 +16,14 @@ add_library(
     # Media Readers
     Readers/OIIOReader.cpp
     Readers/OpenEXRReader.cpp
+    Readers/FFmpegReader.cpp
 )
 
 target_include_directories(
     VoidCore
     PRIVATE
     ${Boost_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 # Link to this library
@@ -31,6 +33,7 @@ target_link_libraries(
     Imath::Imath
     OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
+    ${FFMPEG_LIBRARIES}
 )
 
 # Export symbols for windows

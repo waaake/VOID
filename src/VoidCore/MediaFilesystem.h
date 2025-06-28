@@ -52,13 +52,14 @@ public:
     inline std::string Basepath() const { return m_Basepath; }
     inline std::string Name() const { return m_Name; }
     inline std::string Extension() const { return m_Extension; }
-    inline int Framenumber() const { return m_Framenumber; }
+    inline v_frame_t Framenumber() const { return m_Framenumber; }
     
     /**
      * Returns True if the Media does not have a frame number on it to denote that this
      * file is a separate single entity
      */
-    [[nodiscard]] inline bool IsSingleFile() const { return m_SingleFile; }
+    [[nodiscard]] inline bool SingleFile() const { return m_SingleFile; }
+    [[nodiscard]] inline bool Valid() const { return not m_Path.empty(); }
 
     /**
      * Validates and returns true if the other entry is similar to this
@@ -84,7 +85,7 @@ private: /* Members */
     /**
      *  Not All files would have this
      */
-    int m_Framenumber;
+    v_frame_t m_Framenumber;
 
     /**
      * Media is a single file and only has frame sequences
@@ -212,17 +213,26 @@ public:
     std::string Basepath() const;
 
     std::string FirstPath() const;
-    [[nodiscard]] bool IsSingleFile() const;
+    [[nodiscard]] bool SingleFile() const;
 
     /**
      * Returns whether the media struct is currently empty
      */
-    inline bool Empty() const { return m_Entries.empty(); }
+    [[nodiscard]] inline bool Empty() const { return m_Entries.empty(); }
 
     /**
      * Returns if the MediaStruct is a valid Media Type
      */
     inline bool ValidMedia() const { return (m_MediaType == MediaType::Image) || (m_MediaType == MediaType::Movie); }
+
+    /**
+     * Returns an empty entry if the struct is empty
+     * else returns the first entry from the map (which isn't guaranteed to be same unless it's a single file)
+     * TODO: Check on it's usecase on how this evolves, generally it should be used only for single files
+     * but could have a potential usecase for multi files as well like an image sequence else the underlying
+     * struct needs to be ordered map
+     */
+    MEntry First() const;
 
     inline MediaType Type() const { return m_MediaType; }
 
@@ -233,8 +243,8 @@ public:
     static MediaStruct FromFile(const std::string& filepath);
 
 private: /* Members */
-    std::vector<int> m_Frames;
-    std::unordered_map<int, MEntry> m_Entries;
+    std::vector<v_frame_t> m_Frames;
+    std::unordered_map<v_frame_t, MEntry> m_Entries;
 
     /* The kind of media */
     MediaType m_MediaType;
@@ -255,7 +265,7 @@ private: /* Iterator */
      */
     class Iterator
     {
-        using Iter = std::unordered_map<int, MEntry>::const_iterator;
+        using Iter = std::unordered_map<v_frame_t, MEntry>::const_iterator;
         Iter it;
 
     public:
