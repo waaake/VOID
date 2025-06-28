@@ -186,13 +186,13 @@ void ControlBar::Setup()
     /**
      * Exposure Controller
      */
-    m_ExposureController->setMinimum(0.5f);
-    m_ExposureController->setMaximum(2.f);
+    m_ExposureController->setMinimum(-5.f);
+    m_ExposureController->setMaximum(5.f);
     m_ExposureController->setSingleStep(0.1f);
     m_ExposureController->setDecimals(1);
 
     /* Default */
-    m_ExposureController->setValue(1.f);
+    m_ExposureController->setValue(0.f);
 
     /**
      * Gamma Controller
@@ -250,7 +250,7 @@ void ControlBar::Connect()
     connect(m_GainController, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::gainChanged);
 
     /* Channel Mode controller */
-    connect(m_ChannelModeController, &QComboBox::currentIndexChanged, this, &ControlBar::channelModeChanged);
+    connect(m_ChannelModeController, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged), this, &ControlBar::channelModeChanged);
 
     /* Viewer Buffer Switch */
     connect(m_BufferSwitch, &BufferSwitch::switched, this, &ControlBar::viewerBufferSwitched);

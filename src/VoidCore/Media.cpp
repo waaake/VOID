@@ -16,7 +16,7 @@ Frame::Frame(const MEntry& e)
 {
 }
 
-Frame::Frame(const MEntry& e, int frame)
+Frame::Frame(const MEntry& e, v_frame_t frame)
     : m_MediaEntry(e)
     , m_Framenumber(frame)
 {
@@ -52,7 +52,7 @@ void Frame::Cache()
     if (m_ImageData->Empty())
     {
         m_ImageData->Read(m_MediaEntry.Fullpath(), m_Framenumber);
-        VOID_LOG_INFO("Cached Frame: {0}", m_MediaEntry.Framenumber());
+        VOID_LOG_INFO("Cached Frame: {0}", m_Framenumber);
     }
 }
 
@@ -61,13 +61,29 @@ void Frame::ClearCache()
     if (!m_ImageData->Empty())
     {
         m_ImageData->Clear();
-        VOID_LOG_INFO("Cleared Frame Cache: {0}", m_MediaEntry.Framenumber());
+        VOID_LOG_INFO("Cleared Frame Cache: {0}", m_Framenumber);
     }
+}
+
+MovieFrame::MovieFrame(const MEntry& e, const v_frame_t frame)
+{
+    /* Update the entry */
+    m_MediaEntry = e;
+    /* The frame */
+    m_Framenumber = frame;
+
+    /**
+     * And get the Reader
+     * As of today there isn't a usecase to hold the movie reader in the Movie frame
+     * as a SharedMPixReader as all the bits about reading are same
+     */
+    m_ImageData = std::move(Forge::Instance().GetMovieReader(m_MediaEntry.Extension()));
 }
 
 Media::Media()
     : m_FirstFrame(-1)
     , m_LastFrame(-1)
+    , m_Framerate(24.0)
     , m_Type(Type::UNDEFINED)
     , m_Caching(false)
     , m_StopCaching(false)
@@ -75,6 +91,7 @@ Media::Media()
 }
 
 Media::Media(const MediaStruct& mstruct)
+    : Media()
 {
     Read(mstruct);
 }
@@ -97,7 +114,7 @@ void Media::UpdateRange()
     m_LastFrame = m_Framenumbers.back();
 }
 
-int Media::NearestFrame(const int frame) const
+v_frame_t Media::NearestFrame(const v_frame_t frame) const
 {
     /* We need the lower bound of the given frame available in the vector */
     auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
@@ -108,7 +125,7 @@ int Media::NearestFrame(const int frame) const
         return *(--it);
     }
 
-    /* 
+    /**
      * As the provided frame is lower than the first frame,
      * The most natural nearest frame to it is the first frame
      */
@@ -124,7 +141,8 @@ void Media::Read(const MediaStruct& mstruct)
      * Check if we have a Plugin reader for the file format
      * If not -> we can't proceed
      */
-    if (!Forge::Instance().GetImageReader(mstruct.Extension()))
+    Forge& f = Forge::Instance();
+    if (!(f.GetImageReader(mstruct.Extension()) || f.GetMovieReader(mstruct.Extension())))
     {
         VOID_LOG_WARN("No Media Reader found for type {0}", mstruct.Extension());
         return;
@@ -152,7 +170,34 @@ void Media::Read(const MediaStruct& mstruct)
 
 void Media::ProcessMovie(const MediaStruct& mstruct)
 {
+    /* Get the First entry since it is a Single File Movie */
+    MEntry entry = mstruct.First();
 
+    if (!entry.Valid())
+        return;
+
+    /* Media Reader */
+    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(mstruct.Extension());
+
+    /* Get the frame information */
+    r->UpdatePath(entry.Fullpath());
+
+    MFrameRange frange = r->Framerange();
+    VOID_LOG_INFO("Movie Media Range: {0}-{1}", frange.startframe, frange.endframe);
+
+    /* Update internal framerate */
+    m_Framerate = r->Framerate();
+
+    /* Add each of the Frame with the same entry and the varying frame number */
+    for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
+    {
+        /* Update internal structures with the frame information */
+        m_Mediaframes[i] = MovieFrame(entry, i);
+        m_Framenumbers.push_back(i);
+    }
+
+    /* Update internal frame range based on the frames read */
+    UpdateRange();
 }
 
 void Media::Cache()
@@ -161,7 +206,7 @@ void Media::Cache()
     m_Caching = true;
 
     /* For all the frames in the media frames */
-    for (std::pair<int, Frame> it: m_Mediaframes)
+    for (std::pair<v_frame_t, Frame> it: m_Mediaframes)
     {
         /* Check if we're supposed to stop caching frames further */
         if (m_StopCaching)
@@ -182,7 +227,7 @@ void Media::Cache()
 void Media::ClearCache()
 {
     /* For all the frames in the media frames */
-    for (std::pair<int, Frame> it: m_Mediaframes)
+    for (std::pair<v_frame_t, Frame> it: m_Mediaframes)
     {
         /* Clear the Data for the Frame from the memory */
         it.second.ClearCache();

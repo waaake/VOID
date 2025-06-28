@@ -49,7 +49,7 @@ public:
     inline QColor Color() const { return m_Color; }
 
     /* Overloading Base Media functions to allow frameCached be emit */
-    inline SharedPixels Image(const int frame)
+    inline SharedPixels Image(const v_frame_t frame)
     { 
         /* Emit that the frame was cached */
         emit frameCached(frame);
@@ -66,7 +66,7 @@ public:
     void Cache()
     {
         /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
-        for (std::pair<const int, Frame>& it: m_Media)
+        for (std::pair<const v_frame_t, Frame>& it: m_Media)
         {
             /* Cache the data for the frame */
             it.second.Cache();
@@ -79,30 +79,30 @@ public:
     /* Exposed Media Function Accessors */
     inline std::string Name() const { return m_Media.Name(); }
     inline std::string Extension() const { return m_Media.Extension(); }
-    inline int FirstFrame() const { return m_Media.FirstFrame(); }
-    inline int LastFrame() const { return m_Media.LastFrame(); }
+    inline v_frame_t FirstFrame() const { return m_Media.FirstFrame(); }
+    inline v_frame_t LastFrame() const { return m_Media.LastFrame(); }
 
-    inline int Duration() const { return (LastFrame() - FirstFrame()) + 1; }
+    inline v_frame_t Duration() const { return (LastFrame() - FirstFrame()) + 1; }
 
     /*
      * Returns whether a given frame falls in the range of Media
      * i.e. between the first and the last frame of media
      * Any frame missing does not matter as this method only returns whether a frame is in the range or not
      */
-    [[nodiscard]] inline bool HasFrame(const int frame) const { return m_Media.HasFrame(frame); }
+    [[nodiscard]] inline bool HasFrame(const v_frame_t frame) const { return m_Media.HasFrame(frame); }
 
     /* 
      * Returns whether a given frame is available to read
      * There could be a scenario where the given frame is in the range of first - last but is not available
      * and is referred to as the missing frame.
      */
-    [[nodiscard]] inline bool Contains(const int frame) const { return m_Media.Contains(frame); }
+    [[nodiscard]] inline bool Contains(const v_frame_t frame) const { return m_Media.Contains(frame); }
 
     /*
      * Based on the available frames, returns the frame which is just lower than the provided frame
      * This is used when the current frame is not available but we want the neartest frame to be used in it's place
      */
-    inline int NearestFrame(const int frame) const { return m_Media.NearestFrame(frame); };
+    inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media.NearestFrame(frame); };
 
     inline Frame FirstFrameData() const { return m_Media.FirstFrameData(); }
     inline Frame LastFrameData() const { return m_Media.LastFrameData(); }
@@ -136,7 +136,7 @@ signals: /* Signals defining any change that has happened */
      * The cache could happen when the media cache operation is run continuously on a thread
      * Or if the frame is queried by the viewport
      */
-    void frameCached(int frame);
+    void frameCached(v_frame_t frame);
 
 private: /* Members */
     /* The Media it holds for playback */

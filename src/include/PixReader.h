@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "FrameRange.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -40,7 +41,9 @@ VOID_NAMESPACE_OPEN
 
 /* Typedefs */
 class VoidPixReader;    // forward decl for the typedef
+class VoidMPixReader;
 typedef std::shared_ptr<VoidPixReader> SharedPixels;
+typedef std::shared_ptr<VoidMPixReader> SharedMPixels;
 
 class VoidPixReader
 {
@@ -98,6 +101,26 @@ public:
      * updates the underlying struct with the data
      */
     virtual void Read(const std::string& path, int framenumber) = 0;
+};
+
+class VoidMPixReader : public VoidPixReader
+{
+public:
+    /**
+     * Updates the internal filepath to process information when needed
+     */
+    virtual void UpdatePath(const std::string& path) = 0;
+
+    /**
+     * Returns the frame range information of the Movie media
+     */
+    virtual MFrameRange Framerange() = 0;
+
+    /**
+     * Returns the framerate of the movie media
+     */
+    virtual double Framerate() = 0;
+
 };
 
 VOID_NAMESPACE_CLOSE

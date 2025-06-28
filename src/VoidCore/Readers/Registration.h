@@ -11,6 +11,7 @@
 #include "FormatForge.h"
 #include "OIIOReader.h"
 #include "OpenEXRReader.h"
+#include "FFmpegReader.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -49,6 +50,9 @@ struct OIIOReaderPlugin
         /* jpg */
         Forge::Instance().RegisterImageReader("jpg", []() { return std::make_unique<OIIOPixReader>(); });
 
+        /* jpeg */
+        Forge::Instance().RegisterImageReader("jpeg", []() { return std::make_unique<OIIOPixReader>(); });
+
         /* JPEG */
         Forge::Instance().RegisterImageReader("JPEG", []() { return std::make_unique<OIIOPixReader>(); });
 
@@ -59,21 +63,19 @@ struct OpenEXRReaderPlugin
 {
     OpenEXRReaderPlugin()
     {
-        /**
-         * OIIO Image Reader supports a Bunch of Image formats
-         * Adding all of them
-         */
-
-        /**
-         * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
-         * We could go for a tolower but the case might have unnecessary copies going for each extension
-         * and for each of the frame that's from the source which looks too expensive at the moment
-         * 
-         * TODO: have a thought about this again at a later stage to see if we can do something better than this
-         */
-
-        /* PNG */
+        /* exr */
         Forge::Instance().RegisterImageReader("exr", []() { return std::make_unique<OpenEXRReader>(); });
+    }
+};
+
+struct FFmpegReaderPlugin
+{
+    FFmpegReaderPlugin()
+    {
+        /* mp4 */
+        Forge::Instance().RegisterMovieReader("mp4", []() { return std::make_unique<FFmpegPixReader>(); });
+        /* mov */
+        Forge::Instance().RegisterMovieReader("mov", []() { return std::make_unique<FFmpegPixReader>(); });
     }
 };
 
@@ -90,6 +92,9 @@ VOID_API void RegisterReaders()
 
     /* Register OpenEXR Reader */
     OpenEXRReaderPlugin openx;
+
+    /* FFmpeg Reader */
+    FFmpegReaderPlugin f;
 }
 
 VOID_NAMESPACE_CLOSE
