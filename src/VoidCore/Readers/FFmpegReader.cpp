@@ -154,7 +154,7 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
     int retryCount = 0;
 
     /* Retry seeking for 3 times before giving up */
-    while (!found || retryCount > 3)
+    while (!found && retryCount < 3)
     {
         /* Decode the next frame and it returns back either a negative value or the decoded frame */
         v_frame_t ret = DecodeNextFrame();
@@ -162,8 +162,10 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
         /**
          * Then we check if the return value was greater than the requested frame
          * if so, we might need to seek back and try again (max 3 times)
+         * 
+         * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
          */
-        if (ret > framenumber)
+        if (ret > framenumber || ret == -1)
         {
             /* Seek */
             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
@@ -178,11 +180,6 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
         {
             /* We found the frame */
             found = true;
-            break;
-        }
-        else if (ret == -1)
-        {
-            /* Can't read the frame and it makes no sense to retry this any more */
             break;
         }
     }
@@ -323,7 +320,7 @@ void FFmpegPixReader::Read(const std::string& path, int framenumber)
 
     /**
      * Once the decoding for the frame is completed
-     * Swap the needed frame data with undelying pixel struct
+     * Swap the needed frame data with empty undelying pixel struct
      */
     std::swap(decoder.GetData(framenumber), m_Pixels);
 
