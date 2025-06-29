@@ -81,6 +81,12 @@ private: /* Methods */
     void Close();
 
     std::vector<unsigned char>& GetVector(const int frame);
+
+    /**
+     * Decodes the next frame from the movie container
+     * returns back the frame number (converted from av time base to signed long)
+     */
+    v_frame_t DecodeNextFrame();
 };
 
 

@@ -119,7 +119,6 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
     /* The framenumber was already decoded as stored */
     if (!GetVector(framenumber).empty())
     {
-        // VOID_LOG_INFO("Already Decoded..");
         return;
     }
 
@@ -150,47 +149,76 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
      */
     m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
-    /**
-     * Seek
-     */
-    // int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
-    /* Seek the closest keyframe before the framenumber */
-    // av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
-    // avformat_seek_file(formatContext, m_StreamID, INT64_MIN, seek_pts, seek_pts, AVSEEK_FLAG_BACKWARD);
-    // avcodec_flush_buffers(m_CodecContext);
-
     /* Now we start */
     bool found = false;
+    int retryCount = 0;
 
-    while (av_read_frame(m_FormatContext, m_Packet) >= 0 && !found)
+    /* Retry seeking for 3 times before giving up */
+    while (!found && retryCount < 3)
     {
-        /* Only for the stream we're reading */
-        if (m_Packet->stream_index == m_StreamID)
+        /* Decode the next frame and it returns back either a negative value or the decoded frame */
+        v_frame_t ret = DecodeNextFrame();
+
+        /**
+         * Then we check if the return value was greater than the requested frame
+         * if so, we might need to seek back and try again (max 3 times)
+         * 
+         * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
+         */
+        if (ret > framenumber || ret == -1)
         {
-            avcodec_send_packet(m_CodecContext, m_Packet);
-            while (avcodec_receive_frame(m_CodecContext, m_Frame) == 0)
-            {
-                int64_t currentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
-                sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+            /* Seek */
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            /* Seek the closest keyframe before the framenumber */
+            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
+            avcodec_flush_buffers(m_CodecContext);
 
-                /* The data has been updated on the buffer */
-                // std::swap(m_Pixels, GetVector(currentFrame));
-                std::vector<unsigned char>& v = GetVector(currentFrame);
-                v = m_Pixels;
-
-                /* Found the matching frame --> stop here */
-                if (currentFrame == framenumber)
-                {
-                    found = true;
-                    break;
-                }
-                /* Update the current frame*/
-                m_CurrentFrame++;
-            }
+            /* Increment the retry count */
+            retryCount++;
         }
-        /* Dereference the buffer */
-        av_packet_unref(m_Packet);
+        else if (ret == framenumber)
+        {
+            /* We found the frame */
+            found = true;
+            break;
+        }
     }
+}
+
+v_frame_t FFmpegDecoder::DecodeNextFrame()
+{
+    /* Read the next frame from the packet */
+    int status = av_read_frame(m_FormatContext, m_Packet);
+
+    /* Indicates a Read failure */
+    if (status < 0)
+        return -1;
+
+    /* Indicates just a stream mismatch and can continue back */
+    if (m_Packet->stream_index != m_StreamID)
+        return -2;
+
+    /* Send the packet */
+    avcodec_send_packet(m_CodecContext, m_Packet);
+    /* Recieve back the frame */
+    status = avcodec_receive_frame(m_CodecContext, m_Frame);
+
+    /* Check if we can proceed further */
+    if (status != 0)
+        return -3;
+
+    int64_t currentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
+    sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+
+    // VOID_LOG_INFO("FRAME--> {0}", currentFrame);
+    std::vector<unsigned char>& v = GetVector(currentFrame);
+    v = m_Pixels;
+
+    /* Dereference the buffer */
+    av_packet_unref(m_Packet);
+
+    /* The decoded frame number*/
+    return currentFrame;
 }
 
 /* }}} */
@@ -257,7 +285,7 @@ void FFmpegPixReader::ProcessInformation()
     m_Framerate = av_q2d(framerate);
 
     /* Update the range */
-    m_Duration = seconds * m_Framerate;
+    m_Duration = (seconds * m_Framerate) - 1; // There is always a frame extra (atleast at 60fps, so need to confirm this and check on as well)
     m_Startframe = av_rescale_q(formatContext->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
     m_Endframe = m_Duration - 1;
 
@@ -292,7 +320,7 @@ void FFmpegPixReader::Read(const std::string& path, int framenumber)
 
     /**
      * Once the decoding for the frame is completed
-     * Swap the needed frame data with undelying pixel struct
+     * Swap the needed frame data with empty undelying pixel struct
      */
     std::swap(decoder.GetData(framenumber), m_Pixels);
 
