@@ -503,6 +503,12 @@ void Timeline::Build()
 	m_LoopTypeButton = new LoopTypeButton;
 	m_LoopTypeButton->setFixedWidth(MEDIUM_BUTTON_WIDTH);
 
+	/* Fullscreen Button */
+	m_FullscreenButton = new QPushButton;
+	m_FullscreenButton->setIcon(QIcon(":resources/icons/icon_fullscreen.svg"));
+	m_FullscreenButton->setFlat(true);
+	m_FullscreenButton->setFixedWidth(SMALL_BUTTON_WIDTH);
+
 	/* Timing */
 	m_TimeDisplay = new QLineEdit;
 	m_TimeDisplay->setReadOnly(true);
@@ -528,7 +534,6 @@ void Timeline::Build()
 	optionsLayout->insertStretch(3, 1);
 
 	/* Buttons */
-	optionsLayout->addWidget(m_LoopTypeButton);
 	optionsLayout->addWidget(m_InFrameButton);
 
 	playoptsLayout->addWidget(m_StartFrameButton);
@@ -542,6 +547,8 @@ void Timeline::Build()
 	optionsLayout->addLayout(playoptsLayout);
 
 	optionsLayout->addWidget(m_OutFrameButton);
+	optionsLayout->addWidget(m_LoopTypeButton);
+	optionsLayout->addWidget(m_FullscreenButton);
 
 	/* Timeslider */
 	m_Timeslider = new Timeslider(Qt::Horizontal);
@@ -576,6 +583,7 @@ void Timeline::Connect()
 	connect(m_OutFrameButton, &QPushButton::clicked, this, &Timeline::ResetOutFrame);
 
 	connect(m_LoopTypeButton, &LoopTypeButton::loopTypeChanged, this, [this](const LoopType& looptype) { m_LoopType = looptype; });
+	connect(m_FullscreenButton, &QPushButton::clicked, this, &Timeline::fullscreenRequested);
 }
 
 void Timeline::Setup()

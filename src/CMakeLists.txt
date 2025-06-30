@@ -84,6 +84,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_restore.svg
             ../icons/icon_zoom_in.svg
             ../icons/icon_zoom_out.svg
+            ../icons/icon_fullscreen.svg
     )
 endif()
 

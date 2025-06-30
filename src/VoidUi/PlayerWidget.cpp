@@ -1,14 +1,60 @@
 /* Qt */
-#include <QLayout>
+#include <QKeyEvent>
 
 /* Internal */
 #include "PlayerWidget.h"
 
 VOID_NAMESPACE_OPEN
 
+/* RenderFSWidget {{{ */
+RenderFSWidget::RenderFSWidget(QWidget* parent)
+    : QWidget(parent)
+{
+    /* Internal Layout */
+    m_Layout = new QHBoxLayout(this);
+    /* Setup 0 margins so the renderer occupies everything fully */
+    m_Layout->setContentsMargins(0, 0, 0, 0);
+}
+
+void RenderFSWidget::SetRenderer(VoidRenderer* renderer)
+{
+    renderer->setParent(this);
+    m_Layout->addWidget(renderer);
+}
+
+void RenderFSWidget::keyPressEvent(QKeyEvent* event)
+{
+    switch (event->key())
+    {
+        case Qt::Key_Escape:
+            emit exitView();
+            break;
+        case Qt::Key_Period:
+            emit moveForward();
+            break;
+        case Qt::Key_Comma:
+            emit moveBackward();
+            break;
+        case Qt::Key_J:
+            emit playBackwards();
+            break;
+        case Qt::Key_K:
+            emit stop();
+            break;
+        case Qt::Key_L:
+            emit playForwards();
+            break;
+    }
+
+    /* Default Key presses */
+    QWidget::keyPressEvent(event);
+}
+/* }}} */
+
 Player::Player(QWidget* parent)
     : QWidget(parent)
     , m_MFrameHandler(MissingFrameHandler::BLACK_FRAME)
+    , m_Fullscreen(false)
 {
     /* Init the Viewer Buffer */
     m_ViewBufferA = new ViewerBuffer("A");
@@ -50,8 +96,10 @@ Player::~Player()
 
 void Player::Connect()
 {
-    /* Timeslider - TimeChange -> Player - SetFrame */
+    /* Timeline - TimeChange -> Player - SetFrame */
     connect(m_Timeline, &Timeline::TimeChanged, this, &Player::SetFrame);
+    /* Timeline - fullscreenRequested -> Player - SetRendererFullscreen */
+    connect(m_Timeline, &Timeline::fullscreenRequested, this, &Player::SetRendererFullscreen);
 
     /* ControlBar - ZoomChange -> Renderer - UpdateZoom */
     connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::UpdateZoom);
@@ -74,6 +122,10 @@ void Player::Build()
     /* Base layout for the widget */
     QVBoxLayout* layout = new QVBoxLayout(this);
 
+    /* Renderer's house */
+    m_RendererLayout = new QVBoxLayout;
+    m_RendererLayout->setContentsMargins(0, 0, 0, 0);
+
     /* Instantiate widgets */
     m_ControlBar = new ControlBar(m_ViewBufferA, m_ViewBufferB, this);
     m_Renderer = new VoidRenderer(this);
@@ -86,7 +138,10 @@ void Player::Build()
      * Then comes the Timeslider which holds any controls for playback
      */
     layout->addWidget(m_ControlBar);
-    layout->addWidget(m_Renderer);
+    /* Add to the Renderer Layout */
+    m_RendererLayout->addWidget(m_Renderer);
+    layout->addLayout(m_RendererLayout);
+
     layout->addWidget(m_Timeline);
 
     /* Spacing */
@@ -324,6 +379,43 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
 
     /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+}
+
+void Player::SetRendererFullscreen()
+{
+    /* Create A Fullscreen Render Widget which is capable of holding the renderer */
+    m_FullscreenRenderer = new RenderFSWidget;
+    m_FullscreenRenderer->SetRenderer(m_Renderer);
+
+    /* Connect to exit fullscreen */
+    connect(m_FullscreenRenderer, &RenderFSWidget::exitView, this, &Player::ExitFullscreenRenderer);
+    /* Connect Play Controls */
+    connect(m_FullscreenRenderer, &RenderFSWidget::playForwards, this, &Player::PlayForwards);
+    connect(m_FullscreenRenderer, &RenderFSWidget::playBackwards, this, &Player::PlayBackwards);
+    connect(m_FullscreenRenderer, &RenderFSWidget::stop, this, &Player::Stop);
+    connect(m_FullscreenRenderer, &RenderFSWidget::moveForward, this, &Player::NextFrame);
+    connect(m_FullscreenRenderer, &RenderFSWidget::moveBackward, this, &Player::PreviousFrame);
+
+    /* Show the Renderer in fullscreen view */
+    m_FullscreenRenderer->showFullScreen();
+    /* Set fullscreen to true */
+    m_Fullscreen = true;
+}
+
+void Player::ExitFullscreenRenderer()
+{
+    /* Reset the parent of the Renderer back to this widget */
+    m_Renderer->setParent(this);
+
+    /* Once that is done, we can delete the RenderFSWidget */
+    m_FullscreenRenderer->deleteLater();
+    delete m_FullscreenRenderer;
+    m_FullscreenRenderer = nullptr;
+
+    /* Add the renderer back */
+    m_RendererLayout->addWidget(m_Renderer);
+    /* We're back normal screened */
+    m_Fullscreen = false;
 }
 
 VOID_NAMESPACE_CLOSE

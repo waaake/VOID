@@ -15,5 +15,6 @@
         <file>../icons/icon_restore.svg</file>
         <file>../icons/icon_zoom_in.svg</file>
         <file>../icons/icon_zoom_out.svg</file>
+        <file>../icons/icon_fullscreen.svg</file>
     </qresource>
 </RCC>
