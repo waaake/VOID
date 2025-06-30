@@ -83,17 +83,19 @@ void main() {
 
 VoidShader::VoidShader()
 {
-    /* Construct a program to be used */
-    m_Shader = new QOpenGLShaderProgram;
 }
 
 VoidShader::~VoidShader()
 {
-    m_Shader->deleteLater();
+    if (m_Shader)
+        m_Shader->deleteLater();
 }
 
 void VoidShader::Initialize()
 {
+    /* Construct a program to be used */
+    m_Shader = new QOpenGLShaderProgram;
+
     /* Try and Initialize Glew */
     unsigned int status = glewInit();
 
