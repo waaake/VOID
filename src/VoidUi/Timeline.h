@@ -168,6 +168,8 @@ private: /* Members */
 	/* Loop State Button - Indicates the current playback loop type */
 	LoopTypeButton* m_LoopTypeButton;
 
+	QPushButton* m_FullscreenButton;
+
 	QPushButton* m_StopButton;
 
 	/* Internal timeslider */
@@ -264,6 +266,7 @@ signals:
 	void PlayedForwards();
 	void PlayedBackwards();
 	void TimeChanged(int time);
+	void fullscreenRequested();
 };
 
 VOID_NAMESPACE_CLOSE

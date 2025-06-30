@@ -135,6 +135,7 @@ private: /* Members */
     QAction* m_ZoomInAction;
     QAction* m_ZoomOutAction;
     QAction* m_ZoomToFitAction;
+    QAction* m_FullscreenAction;
 
     /* Window Menu */
     QMenu* m_WindowMenu;

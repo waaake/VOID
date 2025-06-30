@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QWidget>
+#include <QLayout>
 
 /* Internal */
 #include "ControlBar.h"
@@ -15,6 +16,41 @@
 #include "VoidRenderer/Renderer.h"
 
 VOID_NAMESPACE_OPEN
+
+class RenderFSWidget : public QWidget
+{
+    Q_OBJECT
+
+public:
+    RenderFSWidget(QWidget* parent = nullptr);
+
+    /**
+     * Sets the renderer's parent onto this widget
+     * Set the renderer in this widget's layout
+     */
+    void SetRenderer(VoidRenderer* renderer);
+
+signals:
+    /**
+     * Signals controlling the playback for the media
+     */
+    void playForwards();
+    void stop();
+    void playBackwards();
+    void moveBackward();
+    void moveForward();
+
+    /* Exit this view and back to normal */
+    void exitView();
+
+protected:
+    /* Override the key presses to trigger signals */
+    void keyPressEvent(QKeyEvent* event) override;
+
+private: /* Members */
+    QHBoxLayout* m_Layout;
+
+};
 
 class Player : public QWidget
 {
@@ -50,6 +86,14 @@ public:
     }
 
     inline SharedPlaybackTrack GetTrack() const { return m_ActiveViewBuffer->GetTrack(); }
+
+    /* Fullscreen Renderer */
+    void SetRendererFullscreen();
+    void ExitFullscreenRenderer();
+    /**
+     * Returns whether the player is currently fullscreen or not
+     */
+    [[nodiscard]] inline bool Fullscreen() { return m_Fullscreen; }
 
     /* Loads a Playable Media (clip) on the Player */
     void Load(const SharedMediaClip& media);
@@ -176,6 +220,13 @@ private:  /* Members */
 
     /* Holds the Mode of representing Missing Frames */
     MissingFrameHandler m_MFrameHandler;
+
+    /* Internal Layout to hold Renderer -- For when the renderer has returned from it's fullscreen view */
+    QVBoxLayout* m_RendererLayout;
+
+    /* The Widget to house the fullscreen renderer */
+    RenderFSWidget* m_FullscreenRenderer;
+    bool m_Fullscreen;
 };
 
 VOID_NAMESPACE_CLOSE

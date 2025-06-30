@@ -36,7 +36,7 @@ DockerWindow::~DockerWindow()
 void DockerWindow::Build()
 {
     /* Player */
-    m_Player = new Player();
+    m_Player = new Player(this);
 
     /* Media Lister Widget */
     m_MediaLister = new VoidMediaLister(this);
@@ -264,9 +264,13 @@ void VoidMainWindow::Build()
     m_ZoomToFitAction = new QAction("Zoom to Fit");
     m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
 
+    m_FullscreenAction = new QAction("Show Fullscreen");
+    m_FullscreenAction->setShortcut(QKeySequence("Ctrl+F"));
+
     m_ViewerMenu->addAction(m_ZoomInAction);
     m_ViewerMenu->addAction(m_ZoomOutAction);
     m_ViewerMenu->addAction(m_ZoomToFitAction);
+    m_ViewerMenu->addAction(m_FullscreenAction);
     /* }}} */
 
     /* Window Menu {{{ */
@@ -301,7 +305,15 @@ void VoidMainWindow::Connect()
     /* Title Bar Actions */
     connect(m_TitleBar, &VoidTitleBar::requestMinimize, this, &QWidget::showMinimized);
     connect(m_TitleBar, &VoidTitleBar::requestMaximizeRestore, this, [this]() { isMaximized() ? showNormal() : showMaximized(); });
-    connect(m_TitleBar, &VoidTitleBar::requestClose, this, &QWidget::close);
+    connect(m_TitleBar, &VoidTitleBar::requestClose, this, [this]() 
+    {
+        /* Close fullscreen */
+        if (m_Player->Fullscreen())
+            m_Player->ExitFullscreenRenderer();
+
+        /* Close the player */
+        close();
+    });
     #endif  // USE_FRAMED_WINDOW
 
     /* Menu Actions */
@@ -333,6 +345,7 @@ void VoidMainWindow::Connect()
     connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
     connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
     connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
+    connect(m_FullscreenAction, &QAction::triggered, m_Player, &Player::SetRendererFullscreen);
     /* }}} */
 
     connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });
