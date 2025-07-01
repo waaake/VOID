@@ -7,6 +7,8 @@
 #include <glm/gtc/type_ptr.hpp>             // for glm::value_ptr
 
 /* Qt */
+#include <QKeyEvent>
+#include <QLabel>
 #include <QMouseEvent>
 
 /* Internal */
@@ -30,6 +32,7 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     , m_TranslateX(0.f)
     , m_TranslateY(0.f)
     , m_Pressed(false)
+    , m_Fullscreen(false)
     , m_Pan(0.f, 0.f)
 {
     /* Add Render StatusBar */
@@ -186,7 +189,7 @@ void VoidRenderer::paintGL()
         /* Update the viewer properties to the shader */
         SetUniform("exposure", m_Exposure);
         SetUniform("gamma", m_Gamma);
-        /** 
+        /**
          * Gain is the linear multiplier to amplify brigtness
          * Can be used befor or after exposure or gamma correction
          */
@@ -374,6 +377,38 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
     update();
 }
 
+void VoidRenderer::keyPressEvent(QKeyEvent* event)
+{
+    /* The below keypresses only work when we're fullscreen */
+    if (m_Fullscreen)
+    {
+        switch (event->key())
+        {
+            case Qt::Key_Escape:
+                emit exitFullscreen();
+                break;
+            case Qt::Key_Period:
+                emit moveForward();
+                break;
+            case Qt::Key_Comma:
+                emit moveBackward();
+                break;
+            case Qt::Key_J:
+                emit playBackwards();
+                break;
+            case Qt::Key_K:
+                emit stop();
+                break;
+            case Qt::Key_L:
+                emit playForwards();
+                break;
+        }
+    }
+
+    /* Base Key presses */
+    QOpenGLWidget::keyPressEvent(event);
+}
+
 // void VoidRenderer::Load(const std::string& path)
 // {
 
@@ -411,7 +446,7 @@ void VoidRenderer::Render(SharedPixels data)
     m_DisplayLabel->setVisible(false);
 
     /**
-     * Update the render resolution 
+     * Update the render resolution
      * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
      * So constantly redrawing this is just too ineffecient
      */
@@ -513,5 +548,38 @@ void VoidRenderer::SetChannelMode(int mode)
     /* Redraw the texture */
     update();
 }
+
+void VoidRenderer::PrepareFullscreen()
+{
+    /* Unparent from any current parents */
+    setParent(nullptr);
+
+    /* Update the window flags */
+    setWindowFlags(Qt::Window);
+
+    /* And update the state to allow the keyboard presses to work as shortcuts */
+    m_Fullscreen = true;
+}
+
+/* Placeholder Renderer {{{ */
+
+VoidPlaceholderRenderer::VoidPlaceholderRenderer(QWidget* parent)
+    : QWidget(parent)
+{
+    /* Setup */
+    m_Layout = new QHBoxLayout(this);
+    /* Label description */
+    m_Label = new QLabel("The Renderer is currently playing in Fullscreen View.");
+
+    /* Update label font */
+    QFont f = m_Label->font();
+    f.setPixelSize(24);
+    m_Label->setFont(f);
+
+    /* Add to the layout */
+    m_Layout->addWidget(m_Label, 1, Qt::AlignCenter);
+}
+
+/* }}} */
 
 VOID_NAMESPACE_CLOSE

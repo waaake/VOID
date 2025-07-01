@@ -24,6 +24,8 @@ VOID_NAMESPACE_OPEN
 
 class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
 {
+    Q_OBJECT
+
 public: /* Enums */
 
     enum class ChannelMode : int
@@ -56,6 +58,15 @@ public:
     void UpdateZoom(const float zoom);
 
     /**
+     * Updates necessary attributes to be ready for fullscreen
+     */
+    void PrepareFullscreen();
+    void ExitFullscreen() { m_Fullscreen = false; }
+    
+    /* Lets other components know whether the Renderer is fullscreen */
+    [[nodiscard]] inline bool Fullscreen() const { return m_Fullscreen; }
+
+    /**
      * Adjusts the Exposure of the Viewer
      */
     void SetExposure(const float exposure);
@@ -79,6 +90,19 @@ public:
         m_DisplayLabel->setVisible(true);
     }
     
+signals: 
+    /**
+     * Signals controlling the playback for the media
+     */
+    void playForwards();
+    void stop();
+    void playBackwards();
+    void moveBackward();
+    void moveForward();
+
+    /* Exit fullscreen view and back to normal */
+    void exitFullscreen();
+
 protected:
     virtual void initializeGL() override;
     virtual void paintGL() override;
@@ -88,6 +112,8 @@ protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
+
+    virtual void keyPressEvent(QKeyEvent* event) override;
 
     virtual void wheelEvent(QWheelEvent* event) override;
 
@@ -124,9 +150,30 @@ private: /* Members */
 
     bool m_Pressed;
 
+    /**
+     * Holds the state whether the Renderer is currently rendering
+     * fullscreen or in normal view
+     */
+    bool m_Fullscreen;
+
     /* Panning */
     glm::vec2 m_Pan;
     Point m_LastMouse;
+
+};
+
+/**
+ * A Placeholder Renderer Widget which shows up when the renderer is fullscreen to occupy it's place
+ * Holds a Label stating that the Renderer is Fullscreen 
+ */
+class VOID_API VoidPlaceholderRenderer : public QWidget
+{
+public:
+    VoidPlaceholderRenderer(QWidget* parent = nullptr);
+
+private: /* Members */
+    QHBoxLayout* m_Layout;
+    QLabel* m_Label;
 
 };
 
