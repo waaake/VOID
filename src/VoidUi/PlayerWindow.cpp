@@ -123,6 +123,13 @@ QSize VoidMainWindow::sizeHint() const
     return QSize(1280, 760);
 }
 
+void VoidMainWindow::closeEvent(QCloseEvent* event)
+{
+    /* Close fullscreen if we're in that*/
+    if (m_Player->Fullscreen())
+        m_Player->ExitFullscreenRenderer();
+}
+
 void VoidMainWindow::Build()
 {
     /* Base Frameless widget */
@@ -266,11 +273,14 @@ void VoidMainWindow::Build()
 
     m_FullscreenAction = new QAction("Show Fullscreen");
     m_FullscreenAction->setShortcut(QKeySequence("Ctrl+F"));
+    
+    m_ExitFullscreenAction = new QAction("Exit Fullscreen");
 
     m_ViewerMenu->addAction(m_ZoomInAction);
     m_ViewerMenu->addAction(m_ZoomOutAction);
     m_ViewerMenu->addAction(m_ZoomToFitAction);
     m_ViewerMenu->addAction(m_FullscreenAction);
+    m_ViewerMenu->addAction(m_ExitFullscreenAction);
     /* }}} */
 
     /* Window Menu {{{ */
@@ -305,15 +315,7 @@ void VoidMainWindow::Connect()
     /* Title Bar Actions */
     connect(m_TitleBar, &VoidTitleBar::requestMinimize, this, &QWidget::showMinimized);
     connect(m_TitleBar, &VoidTitleBar::requestMaximizeRestore, this, [this]() { isMaximized() ? showNormal() : showMaximized(); });
-    connect(m_TitleBar, &VoidTitleBar::requestClose, this, [this]() 
-    {
-        /* Close fullscreen */
-        if (m_Player->Fullscreen())
-            m_Player->ExitFullscreenRenderer();
-
-        /* Close the player */
-        close();
-    });
+    connect(m_TitleBar, &VoidTitleBar::requestClose, this, &QWidget::close);
     #endif  // USE_FRAMED_WINDOW
 
     /* Menu Actions */
@@ -346,6 +348,7 @@ void VoidMainWindow::Connect()
     connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
     connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
     connect(m_FullscreenAction, &QAction::triggered, m_Player, &Player::SetRendererFullscreen);
+    connect(m_ExitFullscreenAction, &QAction::triggered, m_Player, &Player::ExitFullscreenRenderer);
     /* }}} */
 
     connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });

@@ -83,6 +83,8 @@ private: /* Methods */
     void Connect();
 
 protected:
+    void closeEvent(QCloseEvent* event) override;
+
     /* Caches the Media if Caching is allowed */
     void CacheLookAhead();
 
@@ -136,6 +138,7 @@ private: /* Members */
     QAction* m_ZoomOutAction;
     QAction* m_ZoomToFitAction;
     QAction* m_FullscreenAction;
+    QAction* m_ExitFullscreenAction;
 
     /* Window Menu */
     QMenu* m_WindowMenu;
