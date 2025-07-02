@@ -33,9 +33,7 @@ target_link_libraries(
     Imath::Imath
     OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
-    avcodec
-    avformat
-    avutil
+    ${FFMPEG_LIBRARIES}
     swscale
 )
 
