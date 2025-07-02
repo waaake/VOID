@@ -11,6 +11,7 @@
 #include <QUrl>
 
 /* Internal */
+#include "MediaBridge.h"
 #include "MediaLister.h"
 #include "VoidStyle.h"
 #include "VoidCore/Logging.h"
@@ -181,6 +182,9 @@ void VoidMediaLister::Connect()
 
     /* Options */
     connect(m_DeleteButton, &QPushButton::clicked, this, &VoidMediaLister::RemoveSelectedMedia);
+
+    /* Media Bridge */
+    connect(&MBridge::Instance(), &MBridge::mediaAdded, this, &VoidMediaLister::AddMedia);
 }
 
 void VoidMediaLister::ClearPlaying()
@@ -224,10 +228,6 @@ void VoidMediaLister::AddMedia(const SharedMediaClip& media)
 
     /* Add the Media Item to the Media Lister Scroll Widget */
     m_ScrollLayout->addWidget(mediaItem);
-
-    /* Set Playing state */
-    m_CurrentPlaying.push_back(mediaItem);
-    mediaItem->SetPlaying(true);
 
     /* Set Selection on this item */
     SelectItem(mediaItem);

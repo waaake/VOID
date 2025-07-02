@@ -11,6 +11,7 @@
 
 /* Internal */
 #include "Browser.h"
+#include "MediaBridge.h"
 #include "PlayerWindow.h"
 #include "Preferences/PreferencesUI.h"
 #include "VoidCore/Logging.h"
@@ -181,15 +182,15 @@ void VoidMainWindow::Build()
     /* File Menu {{{ */
     m_FileMenu = new QMenu("File", menuBar);
 
-    m_OpenAction = new QAction("Open...", m_FileMenu);
-    m_OpenAction->setShortcut(QKeySequence("Ctrl+O"));
+    m_ImportAction = new QAction("Import Media...", m_FileMenu);
+    m_ImportAction->setShortcut(QKeySequence("Ctrl+I"));
 
     m_ClearAction = new QAction("Clear", m_FileMenu);
 
     m_CloseAction = new QAction("Close Player", m_FileMenu);
     m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
 
-    m_FileMenu->addAction(m_OpenAction);
+    m_FileMenu->addAction(m_ImportAction);
     m_FileMenu->addAction(m_ClearAction);
     m_FileMenu->addAction(m_CloseAction);
     /* }}} */
@@ -332,7 +333,7 @@ void VoidMainWindow::Connect()
     /* Menu Actions */
     /* File Menu {{{ */
     connect(m_CloseAction, &QAction::triggered, this, &VoidMainWindow::close);
-    connect(m_OpenAction, &QAction::triggered, this, &VoidMainWindow::Load);
+    connect(m_ImportAction, &QAction::triggered, this, &VoidMainWindow::Load);
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
@@ -452,28 +453,8 @@ void VoidMainWindow::ImportMedia(const MediaStruct& mstruct)
         return;
     }
 
-    /* Create the media from the path */
-    m_Media = Media(mstruct);
-
-    /* Check if the media is valid */
-    if (m_Media.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media.");
-        return;
-    }
-
-    /* Cache */
-    CacheLookAhead();
-
-    // /* Set the start frame from the media in this case */
-    // m_Track->SetStartFrame(m_Media.FirstFrame());
-    SharedMediaClip clip = std::make_shared<MediaClip>(m_Media);
-
-    /* Load the clip on the player */
-    m_Player->Load(clip);
-
-    /* Add the media clip on the Media Lister */
-    m_MediaLister->AddMedia(clip);
+    /* Add to the Media Bridge */
+    MBridge::Instance().AddMedia(mstruct);
 }
 
 void VoidMainWindow::ImportDirectory(const std::string& path)
