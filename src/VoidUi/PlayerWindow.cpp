@@ -12,6 +12,7 @@
 /* Internal */
 #include "Browser.h"
 #include "PlayerWindow.h"
+#include "Preferences/PreferencesUI.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -193,6 +194,15 @@ void VoidMainWindow::Build()
     m_FileMenu->addAction(m_CloseAction);
     /* }}} */
 
+    /* Edit Menu {{{ */
+    m_EditMenu = new QMenu("Edit", menuBar);
+
+    m_EditPrefsAction = new QAction("Preferences...", m_EditMenu);
+    m_EditPrefsAction->setIcon(QIcon(":resources/icons/icon_settings.svg"));
+    
+    m_EditMenu->addAction(m_EditPrefsAction);
+    /* }}} */
+
     /* Playback Menu {{{ */
     m_PlaybackMenu = new QMenu("Playback", menuBar);
 
@@ -303,6 +313,7 @@ void VoidMainWindow::Build()
 
     /* Add to the Menubar */
     menuBar->addMenu(m_FileMenu);
+    menuBar->addMenu(m_EditMenu);
     menuBar->addMenu(m_PlaybackMenu);
     menuBar->addMenu(m_ViewerMenu);
     menuBar->addMenu(m_WindowMenu);
@@ -323,6 +334,10 @@ void VoidMainWindow::Connect()
     connect(m_CloseAction, &QAction::triggered, this, &VoidMainWindow::close);
     connect(m_OpenAction, &QAction::triggered, this, &VoidMainWindow::Load);
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
+    /* }}} */
+
+    /* Edit Menu {{{ */
+    connect(m_EditPrefsAction, &QAction::triggered, this, [this]() {VoidPreferencesWidget(this).exec(); } );
     /* }}} */
 
     /* Playback Menu {{{ */

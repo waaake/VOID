@@ -22,6 +22,9 @@ add_library(
     TrackItem.cpp
     ViewerBuffer.cpp
     VoidStyle.cpp
+    Preferences/Preferences.cpp
+    Preferences/PreferencesUI.cpp
+    Preferences/PlayerPreferences.cpp
     QExtensions/PushButton.cpp
 )
 

@@ -3,12 +3,13 @@
 
 /* Internal */
 #include "PlayerWidget.h"
+#include "Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
 Player::Player(QWidget* parent)
     : QWidget(parent)
-    , m_MFrameHandler(MissingFrameHandler::BLACK_FRAME)
+    , m_MFrameHandler(static_cast<MissingFrameHandler>(VoidPreferences::Instance().GetMissingFrameHandler()))
 {
     /* Init the Viewer Buffer */
     m_ViewBufferA = new ViewerBuffer("A");
@@ -65,10 +66,11 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::gainChanged, m_Renderer, &VoidRenderer::SetGain);
     /* ControlBar - ChannelModeChanged -> Renderer - SetChannelMode */
     connect(m_ControlBar, &ControlBar::channelModeChanged, m_Renderer, &VoidRenderer::SetChannelMode);
-    /* ControlBar - MissingFrameHandler Change -> Player - SetMissingFrameHandler */
-    connect(m_ControlBar, &ControlBar::missingFrameHandlerChanged, this, &Player::SetMissingFrameHandler);
     /* ControlBar - Viewer Buffer Switched -> Player - Set View Buffer */
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::SetViewBuffer);
+
+    /* Preference - updated -> Player - SetFromPreferences */
+    connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &Player::SetFromPreferences);
 
     /* Renderer - exitFullscreen -> Player - Exitfullscreen */
     connect(m_Renderer, &VoidRenderer::exitFullscreen, this, &Player::ExitFullscreenRenderer);
@@ -78,6 +80,13 @@ void Player::Connect()
     connect(m_Renderer, &VoidRenderer::stop, this, &Player::Stop);
     connect(m_Renderer, &VoidRenderer::moveForward, this, &Player::NextFrame);
     connect(m_Renderer, &VoidRenderer::moveBackward, this, &Player::PreviousFrame);
+}
+
+void Player::SetFromPreferences()
+{
+    VOID_LOG_INFO("Player Preferences Updated.");
+    /* Reset the Missing Frame Hanlder */
+    SetMissingFrameHandler(VoidPreferences::Instance().GetMissingFrameHandler());
 }
 
 void Player::Build()

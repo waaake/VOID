@@ -53,7 +53,6 @@ signals:
     void exposureChanged(const float exposure);
     void gammaChanged(const float gamma);
     void gainChanged(const float gain);
-    void missingFrameHandlerChanged(int handler);
     void viewerBufferSwitched(const PlayerViewBuffer&);
     void channelModeChanged(const int);
 
@@ -84,12 +83,6 @@ private: /* Members */
 
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;
-
-    /* Missing Frame Handler */
-    /* TODO: This is temporarily here till we have a place for settings/preferences defined */
-    QLabel* m_MissingFrameLabel;
-    ControlCombo* m_MissingFrameCombo;
-    QHBoxLayout* m_MissingFrameLayout;
 
     /* Viewer Buffers */
     ViewerBuffer* m_ViewerBufferA;

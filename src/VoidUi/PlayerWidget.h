@@ -162,6 +162,11 @@ private:  /* Methods */
         connect(clip.get(), &MediaClip::frameCached, this, &Player::AddCacheFrame);
     }
 
+    /**
+     * Fetches the Requred settings from Prefences and sets the internal values accordingly
+     */
+    void SetFromPreferences();
+
 private:  /* Members */
     VoidRenderer* m_Renderer;
     VoidPlaceholderRenderer* m_PlaceholderRenderer;
