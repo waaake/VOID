@@ -33,7 +33,10 @@ target_link_libraries(
     Imath::Imath
     OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
-    ${FFMPEG_LIBRARIES}
+    avcodec
+    avformat
+    avutil
+    swscale
 )
 
 # Export symbols for windows
