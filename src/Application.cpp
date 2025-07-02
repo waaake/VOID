@@ -23,6 +23,10 @@ int main(int argc, char* argv[])
 
     VOID_LOG_INFO("App initialised.");
 
+    /* App Settings */
+    QCoreApplication::setOrganizationName("VOID");
+    QCoreApplication::setApplicationName("VOID");
+
     VOID_NAMESPACE::VoidMainWindow* imager = new voidplayer::VoidMainWindow;
 
     VOID_LOG_INFO("Imager initialised.");

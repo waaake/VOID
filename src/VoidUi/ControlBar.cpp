@@ -103,16 +103,6 @@ void ControlBar::Build()
     /* Main Layout */
     m_Layout = new QHBoxLayout(this);
 
-    /* Missing Frame Handler */
-    m_MissingFrameLayout = new QHBoxLayout;
-    m_MissingFrameLabel = new QLabel;
-    m_MissingFrameLabel->setPixmap(QPixmap(":resources/icons/icon_missing_frame.svg"));
-    m_MissingFrameCombo = new ControlCombo;
-
-    m_MissingFrameLayout->setSpacing(0);
-    m_MissingFrameLayout->addWidget(m_MissingFrameLabel);
-    m_MissingFrameLayout->addWidget(m_MissingFrameCombo);
-
     /* Viewer Buffer Controls */
     m_BufferSwitch = new BufferSwitch(m_ViewerBufferA, m_ViewerBufferB);
 
@@ -142,7 +132,6 @@ void ControlBar::Build()
     m_RightLayout->setContentsMargins(0, 0, 0, 0);
 
     /* Add to Left Controls */
-    m_LeftLayout->addLayout(m_MissingFrameLayout);
     m_LeftLayout->addWidget(m_ChannelModeController);
     m_LeftLayout->addWidget(m_ExposureLabel);
     m_LeftLayout->addWidget(m_ExposureController);
@@ -171,11 +160,6 @@ void ControlBar::Setup()
 {
     /* Widget has a Fixed height */
     setFixedHeight(40);
-
-    /* Missing Frame Handler */
-    m_MissingFrameCombo->addItems({"Error", "Black Frame", "Nearest"});
-    /* Default to Using Black frame */
-    m_MissingFrameCombo->setCurrentIndex(1);
 
     /**
      * Channels controller
@@ -232,15 +216,6 @@ void ControlBar::Setup()
 
 void ControlBar::Connect()
 {
-    /* Missing Frame */
-    connect(
-        m_MissingFrameCombo,
-        /* Invoke the signal taking int as the arg */
-        static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-        this,
-        [this](int index) { emit missingFrameHandlerChanged(index); }
-    );
-
     /* Zoom */
     connect(m_Zoomer, static_cast<void (QSpinBox::* )(int)>(&QSpinBox::valueChanged), this, &ControlBar::UpdateZoom);
 

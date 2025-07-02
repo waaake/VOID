@@ -113,6 +113,10 @@ private: /* Members */
     QAction* m_OpenAction;
     QAction* m_ClearAction;
     QAction* m_CloseAction;
+
+    /* Edit Menu */
+    QMenu* m_EditMenu;
+    QAction* m_EditPrefsAction;
     
     /* Playback Menu */
     QMenu* m_PlaybackMenu;
