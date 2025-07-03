@@ -32,6 +32,13 @@ void VoidDark::drawPrimitive(PrimitiveElement element, const QStyleOption* optio
         //     /* Dark window background */
         //     painter->fillRect(option->rect, QColor(40, 40, 40));
         //     break;
+        case PE_FrameTabWidget:
+            painter->save();
+            painter->setBrush(QColor(35, 35, 35));
+            painter->setPen(Qt::NoPen);
+            painter->drawRect(option->rect);
+            painter->restore();
+            break;
         default:
             /* Let everything else get drawn */
             QProxyStyle::drawPrimitive(element, option, painter, widget);
@@ -52,6 +59,22 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
         // case CE_MenuBarEmptyArea:
         //     painter->fillRect(option->rect, QColor(40, 40, 40));
         //     break;
+        case CE_TabBarTab:
+        {
+            const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>(option);
+
+            if (tab)
+            {
+                QRect rect = tab->rect;
+                painter->save();
+                QColor tabColor = tab->state & State_Selected ? QColor(35, 35, 35) : QColor(30, 30, 30);
+                painter->fillRect(rect, tabColor);
+                painter->setPen(QColor(210, 210, 210)); // Text
+                painter->drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, tab->text);
+                painter->restore();
+                break;
+            }
+        }
         default:
             QProxyStyle::drawControl(element, option, painter, widget);
     }
