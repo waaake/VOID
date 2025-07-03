@@ -162,6 +162,9 @@ void Media::Read(const MediaStruct& mstruct)
         m_Framenumbers.push_back(e.Framenumber());
     }
 
+    /* Update Media Type */
+    m_Type = Media::Type::IMAGE_SEQUENCE;
+
     /*
      * Update the frame range as we have read any of the media present in the given path
      */
@@ -195,6 +198,9 @@ void Media::ProcessMovie(const MediaStruct& mstruct)
         m_Mediaframes[i] = MovieFrame(entry, i);
         m_Framenumbers.push_back(i);
     }
+
+    /* Update Media Type */
+    m_Type = Media::Type::MOVIE;
 
     /* Update internal frame range based on the frames read */
     UpdateRange();

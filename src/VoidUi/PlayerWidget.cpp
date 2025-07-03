@@ -2,6 +2,7 @@
 #include <QKeyEvent>
 
 /* Internal */
+#include "MediaBridge.h"
 #include "PlayerWidget.h"
 #include "Preferences/Preferences.h"
 
@@ -80,6 +81,21 @@ void Player::Connect()
     connect(m_Renderer, &VoidRenderer::stop, this, &Player::Stop);
     connect(m_Renderer, &VoidRenderer::moveForward, this, &Player::NextFrame);
     connect(m_Renderer, &VoidRenderer::moveBackward, this, &Player::PreviousFrame);
+
+    /* When a MediaClip is about to be removed from the MediaBride */
+    connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &Player::RemoveMedia);
+}
+
+void Player::RemoveMedia(const SharedMediaClip& media)
+{
+    /* Check if the media was playing currently */
+    if (m_ActiveViewBuffer->Playing(media))
+    {
+        /* Clear the active Viewer Buffer */
+        m_ActiveViewBuffer->Clear();
+        /* Clear the player */
+        Clear();
+    }
 }
 
 void Player::SetFromPreferences()
@@ -132,8 +148,7 @@ void Player::Clear()
      * Update the time range to be 0-1 ??
      * Clear the data from the player
      */
-    m_Timeline->ResetRange();
-    m_Timeline->SetRange(0, 0);
+    m_Timeline->SetRange(0, 1);
     m_Renderer->Clear();
 }
 

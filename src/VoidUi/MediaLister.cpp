@@ -308,6 +308,9 @@ void VoidMediaLister::RemoveSelectedMedia()
             );
         }
 
+        /* Retrieve the item's media clip before the item is deleted */
+        SharedMediaClip c = item->Clip();
+
         /* Prepare for the item to be deleted */
         item->setParent(nullptr);
         item->setVisible(false);
@@ -315,6 +318,12 @@ void VoidMediaLister::RemoveSelectedMedia()
         /* Mark the item for deletion from Qt's memory */
         item->deleteLater();
         item = nullptr;
+
+        /**
+         * Remove the Item from the MediaBride for it to be removed across other components
+         * that might be accessing it
+         */
+        MBridge::Instance().RemoveClip(c);
     }
 
     /* Clear the Current Selection*/
