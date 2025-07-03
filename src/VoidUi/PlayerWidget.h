@@ -105,6 +105,11 @@ public:
     inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }
 
     /**
+     * Removes the MediaClip from the player buffer, if found
+     */
+    void RemoveMedia(const SharedMediaClip& media);
+
+    /**
      * Timeline Controls:
      * Below methods expose the functionality from the timeline
      * These are required to be able to govern the play state or set any frame according

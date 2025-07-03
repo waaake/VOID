@@ -34,6 +34,7 @@ target_link_libraries(
     OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
     ${FFMPEG_LIBRARIES}
+    swscale
 )
 
 # Export symbols for windows

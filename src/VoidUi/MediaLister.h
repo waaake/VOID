@@ -3,6 +3,7 @@
 
 /* STD */
 #include <vector>
+#include <unordered_map>
 
 /* Qt */
 #include <QAction>
@@ -27,6 +28,7 @@ public:
 
     /* Adds a Media Item to the List of widgets based on the provided Media */
     void AddMedia(const SharedMediaClip& media);
+    void RemoveMedia(const SharedMediaClip& media);
 
     /* Override the default size of the widget */
     QSize sizeHint() const override;
@@ -85,7 +87,7 @@ private: /* Members */
     QAction* m_PlayAction;
     QAction* m_RemoveAction;
 
-    std::vector<VoidMediaItem*> m_MediaItems;
+    std::unordered_map<std::string, VoidMediaItem*> m_MediaItems;
     
     /* Holds the media item which is currently playing */
     std::vector<VoidMediaItem*> m_CurrentPlaying;

@@ -63,6 +63,7 @@ public: /* Enums */
     {
         UNDEFINED,
         IMAGE_SEQUENCE,
+        MOVIE,
         SINGLE_FILE,
         NON_MEDIA
     };

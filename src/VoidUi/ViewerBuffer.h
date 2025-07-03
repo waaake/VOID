@@ -93,6 +93,11 @@ public:
     inline SharedPlaybackSequence GetSequence() const { return m_Sequence; }
 
     /**
+     * Returns whether the provided media clip is currently being played
+     */
+    bool Playing(const SharedMediaClip& media) const;
+
+    /**
      * Active state of the Viewer Buffer
      */
     [[nodiscard]] inline bool Active() const { return m_Active; }
@@ -114,6 +119,12 @@ public:
      * Refreshes any underlying caches and updates internals
      */
     void Refresh();
+
+    /**
+     * Clears any playable medias from the buffer
+     * this might be needed when a media which is currently playing was removed
+     */
+    void Clear();
 
     /**
      * Clears any cache from underlying components

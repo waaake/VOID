@@ -110,7 +110,7 @@ private: /* Members */
 
     /* File Menu */
     QMenu* m_FileMenu;
-    QAction* m_OpenAction;
+    QAction* m_ImportAction;
     QAction* m_ClearAction;
     QAction* m_CloseAction;
 

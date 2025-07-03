@@ -11,6 +11,7 @@
 #include <QUrl>
 
 /* Internal */
+#include "MediaBridge.h"
 #include "MediaLister.h"
 #include "VoidStyle.h"
 #include "VoidCore/Logging.h"
@@ -36,10 +37,9 @@ VoidMediaLister::VoidMediaLister(QWidget* parent)
 
 VoidMediaLister::~VoidMediaLister()
 {
-    /* Delete any media items */
-    for (int i = 0; i < m_MediaItems.size(); i++)
+    for (auto mit: m_MediaItems)
     {
-        m_MediaItems[0]->deleteLater();
+        mit.second->deleteLater();
     }
 }
 
@@ -181,6 +181,10 @@ void VoidMediaLister::Connect()
 
     /* Options */
     connect(m_DeleteButton, &QPushButton::clicked, this, &VoidMediaLister::RemoveSelectedMedia);
+
+    /* Media Bridge */
+    connect(&MBridge::Instance(), &MBridge::mediaAdded, this, &VoidMediaLister::AddMedia);
+    connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &VoidMediaLister::RemoveMedia);
 }
 
 void VoidMediaLister::ClearPlaying()
@@ -209,9 +213,6 @@ void VoidMediaLister::ClearSelection()
 
 void VoidMediaLister::AddMedia(const SharedMediaClip& media)
 {
-    /* Clear existing playing media */
-    ClearPlaying();
-
     /* Construct a Media Item from the provided media */
     VoidMediaItem* mediaItem = new VoidMediaItem(media);
 
@@ -219,15 +220,11 @@ void VoidMediaLister::AddMedia(const SharedMediaClip& media)
     connect(mediaItem, &VoidMediaItem::selected, this, &VoidMediaLister::SelectItem);
     connect(mediaItem, &VoidMediaItem::doubleClicked, this, &VoidMediaLister::ChangeMedia);
 
-    /* Add to the internal array holding all media items */
-    m_MediaItems.push_back(mediaItem);
+    /* Add to the internal map holding all media items */
+    m_MediaItems[media->Vuid()] = mediaItem;
 
     /* Add the Media Item to the Media Lister Scroll Widget */
     m_ScrollLayout->addWidget(mediaItem);
-
-    /* Set Playing state */
-    m_CurrentPlaying.push_back(mediaItem);
-    mediaItem->SetPlaying(true);
 
     /* Set Selection on this item */
     SelectItem(mediaItem);
@@ -289,16 +286,37 @@ void VoidMediaLister::AddSelectionToSequence()
     emit playlistChanged(m);
 }
 
+void VoidMediaLister::RemoveMedia(const SharedMediaClip& media)
+{
+    /* Check if the media exists in the lister */
+    auto it = m_MediaItems.find(media->Vuid());
+
+    if (it != m_MediaItems.end())
+    {
+        /* Get the pointer to the Media item */
+        VoidMediaItem* item = it->second;
+
+        /* See if the item is present in selected array to remove that */
+        m_CurrentPlaying.erase(std::remove(m_CurrentPlaying.begin(), m_CurrentPlaying.end(), item), m_CurrentPlaying.end());
+        m_CurrentSelected.erase(std::remove(m_CurrentSelected.begin(), m_CurrentSelected.end(), item), m_CurrentSelected.end());
+        
+        /* Remove the Media item from the map */
+        m_MediaItems.erase(it);
+
+        /* Delete the media Item */
+        item->setParent(nullptr);
+        item->setVisible(false);
+
+        /* Mark the item for deletion from Qt's memory */
+        item->deleteLater();
+        item = nullptr;
+    }
+}
+
 void VoidMediaLister::RemoveSelectedMedia()
 {
     for (VoidMediaItem* item: m_CurrentSelected)
     {
-        /* Remove item from the media list as well */
-        m_MediaItems.erase(
-            std::remove(m_MediaItems.begin(), m_MediaItems.end(), item),
-            m_MediaItems.end()
-        );
-
         /* Remove from Playing if it exists */
         if (item->Playing())
         {
@@ -308,13 +326,14 @@ void VoidMediaLister::RemoveSelectedMedia()
             );
         }
 
-        /* Prepare for the item to be deleted */
-        item->setParent(nullptr);
-        item->setVisible(false);
+        /* Retrieve the item's media clip before the item is deleted */
+        SharedMediaClip c = item->Clip();
 
-        /* Mark the item for deletion from Qt's memory */
-        item->deleteLater();
-        item = nullptr;
+        /**
+         * Remove the Item from the MediaBride for it to be removed across other components
+         * that might be accessing it
+         */
+        MBridge::Instance().RemoveClip(c);
     }
 
     /* Clear the Current Selection*/

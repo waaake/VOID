@@ -133,7 +133,7 @@ void ViewerBuffer::ClearCache()
     /* Clear Cache from the playing components */
     if (m_Clip)
         m_Clip->ClearCache();
-    
+
     if (m_Track)
         m_Track->ClearCache();
 }
@@ -170,6 +170,26 @@ SharedTrackItem ViewerBuffer::ItemFromTrack(const int frame)
 
     /* Return what has been cached */
     return m_CachedTrackItem;
+}
+
+void ViewerBuffer::Clear()
+{
+    /* Clear up --> Point to an empty clip */
+    m_Clip = std::make_shared<MediaClip>();
+    /* Clear Cache */
+    ClearCache();
+}
+
+bool ViewerBuffer::Playing(const SharedMediaClip& media) const
+{
+    /* If a clip is being played check if the internal clip and the media are same */
+    if (m_PlayingComponent == PlayableComponent::Clip)
+        return media == m_Clip;
+
+    /**
+     * In other cases the cached track item should tell us if the clip was being played currently
+     */
+    return m_CachedTrackItem->GetMedia() == media;
 }
 
 VOID_NAMESPACE_CLOSE

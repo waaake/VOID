@@ -10,6 +10,7 @@ add_library(
     Docker.cpp
     Events.h
     BaseWindow.cpp
+    MediaBridge.cpp
     MediaClip.cpp
     MediaLister.cpp
     MediaItem.cpp
