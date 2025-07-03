@@ -23,6 +23,8 @@ add_library(
     TrackItem.cpp
     ViewerBuffer.cpp
     VoidStyle.cpp
+    Dock/DockPanel.cpp
+    Dock/DockWidget.cpp
     Preferences/Preferences.cpp
     Preferences/PreferencesUI.cpp
     Preferences/PlayerPreferences.cpp
