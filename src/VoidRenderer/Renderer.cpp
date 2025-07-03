@@ -346,13 +346,13 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
 void VoidRenderer::wheelEvent(QWheelEvent* event)
 {
     /* Normalize to OpenGL Coords */
-    #if _QT6        /* Qt6 Compat */
+    #if _QT6_COMPAT        /* Qt6 Compat */
     m_TranslateX = (2.f * event->position().x() / width()) - 1.f;
     m_TranslateY = 1.f - (2.f * event->position().y() / height());
     #else
     m_TranslateX = (2.f * event->pos().x() / width()) - 1.f;
     m_TranslateY = 1.f - (2.f * event->pos().y() / height());
-    #endif
+    #endif // Qt6 Compat
 
     if (event->angleDelta().y() > 0)
     {
