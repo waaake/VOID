@@ -4,6 +4,7 @@
 /* Qt */
 #include <QLayout>
 #include <QFrame>
+#include <QComboBox>
 
 /* Internal */
 #include "Definition.h"
@@ -43,6 +44,7 @@ public:
 
 signals:
     void switched(const PlayerViewBuffer&);
+    void compareModeChanged(const int);
 
 private: /* Members */
     /* Main Layout */
@@ -51,6 +53,9 @@ private: /* Members */
     /* Buffer Pages */
     BufferPage* m_BufferA;
     BufferPage* m_BufferB;
+
+    /* Comparison Modes */
+    QComboBox* m_ComparisonModes;
 
     /* Buffers */
     ViewerBuffer* m_ViewerBufferA;

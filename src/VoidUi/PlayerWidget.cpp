@@ -10,6 +10,8 @@ VOID_NAMESPACE_OPEN
 
 Player::Player(QWidget* parent)
     : QWidget(parent)
+    , m_ComparisonMode(VoidRenderer::ComparisonMode::NONE)
+    , m_BlendMode(VoidRenderer::BlendMode::OVER)
     , m_MFrameHandler(static_cast<MissingFrameHandler>(VoidPreferences::Instance().GetMissingFrameHandler()))
 {
     /* Init the Viewer Buffer */
@@ -69,6 +71,8 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::channelModeChanged, m_Renderer, &VoidRenderer::SetChannelMode);
     /* ControlBar - Viewer Buffer Switched -> Player - Set View Buffer */
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::SetViewBuffer);
+    /* ControlBar - Comparison Mode Changed -> Player - Set Comparison mode */
+    connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
 
     /* Preference - updated -> Player - SetFromPreferences */
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &Player::SetFromPreferences);
@@ -103,6 +107,22 @@ void Player::SetFromPreferences()
     VOID_LOG_INFO("Player Preferences Updated.");
     /* Reset the Missing Frame Hanlder */
     SetMissingFrameHandler(VoidPreferences::Instance().GetMissingFrameHandler());
+}
+
+void Player::CacheBuffer()
+{
+    /* Cache the Buffer which is active (or both if in comparison mode) */
+    if (m_ViewBufferA->Active())
+        m_ViewBufferA->Cache();
+    if (m_ViewBufferB->Active())
+        m_ViewBufferB->Cache();
+}
+
+void Player::ClearCache()
+{
+    /* Dump cache from both the viewer Buffers */
+    m_ViewBufferA->ClearCache();
+    m_ViewBufferB->ClearCache();
 }
 
 void Player::Build()
@@ -216,6 +236,9 @@ void Player::SetFrame(int frame)
         return SetSequenceFrame(frame);
     else if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Track)
         return SetTrackFrame(frame);
+
+    if (m_ComparisonMode != VoidRenderer::ComparisonMode::NONE)
+        return CompareMediaFrame(frame);
 
     return SetMediaFrame(frame);
 }
@@ -343,6 +366,52 @@ void Player::SetMediaFrame(int frame)
     }
 }
 
+void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second)
+{
+    // SharedPixels f = first->Image();
+    /* Update the Viewer Buffer with the Media Clips --> And then ask for them to be compared in the viewer */
+    m_ViewBufferA->Set(first);
+    m_ViewBufferB->Set(second);
+
+    /* Compare frames */
+    CompareMediaFrame(m_Timeline->Frame());
+}
+
+void Player::CompareMediaFrame(v_frame_t frame)
+{
+    // SharedPixels first = m_ViewBufferA->GetMediaClip()->Image(frame);
+    // SharedPixels second = m_ViewBufferB->GetMediaClip()->Image(frame);
+    // SharedPixels first
+
+    /* Compare on the Viewer */
+    m_Renderer->Compare(m_ViewBufferA->Image(frame), m_ViewBufferB->Image(frame), m_ComparisonMode, m_BlendMode);
+}
+
+void Player::SetComparisonMode(int mode)
+{
+    /* Update Comparison Mode */
+    m_ComparisonMode = static_cast<VoidRenderer::ComparisonMode>(mode);
+
+    if (m_ComparisonMode != VoidRenderer::ComparisonMode::NONE)
+    {
+        /* Mark both the viewer Buffers as active */
+        m_ViewBufferA->SetActive(true);
+        m_ViewBufferB->SetActive(true);
+    }
+    else
+    {
+        /* Revert to the actual active Buffer */
+        bool activeA = m_ActiveViewBuffer == m_ViewBufferA;
+        /* Set its Active state */
+        m_ViewBufferA->SetActive(activeA);
+        /* Reset the active state for the other buffer */
+        m_ViewBufferB->SetActive(!activeA);
+    }
+
+    /* Update to show the current frame */
+    Refresh();
+}
+
 void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
 {
     /* Update the active buffer based on the provided buffer enum */
@@ -353,7 +422,7 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
         m_ViewBufferA->SetActive(true);
         /* Reset the active state for the other buffer */
         m_ViewBufferB->SetActive(false);
-    }        
+    }
     else
     {
         m_ActiveViewBuffer = m_ViewBufferB;
