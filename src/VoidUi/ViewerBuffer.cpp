@@ -128,6 +128,15 @@ void ViewerBuffer::Refresh()
     m_CachedTrackItem = nullptr;
 }
 
+void ViewerBuffer::Cache()
+{
+    /* What is the active item for playback */
+    if (m_PlayingComponent == PlayableComponent::Clip)
+        m_Clip->Cache();
+    else
+        m_Track->Cache();
+}
+
 void ViewerBuffer::ClearCache()
 {
     /* Clear Cache from the playing components */
@@ -138,7 +147,33 @@ void ViewerBuffer::ClearCache()
         m_Track->ClearCache();
 }
 
-SharedTrackItem ViewerBuffer::ItemFromSequence(const int frame)
+SharedPixels ViewerBuffer::Image(const v_frame_t frame)
+{
+    /* The active element is a clip */
+    if (m_PlayingComponent == PlayableComponent::Clip)
+    {
+        /* Nothing being played at the moment */
+        if (m_Clip->Empty())
+            return nullptr;
+
+        /* Check if we have the frame available in the Clip */
+        if (m_Clip->HasFrame(frame))
+            return m_Clip->Image(frame);
+        
+        /* Return the nearest frame */
+        return m_Clip->Image(m_Clip->NearestFrame(frame));
+    }
+
+    SharedTrackItem item = ItemFromTrack(frame);
+
+    if (!item)
+        return nullptr;
+    
+    /* The pixels from the track item */
+    return item->GetImage(frame);
+}
+
+SharedTrackItem ViewerBuffer::ItemFromSequence(const v_frame_t frame)
 {
     /**
      * Check if we have a cached track item present -> return that
@@ -155,7 +190,7 @@ SharedTrackItem ViewerBuffer::ItemFromSequence(const int frame)
     return m_CachedTrackItem;
 }
 
-SharedTrackItem ViewerBuffer::ItemFromTrack(const int frame)
+SharedTrackItem ViewerBuffer::ItemFromTrack(const v_frame_t frame)
 {
     /**
      * Check if we have a cached track item present -> return that

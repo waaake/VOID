@@ -84,8 +84,13 @@ void BufferSwitch::Build()
     m_BufferA = new BufferPage(m_ViewerBufferA, PlayerViewBuffer::A);
     m_BufferB = new BufferPage(m_ViewerBufferB, PlayerViewBuffer::B);
 
+    m_ComparisonModes = new QComboBox;
+    // m_ComparisonModes->addItems({"Under", "Over", "Add", "Subtract", "Mix"});
+    m_ComparisonModes->addItems({"Off", "Wipe", "Stack"});
+
     /* Add to the Control Layout */
     m_Layout->addWidget(m_BufferA);
+    m_Layout->addWidget(m_ComparisonModes);
     m_Layout->addWidget(m_BufferB);
 }
 
@@ -94,6 +99,9 @@ void BufferSwitch::Connect()
     /* Connect the buffer pages to switch on click */
     connect(m_BufferA, &BufferPage::selected, this, &BufferSwitch::switched);
     connect(m_BufferB, &BufferPage::selected, this, &BufferSwitch::switched);
+    
+    /* Connect the Comparison Mode changes */
+    connect(m_ComparisonModes, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged), this, &BufferSwitch::compareModeChanged);
 }
 
 /* }}} */

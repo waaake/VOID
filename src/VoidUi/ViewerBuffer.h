@@ -67,7 +67,7 @@ public:
     /**
      * Returns a track item at a given frame
      */
-    inline SharedTrackItem TrackItem(const int frame)
+    inline SharedTrackItem TrackItem(const v_frame_t frame)
     {
         /* Return from the sequence if that is currently playing */
         if (m_PlayingComponent == PlayableComponent::Sequence)
@@ -76,6 +76,11 @@ public:
         /* Else return the TrackItem from track */
         return ItemFromTrack(frame);
     }
+
+    /**
+     * Returns the Image Pixels from the active item in the buffer
+     */
+    SharedPixels Image(const v_frame_t frame);
 
     /**
      * Returns the shared media clip instance
@@ -125,6 +130,11 @@ public:
      * this might be needed when a media which is currently playing was removed
      */
     void Clear();
+
+    /**
+     * Cache's the active item for playback
+     */
+    void Cache();
 
     /**
      * Clears any cache from underlying components
@@ -185,8 +195,8 @@ private: /* Methods */
      * The item returned from the entity is then cached locally on the class to reduce the operations to try and find
      * a track item for the next frame (unless the frame is out of items' bounds)
      */
-    SharedTrackItem ItemFromTrack(const int frame);
-    SharedTrackItem ItemFromSequence(const int frame);
+    SharedTrackItem ItemFromTrack(const v_frame_t frame);
+    SharedTrackItem ItemFromSequence(const v_frame_t frame);
 
 };
 

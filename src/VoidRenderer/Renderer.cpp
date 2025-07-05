@@ -24,10 +24,18 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     : QOpenGLWidget(parent)
     , m_Texture(nullptr)
     , m_ImageData(nullptr)
+    , m_SecondaryImageData(nullptr)
     , m_Exposure(0.f)
     , m_Gamma(1.f)
     , m_Gain(1.f)
+    , m_TextureA(0)
+    , m_TextureB(0)
     , m_ChannelMode(ChannelMode::RGBA)
+    , m_CompareMode(ComparisonMode::NONE)
+    , m_BlendMode(BlendMode::UNDER)
+    , m_SwipeX(0.5f)
+    , m_SwipeOffet(0.f)
+    , m_Swiping(false)
     , m_ZoomFactor(1.f)
     , m_TranslateX(0.f)
     , m_TranslateY(0.f)
@@ -52,6 +60,10 @@ VoidRenderer::~VoidRenderer()
         m_Texture->destroy();
         delete m_Texture;
     }
+
+    /* Destroy texture */
+    glDeleteTextures(1, &m_TextureA);
+    glDeleteTextures(1, &m_TextureB);
 
     /* Delete the Render Status bar */
     m_RenderStatus->deleteLater();
@@ -120,6 +132,34 @@ void VoidRenderer::initializeGL()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    /* Generate Textures for Rendering */
+    glGenTextures(1, &m_TextureA);
+    glGenTextures(1, &m_TextureB);
+
+    /**
+     * Swipe Shaders
+     */
+    float swipeVertices[6] = {
+        0.f, -1.f, 0.f,
+        0.f,  1.f, 0.f
+    };
+
+    glGenVertexArrays(1, &m_SwipeVAO);
+    glGenBuffers(1, &m_SwipeVBO);
+
+    /* Bind */
+    glBindVertexArray(m_SwipeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_SwipeVBO);
+
+    /* Buffer data */
+    glBufferData(GL_ARRAY_BUFFER, sizeof(swipeVertices), swipeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+
+    /* Unbind */
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
 void VoidRenderer::paintGL()
@@ -129,26 +169,52 @@ void VoidRenderer::paintGL()
     if (m_ImageData && !m_ImageData->Empty())
     {
         /* Texture ID */
-        unsigned int texture;
+        // unsigned int texture;
+        // unsigned int textureB;
 
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        // glGenTextures(1, &texture);
+        // glBindTexture(GL_TEXTURE_2D, texture);
+
+        glUseProgram(ProgramId());
 
         /**
          * Bind the shader program to use for
          */
         Bind();
 
-        glGenTextures(1, &texture);
+        // glGenTextures(1, &m_TextureA);
+        // glGenTextures(1, &m_TextureB);
+
+        glActiveTexture(GL_TEXTURE0);
         /* Bind the Generated texture for Render */
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, m_TextureA);
+
+        /* Tell the shader what texture to use */
+        glUniform1i(glGetUniformLocation(ProgramId(), "uTexture"), 0);
 
         /**
          * Load the image data onto the Texture 2D
          */
         glTexImage2D(GL_TEXTURE_2D, 0, m_ImageData->GLFormat(), m_ImageData->Width(), m_ImageData->Height(), 0, m_ImageData->GLFormat(), m_ImageData->GLType(), m_ImageData->Pixels());
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+        // /* If we're comparing something --> We should have the data from the secondary image as well */
+        if (m_CompareMode != ComparisonMode::NONE && m_SecondaryImageData)
+        {
+            // glGenTextures(1, &m_TextureB);
+            /* Bind the texture for render */
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, m_TextureB);
+
+            /* Tell this to the shader to use this texture as the second sampler2D */
+            glUniform1i(glGetUniformLocation(ProgramId(), "uTextureB"), 1);
+
+            /**
+             * Load the image data onto the Texture 2D
+             */
+            glTexImage2D(GL_TEXTURE_2D, 0, m_SecondaryImageData->GLFormat(), m_SecondaryImageData->Width(), m_SecondaryImageData->Height(), 0, m_SecondaryImageData->GLFormat(), m_SecondaryImageData->GLType(), m_SecondaryImageData->Pixels());
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        }
 
         /**
          * To ensure the image is of the correct aspect while render
@@ -165,7 +231,6 @@ void VoidRenderer::paintGL()
          * Get the Model matrix,
          * This is how our image/model looks like as a 4x4 matrix
          */
-        // glm::mat4 model = glm::scale(glm::mat4(1.f), glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
         glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
 
         /* Update the model with the aspect and the zoom scale */
@@ -200,8 +265,28 @@ void VoidRenderer::paintGL()
          */
         SetUniform("channelMode", static_cast<int>(m_ChannelMode));
 
-        /* Bind texture */
-        glBindTexture(GL_TEXTURE_2D, texture);
+        /**
+         * Update the compare mode on the shader
+         */
+        SetUniform("comparisonMode", static_cast<int>(m_CompareMode));
+
+        /**
+         * Update the blend mode on the shader
+         */
+        SetUniform("blendMode", static_cast<int>(m_BlendMode));
+
+        /**
+         * Update the swipe factor
+         */
+        SetUniform("swipeX", m_SwipeX);
+
+        // /* Bind texture */
+        // glActiveTexture(GL_TEXTURE0);
+        // glBindTexture(GL_TEXTURE_2D, m_TextureA);
+
+        // glActiveTexture(GL_TEXTURE1);
+        // glBindTexture(GL_TEXTURE_2D, m_TextureB);
+
         /* And the Vertex Array */
         glBindVertexArray(VAO);
 
@@ -225,10 +310,52 @@ void VoidRenderer::paintGL()
         /* Unbind texture */
         glBindTexture(GL_TEXTURE_2D, 0);
         /* Destroy texture */
-        glDeleteTextures(1, &texture);
+        // glDeleteTextures(1, &m_TextureA);
+        // glDeleteTextures(1, &m_TextureB);
 
         /* Release the active shader program from the current OpenGL Context */
         Release();
+
+        /* Draw the Swipe Controller if */
+        if (m_CompareMode == ComparisonMode::WIPE)
+        {
+            /* Swipe Lines */
+            BindSwiper();
+
+            /**
+             * Normalize between the device coordinates
+             * the SwipeX limit is between 0.0 - 1.0
+             * to make it work in OpenGL's Normalized coordinates -1.0 - 1.0
+             * the math needs to be applied
+             *
+             * lowest: (0.f * 2.f) - 1.f = -1.f;
+             * mid: (0.5f * 2.f) - 1.f = 0.f;
+             * highest: (1.f * 2.f) - 1.f = 1.f;
+             */
+            float swiperNormalized = ((m_SwipeX + m_SwipeOffet) * 2.f) - 1.f;
+
+            /* Model view projection for the swiper */
+            glm::mat4 swproj = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+            glm::mat4 swmodel = glm::translate(glm::mat4(1.f), glm::vec3(swiperNormalized, 0.f, 0.f));
+            glm::mat4 swiperMvp = swproj * swmodel;
+
+            /* Use the Swipe Shader */
+            glUseProgram(SwipeProgramId());
+            /* Set Model View Projection Matrix */
+            glUniformMatrix4fv(glGetUniformLocation(SwipeProgramId(), "uMVP"), 1, GL_FALSE, glm::value_ptr(swiperMvp));
+            /* Set the Color */
+            float color[3] = {1.f, 0.f, 1.f};
+            glUniform3fv(glGetUniformLocation(SwipeProgramId(), "uColor"), 1, color);
+
+            /* Bind the Array */
+            glBindVertexArray(m_SwipeVAO);
+            glDrawArrays(GL_LINES, 0, 2);
+
+            /* Unbind */
+            glBindVertexArray(0);
+
+            ReleaseSwiper();
+        }
     }
 }
 
@@ -262,12 +389,27 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
     #else
     m_LastMouse = event->pos();
     #endif // _QT6
+
+    /* The Swipe only works when we're in Wipe mode for Comparison -- else the Swiper isn't shown */
+    if (m_CompareMode == ComparisonMode::WIPE)
+    {
+        /* Convert the Swipe onto Qt Coordinates actual window width */
+        float swipex = (m_SwipeX + m_SwipeOffet) * width();
+
+        /* A Buffer of 10 pixels to allow swiping */
+        if (std::abs(m_LastMouse.x() - swipex) < 10.f)
+        {
+            /* Update to indicate that we're now swiping and not panning */
+            m_Swiping = true;
+        }
+    }
 }
 
 void VoidRenderer::mouseReleaseEvent(QMouseEvent* event)
 {
     /* And indicates that the mouse was released */
     m_Pressed = false;
+    m_Swiping = false;
 }
 
 void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
@@ -280,6 +422,39 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     int x = event->x();
     int y = event->y();
     #endif // _QT6
+
+    /* The Swipe only works when we're in Wipe mode for Comparison -- else the Swiper isn't shown */
+    if (m_CompareMode == ComparisonMode::WIPE)
+    {
+        /* Convert the Swipe onto Qt Coordinates actual window width */
+        float swipex = (m_SwipeX + m_SwipeOffet) * width();
+
+        /* A Buffer of 10 pixels to allow swiping */
+        if (std::abs(x - swipex) < 10.f)
+        {
+            /* Update the Mouse Cursor */
+            setCursor(Qt::SizeHorCursor);
+        }
+        else
+        {
+            /* Restore the cursor */
+            unsetCursor();
+        }
+
+        /* Check if we're Swiping */
+        if (m_Swiping)
+        {
+            /* Update the Swipe in it's normalized system (0.f - +1.f)*/
+            m_SwipeX = std::clamp(x / float(width()), 0.f, 1.f);
+    
+            /* Redraw the Texture */
+            update();
+    
+            /* Return from here and not affect the pan */
+            return;
+        }
+    }
+
 
     /**
      * If the mouse is currently Pressed
@@ -308,6 +483,12 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
          * This speed is also governed by how much we have zoomed in
          */
         float speed = 2.f / m_ZoomFactor;
+
+        /**
+         * Update the offset with which the swipe handle needs to be moved to maintain a 1:1
+         * placement with the panned texture
+         */
+        m_SwipeOffet += dx;
 
         /**
          * Open GL expects the 0, 0 of the texture on the bottom left
@@ -445,6 +626,38 @@ void VoidRenderer::Render(SharedPixels data)
     /* Hide the Error Label */
     m_DisplayLabel->setVisible(false);
 
+    /* We're no longer comparing */
+    m_CompareMode = ComparisonMode::NONE;
+
+    /* Clear Secondary Image Data*/
+    m_SecondaryImageData = nullptr;
+
+    /**
+     * Update the render resolution
+     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
+     * So constantly redrawing this is just too ineffecient
+     */
+    if (m_ImageData)
+        m_RenderStatus->SetRenderResolution(m_ImageData->Width(), m_ImageData->Height());
+
+    /* Trigger a Re-paint */
+    update();
+}
+
+void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend)
+{
+    /* Update the image data */
+    m_ImageData = first;
+    m_SecondaryImageData = second;
+
+    /* Update the Comparison Mode */
+    m_CompareMode = comparison;
+    /* Update the Blend Mode */
+    m_BlendMode = blend;
+
+    /* Hide the Error Label */
+    m_DisplayLabel->setVisible(false);
+
     /**
      * Update the render resolution
      * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
@@ -506,6 +719,9 @@ void VoidRenderer::ZoomToFit()
 
     /* Reset the panning as well */
     m_Pan = {0.f, 0.f};
+
+    /* Reset the SwipeOffset to make it come to it's original place */
+    m_SwipeOffet = 0.f;
 
     /* Repaint after the zoom attributes have been reset */
     update();

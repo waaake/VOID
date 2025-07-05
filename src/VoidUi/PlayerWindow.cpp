@@ -287,11 +287,19 @@ void VoidMainWindow::Build()
     
     m_ExitFullscreenAction = new QAction("Exit Fullscreen");
 
+    m_ToggleComparisonAction = new QAction("Toggle On/Off Comparison Mode");
+    m_ToggleComparisonAction->setShortcut(QKeySequence(Qt::Key_W));
+
     m_ViewerMenu->addAction(m_ZoomInAction);
     m_ViewerMenu->addAction(m_ZoomOutAction);
     m_ViewerMenu->addAction(m_ZoomToFitAction);
     m_ViewerMenu->addAction(m_FullscreenAction);
     m_ViewerMenu->addAction(m_ExitFullscreenAction);
+
+    /* -------------------------------- */
+    m_ViewerMenu->insertSeparator(m_ToggleComparisonAction);
+
+    m_ViewerMenu->addAction(m_ToggleComparisonAction);
     /* }}} */
 
     /* Window Menu {{{ */
@@ -365,6 +373,7 @@ void VoidMainWindow::Connect()
     connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
     connect(m_FullscreenAction, &QAction::triggered, m_Player, &Player::SetRendererFullscreen);
     connect(m_ExitFullscreenAction, &QAction::triggered, m_Player, &Player::ExitFullscreenRenderer);
+    connect(m_ToggleComparisonAction, &QAction::triggered, m_Player, [this]() { m_Player->SetComparisonMode(2); });
     /* }}} */
 
     connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });
@@ -397,18 +406,8 @@ void VoidMainWindow::CacheLookAhead()
     {
         std::thread t;
 
-        /* Grab the Active Media Clip, if that's set on the Player */
-        SharedMediaClip clip = m_Player->ActiveMediaClip();
-
-        /*
-         * Get the current media to cache frames on a thread
-         * Any frame which gets clicked on, in the timeslider caches the frame if not cached
-         * meanwhile this cache continues on
-         */
-        if (clip)
-            t = std::thread(&MediaClip::Cache, clip.get());
-        else
-            t = std::thread(&PlaybackTrack::Cache, m_Track.get());
+        /* Cache the active Buffers */
+        t = std::thread(&Player::CacheBuffer, m_Player);
 
         /* TODO: Replace with threadpool */
         /*
