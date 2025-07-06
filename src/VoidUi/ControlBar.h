@@ -39,7 +39,7 @@ public:
     ControlBar(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent = nullptr);
     virtual ~ControlBar();
 
-    /*
+    /**
      * Since the viewport could also have a zoom applied on itself, that value should then also
      * need to reflect on the zoom slider, and hence the zoom factor needs to be translated to Slider
      * space and then set on the Zoom slider
@@ -47,6 +47,11 @@ public:
      * the signals are blocked till the time the value has been set on the slider and unblocked after
      */
     void SetFromZoom(float zoom);
+
+    /**
+     * Sets the current Compare mode
+     */
+    inline void SetCompareMode(const Renderer::ComparisonMode& mode) { m_BufferSwitch->SetCompareMode(mode); }
 
 signals:
     void zoomChanged(const float factor);

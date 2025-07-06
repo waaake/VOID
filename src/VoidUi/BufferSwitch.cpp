@@ -4,7 +4,6 @@
 /* Internal */
 #include "BufferSwitch.h"
 #include "VoidCore/Logging.h"
-#include "VoidRenderer/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -88,6 +87,15 @@ void ComparisonModeSelector::Setup()
 
     /* Set the Default Radio Item check state */
     m_RadioActions.front()->setChecked(true);
+}
+
+void ComparisonModeSelector::SetCompareMode(const Renderer::ComparisonMode& mode)
+{
+    /* Update the Text on the Frame */
+    setText(Renderer::ComparisonModesMap.at(mode).c_str());
+
+    /* Emit the index of the Mode so that other components can receive them */
+    emit primaryIndexChanged(static_cast<int>(mode));
 }
 
 /* }}} */

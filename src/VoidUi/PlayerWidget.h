@@ -60,6 +60,10 @@ public:
      * Returns whether the player is currently fullscreen or not
      */
     [[nodiscard]] inline bool Fullscreen() { return m_Renderer->Fullscreen(); }
+    /**
+     * Returns true if the current comparison mode is not Compare None
+     */
+    [[nodiscard]] inline bool Comparing() { return m_ComparisonMode != Renderer::ComparisonMode::NONE; }
 
     /* Loads a Playable Media (clip) on the Player */
     void Load(const SharedMediaClip& media);

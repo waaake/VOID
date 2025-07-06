@@ -231,16 +231,20 @@ void Player::Load(const SharedPlaybackSequence& sequence)
 void Player::SetFrame(int frame)
 {
     /**
+     * Comparison Gets precedence --> If we're in comparing mode -> Compare Media frames
+     * the media frames could be from any component Track, Clip
+     */
+    if (Comparing())
+        return CompareMediaFrame(frame);
+
+    /**
      * Check what do we want to play
      * if currently playing component on the Active ViewerBuffer is Sequence, meaning that was latest set on it
      */
     if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Sequence)
         return SetSequenceFrame(frame);
     else if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Track)
-        return SetTrackFrame(frame);
-
-    if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
-        return CompareMediaFrame(frame);
+        return SetTrackFrame(frame);        
 
     return SetMediaFrame(frame);
 }
@@ -423,6 +427,13 @@ void Player::SetBlendMode(const int mode)
 
 void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
 {
+    /**
+     * If we're currently comparing -> Then reset the Compare Mode to be None and select the buffer
+     * which was currently opted
+     */
+    if (Comparing())
+        m_ControlBar->SetCompareMode(Renderer::ComparisonMode::NONE);
+
     /* Update the active buffer based on the provided buffer enum */
     if (buffer == PlayerViewBuffer::A)
     {
