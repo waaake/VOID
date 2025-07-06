@@ -190,6 +190,8 @@ void VoidRenderer::paintGL()
         /* Tell this to the shader to use this texture as the second sampler2D */
         glUniform1i(glGetUniformLocation(ProgramId(), "uTextureB"), 1);
 
+        CalculateModelViewProjection();
+
         GLuint projLoc = glGetUniformLocation(ProgramId(), "uMVP");
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(m_ModelViewProjection));
 
@@ -295,9 +297,6 @@ void VoidRenderer::resizeGL(int w, int h)
 {
     /* Adjust the viewport size */
     glViewport(0, 0, w, h);
-
-    /* On Resize, Recalculate the Model Projection */
-    CalculateModelViewProjection();
 }
 
 void VoidRenderer::resizeEvent(QResizeEvent* event)
@@ -434,7 +433,7 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         m_Pan += glm::vec2(dx * speed, -dy * speed);
 
         /* Redraw the image texture, this time with the translation offset applied */
-        Redraw();
+        update();
     }
 
     /* Update the X and Y Coordinates for the mouse movements */
@@ -490,7 +489,7 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
     VOID_LOG_INFO("Zoom Level: {0}", m_ZoomFactor);
 
     /* Repaint */
-    Redraw();
+    update();
 }
 
 void VoidRenderer::keyPressEvent(QKeyEvent* event)
@@ -586,7 +585,7 @@ void VoidRenderer::Render(SharedPixels data)
     }
 
     /* Trigger a Re-paint */
-    Redraw();
+    update();
 }
 
 void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend)
@@ -634,7 +633,7 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
     }
 
     /* Trigger a Re-paint */
-    Redraw();
+    update();
 }
 
 void VoidRenderer::Play()
@@ -691,7 +690,7 @@ void VoidRenderer::ZoomToFit()
     m_SwipeOffet = 0.f;
 
     /* Repaint after the zoom attributes have been reset */
-    Redraw();
+    update();
 }
 
 void VoidRenderer::UpdateZoom(const float zoom)
@@ -699,7 +698,7 @@ void VoidRenderer::UpdateZoom(const float zoom)
     m_ZoomFactor = zoom;
 
     /* Repaint */
-    Redraw();
+    update();
 }
 
 void VoidRenderer::SetExposure(const float exposure)
