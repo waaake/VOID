@@ -192,7 +192,6 @@ void VoidRenderer::paintGL()
         // /* If we're comparing something --> We should have the data from the secondary image as well */
         if (m_CompareMode != ComparisonMode::NONE && m_SecondaryImageData)
         {
-            // glGenTextures(1, &m_TextureB);
             /* Bind the texture for render */
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, m_TextureB);

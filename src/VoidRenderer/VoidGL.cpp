@@ -123,6 +123,7 @@ void main() {
             // Multiply the x of the TexCoord by 2 to cover off the entire screen worth of pixels (fragments)
             // [0.0, 0.5] when multiplied gives [0.0 - 1.0]
             vec2 texCoordA = vec2(TexCoord.x * 2.0, TexCoord.y);
+
             // Fetch the color from the calculated Texture Coordinate
             color = texture(uTexture, texCoordA);
         }
@@ -131,6 +132,7 @@ void main() {
             // Multiply the x of the TexCoord by 2 to cover off the entire screen worth of pixels (fragments)
             // [0.5, 1.0] when multiplied gives [0.0 - 1.0] effectively covering entire device coordinates
             vec2 texCoordB = vec2((TexCoord.x - 0.5) * 2.0, TexCoord.y);
+
             // Fetch the color from the calculated Texture Coordinate
             color = texture(uTextureB, texCoordB);
         }
@@ -144,6 +146,7 @@ void main() {
             // The Top Half of the screen
             // When Multiplied gives the y range as [0.0 - 1.0]
             vec2 texCoordA = vec2(TexCoord.x, TexCoord.y * 2.0);
+
             color = texture(uTexture, texCoordA);
         }
         else
@@ -151,6 +154,7 @@ void main() {
             // The Bottom Half of the screen
             // When Multiplied gives the y range as [0.0 - 1.0]
             vec2 texCoordB = vec2(TexCoord.x, (TexCoord.y - 0.5) * 2.0);
+
             color = texture(uTextureB, texCoordB);
         }
     }

@@ -370,7 +370,6 @@ void Player::SetMediaFrame(int frame)
 
 void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second)
 {
-    // SharedPixels f = first->Image();
     /* Update the Viewer Buffer with the Media Clips --> And then ask for them to be compared in the viewer */
     m_ViewBufferA->Set(first);
     m_ViewBufferB->Set(second);
