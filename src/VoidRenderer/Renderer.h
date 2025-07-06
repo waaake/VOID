@@ -43,6 +43,8 @@ public: /* Enums */
         NONE,
         WIPE,
         STACK,
+        HORIZONTAL,
+        VERTICAL
     };
 
     enum class BlendMode : int
@@ -208,6 +210,21 @@ private: /* Members */
     glm::vec2 m_Pan;
     Point m_LastMouse;
 
+private: /* Methods */
+    /**
+     * Based on the Comparison Mode this returns the factor with which the width of the view is divided
+     * to get the correct aspect for the Rendering of the texture
+     * This is needed for Horizontal and Vertical Comparisons to retain the aspect when two (or more) textures
+     * are simultaneously played
+     */
+    inline float WidthDivisor() const
+    {
+        return (m_CompareMode == ComparisonMode::HORIZONTAL) ? 2.f : 1.f;
+    }
+    inline float HeightDivisor() const
+    {
+        return (m_CompareMode == ComparisonMode::VERTICAL) ? 2.f : 1.f;
+    }
 };
 
 /**

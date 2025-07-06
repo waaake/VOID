@@ -230,6 +230,7 @@ void ControlBar::Connect()
     /* Viewer Buffer Switch */
     connect(m_BufferSwitch, &BufferSwitch::switched, this, &ControlBar::viewerBufferSwitched);
     connect(m_BufferSwitch, &BufferSwitch::compareModeChanged, this, &ControlBar::comparisonModeChanged);
+    connect(m_BufferSwitch, &BufferSwitch::blendModeChanged, this, &ControlBar::blendModeChanged);
 }
 
 float ControlBar::MapToZoom(int value)

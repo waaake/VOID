@@ -84,9 +84,10 @@ void BufferSwitch::Build()
     m_BufferA = new BufferPage(m_ViewerBufferA, PlayerViewBuffer::A);
     m_BufferB = new BufferPage(m_ViewerBufferB, PlayerViewBuffer::B);
 
-    m_ComparisonModes = new QComboBox;
-    // m_ComparisonModes->addItems({"Under", "Over", "Add", "Subtract", "Mix"});
-    m_ComparisonModes->addItems({"Off", "Wipe", "Stack"});
+    m_ComparisonModes = new SplitSectionSelector(this);
+    m_ComparisonModes->AddPrimaryItems({"Off", "Wipe", "Stack", "Horizontal", "Vertical"});
+    m_ComparisonModes->AddSeparator();
+    m_ComparisonModes->AddRadioItems({"Under", "Over"});
 
     /* Add to the Control Layout */
     m_Layout->addWidget(m_BufferA);
@@ -101,7 +102,8 @@ void BufferSwitch::Connect()
     connect(m_BufferB, &BufferPage::selected, this, &BufferSwitch::switched);
     
     /* Connect the Comparison Mode changes */
-    connect(m_ComparisonModes, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged), this, &BufferSwitch::compareModeChanged);
+    connect(m_ComparisonModes, &SplitSectionSelector::primaryIndexChanged, this, &BufferSwitch::compareModeChanged);
+    connect(m_ComparisonModes, &SplitSectionSelector::radioIndexChanged, this, &BufferSwitch::blendModeChanged);
 }
 
 /* }}} */

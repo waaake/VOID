@@ -73,6 +73,8 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::SetViewBuffer);
     /* ControlBar - Comparison Mode Changed -> Player - Set Comparison mode */
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
+    /* ControlBar - Blend Mode Changed -> Player - Set Blend mode */
+    connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
 
     /* Preference - updated -> Player - SetFromPreferences */
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &Player::SetFromPreferences);
@@ -379,10 +381,6 @@ void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second
 
 void Player::CompareMediaFrame(v_frame_t frame)
 {
-    // SharedPixels first = m_ViewBufferA->GetMediaClip()->Image(frame);
-    // SharedPixels second = m_ViewBufferB->GetMediaClip()->Image(frame);
-    // SharedPixels first
-
     /* Compare on the Viewer */
     m_Renderer->Compare(m_ViewBufferA->Image(frame), m_ViewBufferB->Image(frame), m_ComparisonMode, m_BlendMode);
 }
@@ -410,6 +408,18 @@ void Player::SetComparisonMode(int mode)
 
     /* Update to show the current frame */
     Refresh();
+}
+
+void Player::SetBlendMode(const int mode)
+{
+    /* Update the blend mode */
+    m_BlendMode = static_cast<VoidRenderer::BlendMode>(mode);
+
+    if (m_ComparisonMode != VoidRenderer::ComparisonMode::NONE)
+    {
+        /* Update to show the current frame */
+        Refresh();
+    }
 }
 
 void Player::SetViewBuffer(const PlayerViewBuffer& buffer)

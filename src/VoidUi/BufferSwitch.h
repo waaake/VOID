@@ -4,11 +4,11 @@
 /* Qt */
 #include <QLayout>
 #include <QFrame>
-#include <QComboBox>
 
 /* Internal */
 #include "Definition.h"
 #include "ViewerBuffer.h"
+#include "QExtensions/Frame.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -45,6 +45,7 @@ public:
 signals:
     void switched(const PlayerViewBuffer&);
     void compareModeChanged(const int);
+    void blendModeChanged(const int);
 
 private: /* Members */
     /* Main Layout */
@@ -55,7 +56,7 @@ private: /* Members */
     BufferPage* m_BufferB;
 
     /* Comparison Modes */
-    QComboBox* m_ComparisonModes;
+    SplitSectionSelector* m_ComparisonModes;
 
     /* Buffers */
     ViewerBuffer* m_ViewerBufferA;

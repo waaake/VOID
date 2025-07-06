@@ -26,6 +26,7 @@ add_library(
     Preferences/Preferences.cpp
     Preferences/PreferencesUI.cpp
     Preferences/PlayerPreferences.cpp
+    QExtensions/Frame.cpp
     QExtensions/PushButton.cpp
 )
 

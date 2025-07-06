@@ -56,6 +56,7 @@ signals:
     void viewerBufferSwitched(const PlayerViewBuffer&);
     void channelModeChanged(const int);
     void comparisonModeChanged(const int);
+    void blendModeChanged(const int);
 
 protected:
     void paintEvent(QPaintEvent* event) override;

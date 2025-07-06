@@ -63,6 +63,10 @@ void main() {
     // 0 indicates No Comparison (OFF state for Compare Mode)
     // 1 indicates Wipe (The swipe determines what pixels to read from A and what from B)
     // 2 indicates Stack (full pixels be it from A or B)
+    // 3 indicates Horizontal Stacking ([Texture A] [Texture B])
+    // 4 indicates Vertical Stacking
+    // ( [Texture A]
+    //   [Texture B] )
     if (comparisonMode == 0)
     {
         // The Color will always be the Primary Buffer (A or B in renderer terms)
@@ -89,7 +93,7 @@ void main() {
                     color = colorB;
         }
     }
-    else
+    else if (comparisonMode == 2)
     {
         // Outcolor based on blend mode
         switch (blendMode)
@@ -110,35 +114,49 @@ void main() {
                 color = colorA; 
         }
     }
+    else if (comparisonMode == 3)
+    {
+        // Outcolor uses both textures (Left side is Texture A | Right Side is Texture B)
+        // Split by half (0.5)
+        if (TexCoord.x < 0.5)
+        {
+            // Multiply the x of the TexCoord by 2 to cover off the entire screen worth of pixels (fragments)
+            // [0.0, 0.5] when multiplied gives [0.0 - 1.0]
+            vec2 texCoordA = vec2(TexCoord.x * 2.0, TexCoord.y);
+            // Fetch the color from the calculated Texture Coordinate
+            color = texture(uTexture, texCoordA);
+        }
+        else
+        {
+            // Multiply the x of the TexCoord by 2 to cover off the entire screen worth of pixels (fragments)
+            // [0.5, 1.0] when multiplied gives [0.0 - 1.0] effectively covering entire device coordinates
+            vec2 texCoordB = vec2((TexCoord.x - 0.5) * 2.0, TexCoord.y);
+            // Fetch the color from the calculated Texture Coordinate
+            color = texture(uTextureB, texCoordB);
+        }
+    }
+    else
+    {
+        // Outcolor uses both textures (Top is Texture A | Bottom is Texture B)
+        // Split Height by half (0.5)
+        if (TexCoord.y < 0.5)
+        {
+            // The Top Half of the screen
+            // When Multiplied gives the y range as [0.0 - 1.0]
+            vec2 texCoordA = vec2(TexCoord.x, TexCoord.y * 2.0);
+            color = texture(uTexture, texCoordA);
+        }
+        else
+        {   
+            // The Bottom Half of the screen
+            // When Multiplied gives the y range as [0.0 - 1.0]
+            vec2 texCoordB = vec2(TexCoord.x, (TexCoord.y - 0.5) * 2.0);
+            color = texture(uTextureB, texCoordB);
+        }
+    }
 
     // By Now we know the pixel color which will be finally rendered
     // Next are the adjustments for exposure and color
-
-    // // Get the outcolor based on the comparison mode
-    // switch (comparisonMode)
-    // {
-    //     case 0:
-    //         color = colorA;
-    //         break;
-    //     case 1:
-    //         // color = colorB;
-    //         if (TexCoord.x < swipe)
-    //             color = colorB;
-    //         else
-    //             color = colorA;
-    //         break;
-    //     case 2:
-    //         color = colorA + colorB;
-    //         break;
-    //     case 3:
-    //         color = colorA - colorB;
-    //         break;
-    //     case 4:
-    //         color = mix(colorA, colorB, 0.5);
-    //         break;
-    //     default:
-    //         color = colorA;
-    // }
 
     // Apply linear gain multiplier
     color.rgb *= gain;

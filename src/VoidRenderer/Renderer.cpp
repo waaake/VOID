@@ -168,22 +168,13 @@ void VoidRenderer::paintGL()
 
     if (m_ImageData && !m_ImageData->Empty())
     {
-        /* Texture ID */
-        // unsigned int texture;
-        // unsigned int textureB;
-
-        // glGenTextures(1, &texture);
-        // glBindTexture(GL_TEXTURE_2D, texture);
-
+        /* Use the Main Image Render Program */
         glUseProgram(ProgramId());
 
         /**
          * Bind the shader program to use for
          */
         Bind();
-
-        // glGenTextures(1, &m_TextureA);
-        // glGenTextures(1, &m_TextureB);
 
         glActiveTexture(GL_TEXTURE0);
         /* Bind the Generated texture for Render */
@@ -221,7 +212,7 @@ void VoidRenderer::paintGL()
          * Calculate the aspect of the current view (Renderer Width / Renderer Height)
          * And the aspect of the image being rendered
          */
-        float viewAspect = float(width()) / float(height());
+        float viewAspect = (width() / WidthDivisor()) / (height() / HeightDivisor());
         float imageAspect = float(m_ImageData->Width()) / float((m_ImageData->Height() ? m_ImageData->Height() : 1));
 
         /* Find the overall scale of the image */
@@ -280,13 +271,6 @@ void VoidRenderer::paintGL()
          */
         SetUniform("swipeX", m_SwipeX);
 
-        // /* Bind texture */
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, m_TextureA);
-
-        // glActiveTexture(GL_TEXTURE1);
-        // glBindTexture(GL_TEXTURE_2D, m_TextureB);
-
         /* And the Vertex Array */
         glBindVertexArray(VAO);
 
@@ -309,9 +293,6 @@ void VoidRenderer::paintGL()
          */
         /* Unbind texture */
         glBindTexture(GL_TEXTURE_2D, 0);
-        /* Destroy texture */
-        // glDeleteTextures(1, &m_TextureA);
-        // glDeleteTextures(1, &m_TextureB);
 
         /* Release the active shader program from the current OpenGL Context */
         Release();
@@ -344,7 +325,7 @@ void VoidRenderer::paintGL()
             /* Set Model View Projection Matrix */
             glUniformMatrix4fv(glGetUniformLocation(SwipeProgramId(), "uMVP"), 1, GL_FALSE, glm::value_ptr(swiperMvp));
             /* Set the Color */
-            float color[3] = {1.f, 0.f, 1.f};
+            float color[3] = {1.f, 1.f, 1.f};
             glUniform3fv(glGetUniformLocation(SwipeProgramId(), "uColor"), 1, color);
 
             /* Bind the Array */
