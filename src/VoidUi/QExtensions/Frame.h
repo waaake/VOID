@@ -1,6 +1,9 @@
 #ifndef _VOID_Q_EXT_FRAME_H
 #define _VOID_Q_EXT_FRAME_H
 
+/* STD */
+#include <vector>
+
 /* Qt */
 #include <QFrame>
 #include <QPushButton>
@@ -48,6 +51,9 @@ signals:
      * emits the index of the Item in the Radio List
      */
     void radioIndexChanged(const int);
+
+protected: /* Members */
+    std::vector<QAction*> m_RadioActions;
 
 private: /* Members */
     QMenu* m_Menu;

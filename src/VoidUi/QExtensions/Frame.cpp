@@ -19,6 +19,12 @@ SplitSectionSelector::SplitSectionSelector(QWidget* parent)
 
 SplitSectionSelector::~SplitSectionSelector()
 {
+    /**
+     * Remove Entities from the Vector
+     * the pointer to that action will get removed internally when the menu is deleted
+     */
+    m_RadioActions.clear();
+
     m_Menu->deleteLater();
 }
 
@@ -60,6 +66,9 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
 
         /* Add to the Menu */
         m_Menu->addAction(action);
+
+        /* Store them in the Vector */
+        m_RadioActions.push_back(action);
     }
 }
 

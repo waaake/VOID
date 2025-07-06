@@ -34,6 +34,18 @@ private: /* Members */
     PlayerViewBuffer m_Buffer;
 };
 
+class ComparisonModeSelector : public SplitSectionSelector
+{
+public:
+    ComparisonModeSelector(QWidget* parent = nullptr);
+
+private:
+    /**
+     * Setup the Comparison Modes and Default values
+     */
+    void Setup();
+};
+
 class BufferSwitch : public QWidget
 {
     Q_OBJECT
@@ -56,7 +68,7 @@ private: /* Members */
     BufferPage* m_BufferB;
 
     /* Comparison Modes */
-    SplitSectionSelector* m_ComparisonModes;
+    ComparisonModeSelector* m_ComparisonModes;
 
     /* Buffers */
     ViewerBuffer* m_ViewerBufferA;

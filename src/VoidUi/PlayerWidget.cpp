@@ -10,8 +10,8 @@ VOID_NAMESPACE_OPEN
 
 Player::Player(QWidget* parent)
     : QWidget(parent)
-    , m_ComparisonMode(VoidRenderer::ComparisonMode::NONE)
-    , m_BlendMode(VoidRenderer::BlendMode::OVER)
+    , m_ComparisonMode(Renderer::ComparisonMode::NONE)
+    , m_BlendMode(Renderer::BlendMode::UNDER)
     , m_MFrameHandler(static_cast<MissingFrameHandler>(VoidPreferences::Instance().GetMissingFrameHandler()))
 {
     /* Init the Viewer Buffer */
@@ -239,7 +239,7 @@ void Player::SetFrame(int frame)
     else if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Track)
         return SetTrackFrame(frame);
 
-    if (m_ComparisonMode != VoidRenderer::ComparisonMode::NONE)
+    if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
         return CompareMediaFrame(frame);
 
     return SetMediaFrame(frame);
@@ -388,9 +388,9 @@ void Player::CompareMediaFrame(v_frame_t frame)
 void Player::SetComparisonMode(int mode)
 {
     /* Update Comparison Mode */
-    m_ComparisonMode = static_cast<VoidRenderer::ComparisonMode>(mode);
+    m_ComparisonMode = static_cast<Renderer::ComparisonMode>(mode);
 
-    if (m_ComparisonMode != VoidRenderer::ComparisonMode::NONE)
+    if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
     {
         /* Mark both the viewer Buffers as active */
         m_ViewBufferA->SetActive(true);
@@ -413,9 +413,9 @@ void Player::SetComparisonMode(int mode)
 void Player::SetBlendMode(const int mode)
 {
     /* Update the blend mode */
-    m_BlendMode = static_cast<VoidRenderer::BlendMode>(mode);
+    m_BlendMode = static_cast<Renderer::BlendMode>(mode);
 
-    if (m_ComparisonMode != VoidRenderer::ComparisonMode::NONE)
+    if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
     {
         /* Update to show the current frame */
         Refresh();

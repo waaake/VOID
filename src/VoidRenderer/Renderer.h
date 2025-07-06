@@ -11,13 +11,13 @@
 
 /* Qt */
 #include <QOpenGLWidget>
-#include <QImage>
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
 
 /* Internal */
 #include "PixReader.h"
 #include "QDefinition.h"
+#include "RenderTypes.h"
 #include "RendererStatus.h"
 
 VOID_NAMESPACE_OPEN
@@ -26,40 +26,16 @@ class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
 {
     Q_OBJECT
 
-public: /* Enums */
-
-    enum class ChannelMode : int
-    {
-        RED,    // Show the Red Channel
-        GREEN,  // The Green channel
-        BLUE,   // The Blue channel
-        ALPHA,  // Alpha Channel
-        RGB,    // RGB Channels leaving alpha out
-        RGBA    // RGBA or all channels mostly
-    };
-
-    enum class ComparisonMode : int
-    {
-        NONE,
-        WIPE,
-        STACK,
-        HORIZONTAL,
-        VERTICAL
-    };
-
-    enum class BlendMode : int
-    {
-        UNDER,
-        OVER,
-        MINUS,
-        DIFF,
-    };
-
 private: /* Members */
     QOpenGLTexture* m_Texture;
     SharedPixels m_ImageData;
     SharedPixels m_SecondaryImageData;
     std::string m_Path;
+
+    /* Enum Types */
+    using ChannelMode = Renderer::ChannelMode;
+    using ComparisonMode = Renderer::ComparisonMode;
+    using BlendMode = Renderer::BlendMode;
 
 public:
     VoidRenderer(QWidget* parent = nullptr);

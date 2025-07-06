@@ -13,6 +13,7 @@
 #include "Sequence.h"
 #include "ViewerBuffer.h"
 #include "VoidCore/Media.h"
+#include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/Renderer.h"
 
 VOID_NAMESPACE_OPEN
@@ -197,11 +198,11 @@ private:  /* Members */
     /**
      * Set a comparison Mode on the Player (of how to compare the data from the buffers)
      */
-    VoidRenderer::ComparisonMode m_ComparisonMode;
+    Renderer::ComparisonMode m_ComparisonMode;
     /**
      * Set a blend mode on the Player (how to blend the data being currently compared)
      */
-    VoidRenderer::BlendMode m_BlendMode;
+    Renderer::BlendMode m_BlendMode;
 
     /**
      * Playable Governing Component
