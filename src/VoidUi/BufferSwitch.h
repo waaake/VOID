@@ -9,6 +9,7 @@
 #include "Definition.h"
 #include "ViewerBuffer.h"
 #include "QExtensions/Frame.h"
+#include "VoidRenderer/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -39,6 +40,11 @@ class ComparisonModeSelector : public SplitSectionSelector
 public:
     ComparisonModeSelector(QWidget* parent = nullptr);
 
+    /**
+     * Sets the Comparison Mode
+     */
+    void SetCompareMode(const Renderer::ComparisonMode& mode);
+
 private:
     /**
      * Setup the Comparison Modes and Default values
@@ -53,6 +59,8 @@ class BufferSwitch : public QWidget
 public:
     BufferSwitch(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent = nullptr);
     ~BufferSwitch();
+
+    inline void SetCompareMode(const Renderer::ComparisonMode& mode) { m_ComparisonModes->SetCompareMode(mode); }
 
 signals:
     void switched(const PlayerViewBuffer&);
