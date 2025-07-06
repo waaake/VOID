@@ -28,8 +28,8 @@ class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
 
 private: /* Members */
     QOpenGLTexture* m_Texture;
-    SharedPixels m_ImageData;
-    SharedPixels m_SecondaryImageData;
+    SharedPixels m_ImageA;
+    SharedPixels m_ImageB;
     std::string m_Path;
 
     /* Enum Types */
@@ -148,6 +148,11 @@ private: /* Members */
      */
     unsigned int m_TextureA, m_TextureB;
 
+    /**
+     * ModelViewProjection matrix for the Texture
+     */
+    glm::mat4 m_ModelViewProjection;
+
     /* Channels to display on the viewport */
     ChannelMode m_ChannelMode;
 
@@ -201,6 +206,20 @@ private: /* Methods */
     {
         return (m_CompareMode == ComparisonMode::VERTICAL) ? 2.f : 1.f;
     }
+
+    /**
+     * Redraw after calculating the Projection Matrix
+     */
+    inline void Redraw()
+    {
+        CalculateModelViewProjection();
+        update(); // Redraw
+    }
+
+    /**
+     * Calculates the ModelViewProjection Matrix for the Image Texture
+     */
+    void CalculateModelViewProjection();
 };
 
 /**

@@ -23,8 +23,8 @@ VOID_NAMESPACE_OPEN
 VoidRenderer::VoidRenderer(QWidget* parent)
     : QOpenGLWidget(parent)
     , m_Texture(nullptr)
-    , m_ImageData(nullptr)
-    , m_SecondaryImageData(nullptr)
+    , m_ImageA(nullptr)
+    , m_ImageB(nullptr)
     , m_Exposure(0.f)
     , m_Gamma(1.f)
     , m_Gain(1.f)
@@ -166,7 +166,7 @@ void VoidRenderer::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (m_ImageData && !m_ImageData->Empty())
+    if (m_ImageA && !m_ImageA->Empty())
     {
         /* Use the Main Image Render Program */
         glUseProgram(ProgramId());
@@ -183,63 +183,17 @@ void VoidRenderer::paintGL()
         /* Tell the shader what texture to use */
         glUniform1i(glGetUniformLocation(ProgramId(), "uTexture"), 0);
 
-        /**
-         * Load the image data onto the Texture 2D
-         */
-        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageData->GLFormat(), m_ImageData->Width(), m_ImageData->Height(), 0, m_ImageData->GLFormat(), m_ImageData->GLType(), m_ImageData->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        /* Bind the texture for render */
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_TextureB);
 
-        // /* If we're comparing something --> We should have the data from the secondary image as well */
-        if (m_CompareMode != ComparisonMode::NONE && m_SecondaryImageData)
-        {
-            /* Bind the texture for render */
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, m_TextureB);
+        /* Tell this to the shader to use this texture as the second sampler2D */
+        glUniform1i(glGetUniformLocation(ProgramId(), "uTextureB"), 1);
 
-            /* Tell this to the shader to use this texture as the second sampler2D */
-            glUniform1i(glGetUniformLocation(ProgramId(), "uTextureB"), 1);
-
-            /**
-             * Load the image data onto the Texture 2D
-             */
-            glTexImage2D(GL_TEXTURE_2D, 0, m_SecondaryImageData->GLFormat(), m_SecondaryImageData->Width(), m_SecondaryImageData->Height(), 0, m_SecondaryImageData->GLFormat(), m_SecondaryImageData->GLType(), m_SecondaryImageData->Pixels());
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        }
-
-        /**
-         * To ensure the image is of the correct aspect while render
-         * Calculate the aspect of the current view (Renderer Width / Renderer Height)
-         * And the aspect of the image being rendered
-         */
-        float viewAspect = (width() / WidthDivisor()) / (height() / HeightDivisor());
-        float imageAspect = float(m_ImageData->Width()) / float((m_ImageData->Height() ? m_ImageData->Height() : 1));
-
-        /* Find the overall scale of the image */
-        glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
-
-        /**
-         * Get the Model matrix,
-         * This is how our image/model looks like as a 4x4 matrix
-         */
-        glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
-
-        /* Update the model with the aspect and the zoom scale */
-        model = glm::scale(model, glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
-
-        /**
-         * And the projection matrix of how it's supposed to be projected on the viewport
-         * Holds the scaling and aspect
-         */
-        glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
-
-        /*
-         * Calculate the model view prohection matrix
-         * For any 2D Texture/image the transform from the camera is unity
-         */
-        glm::mat4 mvp = model * projection; // * unity view i.e. glm::mat4(1.f)
+        CalculateModelViewProjection();
 
         GLuint projLoc = glGetUniformLocation(ProgramId(), "uMVP");
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(m_ModelViewProjection));
 
         /* Update the viewer properties to the shader */
         SetUniform("exposure", m_Exposure);
@@ -602,7 +556,7 @@ void VoidRenderer::keyPressEvent(QKeyEvent* event)
 void VoidRenderer::Render(SharedPixels data)
 {
     /* Update the image data */
-    m_ImageData = data;
+    m_ImageA = data;
     /* Hide the Error Label */
     m_DisplayLabel->setVisible(false);
 
@@ -610,15 +564,25 @@ void VoidRenderer::Render(SharedPixels data)
     m_CompareMode = ComparisonMode::NONE;
 
     /* Clear Secondary Image Data*/
-    m_SecondaryImageData = nullptr;
+    m_ImageB = nullptr;
 
     /**
      * Update the render resolution
      * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
      * So constantly redrawing this is just too ineffecient
      */
-    if (m_ImageData)
-        m_RenderStatus->SetRenderResolution(m_ImageData->Width(), m_ImageData->Height());
+    if (m_ImageA)
+    {
+        m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+
+        /* Bind the Generated texture for Render */
+        glBindTexture(GL_TEXTURE_2D, m_TextureA);
+        /**
+         * Load the image data onto the Texture 2D
+         */
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
 
     /* Trigger a Re-paint */
     update();
@@ -627,8 +591,8 @@ void VoidRenderer::Render(SharedPixels data)
 void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend)
 {
     /* Update the image data */
-    m_ImageData = first;
-    m_SecondaryImageData = second;
+    m_ImageA = first;
+    m_ImageB = second;
 
     /* Update the Comparison Mode */
     m_CompareMode = comparison;
@@ -643,8 +607,30 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
      * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
      * So constantly redrawing this is just too ineffecient
      */
-    if (m_ImageData)
-        m_RenderStatus->SetRenderResolution(m_ImageData->Width(), m_ImageData->Height());
+    if (m_ImageA)
+    {
+        m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+
+        /* Bind the Generated texture for Render */
+        glBindTexture(GL_TEXTURE_2D, m_TextureA);
+        /**
+         * Load the image data onto the Texture 2D
+         */
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
+
+    if (m_ImageB)
+    {
+        /* Bind the texture for render */
+        glBindTexture(GL_TEXTURE_2D, m_TextureB);
+
+        /**
+         * Load the image data onto the Texture 2D
+         */
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageB->GLFormat(), m_ImageB->Width(), m_ImageB->Height(), 0, m_ImageB->GLFormat(), m_ImageB->GLType(), m_ImageB->Pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
+    }
 
     /* Trigger a Re-paint */
     update();
@@ -658,7 +644,7 @@ void VoidRenderer::Play()
 void VoidRenderer::Clear()
 {
     /* Delete the reference to the Image Data */
-    m_ImageData = nullptr;
+    m_ImageA = nullptr;
     /* Clear the frame */
     ClearFrame();
     /* Hide the Error Label */
@@ -755,6 +741,47 @@ void VoidRenderer::PrepareFullscreen()
 
     /* And update the state to allow the keyboard presses to work as shortcuts */
     m_Fullscreen = true;
+}
+
+void VoidRenderer::CalculateModelViewProjection()
+{
+    /**
+     * No Image Data to Proceed
+     */
+    if (!m_ImageA || m_ImageA->Empty())
+        return;
+
+    /**
+     * To ensure the image is of the correct aspect while render
+     * Calculate the aspect of the current view (Renderer Width / Renderer Height)
+     * And the aspect of the image being rendered
+     */
+    float viewAspect = (width() / WidthDivisor()) / (height() / HeightDivisor());
+    float imageAspect = float(m_ImageA->Width()) / float((m_ImageA->Height() ? m_ImageA->Height() : 1));
+
+    /* Find the overall scale of the image */
+    glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
+
+    /**
+     * Get the Model matrix,
+     * This is how our image/model looks like as a 4x4 matrix
+     */
+    glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
+
+    /* Update the model with the aspect and the zoom scale */
+    model = glm::scale(model, glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
+
+    /**
+     * And the projection matrix of how it's supposed to be projected on the viewport
+     * Holds the scaling and aspect
+     */
+    glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+
+    /*
+        * Calculate the model view prohection matrix
+        * For any 2D Texture/image the transform from the camera is unity
+        */
+    m_ModelViewProjection = model * projection; // * unity view i.e. glm::mat4(1.f)    
 }
 
 /* Placeholder Renderer {{{ */
