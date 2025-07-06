@@ -28,8 +28,8 @@ class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
 
 private: /* Members */
     QOpenGLTexture* m_Texture;
-    SharedPixels m_ImageData;
-    SharedPixels m_SecondaryImageData;
+    SharedPixels m_ImageA;
+    SharedPixels m_ImageB;
     std::string m_Path;
 
     /* Enum Types */
@@ -205,6 +205,15 @@ private: /* Methods */
     inline float HeightDivisor() const
     {
         return (m_CompareMode == ComparisonMode::VERTICAL) ? 2.f : 1.f;
+    }
+
+    /**
+     * Redraw after calculating the Projection Matrix
+     */
+    inline void Redraw()
+    {
+        CalculateModelViewProjection();
+        update(); // Redraw
     }
 
     /**
