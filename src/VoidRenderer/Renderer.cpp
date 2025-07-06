@@ -206,40 +206,8 @@ void VoidRenderer::paintGL()
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         }
 
-        /**
-         * To ensure the image is of the correct aspect while render
-         * Calculate the aspect of the current view (Renderer Width / Renderer Height)
-         * And the aspect of the image being rendered
-         */
-        float viewAspect = (width() / WidthDivisor()) / (height() / HeightDivisor());
-        float imageAspect = float(m_ImageData->Width()) / float((m_ImageData->Height() ? m_ImageData->Height() : 1));
-
-        /* Find the overall scale of the image */
-        glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
-
-        /**
-         * Get the Model matrix,
-         * This is how our image/model looks like as a 4x4 matrix
-         */
-        glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
-
-        /* Update the model with the aspect and the zoom scale */
-        model = glm::scale(model, glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
-
-        /**
-         * And the projection matrix of how it's supposed to be projected on the viewport
-         * Holds the scaling and aspect
-         */
-        glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
-
-        /*
-         * Calculate the model view prohection matrix
-         * For any 2D Texture/image the transform from the camera is unity
-         */
-        glm::mat4 mvp = model * projection; // * unity view i.e. glm::mat4(1.f)
-
         GLuint projLoc = glGetUniformLocation(ProgramId(), "uMVP");
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(m_ModelViewProjection));
 
         /* Update the viewer properties to the shader */
         SetUniform("exposure", m_Exposure);
@@ -343,6 +311,9 @@ void VoidRenderer::resizeGL(int w, int h)
 {
     /* Adjust the viewport size */
     glViewport(0, 0, w, h);
+
+    /* On Resize, Recalculate the Model Projection */
+    CalculateModelViewProjection();
 }
 
 void VoidRenderer::resizeEvent(QResizeEvent* event)
@@ -620,6 +591,8 @@ void VoidRenderer::Render(SharedPixels data)
     if (m_ImageData)
         m_RenderStatus->SetRenderResolution(m_ImageData->Width(), m_ImageData->Height());
 
+    CalculateModelViewProjection();
+
     /* Trigger a Re-paint */
     update();
 }
@@ -645,6 +618,8 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
      */
     if (m_ImageData)
         m_RenderStatus->SetRenderResolution(m_ImageData->Width(), m_ImageData->Height());
+
+    CalculateModelViewProjection();
 
     /* Trigger a Re-paint */
     update();
@@ -755,6 +730,47 @@ void VoidRenderer::PrepareFullscreen()
 
     /* And update the state to allow the keyboard presses to work as shortcuts */
     m_Fullscreen = true;
+}
+
+void VoidRenderer::CalculateModelViewProjection()
+{
+    /**
+     * No Image Data to Proceed
+     */
+    if (!m_ImageData || m_ImageData->Empty())
+        return;
+
+    /**
+     * To ensure the image is of the correct aspect while render
+     * Calculate the aspect of the current view (Renderer Width / Renderer Height)
+     * And the aspect of the image being rendered
+     */
+    float viewAspect = (width() / WidthDivisor()) / (height() / HeightDivisor());
+    float imageAspect = float(m_ImageData->Width()) / float((m_ImageData->Height() ? m_ImageData->Height() : 1));
+
+    /* Find the overall scale of the image */
+    glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
+
+    /**
+     * Get the Model matrix,
+     * This is how our image/model looks like as a 4x4 matrix
+     */
+    glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
+
+    /* Update the model with the aspect and the zoom scale */
+    model = glm::scale(model, glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
+
+    /**
+     * And the projection matrix of how it's supposed to be projected on the viewport
+     * Holds the scaling and aspect
+     */
+    glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+
+    /*
+        * Calculate the model view prohection matrix
+        * For any 2D Texture/image the transform from the camera is unity
+        */
+    m_ModelViewProjection = model * projection; // * unity view i.e. glm::mat4(1.f)    
 }
 
 /* Placeholder Renderer {{{ */

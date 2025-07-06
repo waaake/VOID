@@ -148,6 +148,11 @@ private: /* Members */
      */
     unsigned int m_TextureA, m_TextureB;
 
+    /**
+     * ModelViewProjection matrix for the Texture
+     */
+    glm::mat4 m_ModelViewProjection;
+
     /* Channels to display on the viewport */
     ChannelMode m_ChannelMode;
 
@@ -201,6 +206,11 @@ private: /* Methods */
     {
         return (m_CompareMode == ComparisonMode::VERTICAL) ? 2.f : 1.f;
     }
+
+    /**
+     * Calculates the ModelViewProjection Matrix for the Image Texture
+     */
+    void CalculateModelViewProjection();
 };
 
 /**
