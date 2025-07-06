@@ -8,6 +8,7 @@
 /* Internal */
 #include "Definition.h"
 #include "ViewerBuffer.h"
+#include "QExtensions/Frame.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -33,6 +34,18 @@ private: /* Members */
     PlayerViewBuffer m_Buffer;
 };
 
+class ComparisonModeSelector : public SplitSectionSelector
+{
+public:
+    ComparisonModeSelector(QWidget* parent = nullptr);
+
+private:
+    /**
+     * Setup the Comparison Modes and Default values
+     */
+    void Setup();
+};
+
 class BufferSwitch : public QWidget
 {
     Q_OBJECT
@@ -43,6 +56,8 @@ public:
 
 signals:
     void switched(const PlayerViewBuffer&);
+    void compareModeChanged(const int);
+    void blendModeChanged(const int);
 
 private: /* Members */
     /* Main Layout */
@@ -51,6 +66,9 @@ private: /* Members */
     /* Buffer Pages */
     BufferPage* m_BufferA;
     BufferPage* m_BufferB;
+
+    /* Comparison Modes */
+    ComparisonModeSelector* m_ComparisonModes;
 
     /* Buffers */
     ViewerBuffer* m_ViewerBufferA;

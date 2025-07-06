@@ -31,11 +31,15 @@ public:
     inline void Bind() { m_Shader->bind(); }
     inline void Release() { m_Shader->release(); }
 
+    inline void BindSwiper() { m_SwipeShader->bind(); }
+    inline void ReleaseSwiper() { m_SwipeShader->release(); }
+
     /**
      * Sets Uniform value on the shader program
      */
     inline void SetUniform(const std::string& name, float value) { m_Shader->setUniformValue(name.c_str(), value); }
     inline void SetUniform(const std::string& name, int value) { m_Shader->setUniformValue(name.c_str(), value); }
+    inline void SetUniform(const std::string& name, unsigned int value) { m_Shader->setUniformValue(name.c_str(), value); }
     inline void SetUniform(const std::string& name, const QMatrix4x4& value) { m_Shader->setUniformValue(name.c_str(), value); }
 
     /**
@@ -43,9 +47,11 @@ public:
      * Returns whether the shaders were loaded correctly or not
      */
     bool LoadShaders();
+    bool LoadSwipeShaders();
 
     inline QOpenGLShaderProgram* GetShader() const { return m_Shader; }
     inline unsigned int ProgramId() const { return m_Shader->programId(); }
+    inline unsigned int SwipeProgramId() const { return m_SwipeShader->programId(); }
 
     /**
      * Sets Core Profile for OpenGL
@@ -56,6 +62,7 @@ public:
 
 private:
     QOpenGLShaderProgram* m_Shader;
+    QOpenGLShaderProgram* m_SwipeShader;
 
 };
 

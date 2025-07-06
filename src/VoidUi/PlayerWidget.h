@@ -13,6 +13,7 @@
 #include "Sequence.h"
 #include "ViewerBuffer.h"
 #include "VoidCore/Media.h"
+#include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/Renderer.h"
 
 VOID_NAMESPACE_OPEN
@@ -69,6 +70,13 @@ public:
     /* Load a Sequence to be played on the Player */
     void Load(const SharedPlaybackSequence& sequence);
 
+    /* Sets the comparison mode for comparing the two buffers */
+    void SetComparisonMode(int mode);
+    void SetBlendMode(int mode);
+
+    /* Compare Media on the Player */
+    void Compare(const SharedMediaClip& first, const SharedMediaClip& second);
+
     /* Set a frame on the player based on the media */
     void SetFrame(int frame);
 
@@ -90,7 +98,8 @@ public:
     void SetViewBuffer(const PlayerViewBuffer& buffer);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
-    inline void ClearCache() { m_ActiveViewBuffer->ClearCache(); }
+    void CacheBuffer();
+    void ClearCache();
 
     /* Zoom on the Viewport */
     inline void ZoomIn() { m_Renderer->ZoomIn(); }
@@ -159,6 +168,9 @@ private:  /* Methods */
     /* Loads the frame from the media in the player */
     void SetMediaFrame(int frame);
 
+    /* Sets the Comparison Buffer frame */
+    void CompareMediaFrame(v_frame_t frame);
+
     /**
      * Connects the signals from SharedMediaClip (i.e. shared_ptr for MediaClip)
      */
@@ -182,6 +194,15 @@ private:  /* Members */
      * Providing tweak controls and how the viewer behaves
      */
     ControlBar* m_ControlBar;
+
+    /**
+     * Set a comparison Mode on the Player (of how to compare the data from the buffers)
+     */
+    Renderer::ComparisonMode m_ComparisonMode;
+    /**
+     * Set a blend mode on the Player (how to blend the data being currently compared)
+     */
+    Renderer::BlendMode m_BlendMode;
 
     /**
      * Playable Governing Component

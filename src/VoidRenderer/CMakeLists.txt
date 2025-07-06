@@ -4,6 +4,7 @@ add_library(
     SHARED
     Renderer.cpp
     RendererStatus.cpp
+    RenderTypes.h
     VoidGL.cpp
 )
 

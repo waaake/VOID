@@ -4,6 +4,7 @@
 /* Internal */
 #include "BufferSwitch.h"
 #include "VoidCore/Logging.h"
+#include "VoidRenderer/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -55,6 +56,42 @@ void BufferPage::mousePressEvent(QMouseEvent* event)
 
 /* }}} */
 
+/* Comparison Mode Selector {{{ */
+
+ComparisonModeSelector::ComparisonModeSelector(QWidget* parent)
+    : SplitSectionSelector(parent)
+{
+    /* Setup UI values */
+    Setup();
+}
+
+void ComparisonModeSelector::Setup()
+{
+    /* Add the Primary Menu Items */
+    QStringList comparisonModes;
+    QStringList blendModes;
+
+    /* Add the Renderer Comparison Modes */
+    for (auto it: Renderer::ComparisonModesMap)
+        comparisonModes << it.second.c_str();
+
+    /* And the Renderer Blend Modes */
+    for (auto it: Renderer::BlendModesMap)
+        blendModes << it.second.c_str();
+
+    AddPrimaryItems(comparisonModes);
+    /* Add a Separator After the Primary Items */
+    AddSeparator();
+
+    /* Radio Items */
+    AddRadioItems(blendModes);
+
+    /* Set the Default Radio Item check state */
+    m_RadioActions.front()->setChecked(true);
+}
+
+/* }}} */
+
 /* Buffer Switch {{{ */
 
 BufferSwitch::BufferSwitch(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent)
@@ -84,8 +121,11 @@ void BufferSwitch::Build()
     m_BufferA = new BufferPage(m_ViewerBufferA, PlayerViewBuffer::A);
     m_BufferB = new BufferPage(m_ViewerBufferB, PlayerViewBuffer::B);
 
+    m_ComparisonModes = new ComparisonModeSelector(this);
+
     /* Add to the Control Layout */
     m_Layout->addWidget(m_BufferA);
+    m_Layout->addWidget(m_ComparisonModes);
     m_Layout->addWidget(m_BufferB);
 }
 
@@ -94,6 +134,10 @@ void BufferSwitch::Connect()
     /* Connect the buffer pages to switch on click */
     connect(m_BufferA, &BufferPage::selected, this, &BufferSwitch::switched);
     connect(m_BufferB, &BufferPage::selected, this, &BufferSwitch::switched);
+
+    /* Connect the Comparison Mode changes */
+    connect(m_ComparisonModes, &SplitSectionSelector::primaryIndexChanged, this, &BufferSwitch::compareModeChanged);
+    connect(m_ComparisonModes, &SplitSectionSelector::radioIndexChanged, this, &BufferSwitch::blendModeChanged);
 }
 
 /* }}} */

@@ -11,13 +11,13 @@
 
 /* Qt */
 #include <QOpenGLWidget>
-#include <QImage>
 #include <QOpenGLTexture>
 #include <QOpenGLShaderProgram>
 
 /* Internal */
 #include "PixReader.h"
 #include "QDefinition.h"
+#include "RenderTypes.h"
 #include "RendererStatus.h"
 
 VOID_NAMESPACE_OPEN
@@ -26,22 +26,16 @@ class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
 {
     Q_OBJECT
 
-public: /* Enums */
-
-    enum class ChannelMode : int
-    {
-        RED,    // Show the Red Channel
-        GREEN,  // The Green channel
-        BLUE,   // The Blue channel
-        ALPHA,  // Alpha Channel
-        RGB,    // RGB Channels leaving alpha out
-        RGBA    // RGBA or all channels mostly
-    };
-
 private: /* Members */
     QOpenGLTexture* m_Texture;
     SharedPixels m_ImageData;
+    SharedPixels m_SecondaryImageData;
     std::string m_Path;
+
+    /* Enum Types */
+    using ChannelMode = Renderer::ChannelMode;
+    using ComparisonMode = Renderer::ComparisonMode;
+    using BlendMode = Renderer::BlendMode;
 
 public:
     VoidRenderer(QWidget* parent = nullptr);
@@ -49,6 +43,7 @@ public:
     ~VoidRenderer();
 
     void Render(SharedPixels data);
+    void Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend);
     void Play();
     void Clear();
 
@@ -62,7 +57,7 @@ public:
      */
     void PrepareFullscreen();
     void ExitFullscreen() { m_Fullscreen = false; }
-    
+
     /* Lets other components know whether the Renderer is fullscreen */
     [[nodiscard]] inline bool Fullscreen() const { return m_Fullscreen; }
 
@@ -78,6 +73,12 @@ public:
      */
     void SetChannelMode(int mode);
 
+    // /**
+    //  * Setup the Comparisons
+    //  */
+    // void SetComparisonMode(ComparisonMode mode);
+    // void SetBlendMode(BlendMode mode);
+
     /*
      * Set a Message to be displayed on the Renderer
      * Mostly gets used to show error messages if anything is not working/available
@@ -89,8 +90,8 @@ public:
         /* And make it visible */
         m_DisplayLabel->setVisible(true);
     }
-    
-signals: 
+
+signals:
     /**
      * Signals controlling the playback for the media
      */
@@ -120,14 +121,19 @@ protected:
     void ClearFrame();
 
 private: /* Members */
-    /** 
+    /**
      * Array and Buffer objects
-     * 
+     *
      * Vertex array Object
      * Vertex Buffer Object
      * Element or the index buffer object
      */
     unsigned int VAO, VBO, EBO;
+
+    /**
+     * Array and Buffer objects for the swipe handle
+     */
+    unsigned int m_SwipeVAO, m_SwipeVBO;
 
     /**
      * Viewer Adjustments
@@ -137,11 +143,31 @@ private: /* Members */
      */
     float m_Exposure, m_Gamma, m_Gain;
 
+    /**
+     * Render Textures
+     */
+    unsigned int m_TextureA, m_TextureB;
+
     /* Channels to display on the viewport */
     ChannelMode m_ChannelMode;
 
+    /* Comparison Mode for the buffers */
+    ComparisonMode m_CompareMode;
+    /* Blend Mode for the comparison */
+    BlendMode m_BlendMode;
+
     RendererStatusBar* m_RenderStatus;
     RendererDisplayLabel* m_DisplayLabel;
+
+    /* The Swipe Controller */
+    float m_SwipeX;
+    /**
+     * When the texture is panned, this controls how much the swipeX needs to be visually
+     * panned to maintain evenness with the panned texture
+     */
+    float m_SwipeOffet;
+
+    bool m_Swiping;
 
     /* Zoom Factor/Level on the Renderer */
     float m_ZoomFactor;
@@ -160,11 +186,26 @@ private: /* Members */
     glm::vec2 m_Pan;
     Point m_LastMouse;
 
+private: /* Methods */
+    /**
+     * Based on the Comparison Mode this returns the factor with which the width of the view is divided
+     * to get the correct aspect for the Rendering of the texture
+     * This is needed for Horizontal and Vertical Comparisons to retain the aspect when two (or more) textures
+     * are simultaneously played
+     */
+    inline float WidthDivisor() const
+    {
+        return (m_CompareMode == ComparisonMode::HORIZONTAL) ? 2.f : 1.f;
+    }
+    inline float HeightDivisor() const
+    {
+        return (m_CompareMode == ComparisonMode::VERTICAL) ? 2.f : 1.f;
+    }
 };
 
 /**
  * A Placeholder Renderer Widget which shows up when the renderer is fullscreen to occupy it's place
- * Holds a Label stating that the Renderer is Fullscreen 
+ * Holds a Label stating that the Renderer is Fullscreen
  */
 class VOID_API VoidPlaceholderRenderer : public QWidget
 {
