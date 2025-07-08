@@ -2,10 +2,14 @@
 add_library(
     VoidRenderer
     SHARED
+    AnnotationRenderer.cpp
     Renderer.cpp
     RendererStatus.cpp
     RenderTypes.h
     VoidGL.cpp
+    Programs/StrokeShaderProgram.cpp
+    Gears/RenderGear.cpp
+    Gears/StrokeRenderGear.cpp
 )
 
 target_include_directories(

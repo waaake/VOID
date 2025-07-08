@@ -4,6 +4,7 @@
 /* Qt */
 #include <QComboBox>
 #include <QLayout>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QWidget>
 
@@ -62,6 +63,7 @@ signals:
     void channelModeChanged(const int);
     void comparisonModeChanged(const int);
     void blendModeChanged(const int);
+    void annotationsToggled(const int);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -90,6 +92,9 @@ private: /* Members */
 
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;
+
+    /* Annotation Controller */
+    QPushButton* m_AnnotationButton;
 
     /* Viewer Buffers */
     ViewerBuffer* m_ViewerBufferA;

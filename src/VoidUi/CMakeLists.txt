@@ -3,6 +3,7 @@ add_library(
     VoidUi
     SHARED
     About.cpp
+    AnnotationController.cpp
     Browser.cpp
     BufferSwitch.cpp
     ControlBar.cpp
@@ -28,6 +29,7 @@ add_library(
     Preferences/PlayerPreferences.cpp
     QExtensions/Frame.cpp
     QExtensions/PushButton.cpp
+    QExtensions/Slider.cpp
 )
 
 target_link_libraries(

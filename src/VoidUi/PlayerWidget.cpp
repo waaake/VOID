@@ -75,6 +75,15 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
     /* ControlBar - Blend Mode Changed -> Player - Set Blend mode */
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
+    /* ControlBar - Annotations Toggled -> AnnotationsController - Set Visible */
+    connect(m_ControlBar, &ControlBar::annotationsToggled, this, &Player::ToggleAnnotations);
+
+    /* Annotations Controller - Cleared -> Renderer -> Clear Annotations */
+    connect(m_AnnotationsController, &AnnotationsController::cleared, m_Renderer, &VoidRenderer::ClearAnnotations);
+    /* Annotations Controller - Color Changed -> Renderer -> Set Annotation Color */
+    connect(m_AnnotationsController, &AnnotationsController::colorChanged, m_Renderer, static_cast<void(VoidRenderer::*)(const QColor&)>(&VoidRenderer::SetAnnotationColor));
+    /* Annotations Controller - Brush Size Changed -> Renderer -> Set Annotation Thickness */
+    connect(m_AnnotationsController, &AnnotationsController::brushSizeChanged, m_Renderer, &VoidRenderer::SetAnnotationBrushSize);
 
     /* Preference - updated -> Player - SetFromPreferences */
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &Player::SetFromPreferences);
@@ -132,6 +141,13 @@ void Player::Build()
     /* Base layout for the widget */
     QVBoxLayout* layout = new QVBoxLayout(this);
 
+    QHBoxLayout* horizontalInternal = new QHBoxLayout;
+    horizontalInternal->setContentsMargins(0, 0, 0, 0);
+
+    m_AnnotationsController = new AnnotationsController(this);
+    /* Is Hidden by default and controlled by Annotations Toggle Controller */
+    m_AnnotationsController->setVisible(false);
+
     /* Renderer's house */
     m_RendererLayout = new QVBoxLayout;
     m_RendererLayout->setContentsMargins(0, 0, 0, 0);
@@ -155,7 +171,10 @@ void Player::Build()
     /* Add to the Renderer Layout */
     m_RendererLayout->addWidget(m_Renderer);
     m_RendererLayout->addWidget(m_PlaceholderRenderer);
-    layout->addLayout(m_RendererLayout);
+    horizontalInternal->addLayout(m_RendererLayout);
+    horizontalInternal->addWidget(m_AnnotationsController);
+
+    layout->addLayout(horizontalInternal);
 
     layout->addWidget(m_Timeline);
 
@@ -488,6 +507,26 @@ void Player::ExitFullscreenRenderer()
 
     /* We're back normal screened */
     m_Renderer->ExitFullscreen();
+}
+
+void Player::ToggleAnnotations(const bool state)
+{
+    /* Show/Hide the annotation controller based on the state */
+    m_AnnotationsController->setVisible(state);
+
+    /* Setup Annotations on the Renderer */
+    m_Renderer->ToggleAnnotation(state);
+
+    /**
+     * Also Make the Render view as default to allow annotating correctly 
+     * TODO: At a later stage we can enable panning with Annotations
+     * allowing to pan with ALT + Click Drag
+     */
+    m_Renderer->ZoomToFit();
+
+    /* If we're in compare mode -> Reset that as we only want to annotate a frame in the buffer */
+    if (Comparing())
+        m_ControlBar->SetCompareMode(Renderer::ComparisonMode::NONE);
 }
 
 VOID_NAMESPACE_CLOSE

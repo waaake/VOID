@@ -40,6 +40,7 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     , m_TranslateX(0.f)
     , m_TranslateY(0.f)
     , m_Pressed(false)
+    , m_Annotating(false)
     , m_Fullscreen(false)
     , m_Pan(0.f, 0.f)
 {
@@ -48,6 +49,9 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     /* Message display */
     m_DisplayLabel = new RendererDisplayLabel(this);
     m_DisplayLabel->setVisible(false);
+
+    /* Renderer for Annotations */
+    m_AnnotationsRenderer = new VoidAnnotationsRenderer;
 
     /* Enable to track mouse movements */
     setMouseTracking(true);
@@ -72,6 +76,9 @@ VoidRenderer::~VoidRenderer()
     /* Delete the Error Label */
     m_DisplayLabel->deleteLater();
     m_DisplayLabel = nullptr;
+
+    /* Delete the Strokes Renderer */
+    delete m_AnnotationsRenderer;
 }
 
 void VoidRenderer::initializeGL()
@@ -160,6 +167,27 @@ void VoidRenderer::initializeGL()
     /* Unbind */
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    // /**
+    //  * Annotation Shader Arrays
+    //  */
+    // glGenVertexArrays(1, &m_DrawAnnotationVAO);
+    // glGenBuffers(1, &m_DrawAnnotationVBO);
+
+    // /* Bind */
+    // glBindVertexArray(m_DrawAnnotationVAO);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_DrawAnnotationVBO);
+
+    // /* Buffer Data */
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_MaxPoints, nullptr, GL_DYNAMIC_DRAW);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
+
+    // /* Unbind */
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindVertexArray(0);
+
+    m_AnnotationsRenderer->Initialize();
 }
 
 void VoidRenderer::paintGL()
@@ -283,6 +311,8 @@ void VoidRenderer::paintGL()
 
             /* Bind the Array */
             glBindVertexArray(m_SwipeVAO);
+
+            /* Draw */
             glDrawArrays(GL_LINES, 0, 2);
 
             /* Unbind */
@@ -290,6 +320,78 @@ void VoidRenderer::paintGL()
 
             ReleaseSwiper();
         }
+
+        // /* Draw Annotations */
+        // if (m_Annotating && !m_DrawAnnotation.empty())
+        // {
+        //     /* Bind the Annotation Shader*/
+        //     BindAnnotator();
+
+        //     /* Use the Annotation Shader */
+        //     glUseProgram(AnnotationProgramId());
+
+        //     /**
+        //      * A Fullscreen device projection
+        //      * 0 - left
+        //      * width - right
+        //      * height - bottom
+        //      * 0 - top
+        //      * -1 - near z
+        //      * 1 - far z
+        //      */
+        //     glm::mat4 projection = glm::ortho(0.f, float(width()), float(height()), 0.f, -1.f, 1.f);
+
+        //     /* Model View Projection for the Annotations */
+        //     glUniformMatrix4fv(glGetUniformLocation(AnnotationProgramId(), "uMVP"), 1, GL_FALSE, glm::value_ptr(projection));
+
+        //     /* Set the Color */
+        //     float color[3] = {1.f, 0.f, 1.f};
+        //     glUniform3fv(glGetUniformLocation(AnnotationProgramId(), "uColor"), 1, color);
+
+        //     /* Bind the Array */
+        //     glBindVertexArray(m_DrawAnnotationVAO);
+
+        //     // std::vector<glm::vec2> debugLine = { {100.f, 100.f}, {300.f, 300.f} };
+        //     // glBindBuffer(GL_ARRAY_BUFFER, m_DrawAnnotationVBO);
+        //     // glBufferSubData(GL_ARRAY_BUFFER, 0, debugLine.size() * sizeof(glm::vec2), debugLine.data());
+
+        //     // glDrawArrays(GL_LINE_STRIP, 0, debugLine.size());
+
+        //     // glBindBuffer(GL_ARRAY_BUFFER, m_DrawAnnotationVBO);
+        //     // glBufferSubData(GL_ARRAY_BUFFER, 0, m_DrawAnnotation.size() * sizeof(glm::vec2), m_DrawAnnotation.data());
+        //     // glBindBuffer(GL_ARRAY_BUFFER, 0);
+        //     // glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //     /* Draw line strip from start to the vector size */
+        //     glDrawArrays(GL_LINE_STRIP, 0, m_DrawAnnotation.size());
+            
+        //     /* Unbind */
+        //     glBindVertexArray(0);
+
+        //     /* We're done with the draw -> Release the Annotation Shader */
+        //     ReleaseAnnotator();
+        // }
+        
+        /* Draw Annotations */
+        if (m_Annotating)
+        {
+            /**
+             * A Fullscreen device projection
+             * 0 - left
+             * width - right
+             * height - bottom
+             * 0 - top
+             * -1 - near z
+             * 1 - far z
+             */
+            glm::mat4 projection = glm::ortho(0.f, float(width()), float(height()), 0.f, -1.f, 1.f);
+
+            /* Render the stokes with the projection */
+            m_AnnotationsRenderer->Render(projection);
+        }
+
+        /* Exit Programs */
+        glUseProgram(0);
     }
 }
 
@@ -344,6 +446,15 @@ void VoidRenderer::mouseReleaseEvent(QMouseEvent* event)
     /* And indicates that the mouse was released */
     m_Pressed = false;
     m_Swiping = false;
+
+    if (m_Annotating)
+    {
+        /* Commit the Stroke if we're annotating */
+        m_AnnotationsRenderer->CommitStroke();
+
+        /* Redraw */
+        update();
+    }
 }
 
 void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
@@ -356,6 +467,24 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     int x = event->x();
     int y = event->y();
     #endif // _QT6
+
+    /* If we're in annotation Mode don't pan the image or drag the slider */
+    if (m_Annotating && m_Pressed)
+    {
+        /* If we're not able to create a point -> that could be because the annotation isn't created yet */
+        if (!m_AnnotationsRenderer->DrawPoint({x, y}))
+        {
+            /* Create a new Annotation for drawing over */
+            m_AnnotationsRenderer->NewAnnotation();
+
+            /* Add the Original Point back*/
+            m_AnnotationsRenderer->DrawPoint({x, y});
+        }
+
+        /* Redraw */
+        update();
+        return;
+    }
 
     /* The Swipe only works when we're in Wipe mode for Comparison -- else the Swiper isn't shown */
     if (m_CompareMode == ComparisonMode::WIPE)

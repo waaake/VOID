@@ -73,10 +73,14 @@ if (QT_MAJOR_VERSION EQUAL 6)
         FILES
             ../images/VOID_Logo.svg
             ../images/VOID_Logo_900x200.png
+            ../icons/icon_adjust.svg
+            ../icons/icon_annotate.svg
             ../icons/icon_arrow_right.svg
+            ../icons/icon_brush.svg
             ../icons/icon_bounce.svg
             ../icons/icon_close.svg
             ../icons/icon_delete.svg
+            ../icons/icon_eraser.svg
             ../icons/icon_fullscreen.svg
             ../icons/icon_maximize.svg
             ../icons/icon_minimize.svg
@@ -84,6 +88,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg
             ../icons/icon_settings.svg
+            ../icons/icon_text.svg
             ../icons/icon_video_player.png
             ../icons/icon_zoom_in.svg
             ../icons/icon_zoom_out.svg

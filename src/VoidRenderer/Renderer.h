@@ -4,6 +4,9 @@
 /* This includes glew which needs to be included before gl.h and hence this gets included first */
 #include "VoidGL.h"
 
+/* STD */
+#include <vector>
+
 /* glm */
 #include <glm/glm.hpp>
 #include <glm/vec4.hpp>
@@ -19,6 +22,7 @@
 #include "QDefinition.h"
 #include "RenderTypes.h"
 #include "RendererStatus.h"
+#include "AnnotationRenderer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -57,6 +61,29 @@ public:
      */
     void PrepareFullscreen();
     void ExitFullscreen() { m_Fullscreen = false; }
+
+    /**
+     * Annotation Features
+     */
+    /* Toggles Annotation state */
+    inline void ToggleAnnotation(bool t) { m_Annotating = t; }
+    [[nodiscard]] inline bool Annotating() const { return m_Annotating; }
+
+    /**
+     * Clears any Annotation strokes on the current frame
+     */
+    inline void ClearAnnotations() { m_AnnotationsRenderer->Clear(); update(); }
+
+    /**
+     * Sets the color on the annotation -> next stroke gets this color to annotate with
+     */
+    inline void SetAnnotationColor(const glm::vec3& color) { m_AnnotationsRenderer->SetColor(color); }
+    inline void SetAnnotationColor(const QColor& color) { m_AnnotationsRenderer->SetColor(color); }
+
+    /**
+     * Sets the thickness of the annotation -> next stroke gets the thickness
+     */
+    inline void SetAnnotationBrushSize(const float thickness) { m_AnnotationsRenderer->SetAnnotationBrushSize(thickness); }
 
     /* Lets other components know whether the Renderer is fullscreen */
     [[nodiscard]] inline bool Fullscreen() const { return m_Fullscreen; }
@@ -136,6 +163,11 @@ private: /* Members */
     unsigned int m_SwipeVAO, m_SwipeVBO;
 
     /**
+     * Renders All kinds of annotations
+     */
+    VoidAnnotationsRenderer* m_AnnotationsRenderer;
+
+    /**
      * Viewer Adjustments
      * Exposure
      * Gamma
@@ -180,6 +212,11 @@ private: /* Members */
     float m_TranslateX, m_TranslateY;
 
     bool m_Pressed;
+
+    /**
+     * State describing if the Renderer is currently up for annotation
+     */
+    bool m_Annotating;
 
     /**
      * Holds the state whether the Renderer is currently rendering
