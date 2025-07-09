@@ -72,6 +72,12 @@ struct AnnotatedVertex
     glm::vec2 normal;
 };
 
+/**
+ * What is a Stroke ?
+ * Stroke is a collection of Annotated Vertices which also has a 
+ * defined color and brush size (thickness)
+ * The brush size defines how thick will the line be drawn on the viewport
+ */
 struct Stroke
 {
     /* All of the Annotated Vertices (points) */
@@ -80,8 +86,12 @@ struct Stroke
     /* Color of the Vertices (points) */
     glm::vec3 color;
 
-    /* Thickness of the Vertices (points) */
+    /* Size of the Brush for draw (points) */
     float thickness;
+
+    inline bool Empty() const noexcept { return vertices.empty(); }
+    inline int Size() const noexcept { return vertices.size(); }
+    inline const AnnotatedVertex* Data() const noexcept { return vertices.data(); }
 };
 
 /**
@@ -101,6 +111,11 @@ struct Annotation
      * Stores the Active Annotation
      */
     std::vector<AnnotatedVertex> annotation;
+
+    /**
+     * Stores the Active Annotation Stroke
+     */
+    Stroke current;
 
     /**
      * Returns True if there is no active annotation and also no strokes
@@ -123,19 +138,13 @@ typedef std::shared_ptr<Annotation> SharedAnnotation;
 /**
  * A structure holding A Renderable Annotation
  */
-struct RenderableAnnotation
+struct AnnotationRenderData
 {
-    /* The Committed Vertices */
-    std::vector<Stroke> strokes;
-
-    /* Ongoing Annotation */
-    AnnotatedVertex current;
-
-    /* The Projection Matrix for the Render */
+    /* The Annotation to be renderer */
+    Renderer::SharedAnnotation annotation;
+    /* Projection for the Annotation for rendering on the viewport */
     glm::mat4 projection;
 };
-
-typedef std::shared_ptr<RenderableAnnotation> SharedRenderableAnnotation;
 
 } // namespace Renderer
 

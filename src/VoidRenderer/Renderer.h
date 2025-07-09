@@ -83,7 +83,7 @@ public:
     /**
      * Sets the thickness of the annotation -> next stroke gets the thickness
      */
-    inline void SetAnnotationBrushSize(const float thickness) { m_AnnotationsRenderer->SetAnnotationBrushSize(thickness); }
+    inline void SetAnnotationBrushSize(const float size) { m_AnnotationsRenderer->SetAnnotationBrushSize(size); }
 
     /* Lets other components know whether the Renderer is fullscreen */
     [[nodiscard]] inline bool Fullscreen() const { return m_Fullscreen; }

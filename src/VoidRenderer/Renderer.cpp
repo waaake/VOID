@@ -386,6 +386,32 @@ void VoidRenderer::paintGL()
              */
             glm::mat4 projection = glm::ortho(0.f, float(width()), float(height()), 0.f, -1.f, 1.f);
 
+            // glm::mat4 view = glm::translate(glm::mat4(1.f), glm::vec3(-m_Pan[0], -m_Pan[1], 0.f));
+            // view = glm::scale(view, glm::vec3(m_ZoomFactor, m_ZoomFactor, 1.f));
+
+            // glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+            /**
+             * To ensure the image is of the correct aspect while render
+             * Calculate the aspect of the current view (Renderer Width / Renderer Height)
+             * And the aspect of the image being rendered
+             */
+            // float viewAspect = float(width()) / height();
+            // float viewWidth = 1.f / m_ZoomFactor;
+            // float viewHeight = viewWidth / viewAspect;
+
+            // // glm::mat4 projection = glm::ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
+            // glm::mat4 projection = glm::ortho(0.5f - viewWidth / 2.f, 0.5f + viewWidth / 2.f, 0.5f + viewHeight / 2.f, 0.5f - viewHeight / 2.f, -1.f, 1.f);
+
+            // float zoomedWidth = width() / m_ZoomFactor;
+            // float zoomedHeight = height() / m_ZoomFactor;
+
+            // float centerX = width() / 2.f;
+            // float centerY = height() / 2.f;
+
+            // glm::mat4 projection = glm::ortho(centerX - zoomedWidth / 2.f, centerX + zoomedWidth / 2.f, centerY + zoomedHeight / 2.f, centerY - zoomedHeight / 2.f, -1.f, 1.f);
+            // glm::mat4 projection = glm::ortho(0.f, zoomedWidth, zoomedHeight, 0.f, -1.f, 1.f);
+
+
             /* Render the stokes with the projection */
             m_AnnotationsRenderer->Render(projection);
         }
@@ -471,14 +497,31 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     /* If we're in annotation Mode don't pan the image or drag the slider */
     if (m_Annotating && m_Pressed)
     {
+        /* Convert the x | y to normalized device coordinates before we supply them to the Annotation for drawing */
+        // float glX = ((x / width()) * 2.f) - 1.f;
+        // float glY = 1.f - ((y / height()) * 2.f);
+        // float glX = x / float(width());
+        // float glY = y / float(height());
+
+        // float viewAspect = float(width()) / height();
+        // float viewWidth = 1.f / m_ZoomFactor;
+        // float viewHeight = viewWidth / viewAspect;
+
+        // float viewLeft = 0.5f - viewWidth / 2.f;
+        // float viewTop = 0.5f + viewHeight / 2.f;
+
+        // glm::vec2 p = {glX, glY};
+        // glm::vec2 p = glm::vec2(x, y) / m_ZoomFactor;
+        glm::vec2 p(x, y);
+
         /* If we're not able to create a point -> that could be because the annotation isn't created yet */
-        if (!m_AnnotationsRenderer->DrawPoint({x, y}))
+        if (!m_AnnotationsRenderer->DrawPoint(p))
         {
             /* Create a new Annotation for drawing over */
             m_AnnotationsRenderer->NewAnnotation();
 
             /* Add the Original Point back*/
-            m_AnnotationsRenderer->DrawPoint({x, y});
+            m_AnnotationsRenderer->DrawPoint(p);
         }
 
         /* Redraw */

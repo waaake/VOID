@@ -2,6 +2,7 @@
 #define _VOID_STROKE_RENDER_GEAR_H
 
 /* GLM */
+#include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp> // for glm::value_ptr
 
 /* Internal */
@@ -11,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class StrokeRenderGear : RenderGear
+class StrokeRenderGear : public RenderGear
 {
 public:
     StrokeRenderGear();
@@ -32,25 +33,25 @@ protected:
      */
     virtual void SetupBuffers() override;
 
-    // /**
-    //  * Pre-Draw Call
-    //  * Setup anything which is required before drawing anything on the screen
-    //  */
-    // virtual bool PreDraw() override;
+    /**
+     * Pre-Draw Call
+     * Setup anything which is required before drawing anything on the screen
+     */
+    virtual bool PreDraw() override;
 
-    // /**
-    //  * The Main Draw Call
-    //  * This is invoked if the PreDraw is successful
-    //  * The data to be drawn is passed to it
-    //  */
-    // virtual void Draw(const RenderKit& data) override;
+    /**
+     * The Main Draw Call
+     * This is invoked if the PreDraw is successful
+     * The data to be drawn is passed to it
+     */
+    virtual void Draw(const void* data) override;
 
-    // /**
-    //  * The Post Draw Call
-    //  * Anything to be cleaned up after the draw is completed can be done here
-    //  * This method always gets called even if the draw isn't called this will be
-    //  */
-    // virtual void PostDraw() override;
+    /**
+     * The Post Draw Call
+     * Anything to be cleaned up after the draw is completed can be done here
+     * This method always gets called even if the draw isn't called this will be
+     */
+    virtual void PostDraw() override;
 
 
 private: /* Members */

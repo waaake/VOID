@@ -17,9 +17,10 @@ uniform float uThickness;
 
 void main() {
     // Offset by half of thickness
-    vec2 offset = normal * uThickness * 0.5;
+    // vec2 offset = normal * uThickness * 0.5;
 
-    gl_Position = uMVP * vec4(position + offset, 0.0, 1.0);
+    // gl_Position = uMVP * vec4(position + offset, 0.0, 1.0);
+    gl_Position = uMVP * vec4(position, 0.0, 1.0);
 }
 )";
 

@@ -61,81 +61,67 @@ void StrokeRenderGear::SetupBuffers()
     glBindVertexArray(0);
 }
 
-// bool StrokeRenderGear::PreDraw()
-// {
-//     /* Use the Shader Program */
-//     m_Shader->Bind();
+bool StrokeRenderGear::PreDraw()
+{
+    /* Use the Shader Program */
+    m_Shader->Bind();
 
-//     /* Bind the Vertex Array */
-//     glBindVertexArray(m_VAO);
-//     glEnableVertexAttribArray(0);
-//     glEnableVertexAttribArray(1);
+    /* Bind the Vertex Array */
+    glBindVertexArray(m_VAO);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
-//     return true;
-// }
+    return true;
+}
 
-// void StrokeRenderGear::Draw(const RenderKit& data)
-// {
-//     /* Cast the Data back to Renderable Annotation */
-//     // Renderer::SharedRenderableAnnotation d = std::static_pointer_cast<Renderer::RenderableAnnotation>(data.Get());
+void StrokeRenderGear::Draw(const void* data)
+{
+    /* Cast the Data back to Renderable Annotation */
+    const Renderer::AnnotationRenderData* d = static_cast<const Renderer::AnnotationRenderData*>(data);
 
-//     // /* Cannot cast the data */
-//     // if (!d)
-//     //     return;
+    /* Cannot cast the data */
+    if (!d)
+        return;
 
-//     // /* Update the Projection matrix */
-//     // glUniformMatrix4fv(m_UProjection, 1, GL_FALSE, glm::value_ptr(d->projection));
+    /* Update the Projection matrix */
+    glUniformMatrix4fv(m_UProjection, 1, GL_FALSE, glm::value_ptr(d->projection));
 
-//     // // /* Bind the Vertex Array */
-//     // // glBindVertexArray(m_VAO);
-//     // // glEnableVertexAttribArray(0);
-//     // // glEnableVertexAttribArray(1);
+    /* Draw out the existing stokes */
+    for (const Renderer::Stroke& stroke: d->annotation->strokes)
+    {
+        /* Update uniforms */
+        glUniform3fv(m_UColor, 1, glm::value_ptr(stroke.color));
+        glUniform1f(m_USize, stroke.thickness);
 
-//     // /* Draw out the stokes */
-//     // for (const Renderer::Stroke& stroke: d->strokes)
-//     // {
-//     //     /* Update uniforms */
-//     //     glUniform3fv(m_UColor, 1, glm::value_ptr(stroke.color));
-//     //     glUniform1f(m_USize, stroke.thickness);
+        /* Update the data on the buffer */
+        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Renderer::AnnotatedVertex) * stroke.Size(), stroke.Data(), GL_DYNAMIC_DRAW);
 
-//     //     /* Update the data on the buffer */
-//     //     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-//     //     glBufferData(GL_ARRAY_BUFFER, sizeof(Renderer::AnnotatedVertex) * stroke.vertices.size(), stroke.vertices.data(), GL_DYNAMIC_DRAW);
+        /* Draw the strokes as Triangle strip with stroke thickness */
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, stroke.Size());
+    }
 
-//     //     /* Draw the strokes as Triangle strip with stroke thickness */
-//     //     glDrawArrays(GL_TRIANGLE_STRIP, 0, stroke.vertices.size());
-
-//     //     // VOID_LOG_INFO("DRAWING...");
-//     //     // VOID_LOG_INFO(stroke.vertices.size());
-//     //     // VOID_LOG_INFO(stroke.thickness);
-//     // }
-
-//     // // GLenum err;
-//     // // while ((err = glGetError()) != GL_NO_ERROR) {
-//     // //     // std::cerr << "OpenGL error: " << err << std::endl;
-//     // //     VOID_LOG_ERROR("OPENGL ERROR: {0}", err);
-//     // // }
-
-//     // if (!d->current.empty())
-//     // {
-//     //     /* Update uniforms */
-//     //     glUniform3fv(m_UColor, 1, glm::value_ptr({1.f, 1.f, 1.f}));
-//     //     glUniform1f(m_USize, 4.f);
+    /* Draw out the */
+    if (!d->annotation->current.Empty())
+    {
+        /* Update uniforms */
+        glUniform3fv(m_UColor, 1, glm::value_ptr(d->annotation->current.color));
+        glUniform1f(m_USize, d->annotation->current.thickness);
     
-//     //     /* Update the data on the buffer */
-//     //     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-//     //     glBufferData(GL_ARRAY_BUFFER, sizeof(Renderer::AnnotatedVertex) * d->current.size(), d->current.data(), GL_DYNAMIC_DRAW);
+        /* Update the data on the buffer */
+        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Renderer::AnnotatedVertex) * d->annotation->current.Size(), d->annotation->current.Data(), GL_DYNAMIC_DRAW);
     
-//     //     /* Draw the strokes as Triangle strip with stroke thickness */
-//     //     glDrawArrays(GL_TRIANGLE_STRIP, 0, d->current.size());
-//     // }
-// }
+        /* Draw the strokes as Triangle strip with stroke thickness */
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, d->annotation->current.Size());
+    }
+}
 
-// void StrokeRenderGear::PostDraw()
-// {
-//     /* Cleanup */
-//     glBindVertexArray(0);
-//     m_Shader->Release();
-// }
+void StrokeRenderGear::PostDraw()
+{
+    /* Cleanup */
+    glBindVertexArray(0);
+    m_Shader->Release();
+}
 
 VOID_NAMESPACE_CLOSE

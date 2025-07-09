@@ -51,7 +51,7 @@ public:
      * This invokes the PreDraw first and check the return status to invoke Draw or not
      * Then the PostDraw is invoked always
      */
-    // void Render(const RenderKit& data);
+    void Render(const void* data);
 
 protected:
     /**
@@ -60,25 +60,26 @@ protected:
      */
     virtual void SetupBuffers() = 0;
 
-    // /**
-    //  * Pre-Draw Call
-    //  * Setup anything which is required before drawing anything on the screen
-    //  */
-    // virtual bool PreDraw() = 0;
+    /**
+     * Pre-Draw Call
+     * Setup anything which is required before drawing anything on the screen
+     */
+    virtual bool PreDraw() = 0;
 
-    // /**
-    //  * The Main Draw Call
-    //  * This is invoked if the PreDraw is successful
-    //  * The data to be drawn is passed to it
-    //  */
+    /**
+     * The Main Draw Call
+     * This is invoked if the PreDraw is successful
+     * The data to be drawn is passed to it
+     */
     // virtual void Draw(const RenderKit& data) = 0;
+    virtual void Draw(const void* data) = 0;
 
-    // /**
-    //  * The Post Draw Call
-    //  * Anything to be cleaned up after the draw is completed can be done here
-    //  * This method always gets called even if the draw isn't called this will be
-    //  */
-    // virtual void PostDraw() = 0;
+    /**
+     * The Post Draw Call
+     * Anything to be cleaned up after the draw is completed can be done here
+     * This method always gets called even if the draw isn't called this will be
+     */
+    virtual void PostDraw() = 0;
 
 };
 
