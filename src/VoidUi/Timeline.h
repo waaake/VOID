@@ -56,8 +56,14 @@ public:
 	int Minimum();
 	int Maximum();
 
+	/* Adds a cache marker on the frame */
 	void AddCacheFrame(int frame);
 	void ClearCachedFrames();
+
+	/* Adds an annotation marker on the frame */
+	void AddAnnotatedFrame(int frame);
+	void RemoveAnnotatedFrame(int frame);
+	void ClearAnnotatedFrames();
 
 	/**
 	 * Checks whether a given frame is in Playable range
@@ -75,6 +81,18 @@ protected:
 private: /* Methods */
 	void UpdateHovered(int xpos);
 
+	/* Returns whether the requested frame is annotated? */
+	inline bool Annotated(int frame) const
+	{ 
+		return std::find(m_AnnotatedFrames.begin(), m_AnnotatedFrames.end(), frame) != m_AnnotatedFrames.end(); 
+	}
+
+	/* Returns whether the requested frame is cached? */
+	inline bool Cached(int frame) const
+	{
+		return std::find(m_CachedFrames.begin(), m_CachedFrames.end(), frame) != m_CachedFrames.end();
+	}
+
 private: /* Members */
 	bool m_Focussed;
 	int m_HovXPos;
@@ -82,6 +100,8 @@ private: /* Members */
 
 	/* Stores any frame that have been marked as Cached for the timeslider */
 	std::vector<int> m_CachedFrames;
+	/* Stores any frame that has been annotated */
+	std::vector<int> m_AnnotatedFrames;
 
 	/**
 	 * By default the timeline has a minimum and maximum value
@@ -226,8 +246,18 @@ public:
 
 	void ResetRange();
 
+	/**
+	 * Mark Cached frames on the Timeslider visually
+	 */
 	inline void AddCacheFrame(int frame) { m_Timeslider->AddCacheFrame(frame); }
 	inline void ClearCachedFrames() { m_Timeslider->ClearCachedFrames(); }
+
+	/**
+	 * Mark Annotations on the Timeslider visually
+	 */
+	inline void AddAnnotatedFrame(int frame) { m_Timeslider->AddAnnotatedFrame(frame); }
+	inline void RemoveAnnotatedFrame(int frame) { m_Timeslider->RemoveAnnotatedFrame(frame); }
+	inline void ClearAnnotatedFrames() { m_Timeslider->ClearAnnotatedFrames(); }
 
 	/* Friendly classes */
 	friend class Player;

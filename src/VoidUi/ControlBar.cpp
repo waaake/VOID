@@ -118,6 +118,13 @@ void ControlBar::Build()
 
     m_ChannelModeController = new ControlCombo();
 
+    /* Annotation */
+    m_AnnotationButton = new QPushButton;
+    m_AnnotationButton->setIcon(QIcon(":resources/icons/icon_annotate.svg"));
+    m_AnnotationButton->setCheckable(true);
+    m_AnnotationButton->setFixedWidth(26);
+    m_AnnotationButton->setFlat(true);
+
     /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
 
@@ -147,6 +154,7 @@ void ControlBar::Build()
     /* Spacer from the left side */
     m_RightLayout->addStretch(1);
     m_RightLayout->addWidget(m_Zoomer);
+    m_RightLayout->addWidget(m_AnnotationButton);
 
     /* Add the left side controls */
     m_Layout->addWidget(m_LeftControls);
@@ -231,6 +239,9 @@ void ControlBar::Connect()
     connect(m_BufferSwitch, &BufferSwitch::switched, this, &ControlBar::viewerBufferSwitched);
     connect(m_BufferSwitch, &BufferSwitch::compareModeChanged, this, &ControlBar::comparisonModeChanged);
     connect(m_BufferSwitch, &BufferSwitch::blendModeChanged, this, &ControlBar::blendModeChanged);
+
+    /* Annotations */
+    connect(m_AnnotationButton, &QPushButton::toggled, this, &ControlBar::annotationsToggled);
 }
 
 float ControlBar::MapToZoom(int value)

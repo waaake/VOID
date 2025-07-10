@@ -10,6 +10,8 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
 
 /* Internal */
 #include "Renderer.h"
@@ -40,6 +42,7 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     , m_TranslateX(0.f)
     , m_TranslateY(0.f)
     , m_Pressed(false)
+    , m_Annotating(false)
     , m_Fullscreen(false)
     , m_Pan(0.f, 0.f)
 {
@@ -48,6 +51,9 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     /* Message display */
     m_DisplayLabel = new RendererDisplayLabel(this);
     m_DisplayLabel->setVisible(false);
+
+    /* Renderer for Annotations */
+    m_AnnotationsRenderer = new VoidAnnotationsRenderer;
 
     /* Enable to track mouse movements */
     setMouseTracking(true);
@@ -72,6 +78,9 @@ VoidRenderer::~VoidRenderer()
     /* Delete the Error Label */
     m_DisplayLabel->deleteLater();
     m_DisplayLabel = nullptr;
+
+    /* Delete the Strokes Renderer */
+    delete m_AnnotationsRenderer;
 }
 
 void VoidRenderer::initializeGL()
@@ -160,6 +169,12 @@ void VoidRenderer::initializeGL()
     /* Unbind */
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    /* Initialize the Annotations Layer */
+    m_AnnotationsRenderer->Initialize();
+
+    /* (Re)Load Any textures if available */
+    ReloadTextures();
 }
 
 void VoidRenderer::paintGL()
@@ -283,6 +298,8 @@ void VoidRenderer::paintGL()
 
             /* Bind the Array */
             glBindVertexArray(m_SwipeVAO);
+
+            /* Draw */
             glDrawArrays(GL_LINES, 0, 2);
 
             /* Unbind */
@@ -290,6 +307,16 @@ void VoidRenderer::paintGL()
 
             ReleaseSwiper();
         }
+
+        /* Draw Annotations */
+        if (m_Annotating)
+        {
+            /* Render the stokes with the projection */
+            m_AnnotationsRenderer->Render(m_ModelViewProjection);
+        }
+
+        /* Exit Programs */
+        glUseProgram(0);
     }
 }
 
@@ -337,6 +364,40 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
             m_Swiping = true;
         }
     }
+
+    /* Annotating? and we have a brush active? */
+    if (m_Annotating)
+    {
+        /**
+         * Normalized x y points into Device Coordinates [-1, +1]
+         */
+        float glX = ((m_LastMouse.x() / float(width())) * 2.f) - 1.f;
+        float glY = 1.f - (m_LastMouse.y() / float(height()) * 2.f);
+
+        glm::vec2 p = {glX, glY};
+
+        /* Annotating */
+        if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
+        {
+            /* If we're not able to create a point -> that could be because the annotation isn't created yet */
+            if (!m_AnnotationsRenderer->DrawPoint(p))
+            {
+                /* Create a new Annotation for drawing over */
+                SharedAnnotation annotation = m_AnnotationsRenderer->NewAnnotation();
+                
+                /* Add the Original Point back*/
+                m_AnnotationsRenderer->DrawPoint(p);
+    
+                /* Emit the Created Annotation */
+                emit annotationCreated(annotation);
+            }
+        }
+        else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
+        {
+            /* Remove a Stroke which contains the point */
+            m_AnnotationsRenderer->EraseStroke(p);
+        }
+    }
 }
 
 void VoidRenderer::mouseReleaseEvent(QMouseEvent* event)
@@ -344,6 +405,15 @@ void VoidRenderer::mouseReleaseEvent(QMouseEvent* event)
     /* And indicates that the mouse was released */
     m_Pressed = false;
     m_Swiping = false;
+
+    if (m_Annotating)
+    {
+        /* Commit the Stroke if we're annotating */
+        m_AnnotationsRenderer->CommitStroke();
+
+        /* Redraw */
+        update();
+    }
 }
 
 void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
@@ -356,6 +426,37 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     int x = event->x();
     int y = event->y();
     #endif // _QT6
+
+    /* If we're in annotation Mode don't pan the image or drag the slider */
+    if (m_Annotating && m_Pressed)
+    {
+        /**
+         * Normalized x y points into Device Coordinates [-1, +1]
+         */
+        float glX = ((x / float(width())) * 2.f) - 1.f;
+        float glY = 1.f - (y / float(height()) * 2.f);
+
+        /* Draw Textures on Screen */
+        if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
+        {
+            /* Add the Point */
+            m_AnnotationsRenderer->DrawPoint({glX, glY});
+    
+            /* Redraw */
+            update();
+        }
+        else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
+        {
+            /* Remove a Stroke which contains the point */
+            m_AnnotationsRenderer->EraseStroke({glX, glY});
+
+            /* Redraw */
+            update();
+        }
+
+        /* Return from Here as we're annotating */
+        return;
+    }
 
     /* The Swipe only works when we're in Wipe mode for Comparison -- else the Swiper isn't shown */
     if (m_CompareMode == ComparisonMode::WIPE)
@@ -574,15 +675,46 @@ void VoidRenderer::Render(SharedPixels data)
     if (m_ImageA)
     {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-
-        /* Bind the Generated texture for Render */
-        glBindTexture(GL_TEXTURE_2D, m_TextureA);
-        /**
-         * Load the image data onto the Texture 2D
-         */
-        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+
+    /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
+    m_AnnotationsRenderer->SetAnnotation(nullptr);
+
+    /* Load the Textures to be rendered */
+    ReloadTextures();
+
+    /* Trigger a Re-paint */
+    update();
+}
+
+void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& annotation)
+{
+    /* Update the image data */
+    m_ImageA = data;
+    /* Hide the Error Label */
+    m_DisplayLabel->setVisible(false);
+
+    /* We're no longer comparing */
+    m_CompareMode = ComparisonMode::NONE;
+
+    /* Clear Secondary Image Data*/
+    m_ImageB = nullptr;
+
+    /**
+     * Update the render resolution
+     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
+     * So constantly redrawing this is just too ineffecient
+     */
+    if (m_ImageA)
+    {
+        m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+    }
+
+    /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
+    m_AnnotationsRenderer->SetAnnotation(annotation);
+
+    /* Load the Textures to be rendered */
+    ReloadTextures();
 
     /* Trigger a Re-paint */
     update();
@@ -610,27 +742,10 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
     if (m_ImageA)
     {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-
-        /* Bind the Generated texture for Render */
-        glBindTexture(GL_TEXTURE_2D, m_TextureA);
-        /**
-         * Load the image data onto the Texture 2D
-         */
-        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
-    if (m_ImageB)
-    {
-        /* Bind the texture for render */
-        glBindTexture(GL_TEXTURE_2D, m_TextureB);
-
-        /**
-         * Load the image data onto the Texture 2D
-         */
-        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageB->GLFormat(), m_ImageB->Width(), m_ImageB->Height(), 0, m_ImageB->GLFormat(), m_ImageB->GLType(), m_ImageB->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
-    }
+    /* Load the Textures to be rendered */
+    ReloadTextures();
 
     /* Trigger a Re-paint */
     update();
@@ -782,6 +897,147 @@ void VoidRenderer::CalculateModelViewProjection()
         * For any 2D Texture/image the transform from the camera is unity
         */
     m_ModelViewProjection = model * projection; // * unity view i.e. glm::mat4(1.f)    
+}
+
+void VoidRenderer::ReloadTextures()
+{
+    /* Based on the Image Data available -> Load the Textures */
+    if (m_ImageA)
+    {
+        /* Bind the Generated texture for Render */
+        glBindTexture(GL_TEXTURE_2D, m_TextureA);
+        /**
+         * Load the image data onto the Texture 2D
+         */
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
+
+    if (m_ImageB)
+    {
+        /* Bind the texture for render */
+        glBindTexture(GL_TEXTURE_2D, m_TextureB);
+
+        /**
+         * Load the image data onto the Texture 2D
+         */
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageB->GLFormat(), m_ImageB->Width(), m_ImageB->Height(), 0, m_ImageB->GLFormat(), m_ImageB->GLType(), m_ImageB->Pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
+    }
+}
+
+void VoidRenderer::ToggleAnnotation(bool t)
+{
+    /* Update Annotation State */
+    m_Annotating = t;
+    /* Accordinly set the Mouse Pointer */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::SetAnnotationColor(const glm::vec3& color)
+{
+    /* Update the current color on the Annotation */
+    m_AnnotationsRenderer->SetColor(color);
+    /* Reset The Mouse Pointer */
+    ResetAnnotationPointer();
+}
+void VoidRenderer::SetAnnotationColor(const QColor& color)
+{
+    /* Update the current color on the Annotation */
+    m_AnnotationsRenderer->SetColor(color);
+    /* Reset The Mouse Pointer */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::SetAnnotationBrushSize(const float size)
+{
+    /* Update the Brush Size */
+    m_AnnotationsRenderer->SetBrushSize(size);
+
+    /* Reset the Mouse Pointer to reflect the brush size */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::SetAnnotationDrawType(const int type)
+{
+    /* Update the Draw Component */
+    m_AnnotationsRenderer->SetDrawType(static_cast<Renderer::DrawType>(type));
+    /* Update the mouse Pointer */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::ClearAnnotations()
+{
+    /* Clear the Annotation */
+    m_AnnotationsRenderer->DeleteAnnotation();
+    /* Redraw */
+    update();
+
+    /* Emit that the annotation has now been removed */
+    emit annotationDeleted();
+}
+
+void VoidRenderer::ResetAnnotationPointer()
+{
+    /* Setup the Pointer for Annotation */
+    if (!m_Annotating)
+    {
+        /* Reset the Mouse Pointer */
+        unsetCursor();
+        return;
+    }
+
+    /* Size to be Used for Brush and Eraser */
+    int diameter = (m_AnnotationsRenderer->BrushSize() * 500) + 4;
+
+    /* For each of the Annotation Tool -> Set the Mouse Pointer */
+    if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
+    {
+        /* The Pixmap holding the Brush */
+        QPixmap p(diameter, diameter);
+        p.fill(Qt::transparent);
+
+        QPainter painter(&p);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        /* Fetch the current color from the Renderer */
+        glm::vec3 color = m_AnnotationsRenderer->Color();
+        /* Normalize to QColor RGB space (0 - 255) */
+        painter.setBrush(QColor(color[0] * 255, color[1] * 255, color[2] * 255));
+        // painter.setPen(Qt::black);
+        painter.drawEllipse(0, 0, diameter, diameter);
+
+        /* Hotspot at the center */
+        int hotspot = diameter / 2;
+        setCursor(QCursor(p, hotspot, hotspot));
+    }
+    else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
+    {
+        /* The Pixmap holding the Brush */
+        QPixmap p(diameter, diameter);
+        p.fill(Qt::transparent);
+
+        QPainter painter(&p);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        /* Fetch the current color from the Renderer */
+        glm::vec3 color = m_AnnotationsRenderer->Color();
+        painter.setPen(QPen(Qt::white, 2));
+        painter.drawEllipse(0, 0, diameter, diameter);
+
+        /* Hotspot at the center */
+        int hotspot = diameter / 2;
+        setCursor(QCursor(p, hotspot, hotspot));
+    }
+    else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::TEXT)
+    {
+        /* Set as Text Cursor */
+        setCursor(Qt::IBeamCursor);
+    }
+    else 
+    {
+        unsetCursor();
+    }
 }
 
 /* Placeholder Renderer {{{ */

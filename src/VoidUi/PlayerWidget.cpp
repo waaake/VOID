@@ -75,6 +75,17 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
     /* ControlBar - Blend Mode Changed -> Player - Set Blend mode */
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
+    /* ControlBar - Annotations Toggled -> AnnotationsController - Set Visible */
+    connect(m_ControlBar, &ControlBar::annotationsToggled, this, &Player::ToggleAnnotations);
+
+    /* Annotations Controller - Cleared -> Renderer -> Clear Annotations */
+    connect(m_AnnotationsController, &AnnotationsController::cleared, m_Renderer, &VoidRenderer::ClearAnnotations);
+    /* Annotations Controller - Color Changed -> Renderer -> Set Annotation Color */
+    connect(m_AnnotationsController, &AnnotationsController::colorChanged, m_Renderer, static_cast<void(VoidRenderer::*)(const QColor&)>(&VoidRenderer::SetAnnotationColor));
+    /* Annotations Controller - Brush Size Changed -> Renderer -> Set Annotation Thickness */
+    connect(m_AnnotationsController, &AnnotationsController::brushSizeChanged, m_Renderer, &VoidRenderer::SetAnnotationBrushSize);
+    /* Annotations Controller - Control Changed -> Renderer -> Set Annotation DrawType */
+    connect(m_AnnotationsController, &AnnotationsController::controlChanged, m_Renderer, &VoidRenderer::SetAnnotationDrawType);
 
     /* Preference - updated -> Player - SetFromPreferences */
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &Player::SetFromPreferences);
@@ -87,6 +98,11 @@ void Player::Connect()
     connect(m_Renderer, &VoidRenderer::stop, this, &Player::Stop);
     connect(m_Renderer, &VoidRenderer::moveForward, this, &Player::NextFrame);
     connect(m_Renderer, &VoidRenderer::moveBackward, this, &Player::PreviousFrame);
+
+    /* Renderer - Annotation Created -> ViewerBuffer - SetAnnotation */
+    connect(m_Renderer, &VoidRenderer::annotationCreated, this, &Player::AddAnnotation);
+    /* Renderer - Annotation Deleted -> ViewerBuffer - RemoveAnnotation */
+    connect(m_Renderer, &VoidRenderer::annotationDeleted, this, &Player::RemoveAnnotation);
 
     /* When a MediaClip is about to be removed from the MediaBride */
     connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &Player::RemoveMedia);
@@ -132,6 +148,13 @@ void Player::Build()
     /* Base layout for the widget */
     QVBoxLayout* layout = new QVBoxLayout(this);
 
+    QHBoxLayout* horizontalInternal = new QHBoxLayout;
+    horizontalInternal->setContentsMargins(0, 0, 0, 0);
+
+    m_AnnotationsController = new AnnotationsController(this);
+    /* Is Hidden by default and controlled by Annotations Toggle Controller */
+    m_AnnotationsController->setVisible(false);
+
     /* Renderer's house */
     m_RendererLayout = new QVBoxLayout;
     m_RendererLayout->setContentsMargins(0, 0, 0, 0);
@@ -155,7 +178,10 @@ void Player::Build()
     /* Add to the Renderer Layout */
     m_RendererLayout->addWidget(m_Renderer);
     m_RendererLayout->addWidget(m_PlaceholderRenderer);
-    layout->addLayout(m_RendererLayout);
+    horizontalInternal->addLayout(m_RendererLayout);
+    horizontalInternal->addWidget(m_AnnotationsController);
+
+    layout->addLayout(horizontalInternal);
 
     layout->addWidget(m_Timeline);
 
@@ -330,8 +356,10 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
 
 void Player::SetMediaFrame(int frame)
 {
+    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+
     /* Ensure we have a valid media to process before setting the frame */
-    if (m_ActiveViewBuffer->GetMediaClip()->Empty())
+    if (clip->Empty())
         return;
 
     /**
@@ -344,10 +372,10 @@ void Player::SetMediaFrame(int frame)
      * BLACK_FRAME: Display a black frame instead of anything else. No error is displayed.
      * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
      */
-    if (m_ActiveViewBuffer->GetMediaClip()->Contains(frame))
+    if (clip->Contains(frame))
     {
         /* Read the image for the frame from the sequence and set it on the player */
-        m_Renderer->Render(m_ActiveViewBuffer->GetMediaClip()->Image(frame));
+        m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
     }
     else
     {
@@ -366,7 +394,7 @@ void Player::SetMediaFrame(int frame)
                  * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
                  * to read and render on the renderer
                  */
-                SetMediaFrame(m_ActiveViewBuffer->GetMediaClip()->NearestFrame(frame));
+                SetMediaFrame(clip->NearestFrame(frame));
                 break;
         }
     }
@@ -488,6 +516,42 @@ void Player::ExitFullscreenRenderer()
 
     /* We're back normal screened */
     m_Renderer->ExitFullscreen();
+}
+
+void Player::ToggleAnnotations(const bool state)
+{
+    /* Show/Hide the annotation controller based on the state */
+    m_AnnotationsController->setVisible(state);
+
+    /* Setup Annotations on the Renderer */
+    m_Renderer->ToggleAnnotation(state);
+
+    /**
+     * Also Make the Render view as default to allow annotating correctly 
+     * TODO: At a later stage we can enable panning with Annotations
+     * allowing to pan with ALT + Click Drag
+     */
+    m_Renderer->ZoomToFit();
+
+    /* If we're in compare mode -> Reset that as we only want to annotate a frame in the buffer */
+    if (Comparing())
+        m_ControlBar->SetCompareMode(Renderer::ComparisonMode::NONE);
+}
+
+void Player::AddAnnotation(const Renderer::SharedAnnotation& annotation)
+{
+    /* Save the Annotation */
+    m_ActiveViewBuffer->SetAnnotation(m_Timeline->Frame(), annotation);
+    /* Also Mark that the frame has been annotated */
+    m_Timeline->AddAnnotatedFrame(m_Timeline->Frame());
+}
+
+void Player::RemoveAnnotation()
+{
+    /* Remove Annotation from the underlying Media */
+    m_ActiveViewBuffer->RemoveAnnotation(m_Timeline->Frame());
+    /* Remove the annotated frame from the Timeline */
+    m_Timeline->RemoveAnnotatedFrame(m_Timeline->Frame());
 }
 
 VOID_NAMESPACE_CLOSE

@@ -148,6 +148,15 @@ public:
     void Set(const SharedPlaybackTrack& track);
     void Set(const SharedPlaybackSequence& sequence);
 
+    /**
+     * Set Annotation on the Active Media Item
+     */
+    void SetAnnotation(const v_frame_t, const Renderer::SharedAnnotation& annotation);
+    /**
+     * Removes Annotation from the Active Media item
+     */
+    void RemoveAnnotation(const v_frame_t);
+
 signals:
     /* The updated signal is emitted when the viewer buffer receives a change */
     void updated();

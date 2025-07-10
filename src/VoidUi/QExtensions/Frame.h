@@ -5,10 +5,11 @@
 #include <vector>
 
 /* Qt */
+#include <QAction>
+#include <QActionGroup>
 #include <QFrame>
 #include <QPushButton>
 #include <QMenu>
-#include <QAction>
 
 /* Internal */
 #include "Definition.h"

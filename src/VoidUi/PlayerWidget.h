@@ -6,6 +6,7 @@
 #include <QLayout>
 
 /* Internal */
+#include "AnnotationController.h"
 #include "ControlBar.h"
 #include "Definition.h"
 #include "MediaClip.h"
@@ -188,10 +189,26 @@ private:  /* Methods */
      */
     void SetFromPreferences();
 
+    /**
+     * Setup Annotations
+     */
+    void ToggleAnnotations(const bool state);
+
+    /**
+     * Add an Annotation to the Viewer Buffer
+     */
+    void AddAnnotation(const Renderer::SharedAnnotation& annotation);
+    /**
+     * Removes the Annotation from the underlying Media
+     */
+    void RemoveAnnotation();
+
 private:  /* Members */
     VoidRenderer* m_Renderer;
     VoidPlaceholderRenderer* m_PlaceholderRenderer;
     Timeline* m_Timeline;
+
+    AnnotationsController* m_AnnotationsController;
 
     /**
      * The control bar provides users tools to play around with the viewer

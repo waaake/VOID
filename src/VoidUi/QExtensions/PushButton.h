@@ -33,6 +33,37 @@ private: /* Methods */
 
 };
 
+/**
+ * This class creates a Tool button which when clicked shows a ColorDialog allowing selection of color
+ * The selected color is what is displayed on the button as well
+ */
+class ColorSelectionButton : public QPushButton
+{
+    Q_OBJECT
+
+public:
+    ColorSelectionButton(QWidget* parent = nullptr);
+    ColorSelectionButton(const QColor& color, QWidget* parent = nullptr);
+
+signals:
+    /**
+     * Emits the currently selected color
+     */
+    void colorChanged(const QColor&);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+
+private: /* Members */
+    QColor m_Color;
+
+private: /* Methods */
+    /**
+     * Gets invoked to allow selection of color and emits the selected color.
+     */
+    void SelectColor();
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif

@@ -63,8 +63,8 @@ void VoidDark::polish(QPalette& palette)
     palette.setColor(QPalette::WindowText, QColor(210, 210, 210));
     palette.setColor(QPalette::Base, QColor(25, 25, 25));
     palette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-    palette.setColor(QPalette::ToolTipBase, QColor(210, 210, 210));
-    palette.setColor(QPalette::ToolTipText, QColor(210, 210, 210));
+    palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
+    palette.setColor(QPalette::ToolTipText, Qt::black);
     palette.setColor(QPalette::Text, QColor(210, 210, 210));
     palette.setColor(QPalette::Button, QColor(53, 53, 53));
     palette.setColor(QPalette::ButtonText, QColor(210, 210, 210));

@@ -234,6 +234,8 @@ VoidShader::~VoidShader()
 {
     if (m_Shader)
         m_Shader->deleteLater();
+    if (m_SwipeShader)
+        m_SwipeShader->deleteLater();
 }
 
 void VoidShader::Initialize()
@@ -309,6 +311,7 @@ void VoidShader::SetProfile()
     /**
      * The reason we're going for 3,3 is that whatever we need is available in 3,3 there isn't too much of a benefit
      * going up? maybe we do it later?
+     * Plus Apple is kind enough to support only till GL 4.1 so not much to update afterall
      */
     format.setVersion(3, 3);    // This is so that our shader gets compiled and linked version 330 core for OpenGL 3.3
     format.setProfile(QSurfaceFormat::CoreProfile);

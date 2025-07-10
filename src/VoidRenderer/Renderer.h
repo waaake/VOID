@@ -4,6 +4,9 @@
 /* This includes glew which needs to be included before gl.h and hence this gets included first */
 #include "VoidGL.h"
 
+/* STD */
+#include <vector>
+
 /* glm */
 #include <glm/glm.hpp>
 #include <glm/vec4.hpp>
@@ -19,6 +22,7 @@
 #include "QDefinition.h"
 #include "RenderTypes.h"
 #include "RendererStatus.h"
+#include "AnnotationRenderer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -32,17 +36,21 @@ private: /* Members */
     SharedPixels m_ImageB;
     std::string m_Path;
 
-    /* Enum Types */
+    /* Render Types */
     using ChannelMode = Renderer::ChannelMode;
     using ComparisonMode = Renderer::ComparisonMode;
     using BlendMode = Renderer::BlendMode;
+    using SharedAnnotation = Renderer::SharedAnnotation;
 
 public:
     VoidRenderer(QWidget* parent = nullptr);
-
     ~VoidRenderer();
 
+    /* Render the Image */
     void Render(SharedPixels data);
+    /* Render Image along with Annotations */
+    void Render(const SharedPixels& data, const SharedAnnotation& annotation);
+    /* Compare 2 Images */
     void Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend);
     void Play();
     void Clear();
@@ -57,6 +65,34 @@ public:
      */
     void PrepareFullscreen();
     void ExitFullscreen() { m_Fullscreen = false; }
+
+    /**
+     * Annotation Features
+     */
+    /* Toggles Annotation state */
+    void ToggleAnnotation(bool t);
+    [[nodiscard]] inline bool Annotating() const { return m_Annotating; }
+
+    /**
+     * Clears any Annotation strokes on the current frame
+     */
+    void ClearAnnotations();
+
+    /**
+     * Sets the color on the annotation -> next stroke gets this color to annotate with
+     */
+    void SetAnnotationColor(const glm::vec3& color);
+    void SetAnnotationColor(const QColor& color);
+
+    /**
+     * Sets the thickness of the annotation -> next stroke gets the thickness
+     */
+    void SetAnnotationBrushSize(const float size);
+
+    /**
+     * Set the draw type on the annotation Renderer
+     */
+    void SetAnnotationDrawType(const int type);
 
     /* Lets other components know whether the Renderer is fullscreen */
     [[nodiscard]] inline bool Fullscreen() const { return m_Fullscreen; }
@@ -104,6 +140,14 @@ signals:
     /* Exit fullscreen view and back to normal */
     void exitFullscreen();
 
+    /**
+     * Signals for the Annotations
+     */
+    /* Emitted when a new annotation is just created */
+    void annotationCreated(const SharedAnnotation&);
+    /* Emitted when annotation on a frame has been cleared/deleted */
+    void annotationDeleted();
+
 protected:
     virtual void initializeGL() override;
     virtual void paintGL() override;
@@ -134,6 +178,11 @@ private: /* Members */
      * Array and Buffer objects for the swipe handle
      */
     unsigned int m_SwipeVAO, m_SwipeVBO;
+
+    /**
+     * Renders All kinds of annotations
+     */
+    VoidAnnotationsRenderer* m_AnnotationsRenderer;
 
     /**
      * Viewer Adjustments
@@ -182,6 +231,11 @@ private: /* Members */
     bool m_Pressed;
 
     /**
+     * State describing if the Renderer is currently up for annotation
+     */
+    bool m_Annotating;
+
+    /**
      * Holds the state whether the Renderer is currently rendering
      * fullscreen or in normal view
      */
@@ -220,6 +274,16 @@ private: /* Methods */
      * Calculates the ModelViewProjection Matrix for the Image Texture
      */
     void CalculateModelViewProjection();
+
+    /**
+     * Loads the Textures With Image Data
+     */
+    void ReloadTextures();
+
+    /**
+     * (Re)Sets the Mouse pointer based on the current Annotation tool
+     */
+    void ResetAnnotationPointer();
 };
 
 /**
