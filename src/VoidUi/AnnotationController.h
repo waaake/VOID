@@ -8,7 +8,7 @@
 #include <QWidget>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "QExtensions/PushButton.h"
 #include "QExtensions/Slider.h"
 
@@ -23,6 +23,14 @@ public:
 
 signals:
     void cleared();
+    /**
+     * Gets emitted when a control has been selected
+     * this indicates the Renderer to change the DrawType
+     * e.g. when brush is selected and drawn with
+     * later eraser was selected to update the DrawType on the Renderer
+     */
+    void controlChanged(const int);
+
     void colorChanged(const QColor&);
     void brushSizeChanged(const int);
 
@@ -36,6 +44,7 @@ private: /* Members */
     FramelessSlider* m_SizeSlider;
     
     /* Buttons */
+    QPushButton* m_PointerButton;
     QPushButton* m_BrushButton;
     QPushButton* m_TextButton;
     QPushButton* m_EraserButton;
@@ -53,6 +62,11 @@ private: /* Methods */
      * Connects Signals
      */
     void Connect();
+
+    /**
+     * Setup the UI defaults
+     */
+    void Setup();
 
     /**
      * Shows the Size Slider

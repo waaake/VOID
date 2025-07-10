@@ -225,31 +225,6 @@ void main() {
 
 /* }}} */
 
-/* Annotation Shaders -- The freehand annotations {{{ */
-static const std::string freehandAnnotationVertexShaderSrc = R"(
-#version 330 core
-layout (location = 0) in vec2 position;
-
-uniform mat4 uMVP;
-
-void main() {
-    gl_Position = uMVP * vec4(position, 0.0, 1.0);
-}
-)";
-
-static const std::string freehandAnnotationFragmentShaderSrc = R"(
-#version 330 core
-out vec4 FragColor;
-
-uniform vec3 uColor;
-
-void main() {
-    FragColor = vec4(uColor, 1.0);
-}
-)";
-
-/* }}} */
-
 
 VoidShader::VoidShader()
 {
@@ -259,6 +234,8 @@ VoidShader::~VoidShader()
 {
     if (m_Shader)
         m_Shader->deleteLater();
+    if (m_SwipeShader)
+        m_SwipeShader->deleteLater();
 }
 
 void VoidShader::Initialize()
@@ -266,7 +243,6 @@ void VoidShader::Initialize()
     /* Construct a program to be used */
     m_Shader = new QOpenGLShaderProgram;
     m_SwipeShader = new QOpenGLShaderProgram;
-    m_AnnotationShader = new QOpenGLShaderProgram;
 
     /* Try and Initialize Glew */
     unsigned int status = glewInit();
@@ -282,7 +258,6 @@ void VoidShader::Initialize()
     /* Load the shaders */
     LoadShaders();
     LoadSwipeShaders();
-    LoadAnnotationShaders();
 }
 
 bool VoidShader::LoadShaders()
@@ -322,25 +297,6 @@ bool VoidShader::LoadSwipeShaders()
 
     /* All Good */
     VOID_LOG_INFO("Swipe Shaders Loaded.");
-    return true;
-}
-
-bool VoidShader::LoadAnnotationShaders()
-{
-    /* Compile and Link the free hand annotation shaders */
-    m_AnnotationShader->addShaderFromSourceCode(QOpenGLShader::Vertex, freehandAnnotationVertexShaderSrc.c_str());
-    m_AnnotationShader->addShaderFromSourceCode(QOpenGLShader::Fragment, freehandAnnotationFragmentShaderSrc.c_str());
-
-    /* If we're not able to link the annotation shaders */
-    if (!m_AnnotationShader->link())
-    {
-        /* Log the error */
-        VOID_LOG_ERROR("Annotation Shaders Linking Failed: {0}", m_AnnotationShader->log().toStdString());
-        return false;
-    }
-
-    /* Good to go */
-    VOID_LOG_INFO("Annotation Shaders Loaded.");
     return true;
 }
 

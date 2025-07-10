@@ -2,9 +2,10 @@
 #define _VOID_RENDER_TYPES_H
 
 /* STD */
-#include <vector>
 #include <memory>
 #include <map>
+#include <string>
+#include <vector>
 
 /* GLM */
 #include <glm/vec2.hpp>
@@ -144,6 +145,25 @@ struct AnnotationRenderData
     Renderer::SharedAnnotation annotation;
     /* Projection for the Annotation for rendering on the viewport */
     glm::mat4 projection;
+};
+
+/**
+ * Enum describing the types of draws that can happen on the Annotations Renderer
+ * NONE does nothing
+ * BRUSH draws annotations
+ * TEXT draws text on the screen (so no brush annotation)
+ * ERASER allows removing
+ */
+enum class DrawType
+{
+    /* Nothing */
+    NONE,
+    /* Draw/Annotate using a Brush */
+    BRUSH,
+    /* Draw Text */
+    TEXT,
+    /* Erase Strokes/Text */
+    ERASER
 };
 
 } // namespace Renderer

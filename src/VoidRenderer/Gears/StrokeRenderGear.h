@@ -24,8 +24,6 @@ public:
      */
     virtual void Initialize() override;
 
-    // void Render()
-
 protected:
     /**
      * Setup Array Buffers

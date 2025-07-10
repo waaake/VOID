@@ -3,6 +3,7 @@
 
 /* STD */
 #include <memory>
+#include <unordered_map>
 
 /* Qt */
 #include <QObject>
@@ -12,6 +13,7 @@
 #include "Definition.h"
 #include "VoidObject.h"
 #include "VoidCore/Media.h"
+#include "VoidRenderer/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -75,6 +77,17 @@ public:
             emit frameCached(it.first);
         }
     }
+
+    /* Add Annotation for a Frame */
+    void SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation);
+    /* Remove Anotation for the frame */
+    void RemoveAnnotation(const v_frame_t frame);
+
+    /**
+     * Returns the Annotation for the frame 
+     * nullptr if the annotation isn't found
+     */
+    Renderer::SharedAnnotation Annotation(const v_frame_t frame) const;
 
     /* Exposed Media Function Accessors */
     inline std::string Name() const { return m_Media.Name(); }
@@ -142,6 +155,12 @@ private: /* Members */
     /* The Media it holds for playback */
     Media m_Media;
     QColor m_Color;
+
+    /**
+     * This struct saves the Annotations for the frames
+     * Each Shared Annotation Pointer is mapped to a frame (as simple as it can be :D)
+     */
+    std::unordered_map<v_frame_t, Renderer::SharedAnnotation> m_Annotations;
 };
 
 VOID_NAMESPACE_CLOSE

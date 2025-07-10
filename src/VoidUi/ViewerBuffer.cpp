@@ -227,4 +227,32 @@ bool ViewerBuffer::Playing(const SharedMediaClip& media) const
     return m_CachedTrackItem->GetMedia() == media;
 }
 
+void ViewerBuffer::SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation)
+{
+    /**
+     * For now Just adding the annotation on the Media Clip
+     * TODO: The Active sequence should also have a way to save Annotations to
+     * that way it's not applied on to the TrackItem but on the sequence itself (or maybe check behaviours around this)
+     */
+    if (m_PlayingComponent == PlayableComponent::Clip)
+    {
+        /* Save the annotation on the Media clip */
+        m_Clip->SetAnnotation(frame, annotation);
+    }
+}
+
+void ViewerBuffer::RemoveAnnotation(const v_frame_t frame)
+{
+    /**
+     * For now Just removing the annotation from the Media Clip
+     * TODO: The Active sequence should also have a way to save Annotations to and remove from
+     * that way it's not happening on to TrackItem but on the sequence itself (or maybe check behaviours around this)
+     */
+    if (m_PlayingComponent == PlayableComponent::Clip)
+    {
+        /* Remove the annotation from the Media clip on the given frame */
+        m_Clip->RemoveAnnotation(frame);
+    }
+}
+
 VOID_NAMESPACE_CLOSE

@@ -32,6 +32,9 @@ static const QColor SL_FRAME_COLOR = {190, 150, 60};
 /* Color for the cache denotion of the timeslider */
 static const QColor SL_CACHE_COLOR = {190, 150, 60};
 
+/* Color for the annotate frame denotion of the timeslider */
+static const QColor SL_ANNOTATED_COLOR = {70, 130, 250};
+
 VOID_NAMESPACE_OPEN
 
 Timeslider::Timeslider(Qt::Orientation orientation, QWidget *parent)
@@ -136,6 +139,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 
 	/* Width of each unit value represented in the slider */
 	double uwidth = double(width()) / (maximum() - minimum());
+	double halfuwidth = uwidth / 2;
 
 	/* Groove {{{ */
 	painter.setPen(QColor(30, 30, 30));
@@ -183,22 +187,6 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	painter.drawRect(hpos - hwidth / 2, 0, hwidth, height());
 	/* }}} */
 
-	/* Painter for drawing the Cached frame {{{ */
-	painter.setPen(QPen(SL_CACHE_COLOR, 3));
-
-	for (int frame: m_CachedFrames)
-	{
-		/* Position */
-		int xpos = (frame - minimum()) * uwidth;
-		/* Draw line representing the frame which has been cached */
-		painter.drawLine(xpos, 0, xpos + uwidth, 0);
-	}
-	/* }}} */
-
-	/* Update pen to draw Pre-marked frames on the timeslider */
-	painter.setPen(QPen(Qt::gray, 2));
-
-	/* Draw Lines */
 	int range = maximum() - minimum();
 
 	/* Number of frames to be drawn */
@@ -207,11 +195,46 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	/* Step here would give the step based on the number of markings are being generated */
 	int step = range / number;
 
-	for (int i = minimum(); i < maximum() ; i+= step)
+	/**
+	 * One Big Loop over all the frames
+	 * Checks if the frame is Cached? -> Color Cache
+	 * Checks if the frame is Annotated? -> Color Annotated
+	 * Is that a frame on which we're supposed to Draw a Line? -> Draw a Line
+	 */
+	for (int i = minimum(); i <= maximum(); i++)
 	{
-		int pos = width() * (i - minimum()) / range;
-		/* Draw Line representing Marked frames on the timeslider */
-		painter.drawLine(pos, height() - 10, pos, height());
+		/* Position of the frame */
+		int xpos = (i - minimum()) * uwidth;
+
+		/* Cache {{{ */
+		if (Cached(i))
+		{
+			painter.setPen(QPen(SL_CACHE_COLOR, 3));
+			/* Draw line representing the frame which has been cached */
+			painter.drawLine(xpos, 0, xpos + uwidth, 0);
+		}
+		/* }}}*/
+
+		/* Annotation {{{ */
+		if (Annotated(i))
+		{
+			painter.setPen(QPen(SL_ANNOTATED_COLOR, 3));
+			/* Draw line representing that the frame has been cached */
+			painter.drawLine(xpos - halfuwidth, 6, xpos + halfuwidth, 6);
+		}
+		/* }}}*/
+		
+		/* Line {{{ */
+		if (!(i % step))
+		{
+			/* Update pen to draw Pre-marked frames on the timeslider */
+			painter.setPen(QPen(Qt::gray, 2));
+			/* Position of the line */
+			int pos = width() * (i - minimum()) / range;
+			/* Draw Line representing Marked frames on the timeslider */
+			painter.drawLine(pos, height() - 10, pos, height());
+		}
+		/* }}}*/
 	}
 
 	/* Draw In and Out Frames with Red if they have been defined {{{ */
@@ -350,6 +373,46 @@ void Timeslider::ClearCachedFrames()
 	m_CachedFrames.clear();
 
 	/* Repaint after the cache frames have been cleared */
+	update();
+}
+
+void Timeslider::AddAnnotatedFrame(int frame)
+{
+	auto it = std::find(m_AnnotatedFrames.begin(), m_AnnotatedFrames.end(), frame);
+
+	/**
+	 * Frame doesn't exist already
+	 */
+	if (it == m_AnnotatedFrames.end())
+	{
+		/* Add to the annotated frames */
+		m_AnnotatedFrames.push_back(frame);
+
+		/* Redraw now that we have annotated it */
+		update();
+	}
+}
+
+void Timeslider::RemoveAnnotatedFrame(int frame)
+{
+	// auto it = std::find(m_AnnotatedFrames.begin(), )
+	auto it = std::remove(m_AnnotatedFrames.begin(), m_AnnotatedFrames.end(), frame);
+
+	if (it != m_AnnotatedFrames.end())
+	{
+		/* Remove the frame from the Annotated frames */
+		m_AnnotatedFrames.erase(it, m_AnnotatedFrames.end());
+		/* And Redraw */
+		update();
+	}
+}
+
+void Timeslider::ClearAnnotatedFrames()
+{
+	/* Clear All frames that were marked annotated */
+	m_AnnotatedFrames.clear();
+
+	/* Redraw */
 	update();
 }
 

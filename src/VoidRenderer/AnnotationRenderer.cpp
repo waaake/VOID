@@ -10,8 +10,8 @@ VOID_NAMESPACE_OPEN
 VoidAnnotationsRenderer::VoidAnnotationsRenderer()
     : m_Drawing(false)
     , m_Color(1.f, 1.f, 1.f)
-    , m_Size(4.f)
-    , m_DrawType(DrawType::NONE)
+    , m_Size(0.004f)
+    , m_DrawType(Renderer::DrawType::NONE)
 {
     m_Annotation = nullptr;
 
@@ -84,6 +84,28 @@ bool VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
     m_LastPoint = point;
 
     return true;
+}
+
+void VoidAnnotationsRenderer::EraseStroke(const glm::vec2& point)
+{
+    /* No Active Annotation */
+    if (!m_Annotation)
+        return;
+
+    auto colliding = [&](const Renderer::Stroke& stroke) -> bool 
+    {
+        for (const Renderer::AnnotatedVertex& vertex: stroke.vertices)
+        {
+            if (glm::distance(vertex.position, point) < 0.05)   // If the point is closer than the threshold
+                return true;
+        }
+
+        /* Not Colliding */
+        return false;
+    };
+
+    /* Erase if the point collides on the stroke */
+    m_Annotation->strokes.erase(std::remove_if(m_Annotation->strokes.begin(), m_Annotation->strokes.end(), colliding), m_Annotation->strokes.end());
 }
 
 void VoidAnnotationsRenderer::CommitStroke()

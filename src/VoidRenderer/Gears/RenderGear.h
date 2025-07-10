@@ -71,7 +71,6 @@ protected:
      * This is invoked if the PreDraw is successful
      * The data to be drawn is passed to it
      */
-    // virtual void Draw(const RenderKit& data) = 0;
     virtual void Draw(const void* data) = 0;
 
     /**

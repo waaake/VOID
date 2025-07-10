@@ -36,12 +36,6 @@ protected:
      */
     virtual bool SetupShaders() = 0;
 
-    // /**
-    //  * Setup Array Buffers
-    //  * Initialize the Array Buffers to be used in the program
-    //  */
-    // virtual void SetupBuffers() = 0;
-
 };
 
 VOID_NAMESPACE_CLOSE

@@ -84,6 +84,8 @@ void Player::Connect()
     connect(m_AnnotationsController, &AnnotationsController::colorChanged, m_Renderer, static_cast<void(VoidRenderer::*)(const QColor&)>(&VoidRenderer::SetAnnotationColor));
     /* Annotations Controller - Brush Size Changed -> Renderer -> Set Annotation Thickness */
     connect(m_AnnotationsController, &AnnotationsController::brushSizeChanged, m_Renderer, &VoidRenderer::SetAnnotationBrushSize);
+    /* Annotations Controller - Control Changed -> Renderer -> Set Annotation DrawType */
+    connect(m_AnnotationsController, &AnnotationsController::controlChanged, m_Renderer, &VoidRenderer::SetAnnotationDrawType);
 
     /* Preference - updated -> Player - SetFromPreferences */
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &Player::SetFromPreferences);
@@ -96,6 +98,11 @@ void Player::Connect()
     connect(m_Renderer, &VoidRenderer::stop, this, &Player::Stop);
     connect(m_Renderer, &VoidRenderer::moveForward, this, &Player::NextFrame);
     connect(m_Renderer, &VoidRenderer::moveBackward, this, &Player::PreviousFrame);
+
+    /* Renderer - Annotation Created -> ViewerBuffer - SetAnnotation */
+    connect(m_Renderer, &VoidRenderer::annotationCreated, this, &Player::AddAnnotation);
+    /* Renderer - Annotation Deleted -> ViewerBuffer - RemoveAnnotation */
+    connect(m_Renderer, &VoidRenderer::annotationDeleted, this, &Player::RemoveAnnotation);
 
     /* When a MediaClip is about to be removed from the MediaBride */
     connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &Player::RemoveMedia);
@@ -349,8 +356,10 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
 
 void Player::SetMediaFrame(int frame)
 {
+    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+
     /* Ensure we have a valid media to process before setting the frame */
-    if (m_ActiveViewBuffer->GetMediaClip()->Empty())
+    if (clip->Empty())
         return;
 
     /**
@@ -363,10 +372,10 @@ void Player::SetMediaFrame(int frame)
      * BLACK_FRAME: Display a black frame instead of anything else. No error is displayed.
      * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
      */
-    if (m_ActiveViewBuffer->GetMediaClip()->Contains(frame))
+    if (clip->Contains(frame))
     {
         /* Read the image for the frame from the sequence and set it on the player */
-        m_Renderer->Render(m_ActiveViewBuffer->GetMediaClip()->Image(frame));
+        m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
     }
     else
     {
@@ -385,7 +394,7 @@ void Player::SetMediaFrame(int frame)
                  * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
                  * to read and render on the renderer
                  */
-                SetMediaFrame(m_ActiveViewBuffer->GetMediaClip()->NearestFrame(frame));
+                SetMediaFrame(clip->NearestFrame(frame));
                 break;
         }
     }
@@ -527,6 +536,22 @@ void Player::ToggleAnnotations(const bool state)
     /* If we're in compare mode -> Reset that as we only want to annotate a frame in the buffer */
     if (Comparing())
         m_ControlBar->SetCompareMode(Renderer::ComparisonMode::NONE);
+}
+
+void Player::AddAnnotation(const Renderer::SharedAnnotation& annotation)
+{
+    /* Save the Annotation */
+    m_ActiveViewBuffer->SetAnnotation(m_Timeline->Frame(), annotation);
+    /* Also Mark that the frame has been annotated */
+    m_Timeline->AddAnnotatedFrame(m_Timeline->Frame());
+}
+
+void Player::RemoveAnnotation()
+{
+    /* Remove Annotation from the underlying Media */
+    m_ActiveViewBuffer->RemoveAnnotation(m_Timeline->Frame());
+    /* Remove the annotated frame from the Timeline */
+    m_Timeline->RemoveAnnotatedFrame(m_Timeline->Frame());
 }
 
 VOID_NAMESPACE_CLOSE

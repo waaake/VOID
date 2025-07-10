@@ -85,6 +85,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_maximize.svg
             ../icons/icon_minimize.svg
             ../icons/icon_missing_frame.svg
+            ../icons/icon_pointer.svg
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg
             ../icons/icon_settings.svg

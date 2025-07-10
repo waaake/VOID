@@ -34,9 +34,6 @@ public:
     inline void BindSwiper() { m_SwipeShader->bind(); }
     inline void ReleaseSwiper() { m_SwipeShader->release(); }
 
-    inline void BindAnnotator() { m_AnnotationShader->bind(); }
-    inline void ReleaseAnnotator() { m_AnnotationShader->release(); }
-
     /**
      * Sets Uniform value on the shader program
      */
@@ -51,12 +48,10 @@ public:
      */
     bool LoadShaders();
     bool LoadSwipeShaders();
-    bool LoadAnnotationShaders();
 
     inline QOpenGLShaderProgram* GetShader() const { return m_Shader; }
     inline unsigned int ProgramId() const { return m_Shader->programId(); }
     inline unsigned int SwipeProgramId() const { return m_SwipeShader->programId(); }
-    inline unsigned int AnnotationProgramId() const { return m_AnnotationShader->programId(); }
 
     /**
      * Sets Core Profile for OpenGL
@@ -68,7 +63,6 @@ public:
 private:
     QOpenGLShaderProgram* m_Shader;
     QOpenGLShaderProgram* m_SwipeShader;
-    QOpenGLShaderProgram* m_AnnotationShader;
 
 };
 

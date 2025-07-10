@@ -194,6 +194,15 @@ private:  /* Methods */
      */
     void ToggleAnnotations(const bool state);
 
+    /**
+     * Add an Annotation to the Viewer Buffer
+     */
+    void AddAnnotation(const Renderer::SharedAnnotation& annotation);
+    /**
+     * Removes the Annotation from the underlying Media
+     */
+    void RemoveAnnotation();
+
 private:  /* Members */
     VoidRenderer* m_Renderer;
     VoidPlaceholderRenderer* m_PlaceholderRenderer;

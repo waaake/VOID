@@ -10,6 +10,8 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
 
 /* Internal */
 #include "Renderer.h"
@@ -168,26 +170,11 @@ void VoidRenderer::initializeGL()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // /**
-    //  * Annotation Shader Arrays
-    //  */
-    // glGenVertexArrays(1, &m_DrawAnnotationVAO);
-    // glGenBuffers(1, &m_DrawAnnotationVBO);
-
-    // /* Bind */
-    // glBindVertexArray(m_DrawAnnotationVAO);
-    // glBindBuffer(GL_ARRAY_BUFFER, m_DrawAnnotationVBO);
-
-    // /* Buffer Data */
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_MaxPoints, nullptr, GL_DYNAMIC_DRAW);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
-
-    // /* Unbind */
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // glBindVertexArray(0);
-
+    /* Initialize the Annotations Layer */
     m_AnnotationsRenderer->Initialize();
+
+    /* (Re)Load Any textures if available */
+    ReloadTextures();
 }
 
 void VoidRenderer::paintGL()
@@ -321,99 +308,11 @@ void VoidRenderer::paintGL()
             ReleaseSwiper();
         }
 
-        // /* Draw Annotations */
-        // if (m_Annotating && !m_DrawAnnotation.empty())
-        // {
-        //     /* Bind the Annotation Shader*/
-        //     BindAnnotator();
-
-        //     /* Use the Annotation Shader */
-        //     glUseProgram(AnnotationProgramId());
-
-        //     /**
-        //      * A Fullscreen device projection
-        //      * 0 - left
-        //      * width - right
-        //      * height - bottom
-        //      * 0 - top
-        //      * -1 - near z
-        //      * 1 - far z
-        //      */
-        //     glm::mat4 projection = glm::ortho(0.f, float(width()), float(height()), 0.f, -1.f, 1.f);
-
-        //     /* Model View Projection for the Annotations */
-        //     glUniformMatrix4fv(glGetUniformLocation(AnnotationProgramId(), "uMVP"), 1, GL_FALSE, glm::value_ptr(projection));
-
-        //     /* Set the Color */
-        //     float color[3] = {1.f, 0.f, 1.f};
-        //     glUniform3fv(glGetUniformLocation(AnnotationProgramId(), "uColor"), 1, color);
-
-        //     /* Bind the Array */
-        //     glBindVertexArray(m_DrawAnnotationVAO);
-
-        //     // std::vector<glm::vec2> debugLine = { {100.f, 100.f}, {300.f, 300.f} };
-        //     // glBindBuffer(GL_ARRAY_BUFFER, m_DrawAnnotationVBO);
-        //     // glBufferSubData(GL_ARRAY_BUFFER, 0, debugLine.size() * sizeof(glm::vec2), debugLine.data());
-
-        //     // glDrawArrays(GL_LINE_STRIP, 0, debugLine.size());
-
-        //     // glBindBuffer(GL_ARRAY_BUFFER, m_DrawAnnotationVBO);
-        //     // glBufferSubData(GL_ARRAY_BUFFER, 0, m_DrawAnnotation.size() * sizeof(glm::vec2), m_DrawAnnotation.data());
-        //     // glBindBuffer(GL_ARRAY_BUFFER, 0);
-        //     // glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        //     /* Draw line strip from start to the vector size */
-        //     glDrawArrays(GL_LINE_STRIP, 0, m_DrawAnnotation.size());
-            
-        //     /* Unbind */
-        //     glBindVertexArray(0);
-
-        //     /* We're done with the draw -> Release the Annotation Shader */
-        //     ReleaseAnnotator();
-        // }
-        
         /* Draw Annotations */
         if (m_Annotating)
         {
-            /**
-             * A Fullscreen device projection
-             * 0 - left
-             * width - right
-             * height - bottom
-             * 0 - top
-             * -1 - near z
-             * 1 - far z
-             */
-            glm::mat4 projection = glm::ortho(0.f, float(width()), float(height()), 0.f, -1.f, 1.f);
-
-            // glm::mat4 view = glm::translate(glm::mat4(1.f), glm::vec3(-m_Pan[0], -m_Pan[1], 0.f));
-            // view = glm::scale(view, glm::vec3(m_ZoomFactor, m_ZoomFactor, 1.f));
-
-            // glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
-            /**
-             * To ensure the image is of the correct aspect while render
-             * Calculate the aspect of the current view (Renderer Width / Renderer Height)
-             * And the aspect of the image being rendered
-             */
-            // float viewAspect = float(width()) / height();
-            // float viewWidth = 1.f / m_ZoomFactor;
-            // float viewHeight = viewWidth / viewAspect;
-
-            // // glm::mat4 projection = glm::ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
-            // glm::mat4 projection = glm::ortho(0.5f - viewWidth / 2.f, 0.5f + viewWidth / 2.f, 0.5f + viewHeight / 2.f, 0.5f - viewHeight / 2.f, -1.f, 1.f);
-
-            // float zoomedWidth = width() / m_ZoomFactor;
-            // float zoomedHeight = height() / m_ZoomFactor;
-
-            // float centerX = width() / 2.f;
-            // float centerY = height() / 2.f;
-
-            // glm::mat4 projection = glm::ortho(centerX - zoomedWidth / 2.f, centerX + zoomedWidth / 2.f, centerY + zoomedHeight / 2.f, centerY - zoomedHeight / 2.f, -1.f, 1.f);
-            // glm::mat4 projection = glm::ortho(0.f, zoomedWidth, zoomedHeight, 0.f, -1.f, 1.f);
-
-
             /* Render the stokes with the projection */
-            m_AnnotationsRenderer->Render(projection);
+            m_AnnotationsRenderer->Render(m_ModelViewProjection);
         }
 
         /* Exit Programs */
@@ -465,6 +364,40 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
             m_Swiping = true;
         }
     }
+
+    /* Annotating? and we have a brush active? */
+    if (m_Annotating)
+    {
+        /**
+         * Normalized x y points into Device Coordinates [-1, +1]
+         */
+        float glX = ((m_LastMouse.x() / float(width())) * 2.f) - 1.f;
+        float glY = 1.f - (m_LastMouse.y() / float(height()) * 2.f);
+
+        glm::vec2 p = {glX, glY};
+
+        /* Annotating */
+        if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
+        {
+            /* If we're not able to create a point -> that could be because the annotation isn't created yet */
+            if (!m_AnnotationsRenderer->DrawPoint(p))
+            {
+                /* Create a new Annotation for drawing over */
+                SharedAnnotation annotation = m_AnnotationsRenderer->NewAnnotation();
+                
+                /* Add the Original Point back*/
+                m_AnnotationsRenderer->DrawPoint(p);
+    
+                /* Emit the Created Annotation */
+                emit annotationCreated(annotation);
+            }
+        }
+        else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
+        {
+            /* Remove a Stroke which contains the point */
+            m_AnnotationsRenderer->EraseStroke(p);
+        }
+    }
 }
 
 void VoidRenderer::mouseReleaseEvent(QMouseEvent* event)
@@ -497,35 +430,31 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     /* If we're in annotation Mode don't pan the image or drag the slider */
     if (m_Annotating && m_Pressed)
     {
-        /* Convert the x | y to normalized device coordinates before we supply them to the Annotation for drawing */
-        // float glX = ((x / width()) * 2.f) - 1.f;
-        // float glY = 1.f - ((y / height()) * 2.f);
-        // float glX = x / float(width());
-        // float glY = y / float(height());
+        /**
+         * Normalized x y points into Device Coordinates [-1, +1]
+         */
+        float glX = ((x / float(width())) * 2.f) - 1.f;
+        float glY = 1.f - (y / float(height()) * 2.f);
 
-        // float viewAspect = float(width()) / height();
-        // float viewWidth = 1.f / m_ZoomFactor;
-        // float viewHeight = viewWidth / viewAspect;
-
-        // float viewLeft = 0.5f - viewWidth / 2.f;
-        // float viewTop = 0.5f + viewHeight / 2.f;
-
-        // glm::vec2 p = {glX, glY};
-        // glm::vec2 p = glm::vec2(x, y) / m_ZoomFactor;
-        glm::vec2 p(x, y);
-
-        /* If we're not able to create a point -> that could be because the annotation isn't created yet */
-        if (!m_AnnotationsRenderer->DrawPoint(p))
+        /* Draw Textures on Screen */
+        if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
         {
-            /* Create a new Annotation for drawing over */
-            m_AnnotationsRenderer->NewAnnotation();
+            /* Add the Point */
+            m_AnnotationsRenderer->DrawPoint({glX, glY});
+    
+            /* Redraw */
+            update();
+        }
+        else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
+        {
+            /* Remove a Stroke which contains the point */
+            m_AnnotationsRenderer->EraseStroke({glX, glY});
 
-            /* Add the Original Point back*/
-            m_AnnotationsRenderer->DrawPoint(p);
+            /* Redraw */
+            update();
         }
 
-        /* Redraw */
-        update();
+        /* Return from Here as we're annotating */
         return;
     }
 
@@ -746,15 +675,46 @@ void VoidRenderer::Render(SharedPixels data)
     if (m_ImageA)
     {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-
-        /* Bind the Generated texture for Render */
-        glBindTexture(GL_TEXTURE_2D, m_TextureA);
-        /**
-         * Load the image data onto the Texture 2D
-         */
-        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+
+    /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
+    m_AnnotationsRenderer->SetAnnotation(nullptr);
+
+    /* Load the Textures to be rendered */
+    ReloadTextures();
+
+    /* Trigger a Re-paint */
+    update();
+}
+
+void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& annotation)
+{
+    /* Update the image data */
+    m_ImageA = data;
+    /* Hide the Error Label */
+    m_DisplayLabel->setVisible(false);
+
+    /* We're no longer comparing */
+    m_CompareMode = ComparisonMode::NONE;
+
+    /* Clear Secondary Image Data*/
+    m_ImageB = nullptr;
+
+    /**
+     * Update the render resolution
+     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
+     * So constantly redrawing this is just too ineffecient
+     */
+    if (m_ImageA)
+    {
+        m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+    }
+
+    /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
+    m_AnnotationsRenderer->SetAnnotation(annotation);
+
+    /* Load the Textures to be rendered */
+    ReloadTextures();
 
     /* Trigger a Re-paint */
     update();
@@ -782,27 +742,10 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
     if (m_ImageA)
     {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-
-        /* Bind the Generated texture for Render */
-        glBindTexture(GL_TEXTURE_2D, m_TextureA);
-        /**
-         * Load the image data onto the Texture 2D
-         */
-        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
-    if (m_ImageB)
-    {
-        /* Bind the texture for render */
-        glBindTexture(GL_TEXTURE_2D, m_TextureB);
-
-        /**
-         * Load the image data onto the Texture 2D
-         */
-        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageB->GLFormat(), m_ImageB->Width(), m_ImageB->Height(), 0, m_ImageB->GLFormat(), m_ImageB->GLType(), m_ImageB->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
-    }
+    /* Load the Textures to be rendered */
+    ReloadTextures();
 
     /* Trigger a Re-paint */
     update();
@@ -954,6 +897,147 @@ void VoidRenderer::CalculateModelViewProjection()
         * For any 2D Texture/image the transform from the camera is unity
         */
     m_ModelViewProjection = model * projection; // * unity view i.e. glm::mat4(1.f)    
+}
+
+void VoidRenderer::ReloadTextures()
+{
+    /* Based on the Image Data available -> Load the Textures */
+    if (m_ImageA)
+    {
+        /* Bind the Generated texture for Render */
+        glBindTexture(GL_TEXTURE_2D, m_TextureA);
+        /**
+         * Load the image data onto the Texture 2D
+         */
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
+
+    if (m_ImageB)
+    {
+        /* Bind the texture for render */
+        glBindTexture(GL_TEXTURE_2D, m_TextureB);
+
+        /**
+         * Load the image data onto the Texture 2D
+         */
+        glTexImage2D(GL_TEXTURE_2D, 0, m_ImageB->GLFormat(), m_ImageB->Width(), m_ImageB->Height(), 0, m_ImageB->GLFormat(), m_ImageB->GLType(), m_ImageB->Pixels());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
+    }
+}
+
+void VoidRenderer::ToggleAnnotation(bool t)
+{
+    /* Update Annotation State */
+    m_Annotating = t;
+    /* Accordinly set the Mouse Pointer */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::SetAnnotationColor(const glm::vec3& color)
+{
+    /* Update the current color on the Annotation */
+    m_AnnotationsRenderer->SetColor(color);
+    /* Reset The Mouse Pointer */
+    ResetAnnotationPointer();
+}
+void VoidRenderer::SetAnnotationColor(const QColor& color)
+{
+    /* Update the current color on the Annotation */
+    m_AnnotationsRenderer->SetColor(color);
+    /* Reset The Mouse Pointer */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::SetAnnotationBrushSize(const float size)
+{
+    /* Update the Brush Size */
+    m_AnnotationsRenderer->SetBrushSize(size);
+
+    /* Reset the Mouse Pointer to reflect the brush size */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::SetAnnotationDrawType(const int type)
+{
+    /* Update the Draw Component */
+    m_AnnotationsRenderer->SetDrawType(static_cast<Renderer::DrawType>(type));
+    /* Update the mouse Pointer */
+    ResetAnnotationPointer();
+}
+
+void VoidRenderer::ClearAnnotations()
+{
+    /* Clear the Annotation */
+    m_AnnotationsRenderer->DeleteAnnotation();
+    /* Redraw */
+    update();
+
+    /* Emit that the annotation has now been removed */
+    emit annotationDeleted();
+}
+
+void VoidRenderer::ResetAnnotationPointer()
+{
+    /* Setup the Pointer for Annotation */
+    if (!m_Annotating)
+    {
+        /* Reset the Mouse Pointer */
+        unsetCursor();
+        return;
+    }
+
+    /* Size to be Used for Brush and Eraser */
+    int diameter = (m_AnnotationsRenderer->BrushSize() * 500) + 4;
+
+    /* For each of the Annotation Tool -> Set the Mouse Pointer */
+    if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
+    {
+        /* The Pixmap holding the Brush */
+        QPixmap p(diameter, diameter);
+        p.fill(Qt::transparent);
+
+        QPainter painter(&p);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        /* Fetch the current color from the Renderer */
+        glm::vec3 color = m_AnnotationsRenderer->Color();
+        /* Normalize to QColor RGB space (0 - 255) */
+        painter.setBrush(QColor(color[0] * 255, color[1] * 255, color[2] * 255));
+        // painter.setPen(Qt::black);
+        painter.drawEllipse(0, 0, diameter, diameter);
+
+        /* Hotspot at the center */
+        int hotspot = diameter / 2;
+        setCursor(QCursor(p, hotspot, hotspot));
+    }
+    else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
+    {
+        /* The Pixmap holding the Brush */
+        QPixmap p(diameter, diameter);
+        p.fill(Qt::transparent);
+
+        QPainter painter(&p);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        /* Fetch the current color from the Renderer */
+        glm::vec3 color = m_AnnotationsRenderer->Color();
+        painter.setPen(QPen(Qt::white, 2));
+        painter.drawEllipse(0, 0, diameter, diameter);
+
+        /* Hotspot at the center */
+        int hotspot = diameter / 2;
+        setCursor(QCursor(p, hotspot, hotspot));
+    }
+    else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::TEXT)
+    {
+        /* Set as Text Cursor */
+        setCursor(Qt::IBeamCursor);
+    }
+    else 
+    {
+        unsetCursor();
+    }
 }
 
 /* Placeholder Renderer {{{ */

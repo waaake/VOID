@@ -49,11 +49,11 @@ void StrokeRenderGear::SetupBuffers()
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
     /* Positions */
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Renderer::AnnotatedVertex), (void*)offsetof(Renderer::AnnotatedVertex, Renderer::AnnotatedVertex::position));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Renderer::AnnotatedVertex), nullptr);
     glEnableVertexAttribArray(0);
 
     /* Normals */
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Renderer::AnnotatedVertex), (void*)offsetof(Renderer::AnnotatedVertex, Renderer::AnnotatedVertex::normal));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Renderer::AnnotatedVertex), nullptr);
     glEnableVertexAttribArray(1);
 
     /* Unbind */
