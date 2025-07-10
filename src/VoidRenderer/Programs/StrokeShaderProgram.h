@@ -46,23 +46,8 @@ protected:
      */
     virtual bool SetupShaders() override;
 
-    // /**
-    //  * Setup Array Buffers
-    //  * Initialize the Array Buffers to be used in the program
-    //  */
-    // virtual void SetupBuffers() override;
-
 private: /* Members */
     QOpenGLShaderProgram* m_Program;
-
-    // /* Array Buffers */
-    // unsigned int m_VAO;
-    // unsigned int m_VBO;
-
-    // /* Uniforms */
-    // int m_UProjection;
-    // int m_UColor;
-    // int m_USize;
 
 };
 

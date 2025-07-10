@@ -117,7 +117,7 @@ void AnnotationsController::Connect()
     connect(m_AnnotationGroup, &QButtonGroup::idPressed, this, &AnnotationsController::controlChanged);
     #else
     connect(m_AnnotationGroup, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonPressed), this, &AnnotationsController::controlChanged);
-    #endif // _QT6
+    #endif // _QT6_COMPAT
 }
 
 void AnnotationsController::Setup()
