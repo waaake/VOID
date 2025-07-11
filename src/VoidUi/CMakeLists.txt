@@ -30,8 +30,10 @@ add_library(
     Toolkit/ControlBar.cpp
     Toolkit/ControlScroller.cpp
     QExtensions/Frame.cpp
+    QExtensions/Label.cpp
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp
+    QExtensions/SpinBox.cpp
     QExtensions/ToolTip.cpp
 )
 

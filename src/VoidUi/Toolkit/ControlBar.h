@@ -78,12 +78,9 @@ private: /* Members */
      * Gamma
      * Gain
      */
-    QLabel* m_ExposureLabel;
-    ControlDoubleSpinner* m_ExposureController;
-    QLabel* m_GammaLabel;
-    ControlDoubleSpinner* m_GammaController;
-    QLabel* m_GainLabel;
-    ControlDoubleSpinner* m_GainController;
+    QuickSpinner* m_ExposureSpinner;
+    QuickSpinner* m_GammaSpinner;
+    QuickSpinner* m_GainSpinner;
 
     /**
      * Set/Update channels on the viewer
