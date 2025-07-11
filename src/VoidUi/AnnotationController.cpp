@@ -1,6 +1,6 @@
 /* Internal */
 #include "AnnotationController.h"
-#include "VoidCore/Logging.h"
+#include "QExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -58,32 +58,32 @@ void AnnotationsController::Build()
     m_BrushButton->setIcon(QIcon(":resources/icons/icon_brush.svg"));
     m_BrushButton->setCheckable(true);
     m_BrushButton->setFlat(true);
-    m_BrushButton->setToolTip("<b>Brush Tool</b><br>Annotate free hand using the Brush tool.");
+    m_BrushButton->setToolTip(ToolTipString("Brush Tool", "Annotate free hand using the Brush tool.").c_str());
 
     m_TextButton = new QPushButton;
     m_TextButton->setIcon(QIcon(":resources/icons/icon_text.svg"));
     m_TextButton->setCheckable(true);
     m_TextButton->setFlat(true);
-    m_TextButton->setToolTip("<b>Text Tool</b><br>Annotate by typing where clicked.");
+    m_TextButton->setToolTip(ToolTipString("Text Tool", "Annotate by typing where clicked.").c_str());
 
     m_EraserButton = new QPushButton;
     m_EraserButton->setIcon(QIcon(":resources/icons/icon_eraser.svg"));
     m_EraserButton->setCheckable(true);
     m_EraserButton->setFlat(true);
-    m_EraserButton->setToolTip("<b>Eraser Tool</b><br>Erase Text Characters or Annotation Stroke by dragging over.");
+    m_EraserButton->setToolTip(ToolTipString("Eraser Tool", "Erase Text Characters or Annotation Stroke by dragging over.").c_str());
 
     m_ClearButton = new QPushButton;
     m_ClearButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
     m_ClearButton->setFlat(true);
-    m_ClearButton->setToolTip("<b>Delete Annotation</b><br>Deletes the annotation from the current frame.");
+    m_ClearButton->setToolTip(ToolTipString("Delete Annotation", "Deletes the annotation from the current frame.").c_str());
 
     m_ColorButton = new ColorSelectionButton({255, 255, 255}, this);
-    m_ColorButton->setToolTip("<b>Color Selector</b><br>Selects Color for Annotation.");
+    m_ColorButton->setToolTip(ToolTipString("Color Selector", "Selects Color for Annotation.").c_str());
 
     m_SizeAdjuster = new QPushButton;
     m_SizeAdjuster->setIcon(QIcon(":resources/icons/icon_adjust.svg"));
     m_SizeAdjuster->setFlat(true);
-    m_SizeAdjuster->setToolTip("<b>Adjust Size</b><br>Adjust size of the Brush/Eraser.");
+    m_SizeAdjuster->setToolTip(ToolTipString("Adjust Size", "Adjust size of the Brush/Eraser.").c_str());
 
     /* Add to the button group */
     m_AnnotationGroup->addButton(m_PointerButton, 0);

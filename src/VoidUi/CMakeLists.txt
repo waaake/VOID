@@ -18,7 +18,6 @@ add_library(
     PlayerWidget.cpp
     PlayerWindow.cpp
     Sequence.cpp
-    Timeline.cpp
     TitleBar.cpp
     Track.cpp
     TrackItem.cpp
@@ -27,9 +26,13 @@ add_library(
     Preferences/Preferences.cpp
     Preferences/PreferencesUI.cpp
     Preferences/PlayerPreferences.cpp
+    Timeline/Timeline.cpp
+    Timeline/TimelineElements.cpp
+    Timeline/Timeslider.cpp
     QExtensions/Frame.cpp
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp
+    QExtensions/ToolTip.cpp
 )
 
 target_link_libraries(

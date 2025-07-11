@@ -988,7 +988,7 @@ void VoidRenderer::ResetAnnotationPointer()
     }
 
     /* Size to be Used for Brush and Eraser */
-    int diameter = (m_AnnotationsRenderer->BrushSize() * 500) + 4;
+    int diameter = (m_AnnotationsRenderer->BrushSize() * 500) + 4; // 4 units for boundaries
 
     /* For each of the Annotation Tool -> Set the Mouse Pointer */
     if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
@@ -1014,7 +1014,7 @@ void VoidRenderer::ResetAnnotationPointer()
     else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
     {
         /* The Pixmap holding the Brush */
-        QPixmap p(diameter, diameter);
+        QPixmap p(diameter + 4, diameter + 4);
         p.fill(Qt::transparent);
 
         QPainter painter(&p);
@@ -1023,7 +1023,7 @@ void VoidRenderer::ResetAnnotationPointer()
         /* Fetch the current color from the Renderer */
         glm::vec3 color = m_AnnotationsRenderer->Color();
         painter.setPen(QPen(Qt::white, 2));
-        painter.drawEllipse(0, 0, diameter, diameter);
+        painter.drawEllipse(2, 2, diameter, diameter);
 
         /* Hotspot at the center */
         int hotspot = diameter / 2;

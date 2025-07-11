@@ -70,7 +70,7 @@ void VoidDark::polish(QPalette& palette)
     palette.setColor(QPalette::ButtonText, QColor(210, 210, 210));
     palette.setColor(QPalette::BrightText, Qt::red);
     palette.setColor(QPalette::Link, QColor(42, 130, 218));
-    palette.setColor(QPalette::Highlight, QColor(160, 190, 60));
+    palette.setColor(QPalette::Highlight, VOID_HIGHLIGHT_GREEN);
     palette.setColor(QPalette::HighlightedText, Qt::black);
     palette.setColor(QPalette::Dark, QColor(20, 20, 20));
 }
