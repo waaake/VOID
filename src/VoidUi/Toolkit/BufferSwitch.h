@@ -7,8 +7,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "ViewerBuffer.h"
-#include "QExtensions/Frame.h"
+#include "VoidUi/QExtensions/Frame.h"
+#include "VoidUi/ViewerBuffer.h"
 #include "VoidRenderer/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN

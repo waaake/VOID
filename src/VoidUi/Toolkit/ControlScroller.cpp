@@ -181,139 +181,97 @@ void ControlSpinner::leaveEvent(QEvent* event)
 
 /* }}} */
 
-/* Control Double Spinner {{{ */
-ControlDoubleSpinner::ControlDoubleSpinner(QWidget* parent)
-    : QDoubleSpinBox(parent)
-    , m_LastX(0)
-    , m_Threshold(10)
+/* Quick Spinner {{{ */
+
+QuickSpinner::QuickSpinner(QWidget* parent)
+    : QuickSpinner("", 0.0, 10.0, 0.0, parent)
 {
-    /* Use Simple arrows */
-    setButtonSymbols(QAbstractSpinBox::PlusMinus);
-
-    /* Hide the text input */
-    lineEdit()->setVisible(false);
-
-    /* Set Focus to never stay on it */
-    setFocusPolicy(Qt::NoFocus);
 }
 
-void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
+QuickSpinner::QuickSpinner(const std::string& label, const double min, const double max, const double value, QWidget* parent)
+    : QWidget(parent)
+    , m_Default(value)
+    , m_Last(value)
 {
-    /* Painter to draw elements */
-    QPainter painter(this);
+    /* Build the UI elements */
+    Build();
 
-    painter.setRenderHint(QPainter::Antialiasing);
+    /* Setup Values */
+    m_Spinner->setMinimum(min);
+    m_Spinner->setMaximum(max);
 
-    /* Text */
-    painter.setPen(QColor(210, 210, 210));
-    /* Show fixed point number with 1 decimal precision */
-    painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignLeft | Qt::AlignVCenter, QString::number(value(), 'f', 1));
+    /* The value acts as the default value and last as well */
+    m_Spinner->setValue(value);
 
-    /* Draw Arrows */
-    QPoint arrowCenter(width() - 8, height() / 2);
-    QPolygon downArrow;
-    QPolygon upArrow;
+    /* Connect */
+    connect(m_Spinner, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &QuickSpinner::ValueChanged);
+    connect(m_Label, &ClickableLabel::clicked, this, &QuickSpinner::Reset);
+}
 
-    /* Add Points */
-    downArrow << QPoint(arrowCenter.x() - 3, arrowCenter.y() + 1)
-        << QPoint(arrowCenter.x() + 3, arrowCenter.y() + 1)
-        << QPoint(arrowCenter.x(), arrowCenter.y() + 5);
+QuickSpinner::~QuickSpinner()
+{
+    m_Label->deleteLater();
+    delete m_Label;
+    m_Label = nullptr;
+
+    m_Spinner->deleteLater();
+    delete m_Spinner;
+    m_Spinner = nullptr;
+
+    m_Layout->deleteLater();
+    delete m_Layout;
+    m_Layout = nullptr;
+}
+
+void QuickSpinner::Build()
+{
+    /* Main Layout */
+    m_Layout = new QHBoxLayout(this);
+
+    /* Spacing */
+    m_Layout->setContentsMargins(0, 0, 0, 0);
+    m_Layout->setSpacing(1);
+
+    m_Label = new ClickableLabel;
+
+    m_Spinner = new ControlDoubleSpinner;
     
-    upArrow << QPoint(arrowCenter.x() - 3, arrowCenter.y() - 1)
-        << QPoint(arrowCenter.x() + 3, arrowCenter.y() - 1)
-        << QPoint(arrowCenter.x(), arrowCenter.y() - 5);
-
-    /* Draw the Arrow polygon */
-    painter.setBrush(QColor(210, 210, 210));
-    painter.drawPolygon(upArrow);
-    painter.drawPolygon(downArrow);
+    /* Add to the main layout */
+    m_Layout->addWidget(m_Label);
+    m_Layout->addWidget(m_Spinner);
 }
 
-void ControlDoubleSpinner::mousePressEvent(QMouseEvent* event)
+void QuickSpinner::ValueChanged(const double value)
 {
-    /* Base Mouse Press */
-    QDoubleSpinBox::mousePressEvent(event);
+    QPalette p = m_Label->palette();
 
-    #if _QT6 /* Qt6 Compat */
-    /* Save the last mouse x pos */
-    m_LastX = event->position().x();
-    #else
-    /* Save the last mouse x pos */
-    m_LastX = event->x();
-    #endif
-}
-
-#if _QT6            /* Qt6 Compat*/
-void ControlDoubleSpinner::mouseMoveEvent(QMouseEvent* event)
-{
-    /* Get the delta of how much the mouse has moved since the click */
-    int delta = event->position().x() - m_LastX;
-
-    /* 
-     * If the delta is above the threshold -> we can modify the value 
-     * The real threshold can also be altered by pressing in shift
-     */   
-    // if (std::abs(delta) > (event->modifiers() & Qt::ShiftModifier) ? m_Threshold / 10 : m_Threshold)
-    if (std::abs(delta) > m_Threshold)
+    /* Validate the value against the last value to set the Color of the Spinner */
+    if (m_Default != value)
     {
-        /* Check which side the delta has been */
-        if (delta > 0)
-        {
-            /* Set the max of what we get by incrementing or the higher limit */
-            setValue(std::min(maximum(), value() + singleStep()));
-        }
-        else
-        {
-            /* Set the max of the least or what we get by decrementing */
-            setValue(std::max(minimum(), value() - singleStep()));
-        }
+        p.setColor(QPalette::WindowText, Qt::red);
 
-        /* Update the last mouse x */
-        m_LastX = event->position().x();
+        /* Update the Last value -- The last value should never be the default value */
+        m_Last = value;
     }
-}
-#else
-void ControlDoubleSpinner::mouseMoveEvent(QMouseEvent* event)
-{
-    /* Get the delta of how much the mouse has moved since the click */
-    int delta = event->x() - m_LastX;
-
-    /* 
-     * If the delta is above the threshold -> we can modify the value 
-     * The real threshold can also be altered by pressing in shift
-     */   
-    // if (std::abs(delta) > (event->modifiers() & Qt::ShiftModifier) ? m_Threshold / 10 : m_Threshold)
-    if (std::abs(delta) > m_Threshold)
+    else
     {
-        /* Check which side the delta has been */
-        if (delta > 0)
-        {
-            /* Set the max of what we get by incrementing or the higher limit */
-            setValue(std::min(maximum(), value() + singleStep()));
-        }
-        else
-        {
-            /* Set the max of the least or what we get by decrementing */
-            setValue(std::max(minimum(), value() - singleStep()));
-        }
-
-        /* Update the last mouse x */
-        m_LastX = event->x();
+        p.setColor(QPalette::WindowText, QColor(210, 210, 210));
     }
-}
-#endif
+    
+    /* Update the color on the Label to indicate when we're on the Default value */
+    m_Label->setPalette(p);
 
-void ControlDoubleSpinner::enterEvent(EnterEvent* event)
-{
-    /* Set Cursor Override */
-    setCursor(Qt::SizeHorCursor);
-    QDoubleSpinBox::enterEvent(event);
+    /* Emit that the value has been changed */
+    emit valueChanged(value);
 }
 
-void ControlDoubleSpinner::leaveEvent(QEvent* event)
+void QuickSpinner::Reset()
 {
-    setCursor(Qt::ArrowCursor);
-    QDoubleSpinBox::leaveEvent(event);
+    /* If we're already in the default value -> switch to the last value */
+    if (m_Spinner->value() == m_Default)
+        m_Spinner->setValue(m_Last);
+    else
+        m_Spinner->setValue(m_Default);
 }
 
 /* }}} */

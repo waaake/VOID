@@ -1,6 +1,6 @@
 /* Internal */
 #include "AnnotationController.h"
-#include "QExtensions/Tooltip.h"
+#include "VoidUi/QExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 
