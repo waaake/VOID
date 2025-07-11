@@ -3,11 +3,7 @@ add_library(
     VoidUi
     SHARED
     About.cpp
-    AnnotationController.cpp
     Browser.cpp
-    BufferSwitch.cpp
-    ControlBar.cpp
-    ControlScroller.cpp
     Docker.cpp
     Events.h
     BaseWindow.cpp
@@ -29,6 +25,10 @@ add_library(
     Timeline/Timeline.cpp
     Timeline/TimelineElements.cpp
     Timeline/Timeslider.cpp
+    Toolkit/AnnotationController.cpp
+    Toolkit/BufferSwitch.cpp
+    Toolkit/ControlBar.cpp
+    Toolkit/ControlScroller.cpp
     QExtensions/Frame.cpp
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp

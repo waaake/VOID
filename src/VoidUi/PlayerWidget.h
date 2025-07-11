@@ -6,14 +6,14 @@
 #include <QLayout>
 
 /* Internal */
-#include "AnnotationController.h"
-#include "ControlBar.h"
 #include "Definition.h"
 #include "MediaClip.h"
 #include "Sequence.h"
 #include "ViewerBuffer.h"
 #include "VoidCore/Media.h"
 #include "Timeline/Timeline.h"
+#include "Toolkit/AnnotationController.h"
+#include "Toolkit/ControlBar.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/Renderer.h"
 

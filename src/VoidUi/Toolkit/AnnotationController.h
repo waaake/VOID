@@ -9,8 +9,8 @@
 
 /* Internal */
 #include "QDefinition.h"
-#include "QExtensions/PushButton.h"
-#include "QExtensions/Slider.h"
+#include "VoidUi/QExtensions/PushButton.h"
+#include "VoidUi/QExtensions/Slider.h"
 
 VOID_NAMESPACE_OPEN
 
