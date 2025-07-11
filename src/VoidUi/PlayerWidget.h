@@ -10,10 +10,10 @@
 #include "ControlBar.h"
 #include "Definition.h"
 #include "MediaClip.h"
-#include "Timeline.h"
 #include "Sequence.h"
 #include "ViewerBuffer.h"
 #include "VoidCore/Media.h"
+#include "Timeline/Timeline.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/Renderer.h"
 
