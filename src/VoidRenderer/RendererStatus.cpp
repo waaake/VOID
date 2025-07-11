@@ -91,12 +91,26 @@ RendererStatusBar::RendererStatusBar(QWidget* parent)
 
 RendererStatusBar::~RendererStatusBar()
 {
+    m_LeftLayout->deleteLater();
+    delete m_LeftLayout;
+    m_LeftLayout = nullptr;
+
+    m_RightLayout->deleteLater();
+    delete m_RightLayout;
+    m_RightLayout = nullptr;
+
+    m_Layout->deleteLater();
+    delete m_Layout;
+    m_Layout = nullptr;
 }
 
 void RendererStatusBar::Build()
 {
     /* Base Layout */
     m_Layout = new QHBoxLayout(this);
+
+    m_LeftLayout = new QHBoxLayout;
+    m_RightLayout = new QHBoxLayout;
 
     m_ResolutionLabel = new QLabel("Resolution: ");
     m_ResolutionValue = new QLabel("");
@@ -135,26 +149,31 @@ void RendererStatusBar::Build()
     /* Fixed Size */
     m_ColorPreview->setFixedSize(30, 12);
 
+    /* Left Layout */
+    m_LeftLayout->addWidget(m_ResolutionLabel);
+    m_LeftLayout->addWidget(m_ResolutionValue);
+    m_LeftLayout->addStretch(1);
+
+    /* Right Layout */
+    m_RightLayout->addStretch(1);
+    m_RightLayout->addWidget(m_RValue);
+    m_RightLayout->addWidget(m_GValue);
+    m_RightLayout->addWidget(m_BValue);
+    m_RightLayout->addWidget(m_AValue);
+    m_RightLayout->addWidget(m_ColorPreview);
+
     /* Add to the main layout */
-    m_Layout->addWidget(m_ResolutionLabel);
-    m_Layout->addWidget(m_ResolutionValue);
+    /* Left */
+    m_Layout->addLayout(m_LeftLayout);
 
-    /* Stretch */
-    m_Layout->addStretch(1);
-
+    /* Centered */
     m_Layout->addWidget(m_XLabel);
     m_Layout->addWidget(m_XValue);
     m_Layout->addWidget(m_YLabel);
     m_Layout->addWidget(m_YValue);
 
-    /* Stretch */
-    m_Layout->addStretch(1);
-
-    m_Layout->addWidget(m_RValue);
-    m_Layout->addWidget(m_GValue);
-    m_Layout->addWidget(m_BValue);
-    m_Layout->addWidget(m_AValue);
-    m_Layout->addWidget(m_ColorPreview);
+    /* Right */
+    m_Layout->addLayout(m_RightLayout);
 }
 
 void RendererStatusBar::SetRenderResolution(const int width, const int height)

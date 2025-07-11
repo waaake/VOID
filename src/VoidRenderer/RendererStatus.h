@@ -55,6 +55,12 @@ private: /* Members */
     /* Main Layout */
     QHBoxLayout* m_Layout;
 
+    /* Layout needs to be grouped so that size changes don't affect the center elements */
+    /* Left Side Layout */
+    QHBoxLayout* m_LeftLayout;
+    /* Right Side Layout */
+    QHBoxLayout* m_RightLayout;
+
     /* Input Details */
     QLabel* m_ResolutionLabel;
     QLabel* m_ResolutionValue;
