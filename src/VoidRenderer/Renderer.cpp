@@ -208,7 +208,7 @@ void VoidRenderer::paintGL()
         CalculateModelViewProjection();
 
         GLuint projLoc = glGetUniformLocation(ProgramId(), "uMVP");
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(m_ModelViewProjection));
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(m_VProjection));
 
         /* Update the viewer properties to the shader */
         SetUniform("exposure", m_Exposure);
@@ -312,7 +312,7 @@ void VoidRenderer::paintGL()
         if (m_Annotating)
         {
             /* Render the stokes with the projection */
-            m_AnnotationsRenderer->Render(m_ModelViewProjection);
+            m_AnnotationsRenderer->Render(m_VProjection);
         }
 
         /* Exit Programs */
@@ -374,7 +374,7 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         float glX = ((m_LastMouse.x() / float(width())) * 2.f) - 1.f;
         float glY = 1.f - (m_LastMouse.y() / float(height()) * 2.f);
 
-        glm::vec2 p = {glX, glY};
+        glm::vec2 p = InverseWorldPoint({glX, glY});
 
         /* Annotating */
         if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
@@ -384,10 +384,10 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
             {
                 /* Create a new Annotation for drawing over */
                 SharedAnnotation annotation = m_AnnotationsRenderer->NewAnnotation();
-                
+
                 /* Add the Original Point back*/
                 m_AnnotationsRenderer->DrawPoint(p);
-    
+
                 /* Emit the Created Annotation */
                 emit annotationCreated(annotation);
             }
@@ -440,15 +440,15 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
         {
             /* Add the Point */
-            m_AnnotationsRenderer->DrawPoint({glX, glY});
-    
+            m_AnnotationsRenderer->DrawPoint(InverseWorldPoint({glX, glY}));
+
             /* Redraw */
             update();
         }
         else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
         {
             /* Remove a Stroke which contains the point */
-            m_AnnotationsRenderer->EraseStroke({glX, glY});
+            m_AnnotationsRenderer->EraseStroke(InverseWorldPoint({glX, glY}));
 
             /* Redraw */
             update();
@@ -481,10 +481,10 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         {
             /* Update the Swipe in it's normalized system (0.f - +1.f)*/
             m_SwipeX = std::clamp(x / float(width()), 0.f, 1.f);
-    
+
             /* Redraw the Texture */
             update();
-    
+
             /* Return from here and not affect the pan */
             return;
         }
@@ -892,11 +892,14 @@ void VoidRenderer::CalculateModelViewProjection()
      */
     glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
 
-    /*
-        * Calculate the model view prohection matrix
-        * For any 2D Texture/image the transform from the camera is unity
-        */
-    m_ModelViewProjection = model * projection; // * unity view i.e. glm::mat4(1.f)    
+    /**
+     * Calculate the model view prohection matrix
+     * For any 2D Texture/image the transform from the camera is unity
+     */
+    m_VProjection = model * projection; // * unity view i.e. glm::mat4(1.f)
+
+    /* Calculate the inverse projection as well */
+    m_InverseProjection = glm::inverse(m_VProjection);
 }
 
 void VoidRenderer::ReloadTextures()
@@ -922,7 +925,7 @@ void VoidRenderer::ReloadTextures()
          * Load the image data onto the Texture 2D
          */
         glTexImage2D(GL_TEXTURE_2D, 0, m_ImageB->GLFormat(), m_ImageB->Width(), m_ImageB->Height(), 0, m_ImageB->GLFormat(), m_ImageB->GLType(), m_ImageB->Pixels());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);   
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 }
 
@@ -1034,7 +1037,7 @@ void VoidRenderer::ResetAnnotationPointer()
         /* Set as Text Cursor */
         setCursor(Qt::IBeamCursor);
     }
-    else 
+    else
     {
         unsetCursor();
     }

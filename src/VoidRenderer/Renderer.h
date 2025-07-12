@@ -200,7 +200,8 @@ private: /* Members */
     /**
      * ModelViewProjection matrix for the Texture
      */
-    glm::mat4 m_ModelViewProjection;
+    glm::mat4 m_VProjection;
+    glm::mat4 m_InverseProjection;
 
     /* Channels to display on the viewport */
     ChannelMode m_ChannelMode;
@@ -274,6 +275,23 @@ private: /* Methods */
      * Calculates the ModelViewProjection Matrix for the Image Texture
      */
     void CalculateModelViewProjection();
+
+    /**
+     * Applies inverse Projection tranformation to the Normalized x, y position
+     * for the mouse to represent a point accurately in 2D world irrespective of the zoom
+     * 
+     * The inverse of the world transform (model view projection) when going back from 
+     * screen space to logical coordinate space (annotation position)
+     * Takes in the Normalized Device Converted Coordinates from the Mouse.x Mouse.y -> Normalized to [-1, 1] Gl Viewport
+     * Applies the inverse of the projection matrix to the 4 vec of (x, y, z, w)
+     * where w is 1 (homogeneous Coordinate) cannot be 0 else the value gets treated as a direction vector 
+     * z can be 0 as for 2D the depth doesn't matter
+     */
+    inline glm::vec2 InverseWorldPoint(const glm::vec2& normalized) const
+    {
+        glm::vec4 worldCoord = m_InverseProjection * glm::vec4(normalized.x, normalized.y, 0.f, 1.f);
+        return glm::vec2(worldCoord.x, worldCoord.y);
+    }
 
     /**
      * Loads the Textures With Image Data
