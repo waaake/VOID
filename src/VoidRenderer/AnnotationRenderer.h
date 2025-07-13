@@ -7,6 +7,10 @@
 /* STD */
 #include <vector>
 
+/* Freetype */
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 /* GLM */
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -19,6 +23,7 @@
 #include "Definition.h"
 #include "RenderTypes.h"
 #include "Gears/StrokeRenderGear.h"
+#include "Gears/TextRenderGear.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -41,8 +46,13 @@ public:
     /* Remove a stroke which collides with the point */
     void EraseStroke(const glm::vec2& point);
 
+    void AddDemoText(const glm::vec2& point, const std::string& text);
+
     /* Draw the Points */
     void Render(const glm::mat4& projection);
+
+    /* Sets the Current Font Face */
+    void SetFontFace(const std::string& path, const int size);
 
     /**
      * Creates a New Annotation and sets it for the Drawing
@@ -89,6 +99,9 @@ public:
     inline void SetDrawType(const Renderer::DrawType& type) { m_DrawType = type; }
     inline const Renderer::DrawType& DrawType() const { return m_DrawType; }
 
+    /* Returns whether the annotater is currently typing anything */
+    inline bool Typing() const { return m_Typing; }
+
 private: /* Members */
     /* Current Annotation to be renderer / Updated during a draw */
     Renderer::SharedAnnotation m_Annotation;
@@ -99,9 +112,16 @@ private: /* Members */
     /* Indicates whether the draw has been started for the annotation */
     bool m_Drawing;
 
+    /* Indicates that we're typing text for the annoation */
+    bool m_Typing;
+
     /* Annotation Attributes */
     glm::vec3 m_Color;
     float m_Size;
+
+    /* Text Attributes */
+    FT_Library m_FtLib;
+    FT_Face m_FontFace;
 
     /* Renderable Annotation Data */
     Renderer::AnnotationRenderData* m_AnnotationData;
@@ -111,6 +131,7 @@ private: /* Members */
 
     /* Render Components */
     StrokeRenderGear* m_StrokeRenderer;
+    TextRenderGear* m_TextRenderer;
 
 };
 

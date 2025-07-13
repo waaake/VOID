@@ -15,6 +15,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${QtWidgets_INCLUDE_DIRS}
     ${QtCore_INCLUDE_DIRS}
+    ${FREETYPE_INCLUDE_DIRS}
 )
 
 target_include_directories(
@@ -39,6 +40,9 @@ endif()
 if (QT_MAJOR_VERSION EQUAL 6)
     include_directories(${QtOpenGLWidgets_INCLUDE_DIRS})
 endif()
+
+# Freetype
+include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # Main Executable
 add_executable(

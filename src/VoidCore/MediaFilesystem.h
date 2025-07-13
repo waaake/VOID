@@ -59,7 +59,7 @@ public:
      * file is a separate single entity
      */
     [[nodiscard]] inline bool SingleFile() const { return m_SingleFile; }
-    [[nodiscard]] inline bool Valid() const { return not m_Path.empty(); }
+    [[nodiscard]] inline bool Valid() const { return !m_Path.empty(); }
 
     /**
      * Validates and returns true if the other entry is similar to this

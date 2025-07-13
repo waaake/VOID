@@ -214,7 +214,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 		/* }}}*/
 		
 		/* Line {{{ */
-		if (!(i % step))
+		if (step && !(i % step))
 		{
 			/* Update pen to draw Pre-marked frames on the timeslider */
 			painter.setPen(QPen(Qt::gray, 2));

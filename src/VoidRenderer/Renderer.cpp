@@ -397,6 +397,11 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
             /* Remove a Stroke which contains the point */
             m_AnnotationsRenderer->EraseStroke(p);
         }
+        else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::TEXT)
+        {
+            /* Demo Text */
+            m_AnnotationsRenderer->AddDemoText(p, "Demonstration");
+        }
     }
 }
 

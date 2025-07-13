@@ -8,8 +8,10 @@ add_library(
     RenderTypes.h
     VoidGL.cpp
     Programs/StrokeShaderProgram.cpp
+    Programs/TextShaderProgram.cpp
     Gears/RenderGear.cpp
     Gears/StrokeRenderGear.cpp
+    Gears/TextRenderGear.cpp
 )
 
 target_include_directories(
@@ -19,6 +21,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${QtWidgets_INCLUDE_DIRS}
     ${glm_INCLUDE_DIRS}
+    ${FREETYPE_INCLUDE_DIRS}
 )
 
 # Link to this library
@@ -30,6 +33,7 @@ target_link_libraries(
     OpenGL::GL
     glm::glm
     GLEW::GLEW
+    Freetype::Freetype
 )
 
 # Qt6 needs OpenGLWidgets be included/linked separately

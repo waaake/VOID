@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 
+/* Freetype */
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 /* GLM */
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -93,6 +97,32 @@ struct Stroke
     inline bool Empty() const noexcept { return vertices.empty(); }
     inline int Size() const noexcept { return vertices.size(); }
     inline const AnnotatedVertex* Data() const noexcept { return vertices.data(); }
+    inline void Clear() { vertices.clear(); }
+};
+
+/**
+ * RenderText is a collection of Characters to be rendered
+ * as annoatated text
+ */
+struct RenderText
+{
+    /* The Text to be rendered on the screen */
+    std::string text;
+
+    /* Color of the Text */
+    glm::vec3 color;
+
+    /* Start Position of the Text */
+    glm::vec2 position;
+
+    /* The Font Face to use */
+    /**
+     * TODO: Change it to be a serializable value
+     */
+    FT_Face face;
+
+    inline bool Empty() const noexcept { return text.empty(); }
+    inline void Clear() { text.clear(); }
 };
 
 /**
@@ -101,7 +131,7 @@ struct Stroke
  * Current Set of AnnotatedVertices
  * Committed/Saved Strokes (the Annotated Vertices with information like color and size)
  */
-struct Annotation
+struct VOID_API Annotation
 {
     /**
      * Collection of Strokes
@@ -109,19 +139,27 @@ struct Annotation
     std::vector<Stroke> strokes;
 
     /**
-     * Stores the Active Annotation
-     */
-    std::vector<AnnotatedVertex> annotation;
-
-    /**
      * Stores the Active Annotation Stroke
      */
     Stroke current;
 
     /**
+     * Collection of Render Texts
+     */
+    std::vector<RenderText> texts;
+
+    /**
+     * Stores the Active text
+     */
+    RenderText draft;
+
+    /**
      * Returns True if there is no active annotation and also no strokes
      */
-    inline bool Empty() const { return strokes.empty() && annotation.empty(); }
+    inline bool Empty() const
+    { 
+        return strokes.empty() && current.Empty() && texts.empty() && draft.Empty();
+    }
 
     /**
      * Clears the Annotation
@@ -130,7 +168,9 @@ struct Annotation
     {
         /* Clear any data */
         strokes.clear();
-        annotation.clear();
+        current.Clear();
+        texts.clear();
+        draft.Clear();
     }
 };
 

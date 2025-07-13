@@ -9,6 +9,7 @@ VOID_NAMESPACE_OPEN
 
 VoidAnnotationsRenderer::VoidAnnotationsRenderer()
     : m_Drawing(false)
+    , m_Typing(false)
     , m_Color(1.f, 1.f, 1.f)
     , m_Size(0.004f)
     , m_DrawType(Renderer::DrawType::NONE)
@@ -25,6 +26,11 @@ VoidAnnotationsRenderer::~VoidAnnotationsRenderer()
     {
         delete m_StrokeRenderer;
         m_StrokeRenderer = nullptr;
+    }
+    if (m_TextRenderer)
+    {
+        delete m_TextRenderer;
+        m_TextRenderer = nullptr;
     }
     if (m_AnnotationData)
     {
@@ -122,17 +128,55 @@ void VoidAnnotationsRenderer::CommitStroke()
     m_Annotation->strokes.push_back(std::move(m_Annotation->current));
 
     /* Clear the Current Annotation */
-    m_Annotation->annotation.clear();
+    m_Annotation->current.Clear();
     m_Drawing = false;
+}
+
+void VoidAnnotationsRenderer::AddDemoText(const glm::vec2& point, const std::string& text)
+{
+    /* Don't have annotation ready */
+    if (!m_Annotation)
+        return;
+    
+    Renderer::RenderText r;
+    r.color = m_Color;
+    r.face = m_FontFace;
+    r.position = point;
+    r.text = text;
+
+    m_Annotation->texts.push_back(std::move(r));
 }
 
 void VoidAnnotationsRenderer::Initialize()
 {
     /* Create the Render Components */
     m_StrokeRenderer = new StrokeRenderGear;
+    m_TextRenderer = new TextRenderGear;
 
     /* Initialize */
     m_StrokeRenderer->Initialize();
+    m_TextRenderer->Initialize();
+
+    /* Initialize Freetype */
+    if (FT_Init_FreeType(&m_FtLib))
+    {
+        VOID_LOG_ERROR("Unable to Initialize FreeType.");
+    }
+
+    /* Setup Default Font */
+    SetFontFace("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 40);
+}
+
+void VoidAnnotationsRenderer::SetFontFace(const std::string& path, const int size)
+{
+    /* Load the Font Face */
+    if (FT_New_Face(m_FtLib, path.c_str(), 0, &m_FontFace))
+    {
+        VOID_LOG_ERROR("Not Able to load Font from file: {0}", path);
+    }
+
+    /* Set the Font Size */
+    FT_Set_Pixel_Sizes(m_FontFace, 0, size);
 }
 
 void VoidAnnotationsRenderer::Render(const glm::mat4& projection)
@@ -144,8 +188,14 @@ void VoidAnnotationsRenderer::Render(const glm::mat4& projection)
     /* Update the projection before Drawing */
     m_AnnotationData->projection = projection;
 
-    /* Render the Annotation */
-    m_StrokeRenderer->Render(static_cast<const void*>(m_AnnotationData));
+    /* Annotation data to be sent to Render Gears */
+    const void* data = static_cast<const void*>(m_AnnotationData);
+
+    /* Render the Strokes */
+    m_StrokeRenderer->Render(data);
+
+    /* Render the text */
+    m_TextRenderer->Render(data);
 }
 
 VOID_NAMESPACE_CLOSE
