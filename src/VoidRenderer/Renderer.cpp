@@ -380,17 +380,17 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
         {
             /* If we're not able to create a point -> that could be because the annotation isn't created yet */
-            if (!m_AnnotationsRenderer->DrawPoint(p))
+            if (!m_AnnotationsRenderer->HasAnnotation())
             {
                 /* Create a new Annotation for drawing over */
                 SharedAnnotation annotation = m_AnnotationsRenderer->NewAnnotation();
 
-                /* Add the Original Point back*/
-                m_AnnotationsRenderer->DrawPoint(p);
-
                 /* Emit the Created Annotation */
                 emit annotationCreated(annotation);
             }
+
+            /* Add the Original Point */
+            m_AnnotationsRenderer->DrawPoint(p);
         }
         else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
         {
@@ -399,8 +399,21 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         }
         else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::TEXT)
         {
-            /* Demo Text */
-            m_AnnotationsRenderer->AddDemoText(p, "Demonstration");
+            /* If we're not able to create a point -> that could be because the annotation isn't created yet */
+            if (!m_AnnotationsRenderer->HasAnnotation())
+            {
+                /* Create a new Annotation for drawing over */
+                SharedAnnotation annotation = m_AnnotationsRenderer->NewAnnotation();
+
+                /* Emit the Created Annotation */
+                emit annotationCreated(annotation);
+            }
+
+            /* Begin Typing at this point */
+            m_AnnotationsRenderer->BeginTyping(p);
+
+            /* Set Focus on the Widget to receive Key Events Correctly when typing */
+            setFocus();
         }
     }
 }
@@ -600,6 +613,14 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
 
 void VoidRenderer::keyPressEvent(QKeyEvent* event)
 {
+    /* If we're annotating and typing */
+    if (m_Annotating && m_AnnotationsRenderer->Typing())
+    {
+        HandleAnnotationTyping(event);
+        /* No other operation while the typing is ongoing */
+        return;
+    }
+
     /* The below keypresses only work when we're fullscreen */
     if (m_Fullscreen)
     {
@@ -957,10 +978,11 @@ void VoidRenderer::SetAnnotationColor(const QColor& color)
     ResetAnnotationPointer();
 }
 
-void VoidRenderer::SetAnnotationBrushSize(const float size)
+void VoidRenderer::SetAnnotationSize(const float size)
 {
     /* Update the Brush Size */
     m_AnnotationsRenderer->SetBrushSize(size);
+    m_AnnotationsRenderer->SetFontSize(static_cast<int>(size));
 
     /* Reset the Mouse Pointer to reflect the brush size */
     ResetAnnotationPointer();
@@ -1046,6 +1068,35 @@ void VoidRenderer::ResetAnnotationPointer()
     {
         unsetCursor();
     }
+}
+
+void VoidRenderer::HandleAnnotationTyping(QKeyEvent* event)
+{
+    /* Handle Key Switches */
+    switch (event->key())
+    {
+        case Qt::Key_Backspace:
+            m_AnnotationsRenderer->Backspace();
+            break;
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+            m_AnnotationsRenderer->CommitText();
+            /* Clear Focus from the Widget */
+            clearFocus();
+            break;
+        case Qt::Key_Escape:
+            /* Discard anything that was being typed on screen */
+            m_AnnotationsRenderer->DiscardText();
+            /* Clear the Focus from the widget */
+            clearFocus();
+            break;
+        default:
+            /* Add the Text on the Renderer Draft */
+            m_AnnotationsRenderer->Type(event->text().toStdString());
+    }
+
+    /* Redraw */
+    update();
 }
 
 /* Placeholder Renderer {{{ */

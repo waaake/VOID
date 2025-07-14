@@ -53,15 +53,13 @@ const Character& FontStore::GetChar(FT_Face face, FT_ULong character)
     /**
      * Since we're returning a const reference to the character
      * so the returned reference has to point at the character from the underlying map struct
-     * Till now we have ensured that we have the character added to the cache (if it wasn't already there)
+     * By now, we have ensured that we have the character added to the cache (if it wasn't already there)
      */
     return data.at(character);
 }
 
 Character FontStore::Load(FT_Face face, FT_ULong character)
 {
-    VOID_LOG_INFO("Loading Character: {0}", character);
-
     /* Load the Glyph */
     FT_Load_Char(face, character, FT_LOAD_RENDER);
 
@@ -83,7 +81,6 @@ Character FontStore::Load(FT_Face face, FT_ULong character)
 
     /* Character Bitmap --> Grayscale */
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, flippedBitmap.data());
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -214,8 +211,9 @@ void TextRenderGear::Draw(const void* data)
 
 void TextRenderGear::DrawText(const Renderer::RenderText& text)
 {
-    /* This is to align with the overall NDC of the Projection where the range is [-1, 1]*/
-    float scale = 2.f / 500;
+    /* This is to align with the overall NDC of the Projection where the range is [-1, 1] */
+    float scale = 0.001;
+    float scalex = 0.001/1.77;
 
     /* Beginning Position */
     float x = text.position.x;
@@ -234,10 +232,10 @@ void TextRenderGear::DrawText(const Renderer::RenderText& text)
         const Character& ch = m_FontStore->GetChar(text.face, code);
 
         /* Setup the Necessary data to generate the Buffer data for the draw call */
-        float xpos = x + ch.bearing.x * scale;
+        float xpos = x + ch.bearing.x * scalex;
         float ypos = y - (ch.size.y - ch.bearing.y) * scale;
 
-        float w = ch.size.x * scale;
+        float w = ch.size.x * scalex;
         float h = ch.size.y * scale;
 
         /* Buffer Data Vertices */
@@ -272,7 +270,7 @@ void TextRenderGear::DrawText(const Renderer::RenderText& text)
          * which is 64 times the amount of pixels to advance
          * ch.advance >> 6 is bitshifting and producing an equal result of ch.advance / 64 but is faster
          */
-        x += (ch.advance >> 6) * scale;
+        x += (ch.advance >> 6) * scalex;
     }
 }
 

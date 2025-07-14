@@ -24,5 +24,7 @@
         <file>../icons/icon_video_player.png</file>
         <file>../icons/icon_zoom_in.svg</file>
         <file>../icons/icon_zoom_out.svg</file>
+        <!-- Font -->
+        <file>../fonts/Roboto-Regular.ttf</file>
     </qresource>
 </RCC>

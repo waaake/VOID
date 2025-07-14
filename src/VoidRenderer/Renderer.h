@@ -85,9 +85,9 @@ public:
     void SetAnnotationColor(const QColor& color);
 
     /**
-     * Sets the thickness of the annotation -> next stroke gets the thickness
+     * Sets the size/thickness of the annotation -> next stroke gets the thickness
      */
-    void SetAnnotationBrushSize(const float size);
+    void SetAnnotationSize(const float size);
 
     /**
      * Set the draw type on the annotation Renderer
@@ -302,6 +302,13 @@ private: /* Methods */
      * (Re)Sets the Mouse pointer based on the current Annotation tool
      */
     void ResetAnnotationPointer();
+
+    /**
+     * Handles the KeyPresses for Annotation and converts the required keys into text which is rendered
+     * on the viewport, handles other key presses like Escape to exit out from the mode etc.
+     */
+    void HandleAnnotationTyping(QKeyEvent* event);
+
 };
 
 /**

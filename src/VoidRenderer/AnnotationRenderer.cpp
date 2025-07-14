@@ -1,3 +1,6 @@
+/* Qt */
+#include <QFile>
+
 /* GLM */
 #include <glm/gtc/type_ptr.hpp> // for glm::value_ptr
 
@@ -7,17 +10,43 @@
 
 VOID_NAMESPACE_OPEN
 
+/* Font Reader {{{ */
+
+bool FontReader::Read(const std::string& path)
+{
+    /* Read the File as Byte Array */
+    QFile ff(path.c_str());
+    if (!ff.open(QIODevice::ReadOnly))
+        return false;
+
+    m_Data = ff.readAll();
+    return true;
+}
+
+/* }}} */
+
 VoidAnnotationsRenderer::VoidAnnotationsRenderer()
     : m_Drawing(false)
     , m_Typing(false)
     , m_Color(1.f, 1.f, 1.f)
     , m_Size(0.004f)
     , m_DrawType(Renderer::DrawType::NONE)
+    , m_FontPath(":resources/fonts/Roboto-Regular.ttf")
+    , m_FontSize(40)
 {
     m_Annotation = nullptr;
 
     /* Update the Annotation Data */
     m_AnnotationData = new Renderer::AnnotationRenderData;
+
+    /* Initialize Freetype */
+    if (FT_Init_FreeType(&m_FtLib))
+    {
+        VOID_LOG_ERROR("Unable to Initialize FreeType.");
+    }
+
+    /* Setup Default Font */
+    SetFontFace(m_FontPath, m_FontSize);
 }
 
 VoidAnnotationsRenderer::~VoidAnnotationsRenderer()
@@ -50,10 +79,10 @@ Renderer::SharedAnnotation VoidAnnotationsRenderer::NewAnnotation()
     return m_Annotation;
 }
 
-bool VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
+void VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
 {
     if (!m_Annotation)
-        return false;
+        return;
 
     /* The first point to be inserted for the annotation */
     if (!m_Drawing)
@@ -65,7 +94,7 @@ bool VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
         m_Annotation->current.color = m_Color;
         m_Annotation->current.thickness = m_Size;
 
-        return true;
+        return;
     }
 
     /* Next Set of Points */
@@ -89,7 +118,7 @@ bool VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
     /* Update the Last point */
     m_LastPoint = point;
 
-    return true;
+    return;
 }
 
 void VoidAnnotationsRenderer::EraseStroke(const glm::vec2& point)
@@ -132,19 +161,70 @@ void VoidAnnotationsRenderer::CommitStroke()
     m_Drawing = false;
 }
 
-void VoidAnnotationsRenderer::AddDemoText(const glm::vec2& point, const std::string& text)
+void VoidAnnotationsRenderer::BeginTyping(const glm::vec2& position)
 {
-    /* Don't have annotation ready */
+    /* If the Annotation hasn't been set */
     if (!m_Annotation)
         return;
     
-    Renderer::RenderText r;
-    r.color = m_Color;
-    r.face = m_FontFace;
-    r.position = point;
-    r.text = text;
+    /* Set Typing as true for typing into the Annotations */
+    m_Typing = true;
 
-    m_Annotation->texts.push_back(std::move(r));
+    /* Setup the draft */
+    m_Annotation->draft.color = m_Color;
+    m_Annotation->draft.face = m_FontFace;
+    m_Annotation->draft.position = position;
+}
+
+void VoidAnnotationsRenderer::Type(const std::string& text)
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    m_Annotation->draft.text.append(text);
+}
+
+void VoidAnnotationsRenderer::Backspace()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    m_Annotation->draft.text.pop_back();
+}
+
+void VoidAnnotationsRenderer::CommitText()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    /* Nothing to save */
+    if (m_Annotation->draft.Empty())
+        return;
+
+    /* Add to texts */
+    m_Annotation->texts.push_back(std::move(m_Annotation->draft));
+
+    /* Clear draft */
+    m_Annotation->draft.Clear();
+
+    /* Not typing anymore */
+    m_Typing = false;
+}
+
+void VoidAnnotationsRenderer::DiscardText()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    /* Clear draft */
+    m_Annotation->draft.Clear();
+
+    /* Not typing anymore */
+    m_Typing = false;
 }
 
 void VoidAnnotationsRenderer::Initialize()
@@ -156,21 +236,18 @@ void VoidAnnotationsRenderer::Initialize()
     /* Initialize */
     m_StrokeRenderer->Initialize();
     m_TextRenderer->Initialize();
-
-    /* Initialize Freetype */
-    if (FT_Init_FreeType(&m_FtLib))
-    {
-        VOID_LOG_ERROR("Unable to Initialize FreeType.");
-    }
-
-    /* Setup Default Font */
-    SetFontFace("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 40);
 }
 
 void VoidAnnotationsRenderer::SetFontFace(const std::string& path, const int size)
 {
+    if (!m_FontReader.Read(path))
+    {
+        VOID_LOG_ERROR("Unable to open font file {0}", path);
+        return;
+    }
+
     /* Load the Font Face */
-    if (FT_New_Face(m_FtLib, path.c_str(), 0, &m_FontFace))
+    if (FT_New_Memory_Face(m_FtLib, reinterpret_cast<const FT_Byte*>(m_FontReader.Data().constData()), m_FontReader.Data().size(), 0, &m_FontFace))
     {
         VOID_LOG_ERROR("Not Able to load Font from file: {0}", path);
     }
