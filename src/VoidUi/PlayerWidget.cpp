@@ -82,8 +82,8 @@ void Player::Connect()
     connect(m_AnnotationsController, &AnnotationsController::cleared, m_Renderer, &VoidRenderer::ClearAnnotations);
     /* Annotations Controller - Color Changed -> Renderer -> Set Annotation Color */
     connect(m_AnnotationsController, &AnnotationsController::colorChanged, m_Renderer, static_cast<void(VoidRenderer::*)(const QColor&)>(&VoidRenderer::SetAnnotationColor));
-    /* Annotations Controller - Brush Size Changed -> Renderer -> Set Annotation Thickness */
-    connect(m_AnnotationsController, &AnnotationsController::brushSizeChanged, m_Renderer, &VoidRenderer::SetAnnotationBrushSize);
+    /* Annotations Controller - Brush Size Changed -> Renderer -> Set Annotation Size */
+    connect(m_AnnotationsController, &AnnotationsController::brushSizeChanged, m_Renderer, &VoidRenderer::SetAnnotationSize);
     /* Annotations Controller - Control Changed -> Renderer -> Set Annotation DrawType */
     connect(m_AnnotationsController, &AnnotationsController::controlChanged, m_Renderer, &VoidRenderer::SetAnnotationDrawType);
 

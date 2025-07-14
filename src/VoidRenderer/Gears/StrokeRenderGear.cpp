@@ -89,32 +89,28 @@ void StrokeRenderGear::Draw(const void* data)
     /* Draw out the existing stokes */
     for (const Renderer::Stroke& stroke: d->annotation->strokes)
     {
-        /* Update uniforms */
-        glUniform3fv(m_UColor, 1, glm::value_ptr(stroke.color));
-        glUniform1f(m_USize, stroke.thickness);
-
-        /* Update the data on the buffer */
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Renderer::AnnotatedVertex) * stroke.Size(), stroke.Data(), GL_DYNAMIC_DRAW);
-
-        /* Draw the strokes as Triangle strip with stroke thickness */
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, stroke.Size());
+        DrawStroke(stroke);
     }
 
-    /* Draw out the */
+    /* Draw out the current stroke */
     if (!d->annotation->current.Empty())
     {
-        /* Update uniforms */
-        glUniform3fv(m_UColor, 1, glm::value_ptr(d->annotation->current.color));
-        glUniform1f(m_USize, d->annotation->current.thickness);
-    
-        /* Update the data on the buffer */
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(Renderer::AnnotatedVertex) * d->annotation->current.Size(), d->annotation->current.Data(), GL_DYNAMIC_DRAW);
-    
-        /* Draw the strokes as Triangle strip with stroke thickness */
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, d->annotation->current.Size());
+        DrawStroke(d->annotation->current);
     }
+}
+
+void StrokeRenderGear::DrawStroke(const Renderer::Stroke& stroke)
+{
+    /* Update uniforms */
+    glUniform3fv(m_UColor, 1, glm::value_ptr(stroke.color));
+    glUniform1f(m_USize, stroke.thickness);
+
+    /* Update the data on the buffer */
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Renderer::AnnotatedVertex) * stroke.Size(), stroke.Data(), GL_DYNAMIC_DRAW);
+
+    /* Draw the strokes as Triangle strip with stroke thickness */
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, stroke.Size());
 }
 
 void StrokeRenderGear::PostDraw()

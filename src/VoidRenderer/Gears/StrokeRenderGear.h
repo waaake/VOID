@@ -64,6 +64,9 @@ private: /* Members */
     int m_UColor;
     int m_USize;
 
+private: /* Methods */
+    void DrawStroke(const Renderer::Stroke& stroke);
+
 };
 
 VOID_NAMESPACE_CLOSE

@@ -64,6 +64,9 @@ find_package(GLEW REQUIRED)
 # GL Maths
 find_package(glm REQUIRED)
 
+# Freetype for Font Rendering
+find_package(Freetype REQUIRED)
+
 # Core Readers
 find_package(OpenImageIO REQUIRED)
 find_package(OpenEXR REQUIRED)

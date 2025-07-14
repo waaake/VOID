@@ -34,8 +34,12 @@ target_link_libraries(
     OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
     ${FFMPEG_LIBRARIES}
-    swscale
 )
+
+# Mac for some reason needs this explicitly
+if (APPLE)
+    target_link_libraries(VoidRenderer PRIVATE swscale)
+endif()
 
 # Export symbols for windows
 target_compile_definitions(VoidCore PRIVATE VOID_LIB)

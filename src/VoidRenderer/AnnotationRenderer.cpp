@@ -1,3 +1,6 @@
+/* Qt */
+#include <QFile>
+
 /* GLM */
 #include <glm/gtc/type_ptr.hpp> // for glm::value_ptr
 
@@ -7,16 +10,43 @@
 
 VOID_NAMESPACE_OPEN
 
+/* Font Reader {{{ */
+
+bool FontReader::Read(const std::string& path)
+{
+    /* Read the File as Byte Array */
+    QFile ff(path.c_str());
+    if (!ff.open(QIODevice::ReadOnly))
+        return false;
+
+    m_Data = ff.readAll();
+    return true;
+}
+
+/* }}} */
+
 VoidAnnotationsRenderer::VoidAnnotationsRenderer()
     : m_Drawing(false)
+    , m_Typing(false)
     , m_Color(1.f, 1.f, 1.f)
     , m_Size(0.004f)
     , m_DrawType(Renderer::DrawType::NONE)
+    , m_FontPath(":resources/fonts/Roboto-Regular.ttf")
+    , m_FontSize(40)
 {
     m_Annotation = nullptr;
 
     /* Update the Annotation Data */
     m_AnnotationData = new Renderer::AnnotationRenderData;
+
+    /* Initialize Freetype */
+    if (FT_Init_FreeType(&m_FtLib))
+    {
+        VOID_LOG_ERROR("Unable to Initialize FreeType.");
+    }
+
+    /* Setup Default Font */
+    SetFontFace(m_FontPath, m_FontSize);
 }
 
 VoidAnnotationsRenderer::~VoidAnnotationsRenderer()
@@ -25,6 +55,11 @@ VoidAnnotationsRenderer::~VoidAnnotationsRenderer()
     {
         delete m_StrokeRenderer;
         m_StrokeRenderer = nullptr;
+    }
+    if (m_TextRenderer)
+    {
+        delete m_TextRenderer;
+        m_TextRenderer = nullptr;
     }
     if (m_AnnotationData)
     {
@@ -44,10 +79,10 @@ Renderer::SharedAnnotation VoidAnnotationsRenderer::NewAnnotation()
     return m_Annotation;
 }
 
-bool VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
+void VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
 {
     if (!m_Annotation)
-        return false;
+        return;
 
     /* The first point to be inserted for the annotation */
     if (!m_Drawing)
@@ -59,7 +94,7 @@ bool VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
         m_Annotation->current.color = m_Color;
         m_Annotation->current.thickness = m_Size;
 
-        return true;
+        return;
     }
 
     /* Next Set of Points */
@@ -83,7 +118,7 @@ bool VoidAnnotationsRenderer::DrawPoint(const glm::vec2& point)
     /* Update the Last point */
     m_LastPoint = point;
 
-    return true;
+    return;
 }
 
 void VoidAnnotationsRenderer::EraseStroke(const glm::vec2& point)
@@ -122,17 +157,103 @@ void VoidAnnotationsRenderer::CommitStroke()
     m_Annotation->strokes.push_back(std::move(m_Annotation->current));
 
     /* Clear the Current Annotation */
-    m_Annotation->annotation.clear();
+    m_Annotation->current.Clear();
     m_Drawing = false;
+}
+
+void VoidAnnotationsRenderer::BeginTyping(const glm::vec2& position)
+{
+    /* If the Annotation hasn't been set */
+    if (!m_Annotation)
+        return;
+    
+    /* Set Typing as true for typing into the Annotations */
+    m_Typing = true;
+
+    /* Setup the draft */
+    m_Annotation->draft.color = m_Color;
+    m_Annotation->draft.face = m_FontFace;
+    m_Annotation->draft.position = position;
+}
+
+void VoidAnnotationsRenderer::Type(const std::string& text)
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    m_Annotation->draft.text.append(text);
+}
+
+void VoidAnnotationsRenderer::Backspace()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    m_Annotation->draft.text.pop_back();
+}
+
+void VoidAnnotationsRenderer::CommitText()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    /* Nothing to save */
+    if (m_Annotation->draft.Empty())
+        return;
+
+    /* Add to texts */
+    m_Annotation->texts.push_back(std::move(m_Annotation->draft));
+
+    /* Clear draft */
+    m_Annotation->draft.Clear();
+
+    /* Not typing anymore */
+    m_Typing = false;
+}
+
+void VoidAnnotationsRenderer::DiscardText()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    /* Clear draft */
+    m_Annotation->draft.Clear();
+
+    /* Not typing anymore */
+    m_Typing = false;
 }
 
 void VoidAnnotationsRenderer::Initialize()
 {
     /* Create the Render Components */
     m_StrokeRenderer = new StrokeRenderGear;
+    m_TextRenderer = new TextRenderGear;
 
     /* Initialize */
     m_StrokeRenderer->Initialize();
+    m_TextRenderer->Initialize();
+}
+
+void VoidAnnotationsRenderer::SetFontFace(const std::string& path, const int size)
+{
+    if (!m_FontReader.Read(path))
+    {
+        VOID_LOG_ERROR("Unable to open font file {0}", path);
+        return;
+    }
+
+    /* Load the Font Face */
+    if (FT_New_Memory_Face(m_FtLib, reinterpret_cast<const FT_Byte*>(m_FontReader.Data().constData()), m_FontReader.Data().size(), 0, &m_FontFace))
+    {
+        VOID_LOG_ERROR("Not Able to load Font from file: {0}", path);
+    }
+
+    /* Set the Font Size */
+    FT_Set_Pixel_Sizes(m_FontFace, 0, size);
 }
 
 void VoidAnnotationsRenderer::Render(const glm::mat4& projection)
@@ -144,8 +265,14 @@ void VoidAnnotationsRenderer::Render(const glm::mat4& projection)
     /* Update the projection before Drawing */
     m_AnnotationData->projection = projection;
 
-    /* Render the Annotation */
-    m_StrokeRenderer->Render(static_cast<const void*>(m_AnnotationData));
+    /* Annotation data to be sent to Render Gears */
+    const void* data = static_cast<const void*>(m_AnnotationData);
+
+    /* Render the Strokes */
+    m_StrokeRenderer->Render(data);
+
+    /* Render the text */
+    m_TextRenderer->Render(data);
 }
 
 VOID_NAMESPACE_CLOSE
