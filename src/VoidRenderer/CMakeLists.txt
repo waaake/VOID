@@ -7,10 +7,18 @@ add_library(
     RendererStatus.cpp
     RenderTypes.h
     VoidGL.cpp
+    ImageRenderLayer.cpp
+    ImageComparisonRenderLayer.cpp
+    Programs/ImageShaderProgram.cpp
+    Programs/ImageComparisonShaderProgram.cpp
     Programs/StrokeShaderProgram.cpp
+    Programs/SwiperShaderProgram.cpp
     Programs/TextShaderProgram.cpp
     Gears/RenderGear.cpp
+    Gears/ImageRenderGear.cpp
+    Gears/ImageComparisonRenderGear.cpp
     Gears/StrokeRenderGear.cpp
+    Gears/SwiperRenderGear.cpp
     Gears/TextRenderGear.cpp
 )
 

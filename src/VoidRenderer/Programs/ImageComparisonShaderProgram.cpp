@@ -1,13 +1,14 @@
-/* Qt */
-#include <QSurfaceFormat>
+/* GLEW */
+#include <GL/glew.h>
 
 /* Internal */
-#include "VoidGL.h"
+#include "ImageComparisonShaderProgram.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
- * These are our base shaders which we'll use to render out images (for now)
+ * These are our base shaders which we'll use to render out images for comparison
  * onto our renderer window
  */
 
@@ -199,125 +200,38 @@ void main() {
 }
 )";
 
-
-/* Lines Shaders -- The lines controlling the Actions on the Viewport {{{ */
-static const std::string lineVertexShaderSrc = R"(
-#version 330 core
-layout (location = 0) in vec3 position;
-
-uniform mat4 uMVP;
-
-void main() {
-    gl_Position = uMVP * vec4(position, 1.0);
-}
-)";
-
-static const std::string lineFragmentShaderSrc = R"(
-#version 330 core
-out vec4 FragColor;
-
-uniform vec3 uColor;
-
-void main() {
-    FragColor = vec4(uColor, 1.0);
-}
-)";
-
-/* }}} */
-
-
-VoidShader::VoidShader()
+ImageComparisonShaderProgram::~ImageComparisonShaderProgram()
 {
+    m_Program->deleteLater();
+    delete m_Program;
+    m_Program = nullptr;
 }
 
-VoidShader::~VoidShader()
+void ImageComparisonShaderProgram::Initialize()
 {
-    if (m_Shader)
-        m_Shader->deleteLater();
-    if (m_SwipeShader)
-        m_SwipeShader->deleteLater();
+    m_Program = new QOpenGLShaderProgram;
+
+    /* Setup the Shaders */
+    SetupShaders();
 }
 
-void VoidShader::Initialize()
+bool ImageComparisonShaderProgram::SetupShaders()
 {
-    /* Construct a program to be used */
-    m_Shader = new QOpenGLShaderProgram;
-    m_SwipeShader = new QOpenGLShaderProgram;
+    /* Add Shaders */
+    m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
+    m_Program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc.c_str());
 
-    /* Try and Initialize Glew */
-    unsigned int status = glewInit();
-
-    if (status != GLEW_OK)
+    /* Try and Compile - Link Shaders */
+    if (!m_Program->link())
     {
-        VOID_LOG_ERROR("GLEW init Failed: {0}", reinterpret_cast<const char*>(glewGetErrorString(status)));
-    }
-
-    /* All good for GL and GLEW */
-    VOID_LOG_INFO("GLEW Initialized.");
-
-    /* Load the shaders */
-    // LoadShaders();
-    // LoadSwipeShaders();
-}
-
-bool VoidShader::LoadShaders()
-{
-    /* Compile Vertex Shader */
-    m_Shader->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
-
-    /* Compile Fragment Shader */
-    m_Shader->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc.c_str());
-
-    /* If we're not able to link the shaders */
-    if (!m_Shader->link())
-    {
-        /* Log the error and return the status as false */
-        VOID_LOG_ERROR("Shader Linking Failed: {0}", m_Shader->log().toStdString());
+        /* Log the Errors from the Program */
+        VOID_LOG_ERROR("Unable to Link Comparison Image Shaders: {0}", m_Program->log().toStdString());
         return false;
     }
 
-    /* We're all goood */
-    VOID_LOG_INFO("Shaders Loaded.");
+    /* We're all good */
+    VOID_LOG_INFO("Comparison Image Shaders Loaded.");
     return true;
-}
-
-bool VoidShader::LoadSwipeShaders()
-{
-    /* Compile and Link the Swipe Shaders */
-    m_SwipeShader->addShaderFromSourceCode(QOpenGLShader::Vertex, lineVertexShaderSrc.c_str());
-    m_SwipeShader->addShaderFromSourceCode(QOpenGLShader::Fragment, lineFragmentShaderSrc.c_str());
-
-    /* If We're not able to link the swipe shaders */
-    if (!m_SwipeShader->link())
-    {
-        /* Log the error */
-        VOID_LOG_ERROR("Swipe Shader Linking Failed: {0}", m_SwipeShader->log().toStdString());
-        return false;
-    }
-
-    /* All Good */
-    VOID_LOG_INFO("Swipe Shaders Loaded.");
-    return true;
-}
-
-void VoidShader::SetProfile()
-{
-    /**
-     * As we're going to use Modern OpenGL
-     * We'd like to use the Core Profile
-     * Setup OpenGL Core Profile
-     */
-    QSurfaceFormat format;
-    /**
-     * The reason we're going for 3,3 is that whatever we need is available in 3,3 there isn't too much of a benefit
-     * going up? maybe we do it later?
-     * Plus Apple is kind enough to support only till GL 4.1 so not much to update afterall
-     */
-    format.setVersion(3, 3);    // This is so that our shader gets compiled and linked version 330 core for OpenGL 3.3
-    format.setProfile(QSurfaceFormat::CoreProfile);
-
-    /* Set the adjusted profile */
-    QSurfaceFormat::setDefaultFormat(format);
 }
 
 VOID_NAMESPACE_CLOSE

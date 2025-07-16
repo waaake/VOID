@@ -23,6 +23,8 @@
 #include "RenderTypes.h"
 #include "RendererStatus.h"
 #include "AnnotationRenderer.h"
+#include "ImageRenderLayer.h"
+#include "ImageComparisonRenderLayer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -180,8 +182,14 @@ private: /* Members */
     unsigned int m_SwipeVAO, m_SwipeVBO;
 
     /**
-     * Renders All kinds of annotations
+     * Render Layers
+     * Renders Textures and other elements on the Viewer
      */
+    /* Renders the Main Texture */
+    ImageRenderLayer* m_ImageRenderer;
+    /* Renders the Textures when the compare mode is set */
+    ImageComparisonRenderLayer* m_ImageComparisonRenderer;
+    /* Renders all forms of annotations (text | strokes) */
     VoidAnnotationsRenderer* m_AnnotationsRenderer;
 
     /**

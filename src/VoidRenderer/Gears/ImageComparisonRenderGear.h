@@ -1,18 +1,18 @@
-#ifndef _VOID_STROKE_RENDER_GEAR_H
-#define _VOID_STROKE_RENDER_GEAR_H
+#ifndef _VOID_IMAGE_COMPARISON_RENDER_GEAR_H
+#define _VOID_IMAGE_COMPARISON_RENDER_GEAR_H
 
 /* Internal */
 #include "Definition.h"
 #include "RenderGear.h"
-#include "VoidRenderer/Programs/StrokeShaderProgram.h"
+#include "VoidRenderer/Programs/ImageComparisonShaderProgram.h"
 
 VOID_NAMESPACE_OPEN
 
-class StrokeRenderGear : public RenderGear
+class ImageComparisonRenderGear : public RenderGear
 {
 public:
-    StrokeRenderGear();
-    ~StrokeRenderGear();
+    ImageComparisonRenderGear();
+    ~ImageComparisonRenderGear();
 
     /**
      * Initializes the shaders and the internals (Vertex Array Objects | Vertex Buffer Objects | Element/Index Buffer Objects)
@@ -49,22 +49,33 @@ protected:
 
 
 private: /* Members */
-    StrokeShaderProgram* m_Shader;
+    ImageComparisonShaderProgram* m_Shader;
 
-    /* Array Buffers */
+    /**
+     * Array and Buffer objects
+     *
+     * Vertex array Object
+     * Vertex Buffer Object
+     * Element or the index buffer object
+     */
     unsigned int m_VAO;
     unsigned int m_VBO;
+    unsigned int m_IBO;
 
     /* Uniforms */
     int m_UProjection;
-    int m_UColor;
-    int m_USize;
-
-private: /* Methods */
-    void DrawStroke(const Renderer::Stroke& stroke);
+    int m_UTextureA;
+    int m_UTextureB;
+    int m_UExposure;
+    int m_UGamma;
+    int m_UGain;
+    int m_UChannelMode;
+    int m_UComparisonMode;
+    int m_UBlendMode;
+    int m_USwipeX;
 
 };
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_STROKE_RENDER_GEAR_H
+#endif // _VOID_IMAGE_COMPARISON_RENDER_GEAR_H

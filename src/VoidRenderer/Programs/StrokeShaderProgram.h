@@ -1,9 +1,6 @@
 #ifndef _VOID_STROKE_SHADER_PROGRAM_H
 #define _VOID_STROKE_SHADER_PROGRAM_H
 
-/* GLEW */
-#include <GL/glew.h>
-
 /* Qt */
 #include <QOpenGLShaderProgram>
 
