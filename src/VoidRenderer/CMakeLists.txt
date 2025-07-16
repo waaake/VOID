@@ -5,7 +5,7 @@ add_library(
     Renderer.cpp
     RendererStatus.cpp
     RenderTypes.h
-    VoidGL.cpp
+    VoidRenderer.cpp
 
     # Render Components (Gears)
     Gears/RenderGear.cpp
