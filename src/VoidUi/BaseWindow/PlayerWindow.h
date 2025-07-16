@@ -143,7 +143,6 @@ private: /* Members */
     QAction* m_ZoomToFitAction;
     QAction* m_FullscreenAction;
     QAction* m_ExitFullscreenAction;
-    QAction* m_ToggleComparisonAction;
 
     /* Window Menu */
     QMenu* m_WindowMenu;
