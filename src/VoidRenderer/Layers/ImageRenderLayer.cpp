@@ -20,9 +20,6 @@ ImageRenderLayer::ImageRenderLayer()
     m_ImageData->gain = 1.f;
 
     m_ImageData->channelMode = 5; /* RGBA */
-    m_ImageData->blendMode = 0;
-    m_ImageData->comparisonMode = 0;
-    m_ImageData->swipeX = 0.5f;
 }
 
 ImageRenderLayer::~ImageRenderLayer()

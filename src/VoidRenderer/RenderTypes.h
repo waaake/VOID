@@ -202,11 +202,6 @@ struct ImageRenderData
     float gain;
 
     int channelMode;
-
-    int comparisonMode;
-    int blendMode;
-
-    float swipeX;
 };
 
 /**
