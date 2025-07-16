@@ -188,6 +188,49 @@ struct AnnotationRenderData
 };
 
 /**
+ * A Structure holding a Renderable Image Texture information
+ */
+struct ImageRenderData
+{
+    /* The Image Texture ID to be Rendered */
+    unsigned int textureA;
+    /* Projection for the Texture for the viewport */
+    glm::mat4 projection;
+    /* Render Attributes affecting how the image is displayed */
+    float exposure;
+    float gamma;
+    float gain;
+
+    int channelMode;
+};
+
+/**
+ * A Structure holding a Renderable Image Textures information for Comparison
+ */
+struct ImageComparisonRenderData
+{
+    /* The First Image Texture ID to be Rendered */
+    unsigned int textureA;
+    /* The Second Image Texture ID to be Rendered */
+    unsigned int textureB;
+    /* Projection for the Texture for the viewport */
+    glm::mat4 projection;
+    /* Render Attributes affecting how the image is displayed */
+    float exposure;
+    float gamma;
+    float gain;
+
+    int channelMode;
+
+    int comparisonMode;
+    int blendMode;
+
+    /* Swiper Placement */
+    float swipeX;
+    float offset;
+};
+
+/**
  * Enum describing the types of draws that can happen on the Annotations Renderer
  * NONE does nothing
  * BRUSH draws annotations

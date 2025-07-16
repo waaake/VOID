@@ -2,16 +2,30 @@
 add_library(
     VoidRenderer
     SHARED
-    AnnotationRenderer.cpp
     Renderer.cpp
     RendererStatus.cpp
     RenderTypes.h
-    VoidGL.cpp
-    Programs/StrokeShaderProgram.cpp
-    Programs/TextShaderProgram.cpp
+    VoidRenderer.cpp
+
+    # Render Components (Gears)
     Gears/RenderGear.cpp
+    Gears/ImageRenderGear.cpp
+    Gears/ImageComparisonRenderGear.cpp
     Gears/StrokeRenderGear.cpp
+    Gears/SwiperRenderGear.cpp
     Gears/TextRenderGear.cpp
+
+    # Render Layers
+    Layers/ImageRenderLayer.cpp
+    Layers/ImageComparisonRenderLayer.cpp
+    Layers/AnnotationRenderLayer.cpp
+
+    # Shader Programs
+    Programs/ImageShaderProgram.cpp
+    Programs/ImageComparisonShaderProgram.cpp
+    Programs/StrokeShaderProgram.cpp
+    Programs/SwiperShaderProgram.cpp
+    Programs/TextShaderProgram.cpp
 )
 
 target_include_directories(

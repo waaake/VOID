@@ -1,5 +1,5 @@
-#ifndef _VOID_TEXT_SHADER_PROGRAM_H
-#define _VOID_TEXT_SHADER_PROGRAM_H
+#ifndef _VOID_IMAGE_COMPARISON_SHADER_PROGRAM_H
+#define _VOID_IMAGE_COMPARISON_SHADER_PROGRAM_H
 
 /* Qt */
 #include <QOpenGLShaderProgram>
@@ -10,11 +10,11 @@
 
 VOID_NAMESPACE_OPEN
 
-class TextShaderProgram : public ShaderProgram
+class ImageComparisonShaderProgram : public ShaderProgram
 {
 public:
-    TextShaderProgram() = default;
-    ~TextShaderProgram();
+    ImageComparisonShaderProgram() = default;
+    ~ImageComparisonShaderProgram();
 
     /**
      * Initializes the shaders and the internals
@@ -50,4 +50,4 @@ private: /* Members */
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_TEXT_SHADER_PROGRAM_H
+#endif // _VOID_IMAGE_COMPARISON_SHADER_PROGRAM_H

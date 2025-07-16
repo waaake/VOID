@@ -21,9 +21,9 @@
 
 /* Internal */
 #include "Definition.h"
-#include "RenderTypes.h"
-#include "Gears/StrokeRenderGear.h"
-#include "Gears/TextRenderGear.h"
+#include "VoidRenderer/RenderTypes.h"
+#include "VoidRenderer/Gears/StrokeRenderGear.h"
+#include "VoidRenderer/Gears/TextRenderGear.h"
 
 VOID_NAMESPACE_OPEN
 

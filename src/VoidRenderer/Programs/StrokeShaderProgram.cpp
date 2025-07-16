@@ -1,3 +1,6 @@
+/* GLEW */
+#include <GL/glew.h>
+
 /* Internal */
 #include "StrokeShaderProgram.h"
 #include "VoidCore/Logging.h"

@@ -1,3 +1,11 @@
+/* GLEW */
+#include <GL/glew.h>
+
+/* GLM */
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp> // for glm::value_ptr
+
+
 /* Internal */
 #include "RenderTypes.h"
 #include "StrokeRenderGear.h"

@@ -15,7 +15,7 @@
 #include "Toolkit/AnnotationController.h"
 #include "Toolkit/ControlBar.h"
 #include "VoidRenderer/RenderTypes.h"
-#include "VoidRenderer/Renderer.h"
+#include "VoidRenderer/VoidRenderer.h"
 
 VOID_NAMESPACE_OPEN
 

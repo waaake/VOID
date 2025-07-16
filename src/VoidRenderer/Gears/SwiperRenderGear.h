@@ -1,18 +1,18 @@
-#ifndef _VOID_STROKE_RENDER_GEAR_H
-#define _VOID_STROKE_RENDER_GEAR_H
+#ifndef _VOID_SWIPER_RENDER_GEAR_H
+#define _VOID_SWIPER_RENDER_GEAR_H
 
 /* Internal */
 #include "Definition.h"
 #include "RenderGear.h"
-#include "VoidRenderer/Programs/StrokeShaderProgram.h"
+#include "VoidRenderer/Programs/SwiperShaderProgram.h"
 
 VOID_NAMESPACE_OPEN
 
-class StrokeRenderGear : public RenderGear
+class SwiperRenderGear : public RenderGear
 {
 public:
-    StrokeRenderGear();
-    ~StrokeRenderGear();
+    SwiperRenderGear();
+    ~SwiperRenderGear();
 
     /**
      * Initializes the shaders and the internals (Vertex Array Objects | Vertex Buffer Objects | Element/Index Buffer Objects)
@@ -49,7 +49,7 @@ protected:
 
 
 private: /* Members */
-    StrokeShaderProgram* m_Shader;
+    SwiperShaderProgram* m_Shader;
 
     /* Array Buffers */
     unsigned int m_VAO;
@@ -58,13 +58,9 @@ private: /* Members */
     /* Uniforms */
     int m_UProjection;
     int m_UColor;
-    int m_USize;
-
-private: /* Methods */
-    void DrawStroke(const Renderer::Stroke& stroke);
 
 };
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_STROKE_RENDER_GEAR_H
+#endif // _VOID_SWIPER_RENDER_GEAR_H

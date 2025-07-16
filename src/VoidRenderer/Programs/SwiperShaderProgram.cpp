@@ -2,54 +2,44 @@
 #include <GL/glew.h>
 
 /* Internal */
-#include "TextShaderProgram.h"
+#include "SwiperShaderProgram.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
- * Shaders to be used for Text Rendering
+ * Lines Shaders -- The lines controlling the Actions on the Viewport
  */
 static const std::string vertexShaderSrc = R"(
 #version 330 core
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec2 vTexCoord;
-out vec2 TexCoord;
+layout (location = 0) in vec3 position;
 
 uniform mat4 uMVP;
-uniform float uThickness;
 
 void main() {
-    gl_Position = uMVP * vec4(position, 0.0, 1.0);
-    TexCoord = vTexCoord;
+    gl_Position = uMVP * vec4(position, 1.0);
 }
 )";
 
 static const std::string fragmentShaderSrc = R"(
 #version 330 core
-in vec2 TexCoord;
 out vec4 FragColor;
 
-uniform sampler2D uText;
 uniform vec3 uColor;
 
 void main() {
-    // Alpha is used for blending to create smooth edges
-    // Samples red channel of the glyph texture
-    float alpha = texture(uText, TexCoord).r;
-
-    FragColor = vec4(uColor, alpha);
+    FragColor = vec4(uColor, 1.0);
 }
 )";
 
-TextShaderProgram::~TextShaderProgram()
+SwiperShaderProgram::~SwiperShaderProgram()
 {
     m_Program->deleteLater();
     delete m_Program;
     m_Program = nullptr;
 }
 
-void TextShaderProgram::Initialize()
+void SwiperShaderProgram::Initialize()
 {
     m_Program = new QOpenGLShaderProgram;
 
@@ -57,7 +47,7 @@ void TextShaderProgram::Initialize()
     SetupShaders();
 }
 
-bool TextShaderProgram::SetupShaders()
+bool SwiperShaderProgram::SetupShaders()
 {
     /* Add Shaders */
     m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
@@ -67,12 +57,12 @@ bool TextShaderProgram::SetupShaders()
     if (!m_Program->link())
     {
         /* Log the Errors from the Program */
-        VOID_LOG_ERROR("Unable to Link Text Shaders: {0}", m_Program->log().toStdString());
+        VOID_LOG_ERROR("Unable to Link Swipe Shaders: {0}", m_Program->log().toStdString());
         return false;
     }
 
     /* We're all good */
-    VOID_LOG_INFO("Text Shaders Loaded.");
+    VOID_LOG_INFO("Swipe Shaders Loaded.");
     return true;
 }
 
