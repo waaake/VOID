@@ -60,14 +60,14 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
 void VoidDark::polish(QPalette& palette)
 {
     palette.setColor(QPalette::Window, QColor(40, 40, 40));
-    palette.setColor(QPalette::WindowText, QColor(210, 210, 210));
+    palette.setColor(QPalette::WindowText, VOID_FOREGROUND_COLOR);
     palette.setColor(QPalette::Base, QColor(25, 25, 25));
     palette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
     palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
     palette.setColor(QPalette::ToolTipText, Qt::black);
-    palette.setColor(QPalette::Text, QColor(210, 210, 210));
+    palette.setColor(QPalette::Text, VOID_FOREGROUND_COLOR);
     palette.setColor(QPalette::Button, QColor(53, 53, 53));
-    palette.setColor(QPalette::ButtonText, QColor(210, 210, 210));
+    palette.setColor(QPalette::ButtonText, VOID_FOREGROUND_COLOR);
     palette.setColor(QPalette::BrightText, Qt::red);
     palette.setColor(QPalette::Link, QColor(42, 130, 218));
     palette.setColor(QPalette::Highlight, VOID_HIGHLIGHT_GREEN);

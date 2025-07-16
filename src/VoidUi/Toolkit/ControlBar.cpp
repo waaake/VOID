@@ -135,11 +135,9 @@ void ControlBar::Build()
     m_ChannelModeController = new ControlCombo();
 
     /* Annotation */
-    m_AnnotationButton = new QPushButton;
+    m_AnnotationButton = new HighlightToggleButton;
     m_AnnotationButton->setIcon(QIcon(":resources/icons/icon_annotate.svg"));
-    m_AnnotationButton->setCheckable(true);
     m_AnnotationButton->setFixedWidth(26);
-    m_AnnotationButton->setFlat(true);
     m_AnnotationButton->setToolTip(ToolTipString("Annotations Toolkit", "Toggles Annotation tools for the Viewer.").c_str());
 
     /* Zoom Controls */

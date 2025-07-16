@@ -48,28 +48,20 @@ void AnnotationsController::Build()
     m_SizeSlider = new FramelessSlider(this);
 
     /* Buttons */
-    m_PointerButton = new QPushButton;
+    m_PointerButton = new HighlightToggleButton;
     m_PointerButton->setIcon(QIcon(":resources/icons/icon_pointer.svg"));
-    m_PointerButton->setCheckable(true);
-    m_PointerButton->setFlat(true);
     m_PointerButton->setToolTip("<b>Pointer</b>");
 
-    m_BrushButton = new QPushButton;
+    m_BrushButton = new HighlightToggleButton;
     m_BrushButton->setIcon(QIcon(":resources/icons/icon_brush.svg"));
-    m_BrushButton->setCheckable(true);
-    m_BrushButton->setFlat(true);
     m_BrushButton->setToolTip(ToolTipString("Brush Tool", "Annotate free hand using the Brush tool.").c_str());
 
-    m_TextButton = new QPushButton;
+    m_TextButton = new HighlightToggleButton;
     m_TextButton->setIcon(QIcon(":resources/icons/icon_text.svg"));
-    m_TextButton->setCheckable(true);
-    m_TextButton->setFlat(true);
     m_TextButton->setToolTip(ToolTipString("Text Tool", "Annotate by typing where clicked.").c_str());
 
-    m_EraserButton = new QPushButton;
+    m_EraserButton = new HighlightToggleButton;
     m_EraserButton->setIcon(QIcon(":resources/icons/icon_eraser.svg"));
-    m_EraserButton->setCheckable(true);
-    m_EraserButton->setFlat(true);
     m_EraserButton->setToolTip(ToolTipString("Eraser Tool", "Erase Text Characters or Annotation Stroke by dragging over.").c_str());
 
     m_ClearButton = new QPushButton;

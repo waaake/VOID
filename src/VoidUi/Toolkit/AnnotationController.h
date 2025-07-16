@@ -44,10 +44,10 @@ private: /* Members */
     FramelessSlider* m_SizeSlider;
     
     /* Buttons */
-    QPushButton* m_PointerButton;
-    QPushButton* m_BrushButton;
-    QPushButton* m_TextButton;
-    QPushButton* m_EraserButton;
+    HighlightToggleButton* m_PointerButton;
+    HighlightToggleButton* m_BrushButton;
+    HighlightToggleButton* m_TextButton;
+    HighlightToggleButton* m_EraserButton;
     QPushButton* m_ClearButton;
     ColorSelectionButton* m_ColorButton;
     QPushButton* m_SizeAdjuster;

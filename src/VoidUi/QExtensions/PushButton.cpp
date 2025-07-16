@@ -1,5 +1,6 @@
 /* Qt */
 #include <QPainter>
+#include <QPaintEvent>
 #include <QColorDialog>
 
 /* Internal */
@@ -46,6 +47,43 @@ void ToggleStatePushButton::Update()
     {
         /* Reset to the default palette */
         setPalette(QPalette());
+    }
+}
+
+/* }}} */
+
+/* Toggle State Push Button {{{ */
+HighlightToggleButton::HighlightToggleButton(const std::string& text, QWidget* parent, const QColor& color)
+    : QPushButton(text.c_str(), parent)
+    , m_Color(color)
+{
+    /* This needs to be checkable */
+    setCheckable(true);
+    /* And Flat */
+    setFlat(true);
+}
+
+HighlightToggleButton::HighlightToggleButton(QWidget* parent, const QColor& color)
+    : HighlightToggleButton("", parent, color)
+{
+}
+
+
+void HighlightToggleButton::paintEvent(QPaintEvent* event)
+{
+    /* Base Painting */
+    QPushButton::paintEvent(event);
+
+    /* Custom Paint to add a highlight line on the bottom */
+    if (isChecked())
+    {
+        QPainter painter(this);
+
+        /* A rect which is just super thin in terms of height at the bottom */
+        QRectF r(rect());
+        r.setTop(r.bottom() - 2);
+
+        painter.fillRect(r, m_Color);
     }
 }
 

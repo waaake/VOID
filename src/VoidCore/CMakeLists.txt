@@ -38,7 +38,7 @@ target_link_libraries(
 
 # Mac for some reason needs this explicitly
 if (APPLE)
-    target_link_libraries(VoidRenderer PRIVATE swscale)
+    target_link_libraries(VoidCore PRIVATE swscale)
 endif()
 
 # Export symbols for windows

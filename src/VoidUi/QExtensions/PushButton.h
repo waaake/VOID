@@ -11,6 +11,7 @@ VOID_NAMESPACE_OPEN
 
 /* Default Color for Toggle */
 const QColor TOGGLE_COLOR = QColor(200, 75, 60);
+const QColor HIGHLIGHT_COLOR = QColor(160, 190, 60);
 
 /**
  * This class just wraps over the standard push button to allow buttons to get a different
@@ -31,6 +32,23 @@ private: /* Members */
 private: /* Methods */
     void Update();
 
+};
+
+/**
+ * This class just wraps over the standard push button to allow buttons to show a highlight when the button is
+ * checked (or toggled visually), this indicates that the button is currently checked
+ */
+class HighlightToggleButton : public QPushButton
+{
+public:
+    HighlightToggleButton(const std::string& text, QWidget* parent = nullptr, const QColor& color = HIGHLIGHT_COLOR);
+    HighlightToggleButton(QWidget* parent = nullptr, const QColor& color = HIGHLIGHT_COLOR);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+
+private: /* Members */
+    QColor m_Color;
 };
 
 /**

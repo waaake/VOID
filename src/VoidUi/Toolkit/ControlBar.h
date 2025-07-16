@@ -4,7 +4,6 @@
 /* Qt */
 #include <QComboBox>
 #include <QLayout>
-#include <QPushButton>
 #include <QSpinBox>
 #include <QWidget>
 
@@ -13,6 +12,7 @@
 #include "ControlScroller.h"
 #include "Definition.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/QExtensions/PushButton.h"
 
 /* Describes the amount of zoom (in or out) that happens when the zoom buttons are pressed */
 static const int ZOOM_STEP = 10;
@@ -91,7 +91,7 @@ private: /* Members */
     ControlSpinner* m_Zoomer;
 
     /* Annotation Controller */
-    QPushButton* m_AnnotationButton;
+    HighlightToggleButton* m_AnnotationButton;
 
     /* Viewer Buffers */
     ViewerBuffer* m_ViewerBufferA;
