@@ -174,8 +174,6 @@ void BasicRenderer::SetProfile()
 
     /* Set the adjusted profile */
     QSurfaceFormat::setDefaultFormat(format);
-
-    VOID_LOG_INFO("PROFILE SET....");
 }
 
 /* Placeholder Renderer {{{ */
