@@ -46,6 +46,9 @@ VoidRenderer::~VoidRenderer()
     delete m_AnnotationsRenderer;
     delete m_ImageRenderer;
     delete m_ImageComparisonRenderer;
+
+    /* Set Focus Policy for typing */
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 void VoidRenderer::Initialize()
@@ -154,6 +157,7 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
 
             /* Set Focus on the Widget to receive Key Events Correctly when typing */
             setFocus();
+            grabKeyboard();
         }
     }
 }
@@ -731,12 +735,14 @@ void VoidRenderer::HandleAnnotationTyping(QKeyEvent* event)
             m_AnnotationsRenderer->CommitText();
             /* Clear Focus from the Widget */
             clearFocus();
+            releaseKeyboard();
             break;
         case Qt::Key_Escape:
             /* Discard anything that was being typed on screen */
             m_AnnotationsRenderer->DiscardText();
             /* Clear the Focus from the widget */
             clearFocus();
+            releaseKeyboard();
             break;
         default:
             /* Add the Text on the Renderer Draft */

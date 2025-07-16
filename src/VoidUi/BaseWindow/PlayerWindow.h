@@ -8,16 +8,16 @@
 #include <QList>
 
 /* Internal */
-#include "About.h"
 #include "Definition.h"
 #include "Docker.h"
 #include "BaseWindow.h"
-#include "MediaClip.h"
-#include "MediaLister.h"
-#include "PlayerWidget.h"
-#include "Sequence.h"
 #include "TitleBar.h"
-#include "Track.h"
+#include "VoidUi/About.h"
+#include "VoidUi/MediaClip.h"
+#include "VoidUi/MediaLister.h"
+#include "VoidUi/PlayerWidget.h"
+#include "VoidUi/Sequence.h"
+#include "VoidUi/Track.h"
 #include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
@@ -143,7 +143,6 @@ private: /* Members */
     QAction* m_ZoomToFitAction;
     QAction* m_FullscreenAction;
     QAction* m_ExitFullscreenAction;
-    QAction* m_ToggleComparisonAction;
 
     /* Window Menu */
     QMenu* m_WindowMenu;

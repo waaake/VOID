@@ -10,11 +10,11 @@
 #include <QValidator>
 
 /* Internal */
-#include "Browser.h"
-#include "MediaBridge.h"
 #include "PlayerWindow.h"
-#include "Preferences/PreferencesUI.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Preferences/PreferencesUI.h"
+#include "VoidUi/Browser.h"
+#include "VoidUi/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -287,19 +287,11 @@ void VoidMainWindow::Build()
     
     m_ExitFullscreenAction = new QAction("Exit Fullscreen");
 
-    m_ToggleComparisonAction = new QAction("Toggle On/Off Comparison Mode");
-    m_ToggleComparisonAction->setShortcut(QKeySequence(Qt::Key_W));
-
     m_ViewerMenu->addAction(m_ZoomInAction);
     m_ViewerMenu->addAction(m_ZoomOutAction);
     m_ViewerMenu->addAction(m_ZoomToFitAction);
     m_ViewerMenu->addAction(m_FullscreenAction);
     m_ViewerMenu->addAction(m_ExitFullscreenAction);
-
-    /* -------------------------------- */
-    m_ViewerMenu->insertSeparator(m_ToggleComparisonAction);
-
-    m_ViewerMenu->addAction(m_ToggleComparisonAction);
     /* }}} */
 
     /* Window Menu {{{ */
@@ -373,7 +365,6 @@ void VoidMainWindow::Connect()
     connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
     connect(m_FullscreenAction, &QAction::triggered, m_Player, &Player::SetRendererFullscreen);
     connect(m_ExitFullscreenAction, &QAction::triggered, m_Player, &Player::ExitFullscreenRenderer);
-    connect(m_ToggleComparisonAction, &QAction::triggered, m_Player, [this]() { m_Player->SetComparisonMode(2); });
     /* }}} */
 
     connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });

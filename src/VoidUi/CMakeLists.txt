@@ -4,31 +4,41 @@ add_library(
     SHARED
     About.cpp
     Browser.cpp
-    Docker.cpp
     Events.h
-    BaseWindow.cpp
     MediaBridge.cpp
     MediaClip.cpp
     MediaLister.cpp
     MediaItem.cpp
     PlayerWidget.cpp
-    PlayerWindow.cpp
     Sequence.cpp
-    TitleBar.cpp
     Track.cpp
     TrackItem.cpp
     ViewerBuffer.cpp
     VoidStyle.cpp
+    
+    # Base Window
+    BaseWindow/Docker.cpp
+    BaseWindow/BaseWindow.cpp
+    BaseWindow/PlayerWindow.cpp
+    BaseWindow/TitleBar.cpp
+
+    # Preferences
     Preferences/Preferences.cpp
     Preferences/PreferencesUI.cpp
     Preferences/PlayerPreferences.cpp
+
+    # Timeline
     Timeline/Timeline.cpp
     Timeline/TimelineElements.cpp
     Timeline/Timeslider.cpp
+
+    # Toolkit
     Toolkit/AnnotationController.cpp
     Toolkit/BufferSwitch.cpp
     Toolkit/ControlBar.cpp
     Toolkit/ControlScroller.cpp
+
+    # QExtensions
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
     QExtensions/PushButton.cpp
