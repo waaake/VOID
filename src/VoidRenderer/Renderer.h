@@ -22,9 +22,9 @@
 #include "QDefinition.h"
 #include "RenderTypes.h"
 #include "RendererStatus.h"
-#include "AnnotationRenderer.h"
-#include "ImageRenderLayer.h"
-#include "ImageComparisonRenderLayer.h"
+#include "Layers/AnnotationRenderLayer.h"
+#include "Layers/ImageRenderLayer.h"
+#include "Layers/ImageComparisonRenderLayer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -33,10 +33,8 @@ class VOID_API VoidRenderer : public QOpenGLWidget, protected VoidShader
     Q_OBJECT
 
 private: /* Members */
-    QOpenGLTexture* m_Texture;
-    SharedPixels m_ImageA;
-    SharedPixels m_ImageB;
-    std::string m_Path;
+    // QOpenGLTexture* m_Texture;
+    // std::string m_Path;
 
     /* Render Types */
     using ChannelMode = Renderer::ChannelMode;
@@ -54,7 +52,7 @@ public:
     void Render(const SharedPixels& data, const SharedAnnotation& annotation);
     /* Compare 2 Images */
     void Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend);
-    void Play();
+    // void Play();
     void Clear();
 
     void ZoomIn(float factor = 1.1f);
@@ -167,19 +165,23 @@ protected:
     void ClearFrame();
 
 private: /* Members */
-    /**
-     * Array and Buffer objects
-     *
-     * Vertex array Object
-     * Vertex Buffer Object
-     * Element or the index buffer object
-     */
-    unsigned int VAO, VBO, EBO;
+    // /**
+    //  * Array and Buffer objects
+    //  *
+    //  * Vertex array Object
+    //  * Vertex Buffer Object
+    //  * Element or the index buffer object
+    //  */
+    // unsigned int VAO, VBO, EBO;
 
-    /**
-     * Array and Buffer objects for the swipe handle
-     */
-    unsigned int m_SwipeVAO, m_SwipeVBO;
+    // /**
+    //  * Array and Buffer objects for the swipe handle
+    //  */
+    // unsigned int m_SwipeVAO, m_SwipeVBO;
+
+    /* Render Image Data */
+    SharedPixels m_ImageA;
+    SharedPixels m_ImageB;
 
     /**
      * Render Layers
@@ -192,18 +194,18 @@ private: /* Members */
     /* Renders all forms of annotations (text | strokes) */
     VoidAnnotationsRenderer* m_AnnotationsRenderer;
 
-    /**
-     * Viewer Adjustments
-     * Exposure
-     * Gamma
-     * Gain
-     */
-    float m_Exposure, m_Gamma, m_Gain;
+    // /**
+    //  * Viewer Adjustments
+    //  * Exposure
+    //  * Gamma
+    //  * Gain
+    //  */
+    // float m_Exposure, m_Gamma, m_Gain;
 
-    /**
-     * Render Textures
-     */
-    unsigned int m_TextureA, m_TextureB;
+    // /**
+    //  * Render Textures
+    //  */
+    // unsigned int m_TextureA, m_TextureB;
 
     /**
      * ModelViewProjection matrix for the Texture
@@ -211,8 +213,8 @@ private: /* Members */
     glm::mat4 m_VProjection;
     glm::mat4 m_InverseProjection;
 
-    /* Channels to display on the viewport */
-    ChannelMode m_ChannelMode;
+    // /* Channels to display on the viewport */
+    // ChannelMode m_ChannelMode;
 
     /* Comparison Mode for the buffers */
     ComparisonMode m_CompareMode;

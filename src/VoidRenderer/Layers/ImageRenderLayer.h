@@ -4,13 +4,10 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
-#include "RenderTypes.h"
+#include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/Gears/ImageRenderGear.h"
 
 VOID_NAMESPACE_OPEN
-
-// // Having to forward declare due to include issues (possibly a hidden cyclic include) TODO: Check on this
-// class ImageRenderGear;
 
 class ImageRenderLayer
 {

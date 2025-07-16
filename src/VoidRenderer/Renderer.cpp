@@ -26,15 +26,8 @@ VOID_NAMESPACE_OPEN
 
 VoidRenderer::VoidRenderer(QWidget* parent)
     : QOpenGLWidget(parent)
-    , m_Texture(nullptr)
     , m_ImageA(nullptr)
     , m_ImageB(nullptr)
-    , m_Exposure(0.f)
-    , m_Gamma(1.f)
-    , m_Gain(1.f)
-    , m_TextureA(0)
-    , m_TextureB(0)
-    , m_ChannelMode(ChannelMode::RGBA)
     , m_CompareMode(ComparisonMode::NONE)
     , m_BlendMode(BlendMode::UNDER)
     , m_SwipeX(0.5f)
@@ -65,16 +58,6 @@ VoidRenderer::VoidRenderer(QWidget* parent)
 
 VoidRenderer::~VoidRenderer()
 {
-    if (m_Texture)
-    {
-        m_Texture->destroy();
-        delete m_Texture;
-    }
-
-    /* Destroy texture */
-    glDeleteTextures(1, &m_TextureA);
-    glDeleteTextures(1, &m_TextureB);
-
     /* Delete the Render Status bar */
     m_RenderStatus->deleteLater();
     m_RenderStatus = nullptr;
@@ -85,6 +68,8 @@ VoidRenderer::~VoidRenderer()
 
     /* Delete the Strokes Renderer */
     delete m_AnnotationsRenderer;
+    delete m_ImageRenderer;
+    delete m_ImageComparisonRenderer;
 }
 
 void VoidRenderer::initializeGL()
@@ -105,74 +90,6 @@ void VoidRenderer::initializeGL()
      * RGBA is the final value which will be rendered
      */
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // /**
-    //  * Quad vertices with texture coords
-    //  * Create Vertex Attrib Object and Vertex Buffer Objects
-    //  */
-    // float vertices[16] = {
-    //     // Positions  // Texture Coords
-    //     -1.f, -1.f,  0.f,  1.f,
-    //      1.f, -1.f,  1.f,  1.f,
-    //      1.f,  1.f,  1.f,  0.f,
-    //     -1.f,  1.f,  0.f,  0.f,
-    // };
-
-    // /**
-    //  * Index/Element Buffer indices
-    //  * Tells GL how to draw the triangles
-    //  */
-    // unsigned int indices[] = {
-    //     0, 1, 2,
-    //     2, 3, 0
-    // };
-
-    // /**
-    //  * Generate the vertex array object names
-    //  * Generate 1 array
-    //  */
-    // glGenVertexArrays(1, &VAO);
-    // glGenBuffers(1, &VBO);
-    // glGenBuffers(1, &EBO);
-    // glBindVertexArray(VAO);
-
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-
-    /* Generate Textures for Rendering */
-    // glGenTextures(1, &m_TextureA);
-    // glGenTextures(1, &m_TextureB);
-
-    /**
-     * Swipe Shaders
-     */
-    // float swipeVertices[6] = {
-    //     0.f, -1.f, 0.f,
-    //     0.f,  1.f, 0.f
-    // };
-
-    // glGenVertexArrays(1, &m_SwipeVAO);
-    // glGenBuffers(1, &m_SwipeVBO);
-
-    // /* Bind */
-    // glBindVertexArray(m_SwipeVAO);
-    // glBindBuffer(GL_ARRAY_BUFFER, m_SwipeVBO);
-
-    // /* Buffer data */
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(swipeVertices), swipeVertices, GL_STATIC_DRAW);
-    // glEnableVertexAttribArray(0);
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-
-    // /* Unbind */
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // glBindVertexArray(0);
 
     /* Initialize the Annotations Layer */
     m_AnnotationsRenderer->Initialize();
@@ -547,7 +464,6 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         }
     }
 
-
     /**
      * If the mouse is currently Pressed
      * track how much we have moved it, this will translate into the panning factor
@@ -690,35 +606,6 @@ void VoidRenderer::keyPressEvent(QKeyEvent* event)
     QOpenGLWidget::keyPressEvent(event);
 }
 
-// void VoidRenderer::Load(const std::string& path)
-// {
-
-//     if (m_Texture)
-//     {
-//         delete m_Texture;
-//         m_Texture = nullptr;
-//     }
-
-//     LoadFrame(path);
-
-//     // Trigger a Re-paint
-//     update();
-// }
-
-// void VoidRenderer::Load(const QImage& image)
-// {
-//     if (m_Texture)
-//     {
-//         delete m_Texture;
-//         m_Texture = nullptr;
-//     }
-
-//     LoadFrame(image);
-
-//     /* Trigger a Re-paint */
-//     update();
-// }
-
 void VoidRenderer::Render(SharedPixels data)
 {
     /* Update the image data */
@@ -818,11 +705,6 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
 
     /* Trigger a Re-paint */
     update();
-}
-
-void VoidRenderer::Play()
-{
-
 }
 
 void VoidRenderer::Clear()
@@ -974,34 +856,12 @@ void VoidRenderer::CalculateModelViewProjection()
 void VoidRenderer::ReloadTextures()
 {
     /* Based on the Image Data available -> Load the Textures */
-    // if (m_ImageA)
-    // {
-    //     /* Bind the Generated texture for Render */
-    //     glBindTexture(GL_TEXTURE_2D, m_TextureA);
-    //     /**
-    //      * Load the image data onto the Texture 2D
-    //      */
-    //     glTexImage2D(GL_TEXTURE_2D, 0, m_ImageA->GLFormat(), m_ImageA->Width(), m_ImageA->Height(), 0, m_ImageA->GLFormat(), m_ImageA->GLType(), m_ImageA->Pixels());
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // }
     /* Update Image Render Buffer */
     m_ImageRenderer->SetImage(m_ImageA);
 
     /* Set The Image Buffer with the Images */
     m_ImageComparisonRenderer->SetImageA(m_ImageA);
     m_ImageComparisonRenderer->SetImageB(m_ImageB);
-
-    // if (m_ImageB)
-    // {
-    //     /* Bind the texture for render */
-    //     glBindTexture(GL_TEXTURE_2D, m_TextureB);
-
-    //     /**
-    //      * Load the image data onto the Texture 2D
-    //      */
-    //     glTexImage2D(GL_TEXTURE_2D, 0, m_ImageB->GLFormat(), m_ImageB->Width(), m_ImageB->Height(), 0, m_ImageB->GLFormat(), m_ImageB->GLType(), m_ImageB->Pixels());
-    //     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // }
 }
 
 void VoidRenderer::ToggleAnnotation(bool t)

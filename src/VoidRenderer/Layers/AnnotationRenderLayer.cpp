@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp> // for glm::value_ptr
 
 /* Internal */
-#include "AnnotationRenderer.h"
+#include "AnnotationRenderLayer.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN

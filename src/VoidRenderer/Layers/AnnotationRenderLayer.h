@@ -21,7 +21,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "RenderTypes.h"
+#include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/Gears/StrokeRenderGear.h"
 #include "VoidRenderer/Gears/TextRenderGear.h"
 

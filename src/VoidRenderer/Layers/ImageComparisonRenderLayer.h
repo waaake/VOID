@@ -4,7 +4,7 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
-#include "RenderTypes.h"
+#include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/Gears/ImageComparisonRenderGear.h"
 #include "VoidRenderer/Gears/SwiperRenderGear.h"
 
