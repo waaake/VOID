@@ -10,11 +10,11 @@
 #include <QValidator>
 
 /* Internal */
-#include "Browser.h"
-#include "MediaBridge.h"
 #include "PlayerWindow.h"
-#include "Preferences/PreferencesUI.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Preferences/PreferencesUI.h"
+#include "VoidUi/Browser.h"
+#include "VoidUi/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 

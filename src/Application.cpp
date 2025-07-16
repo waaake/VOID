@@ -6,7 +6,7 @@
 /* LOGGING */
 #include "VoidCore/Logging.h"
 /* Main Window for player */
-#include "VoidUi/PlayerWindow.h"
+#include "VoidUi/BaseWindow/PlayerWindow.h"
 /* Theme */
 #include "VoidUi/VoidStyle.h"
 /* Reader Registration */

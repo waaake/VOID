@@ -15,7 +15,6 @@
 #include "MediaLister.h"
 #include "VoidStyle.h"
 #include "VoidCore/Logging.h"
-#include "PlayerWindow.h"
 
 VOID_NAMESPACE_OPEN
 
