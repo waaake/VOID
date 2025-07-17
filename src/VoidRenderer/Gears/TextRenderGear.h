@@ -4,55 +4,16 @@
 /* STD */
 #include <unordered_map>
 
-/* Freetype */
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
 /* GLM */
 #include <glm/vec2.hpp>
 
 /* Internal */
 #include "Definition.h"
 #include "RenderGear.h"
+#include "VoidRenderer/Core/FontEngine.h"
 #include "VoidRenderer/Programs/TextShaderProgram.h"
 
 VOID_NAMESPACE_OPEN
-
-/**
- * Drawing text with Freetype, each character is rasterized into a grayscale bitmap
- * and each of the bitmap is then uploaded as a separate texture
- * 
- */
-struct Character
-{
-    /* Glyph Texture ID */
-    unsigned int textureId;
-
-    /* Size of the glyph */
-    glm::ivec2 size;
-
-    /* Offset from the baseline */
-    glm::ivec2 bearing;
-
-    /* Horizontal advance of the glyph */
-    unsigned int advance;
-};
-
-class FontStore
-{
-public:
-    FontStore() = default;
-    ~FontStore();
-
-    const Character& GetChar(FT_Face face, FT_ULong character);
-
-private: /* Members */
-    std::unordered_map<FT_Face, std::unordered_map<FT_ULong, Character>> m_Store;
-
-private: /* Methods */
-    Character Load(FT_Face face, FT_ULong character);
-
-};
 
 class TextRenderGear : public RenderGear
 {
@@ -106,8 +67,9 @@ private: /* Members */
     int m_UColor;
     int m_UText;
 
-    /* Freetype Store */
-    FontStore* m_FontStore;
+    /* Font Engine for Generating Font Textures */
+    FontEngine& m_FontEngine;
+    FT_Face m_Ft_Face;
 
 private: /* Methods */
     /**

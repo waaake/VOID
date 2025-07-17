@@ -10,43 +10,18 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Font Reader {{{ */
-
-bool FontReader::Read(const std::string& path)
-{
-    /* Read the File as Byte Array */
-    QFile ff(path.c_str());
-    if (!ff.open(QIODevice::ReadOnly))
-        return false;
-
-    m_Data = ff.readAll();
-    return true;
-}
-
-/* }}} */
-
 VoidAnnotationsRenderer::VoidAnnotationsRenderer()
     : m_Drawing(false)
     , m_Typing(false)
     , m_Color(1.f, 1.f, 1.f)
     , m_Size(0.004f)
     , m_DrawType(Renderer::DrawType::NONE)
-    , m_FontPath(":resources/fonts/Roboto-Regular.ttf")
     , m_FontSize(40)
 {
     m_Annotation = nullptr;
 
     /* Update the Annotation Data */
     m_AnnotationData = new Renderer::AnnotationRenderData;
-
-    /* Initialize Freetype */
-    if (FT_Init_FreeType(&m_FtLib))
-    {
-        VOID_LOG_ERROR("Unable to Initialize FreeType.");
-    }
-
-    /* Setup Default Font */
-    SetFontFace(m_FontPath, m_FontSize);
 }
 
 VoidAnnotationsRenderer::~VoidAnnotationsRenderer()
@@ -172,7 +147,7 @@ void VoidAnnotationsRenderer::BeginTyping(const glm::vec2& position)
 
     /* Setup the draft */
     m_Annotation->draft.color = m_Color;
-    m_Annotation->draft.face = m_FontFace;
+    m_Annotation->draft.size = m_FontSize;
     m_Annotation->draft.position = position;
 }
 
@@ -236,24 +211,6 @@ void VoidAnnotationsRenderer::Initialize()
     /* Initialize */
     m_StrokeRenderer->Initialize();
     m_TextRenderer->Initialize();
-}
-
-void VoidAnnotationsRenderer::SetFontFace(const std::string& path, const int size)
-{
-    if (!m_FontReader.Read(path))
-    {
-        VOID_LOG_ERROR("Unable to open font file {0}", path);
-        return;
-    }
-
-    /* Load the Font Face */
-    if (FT_New_Memory_Face(m_FtLib, reinterpret_cast<const FT_Byte*>(m_FontReader.Data().constData()), m_FontReader.Data().size(), 0, &m_FontFace))
-    {
-        VOID_LOG_ERROR("Not Able to load Font from file: {0}", path);
-    }
-
-    /* Set the Font Size */
-    FT_Set_Pixel_Sizes(m_FontFace, 0, size);
 }
 
 void VoidAnnotationsRenderer::Render(const glm::mat4& projection)
