@@ -22,29 +22,11 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidRenderer/RenderTypes.h"
+#include "VoidRenderer/Core/FontEngine.h"
 #include "VoidRenderer/Gears/StrokeRenderGear.h"
 #include "VoidRenderer/Gears/TextRenderGear.h"
 
 VOID_NAMESPACE_OPEN
-
-/**
- * Font Reader for loading fonts via QResource
- * Reads all of the Font file data
- * Then provides the data to Freetype FT_New_Memory_Face
- * internally keeps the data alive till its needed
- */
-class FontReader
-{
-public:
-    FontReader() = default;
-
-    bool Read(const std::string& path);
-    QByteArray& Data() { return m_Data; }
-
-private:
-    QByteArray m_Data;
-
-};
 
 class VoidAnnotationsRenderer
 {
@@ -78,9 +60,6 @@ public:
 
     /* Draw the Points */
     void Render(const glm::mat4& projection);
-
-    /* Sets the Current Font Face */
-    void SetFontFace(const std::string& path, const int size);
 
     /**
      * Returns if there is an active annotation present
@@ -134,13 +113,7 @@ public:
     /* Returns whether the annotater is currently typing anything */
     inline bool Typing() const { return m_Typing; }
 
-    inline void SetFontSize(const int size)
-    {
-        /* Update the Font size */
-        m_FontSize = size * 20;
-        /* Reload the Font */
-        SetFontFace(m_FontPath, m_FontSize);
-    }
+    inline void SetFontSize(const size_t size) { m_FontSize = size * 20; }
 
 private: /* Members */
     /* Current Annotation to be renderer / Updated during a draw */
@@ -159,10 +132,6 @@ private: /* Members */
     glm::vec3 m_Color;
     float m_Size;
 
-    /* Text Attributes */
-    FT_Library m_FtLib;
-    FT_Face m_FontFace;
-
     /* Renderable Annotation Data */
     Renderer::AnnotationRenderData* m_AnnotationData;
 
@@ -173,11 +142,8 @@ private: /* Members */
     StrokeRenderGear* m_StrokeRenderer;
     TextRenderGear* m_TextRenderer;
 
-    /* Fonts */
-    std::string m_FontPath;
-    int m_FontSize;
-    FontReader m_FontReader;
-
+    /* Font */
+    size_t m_FontSize;
 };
 
 VOID_NAMESPACE_CLOSE

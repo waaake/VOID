@@ -635,7 +635,10 @@ void VoidRenderer::SetAnnotationSize(const float size)
 {
     /* Update the Brush Size */
     m_AnnotationsRenderer->SetBrushSize(size);
-    m_AnnotationsRenderer->SetFontSize(static_cast<int>(size));
+
+    /* Ensure we set a valid size fot the text */
+    if (size > 0)
+        m_AnnotationsRenderer->SetFontSize(static_cast<size_t>(size));
 
     /* Reset the Mouse Pointer to reflect the brush size */
     ResetAnnotationPointer();

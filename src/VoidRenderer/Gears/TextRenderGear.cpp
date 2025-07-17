@@ -14,103 +14,16 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Font Store {{{ */
-
-FontStore::~FontStore()
-{
-    m_Store.clear();
-}
-
-const Character& FontStore::GetChar(FT_Face face, FT_ULong character)
-{
-    /* Check if we have this font face present yet */
-    auto it = m_Store.find(face);
-
-    /* It's not yet present -> Load -> Cache the character */
-    if (it == m_Store.end())
-    {
-        Character ch = Load(face, character);
-
-        /* Cache it since it's not yet present */
-        m_Store[face] = {{character, ch}};
-    }
-
-    /* This time we have the data for the face present */
-    std::unordered_map<FT_ULong, Character>& data = m_Store.at(face);
-
-    /* Check if we have the character present */
-    auto cit = data.find(character);
-
-    /* It's not yet present -> Load -> Cache the character */
-    if (cit == data.end())
-    {
-        Character ch = Load(face, character);
-
-        /* Cache it on the face data */
-        data[character] = ch;
-    }
-
-    /**
-     * Since we're returning a const reference to the character
-     * so the returned reference has to point at the character from the underlying map struct
-     * By now, we have ensured that we have the character added to the cache (if it wasn't already there)
-     */
-    return data.at(character);
-}
-
-Character FontStore::Load(FT_Face face, FT_ULong character)
-{
-    /* Load the Glyph */
-    FT_Load_Char(face, character, FT_LOAD_RENDER);
-
-    /**
-     * Most GL Textures are 4 bytes so gl auto requires rows to be aligned to 4 bytes
-     * but grayscale glyphs require 1 byte and don't have any padding
-     * This setting tells GL that the texture is tightly packed
-     */
-    /* Query the current value of Alignment */
-    int alignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
-    /* Set the alignment to 1 (for glyph )*/
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    /* Create and Bind a Texture for this */
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    /* Character Bitmap --> Grayscale */
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    /* Reset the alignment */
-    glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-
-    Character ch = {
-        texture,                                                                // Texture
-        glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),        // Size
-        glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),          // Bearing
-        static_cast<unsigned int>(face->glyph->advance.x)                       // Horizontal Advance 
-    };
-
-    return ch;
-}
-
-/* }}} */
-
 TextRenderGear::TextRenderGear()
     : m_VAO(0)
     , m_VBO(0)
     , m_UProjection(-1)
     , m_UColor(-1)
     , m_UText(-1)
+    , m_FontEngine(FontEngine::Instance())
 {
-    /* Initialize the Font Store */
-    m_FontStore = new FontStore;
+    /* Setup the Font Face */
+    m_Ft_Face = m_FontEngine.GetStandardFace();
 }
 
 TextRenderGear::~TextRenderGear()
@@ -119,11 +32,6 @@ TextRenderGear::~TextRenderGear()
     {
         delete m_Shader;
         m_Shader = nullptr;
-    }
-    if (m_FontStore)
-    {
-        delete m_FontStore;
-        m_FontStore = nullptr;
     }
 }
 
@@ -136,6 +44,9 @@ void TextRenderGear::Initialize()
 
     /* Initialize the Array Buffers */
     SetupBuffers();
+
+    /* Reinit Textures */
+    m_FontEngine.ClearTextures();
 
     /* Load all the locations for uniforms */
     m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
@@ -224,12 +135,15 @@ void TextRenderGear::DrawText(const Renderer::RenderText& text)
     /* Texture sampler bound to unit 0 */
     glUniform1i(m_UText, 0);
 
+    /* Set Font face Pixel size */
+    FT_Set_Pixel_Sizes(m_Ft_Face, 0, text.size);
+
     for (char c: text.text)
     {
         /* Cast the Character into something Freetype can understand */
         FT_ULong code = static_cast<FT_ULong>(c);
         /* Get the Renderable Character glyph struct */
-        const Character& ch = m_FontStore->GetChar(text.face, code);
+        const Character& ch = m_FontEngine.GetChar(m_Ft_Face, code);
 
         /* Setup the Necessary data to generate the Buffer data for the draw call */
         float xpos = x + ch.bearing.x * scalex;

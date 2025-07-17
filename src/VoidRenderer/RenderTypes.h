@@ -7,10 +7,6 @@
 #include <string>
 #include <vector>
 
-/* Freetype */
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
 /* GLM */
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -115,11 +111,8 @@ struct RenderText
     /* Start Position of the Text */
     glm::vec2 position;
 
-    /* The Font Face to use */
-    /**
-     * TODO: Change it to be a serializable value
-     */
-    FT_Face face;
+    /* The Font size */
+    size_t size;
 
     inline bool Empty() const noexcept { return text.empty(); }
     inline void Clear() { text.clear(); }

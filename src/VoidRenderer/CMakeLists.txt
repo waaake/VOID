@@ -7,6 +7,9 @@ add_library(
     RenderTypes.h
     VoidRenderer.cpp
 
+    # Core
+    Core/FontEngine.cpp
+
     # Render Components (Gears)
     Gears/RenderGear.cpp
     Gears/ImageRenderGear.cpp
