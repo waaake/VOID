@@ -11,12 +11,51 @@
 #include <QWidget>
 #include <QScrollArea>
 #include <QLayout>
+#include <QListView>
 
 /* Internal */
 #include "Definition.h"
+#include "MediaBridge.h"
 #include "MediaItem.h"
+#include "MediaSearchBar.h"
 
 VOID_NAMESPACE_OPEN
+
+class MediaListView : public QListView
+{
+    Q_OBJECT
+
+public:
+    explicit MediaListView(QWidget* parent = nullptr);
+    ~MediaListView();
+
+    /* Search and filter items from the Model */
+    inline void Search(const std::string& text) { proxy->SetSearchText(text); }
+
+    /* Returns the currently selected Media row Model Indices */
+    const std::vector<QModelIndex> SelectedIndexes() const;
+
+signals:
+    /* Sends the Source Model Index mapped from the proxy model */
+    void itemDoubleClicked(const QModelIndex&);
+
+private: /* Models */
+    /* Proxy for filtering and sorting */
+    MediaProxyModel* proxy;
+
+private: /* Methods */
+    /* Setup the List View */
+    void Setup();
+
+    /* Setup Signals */
+    void Connect();
+
+    /* (Re)sets the Media Model */
+    void ResetModel(MediaModel* model);
+
+    /* Maps the Proxy Index to the source Model index before emitting */
+    void ItemDoubleClicked(const QModelIndex& index);
+};
 
 class VoidMediaLister : public QWidget
 {
@@ -40,11 +79,11 @@ signals:
     void mediaDropped(const std::string& path);
 
 protected: /* Methods */
-    void paintEvent(QPaintEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void dragEnterEvent(QDragEnterEvent* event) override;
-    void dropEvent(QDropEvent* event) override;
-    void contextMenuEvent(QContextMenuEvent* event) override;
+    // void paintEvent(QPaintEvent* event) override;
+    // void mousePressEvent(QMouseEvent* event) override;
+    // void dragEnterEvent(QDragEnterEvent* event) override;
+    // void dropEvent(QDropEvent* event) override;
+    // void contextMenuEvent(QContextMenuEvent* event) override;
 
 private: /* Methods */
     void Build();
@@ -73,6 +112,8 @@ private: /* Methods */
     void AddSelectionToSequence();
     void RemoveSelectedMedia();
 
+    void IndexSelected(const QModelIndex& index);
+
 private: /* Members */
     QWidget* m_Scrollwidget;
     QScrollArea* m_ScollArea;
@@ -81,6 +122,8 @@ private: /* Members */
     QHBoxLayout* m_OptionsLayout;
 
     /* Options */
+    MediaSearchBar* m_SearchBar;
+    MediaListView* m_ListView;
     QPushButton* m_DeleteButton;
 
     /* Context Menu */
