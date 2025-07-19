@@ -11,12 +11,96 @@
 #include <QUrl>
 
 /* Internal */
-#include "MediaBridge.h"
 #include "MediaLister.h"
 #include "VoidStyle.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
+
+MediaListView::MediaListView(QWidget* parent)
+    : QListView(parent)
+{
+    Setup();
+
+    /* Connect Signals */
+    Connect();
+}
+
+MediaListView::~MediaListView()
+{
+    proxy->deleteLater();
+    delete proxy;
+    proxy = nullptr;
+}
+
+void MediaListView::Setup()
+{
+    /* Set Model */
+    /* Source Model */
+    MediaModel* model = MBridge::Instance().DataModel();
+
+    /* Proxy */
+    proxy = new MediaProxyModel(this);
+    /* Setup the Proxy's Source Model */
+    ResetModel(model);    
+
+    setModel(proxy);
+    /* Set Delegate */
+    setItemDelegate(new MediaItemDelegate());
+
+    /* Selection Mode */
+    setSelectionMode(QAbstractItemView::ExtendedSelection);
+    setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    /* Spacing between entries */
+    setSpacing(1);
+}
+
+void MediaListView::Connect()
+{
+    connect(this, &QListView::doubleClicked, this, &MediaListView::ItemDoubleClicked);
+}
+
+void MediaListView::ResetModel(MediaModel* model)
+{
+    proxy->setSourceModel(model);
+}
+
+void MediaListView::ItemDoubleClicked(const QModelIndex& index)
+{
+    if (!index.isValid())
+        return;
+    
+    /* The source index */
+    emit itemDoubleClicked(proxy->mapToSource(index));
+}
+
+const std::vector<QModelIndex> MediaListView::SelectedIndexes() const
+{
+    std::vector<QModelIndex> sources;
+
+    /* Get the selection model */
+    QItemSelectionModel* selection = selectionModel();
+
+    /* Nothing is selected at the moment */
+    if (!selection)
+        return sources;
+
+    const QModelIndexList proxyindexes = selection->selectedRows();
+    /* We know how many items are selected */
+    sources.reserve(proxyindexes.size());
+
+    for (const QModelIndex& index: proxyindexes)
+    {
+        QModelIndex source = proxy->mapToSource(index);
+        if (source.isValid())
+            sources.emplace_back(source);
+    }
+
+    /* Return the updated source indexes that are selected */
+    return sources;
+}
+
 
 VoidMediaLister::VoidMediaLister(QWidget* parent)
     : QWidget(parent)
@@ -47,70 +131,70 @@ QSize VoidMediaLister::sizeHint() const
     return QSize(300, 720);
 }
 
-void VoidMediaLister::mousePressEvent(QMouseEvent* event)
-{
-    /* If the Media Lister is clicked by holding Alt key -> Clear any selected media */
-    if (event->button() == Qt::LeftButton && event->modifiers() & Qt::AltModifier)
-        ClearSelection();
-}
+// void VoidMediaLister::mousePressEvent(QMouseEvent* event)
+// {
+//     /* If the Media Lister is clicked by holding Alt key -> Clear any selected media */
+//     if (event->button() == Qt::LeftButton && event->modifiers() & Qt::AltModifier)
+//         ClearSelection();
+// }
 
-void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
-{
-    /* Check if we have urls in the mime data */
-    if (event->mimeData()->hasUrls())
-    {
-        event->acceptProposedAction();
-    }
-}
+// void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
+// {
+//     /* Check if we have urls in the mime data */
+//     if (event->mimeData()->hasUrls())
+//     {
+//         event->acceptProposedAction();
+//     }
+// }
 
-void VoidMediaLister::dropEvent(QDropEvent* event)
-{
-    /* Fetch all the urls which have been dropped */
-    QList<QUrl> urls = event->mimeData()->urls();
+// void VoidMediaLister::dropEvent(QDropEvent* event)
+// {
+//     /* Fetch all the urls which have been dropped */
+//     QList<QUrl> urls = event->mimeData()->urls();
 
-    for (const QUrl& url : urls)
-    {
-        std::string path = url.toLocalFile().toStdString();
+//     for (const QUrl& url : urls)
+//     {
+//         std::string path = url.toLocalFile().toStdString();
 
-        /* Check if the path is a directory and emit the signal with the path if it is */
-        if (std::filesystem::is_directory(path))
-        {
-            VOID_LOG_INFO("Dropped Media Directory: {0}", path);
+//         /* Check if the path is a directory and emit the signal with the path if it is */
+//         if (std::filesystem::is_directory(path))
+//         {
+//             VOID_LOG_INFO("Dropped Media Directory: {0}", path);
 
-            /* Emit the media dropped signal */
-            emit mediaDropped(path);
-        }
-    }
-}
+//             /* Emit the media dropped signal */
+//             emit mediaDropped(path);
+//         }
+//     }
+// }
 
-void VoidMediaLister::contextMenuEvent(QContextMenuEvent* event)
-{
-    /* Don't show up if nothing is selected */
-    if (m_CurrentSelected.empty())
-        return;
+// void VoidMediaLister::contextMenuEvent(QContextMenuEvent* event)
+// {
+//     /* Don't show up if nothing is selected */
+//     if (m_CurrentSelected.empty())
+//         return;
 
-    /* Create a context menu */
-    QMenu contextMenu(this);
+//     /* Create a context menu */
+//     QMenu contextMenu(this);
 
-    /* Add the Defined actions */
-    contextMenu.addAction(m_PlayAction);
-    contextMenu.addAction(m_RemoveAction);
+//     /* Add the Defined actions */
+//     contextMenu.addAction(m_PlayAction);
+//     contextMenu.addAction(m_RemoveAction);
 
-    /* Show Menu */
-    contextMenu.exec(event->globalPos());
-}
+//     /* Show Menu */
+//     contextMenu.exec(event->globalPos());
+// }
 
-void VoidMediaLister::paintEvent(QPaintEvent* event)
-{
-    /* Standard draw for everything */
-    QWidget::paintEvent(event);
+// void VoidMediaLister::paintEvent(QPaintEvent* event)
+// {
+//     /* Standard draw for everything */
+//     QWidget::paintEvent(event);
 
-    /* Create a Painter to draw the border */
-    QPainter painter(this);
-    painter.setPen(QPen(Qt::black, 2));
-    /* Draw the border with the painter */
-    painter.drawLine(0, 0, width(), 0);
-}
+//     /* Create a Painter to draw the border */
+//     QPainter painter(this);
+//     painter.setPen(QPen(Qt::black, 2));
+//     /* Draw the border with the painter */
+//     painter.drawLine(0, 0, width(), 0);
+// }
 
 void VoidMediaLister::Build()
 {
@@ -127,8 +211,15 @@ void VoidMediaLister::Build()
     m_DeleteButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
     m_DeleteButton->setFixedWidth(26);
 
-    m_OptionsLayout->addStretch(1);
+    m_ListView = new MediaListView(this);
+    m_SearchBar = new MediaSearchBar(this);
+
+    // m_OptionsLayout->addStretch(1);
+    m_OptionsLayout->addWidget(m_SearchBar);
     m_OptionsLayout->addWidget(m_DeleteButton);
+
+    /* Setup margins */
+    m_OptionsLayout->setContentsMargins(6, 0, 0, 0);
     /* }}} */
 
 
@@ -152,6 +243,7 @@ void VoidMediaLister::Build()
     /* Add to the base Layout */
     m_layout->addLayout(m_OptionsLayout);
     m_layout->addWidget(m_ScollArea);
+    m_layout->addWidget(m_ListView);
 
     /* Spacing */
     int left, top, right, bottom;
@@ -180,10 +272,14 @@ void VoidMediaLister::Connect()
 
     /* Options */
     connect(m_DeleteButton, &QPushButton::clicked, this, &VoidMediaLister::RemoveSelectedMedia);
+    connect(m_SearchBar, &MediaSearchBar::typed, m_ListView, &MediaListView::Search);
 
     /* Media Bridge */
     connect(&MBridge::Instance(), &MBridge::mediaAdded, this, &VoidMediaLister::AddMedia);
     connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &VoidMediaLister::RemoveMedia);
+
+    /* List */
+    connect(m_ListView, &MediaListView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
 }
 
 void VoidMediaLister::ClearPlaying()
@@ -242,6 +338,15 @@ void VoidMediaLister::SelectItem(VoidMediaItem* item, bool clear)
     /* Update the current selection */
     m_CurrentSelected.push_back(item);
     item->SetSelected(true);
+}
+
+void VoidMediaLister::IndexSelected(const QModelIndex& index)
+{
+    if (!index.isValid())
+        return;
+ 
+    /* Emit the Media Clip dereferenced from the internal pointer */
+    emit mediaChanged(*(static_cast<SharedMediaClip*>(index.internalPointer())));
 }
 
 void VoidMediaLister::ChangeMedia(VoidMediaItem* item)
@@ -314,29 +419,35 @@ void VoidMediaLister::RemoveMedia(const SharedMediaClip& media)
 
 void VoidMediaLister::RemoveSelectedMedia()
 {
-    for (VoidMediaItem* item: m_CurrentSelected)
+    // for (VoidMediaItem* item: m_CurrentSelected)
+    // {
+    //     /* Remove from Playing if it exists */
+    //     if (item->Playing())
+    //     {
+    //         m_CurrentPlaying.erase(
+    //             std::remove(m_CurrentPlaying.begin(), m_CurrentPlaying.end(), item),
+    //             m_CurrentPlaying.end()
+    //         );
+    //     }
+
+    //     /* Retrieve the item's media clip before the item is deleted */
+    //     SharedMediaClip c = item->Clip();
+
+    //     /**
+    //      * Remove the Item from the MediaBride for it to be removed across other components
+    //      * that might be accessing it
+    //      */
+    //     // MBridge::Instance().RemoveClip(c);
+    // }
+
+    // /* Clear the Current Selection*/
+    // m_CurrentSelected.clear();
+
+    for (const QModelIndex& index : m_ListView->SelectedIndexes())
     {
-        /* Remove from Playing if it exists */
-        if (item->Playing())
-        {
-            m_CurrentPlaying.erase(
-                std::remove(m_CurrentPlaying.begin(), m_CurrentPlaying.end(), item),
-                m_CurrentPlaying.end()
-            );
-        }
-
-        /* Retrieve the item's media clip before the item is deleted */
-        SharedMediaClip c = item->Clip();
-
-        /**
-         * Remove the Item from the MediaBride for it to be removed across other components
-         * that might be accessing it
-         */
-        MBridge::Instance().RemoveClip(c);
+        /* Remove the Media at the given index */
+        MBridge::Instance().Remove(index);
     }
-
-    /* Clear the Current Selection*/
-    m_CurrentSelected.clear();
 }
 
 VOID_NAMESPACE_CLOSE

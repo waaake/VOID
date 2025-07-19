@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 
 /* Internal */
+#include "MediaBridge.h"
 #include "MediaItem.h"
 #include "VoidStyle.h"
 #include "VoidCore/VoidTools.h"
@@ -12,6 +13,104 @@ static const int THUMBNAIL_SIZE = 60;
 static const int ICON_SIZE = 20;
 
 VOID_NAMESPACE_OPEN
+
+MediaItemDelegate::MediaItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent)
+{
+}
+
+void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    /**
+     * The main Rect for the Item will be divided into 5 sub sections 
+     * -------------------------------------------------------------
+     * |               |    Name                    |    Extension |
+     * |   Thumbnail   |-------------------------------------------|
+     * |               |    1001 - 1010             |        24fps |
+     * -------------------------------------------------------------
+     */
+
+    /* Base Rect */
+    QRect rect = option.rect;
+
+    painter->save();
+
+    /* Default background */
+    painter->fillRect(rect, VOID_DARK_BG_COLOR);
+
+    /* Selected */
+    if (option.state & QStyle::State_Selected)
+    {
+        // painter->fillRect(rect, option.palette.highlight());
+        // painter->fillRect(rect, QColor(160, 190, 60));
+
+        // QColor selectionIndicator = VOID_BLUE_COLOR;
+
+        /* Gradient */
+        QLinearGradient gradient(0, 0, rect.width(), 0);
+        gradient.setColorAt(0, VOID_DARK_BG_COLOR);
+        gradient.setColorAt(1, VOID_DARK_BLUE_COLOR);
+        
+        painter->save();
+
+        /* Draw the Background */
+        painter->setBrush(gradient);
+        painter->setPen(Qt::NoPen);
+        painter->drawRect(rect);
+
+        /* Draw the right indicator rect */
+        painter->fillRect(QRect(rect.width() - 4, rect.top(), 4, rect.height()), VOID_BLUE_COLOR);
+
+        painter->restore();
+    }
+
+    painter->restore();
+
+    /* Save the painter for restoring later */
+    painter->save();
+
+    /* Side Bar */
+    QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());
+    painter->fillRect(siderect, VOID_GRAY_COLOR);
+
+    /* Thumbnail */
+    QRect thumbrect = QRect(rect.left() + 10, rect.top() + 5, 80, 50);
+    QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+    painter->drawPixmap(thumbrect, p.scaled(thumbrect.width(), thumbrect.height(), Qt::KeepAspectRatio));
+
+    int thumbright = thumbrect.right() + 5;
+    int halfheight = rect.height() / 2;
+
+    int namewidth = rect.width() - (thumbrect.width() + 70);
+
+    /* Name */
+    QRect namerect = QRect(thumbright, rect.top(), namewidth, halfheight);
+    QString name = index.data(static_cast<int>(MediaModel::MRoles::Name)).toString();
+    painter->drawText(namerect, Qt::AlignLeft | Qt::AlignVCenter, name);
+
+    /* Extension */
+    QRect extrect = QRect(namerect.right(), rect.top(), 46, halfheight);
+    QString extension = index.data(static_cast<int>(MediaModel::MRoles::Extension)).toString();
+    painter->drawText(extrect, Qt::AlignRight | Qt::AlignVCenter, extension);
+
+    /* Frame range */
+    QRect rangerect = QRect(thumbright, namerect.bottom(), namewidth, halfheight);
+    QString framerange = index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString();
+    painter->drawText(rangerect, Qt::AlignLeft | Qt::AlignVCenter, framerange);
+
+    /* Framerate */
+    QRect fpsrect = QRect(namerect.right(), extrect.bottom(), 46, halfheight);
+    QString framerate = index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString();
+    painter->drawText(fpsrect, Qt::AlignRight | Qt::AlignVCenter, framerate);
+
+    /* Restore for other use */
+    painter->restore();
+}
+
+QSize MediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 60);
+}
 
 VoidMediaItem::VoidMediaItem(const SharedMediaClip& media, QWidget* parent)
     : QFrame(parent)
