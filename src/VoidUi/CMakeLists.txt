@@ -21,9 +21,13 @@ add_library(
     # Media
     MediaBridge.cpp
     MediaClip.cpp
-    MediaLister.cpp
     MediaItem.cpp
+    MediaLister.cpp
+    MediaModel.cpp
     MediaSearchBar.cpp
+    Media/Views/MediaView.cpp
+    Media/Delegates/ListDelegate.cpp
+    Media/Delegates/ThumbnailDelegate.cpp
 
     # Preferences
     Preferences/Preferences.cpp

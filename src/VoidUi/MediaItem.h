@@ -14,17 +14,6 @@
 
 VOID_NAMESPACE_OPEN
 
-class MediaItemDelegate : public QStyledItemDelegate
-{
-    Q_OBJECT
-
-public:
-    explicit MediaItemDelegate(QObject* parent = nullptr);
-
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-};
-
 class VoidMediaItem : public QFrame
 {
     Q_OBJECT

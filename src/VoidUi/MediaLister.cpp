@@ -17,91 +17,6 @@
 
 VOID_NAMESPACE_OPEN
 
-MediaListView::MediaListView(QWidget* parent)
-    : QListView(parent)
-{
-    Setup();
-
-    /* Connect Signals */
-    Connect();
-}
-
-MediaListView::~MediaListView()
-{
-    proxy->deleteLater();
-    delete proxy;
-    proxy = nullptr;
-}
-
-void MediaListView::Setup()
-{
-    /* Set Model */
-    /* Source Model */
-    MediaModel* model = MBridge::Instance().DataModel();
-
-    /* Proxy */
-    proxy = new MediaProxyModel(this);
-    /* Setup the Proxy's Source Model */
-    ResetModel(model);    
-
-    setModel(proxy);
-    /* Set Delegate */
-    setItemDelegate(new MediaItemDelegate());
-
-    /* Selection Mode */
-    setSelectionMode(QAbstractItemView::ExtendedSelection);
-    setSelectionBehavior(QAbstractItemView::SelectRows);
-
-    /* Spacing between entries */
-    setSpacing(1);
-}
-
-void MediaListView::Connect()
-{
-    connect(this, &QListView::doubleClicked, this, &MediaListView::ItemDoubleClicked);
-}
-
-void MediaListView::ResetModel(MediaModel* model)
-{
-    proxy->setSourceModel(model);
-}
-
-void MediaListView::ItemDoubleClicked(const QModelIndex& index)
-{
-    if (!index.isValid())
-        return;
-    
-    /* The source index */
-    emit itemDoubleClicked(proxy->mapToSource(index));
-}
-
-const std::vector<QModelIndex> MediaListView::SelectedIndexes() const
-{
-    std::vector<QModelIndex> sources;
-
-    /* Get the selection model */
-    QItemSelectionModel* selection = selectionModel();
-
-    /* Nothing is selected at the moment */
-    if (!selection)
-        return sources;
-
-    const QModelIndexList proxyindexes = selection->selectedRows();
-    /* We know how many items are selected */
-    sources.reserve(proxyindexes.size());
-
-    for (const QModelIndex& index: proxyindexes)
-    {
-        QModelIndex source = proxy->mapToSource(index);
-        if (source.isValid())
-            sources.emplace_back(source);
-    }
-
-    /* Return the updated source indexes that are selected */
-    return sources;
-}
-
-
 VoidMediaLister::VoidMediaLister(QWidget* parent)
     : QWidget(parent)
 {
@@ -138,34 +53,34 @@ QSize VoidMediaLister::sizeHint() const
 //         ClearSelection();
 // }
 
-// void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
-// {
-//     /* Check if we have urls in the mime data */
-//     if (event->mimeData()->hasUrls())
-//     {
-//         event->acceptProposedAction();
-//     }
-// }
+void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
+{
+    /* Check if we have urls in the mime data */
+    if (event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+}
 
-// void VoidMediaLister::dropEvent(QDropEvent* event)
-// {
-//     /* Fetch all the urls which have been dropped */
-//     QList<QUrl> urls = event->mimeData()->urls();
+void VoidMediaLister::dropEvent(QDropEvent* event)
+{
+    /* Fetch all the urls which have been dropped */
+    QList<QUrl> urls = event->mimeData()->urls();
 
-//     for (const QUrl& url : urls)
-//     {
-//         std::string path = url.toLocalFile().toStdString();
+    for (const QUrl& url : urls)
+    {
+        std::string path = url.toLocalFile().toStdString();
 
-//         /* Check if the path is a directory and emit the signal with the path if it is */
-//         if (std::filesystem::is_directory(path))
-//         {
-//             VOID_LOG_INFO("Dropped Media Directory: {0}", path);
+        /* Check if the path is a directory and emit the signal with the path if it is */
+        if (std::filesystem::is_directory(path))
+        {
+            VOID_LOG_INFO("Dropped Media Directory: {0}", path);
 
-//             /* Emit the media dropped signal */
-//             emit mediaDropped(path);
-//         }
-//     }
-// }
+            /* Emit the media dropped signal */
+            emit mediaDropped(path);
+        }
+    }
+}
 
 // void VoidMediaLister::contextMenuEvent(QContextMenuEvent* event)
 // {
@@ -207,21 +122,43 @@ void VoidMediaLister::Build()
 
     /* Options {{{ */
     m_OptionsLayout = new QHBoxLayout;
+
+    m_ViewButtonGroup = new QButtonGroup(this);
+    m_ViewButtonGroup->setExclusive(true);
+
+    /* View Toggle Buttons */
+    m_ListViewToggle = new HighlightToggleButton(this);
+    m_ListViewToggle->setIcon(QIcon(":resources/icons/icon_list_view.svg"));
+
+    m_ThumbnailViewToggle = new HighlightToggleButton(this);
+    m_ThumbnailViewToggle->setIcon(QIcon(":resources/icons/icon_grid_view.svg"));
+
+    m_ViewButtonGroup->addButton(m_ListViewToggle, 0);
+    m_ViewButtonGroup->addButton(m_ThumbnailViewToggle, 1);
+
+    m_SortButton = new HighlightToggleButton(this);
+    m_SortButton->setIcon(QIcon(":resources/icons/icon_sort_abc.svg"));
+    m_SortButton->setFixedWidth(26);
+
     m_DeleteButton = new QPushButton;
     m_DeleteButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
     m_DeleteButton->setFixedWidth(26);
 
-    m_ListView = new MediaListView(this);
     m_SearchBar = new MediaSearchBar(this);
 
-    // m_OptionsLayout->addStretch(1);
+    m_OptionsLayout->addWidget(m_ListViewToggle);
+    m_OptionsLayout->addWidget(m_ThumbnailViewToggle);
     m_OptionsLayout->addWidget(m_SearchBar);
+    m_OptionsLayout->addWidget(m_SortButton);
     m_OptionsLayout->addWidget(m_DeleteButton);
 
     /* Setup margins */
-    m_OptionsLayout->setContentsMargins(6, 0, 0, 0);
+    m_OptionsLayout->setContentsMargins(4, 0, 0, 0);
     /* }}} */
 
+    /* Views {{{ */
+    m_MediaView = new MediaView(this);
+    /* }}} */
 
     m_Scrollwidget = new QWidget;
     /* We want to make sure this widget tries to be the maximum of its contents */
@@ -242,8 +179,8 @@ void VoidMediaLister::Build()
 
     /* Add to the base Layout */
     m_layout->addLayout(m_OptionsLayout);
-    m_layout->addWidget(m_ScollArea);
-    m_layout->addWidget(m_ListView);
+    // m_layout->addWidget(m_ScollArea);
+    m_layout->addWidget(m_MediaView);
 
     /* Spacing */
     int left, top, right, bottom;
@@ -262,6 +199,9 @@ void VoidMediaLister::Setup()
     p.setColor(QPalette::Window, VOID_SEMI_DARK_COLOR);
 
     this->setPalette(p);
+
+    /* Default View */
+    m_ListViewToggle->setChecked(true);
 }
 
 void VoidMediaLister::Connect()
@@ -272,14 +212,23 @@ void VoidMediaLister::Connect()
 
     /* Options */
     connect(m_DeleteButton, &QPushButton::clicked, this, &VoidMediaLister::RemoveSelectedMedia);
-    connect(m_SearchBar, &MediaSearchBar::typed, m_ListView, &MediaListView::Search);
+    connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
+    connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
+    
+    /* View Changed */
+    #if _QT6_COMPAT
+    connect(m_ViewButtonGroup, &QButtonGroup::idPressed, this, [this](int index) { m_MediaView->SetViewType(static_cast<MediaView::ViewType>(index)); });
+    #else
+    connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonPressed), this, [this](int index) { m_MediaView->SetViewType(static_cast<MediaView::ViewType>(index)); });
+    #endif // _QT6_COMPAT
 
     /* Media Bridge */
-    connect(&MBridge::Instance(), &MBridge::mediaAdded, this, &VoidMediaLister::AddMedia);
-    connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &VoidMediaLister::RemoveMedia);
+    // connect(&MBridge::Instance(), &MBridge::mediaAdded, this, &VoidMediaLister::AddMedia);
+    // connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &VoidMediaLister::RemoveMedia);
 
     /* List */
-    connect(m_ListView, &MediaListView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
+    connect(m_MediaView, &MediaView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
+    connect(m_MediaView, &MediaView::customContextMenuRequested, this, &VoidMediaLister::ShowContextMenu);
 }
 
 void VoidMediaLister::ClearPlaying()
@@ -370,21 +319,36 @@ void VoidMediaLister::ChangeMedia(VoidMediaItem* item)
 
 void VoidMediaLister::AddSelectionToSequence()
 {
+    /* The currently selected indexes */
+    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
+
+    /* Nothing is selected */
+    if (selected.empty())
+        return;
+
+    /* Vector to hold the underlying selected medias */
     std::vector<SharedMediaClip> m;
+
     /* Already aware of the amount of items which are to be copied */
-    m.reserve(m_CurrentSelected.size());
+    m.reserve(selected.size());
+
+    for (const QModelIndex& index: selected)
+    {
+        /* Add the Media to the vector */
+        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     /* Clear Existing Media which is marked as playing */
-    ClearPlaying();
+    // ClearPlaying();
 
     /* Copy the current selected item's clip to the vector */
-    for (VoidMediaItem* item: m_CurrentSelected)
-    {
-        m.emplace_back(item->Clip());
+    // for (VoidMediaItem* item: m_CurrentSelected)
+    // {
+    //     m.emplace_back(item->Clip());
 
-        item->SetPlaying(true);
-        m_CurrentPlaying.push_back(item);
-    }
+    //     item->SetPlaying(true);
+    //     m_CurrentPlaying.push_back(item);
+    // }
 
     /* Emit that the sequence of playing media is now changed */
     emit playlistChanged(m);
@@ -417,6 +381,23 @@ void VoidMediaLister::RemoveMedia(const SharedMediaClip& media)
     }
 }
 
+void VoidMediaLister::ShowContextMenu(const Point& position)
+{
+    /* Show up only if we have selection */
+    if (!m_MediaView->HasSelection())
+        return;
+
+    /* Create a context menu */
+    QMenu contextMenu(this);
+
+    /* Add the Defined actions */
+    contextMenu.addAction(m_PlayAction);
+    contextMenu.addAction(m_RemoveAction);
+
+    /* Show Menu */
+    contextMenu.exec(m_MediaView->mapToGlobal(position));
+}
+
 void VoidMediaLister::RemoveSelectedMedia()
 {
     // for (VoidMediaItem* item: m_CurrentSelected)
@@ -443,7 +424,7 @@ void VoidMediaLister::RemoveSelectedMedia()
     // /* Clear the Current Selection*/
     // m_CurrentSelected.clear();
 
-    for (const QModelIndex& index : m_ListView->SelectedIndexes())
+    for (const QModelIndex& index : m_MediaView->SelectedIndexes())
     {
         /* Remove the Media at the given index */
         MBridge::Instance().Remove(index);

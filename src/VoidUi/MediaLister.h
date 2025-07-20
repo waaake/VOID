@@ -7,55 +7,21 @@
 
 /* Qt */
 #include <QAction>
+#include <QButtonGroup>
 #include <QPushButton>
 #include <QWidget>
 #include <QScrollArea>
 #include <QLayout>
-#include <QListView>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "MediaBridge.h"
 #include "MediaItem.h"
 #include "MediaSearchBar.h"
+#include "VoidUi/Media/Views/MediaView.h"
+#include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
-
-class MediaListView : public QListView
-{
-    Q_OBJECT
-
-public:
-    explicit MediaListView(QWidget* parent = nullptr);
-    ~MediaListView();
-
-    /* Search and filter items from the Model */
-    inline void Search(const std::string& text) { proxy->SetSearchText(text); }
-
-    /* Returns the currently selected Media row Model Indices */
-    const std::vector<QModelIndex> SelectedIndexes() const;
-
-signals:
-    /* Sends the Source Model Index mapped from the proxy model */
-    void itemDoubleClicked(const QModelIndex&);
-
-private: /* Models */
-    /* Proxy for filtering and sorting */
-    MediaProxyModel* proxy;
-
-private: /* Methods */
-    /* Setup the List View */
-    void Setup();
-
-    /* Setup Signals */
-    void Connect();
-
-    /* (Re)sets the Media Model */
-    void ResetModel(MediaModel* model);
-
-    /* Maps the Proxy Index to the source Model index before emitting */
-    void ItemDoubleClicked(const QModelIndex& index);
-};
 
 class VoidMediaLister : public QWidget
 {
@@ -81,8 +47,8 @@ signals:
 protected: /* Methods */
     // void paintEvent(QPaintEvent* event) override;
     // void mousePressEvent(QMouseEvent* event) override;
-    // void dragEnterEvent(QDragEnterEvent* event) override;
-    // void dropEvent(QDropEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
     // void contextMenuEvent(QContextMenuEvent* event) override;
 
 private: /* Methods */
@@ -109,6 +75,9 @@ private: /* Methods */
      */
     void ChangeMedia(VoidMediaItem* item);
 
+    /* Show Context Menu at the given position */
+    void ShowContextMenu(const Point& position);
+
     void AddSelectionToSequence();
     void RemoveSelectedMedia();
 
@@ -122,9 +91,17 @@ private: /* Members */
     QHBoxLayout* m_OptionsLayout;
 
     /* Options */
+    HighlightToggleButton* m_ListViewToggle;
+    HighlightToggleButton* m_ThumbnailViewToggle;
+
+    QButtonGroup* m_ViewButtonGroup;
+
     MediaSearchBar* m_SearchBar;
-    MediaListView* m_ListView;
+    HighlightToggleButton* m_SortButton;
     QPushButton* m_DeleteButton;
+
+    /* Views */
+    MediaView* m_MediaView;
 
     /* Context Menu */
     QAction* m_PlayAction;
