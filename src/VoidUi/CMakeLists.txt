@@ -21,7 +21,6 @@ add_library(
     # Media
     Media/MediaBridge.cpp
     Media/MediaClip.cpp
-    Media/MediaItem.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
     Media/Models/MediaModel.cpp

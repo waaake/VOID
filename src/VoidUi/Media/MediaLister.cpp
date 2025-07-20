@@ -35,23 +35,15 @@ VoidMediaLister::VoidMediaLister(QWidget* parent)
 
 VoidMediaLister::~VoidMediaLister()
 {
-    for (auto mit: m_MediaItems)
-    {
-        mit.second->deleteLater();
-    }
+    m_MediaView->deleteLater();
+    delete m_MediaView;
+    m_MediaView = nullptr;
 }
 
 QSize VoidMediaLister::sizeHint() const
 {
     return QSize(300, 720);
 }
-
-// void VoidMediaLister::mousePressEvent(QMouseEvent* event)
-// {
-//     /* If the Media Lister is clicked by holding Alt key -> Clear any selected media */
-//     if (event->button() == Qt::LeftButton && event->modifiers() & Qt::AltModifier)
-//         ClearSelection();
-// }
 
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
 {
@@ -82,34 +74,17 @@ void VoidMediaLister::dropEvent(QDropEvent* event)
     }
 }
 
-// void VoidMediaLister::contextMenuEvent(QContextMenuEvent* event)
-// {
-//     /* Don't show up if nothing is selected */
-//     if (m_CurrentSelected.empty())
-//         return;
+void VoidMediaLister::paintEvent(QPaintEvent* event)
+{
+    /* Standard draw for everything */
+    QWidget::paintEvent(event);
 
-//     /* Create a context menu */
-//     QMenu contextMenu(this);
-
-//     /* Add the Defined actions */
-//     contextMenu.addAction(m_PlayAction);
-//     contextMenu.addAction(m_RemoveAction);
-
-//     /* Show Menu */
-//     contextMenu.exec(event->globalPos());
-// }
-
-// void VoidMediaLister::paintEvent(QPaintEvent* event)
-// {
-//     /* Standard draw for everything */
-//     QWidget::paintEvent(event);
-
-//     /* Create a Painter to draw the border */
-//     QPainter painter(this);
-//     painter.setPen(QPen(Qt::black, 2));
-//     /* Draw the border with the painter */
-//     painter.drawLine(0, 0, width(), 0);
-// }
+    /* Create a Painter to draw the border */
+    QPainter painter(this);
+    painter.setPen(QPen(Qt::black, 2));
+    /* Draw the border with the painter */
+    painter.drawLine(0, 0, width(), 0);
+}
 
 void VoidMediaLister::Build()
 {
@@ -160,26 +135,8 @@ void VoidMediaLister::Build()
     m_MediaView = new MediaView(this);
     /* }}} */
 
-    m_Scrollwidget = new QWidget;
-    /* We want to make sure this widget tries to be the maximum of its contents */
-    m_Scrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-    /* Give this ScrollWidget a Vertical Layout */
-    m_ScrollLayout = new QVBoxLayout(m_Scrollwidget);
-
-    /* Spacing */
-    m_ScrollLayout->setSpacing(2);
-    m_ScrollLayout->setContentsMargins(2, 2, 2, 2);
-
-    /* Create a Scroll area that will be incharge of scrolling its conents */
-    m_ScollArea = new QScrollArea;
-    /* Scroll area should be resizable as the UI grows or shrinks */
-    m_ScollArea->setWidgetResizable(true);
-    /* Use our Scoll container on this area */
-    m_ScollArea->setWidget(m_Scrollwidget);
-
     /* Add to the base Layout */
     m_layout->addLayout(m_OptionsLayout);
-    // m_layout->addWidget(m_ScollArea);
     m_layout->addWidget(m_MediaView);
 
     /* Spacing */
@@ -222,71 +179,9 @@ void VoidMediaLister::Connect()
     connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonPressed), this, [this](int index) { m_MediaView->SetViewType(static_cast<MediaView::ViewType>(index)); });
     #endif // _QT6_COMPAT
 
-    /* Media Bridge */
-    // connect(&MBridge::Instance(), &MBridge::mediaAdded, this, &VoidMediaLister::AddMedia);
-    // connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &VoidMediaLister::RemoveMedia);
-
     /* List */
     connect(m_MediaView, &MediaView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
     connect(m_MediaView, &MediaView::customContextMenuRequested, this, &VoidMediaLister::ShowContextMenu);
-}
-
-void VoidMediaLister::ClearPlaying()
-{
-    for (VoidMediaItem* item: m_CurrentPlaying)
-    {
-        item->SetPlaying(false);
-    }
-
-    /* Clear only the vector */
-    /* The Media Item pointer should not get dereferenced at the moment */
-    m_CurrentPlaying.clear();
-}
-
-void VoidMediaLister::ClearSelection()
-{
-    for (VoidMediaItem* item: m_CurrentSelected)
-    {
-        item->SetSelected(false);
-    }
-
-    /* Clear only the vector */
-    /* The Media Item pointer should not get dereferenced at the moment */
-    m_CurrentSelected.clear();
-}
-
-void VoidMediaLister::AddMedia(const SharedMediaClip& media)
-{
-    /* Construct a Media Item from the provided media */
-    VoidMediaItem* mediaItem = new VoidMediaItem(media);
-
-    /* Connect signal */
-    connect(mediaItem, &VoidMediaItem::selected, this, &VoidMediaLister::SelectItem);
-    connect(mediaItem, &VoidMediaItem::doubleClicked, this, &VoidMediaLister::ChangeMedia);
-
-    /* Add to the internal map holding all media items */
-    m_MediaItems[media->Vuid()] = mediaItem;
-
-    /* Add the Media Item to the Media Lister Scroll Widget */
-    m_ScrollLayout->addWidget(mediaItem);
-
-    /* Set Selection on this item */
-    SelectItem(mediaItem);
-}
-
-void VoidMediaLister::SelectItem(VoidMediaItem* item, bool clear)
-{
-    /* Don't have to do anything when the sender is the currently selected media */
-    // if (item == m_CurrentSelectedItem)
-    //     return;
-
-    /* Clear any existing selection if defined so */
-    if (clear)
-        ClearSelection();
-
-    /* Update the current selection */
-    m_CurrentSelected.push_back(item);
-    item->SetSelected(true);
 }
 
 void VoidMediaLister::IndexSelected(const QModelIndex& index)
@@ -296,25 +191,6 @@ void VoidMediaLister::IndexSelected(const QModelIndex& index)
  
     /* Emit the Media Clip dereferenced from the internal pointer */
     emit mediaChanged(*(static_cast<SharedMediaClip*>(index.internalPointer())));
-}
-
-void VoidMediaLister::ChangeMedia(VoidMediaItem* item)
-{
-    /*
-     * Ignore if the currently playing item is the sender
-     * Doesn't makes sense start playing the same item again and again when constantly clicking
-     */
-    // if (item == m_CurrentPlaying)
-    //     return;
-
-    /* Clear the existing playing media */
-    ClearPlaying();
-    /* set the playing state for the media that has been double clicked on, i.e. changed to */
-    m_CurrentPlaying.push_back(item);
-    item->SetPlaying(true);
-
-    /* Finally emit that the media has been changed */
-    emit mediaChanged(item->Clip());
 }
 
 void VoidMediaLister::AddSelectionToSequence()
@@ -338,47 +214,8 @@ void VoidMediaLister::AddSelectionToSequence()
         m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
     }
 
-    /* Clear Existing Media which is marked as playing */
-    // ClearPlaying();
-
-    /* Copy the current selected item's clip to the vector */
-    // for (VoidMediaItem* item: m_CurrentSelected)
-    // {
-    //     m.emplace_back(item->Clip());
-
-    //     item->SetPlaying(true);
-    //     m_CurrentPlaying.push_back(item);
-    // }
-
     /* Emit that the sequence of playing media is now changed */
     emit playlistChanged(m);
-}
-
-void VoidMediaLister::RemoveMedia(const SharedMediaClip& media)
-{
-    /* Check if the media exists in the lister */
-    auto it = m_MediaItems.find(media->Vuid());
-
-    if (it != m_MediaItems.end())
-    {
-        /* Get the pointer to the Media item */
-        VoidMediaItem* item = it->second;
-
-        /* See if the item is present in selected array to remove that */
-        m_CurrentPlaying.erase(std::remove(m_CurrentPlaying.begin(), m_CurrentPlaying.end(), item), m_CurrentPlaying.end());
-        m_CurrentSelected.erase(std::remove(m_CurrentSelected.begin(), m_CurrentSelected.end(), item), m_CurrentSelected.end());
-        
-        /* Remove the Media item from the map */
-        m_MediaItems.erase(it);
-
-        /* Delete the media Item */
-        item->setParent(nullptr);
-        item->setVisible(false);
-
-        /* Mark the item for deletion from Qt's memory */
-        item->deleteLater();
-        item = nullptr;
-    }
 }
 
 void VoidMediaLister::ShowContextMenu(const Point& position)
@@ -400,34 +237,17 @@ void VoidMediaLister::ShowContextMenu(const Point& position)
 
 void VoidMediaLister::RemoveSelectedMedia()
 {
-    // for (VoidMediaItem* item: m_CurrentSelected)
-    // {
-    //     /* Remove from Playing if it exists */
-    //     if (item->Playing())
-    //     {
-    //         m_CurrentPlaying.erase(
-    //             std::remove(m_CurrentPlaying.begin(), m_CurrentPlaying.end(), item),
-    //             m_CurrentPlaying.end()
-    //         );
-    //     }
+    /* Selected Indexes */
+    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
 
-    //     /* Retrieve the item's media clip before the item is deleted */
-    //     SharedMediaClip c = item->Clip();
-
-    //     /**
-    //      * Remove the Item from the MediaBride for it to be removed across other components
-    //      * that might be accessing it
-    //      */
-    //     // MBridge::Instance().RemoveClip(c);
-    // }
-
-    // /* Clear the Current Selection*/
-    // m_CurrentSelected.clear();
-
-    for (const QModelIndex& index : m_MediaView->SelectedIndexes())
+    /**
+     * Loop over in a a reverse way as forward iteration would shift the model indexes and
+     * result in wrong indexes being deleted, or a worst case scenario result in crashes as
+     * the second model index doesn't even exist after the first has been deleted
+     */
+    for (int i = selected.size() - 1; i >= 0; --i)
     {
-        /* Remove the Media at the given index */
-        MBridge::Instance().Remove(index);
+        MBridge::Instance().Remove(selected.at(i));
     }
 }
 
