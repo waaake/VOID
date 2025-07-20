@@ -121,7 +121,6 @@ const Character& FontEngine::GetChar(FT_Face face, FT_ULong character)
     return data.at(character);
 }
 
-
 bool FontEngine::CreateFace(const std::string& path)
 {
     /* Read the File as Byte Array */
@@ -169,7 +168,7 @@ Character FontEngine::Load(FT_Face face, FT_ULong character) const
     /* Query the current value of Alignment */
     int alignment;
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
-    /* Set the alignment to 1 (for glyph )*/
+    /* Set the alignment to 1 (for glyph) */
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     /* Create and Bind a Texture for this */

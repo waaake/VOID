@@ -11,7 +11,7 @@
 VOID_NAMESPACE_OPEN
 
 /* Color Definitions */
-const QColor VOID_DARK_BG_COLOR = {30, 30, 30};
+const QColor VOID_DARK_BG_COLOR = {35, 35, 35};
 const QColor VOID_SEMI_DARK_COLOR = {25, 25, 25};
 const QColor VOID_GRAY_COLOR = {50, 50, 50};
 
@@ -20,6 +20,7 @@ const QColor VOID_BLUE_COLOR = {30, 210, 200};
 
 const QColor VOID_PURPLE_COLOR = {130, 110, 190};
 
+const QColor VOID_DARK_HIGHLIGHT_GREEN = {80, 110, 30};
 const QColor VOID_HIGHLIGHT_GREEN = {160, 190, 60};
 const QColor VOID_FOREGROUND_COLOR = {190, 190, 190};
 

@@ -5,10 +5,6 @@ add_library(
     About.cpp
     Browser.cpp
     Events.h
-    MediaBridge.cpp
-    MediaClip.cpp
-    MediaLister.cpp
-    MediaItem.cpp
     PlayerWidget.cpp
     Sequence.cpp
     Track.cpp
@@ -21,6 +17,16 @@ add_library(
     BaseWindow/BaseWindow.cpp
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
+
+    # Media
+    Media/MediaBridge.cpp
+    Media/MediaClip.cpp
+    Media/MediaLister.cpp
+    Media/MediaSearchBar.cpp
+    Media/Models/MediaModel.cpp
+    Media/Views/MediaView.cpp
+    Media/Delegates/ListDelegate.cpp
+    Media/Delegates/ThumbnailDelegate.cpp
 
     # Preferences
     Preferences/Preferences.cpp

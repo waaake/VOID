@@ -52,7 +52,7 @@ struct FontKey
 
     bool operator==(const FontKey& other) const
     {
-        return (face == face) && (size == size);
+        return (face == other.face) && (size == other.size);
     }
 };
 

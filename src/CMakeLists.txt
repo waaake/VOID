@@ -86,6 +86,8 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_delete.svg
             ../icons/icon_eraser.svg
             ../icons/icon_fullscreen.svg
+            ../icons/icon_grid_view.svg
+            ../icons/icon_list_view.svg
             ../icons/icon_maximize.svg
             ../icons/icon_minimize.svg
             ../icons/icon_missing_frame.svg
@@ -93,6 +95,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg
             ../icons/icon_settings.svg
+            ../icons/icon_sort_abc.svg
             ../icons/icon_text.svg
             ../icons/icon_video_player.png
             ../icons/icon_zoom_in.svg

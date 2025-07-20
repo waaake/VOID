@@ -7,9 +7,9 @@
 
 /* Internal */
 #include "Definition.h"
-#include "MediaClip.h"
 #include "Track.h"
 #include "Sequence.h"
+#include "VoidUi/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -12,13 +12,13 @@
 #include "Docker.h"
 #include "BaseWindow.h"
 #include "TitleBar.h"
+#include "VoidCore/Media.h"
 #include "VoidUi/About.h"
-#include "VoidUi/MediaClip.h"
-#include "VoidUi/MediaLister.h"
 #include "VoidUi/PlayerWidget.h"
 #include "VoidUi/Sequence.h"
 #include "VoidUi/Track.h"
-#include "VoidCore/Media.h"
+#include "VoidUi/Media/MediaClip.h"
+#include "VoidUi/Media/MediaLister.h"
 
 VOID_NAMESPACE_OPEN
 

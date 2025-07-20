@@ -9,7 +9,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "MediaClip.h"
+#include "VoidUi/Media/MediaClip.h"
+#include "VoidUi/Media/Models/MediaModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -25,6 +26,8 @@ class MBridge : public QObject
 {
     Q_OBJECT
 
+    MBridge(QObject* parent = nullptr);
+
 public:
     /* Singleton Instance */
     static MBridge& Instance()
@@ -32,6 +35,8 @@ public:
         static MBridge instance;
         return instance;
     }
+
+    ~MBridge();
 
     /**
      * Adds Media to the Graph
@@ -43,7 +48,10 @@ public:
      * Emits a mediaAboutTobeRemoved signal before removing from the underlying struct
      * to allow components listening to this instance's updates to remove the entity from their structure
      */
-    void RemoveClip(SharedMediaClip clip);
+    void Remove(SharedMediaClip clip);
+    void Remove(const QModelIndex& index);
+
+    MediaModel* DataModel() const { return m_Media; }
 
 signals:
     /**
@@ -56,7 +64,7 @@ signals:
     void mediaAboutToBeRemoved(SharedMediaClip);
 
 private: /* Members */
-    std::vector<SharedMediaClip> m_Media;
+    MediaModel* m_Media;
 
 };
 
