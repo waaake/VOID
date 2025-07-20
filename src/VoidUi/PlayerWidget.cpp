@@ -2,9 +2,9 @@
 #include <QKeyEvent>
 
 /* Internal */
-#include "MediaBridge.h"
 #include "PlayerWidget.h"
 #include "Preferences/Preferences.h"
+#include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -6,8 +6,8 @@
 /* Internal */
 #include "MediaBridge.h"
 #include "MediaItem.h"
-#include "VoidStyle.h"
 #include "VoidCore/VoidTools.h"
+#include "VoidUi/VoidStyle.h"
 
 static const int THUMBNAIL_SIZE = 60;
 static const int ICON_SIZE = 20;

@@ -10,7 +10,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "MediaClip.h"
+#include "VoidUi/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 

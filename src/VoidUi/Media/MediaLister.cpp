@@ -12,8 +12,8 @@
 
 /* Internal */
 #include "MediaLister.h"
-#include "VoidStyle.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/VoidStyle.h"
 
 VOID_NAMESPACE_OPEN
 

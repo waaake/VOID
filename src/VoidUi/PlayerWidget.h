@@ -7,7 +7,6 @@
 
 /* Internal */
 #include "Definition.h"
-#include "MediaClip.h"
 #include "Sequence.h"
 #include "ViewerBuffer.h"
 #include "VoidCore/Media.h"
@@ -16,6 +15,7 @@
 #include "Toolkit/ControlBar.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
+#include "VoidUi/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 

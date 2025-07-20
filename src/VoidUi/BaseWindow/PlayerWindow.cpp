@@ -14,7 +14,7 @@
 #include "VoidCore/Logging.h"
 #include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/Browser.h"
-#include "VoidUi/MediaBridge.h"
+#include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 

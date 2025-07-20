@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/MediaBridge.h"
+#include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 

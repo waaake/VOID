@@ -3,8 +3,8 @@
 
 /* Internal */
 #include "ListDelegate.h"
-#include "VoidUi/MediaBridge.h"
 #include "VoidUi/VoidStyle.h"
+#include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -11,9 +11,9 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidObject.h"
 #include "VoidCore/Media.h"
 #include "VoidRenderer/RenderTypes.h"
+#include "VoidUi/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
 

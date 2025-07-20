@@ -19,12 +19,12 @@ add_library(
     BaseWindow/TitleBar.cpp
 
     # Media
-    MediaBridge.cpp
-    MediaClip.cpp
-    MediaItem.cpp
-    MediaLister.cpp
-    MediaModel.cpp
-    MediaSearchBar.cpp
+    Media/MediaBridge.cpp
+    Media/MediaClip.cpp
+    Media/MediaItem.cpp
+    Media/MediaLister.cpp
+    Media/MediaSearchBar.cpp
+    Media/Models/MediaModel.cpp
     Media/Views/MediaView.cpp
     Media/Delegates/ListDelegate.cpp
     Media/Delegates/ThumbnailDelegate.cpp

@@ -9,8 +9,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "MediaClip.h"
-#include "MediaModel.h"
+#include "VoidUi/Media/MediaClip.h"
+#include "VoidUi/Media/Models/MediaModel.h"
 
 VOID_NAMESPACE_OPEN
 
