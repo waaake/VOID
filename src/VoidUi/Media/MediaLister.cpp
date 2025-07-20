@@ -232,7 +232,14 @@ void VoidMediaLister::ShowContextMenu(const Point& position)
     contextMenu.addAction(m_RemoveAction);
 
     /* Show Menu */
+    #if _QT6
+    /**
+     * Qt6 mapToGlobal returns QPointF while menu.exec expects QPoint
+     */
+    contextMenu.exec(m_MediaView->mapToGlobal(position).toPoint());
+    #else
     contextMenu.exec(m_MediaView->mapToGlobal(position));
+    #endif // _QT6
 }
 
 void VoidMediaLister::RemoveSelectedMedia()

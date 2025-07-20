@@ -51,7 +51,7 @@ QVariant MediaModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || index.row() >= static_cast<int>(m_Media.size()))
         return QVariant();
-    
+
     const SharedMediaClip& item = m_Media.at(index.row());
 
     switch (static_cast<MRoles>(role))
@@ -98,7 +98,7 @@ std::string MediaModel::ItemFramerange(const SharedMediaClip& clip) const
 }
 
 QPixmap MediaModel::ItemThumbnail(const SharedMediaClip& clip) const
-{   
+{
     /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
     const SharedPixels im = clip->FirstImage();
     QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
@@ -123,7 +123,7 @@ void MediaModel::Remove(const QModelIndex& index)
 
     /* Row currently being affected */
     int row = index.row();
-    
+
     beginRemoveRows(index.parent(), row, row);
 
     /* Media Clip at the row */
@@ -143,7 +143,7 @@ SharedMediaClip MediaModel::Media(const QModelIndex& index)
 {
     if (!index.isValid())
         return nullptr;
-    
+
     /* Return the media at the index from the underlying vector */
     return m_Media.at(index.row());
 }
@@ -154,15 +154,15 @@ int MediaModel::MediaRow(const SharedMediaClip& clip) const
 
     if (it != m_Media.end())
         return static_cast<int>(std::distance(m_Media.begin(), it));
-    
+
     return -1;
 }
 
 void MediaModel::Update()
 {
-    if (m_Media.empty());
+    if (m_Media.empty())
         return;
-    
+
     /* the first item from the struct */
     QModelIndex top = index(0, 0);
 

@@ -47,7 +47,7 @@ FT_Face FontEngine::GetFace(const std::string& path)
     if (it == m_FaceStore.end())
     {
         /* Create the Font */
-        if (CreateFace(path));
+        if (CreateFace(path))
             return m_FaceStore.at(path);
         
         /* Could not create the face from the font file */
