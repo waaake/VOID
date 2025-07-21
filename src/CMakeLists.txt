@@ -1,3 +1,6 @@
+# Package Config
+include(CMakePackageConfigHelpers)
+
 # Build Core Library
 add_subdirectory(VoidCore)
 
@@ -21,8 +24,9 @@ target_include_directories(
 target_include_directories(
     VoidCore
     PUBLIC
-    include
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
     ${OpenImageIO_INCLUDE_DIRS}
 )
 
@@ -104,8 +108,21 @@ if (QT_MAJOR_VERSION EQUAL 6)
     )
 endif()
 
+# include_directories(PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#     $<INSTALL_INTERFACE:include>
+# )
+
 # Install Libraries and Binaries
-install(TARGETS VoidCore VoidRenderer VoidUi LIBRARY DESTINATION lib)
+install(TARGETS VoidCore VoidRenderer VoidUi VOID
+    EXPORT VOIDTargets
+    RUNTIME DESTINATION bin
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+)
+
+# Install Headers
+install(DIRECTORY include/ DESTINATION include)
 
 # RPATH
 # Look above in lib dir
@@ -116,5 +133,25 @@ set_target_properties(VoidUi PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
 set_target_properties(VOID PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
 endif()
 
-# Install dir
-install(TARGETS VOID RUNTIME DESTINATION bin)
+set(VOID_INSTALL_CMAKE_DIR share/VOID/cmake)
+
+# Create and install CMake Config Files
+configure_package_config_file(
+    ../cmake/VOIDConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/VOIDConfig.cmake"
+    INSTALL_DESTINATION ${VOID_INSTALL_CMAKE_DIR}
+)
+
+install(
+    FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/VOIDConfig.cmake"
+    DESTINATION ${VOID_INSTALL_CMAKE_DIR}
+)
+
+install(
+    EXPORT VOIDTargets
+    FILE VOIDTargets.cmake
+    NAMESPACE VOID::
+    DESTINATION ${VOID_INSTALL_CMAKE_DIR}
+)
+
