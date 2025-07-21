@@ -5,6 +5,26 @@
 
 VOID_NAMESPACE_OPEN
 
+bool Forge::Register(const FormatRegistry<PixForge>& registry)
+{
+    for (const std::string& extension: registry.extensions)
+    {
+        RegisterImageReader(extension, registry.reader);
+    }
+
+    return true;
+}
+
+bool Forge::Register(const FormatRegistry<MPixForge>& registry)
+{
+    for (const std::string& extension: registry.extensions)
+    {
+        RegisterMovieReader(extension, registry.reader);
+    }
+
+    return true;
+}
+
 void Forge::RegisterImageReader(const std::string& extension, PixForge forger)
 {
     /* Show a warning if the plugin was already registered */
