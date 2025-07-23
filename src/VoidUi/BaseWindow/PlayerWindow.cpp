@@ -47,7 +47,7 @@ void DockerWindow::Build()
     m_Docker = new VoidDocker("Viewer", this);
     m_Docker->SetClosable(false);
 
-    m_MListDocker = new VoidDocker("Media", this);
+    m_MListDocker = new VoidDocker("Media View", this);
 
     /* Update widgets for the docks */
     m_Docker->setWidget(m_Player);
