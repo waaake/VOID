@@ -13,6 +13,10 @@ add_library(
     Media.cpp
     MediaFilesystem.cpp
     VoidTools.cpp
+
+    # Plugins
+    Plugins/Loader.cpp
+
     # Media Readers
     Readers/OIIOReader.cpp
     Readers/OpenEXRReader.cpp

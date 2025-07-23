@@ -21,41 +21,27 @@ struct OIIOReaderPlugin
     OIIOReaderPlugin()
     {
         /**
-         * OIIO Image Reader supports a Bunch of Image formats
-         * Adding all of them
-         */
-
-        /**
          * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
          * We could go for a tolower but the case might have unnecessary copies going for each extension
          * and for each of the frame that's from the source which looks too expensive at the moment
          * 
-         * TODO: have a thought about this again at a later stage to see if we can do something better than this
+        /* Image Registry */
+        FormatRegistry<PixForge> f;
+
+        f.name = "OIIO Reader";
+        /**
+         * OIIO supports multiple formats
+         * internally reading from original library functions
+         * Using this as the base Image Reader
+         * If at any point we want to have a dedicated original library based reader, that could also be implemented
+         * as a custom plugin
          */
-        /* Targa */
-        Forge::Instance().RegisterImageReader("tga", []() { return std::make_unique<OIIOPixReader>(); });
+        f.extensions = { "tga", "tiff", "dpx", "png", "JPG", "jpg", "jpeg", "JPEG" };
+        /* OpenImageIO Reader */
+        f.reader = []() -> std::unique_ptr<OIIOPixReader> { return std::make_unique<OIIOPixReader>(); };
 
-        /* tiff */
-        Forge::Instance().RegisterImageReader("tiff", []() { return std::make_unique<OIIOPixReader>(); });
-
-        /* dpx */
-        Forge::Instance().RegisterImageReader("dpx", []() { return std::make_unique<OIIOPixReader>(); });
-
-        /* PNG */
-        Forge::Instance().RegisterImageReader("png", []() { return std::make_unique<OIIOPixReader>(); });
-
-        /* JPG */
-        Forge::Instance().RegisterImageReader("JPG", []() { return std::make_unique<OIIOPixReader>(); });
-
-        /* jpg */
-        Forge::Instance().RegisterImageReader("jpg", []() { return std::make_unique<OIIOPixReader>(); });
-
-        /* jpeg */
-        Forge::Instance().RegisterImageReader("jpeg", []() { return std::make_unique<OIIOPixReader>(); });
-
-        /* JPEG */
-        Forge::Instance().RegisterImageReader("JPEG", []() { return std::make_unique<OIIOPixReader>(); });
-
+        /* Register Plugin */
+        Forge::Instance().Register(f);
     }
 };
 
@@ -64,7 +50,18 @@ struct OpenEXRReaderPlugin
     OpenEXRReaderPlugin()
     {
         /* exr */
-        Forge::Instance().RegisterImageReader("exr", []() { return std::make_unique<OpenEXRReader>(); });
+        // Forge::Instance().RegisterImageReader("exr", []() { return std::make_unique<OpenEXRReader>(); });
+
+        /* Image Registry */
+        FormatRegistry<PixForge> f;
+
+        f.name = "EXR Reader";
+        f.extensions = { "exr" };
+        /* Open EXR Reader*/
+        f.reader = []() -> std::unique_ptr<OpenEXRReader> { return std::make_unique<OpenEXRReader>(); };
+
+        /* Register Plugin */
+        Forge::Instance().Register(f);
     }
 };
 
@@ -72,10 +69,16 @@ struct FFmpegReaderPlugin
 {
     FFmpegReaderPlugin()
     {
-        /* mp4 */
-        Forge::Instance().RegisterMovieReader("mp4", []() { return std::make_unique<FFmpegPixReader>(); });
-        /* mov */
-        Forge::Instance().RegisterMovieReader("mov", []() { return std::make_unique<FFmpegPixReader>(); });
+        /* Movie Registry */
+        FormatRegistry<MPixForge> f;
+
+        f.name = "FFmpeg Reader";
+        f.extensions = { "mp4", "mov" };
+        /* FFmpeg Reader */
+        f.reader = []() -> std::unique_ptr<FFmpegPixReader> { return std::make_unique<FFmpegPixReader>(); };
+
+        /* Register Plugin */
+        Forge::Instance().Register(f);
     }
 };
 

@@ -10,6 +10,7 @@
 /* Theme */
 #include "VoidUi/VoidStyle.h"
 /* Reader Registration */
+#include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
 
 int main(int argc, char* argv[])
@@ -33,6 +34,9 @@ int main(int argc, char* argv[])
 
     /* Register Media Readers */
     VOID_NAMESPACE::RegisterReaders();
+
+    /* Register Any other Media plugins that are found in the way */
+    // VOID_NAMESPACE::ReaderPluginLoader::Instance().LoadExternals();
 
     /* Set Application icon */
     QImage icon(":resources/images/VOID_Logo.svg");
