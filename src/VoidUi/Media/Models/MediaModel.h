@@ -32,6 +32,7 @@ public:
         Extension,
         FrameRange,
         Thumbnail,
+        Color,
     };
 
 public:

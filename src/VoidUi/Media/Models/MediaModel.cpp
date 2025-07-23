@@ -66,6 +66,8 @@ QVariant MediaModel::data(const QModelIndex& index, int role) const
             return ItemThumbnail(item);
         case MRoles::Framerate:
             return QVariant(ItemFramerate(item).c_str());
+        case MRoles::Color:
+            return item->Color();
         default:
             return QVariant();
     }
