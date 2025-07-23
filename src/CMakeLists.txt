@@ -108,8 +108,10 @@ if (QT_MAJOR_VERSION EQUAL 6)
     )
 endif()
 
+# # Global
 # include_directories(PUBLIC
 #     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 #     $<INSTALL_INTERFACE:include>
 # )
 

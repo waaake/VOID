@@ -25,6 +25,15 @@ bool Forge::Register(const FormatRegistry<MPixForge>& registry)
     return true;
 }
 
+void Forge::UnregisterPlugins()
+{
+    /* Clear All of underlying structs */
+    m_ImageForger.clear();
+    m_MovieForger.clear();
+
+    VOID_LOG_INFO("Unregistered All Reader Plugins.");
+}
+
 void Forge::RegisterImageReader(const std::string& extension, PixForge forger)
 {
     /* Show a warning if the plugin was already registered */

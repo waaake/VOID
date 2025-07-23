@@ -57,6 +57,9 @@ public:
     bool Register(const FormatRegistry<PixForge>& registry);
     bool Register(const FormatRegistry<MPixForge>& registry);
 
+    /* Unregister all of the loaded plugins */
+    void UnregisterPlugins();
+
     /**
      * Returns a Registered ImageReader if found for the given extension
      * Else returns a null pointer instead
