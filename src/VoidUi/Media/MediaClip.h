@@ -90,6 +90,7 @@ public:
     Renderer::SharedAnnotation Annotation(const v_frame_t frame) const;
 
     /* Exposed Media Function Accessors */
+    inline std::string Path() const { return m_Media.Path(); }
     inline std::string Name() const { return m_Media.Name(); }
     inline std::string Extension() const { return m_Media.Extension(); }
     inline v_frame_t FirstFrame() const { return m_Media.FirstFrame(); }

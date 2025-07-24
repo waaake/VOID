@@ -16,6 +16,9 @@
 #include "VoidUi/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
 
+/* Commands */
+#include "VoidUi/Commands/MediaCommands.h"
+
 VOID_NAMESPACE_OPEN
 
 /* Docker Window {{{ */
@@ -97,6 +100,7 @@ void DockerWindow::ToggleComponent(const Component& component, const bool state)
 VoidMainWindow::VoidMainWindow(QWidget* parent)
     : BaseWindow(parent)
     , m_CacheMedia(false)
+    , m_Bridge(MBridge::Instance())
     , m_Media()
 {
     /* The default playback sequence */
@@ -198,9 +202,21 @@ void VoidMainWindow::Build()
     /* Edit Menu {{{ */
     m_EditMenu = new QMenu("Edit", menuBar);
 
+    m_UndoAction = m_Bridge.CreateUndoAction(m_EditMenu);
+    m_UndoAction->setShortcut(QKeySequence("Ctrl+Z"));
+    
+    m_RedoAction = m_Bridge.CreateRedoAction(m_EditMenu);
+    m_RedoAction->setShortcut(QKeySequence("Ctrl+Shift+Z"));
+
     m_EditPrefsAction = new QAction("Preferences...", m_EditMenu);
     m_EditPrefsAction->setIcon(QIcon(":resources/icons/icon_settings.svg"));
     
+    m_EditMenu->addAction(m_UndoAction);
+    m_EditMenu->addAction(m_RedoAction);
+
+    /* -------------------------------- */
+    m_EditMenu->addSeparator();
+
     m_EditMenu->addAction(m_EditPrefsAction);
     /* }}} */
 
@@ -298,7 +314,7 @@ void VoidMainWindow::Build()
     m_WindowMenu = new QMenu("Window", menuBar);
 
     /* All Window/Component Menu Actions are checkable */
-    m_MediaListerAction = new QAction("Media List", m_WindowMenu);
+    m_MediaListerAction = new QAction("Media View", m_WindowMenu);
     m_MediaListerAction->setCheckable(true);
 
     m_WindowMenu->addAction(m_MediaListerAction);
@@ -471,8 +487,8 @@ void VoidMainWindow::Load()
         return;
     }
 
-    /* Read the directory from the FileDialog */
-    ImportMedia(mediaBrowser.GetMediaStruct());
+    /* Read the File from the FileDialog */
+    m_Bridge.PushCommand(new MediaImportCommand(mediaBrowser.GetSelectedFile()));
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)

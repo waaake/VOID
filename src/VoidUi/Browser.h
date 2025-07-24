@@ -25,6 +25,7 @@ public:
     [[nodiscard]] bool Browse();     
 
     inline std::string GetDirectory() const { return directory().absolutePath().toStdString(); }
+    std::string GetSelectedFile() const;
     MediaStruct GetMediaStruct() const;
 };
 

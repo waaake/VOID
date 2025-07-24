@@ -118,6 +118,13 @@ void MediaModel::Add(const SharedMediaClip& media)
     endInsertRows();
 }
 
+void MediaModel::Insert(const SharedMediaClip& media, const int index)
+{
+    beginInsertRows(QModelIndex(), index, index);
+    m_Media.insert(m_Media.begin() + index, media);
+    endInsertRows();
+}
+
 void MediaModel::Remove(const QModelIndex& index)
 {
     if (!index.isValid())

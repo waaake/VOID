@@ -4,8 +4,8 @@
 /* Namespaces */
 #define VOID_NAMESPACE voidplayer
 
-#define VOID_NAMESPACE_OPEN namespace VOID_NAMESPACE { /* VOID namespace */
-#define VOID_NAMESPACE_CLOSE } // namespace VOID
+#define VOID_NAMESPACE_OPEN namespace VOID_NAMESPACE { /* voidplayer namespace */
+#define VOID_NAMESPACE_CLOSE } // namespace voidplayer
 
 /* Symbols Visibility */
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -19,6 +19,6 @@
 #endif // defined(_WIN32) || defined(__CYGWIN__)
 
 /* type definitions */
-typedef int64_t v_frame_t; // Represents a frame number or something to hold a frame duration
+typedef signed long v_frame_t; // Represents a frame number or something to hold a frame duration
 
 #endif // _VOID_BASIC_DEFINITIONS_H

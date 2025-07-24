@@ -23,12 +23,14 @@ const QColor VOID_PURPLE_COLOR = {130, 110, 190};
 const QColor VOID_DARK_HIGHLIGHT_GREEN = {70, 110, 30};
 const QColor VOID_HIGHLIGHT_GREEN = {160, 190, 60};
 const QColor VOID_FOREGROUND_COLOR = {190, 190, 190};
+const QColor VOID_FOREGROUND_DISABLED_COLOR = {80, 80, 80};
 
 class VOID_API VoidDark : public QProxyStyle
 {
 public:
     VoidDark();
 
+    // void drawItemText(QPainter* painter, const QRect& rect, int flags, const QPalette& palette, bool enabled, const QString& text, QPalette::ColorRole textRole = QPalette::NoRole) const override;
     void drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget = nullptr) const override;
     void drawControl(ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget = nullptr) const override;
     void polish(QPalette& palette) override;

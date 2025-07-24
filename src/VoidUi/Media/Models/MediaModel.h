@@ -50,6 +50,7 @@ public:
 
     /* Media */
     void Add(const SharedMediaClip& media);
+    void Insert(const SharedMediaClip& media, const int index);
     void Remove(const QModelIndex& index);
     
     SharedMediaClip Media(const QModelIndex& index);
