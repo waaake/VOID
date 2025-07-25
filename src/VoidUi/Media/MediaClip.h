@@ -6,8 +6,8 @@
 #include <unordered_map>
 
 /* Qt */
-#include <QObject>
 #include <QColor>
+#include <QPixmap>
 
 /* Internal */
 #include "Definition.h"
@@ -98,6 +98,8 @@ public:
 
     inline v_frame_t Duration() const { return (LastFrame() - FirstFrame()) + 1; }
 
+    QPixmap Thumbnail();
+
     /*
      * Returns whether a given frame falls in the range of Media
      * i.e. between the first and the last frame of media
@@ -156,6 +158,8 @@ private: /* Members */
     /* The Media it holds for playback */
     Media m_Media;
     QColor m_Color;
+
+    QPixmap m_Thumbnail;
 
     /**
      * This struct saves the Annotations for the frames

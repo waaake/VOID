@@ -1,6 +1,3 @@
-/* Qt */
-#include <QPixmap>
-
 /* Internal */
 #include "MediaModel.h"
 #include "VoidCore/VoidTools.h"
@@ -63,7 +60,7 @@ QVariant MediaModel::data(const QModelIndex& index, int role) const
         case MRoles::Extension:
             return QVariant(item->Extension().c_str());
         case MRoles::Thumbnail:
-            return ItemThumbnail(item);
+            return item->Thumbnail();
         case MRoles::Framerate:
             return QVariant(ItemFramerate(item).c_str());
         case MRoles::Color:
@@ -97,15 +94,6 @@ std::string MediaModel::ItemFramerange(const SharedMediaClip& clip) const
     range += std::to_string(clip->LastFrame());
 
     return  range;
-}
-
-QPixmap MediaModel::ItemThumbnail(const SharedMediaClip& clip) const
-{
-    /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-    const SharedPixels im = clip->FirstImage();
-    QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
-
-    return QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format));
 }
 
 void MediaModel::Add(const SharedMediaClip& media)
