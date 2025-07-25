@@ -1,6 +1,6 @@
 /* STD */
-#include <sstream>
 #include <algorithm>
+#include <sstream>
 #include <vector>
 
 /* Internal */

@@ -12,6 +12,7 @@ add_library(
     Logging.cpp
     Media.cpp
     MediaFilesystem.cpp
+    Profiler.h
     VoidTools.cpp
 
     # Plugins

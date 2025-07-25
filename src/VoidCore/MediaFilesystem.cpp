@@ -1,9 +1,7 @@
-/* STD */
-#include <chrono>
-
 /* Internal */
 #include "MediaFilesystem.h"
 #include "Logging.h"
+#include "Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -287,7 +285,7 @@ MediaStruct MediaStruct::FromFile(const std::string& filepath)
     if (m.Type() != MediaType::Image || m.SingleFile())
         return m;
 
-    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+    Tools::VoidProfiler<std::chrono::duration<double>> p("Media Struct Construction");
 
     try
     {
@@ -316,10 +314,6 @@ MediaStruct MediaStruct::FromFile(const std::string& filepath)
         VOID_LOG_ERROR(e.what());
     }
 
-    std::chrono::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-
-    VOID_LOG_INFO("Time Taken to Construct Media Struct : {0}", duration.count());
     return m;
 }
 
@@ -357,7 +351,7 @@ std::vector<MediaStruct> MediaFS::FromDirectory(const std::string& path)
     /* Create struct vec */
     std::vector<MediaStruct> vec;
 
-    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+    Tools::VoidProfiler<std::chrono::duration<double>> p("Directory Media Struct Construction");
 
     try
     {
@@ -397,11 +391,6 @@ std::vector<MediaStruct> MediaFS::FromDirectory(const std::string& path)
     {
         VOID_LOG_ERROR(e.what());
     }
-
-    std::chrono::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> d = end - start;
-
-    VOID_LOG_INFO("Time take to find Media Structs from directory : {0}", d.count());
 
     /* Return the final vec */
     return vec;
