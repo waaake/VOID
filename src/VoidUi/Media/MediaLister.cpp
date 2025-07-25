@@ -15,6 +15,9 @@
 #include "VoidCore/Logging.h"
 #include "VoidUi/VoidStyle.h"
 
+/* Commands */
+#include "VoidUi/Commands/MediaCommands.h"
+
 VOID_NAMESPACE_OPEN
 
 VoidMediaLister::VoidMediaLister(QWidget* parent)
@@ -244,18 +247,8 @@ void VoidMediaLister::ShowContextMenu(const Point& position)
 
 void VoidMediaLister::RemoveSelectedMedia()
 {
-    /* Selected Indexes */
-    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
-
-    /**
-     * Loop over in a a reverse way as forward iteration would shift the model indexes and
-     * result in wrong indexes being deleted, or a worst case scenario result in crashes as
-     * the second model index doesn't even exist after the first has been deleted
-     */
-    for (int i = selected.size() - 1; i >= 0; --i)
-    {
-        MBridge::Instance().Remove(selected.at(i));
-    }
+    /* Push all of the selected indexes for removal */
+    MBridge::Instance().PushCommand(new MediaRemoveCommand(m_MediaView->SelectedIndexes()));
 }
 
 VOID_NAMESPACE_CLOSE

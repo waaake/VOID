@@ -116,6 +116,8 @@ private: /* Members */
 
     /* Edit Menu */
     QMenu* m_EditMenu;
+    QAction* m_UndoAction;
+    QAction* m_RedoAction;
     QAction* m_EditPrefsAction;
     
     /* Playback Menu */
@@ -154,6 +156,9 @@ private: /* Members */
 
     /* State determining whether to cache the current media upfront or not */
     bool m_CacheMedia;
+
+    /* Media Bridge Instance */
+    MBridge& m_Bridge;
 
     /* Image Sequence */
     Media m_Media;

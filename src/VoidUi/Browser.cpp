@@ -19,6 +19,17 @@ bool VoidMediaBrowser::Browse()
     return exec();
 }
 
+std::string VoidMediaBrowser::GetSelectedFile() const
+{
+    QStringList files = selectedFiles();
+
+    /* Empty Media struct */
+    if (files.empty())
+        return "";
+
+    return files.first().toStdString();
+}
+
 MediaStruct VoidMediaBrowser::GetMediaStruct() const
 {
     QStringList files = selectedFiles();

@@ -6,6 +6,7 @@
 
 /* Qt */
 #include <QObject>
+#include <QUndoStack>
 
 /* Internal */
 #include "Definition.h"
@@ -15,7 +16,7 @@
 VOID_NAMESPACE_OPEN
 
 /**
- * This class acs as a singleton bridge between various components dealing with Media and MediaClips
+ * This class acts as a singleton bridge between various components dealing with Media and MediaClips
  * The class holds all the MediaClips at any instant
  * Any Media which gets added, gets added to this instance
  * this then propagates the added clip to other components by emitting mediaAdded
@@ -38,20 +39,38 @@ public:
 
     ~MBridge();
 
+    /* Disable Copy */
+    MBridge(const MBridge&) = delete;
+
+    /* Disable Move */
+    MBridge(MBridge&&) = delete;
+    MBridge& operator=(MBridge&&) = delete;
+
     /**
      * Adds Media to the Graph
      */
-    void AddMedia(const MediaStruct& mstruct);
+    bool AddMedia(const MediaStruct& mstruct);
+    bool InsertMedia(const MediaStruct& mstruct, const int index);
 
     /**
      * Removes MediaClip
      * Emits a mediaAboutTobeRemoved signal before removing from the underlying struct
      * to allow components listening to this instance's updates to remove the entity from their structure
      */
-    void Remove(SharedMediaClip clip);
-    void Remove(const QModelIndex& index);
+    bool Remove(SharedMediaClip clip);
+    bool Remove(const QModelIndex& index);
 
     MediaModel* DataModel() const { return m_Media; }
+
+    /* Push an Undo Command on to the stack */
+    void PushCommand(QUndoCommand* command);
+
+    // bool CanRedo() const { return m_UndoStack->canRedo(); }
+    // bool CarUndo() const { return m_UndoStack->canUndo(); }
+
+    /* Returns the Menu Actions for Undo and Redo */
+    QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoStack->createUndoAction(parent, prefix); }
+    QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoStack->createRedoAction(parent, prefix); }
 
 signals:
     /**
@@ -66,6 +85,8 @@ signals:
 private: /* Members */
     MediaModel* m_Media;
 
+    /* Undo Stack */
+    QUndoStack* m_UndoStack;
 };
 
 VOID_NAMESPACE_CLOSE

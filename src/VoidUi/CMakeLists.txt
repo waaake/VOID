@@ -18,6 +18,10 @@ add_library(
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
 
+    # Commands
+    Commands/VoidCommand.cpp
+    Commands/MediaCommands.cpp
+
     # Media
     Media/MediaBridge.cpp
     Media/MediaClip.cpp
