@@ -1,3 +1,6 @@
+/* Qt */
+#include <QPixmap>
+
 /* Internal */
 #include "MediaClip.h"
 
@@ -12,12 +15,27 @@ MediaClip::MediaClip(QObject* parent)
 MediaClip::MediaClip(const Media& media, QObject* parent)
     : VoidObject(parent)
     , m_Media(media)
+    , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
 }
 
 MediaClip::~MediaClip()
 {
+}
+
+QPixmap MediaClip::Thumbnail()
+{
+    if (m_Thumbnail.isNull())
+    {
+        /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
+        const SharedPixels im = m_Media.FirstImage();
+        QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
+
+        m_Thumbnail = QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format));
+    }
+
+    return m_Thumbnail;
 }
 
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const

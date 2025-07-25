@@ -64,7 +64,6 @@ private: /* Members */
 private: /* Methods */
     std::string ItemFramerate(const SharedMediaClip& clip) const;
     std::string ItemFramerange(const SharedMediaClip& clip) const;
-    QPixmap ItemThumbnail(const SharedMediaClip& clip) const;
 
     void Update();
 };
