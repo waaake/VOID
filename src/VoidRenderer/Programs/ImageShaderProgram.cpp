@@ -41,6 +41,17 @@ uniform float gain;
 // Channels to display
 uniform int channelMode;
 
+vec3 inverseGamma(vec3 c)
+{
+    vec3 linear;
+
+    linear.r = (c.r <= 0.081) ? c.r / 4.5 : pow((c.r + 0.099) / 1.099, 1.0 / 0.45);
+    linear.g = (c.g <= 0.081) ? c.g / 4.5 : pow((c.g + 0.099) / 1.099, 1.0 / 0.45);
+    linear.b = (c.b <= 0.081) ? c.b / 4.5 : pow((c.b + 0.099) / 1.099, 1.0 / 0.45);
+
+    return linear;
+}
+
 void main() {
     // Texture pixel values from the buffers
     vec4 color = texture(uTexture, TexCoord);
@@ -55,6 +66,8 @@ void main() {
 
     // Apply gamma correction
     color.rgb = pow(color.rgb, vec3(1.0 / gamma));
+
+    vec3 linear = inverseGamma(color.rgb); 
 
     // Render a channel based on the color
     // 0 = R; 1 = G; 2 = B; 3 = A; 4 = RGB; 5 = RGBA (All)
@@ -77,7 +90,7 @@ void main() {
             break;
         case 5:
         default: // Show all channels -- default
-            FragColor = color;
+            FragColor = vec4(linear, color.a);
     }
 }
 )";
