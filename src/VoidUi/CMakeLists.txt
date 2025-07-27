@@ -11,6 +11,12 @@ add_library(
     TrackItem.cpp
     ViewerBuffer.cpp
     VoidStyle.cpp
+
+    # Renderer   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
+    # the staticMetaObject for BasicRenderer and VoidRenderer to be present at compile time rather link time
+    ../VoidRenderer/Renderer.h
+    ../VoidRenderer/VoidRenderer.h
+    # TODO: Find a better way around this....
     
     # Base Window
     BaseWindow/Docker.cpp

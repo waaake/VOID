@@ -10,7 +10,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class OIIOPixReader : public VoidPixReader
+class VOID_API OIIOPixReader : public VoidPixReader
 {
 public:
     OIIOPixReader();

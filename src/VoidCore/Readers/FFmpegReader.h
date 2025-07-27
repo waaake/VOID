@@ -90,7 +90,7 @@ private: /* Methods */
 };
 
 
-class FFmpegPixReader : public VoidMPixReader
+class VOID_API FFmpegPixReader : public VoidMPixReader
 {
 public:
     FFmpegPixReader();

@@ -36,7 +36,7 @@ struct FormatRegistry
     Ty reader;
 };
 
-class Forge
+class VOID_API Forge
 {
 public:
     /**

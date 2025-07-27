@@ -10,7 +10,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class OpenEXRReader : public VoidPixReader
+class VOID_API OpenEXRReader : public VoidPixReader
 {
 public:
     OpenEXRReader();
