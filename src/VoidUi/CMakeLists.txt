@@ -1,7 +1,5 @@
 # Build Ui Library
-add_library(
-    VoidUi
-    SHARED
+set(SOURCES
     About.cpp
     Browser.cpp
     Events.h
@@ -12,12 +10,6 @@ add_library(
     ViewerBuffer.cpp
     VoidStyle.cpp
 
-    # Renderer   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
-    # the staticMetaObject for BasicRenderer and VoidRenderer to be present at compile time rather link time
-    ../VoidRenderer/Renderer.h
-    ../VoidRenderer/VoidRenderer.h
-    # TODO: Find a better way around this....
-    
     # Base Window
     BaseWindow/Docker.cpp
     BaseWindow/BaseWindow.cpp
@@ -61,6 +53,22 @@ add_library(
     QExtensions/Slider.cpp
     QExtensions/SpinBox.cpp
     QExtensions/ToolTip.cpp
+)
+
+if (WIN32)
+    list(APPEND SOURCES
+        # Renderer   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
+        # the staticMetaObject for BasicRenderer and VoidRenderer to be present at compile time rather link time
+        ../VoidRenderer/Renderer.h
+        ../VoidRenderer/VoidRenderer.h
+        # TODO: Find a better way around this....
+    )
+endif()
+
+add_library(
+    VoidUi
+    SHARED
+    ${SOURCES}
 )
 
 target_link_libraries(

@@ -38,17 +38,23 @@ struct FormatRegistry
 
 class VOID_API Forge
 {
+    Forge() = default;
+
 public:
     /**
      * Returns the static instance of the Forge
      * allowing it to be singleton and accessors can then read from the same instance
      * where readers are registered
      */
-    static Forge& Instance()
-    {
-        static Forge f;
-        return f;
-    }
+    static Forge& Instance();
+
+    /* Disable Copy */
+    Forge(const Forge&) = delete;
+    Forge& operator=(const Forge&) = delete;
+
+    /* Disable Move */
+    Forge(Forge&&) = delete;
+    Forge& operator=(Forge&&) = delete;
 
     /**
      * Allows image Reader plugins for Formats to be registered
