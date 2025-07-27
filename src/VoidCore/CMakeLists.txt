@@ -6,6 +6,7 @@ find_package(Boost REQUIRED)
 add_library(
     VoidCore
     SHARED
+    ColorProcessor.cpp
     FormatForge.cpp
     Identity.h
     ImageData.cpp
@@ -29,6 +30,7 @@ target_include_directories(
     PRIVATE
     ${Boost_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
+    ${OpenColorIO_INCLUDE_DIRS}
 )
 
 # Link to this library
@@ -39,6 +41,7 @@ target_link_libraries(
     OpenEXR::OpenEXR
     OpenImageIO::OpenImageIO
     ${FFMPEG_LIBRARIES}
+    OpenColorIO::OpenColorIO
 )
 
 # Mac for some reason needs this explicitly
