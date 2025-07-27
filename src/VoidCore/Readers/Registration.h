@@ -24,7 +24,7 @@ struct OIIOReaderPlugin
          * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
          * We could go for a tolower but the case might have unnecessary copies going for each extension
          * and for each of the frame that's from the source which looks too expensive at the moment
-         * 
+         */ 
         /* Image Registry */
         FormatRegistry<PixForge> f;
 
@@ -88,7 +88,7 @@ struct FFmpegReaderPlugin
  * image readers from that. For now this needs to be done as a way to explicitly call this function
  * after VOID_LOG has been initialized if required
  */
-VOID_API void RegisterReaders()
+void RegisterReaders()
 {
     /* Register OIIO Reader */
     OIIOReaderPlugin o;

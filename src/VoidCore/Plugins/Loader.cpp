@@ -24,6 +24,7 @@ const std::string DELIMITER = ";";
 const std::string EXTENSION = ".dll";
 #elif defined(__APPLE__)                        // APPLE
 const std::string EXTENSION = ".dylib";
+const std::string DELIMITER = ":";
 #else                                           // Linux
 const std::string EXTENSION = ".so";
 const std::string DELIMITER = ":";

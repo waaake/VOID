@@ -46,7 +46,10 @@ if (QT_MAJOR_VERSION EQUAL 6)
 endif()
 
 # Freetype
-include_directories(${FREETYPE_INCLUDE_DIRS})
+include_directories(
+    ${FREETYPE_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
+)
 
 # Main Executable
 add_executable(

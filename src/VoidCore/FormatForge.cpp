@@ -5,6 +5,12 @@
 
 VOID_NAMESPACE_OPEN
 
+Forge& Forge::Instance()
+{
+    static Forge f;
+    return f;
+}
+
 bool Forge::Register(const FormatRegistry<PixForge>& registry)
 {
     for (const std::string& extension: registry.extensions)
