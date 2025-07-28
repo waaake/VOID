@@ -6,6 +6,7 @@
 #include <string>
 
 /* Internal */
+#include "Colorspace.h"
 #include "Definition.h"
 #include "FrameRange.h"
 
@@ -94,13 +95,18 @@ public:
     /**
      * Returns if the underlying struct has any pixel data
      */
-    virtual bool Empty() = 0;
+    virtual bool Empty() const = 0;
 
     /**
      * Reads the image at the given path
      * updates the underlying struct with the data
      */
     virtual void Read(const std::string& path, int framenumber) = 0;
+
+    /**
+     * Retrieve the input colorspace of the media file
+     */
+    virtual ColorSpace InputColorSpace() const = 0;
 };
 
 class VoidMPixReader : public VoidPixReader

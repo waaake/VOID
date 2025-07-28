@@ -41,15 +41,55 @@ uniform float gain;
 // Channels to display
 uniform int channelMode;
 
-vec3 inverseGamma(vec3 c)
+// Input Colorspace
+uniform int inputColorSpace;
+
+float Rec709ToLinear(float value)
+{
+    return (value <= 0.081) ? value / 4.5 : pow((value + 0.099) / 1.099, 1.0 / 0.45);
+}
+
+float SRGBToLinear(float value)
+{
+    return (value <= 0.04045) ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4);
+}
+
+vec3 inverseRec709(vec3 c)
 {
     vec3 linear;
 
-    linear.r = (c.r <= 0.081) ? c.r / 4.5 : pow((c.r + 0.099) / 1.099, 1.0 / 0.45);
-    linear.g = (c.g <= 0.081) ? c.g / 4.5 : pow((c.g + 0.099) / 1.099, 1.0 / 0.45);
-    linear.b = (c.b <= 0.081) ? c.b / 4.5 : pow((c.b + 0.099) / 1.099, 1.0 / 0.45);
+    linear.r = Rec709ToLinear(c.r);
+    linear.g = Rec709ToLinear(c.g);
+    linear.b = Rec709ToLinear(c.b);
 
     return linear;
+}
+
+vec3 inverseSRGB(vec3 c)
+{
+    vec3 linear;
+
+    linear.r = SRGBToLinear(c.r);
+    linear.g = SRGBToLinear(c.g);
+    linear.b = SRGBToLinear(c.b);
+
+    return linear;
+}
+
+// Converts into Linear Colorspace from the input colorspace
+// Returns the converted vec4 color
+vec4 Linearize(vec4 color, int colorspace)
+{
+    // No Conversion as the Colorspace is already Linear
+    if (colorspace == 0)                                    // Linear
+        return color;
+    else if (colorspace == 1)                               // Rec.709
+        return vec4(inverseRec709(color.rgb), color.a);
+    else if (colorspace == 2)                               // standard RGB
+        return vec4(inverseSRGB(color.rgb), color.a);
+
+    // Default
+    return color;
 }
 
 void main() {
@@ -67,30 +107,31 @@ void main() {
     // Apply gamma correction
     color.rgb = pow(color.rgb, vec3(1.0 / gamma));
 
-    vec3 linear = inverseGamma(color.rgb); 
+    // Ensure we have linear output depending on the input colorspace
+    vec4 linear = Linearize(color, inputColorSpace);
 
     // Render a channel based on the color
     // 0 = R; 1 = G; 2 = B; 3 = A; 4 = RGB; 5 = RGBA (All)
     switch (channelMode)
     {
         case 0: // Red Channels only 
-            FragColor = vec4(color.r, color.r, color.r, 1.f);
+            FragColor = vec4(linear.r, linear.r, linear.r, 1.f);
             break;
         case 1: // Green Channels only
-            FragColor = vec4(color.g, color.g, color.g, 1.f);
+            FragColor = vec4(linear.g, linear.g, linear.g, 1.f);
             break;
         case 2: // Blue Channels only
-            FragColor = vec4(color.b, color.b, color.b, 1.f);
+            FragColor = vec4(linear.b, linear.b, linear.b, 1.f);
             break;
         case 3: // Only Alpha
-            FragColor = vec4(color.a, color.a, color.a, 1.f);
+            FragColor = vec4(linear.a, linear.a, linear.a, 1.f);
             break;
         case 4: // RGB without alpha
-            FragColor = vec4(color.rgb, 1.f);
+            FragColor = vec4(linear.rgb, 1.f);
             break;
         case 5:
         default: // Show all channels -- default
-            FragColor = vec4(linear, color.a);
+            FragColor = linear;
     }
 }
 )";

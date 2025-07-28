@@ -64,6 +64,9 @@ void ImageRenderLayer::SetImage(const SharedPixels& image)
      */
     glTexImage2D(GL_TEXTURE_2D, 0, image->GLFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), image->Pixels());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    /* Update the colorspace on the Image Data */
+    m_ImageData->inputColorSpace = static_cast<int>(image->InputColorSpace());
 }
 
 void ImageRenderLayer::Render(const glm::mat4& projection)

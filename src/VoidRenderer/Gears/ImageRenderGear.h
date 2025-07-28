@@ -69,6 +69,7 @@ private: /* Members */
     int m_UGamma;
     int m_UGain;
     int m_UChannelMode;
+    int m_UInputColorSpace;
 
 };
 
