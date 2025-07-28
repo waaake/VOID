@@ -195,6 +195,8 @@ struct ImageRenderData
     float gain;
 
     int channelMode;
+
+    int inputColorSpace;
 };
 
 /**

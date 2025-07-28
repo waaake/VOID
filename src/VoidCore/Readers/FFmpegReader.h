@@ -147,7 +147,7 @@ public:
     /**
      * Returns if the underlying struct has any pixel data
      */
-    inline virtual bool Empty() override { return m_Pixels.empty(); }
+    inline virtual bool Empty() const override { return m_Pixels.empty(); }
 
     /**
      * Updates the internal filepath to process needed information
@@ -163,6 +163,11 @@ public:
      * Returns the framerate of the movie media
      */
     virtual double Framerate() override;
+
+    /**
+     * Retrieve the input colorspace of the media file
+     */
+    inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::sRGB; }
 
 private: /* Members */
     std::string m_Path;

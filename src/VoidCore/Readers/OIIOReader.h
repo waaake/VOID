@@ -67,7 +67,12 @@ public:
     /**
      * Returns if the underlying struct has any pixel data
      */
-    inline virtual bool Empty() override { return m_Pixels.empty(); }
+    inline virtual bool Empty() const override { return m_Pixels.empty(); }
+
+    /**
+     * Retrieve the input colorspace of the media file
+     */
+    inline virtual ColorSpace InputColorSpace() const { return m_InputColorSpace; }
 
 private: /* Methods */
     std::string m_Path;
@@ -76,6 +81,9 @@ private: /* Methods */
     int m_Width, m_Height;
     /* Number of channels in the image */
     int m_Channels;
+
+    /* Colorspace of the Media */
+    ColorSpace m_InputColorSpace;
 
     /* Internal data store */
     std::vector<unsigned char> m_Pixels;
