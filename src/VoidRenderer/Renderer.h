@@ -13,7 +13,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class BasicRenderer : public QOpenGLWidget
+class VOID_API BasicRenderer : public QOpenGLWidget
 {
     Q_OBJECT
 
@@ -47,7 +47,7 @@ public:
      * This needs to be invoked before the context is initialized
      * That means it should get invoked before we create the instance of the VoidRenderer.
      */
-    static VOID_API void SetProfile();
+    static void SetProfile();
 
 signals:
     /**

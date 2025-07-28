@@ -2,9 +2,11 @@
 add_library(
     VoidRenderer
     SHARED
+    Renderer.h
     Renderer.cpp
     RendererStatus.cpp
     RenderTypes.h
+    VoidRenderer.h
     VoidRenderer.cpp
 
     # Core
@@ -47,6 +49,7 @@ target_link_libraries(
     PRIVATE
     VoidCore
     Qt::Widgets
+    Qt::Core
     OpenGL::GL
     glm::glm
     GLEW::GLEW

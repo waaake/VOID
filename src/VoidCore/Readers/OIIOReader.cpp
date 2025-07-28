@@ -12,6 +12,7 @@ OIIOPixReader::OIIOPixReader(const std::string& path)
     , m_Width(0)
     , m_Height(0)
     , m_Channels(0)
+    , m_InputColorSpace(ColorSpace::sRGB)
 {
 }
 
@@ -60,6 +61,14 @@ void OIIOPixReader::Read(const std::string& path, int framenumber)
     m_Height = spec.height;
     m_Channels = spec.nchannels;
 
+    /* Get the colorspace from the image spec {{{ */
+    std::string colorspace = spec.get_string_attribute("oiio:ColorSpace");
+
+    /* Our default Input ColorSpace points at sRGB, only cases where we want to update that */
+    if (colorspace.find("Rec.709") != std::string::npos)
+        m_InputColorSpace = ColorSpace::Rec709;
+    /* }}} */
+
     VOID_LOG_INFO("OIIOPixReader ( Width: {0}, Height: {1}, Channels: {2} )", m_Width, m_Height, m_Channels);
 
     /* Read requisites */
@@ -77,6 +86,5 @@ void OIIOPixReader::Read(const std::string& path, int framenumber)
     /* Close the image after reading */
     input->close();
 }
-
 
 VOID_NAMESPACE_CLOSE

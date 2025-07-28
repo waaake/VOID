@@ -20,6 +20,7 @@ ImageRenderGear::ImageRenderGear()
     , m_UGamma(-1)
     , m_UGain(-1)
     , m_UChannelMode(-1)
+    , m_UInputColorSpace(-1)
 {
 }
 
@@ -49,6 +50,7 @@ void ImageRenderGear::Initialize()
     m_UGamma = glGetUniformLocation(m_Shader->ProgramId(), "gamma");
     m_UGain = glGetUniformLocation(m_Shader->ProgramId(), "gain");
     m_UChannelMode = glGetUniformLocation(m_Shader->ProgramId(), "channelMode");
+    m_UInputColorSpace = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpace");
 }
 
 void ImageRenderGear::SetupBuffers()
@@ -147,6 +149,12 @@ void ImageRenderGear::Draw(const void* data)
      * Update the channels to be displayed on the renderer
      */
     glUniform1i(m_UChannelMode, d->channelMode);
+
+    /**
+     * Update the input colorspace on the shader to ensure output is linear before applying the final
+     * view tranform for the viewer
+     */
+    glUniform1i(m_UInputColorSpace, d->inputColorSpace);
 
     /**
      * Draw triangles as bound in the Index buffer as defined earlier
