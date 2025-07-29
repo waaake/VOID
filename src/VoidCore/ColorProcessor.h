@@ -41,7 +41,7 @@ public:
     /**
      * Default display value from the current config
      */
-    std::string DefaultDisplay() const { return m_Config->getDefaultDisplay(); }
+    inline std::string DefaultDisplay() const { return m_Config->getDefaultDisplay(); }
 
     /**
      * Setup Processor Config
