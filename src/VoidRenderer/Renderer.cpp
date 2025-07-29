@@ -6,6 +6,7 @@
 /* Internal */
 #include "Renderer.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/ColorProcessor.h"
 
 static const float MAX_ZOOM = 12.8;
 static const float MIN_ZOOM = 0.1;
@@ -24,6 +25,12 @@ BasicRenderer::BasicRenderer(QWidget* parent)
 
     /* Enable to track mouse movements */
     setMouseTracking(true);
+
+    /* Color Processor Setup */
+    ColorProcessor& proc = ColorProcessor::Instance();
+
+    proc.SetConfig(ColorProcessor::Config::Builtin);
+    proc.SetDefaultDisplay();
 }
 
 BasicRenderer::~BasicRenderer()

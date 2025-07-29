@@ -26,11 +26,7 @@ public: /* Enum */
 public:
 
     /* Singleton Instance of the Processor for the Rendering System */
-    static ColorProcessor& Instance()
-    {
-        static ColorProcessor processor;
-        return processor;
-    }
+    static ColorProcessor& Instance();
 
     void SetConfig(const Config& type = Config::Builtin);
     void SetConfig(const std::string& path);
@@ -43,11 +39,23 @@ public:
     std::vector<std::string> Colorspaces() const;
 
     /**
+     * Default display value from the current config
+     */
+    std::string DefaultDisplay() const { return m_Config->getDefaultDisplay(); }
+
+    /**
      * Setup Processor Config
      */
     void Create();
+    void Create(const std::string& display);
     void Create(const std::string& source, const std::string& destination);
     void Create(const std::string& inputcolorspace, const std::string& display, const std::string& view);
+
+    /**
+     * Set Display for the processor
+     */
+    inline void SetDisplay(const std::string& display) { Create(OCIO_NAMESPACE::ROLE_SCENE_LINEAR, display); }
+    inline void SetDefaultDisplay() { Create(OCIO_NAMESPACE::ROLE_SCENE_LINEAR, m_Config->getDefaultDisplay()); }
 
     /**
      * Returns the Generated shader code from the Constructed GPU Processor

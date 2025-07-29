@@ -54,6 +54,17 @@ void TextRenderGear::Initialize()
     m_UText = glGetUniformLocation(m_Shader->ProgramId(), "uText");
 }
 
+void TextRenderGear::Reinitialize()
+{
+    /* Re-Initialize the Shader */
+    m_Shader->Reinitialize();
+
+    /* Re-Load all the locations for uniforms */
+    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
+    m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
+    m_UText = glGetUniformLocation(m_Shader->ProgramId(), "uText");
+}
+
 void TextRenderGear::SetupBuffers()
 {
     /* Gen Arrays */

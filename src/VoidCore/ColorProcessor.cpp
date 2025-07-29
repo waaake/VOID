@@ -12,10 +12,18 @@ ColorProcessor::ColorProcessor()
     SetConfig(Config::Builtin);
 }
 
+ColorProcessor& ColorProcessor::Instance()
+{
+    static ColorProcessor processor;
+    return processor;
+}
+
 void ColorProcessor::SetConfig(const Config& type)
 {
+    // m_Config = OCIO::Config::CreateFromBuiltinConfig("studio-config-v2.2.0_aces-v1.3_ocio-v2.4");
+    // m_Config = OCIO::Config::CreateFromBuiltinConfig(OCIO::BuiltinConfigRegistry::Get().getBuiltinConfig(1));
     if (type == Config::Builtin)
-        m_Config = OCIO::Config::CreateFromBuiltinConfig("studio-config-v2.2.0_aces-v1.3_ocio-v2.4");
+        m_Config = OCIO::Config::CreateFromBuiltinConfig("ocio://default");
     else
         m_Config = OCIO::Config::CreateFromEnv();
 
@@ -90,6 +98,20 @@ void ColorProcessor::Create()
     OCIO::ConstProcessorRcPtr processor = m_Config->getProcessor(OCIO::ROLE_DEFAULT, display, view, OCIO::TRANSFORM_DIR_FORWARD);
 
     /* Get the GPU processor */
+    m_GProcessor = processor->getDefaultGPUProcessor();
+}
+
+void ColorProcessor::Create(const std::string& display)
+{
+    const char* view = m_Config->getDefaultView(display.c_str());
+    // const char* view = "Un-tone-mapped";
+
+    VOID_LOG_INFO("DISPLAY->{0}", display);
+    VOID_LOG_INFO("VIEW->{0}", view);
+
+    OCIO::ConstProcessorRcPtr processor = m_Config->getProcessor(OCIO::ROLE_SCENE_LINEAR, display.c_str(), view, OCIO::TRANSFORM_DIR_FORWARD);
+
+    /* Get the GPU Processor */
     m_GProcessor = processor->getDefaultGPUProcessor();
 }
 

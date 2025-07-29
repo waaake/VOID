@@ -11,6 +11,7 @@
 
 /* Internal */
 #include "VoidRenderer.h"
+#include "VoidCore/ColorProcessor.h"
 #include "VoidCore/Logging.h"
 
 static const float MAX_ZOOM = 12.8;
@@ -550,6 +551,18 @@ void VoidRenderer::SetChannelMode(int mode)
     m_ImageRenderer->SetChannelMode(mode);
 
     /* Redraw the texture */
+    update();
+}
+
+void VoidRenderer::SetColorDisplay(const std::string& display)
+{
+    /* Set the display on the Color Processor */
+    ColorProcessor::Instance().SetDisplay(display);
+
+    /* Reinit the Image Shaders */
+    m_ImageRenderer->ReinitShaderProgram();
+
+    /* Once the Shaders are initialized with the Current OCIO Display -> Redraw */
     update();
 }
 

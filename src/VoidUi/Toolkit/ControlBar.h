@@ -64,6 +64,7 @@ signals:
     void comparisonModeChanged(const int);
     void blendModeChanged(const int);
     void annotationsToggled(const int);
+    void colorDisplayChanged(const std::string&);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -89,6 +90,9 @@ private: /* Members */
 
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;
+
+    /* The current Dsiplays to be selected for Color */
+    ControlCombo* m_ColorDisplayController;
 
     /* Annotation Controller */
     HighlightToggleButton* m_AnnotationButton;

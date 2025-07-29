@@ -8,6 +8,7 @@
 /* Internal */
 #include "ControlBar.h"
 #include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidCore/ColorProcessor.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -119,7 +120,7 @@ void ControlBar::Build()
     m_GammaSpinner = new QuickSpinner;
     m_GammaSpinner->setToolTip(
         ToolTipString(
-            "Quick Exposure Adjustment Tool",
+            "Quick Gamma Adjustment Tool",
             "Tweaks midtone luminance. Switches between last and the default value when the label is clicked."
         ).c_str()
     );
@@ -127,7 +128,7 @@ void ControlBar::Build()
     m_GainSpinner = new QuickSpinner;
     m_GainSpinner->setToolTip(
         ToolTipString(
-            "Quick Exposure Adjustment Tool",
+            "Quick Gain Adjustment Tool",
             "Amplifies image signal intensity. Switches between last and the default value when the label is clicked."
         ).c_str()
     );
@@ -139,6 +140,9 @@ void ControlBar::Build()
     m_AnnotationButton->setIcon(QIcon(":resources/icons/icon_annotate.svg"));
     m_AnnotationButton->setFixedWidth(26);
     m_AnnotationButton->setToolTip(ToolTipString("Annotations Toolkit", "Toggles Annotation tools for the Viewer.").c_str());
+
+    /* Viewer Display Controller */
+    m_ColorDisplayController = new ControlCombo;
 
     /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
@@ -166,6 +170,7 @@ void ControlBar::Build()
     /* Add to the Right Layout */
     /* Spacer from the left side */
     m_RightLayout->addStretch(1);
+    m_RightLayout->addWidget(m_ColorDisplayController);
     m_RightLayout->addWidget(m_Zoomer);
     m_RightLayout->addWidget(m_AnnotationButton);
 
@@ -227,6 +232,16 @@ void ControlBar::Setup()
     /* Resize */
     m_GainSpinner->setMaximumWidth(52);
 
+    /* Color Display Control */
+    ColorProcessor& proc = ColorProcessor::Instance();
+    for (std::string& display : proc.Displays())
+    {
+        m_ColorDisplayController->addItem(display.c_str());
+    }
+
+    /* Default */
+    m_ColorDisplayController->setCurrentText(proc.DefaultDisplay().c_str());
+
     /**
      * Zoom Slider
      * QSlider operates only on a Linear Scale
@@ -261,6 +276,9 @@ void ControlBar::Connect()
 
     /* Annotations */
     connect(m_AnnotationButton, &QPushButton::toggled, this, &ControlBar::annotationsToggled);
+
+    /* Color Display */
+    connect(m_ColorDisplayController, &QComboBox::currentTextChanged, this, [this](const QString& value) { emit colorDisplayChanged(value.toStdString());});
 }
 
 float ControlBar::MapToZoom(int value)

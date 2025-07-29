@@ -46,6 +46,17 @@ void StrokeRenderGear::Initialize()
     m_USize = glGetUniformLocation(m_Shader->ProgramId(), "uThickness");
 }
 
+void StrokeRenderGear::Reinitialize()
+{
+    /* Re-Initialize the Shader */
+    m_Shader->Reinitialize();
+
+    /* Re-Load all the locations for uniforms */
+    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
+    m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
+    m_USize = glGetUniformLocation(m_Shader->ProgramId(), "uThickness");
+}
+
 void StrokeRenderGear::SetupBuffers()
 {
     /* Gen Array */

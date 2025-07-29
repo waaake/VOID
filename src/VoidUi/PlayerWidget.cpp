@@ -77,14 +77,16 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
     /* ControlBar - Annotations Toggled -> AnnotationsController - Set Visible */
     connect(m_ControlBar, &ControlBar::annotationsToggled, this, &Player::ToggleAnnotations);
+    /* ControlBar - Color Display Changed -> Renderer - Set Color Display */
+    connect(m_ControlBar, &ControlBar::colorDisplayChanged, m_Renderer, &VoidRenderer::SetColorDisplay);
 
-    /* Annotations Controller - Cleared -> Renderer -> Clear Annotations */
+    /* Annotations Controller - Cleared -> Renderer - Clear Annotations */
     connect(m_AnnotationsController, &AnnotationsController::cleared, m_Renderer, &VoidRenderer::ClearAnnotations);
-    /* Annotations Controller - Color Changed -> Renderer -> Set Annotation Color */
+    /* Annotations Controller - Color Changed -> Renderer - Set Annotation Color */
     connect(m_AnnotationsController, &AnnotationsController::colorChanged, m_Renderer, static_cast<void(VoidRenderer::*)(const QColor&)>(&VoidRenderer::SetAnnotationColor));
-    /* Annotations Controller - Brush Size Changed -> Renderer -> Set Annotation Size */
+    /* Annotations Controller - Brush Size Changed -> Renderer - Set Annotation Size */
     connect(m_AnnotationsController, &AnnotationsController::brushSizeChanged, m_Renderer, &VoidRenderer::SetAnnotationSize);
-    /* Annotations Controller - Control Changed -> Renderer -> Set Annotation DrawType */
+    /* Annotations Controller - Control Changed -> Renderer - Set Annotation DrawType */
     connect(m_AnnotationsController, &AnnotationsController::controlChanged, m_Renderer, &VoidRenderer::SetAnnotationDrawType);
 
     /* Preference - updated -> Player - SetFromPreferences */

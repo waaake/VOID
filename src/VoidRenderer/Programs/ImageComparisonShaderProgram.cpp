@@ -234,4 +234,18 @@ bool ImageComparisonShaderProgram::SetupShaders()
     return true;
 }
 
+void ImageComparisonShaderProgram::Reinitialize()
+{
+    /* Unbind */
+    Release();
+
+    /* Delete the current Program */
+    m_Program->deleteLater();
+    delete m_Program;
+    m_Program = nullptr;
+
+    /* Reinit */
+    Initialize();
+}
+
 VOID_NAMESPACE_CLOSE

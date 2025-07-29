@@ -16,6 +16,11 @@ public:
     virtual void Initialize() = 0;
 
     /**
+     * Reinitialize the shaders and the internals
+     */
+    virtual void Reinitialize() = 0;
+
+    /**
      * Returns the Shader Program's id
      */
     virtual unsigned int ProgramId() const = 0;

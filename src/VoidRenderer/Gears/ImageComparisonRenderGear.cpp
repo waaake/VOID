@@ -59,6 +59,24 @@ void ImageComparisonRenderGear::Initialize()
     m_USwipeX = glGetUniformLocation(m_Shader->ProgramId(), "swipeX");
 }
 
+void ImageComparisonRenderGear::Reinitialize()
+{
+    /* Re-Initialize the Shader */
+    m_Shader->Reinitialize();
+
+    /* Re-Load all the locations for uniforms */
+    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
+    m_UTextureA = glGetUniformLocation(m_Shader->ProgramId(), "uTexture");
+    m_UTextureB = glGetUniformLocation(m_Shader->ProgramId(), "uTextureB");
+    m_UExposure = glGetUniformLocation(m_Shader->ProgramId(), "exposure");
+    m_UGamma = glGetUniformLocation(m_Shader->ProgramId(), "gamma");
+    m_UGain = glGetUniformLocation(m_Shader->ProgramId(), "gain");
+    m_UChannelMode = glGetUniformLocation(m_Shader->ProgramId(), "channelMode");
+    m_UComparisonMode = glGetUniformLocation(m_Shader->ProgramId(), "comparisonMode");
+    m_UBlendMode = glGetUniformLocation(m_Shader->ProgramId(), "blendMode");
+    m_USwipeX = glGetUniformLocation(m_Shader->ProgramId(), "swipeX");
+}
+
 void ImageComparisonRenderGear::SetupBuffers()
 {
     /**

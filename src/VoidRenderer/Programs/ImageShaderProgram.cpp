@@ -1,9 +1,6 @@
 /* GLEW */
 #include <GL/glew.h>
 
-/* STD */
-#include <string_view>
-
 /* OpenColor IO */
 #include <OpenColorIO/OpenColorIO.h>
 
@@ -11,6 +8,7 @@
 #include "ImageShaderProgram.h"
 #include "VoidCore/Logging.h"
 #include "VoidCore/ColorProcessor.h"
+#include "VoidCore/VoidTools.h"
 
 namespace OCIO = OCIO_NAMESPACE;
 
@@ -123,28 +121,32 @@ void main() {
     // Ensure we have linear output depending on the input colorspace
     vec4 linear = Linearize(color, inputColorSpace);
 
+    // Once the pixel is converted to linear color space
+    // Add the viewer transform to that linear pixel
+    vec4 transformed = OCIOViewerTransform(linear);
+
     // Render a channel based on the color
     // 0 = R; 1 = G; 2 = B; 3 = A; 4 = RGB; 5 = RGBA (All)
     switch (channelMode)
     {
         case 0: // Red Channels only
-            FragColor = vec4(linear.r, linear.r, linear.r, 1.f);
+            FragColor = vec4(transformed.r, transformed.r, transformed.r, 1.f);
             break;
         case 1: // Green Channels only
-            FragColor = vec4(linear.g, linear.g, linear.g, 1.f);
+            FragColor = vec4(transformed.g, transformed.g, transformed.g, 1.f);
             break;
         case 2: // Blue Channels only
-            FragColor = vec4(linear.b, linear.b, linear.b, 1.f);
+            FragColor = vec4(transformed.b, transformed.b, transformed.b, 1.f);
             break;
         case 3: // Only Alpha
-            FragColor = vec4(linear.a, linear.a, linear.a, 1.f);
+            FragColor = vec4(transformed.a, transformed.a, transformed.a, 1.f);
             break;
         case 4: // RGB without alpha
-            FragColor = vec4(linear.rgb, 1.f);
+            FragColor = vec4(transformed.rgb, 1.f);
             break;
         case 5:
         default: // Show all channels -- default
-            FragColor = linear;
+            FragColor = transformed;
     }
 }
     )";
@@ -152,15 +154,8 @@ void main() {
     /* Find the position where the OCIO shader needs to be added */
     std::string placeholder = "// OCIO SHADER PLACEHOLDER //";
 
-    /* String veiw for faster search */
-    std::string_view code = fragmentShaderSrc;
-    size_t pos = code.find(placeholder);
-
-    /* Placeholder found!! */
-    if (pos != std::string_view::npos)
-    {
-        fragmentShaderSrc.replace(pos, placeholder.size(), ocioShader.c_str());
-    }
+    /* Add OCIO Shader in the source code */
+    Tools::find_replace(fragmentShaderSrc, placeholder, ocioShader);
 
     return fragmentShaderSrc;
 }
@@ -183,81 +178,12 @@ void ImageShaderProgram::Initialize()
 
 bool ImageShaderProgram::SetupShaders()
 {
-    ColorProcessor& proc = ColorProcessor::Instance();
-    proc.SetConfig("/mnt/c/Skids/zework/dev/VOID/resources/nuke-default.ocio");
-
-    /* Load OCIO Config */
-    // OCIO::ConstConfigRcPtr config = OCIO::Config::CreateFromFile("/mnt/c/Skids/zework/dev/VOID/resources/cg-config-v3.0.0_aces-v2.0_ocio-v2.4.ocio");
-    // OCIO::ConstConfigRcPtr config = OCIO::Config::CreateFromBuiltinConfig("studio-config-v2.2.0_aces-v1.3_ocio-v2.4");
-    // OCIO::SetCurrentConfig(config);
-
-    // proc.Create("SLog", "default", "sRGB");
-    // int n = config->getNumColorSpaces();
-
-    // for (int i = 0 ; i < n; i++)
-    // {
-    //     VOID_LOG_INFO(config->getColorSpaceNameByIndex(i));
-    // }
-
-
-    // std::vector<std::string> displays = std::move(proc.Displays());
-    // std::vector<std::string> views = std::move(proc.Views(displays.at(0)));
-    // std::vector<std::string> colorspaces = std::move(proc.Colorspaces());
-
-    // VOID_LOG_INFO("\n\nDISPLAYS\n\n");
-
-    // for (auto display : displays)
-    // {
-    //     VOID_LOG_INFO(display);
-    // }
-
-    // VOID_LOG_INFO("\n\nVIEWS\n\n");
-
-    // for (auto view : views)
-    // {
-    //     VOID_LOG_INFO(view);
-    // }
-
-
-    // VOID_LOG_INFO("\n\nCOLORSPACES\n\n");
-
-    // for (auto color : colorspaces)
-    // {
-    //     VOID_LOG_INFO(color);
-    // }
-
-
-    // /* Processor from Linear to sRGB */
-    // OCIO::ConstProcessorRcPtr processor = config->getProcessor("ACEScg", "sRGB - Display");
-
-    // /* GPU Processor */
-    // OCIO::ConstGPUProcessorRcPtr gpuProcessor = processor->getDefaultGPUProcessor();
-
-    // /* OCIO Shader snippet */
-    // OCIO::GpuShaderDescRcPtr shaderDesc = OCIO::GpuShaderDesc::CreateShaderDesc();
-    // shaderDesc->setLanguage(OCIO::GPU_LANGUAGE_GLSL_1_3);
-    // shaderDesc->setFunctionName("OCIODisplay");
-
-    // gpuProcessor->extractGpuShaderInfo(shaderDesc);
-
-    // std::string ocioShader = shaderDesc->getShaderText();
-
-    // VOID_LOG_INFO(ocioShader);
-
-    /* Update Shader Code */
-    /* Linear */
-    // proc.Create();
-    // proc.Create("sRGB", "scene_linear");
-    // fragmentShaderBase += std::move(proc.Shader("OCIODisplay"));
-
-
-    proc.Create("scene_linear", "sRGB");
-
-    std::string fragmentShader = std::move(FragmentShader(proc.Shader("OCIOViewerTransform")));
-
-    VOID_LOG_INFO(fragmentShader);
-
-    // fragmentShaderBase
+    /**
+     * Get the Fragment shader with the OCIO Viewer Transform implementation
+     * The viewer tranform is based on the current display/view or input -> output colorspace
+     * set on the ColorProcessor
+     */
+    std::string fragmentShader = std::move(FragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform")));
 
     /* Add Shaders */
     m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
@@ -274,6 +200,20 @@ bool ImageShaderProgram::SetupShaders()
     /* We're all good */
     VOID_LOG_INFO("Image Shaders Loaded.");
     return true;
+}
+
+void ImageShaderProgram::Reinitialize()
+{
+    /* Unbind */
+    Release();
+
+    /* Delete the current Program */
+    m_Program->deleteLater();
+    delete m_Program;
+    m_Program = nullptr;
+
+    /* Reinit */
+    Initialize();
 }
 
 VOID_NAMESPACE_CLOSE

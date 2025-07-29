@@ -47,6 +47,11 @@ public:
     virtual void Initialize() = 0;
 
     /**
+     * Reinitializes the shaders and internals (Vertex Array Objects | Vertex Buffer Objects | Element/Index Buffer Objects)
+     */
+    virtual void Reinitialize() = 0;
+
+    /**
      * Main Render Call
      * This invokes the PreDraw first and check the return status to invoke Draw or not
      * Then the PostDraw is invoked always

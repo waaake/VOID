@@ -1,3 +1,6 @@
+/* STD */
+#include <string_view>
+
 /* Internal */
 #include "VoidTools.h"
 
@@ -27,6 +30,23 @@ namespace Tools {
 
         /* And return the transformed copied string*/
         return copied;
+    }
+
+    bool find_replace(std::string& text, const std::string& placeholder, const std::string& replacement)
+    {
+        /* String veiw for faster search */
+        std::string_view view = text;
+        size_t pos = view.find(placeholder);
+
+        /* Placeholder found!! */
+        if (pos != std::string_view::npos)
+        {
+            text.replace(pos, placeholder.size(), replacement.c_str());
+
+            return true;
+        }
+
+        return false;
     }
 
     template <typename Ty>
