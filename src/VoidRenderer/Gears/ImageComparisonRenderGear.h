@@ -78,6 +78,8 @@ private: /* Members */
     int m_UComparisonMode;
     int m_UBlendMode;
     int m_USwipeX;
+    int m_UInputColorSpaceA;
+    int m_UInputColorSpaceB;
 
 };
 

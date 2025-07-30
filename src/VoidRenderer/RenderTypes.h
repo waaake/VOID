@@ -220,6 +220,9 @@ struct ImageComparisonRenderData
     int comparisonMode;
     int blendMode;
 
+    int inputColorSpaceA;
+    int inputColorSpaceB;
+
     /* Swiper Placement */
     float swipeX;
     float offset;

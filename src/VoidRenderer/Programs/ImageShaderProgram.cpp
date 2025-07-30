@@ -63,6 +63,18 @@ float SRGBToLinear(float value)
     return (value <= 0.04045) ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4);
 }
 
+float LogCToLinear(float value)
+{
+    // Defined Constants
+    float cut = 0.149;
+    float offset = 0.385;
+    float gain = 5.555556;
+    float linearOffset = 0.0928;
+    float slope = 5.367655;
+
+    return (value < cut) ? ( value - linearOffset ) / slope : (pow(10.f, (value - offset)) - 1) / gain;
+}
+
 vec3 inverseRec709(vec3 c)
 {
     vec3 linear;
@@ -85,6 +97,17 @@ vec3 inverseSRGB(vec3 c)
     return linear;
 }
 
+vec3 inverseLogC(vec3 c)
+{
+    vec3 linear;
+
+    linear.r = LogCToLinear(c.r);
+    linear.g = LogCToLinear(c.g);
+    linear.b = LogCToLinear(c.b);
+
+    return linear;
+}
+
 // Converts into Linear Colorspace from the input colorspace
 // Returns the converted vec4 color
 vec4 Linearize(vec4 color, int colorspace)
@@ -96,6 +119,8 @@ vec4 Linearize(vec4 color, int colorspace)
         return vec4(inverseRec709(color.rgb), color.a);
     else if (colorspace == 2)                               // standard RGB
         return vec4(inverseSRGB(color.rgb), color.a);
+    else if (colorspace == 4)                               // LogC
+        return vec4(inverseLogC(color.rgb), color.a);
 
     // Default
     return color;

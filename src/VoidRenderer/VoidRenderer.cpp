@@ -561,6 +561,7 @@ void VoidRenderer::SetColorDisplay(const std::string& display)
 
     /* Reinit the Image Shaders */
     m_ImageRenderer->ReinitShaderProgram();
+    m_ImageComparisonRenderer->ReinitShaderProgram();
 
     /* Once the Shaders are initialized with the Current OCIO Display -> Redraw */
     update();

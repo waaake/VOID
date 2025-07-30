@@ -65,7 +65,7 @@ void ImageRenderGear::Reinitialize()
     m_UGamma = glGetUniformLocation(m_Shader->ProgramId(), "gamma");
     m_UGain = glGetUniformLocation(m_Shader->ProgramId(), "gain");
     m_UChannelMode = glGetUniformLocation(m_Shader->ProgramId(), "channelMode");
-    m_UInputColorSpace = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpace");   
+    m_UInputColorSpace = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpace");
 }
 
 void ImageRenderGear::SetupBuffers()

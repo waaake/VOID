@@ -42,6 +42,8 @@ public:
     inline float SwipeOffset() const { return m_ImageData->offset; }
     inline void SetSwipeOffset(const float x) { m_ImageData->offset = x; }
 
+    inline void ReinitShaderProgram() { m_ImageRenderer->Reinitialize(); }
+
     /* Main Render Function */
     void Render(const glm::mat4& projection);
 
