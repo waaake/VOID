@@ -25,12 +25,6 @@ BasicRenderer::BasicRenderer(QWidget* parent)
 
     /* Enable to track mouse movements */
     setMouseTracking(true);
-
-    /* Color Processor Setup */
-    ColorProcessor& proc = ColorProcessor::Instance();
-
-    proc.SetConfig(ColorProcessor::Config::Builtin);
-    proc.SetDefaultDisplay();
 }
 
 BasicRenderer::~BasicRenderer()

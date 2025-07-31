@@ -43,6 +43,7 @@ set(SOURCES
     # Toolkit
     Toolkit/AnnotationController.cpp
     Toolkit/BufferSwitch.cpp
+    Toolkit/ColorController.cpp
     Toolkit/ControlBar.cpp
     Toolkit/ControlScroller.cpp
 

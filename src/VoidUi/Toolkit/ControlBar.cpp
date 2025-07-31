@@ -8,7 +8,6 @@
 /* Internal */
 #include "ControlBar.h"
 #include "VoidUi/QExtensions/Tooltip.h"
-#include "VoidCore/ColorProcessor.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -142,7 +141,7 @@ void ControlBar::Build()
     m_AnnotationButton->setToolTip(ToolTipString("Annotations Toolkit", "Toggles Annotation tools for the Viewer.").c_str());
 
     /* Viewer Display Controller */
-    m_ColorDisplayController = new ControlCombo;
+    m_ColorDisplayController = new ColorController;
 
     /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
@@ -232,16 +231,6 @@ void ControlBar::Setup()
     /* Resize */
     m_GainSpinner->setMaximumWidth(52);
 
-    /* Color Display Control */
-    ColorProcessor& proc = ColorProcessor::Instance();
-    for (std::string& display : proc.Displays())
-    {
-        m_ColorDisplayController->addItem(display.c_str());
-    }
-
-    /* Default */
-    m_ColorDisplayController->setCurrentText(proc.DefaultDisplay().c_str());
-
     /**
      * Zoom Slider
      * QSlider operates only on a Linear Scale
@@ -278,7 +267,7 @@ void ControlBar::Connect()
     connect(m_AnnotationButton, &QPushButton::toggled, this, &ControlBar::annotationsToggled);
 
     /* Color Display */
-    connect(m_ColorDisplayController, &QComboBox::currentTextChanged, this, [this](const QString& value) { emit colorDisplayChanged(value.toStdString());});
+    connect(m_ColorDisplayController, &ColorController::colorDisplayChanged, this, &ControlBar::colorDisplayChanged);
 }
 
 float ControlBar::MapToZoom(int value)

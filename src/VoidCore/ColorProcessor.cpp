@@ -37,6 +37,14 @@ void ColorProcessor::SetConfig(const std::string& path)
     OCIO::SetCurrentConfig(m_Config);
 }
 
+void ColorProcessor::SetConfig(std::istream& stream)
+{
+    m_Config = OCIO::Config::CreateFromStream(stream);
+
+    /* Set the color Config */
+    OCIO::SetCurrentConfig(m_Config);
+}
+
 std::vector<std::string> ColorProcessor::Displays() const
 {
     std::vector<std::string> displays;

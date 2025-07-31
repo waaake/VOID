@@ -10,6 +10,7 @@
 /* Internal */
 #include "BufferSwitch.h"
 #include "ControlScroller.h"
+#include "ColorController.h"
 #include "Definition.h"
 #include "VoidCore/Logging.h"
 #include "VoidUi/QExtensions/PushButton.h"
@@ -92,7 +93,7 @@ private: /* Members */
     ControlSpinner* m_Zoomer;
 
     /* The current Dsiplays to be selected for Color */
-    ControlCombo* m_ColorDisplayController;
+    ColorController* m_ColorDisplayController;
 
     /* Annotation Controller */
     HighlightToggleButton* m_AnnotationButton;

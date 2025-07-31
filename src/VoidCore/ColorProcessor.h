@@ -30,6 +30,7 @@ public:
 
     void SetConfig(const Config& type = Config::Builtin);
     void SetConfig(const std::string& path);
+    void SetConfig(std::istream& stream);
 
     /**
      * Value Getters
