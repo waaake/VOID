@@ -42,7 +42,6 @@ namespace Tools {
         if (pos != std::string_view::npos)
         {
             text.replace(pos, placeholder.size(), replacement.c_str());
-
             return true;
         }
 

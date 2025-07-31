@@ -82,6 +82,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
     qt_add_resources(VOID "qresources"
         PREFIX "/resources"
         FILES
+            # Icons
             ../images/VOID_Logo.svg
             ../images/VOID_Logo_900x200.png
             ../icons/icon_adjust.svg
@@ -107,7 +108,11 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_video_player.png
             ../icons/icon_zoom_in.svg
             ../icons/icon_zoom_out.svg
+
+            # Fonts
             ../fonts/Roboto-Regular.ttf
+
+            # Configs
             ../config/void-default.ocio
     )
 endif()
