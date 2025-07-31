@@ -15,6 +15,7 @@
 #include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
+#include "VoidUi/VoidStyle.h"
 
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
@@ -46,30 +47,48 @@ void DockerWindow::Build()
     /* Media Lister Widget */
     m_MediaLister = new VoidMediaLister(this);
 
+    // /* Docker */
+    // m_Docker = new VoidDocker("Viewer", this);
+    // m_Docker->SetClosable(false);
+
+    // m_MListDocker = new VoidDocker("Media View", this);
+
+    // /* Update widgets for the docks */
+    // m_Docker->setWidget(m_Player);
+    // m_MListDocker->setWidget(m_MediaLister);
+
+    // /* Set the central widget */
+    // addDockWidget(Qt::RightDockWidgetArea, m_Docker);
+    // addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
+
+    // splitDockWidget(m_MListDocker, m_Docker, Qt::Horizontal);
+
+    // /* The way how dock widgets appear as default */
+    // /* Dock Widgets */
+    // m_DockList << m_Docker << m_MListDocker;
+    // /* Default Size Corresponding to each of the dock widget */
+    m_DockSizes << 300 << 980;
+
+    // /* Resize Default docks */
+    // resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
+
     /* Docker */
-    m_Docker = new VoidDocker("Viewer", this);
-    m_Docker->SetClosable(false);
+    m_Splitter = new DockSplitter(Qt::Horizontal, this);
 
-    m_MListDocker = new VoidDocker("Media View", this);
+    DockWidget* left = new DockWidget(this);
+    DockWidget* right = new DockWidget(this);
 
-    /* Update widgets for the docks */
-    m_Docker->setWidget(m_Player);
-    m_MListDocker->setWidget(m_MediaLister);
+    /* Add to the splitter */
+    m_Splitter->addWidget(left);
+    m_Splitter->addWidget(right);
 
-    /* Set the central widget */
-    addDockWidget(Qt::RightDockWidgetArea, m_Docker);
-    addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
+    /* Add widgets to each of the dock widgets */
+    left->AddDock(m_MediaLister, "Media View", true);
+    right->AddDock(m_Player, "Viewer");
 
-    splitDockWidget(m_MListDocker, m_Docker, Qt::Horizontal);
+    m_Splitter->setSizes(m_DockSizes);
 
-    /* The way how dock widgets appear as default */
-    /* Dock Widgets */
-    m_DockList << m_Docker << m_MListDocker;
-    /* Default Size Corresponding to each of the dock widget */
-    m_DockSizes << 980 << 300;
-
-    /* Resize Default docks */
-    resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
+    setCentralWidget(m_Splitter);
 }
 
 void DockerWindow::ToggleDock(VoidDocker* dock, const bool state, const Qt::DockWidgetArea& area)
@@ -122,6 +141,12 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
 
 VoidMainWindow::~VoidMainWindow()
 {
+}
+
+void VoidMainWindow::paintEvent(QPaintEvent* event)
+{
+    QPainter painter(this);
+    painter.fillRect(rect(), VOID_SEMI_DARK_COLOR);
 }
 
 QSize VoidMainWindow::sizeHint() const

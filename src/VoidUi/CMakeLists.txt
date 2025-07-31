@@ -12,6 +12,7 @@ set(SOURCES
 
     # Base Window
     BaseWindow/Docker.cpp
+    BaseWindow/DockPanel.cpp
     BaseWindow/BaseWindow.cpp
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp

@@ -43,6 +43,13 @@ void VoidDark::drawPrimitive(PrimitiveElement element, const QStyleOption* optio
             /* Dark buttons */
             painter->fillRect(option->rect, QColor(53, 53, 53));
             break;
+        case PE_FrameTabWidget:
+            painter->save();
+            painter->setBrush(QColor(40, 40, 40));
+            painter->setPen(Qt::NoPen);
+            painter->drawRect(option->rect);
+            painter->restore();
+            break;
         // case PE_FrameWindow:
         // case PE_Widget:
         //     /* Dark window background */
@@ -69,7 +76,6 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
                 break;
 
             /* Get the sub element rect for the icon */
-            // QRect iconRect = QRect(item->rect.left(), item->rect.top(), item->maxIconWidth, )
             QRect textRect = item->rect;
             /* Consider the icon width */
             textRect.setLeft(textRect.left() + item->maxIconWidth + 6); // Add the spacing across icon sides
@@ -85,6 +91,32 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
             painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, item->text);
             break;
 
+        }
+        case CE_TabBarTab:
+        {
+            const QStyleOptionTab* tab = qstyleoption_cast<const QStyleOptionTab*>(option);
+
+            if (!tab)
+                break;
+
+            QRect rect = tab->rect;
+            painter->save();
+
+            /* Background */
+            QColor tabColor = tab->state & State_Selected ? QColor(40, 40, 40) : QColor(35, 35, 35);
+            painter->fillRect(rect, tabColor);
+
+            /* Text */
+            QRect textRect = subElementRect(SE_TabBarTabText, tab, widget);
+            painter->setPen(VOID_FOREGROUND_COLOR);
+            painter->drawText(textRect, Qt::AlignCenter, tab->text);
+
+            // /* Outer Border */
+            // painter->setPen(QPen(Qt::black, 1));
+            // painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+
+            painter->restore();
+            break;
         }
         // case CE_ShapedFrame:
         //     /* Dark frame background */
@@ -102,7 +134,7 @@ void VoidDark::polish(QPalette& palette)
 {
     palette.setColor(QPalette::Window, QColor(40, 40, 40));
     palette.setColor(QPalette::WindowText, VOID_FOREGROUND_COLOR);
-    palette.setColor(QPalette::Base, QColor(25, 25, 25));
+    palette.setColor(QPalette::Base, QColor(30, 30, 30));
     palette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
     palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
     palette.setColor(QPalette::ToolTipText, Qt::black);

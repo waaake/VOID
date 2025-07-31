@@ -73,21 +73,6 @@ ControlBar::~ControlBar()
 {
 }
 
-void ControlBar::paintEvent(QPaintEvent* event)
-{
-    /* Default painting */
-    QWidget::paintEvent(event);
-
-    /* Create a Painter to draw the border */
-    QPainter painter(this);
-
-    /* Set Draw requisites */
-    painter.setPen(QPen(Qt::black, 2));
-
-    /* Draw the border */
-    painter.drawLine(0, 0, width(), 0);
-}
-
 QFrame* ControlBar::Separator()
 {
     QFrame* separator = new QFrame;
@@ -184,7 +169,7 @@ void ControlBar::Build()
 void ControlBar::Setup()
 {
     /* Widget has a Fixed height */
-    setFixedHeight(40);
+    setFixedHeight(38);
 
     /**
      * Channels controller

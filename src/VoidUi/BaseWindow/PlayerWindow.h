@@ -48,6 +48,8 @@ private: /* Members */
     QList<QDockWidget*> m_DockList;
     QList<int> m_DockSizes;
 
+    DockSplitter* m_Splitter;
+
     /* VOID Components */
     Player* m_Player;
     VoidMediaLister* m_MediaLister;
@@ -84,6 +86,7 @@ private: /* Methods */
 
 protected:
     void closeEvent(QCloseEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
 
     /* Caches the Media if Caching is allowed */
     void CacheLookAhead();

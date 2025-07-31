@@ -7,7 +7,6 @@
 #include <QDropEvent>
 #include <QMenu>
 #include <QMimeData>
-#include <QPainter>
 #include <QUrl>
 
 /* Internal */
@@ -78,18 +77,6 @@ void VoidMediaLister::dropEvent(QDropEvent* event)
     }
 }
 
-void VoidMediaLister::paintEvent(QPaintEvent* event)
-{
-    /* Standard draw for everything */
-    QWidget::paintEvent(event);
-
-    /* Create a Painter to draw the border */
-    QPainter painter(this);
-    painter.setPen(QPen(Qt::black, 2));
-    /* Draw the border with the painter */
-    painter.drawLine(0, 0, width(), 0);
-}
-
 void VoidMediaLister::Build()
 {
     /* Menu Actions */
@@ -154,7 +141,7 @@ void VoidMediaLister::Build()
     m_OptionsLayout->addWidget(m_SortButton);
 
     /* Setup margins */
-    m_OptionsLayout->setContentsMargins(4, 0, 0, 0);
+    m_OptionsLayout->setContentsMargins(4, 0, 4, 0);
     /* }}} */
 
     /* Views {{{ */
