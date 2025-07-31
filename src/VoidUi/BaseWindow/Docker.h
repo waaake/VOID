@@ -3,9 +3,10 @@
 
 /* Qt */
 #include <QDockWidget>
+#include <QSplitter>
 #include <QTabBar>
 #include <QTabWidget>
-#include <QSplitter>
+#include <QToolButton>
 
 /* Internal */
 #include "Definition.h"
@@ -72,6 +73,7 @@ public:
 
 private: /* Members */
 	DockTab* m_DockTab;
+	QToolButton* m_PanelOptions;
 
 private: /* Methods */
 	void CloseTab(int index);

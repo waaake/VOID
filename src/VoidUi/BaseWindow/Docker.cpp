@@ -93,6 +93,12 @@ DockWidget::DockWidget(QWidget* parent)
 {
 	m_DockTab = new DockTab(this);
 
+	m_PanelOptions = new QToolButton;
+	m_PanelOptions->setIcon(QIcon(":resources/icons/icon_tab_options.svg"));
+	m_PanelOptions->setAutoRaise(true);
+
+	setCornerWidget(m_PanelOptions, Qt::TopLeftCorner);
+
 	setTabBar(m_DockTab);
 
 	connect(m_DockTab, &DockTab::tabDetachRequested, this, &DockWidget::UndockTab);

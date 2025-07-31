@@ -104,6 +104,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_restore.svg
             ../icons/icon_settings.svg
             ../icons/icon_sort_abc.svg
+            ../icons/icon_tab_options.svg
             ../icons/icon_text.svg
             ../icons/icon_video_player.png
             ../icons/icon_zoom_in.svg
