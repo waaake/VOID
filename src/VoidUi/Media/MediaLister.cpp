@@ -14,6 +14,7 @@
 #include "MediaLister.h"
 #include "VoidCore/Logging.h"
 #include "VoidUi/VoidStyle.h"
+#include "VoidUi/QExtensions/Tooltip.h"
 
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
@@ -95,6 +96,9 @@ void VoidMediaLister::Build()
     m_PlayAction = new QAction("Play Selected As Sequence");
     m_RemoveAction = new QAction("Remove Selected");
 
+    /* Shortcuts */
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+
     /* Base */
     m_layout = new QVBoxLayout(this);
 
@@ -107,9 +111,21 @@ void VoidMediaLister::Build()
     /* View Toggle Buttons */
     m_ListViewToggle = new HighlightToggleButton(this);
     m_ListViewToggle->setIcon(QIcon(":resources/icons/icon_list_view.svg"));
+    m_ListViewToggle->setToolTip(
+        ToolTipString(
+            "Detailed List View",
+            "Shows items in a Vertical List with details."
+        ).c_str()
+    );
 
     m_ThumbnailViewToggle = new HighlightToggleButton(this);
     m_ThumbnailViewToggle->setIcon(QIcon(":resources/icons/icon_grid_view.svg"));
+    m_ThumbnailViewToggle->setToolTip(
+        ToolTipString(
+            "Thumbnail View",
+            "Shows items in a dynamic Thumbnail Grid."
+        ).c_str()
+    );
 
     m_ViewButtonGroup->addButton(m_ListViewToggle, 0);
     m_ViewButtonGroup->addButton(m_ThumbnailViewToggle, 1);
@@ -117,18 +133,25 @@ void VoidMediaLister::Build()
     m_SortButton = new HighlightToggleButton(this);
     m_SortButton->setIcon(QIcon(":resources/icons/icon_sort_abc.svg"));
     m_SortButton->setFixedWidth(26);
-
-    m_DeleteButton = new QPushButton;
-    m_DeleteButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
-    m_DeleteButton->setFixedWidth(26);
+    m_SortButton->setToolTip(
+        ToolTipString(
+            "Sort Media",
+            "Sorts Media in an Alphebetical order based on the name."
+        ).c_str()
+    );
 
     m_SearchBar = new MediaSearchBar(this);
+    m_SearchBar->setToolTip(
+        ToolTipString(
+            "Search Media",
+            "Searches and filters media in the Media View as per the provided Text."
+        ).c_str()
+    );
 
     m_OptionsLayout->addWidget(m_ListViewToggle);
     m_OptionsLayout->addWidget(m_ThumbnailViewToggle);
     m_OptionsLayout->addWidget(m_SearchBar);
     m_OptionsLayout->addWidget(m_SortButton);
-    m_OptionsLayout->addWidget(m_DeleteButton);
 
     /* Setup margins */
     m_OptionsLayout->setContentsMargins(4, 0, 0, 0);
@@ -171,7 +194,6 @@ void VoidMediaLister::Connect()
     connect(m_RemoveAction, &QAction::triggered, this, &VoidMediaLister::RemoveSelectedMedia);
 
     /* Options */
-    connect(m_DeleteButton, &QPushButton::clicked, this, &VoidMediaLister::RemoveSelectedMedia);
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
     connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
     
@@ -185,6 +207,9 @@ void VoidMediaLister::Connect()
     /* List */
     connect(m_MediaView, &MediaView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
     connect(m_MediaView, &MediaView::customContextMenuRequested, this, &VoidMediaLister::ShowContextMenu);
+
+    /* Shortcut */
+    connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);
 }
 
 void VoidMediaLister::IndexSelected(const QModelIndex& index)

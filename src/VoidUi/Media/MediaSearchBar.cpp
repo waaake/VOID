@@ -32,6 +32,9 @@ void MediaSearchBar::Setup()
     addAction(m_ClearAction, QLineEdit::TrailingPosition);
     /* Set Hidden by default */
     m_ClearAction->setVisible(false);
+
+    /* Focus Policy */
+    setFocusPolicy(Qt::ClickFocus);
 }
 
 void MediaSearchBar::Connect()

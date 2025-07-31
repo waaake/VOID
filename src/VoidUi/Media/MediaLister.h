@@ -8,10 +8,11 @@
 /* Qt */
 #include <QAction>
 #include <QButtonGroup>
-#include <QPushButton>
-#include <QWidget>
-#include <QScrollArea>
 #include <QLayout>
+#include <QPushButton>
+#include <QScrollArea>
+#include <QShortcut>
+#include <QWidget>
 
 /* Internal */
 #include "QDefinition.h"
@@ -74,7 +75,6 @@ private: /* Members */
 
     MediaSearchBar* m_SearchBar;
     HighlightToggleButton* m_SortButton;
-    QPushButton* m_DeleteButton;
 
     /* Views */
     MediaView* m_MediaView;
@@ -82,6 +82,9 @@ private: /* Members */
     /* Context Menu */
     QAction* m_PlayAction;
     QAction* m_RemoveAction;
+
+    /* Shortcuts */
+    QShortcut* m_DeleteShortcut;
 
 };
 
