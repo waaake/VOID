@@ -24,6 +24,8 @@ ImageComparisonRenderGear::ImageComparisonRenderGear()
     , m_UComparisonMode(-1)
     , m_UBlendMode(-1)
     , m_USwipeX(-1)
+    , m_UInputColorSpaceA(-1)
+    , m_UInputColorSpaceB(-1)
 {
 }
 
@@ -57,6 +59,28 @@ void ImageComparisonRenderGear::Initialize()
     m_UComparisonMode = glGetUniformLocation(m_Shader->ProgramId(), "comparisonMode");
     m_UBlendMode = glGetUniformLocation(m_Shader->ProgramId(), "blendMode");
     m_USwipeX = glGetUniformLocation(m_Shader->ProgramId(), "swipeX");
+    m_UInputColorSpaceA = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceA");
+    m_UInputColorSpaceB = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceB");
+}
+
+void ImageComparisonRenderGear::Reinitialize()
+{
+    /* Re-Initialize the Shader */
+    m_Shader->Reinitialize();
+
+    /* Re-Load all the locations for uniforms */
+    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
+    m_UTextureA = glGetUniformLocation(m_Shader->ProgramId(), "uTexture");
+    m_UTextureB = glGetUniformLocation(m_Shader->ProgramId(), "uTextureB");
+    m_UExposure = glGetUniformLocation(m_Shader->ProgramId(), "exposure");
+    m_UGamma = glGetUniformLocation(m_Shader->ProgramId(), "gamma");
+    m_UGain = glGetUniformLocation(m_Shader->ProgramId(), "gain");
+    m_UChannelMode = glGetUniformLocation(m_Shader->ProgramId(), "channelMode");
+    m_UComparisonMode = glGetUniformLocation(m_Shader->ProgramId(), "comparisonMode");
+    m_UBlendMode = glGetUniformLocation(m_Shader->ProgramId(), "blendMode");
+    m_USwipeX = glGetUniformLocation(m_Shader->ProgramId(), "swipeX");
+    m_UInputColorSpaceA = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceA");
+    m_UInputColorSpaceB = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceB");
 }
 
 void ImageComparisonRenderGear::SetupBuffers()
@@ -177,6 +201,13 @@ void ImageComparisonRenderGear::Draw(const void* data)
      * Update the swipe factor
      */
     glUniform1f(m_USwipeX, d->swipeX);
+
+    /**
+     * Update the input colorspaces on the shader to ensure output is linear before applying the final
+     * view tranform for the viewer
+     */
+    glUniform1i(m_UInputColorSpaceA, d->inputColorSpaceA);
+    glUniform1i(m_UInputColorSpaceB, d->inputColorSpaceB);
 
     /**
      * Draw triangles as bound in the Index buffer as defined earlier

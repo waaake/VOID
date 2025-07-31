@@ -108,6 +108,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_zoom_in.svg
             ../icons/icon_zoom_out.svg
             ../fonts/Roboto-Regular.ttf
+            ../config/void-default.ocio
     )
 endif()
 

@@ -28,6 +28,8 @@ public:
     inline void SetChannelMode(const int mode) { m_ImageData->channelMode = mode; }
     inline void SetChannelMode(const Renderer::ChannelMode& mode) { m_ImageData->channelMode = static_cast<int>(mode); }
 
+    inline void ReinitShaderProgram() { m_ImageRenderer->Reinitialize(); }
+
     /* Main Render Function */
     void Render(const glm::mat4& projection);
 

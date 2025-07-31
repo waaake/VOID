@@ -18,8 +18,9 @@ namespace Tools {
     /**
      * Updates the reference to the provided string to make it lower case
      */
-    inline VOID_API void to_lower(std::string& in) { std::transform(in.begin(), in.end(), in.begin(), [](unsigned char c) { return std::tolower(c); });
-    }
+    inline VOID_API void to_lower(std::string& in) { std::transform(in.begin(), in.end(), in.begin(), [](unsigned char c) { return std::tolower(c); }); }
+
+    VOID_API bool find_replace(std::string& text, const std::string& placeholder, const std::string& replacement);
 
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value);

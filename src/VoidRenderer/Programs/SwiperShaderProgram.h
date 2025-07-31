@@ -23,6 +23,11 @@ public:
     virtual void Initialize() override;
 
     /**
+     * Reinitialize the shaders and the internals
+     */
+    virtual void Reinitialize() override;
+
+    /**
      * Returns the Shader Program's id
      */
     virtual inline unsigned int ProgramId() const override { return m_Program->programId(); }

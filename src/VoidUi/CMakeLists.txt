@@ -43,6 +43,7 @@ set(SOURCES
     # Toolkit
     Toolkit/AnnotationController.cpp
     Toolkit/BufferSwitch.cpp
+    Toolkit/ColorController.cpp
     Toolkit/ControlBar.cpp
     Toolkit/ControlScroller.cpp
 
@@ -90,6 +91,12 @@ target_link_libraries(
 # Qt6 needs OpenGLWidgets be included/linked separately
 if (QT_MAJOR_VERSION EQUAL 6)
     target_link_libraries(VoidUi PRIVATE Qt::OpenGLWidgets)
+endif()
+
+# Mac for some reason needs this explicitly
+# TODO: Check if we can statically link OCIO to VoidCore?
+if (APPLE)
+    target_link_libraries(VoidUi PRIVATE OpenColorIO::OpenColorIO)
 endif()
 
 # Export symbols for windows

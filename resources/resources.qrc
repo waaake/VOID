@@ -29,5 +29,7 @@
         <file>../icons/icon_zoom_out.svg</file>
         <!-- Font -->
         <file>../fonts/Roboto-Regular.ttf</file>
+        <!-- Config -->
+        <file>../config/void-default.ocio</file>
     </qresource>
 </RCC>

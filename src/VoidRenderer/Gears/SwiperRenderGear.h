@@ -20,6 +20,11 @@ public:
      */
     virtual void Initialize() override;
 
+    /**
+     * Reinitializes the shaders and internals (Vertex Array Objects | Vertex Buffer Objects | Element/Index Buffer Objects)
+     */
+    virtual void Reinitialize() override;
+
 protected:
     /**
      * Setup Array Buffers

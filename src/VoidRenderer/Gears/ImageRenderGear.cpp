@@ -53,6 +53,21 @@ void ImageRenderGear::Initialize()
     m_UInputColorSpace = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpace");
 }
 
+void ImageRenderGear::Reinitialize()
+{
+    /* Re-Initialize the Shader */
+    m_Shader->Reinitialize();
+
+    /* Re-Load all the locations for uniforms */
+    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
+    m_UTexture = glGetUniformLocation(m_Shader->ProgramId(), "uTexture");
+    m_UExposure = glGetUniformLocation(m_Shader->ProgramId(), "exposure");
+    m_UGamma = glGetUniformLocation(m_Shader->ProgramId(), "gamma");
+    m_UGain = glGetUniformLocation(m_Shader->ProgramId(), "gain");
+    m_UChannelMode = glGetUniformLocation(m_Shader->ProgramId(), "channelMode");
+    m_UInputColorSpace = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpace");
+}
+
 void ImageRenderGear::SetupBuffers()
 {
     /**

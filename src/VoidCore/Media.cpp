@@ -119,7 +119,7 @@ v_frame_t Media::NearestFrame(const v_frame_t frame) const
     /* We need the lower bound of the given frame available in the vector */
     auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
 
-    if (it != m_Framenumbers.end())
+    if (it != m_Framenumbers.begin())
     {
         /* Return the value at the iter after moving it back */
         return *(--it);

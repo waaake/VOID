@@ -90,6 +90,11 @@ public:
      */
     void SetChannelMode(int mode);
 
+    /**
+     * The color display to be set for the OCIO Color Process
+     */
+    void SetColorDisplay(const std::string& display);
+
 signals:
     /**
      * Signals for the Annotations

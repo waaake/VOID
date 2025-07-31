@@ -10,6 +10,7 @@
 /* Internal */
 #include "BufferSwitch.h"
 #include "ControlScroller.h"
+#include "ColorController.h"
 #include "Definition.h"
 #include "VoidCore/Logging.h"
 #include "VoidUi/QExtensions/PushButton.h"
@@ -64,6 +65,7 @@ signals:
     void comparisonModeChanged(const int);
     void blendModeChanged(const int);
     void annotationsToggled(const int);
+    void colorDisplayChanged(const std::string&);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -89,6 +91,9 @@ private: /* Members */
 
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;
+
+    /* The current Dsiplays to be selected for Color */
+    ColorController* m_ColorDisplayController;
 
     /* Annotation Controller */
     HighlightToggleButton* m_AnnotationButton;

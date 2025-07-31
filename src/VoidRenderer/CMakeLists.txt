@@ -61,5 +61,11 @@ if (QT_MAJOR_VERSION EQUAL 6)
     target_link_libraries(VoidRenderer PRIVATE Qt::OpenGLWidgets)
 endif()
 
+# Mac for some reason needs this explicitly
+# TODO: Check if we can statically link OCIO to VoidCore?
+if (APPLE)
+    target_link_libraries(VoidRenderer PRIVATE OpenColorIO::OpenColorIO)
+endif()
+
 # Export symbols for windows
 target_compile_definitions(VoidRenderer PRIVATE VOID_LIB)
