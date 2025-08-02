@@ -40,7 +40,7 @@ public:
 	virtual ~Timeline();
 
 	/* Getters */
-	inline double Framerate() const { return m_FramerateBox->currentText().toDouble(); }
+	inline double Framerate() const { return m_FramerateBox->Framerate(); }
 	inline int Frame() const { return m_Timeslider->value(); }
 
 	/**
@@ -53,8 +53,8 @@ public:
 	inline int Maximum() const { return m_Timeslider->Maximum(); }
 
 	/* Setters */
-	void SetFramerate(const double rate);
-	void SetFramerate(const std::string& rate);
+	inline void SetFramerate(const double rate) { m_FramerateBox->SetFramerate(rate); }
+	inline void SetFramerate(const std::string& rate) { m_FramerateBox->SetFramerate(rate); }
 
 	void SetFrame(const int frame);
 
@@ -123,7 +123,7 @@ private: /* Members */
 	Timeslider* m_Timeslider;
 
 	TimeDisplay* m_TimeDisplay;
-	QComboBox* m_FramerateBox;
+	FramerateBox* m_FramerateBox;
 
 	QDoubleValidator* m_DoubleValidator;
 

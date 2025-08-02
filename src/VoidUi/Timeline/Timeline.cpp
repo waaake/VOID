@@ -5,7 +5,6 @@
 #include <QIcon>
 #include <QLayout>
 #include <QStyle>
-#include <QValidator>
 
 /* Internal */
 #include "Timeline.h"
@@ -44,11 +43,6 @@ void Timeline::Build()
 {
 	m_ForwardsTimer = new QTimer;
 	m_BackwardsTimer = new QTimer;
-
-	/* Validator */
-	m_DoubleValidator = new QDoubleValidator;
-	m_DoubleValidator->setBottom(0.0);
-	m_DoubleValidator->setTop(200.0);
 
 	/* Base Layout */
 	m_Layout = new QVBoxLayout(this);
@@ -134,10 +128,7 @@ void Timeline::Build()
 	m_TimeDisplay = new TimeDisplay;
 
 	/* Framerate */
-	m_FramerateBox = new QComboBox;
-	m_FramerateBox->setEditable(true);
-	/* Setup the Focus policy to only accept focus when clicked on */
-	m_FramerateBox->setFocusPolicy(Qt::ClickFocus);
+	m_FramerateBox = new FramerateBox;
 
 	/* Add to options layout */
 	/* Layout spacing */
@@ -208,28 +199,7 @@ void Timeline::Connect()
 
 void Timeline::Setup()
 {
-	// Setup values and defaults
-	const QStringList values = {
-		"8",
-		"10",
-		"12",
-		"12.50",
-		"15",
-		"23.98",
-		"24",
-		"25",
-		"29.97",
-		"30",
-		"48",
-		"50",
-		"59.94",
-		"60"
-	};
-
-	m_FramerateBox->addItems(values);
-	m_FramerateBox->setValidator(m_DoubleValidator);
-
-	// Set the default rate
+	/* Set the default rate */
 	SetFramerate("24");
 
 	SetFrame(m_Timeslider->minimum());
@@ -240,16 +210,6 @@ void Timeline::Setup()
 	/* Update the internal range */
 	m_Start = m_Timeslider->minimum();
 	m_End = m_Timeslider->maximum();
-}
-
-void Timeline::SetFramerate(const double rate)
-{
-	m_FramerateBox->setCurrentText(std::to_string(rate).c_str());
-}
-
-void Timeline::SetFramerate(const std::string& rate)
-{
-	m_FramerateBox->setCurrentText(rate.c_str());
 }
 
 void Timeline::SetFrame(const int frame)

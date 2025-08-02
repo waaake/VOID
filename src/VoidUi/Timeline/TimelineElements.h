@@ -2,8 +2,9 @@
 #define _VOID_TIMELINE_ELEMENTS_H
 
 /* Qt */
-#include <QPushButton>
+#include <QComboBox>
 #include <QLabel>
+#include <QPushButton>
 
 /* Internal */
 #include "Definition.h"
@@ -65,6 +66,29 @@ private:
 	/* Setup the UI */
 	void Setup();
 
+};
+
+class FramerateBox : public QComboBox
+{
+	Q_OBJECT
+
+public:
+	FramerateBox(QWidget* parent = nullptr);
+
+	inline double Framerate() const { return currentText().toDouble(); }
+
+	inline void SetFramerate(const double rate) { setCurrentText(std::to_string(rate).c_str()); }
+	inline void SetFramerate(const std::string& rate) { setCurrentText(rate.c_str()); }
+
+signals:
+	void framerateChanged(double);
+
+private: /* Members */
+	QDoubleValidator* m_DoubleValidator;
+
+private: /* Methods */
+	void Setup();
+	void RateChanged(const QString& text);
 };
 
 VOID_NAMESPACE_CLOSE
