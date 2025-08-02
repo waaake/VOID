@@ -28,11 +28,15 @@ VoidTitleBar::~VoidTitleBar()
 
 void VoidTitleBar::paintEvent(QPaintEvent* event)
 {
+    /* Custom Draw painter */
+    QPainter painter(this);
+
+    /* Background */
+    painter.fillRect(rect(), palette().color(QPalette::Window));
+
     /* Standard Painting */
     QWidget::paintEvent(event);
 
-    /* Custom Draw painter */
-    QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
     /* Set Pen for drawing border */

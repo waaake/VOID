@@ -67,9 +67,6 @@ signals:
     void annotationsToggled(const int);
     void colorDisplayChanged(const std::string&);
 
-protected:
-    void paintEvent(QPaintEvent* event) override;
-
 private: /* Members */
     /* Base Layout */
     QHBoxLayout* m_Layout;
