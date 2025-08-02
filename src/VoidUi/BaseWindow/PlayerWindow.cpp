@@ -16,6 +16,7 @@
 #include "VoidUi/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/VoidStyle.h"
+#include "VoidUi/Dock/DockManager.h"
 
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
@@ -29,62 +30,22 @@ DockerWindow::DockerWindow(QWidget* parent)
 {
     /* Build the Docker */
     Build();
-
-    /* Set Docking options */
-    setDockOptions(QMainWindow::AllowNestedDocks | QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks);
 }
 
 DockerWindow::~DockerWindow()
 {
-    m_Player->deleteLater();
 }
 
 void DockerWindow::Build()
 {
-    /* Player */
-    m_Player = new Player(this);
-
-    /* Media Lister Widget */
-    m_MediaLister = new VoidMediaLister(this);
-
-    // /* Docker */
-    // m_Docker = new VoidDocker("Viewer", this);
-    // m_Docker->SetClosable(false);
-
-    // m_MListDocker = new VoidDocker("Media View", this);
-
-    // /* Update widgets for the docks */
-    // m_Docker->setWidget(m_Player);
-    // m_MListDocker->setWidget(m_MediaLister);
-
-    // /* Set the central widget */
-    // addDockWidget(Qt::RightDockWidgetArea, m_Docker);
-    // addDockWidget(Qt::LeftDockWidgetArea, m_MListDocker);
-
-    // splitDockWidget(m_MListDocker, m_Docker, Qt::Horizontal);
-
-    // /* The way how dock widgets appear as default */
-    // /* Dock Widgets */
-    // m_DockList << m_Docker << m_MListDocker;
-    // /* Default Size Corresponding to each of the dock widget */
-    m_DockSizes << 300 << 980;
-
-    // /* Resize Default docks */
-    // resizeDocks(m_DockList, m_DockSizes, Qt::Horizontal);
+    m_DockSizes << 4 << 6;
 
     /* Docker */
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
 
-    DockWidget* left = new DockWidget(this);
-    DockWidget* right = new DockWidget(this);
-
-    /* Add to the splitter */
-    m_Splitter->addWidget(left);
-    m_Splitter->addWidget(right);
-
-    /* Add widgets to each of the dock widgets */
-    left->AddDock(m_MediaLister, "Media View", true);
-    right->AddDock(m_Player, "Viewer");
+    /* Add Panels */
+    m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
+    m_Splitter->AddPane(static_cast<int>(Component::Viewer));
 
     m_Splitter->setSizes(m_DockSizes);
 
@@ -105,13 +66,13 @@ void DockerWindow::ToggleDock(VoidDocker* dock, const bool state, const Qt::Dock
 
 void DockerWindow::ToggleComponent(const Component& component, const bool state)
 {
-    switch (component)
-    {
-        case Component::MediaLister:
-            /* Setup the Dock */
-            ToggleDock(m_MListDocker, state, Qt::LeftDockWidgetArea);
-            break;
-    }
+    // switch (component)
+    // {
+    //     case Component::MediaLister:
+    //         /* Setup the Dock */
+    //         ToggleDock(m_MListDocker, state, Qt::LeftDockWidgetArea);
+    //         break;
+    // }
 }
 
 /* }}} */
@@ -129,6 +90,9 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
     /* Update the sequence with this track */
     m_Sequence->AddVideoTrack(m_Track);
 
+    /* Register Dock Widgets */
+    RegisterDocks();
+
     /* Build the UI */
     Build();
 
@@ -141,6 +105,8 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
 
 VoidMainWindow::~VoidMainWindow()
 {
+    m_Player->deleteLater();
+    m_MediaLister->deleteLater();
 }
 
 void VoidMainWindow::paintEvent(QPaintEvent* event)
@@ -187,10 +153,6 @@ void VoidMainWindow::Build()
      */
     m_InternalDocker = new DockerWindow(this);
     layout->addWidget(m_InternalDocker);
-
-    /* Fetch the Player and Media Lister from the internal Docker */
-    m_Player = m_InternalDocker->GetPlayer();
-    m_MediaLister = m_InternalDocker->MediaLister();
 
     /* Set the central widget */
     setCentralWidget(baseWidget);
@@ -498,6 +460,21 @@ void VoidMainWindow::ImportDirectory(const std::string& path)
      */
     for (const MediaStruct& m: medias)
         ImportMedia(m);
+}
+
+void VoidMainWindow::RegisterDocks()
+{
+    /* Register Dock Widgets in the Dock Manager */
+    DockManager& manager = DockManager::Instance();
+
+    /* Player */
+    m_Player = new Player(this);
+
+    /* Media Lister Widget */
+    m_MediaLister = new VoidMediaLister(this);
+
+    manager.RegisterDock(m_MediaLister, "Media View");
+    manager.RegisterDock(m_Player, "Viewer");
 }
 
 // Slots

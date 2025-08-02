@@ -11,8 +11,6 @@ set(SOURCES
     VoidStyle.cpp
 
     # Base Window
-    BaseWindow/Docker.cpp
-    BaseWindow/DockPanel.cpp
     BaseWindow/BaseWindow.cpp
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
@@ -20,6 +18,12 @@ set(SOURCES
     # Commands
     Commands/VoidCommand.cpp
     Commands/MediaCommands.cpp
+
+    # Dock
+    Dock/Docker.cpp
+    Dock/DockManager.cpp
+    Dock/DockPanel.cpp
+    Dock/DockSplitter.cpp
 
     # Media
     Media/MediaBridge.cpp

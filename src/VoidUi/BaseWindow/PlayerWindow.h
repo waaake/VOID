@@ -9,11 +9,11 @@
 
 /* Internal */
 #include "Definition.h"
-#include "Docker.h"
 #include "BaseWindow.h"
 #include "TitleBar.h"
 #include "VoidCore/Media.h"
 #include "VoidUi/About.h"
+#include "VoidUi/Dock/Docker.h"
 #include "VoidUi/PlayerWidget.h"
 #include "VoidUi/Sequence.h"
 #include "VoidUi/Track.h"
@@ -28,36 +28,22 @@ public: /* Enum */
     enum class Component
     {
         MediaLister,
+        Viewer,
     };
 
 public:
     explicit DockerWindow(QWidget* parent = nullptr);
     virtual ~DockerWindow();
 
-    /* Component Getters */
-    /* Returns the Pointer to Player Widget */
-    Player* GetPlayer() const { return m_Player; }
-    /* Returns the Pointer to the Media Lister Widget */
-    VoidMediaLister* MediaLister() const { return m_MediaLister; }
-
     void ToggleComponent(const Component& component, const bool state);
 
 private: /* Members */
-    VoidDocker* m_Docker;
-    VoidDocker* m_MListDocker;
-    QList<QDockWidget*> m_DockList;
     QList<int> m_DockSizes;
-
     DockSplitter* m_Splitter;
-
-    /* VOID Components */
-    Player* m_Player;
-    VoidMediaLister* m_MediaLister;
 
 private: /* Methods */
     void Build();
     void ToggleDock(VoidDocker* dock, const bool state, const Qt::DockWidgetArea& area);
-
 };
 
 class VOID_API VoidMainWindow : public BaseWindow
@@ -83,6 +69,9 @@ public:
 private: /* Methods */
     void Build();
     void Connect();
+
+    /* Register Internal components as Dock Widgets */
+    void RegisterDocks();
 
 protected:
     void closeEvent(QCloseEvent* event) override;
