@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
     #endif
 
     QApplication app(argc, argv);
+    app.setStyle(new VOID_NAMESPACE::VoidDark());
 
     VOID_LOG_INFO("App Initialized.");
 
@@ -42,8 +43,6 @@ int main(int argc, char* argv[])
     QImage icon(":resources/images/VOID_Logo.svg");
 
     app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation))));
-
-    app.setStyle(new VOID_NAMESPACE::VoidDark());
 
     /* Show the player */
     imager->show();

@@ -15,7 +15,6 @@
 #include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/VoidStyle.h"
 #include "VoidUi/Dock/DockManager.h"
 
 /* Commands */
@@ -112,7 +111,7 @@ VoidMainWindow::~VoidMainWindow()
 void VoidMainWindow::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
-    painter.fillRect(rect(), VOID_SEMI_DARK_COLOR);
+    painter.fillRect(rect(), palette().color(QPalette::Dark));
 }
 
 QSize VoidMainWindow::sizeHint() const

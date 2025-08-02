@@ -6,7 +6,6 @@
 
 /* Internal */
 #include "TimelineElements.h"
-#include "VoidUi/VoidStyle.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -91,7 +90,7 @@ void TimeDisplay::Setup()
 
     /* Setup the Colors */
     QPalette p = palette();
-    p.setColor(QPalette::WindowText, VOID_HIGHLIGHT_GREEN);
+    p.setColor(QPalette::WindowText, p.color(QPalette::Highlight));
     setPalette(p);
     
     /* Setup Font */

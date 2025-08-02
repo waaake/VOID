@@ -9,7 +9,6 @@
 #include "Docker.h"
 #include "DockManager.h"
 #include "VoidCore/Logging.h"
-#include "VoidUi/VoidStyle.h"
 
 VOID_NAMESPACE_OPEN
 
