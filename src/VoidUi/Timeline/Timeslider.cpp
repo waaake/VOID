@@ -12,9 +12,6 @@ static const int SL_MARKING_STEP = 5;
 /* Timeslider Fixed height */
 static const int SL_HEIGHT = 30;
 
-/* Color for the handle of the timeslider */
-static const QColor SL_HANDLE_COLOR = {160, 190, 60};
-
 /* Color for the frame displayed on the timeslider */
 static const QColor SL_FRAME_COLOR = {190, 150, 60};
 
@@ -168,7 +165,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 
 	/* Position Handle */
 	int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
-	painter.setBrush(SL_HANDLE_COLOR);
+	painter.setBrush(palette().color(QPalette::Highlight));
 
 	/* The position handle should have a minimum width */
 	int hwidth = std::max(uwidth, 4.0);

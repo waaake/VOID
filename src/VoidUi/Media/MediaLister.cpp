@@ -12,7 +12,6 @@
 /* Internal */
 #include "MediaLister.h"
 #include "VoidCore/Logging.h"
-#include "VoidUi/VoidStyle.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
 /* Commands */
@@ -166,7 +165,7 @@ void VoidMediaLister::Setup()
 
     /* Dark Panel */
     QPalette p = this->palette();
-    p.setColor(QPalette::Window, VOID_SEMI_DARK_COLOR);
+    p.setColor(QPalette::Window, palette().color(QPalette::Dark));
 
     this->setPalette(p);
 

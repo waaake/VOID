@@ -9,7 +9,6 @@ VOID_NAMESPACE_OPEN
 VoidDark::VoidDark()
     : QProxyStyle("Fusion")
 {
-
 }
 
 // void VoidDark::drawItemText(QPainter* painter, const QRect& rect, int flags, const QPalette& palette, bool enabled, const QString& text, QPalette::ColorRole textRole) const
@@ -146,7 +145,8 @@ void VoidDark::polish(QPalette& palette)
     palette.setColor(QPalette::Link, QColor(42, 130, 218));
     palette.setColor(QPalette::Highlight, VOID_HIGHLIGHT_GREEN);
     palette.setColor(QPalette::HighlightedText, Qt::black);
-    palette.setColor(QPalette::Dark, QColor(20, 20, 20));
+    // palette.setColor(QPalette::Mid, QColor(40, 40, 40));
+    palette.setColor(QPalette::Dark, QColor(25, 25, 25));
 
     palette.setColor(QPalette::Disabled, QPalette::Text, VOID_FOREGROUND_DISABLED_COLOR);
 }
