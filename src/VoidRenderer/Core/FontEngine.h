@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_RENDERER_FONT_ENGINE_H
 #define _VOID_RENDERER_FONT_ENGINE_H
 

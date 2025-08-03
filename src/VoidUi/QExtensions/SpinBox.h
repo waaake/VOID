@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_Q_EXT_SPIN_BOX_H
 #define _VOID_Q_EXT_SPIN_BOX_H
 

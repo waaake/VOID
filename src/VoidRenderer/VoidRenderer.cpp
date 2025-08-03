@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 /* GLM */
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>     // for ortho/scale

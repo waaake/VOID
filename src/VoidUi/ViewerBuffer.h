@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_VIEWER_BUFFER_H
 #define _VOID_VIEWER_BUFFER_H
 

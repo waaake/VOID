@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #pragma once
 /**
  * This file is temporary till the plugin system becomes enough

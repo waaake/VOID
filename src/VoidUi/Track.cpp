@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 /* STD */
 #include <cstring> /* For using std::memcpy */
 #include <algorithm> /* For std::find and std::lower_bound */

@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifdef _WIN32
 /* https://github.com/AcademySoftwareFoundation/Imath/issues/212 
  * This needs to be declared else we get unresolved symbol from imath library

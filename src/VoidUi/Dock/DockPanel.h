@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_DOCKER_PANEL_H
 #define _VOID_DOCKER_PANEL_H
 

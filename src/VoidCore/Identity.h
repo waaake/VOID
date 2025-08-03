@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_UNIQUE_IDENTITY_H
 #define _VOID_UNIQUE_IDENTITY_H
 
