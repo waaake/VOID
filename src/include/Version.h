@@ -1,0 +1,18 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+#ifndef _VOID_VERSION_H
+#define _VOID_VERSION_H
+
+#define VOID_VERSION_MAJOR 0
+#define VOID_VERSION_MINOR 1
+#define VOID_VERSION_PATCH 0
+
+#define VOID_PRERELEASE "alpha"
+#define VOID_BUILD_NUMBER 202508
+
+#define VOID_VERSION_STRING "0.1.0-alpha"
+
+#define VOID_VERSION_NUMBER ((VOID_VERSION_MAJOR * 10000) + (VOID_VERSION_MINOR * 100) + (VOID_VERSION_PATCH))
+
+#endif // _VOID_VERSION_H

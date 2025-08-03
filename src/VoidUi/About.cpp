@@ -130,7 +130,7 @@ void AboutVoid::Build()
     
     m_VersionHeader = new QLabel("Version: ");
     m_VersionHeader->setFont(header);
-    m_Version = new QLabel("v0.0.1-alpha");
+    m_Version = new QLabel(VOID_VERSION_STRING);
 
     m_GithubHeader = new QLabel("Github: ");
     m_GithubHeader->setFont(header);

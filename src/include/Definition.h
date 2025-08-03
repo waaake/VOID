@@ -24,4 +24,7 @@
 /* type definitions */
 typedef signed long v_frame_t; // Represents a frame number or something to hold a frame duration
 
+/* Internal */
+#include "Version.h"
+
 #endif // _VOID_BASIC_DEFINITIONS_H
