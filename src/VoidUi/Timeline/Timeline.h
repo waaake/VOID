@@ -13,6 +13,7 @@
 #include <QLayout>
 #include <QPushButton>
 #include <QTimer>
+#include <QElapsedTimer>
 #include <QWidget>
 
 /* Internal */
@@ -132,6 +133,9 @@ private: /* Members */
 
 	QTimer* m_ForwardsTimer;
 	QTimer* m_BackwardsTimer;
+	QElapsedTimer* m_ElapsedTimer;
+
+	int m_FrameInterval;
 
 	/**
 	 * Timeslider Min - Max

@@ -12,6 +12,7 @@
 /* Internal */
 #include "Timeline.h"
 #include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidCore/Logging.h"
 
 static const int BUTTON_WIDTH = 30;
 static const int SMALL_BUTTON_WIDTH = 20;
@@ -24,6 +25,7 @@ Timeline::Timeline(QWidget* parent)
 	, m_Start(0)
 	, m_End(0)
 	, m_LoopType(LoopType::LoopInfinitely)
+	, m_FrameInterval(1)
 {
 	/* Build the layout of the widget */
 	Build();
@@ -46,6 +48,9 @@ void Timeline::Build()
 {
 	m_ForwardsTimer = new QTimer;
 	m_BackwardsTimer = new QTimer;
+
+	m_ElapsedTimer = new QElapsedTimer;
+	m_ElapsedTimer->start();
 
 	/* Base Layout */
 	m_Layout = new QVBoxLayout(this);
@@ -180,11 +185,29 @@ void Timeline::Connect()
 {
 	connect(m_Timeslider, &QSlider::valueChanged, this, &Timeline::TimeUpdated);
 
-	connect(m_ForwardButton, &QPushButton::clicked, this, [this]() { Stop(); m_ForwardsTimer->start(1000 / Framerate()); });
-	connect(m_BackwardButton, &QPushButton::clicked, this, [this]() { Stop(); m_BackwardsTimer->start(1000 / Framerate()); });
+	// connect(m_ForwardButton, &QPushButton::clicked, this, [this]() { Stop(); m_ForwardsTimer->start(1000 / Framerate()); });
+	// connect(m_BackwardButton, &QPushButton::clicked, this, [this]() { Stop(); m_BackwardsTimer->start(1000 / Framerate()); });
+	connect(m_ForwardButton, &QPushButton::clicked, this, &Timeline::PlayForwards);
+	connect(m_BackwardButton, &QPushButton::clicked, this, &Timeline::PlayBackwards);
 
-	connect(m_ForwardsTimer, &QTimer::timeout, this, [this]() { Play(Timeline::PlayState::FORWARDS); });
-	connect(m_BackwardsTimer, &QTimer::timeout, this, [this]() { Play(Timeline::PlayState::BACKWARDS); });
+	// connect(m_ForwardsTimer, &QTimer::timeout, this, [this]() { Play(Timeline::PlayState::FORWARDS); });
+	connect(m_ForwardsTimer, &QTimer::timeout, this, [this]()
+	{ 
+		if (m_ElapsedTimer->elapsed() >= m_FrameInterval)
+		{
+			Play(Timeline::PlayState::FORWARDS);
+			m_ElapsedTimer->restart();
+		}		
+	});
+	// connect(m_BackwardsTimer, &QTimer::timeout, this, [this]() { Play(Timeline::PlayState::BACKWARDS); });
+	connect(m_BackwardsTimer, &QTimer::timeout, this, [this]()
+	{
+		if (m_ElapsedTimer->elapsed() >= m_FrameInterval)
+		{
+			Play(Timeline::PlayState::BACKWARDS);
+			m_ElapsedTimer->restart();
+		}
+	});
 
 	connect(m_StopButton, &QPushButton::clicked, this, &Timeline::Stop);
 	connect(m_NextFrameButton, &QPushButton::clicked, this, &Timeline::NextFrame);
@@ -343,7 +366,11 @@ void Timeline::PlayForwards()
 	/* Stop Before we start the timer */
 	Stop();
 
-	m_ForwardsTimer->start(1000 / Framerate());
+	// m_ForwardsTimer->start(1000 / Framerate());
+	m_FrameInterval = 1000 / Framerate();
+
+	m_ForwardsTimer->start(1);
+
 }
 
 void Timeline::PlayBackwards()
@@ -351,7 +378,10 @@ void Timeline::PlayBackwards()
 	/* Stop Before we start the timer */
 	Stop();
 
-	m_BackwardsTimer->start(1000 / Framerate());
+	// m_BackwardsTimer->start(1000 / Framerate());
+	m_FrameInterval = 1000 / Framerate();
+
+	m_BackwardsTimer->start(1);
 }
 
 void Timeline::Stop()
@@ -390,6 +420,8 @@ void Timeline::PreviousFrame()
 
 void Timeline::PlayNextFrame()
 {
+	VOID_LOG_INFO("F");
+
 	int currentFrame = m_Timeslider->value();
 
 	if (currentFrame < m_End)
