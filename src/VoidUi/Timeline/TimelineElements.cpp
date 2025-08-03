@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QPalette>
 #include <QValidator>
+#include <QLineEdit>
 
 /* Internal */
 #include "TimelineElements.h"
@@ -97,6 +98,62 @@ void TimeDisplay::Setup()
     QFont f = font();
     f.setBold(true);
     setFont(f);
+}
+
+/* }}} */
+
+/* Framerate Box {{{ */
+
+FramerateBox::FramerateBox(QWidget* parent)
+	: QComboBox(parent)
+{
+	/* Validator */
+	m_DoubleValidator = new QDoubleValidator;
+	m_DoubleValidator->setBottom(0.0);
+	m_DoubleValidator->setTop(2000.0);
+
+	/* Setup the Box */
+	Setup();
+
+	connect(this->lineEdit(), &QLineEdit::returnPressed, this, [this]() { RateChanged(currentText()); });
+	connect(this->lineEdit(), &QLineEdit::editingFinished, this, [this]() { RateChanged(currentText()); });
+}
+
+void FramerateBox::Setup()
+{
+	// Setup values and defaults
+	const QStringList values = {
+		"8",
+		"10",
+		"12",
+		"12.50",
+		"15",
+		"23.98",
+		"24",
+		"25",
+		"29.97",
+		"30",
+		"48",
+		"50",
+		"59.94",
+		"60"
+	};
+
+	addItems(values);
+
+	setEditable(true);
+
+	setValidator(m_DoubleValidator);
+	/* Setup the Focus policy to only accept focus when clicked on */
+	setFocusPolicy(Qt::ClickFocus);
+}
+
+void FramerateBox::RateChanged(const QString& text)
+{
+	emit framerateChanged(text.toDouble());
+
+	/* Unset Focus once the text is updated */
+	clearFocus();
 }
 
 /* }}} */
