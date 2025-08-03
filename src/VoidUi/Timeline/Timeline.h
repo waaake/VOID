@@ -151,6 +151,7 @@ protected: /* Methods */
 
 	void Play(const PlayState& state = PlayState::FORWARDS);
 	void Stop();
+	void Replay();
 
 	void NextFrame();
 	void PreviousFrame();

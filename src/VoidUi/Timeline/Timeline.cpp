@@ -195,6 +195,8 @@ void Timeline::Connect()
 
 	connect(m_LoopTypeButton, &LoopTypeButton::loopTypeChanged, this, [this](const LoopType& looptype) { m_LoopType = looptype; });
 	connect(m_FullscreenButton, &QPushButton::clicked, this, &Timeline::fullscreenRequested);
+
+	connect(m_FramerateBox, &FramerateBox::framerateChanged, this, [this](double) { Replay(); });
 }
 
 void Timeline::Setup()
@@ -353,6 +355,14 @@ void Timeline::Stop()
 {
 	m_ForwardsTimer->stop();
 	m_BackwardsTimer->stop();
+}
+
+void Timeline::Replay()
+{
+	if (m_ForwardsTimer->isActive())
+		PlayForwards();
+	else if (m_BackwardsTimer->isActive())
+		PlayBackwards();
 }
 
 void Timeline::NextFrame()
