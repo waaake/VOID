@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 /* Internal */
 #include "MediaModel.h"
 #include "VoidCore/VoidTools.h"

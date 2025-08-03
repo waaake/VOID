@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_BASE_PREFERENCE_H
 #define _VOID_BASE_PREFERENCE_H
 

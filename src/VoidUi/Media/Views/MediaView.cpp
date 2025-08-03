@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 /* Internal */
 #include "MediaView.h"
 #include "VoidUi/Media/Delegates/ListDelegate.h"

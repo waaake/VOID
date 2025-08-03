@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_BUFFER_SWITCH_H
 #define _VOID_BUFFER_SWITCH_H
 

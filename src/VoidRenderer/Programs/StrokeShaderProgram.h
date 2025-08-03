@@ -1,3 +1,6 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
 #ifndef _VOID_STROKE_SHADER_PROGRAM_H
 #define _VOID_STROKE_SHADER_PROGRAM_H
 
