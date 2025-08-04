@@ -167,3 +167,31 @@ install(
     DESTINATION ${VOID_INSTALL_CMAKE_DIR}
 )
 
+# Windows Specfic as it needs .dll files next to the binary
+if (WIN32)
+    set(DEPENDENCY_TARGETS
+        OpenEXR::OpenEXR
+        OpenEXR::OpenEXRCore
+        OpenImageIO::OpenImageIO
+        OpenImageIO::OpenImageIO_Util
+        OpenColorIO::OpenColorIO
+        GLEW::GLEW
+        # Freetype::Freetype
+        # FFMPEG::avformat
+        # FFMPEG::avutil
+        # FFMPEG::avcodec
+        # FFMPEG::swresample
+        # FFMPEG::swscale
+        OpenEXR::IlmThread
+        OpenEXR::Iex
+        Imath::Imath
+    )
+
+    # Install dlls for each of the dependency targets
+    foreach(dep ${DEPENDENCY_TARGETS})
+        install(FILES "$<TARGET_FILE:${dep}>" DESTINATION bin)
+    endforeach()
+
+    # windeployqt.exe /path/to/install/dir/bin
+    install(CODE "execute_process(COMMAND ${QT_DEPLOY_TOOL} ${CMAKE_INSTALL_PREFIX}/bin)")
+endif()
