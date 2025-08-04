@@ -93,6 +93,9 @@ bool StrokeRenderGear::PreDraw()
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
+    /* Enable MultiSample to allow smoothness of annotated lines */
+    glEnable(GL_MULTISAMPLE);
+
     return true;
 }
 
@@ -137,6 +140,9 @@ void StrokeRenderGear::DrawStroke(const Renderer::Stroke& stroke)
 
 void StrokeRenderGear::PostDraw()
 {
+    /* Done smoothening */
+    glDisable(GL_MULTISAMPLE);
+
     /* Cleanup */
     glBindVertexArray(0);
     m_Shader->Release();

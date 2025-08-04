@@ -176,6 +176,12 @@ void BasicRenderer::SetProfile()
     format.setVersion(3, 3);    // This is so that our shader gets compiled and linked version 330 core for OpenGL 3.3
     format.setProfile(QSurfaceFormat::CoreProfile);
 
+    /**
+     * Enable Multi Sample support
+     * How many positions within each pixels to be checked (samples) to evaluate the color of the pixel
+     */
+    format.setSamples(4);
+
     /* Set the adjusted profile */
     QSurfaceFormat::setDefaultFormat(format);
 }
