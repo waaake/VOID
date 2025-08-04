@@ -75,7 +75,7 @@ public:
     /**
      * Retrieve the input colorspace of the media file
      */
-    inline virtual ColorSpace InputColorSpace() const { return m_InputColorSpace; }
+    inline virtual ColorSpace InputColorSpace() const override { return m_InputColorSpace; }
 
 private: /* Methods */
     std::string m_Path;

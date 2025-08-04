@@ -105,12 +105,12 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
             painter->save();
 
             /* Background */
-            QColor tabColor = tab->state & State_Selected ? QColor(40, 40, 40) : QColor(25, 25, 25);
+            QColor tabColor = tab->state & State_Selected ? option->palette.color(QPalette::Window) : option->palette.color(QPalette::Window).darker(200);
             painter->fillRect(rect, tabColor);
 
             /* Text */
             QRect textRect = subElementRect(SE_TabBarTabText, tab, widget);
-            QColor textColor = tab->state & State_Selected ? VOID_FOREGROUND_COLOR : QColor(120, 120, 120);
+            QColor textColor = tab->state & State_Selected ? option->palette.color(QPalette::WindowText) : option->palette.color(QPalette::WindowText).darker(150);
             painter->setPen(textColor);
             painter->drawText(textRect, Qt::AlignCenter, tab->text);
 

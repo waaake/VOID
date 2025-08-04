@@ -173,7 +173,6 @@ void ImageComparisonRenderGear::Draw(const void* data)
     /* Tell this to the shader to use this texture as the second sampler2D */
     glUniform1i(m_UTextureB, 1);
 
-    // CalculateModelViewProjection();
     glUniformMatrix4fv(m_UProjection, 1, GL_FALSE, glm::value_ptr(d->projection));
 
     /* Update the viewer properties to the shader */
