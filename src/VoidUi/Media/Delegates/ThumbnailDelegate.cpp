@@ -6,7 +6,6 @@
 
 /* Internal */
 #include "ThumbnailDelegate.h"
-#include "VoidUi/VoidStyle.h"
 #include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
@@ -46,15 +45,16 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->save();
 
     /* Default background */
-    painter->fillRect(rect, VOID_DARK_BG_COLOR);
+    QColor bg = option.palette.color(QPalette::Window).lighter(150);
+    painter->fillRect(rect, bg);
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {
         /* Gradient */
         QLinearGradient gradient(rect.left(), rect.top(), rect.left() + width, rect.top());
-        gradient.setColorAt(0, VOID_DARK_BG_COLOR);
-        gradient.setColorAt(1, VOID_DARK_HIGHLIGHT_GREEN);
+        gradient.setColorAt(0, bg);
+        gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
         
         painter->save();
 
@@ -64,7 +64,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         painter->drawRect(rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(QRect(rect.left() + (width - 4), rect.top(), 4, height), VOID_HIGHLIGHT_GREEN);
+        painter->fillRect(QRect(rect.left() + (width - 4), rect.top(), 4, height), option.palette.color(QPalette::Highlight));
 
         painter->restore();
     }
@@ -76,7 +76,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     /* Side Bar */
     QRect siderect = QRect(rect.left(), rect.top(), 6, height);
-    painter->fillRect(siderect, VOID_GRAY_COLOR);
+    painter->fillRect(siderect, bg.lighter(150));
 
     int left = rect.left() + 10;
 
