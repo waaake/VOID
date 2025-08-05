@@ -81,7 +81,7 @@ Customize player behavior with basic preferences:
 
 ---
 
-## 📜 Credits & Licensing Notice
+## Credits & Licensing Notice
 
 Screenshots used in this project feature content from the open movie **Big Buck Bunny**, created by the [Blender Foundation](https://www.blender.org/).
 This content is licensed under the [Creative Commons Attribution 3.0 license](https://creativecommons.org/licenses/by/3.0/).
