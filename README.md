@@ -40,6 +40,8 @@ The player also supports **media reader plugins**, allowing developers to extend
 
 [<img src="images/VoidPlayerPlaying.png" width="1000"/>](images/VoidPlayerPlaying.png)
 
+[<img src="images/VoidChannelSupport.png" width="1000"/>](images/VoidChannelSupport.png)
+
 ---
 
 ## Comparison Tools
