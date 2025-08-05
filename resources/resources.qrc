@@ -16,11 +16,13 @@
         <file>../icons/icon_grid_view.svg</file>
         <file>../icons/icon_list_view.svg</file>
         <file>../icons/icon_maximize.svg</file>
+        <file>../icons/icon_media_view.png</file>
         <file>../icons/icon_minimize.svg</file>
         <file>../icons/icon_missing_frame.svg</file>
         <file>../icons/icon_pointer.svg</file>
         <file>../icons/icon_repeat.svg</file>
         <file>../icons/icon_restore.svg</file>
+        <file>../icons/icon_setting.png</file>
         <file>../icons/icon_settings.svg</file>
         <file>../icons/icon_sort_abc.svg</file>
         <file>../icons/icon_tab_options.svg</file>

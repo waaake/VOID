@@ -41,6 +41,7 @@ public:
     /* Toggle sorting on the Model */
     void EnableSorting(bool state, const Qt::SortOrder& order = Qt::AscendingOrder);
 
+    const ViewType GetViewType() const { return m_ViewType; }
     /* Set the View Type */
     void SetViewType(const ViewType& type);
 

@@ -88,6 +88,9 @@ private: /* Members */
     /* Shortcuts */
     QShortcut* m_DeleteShortcut;
 
+private: /* Methods */
+    /* Set values from User preferences */
+    void SetFromPreferences();
 };
 
 VOID_NAMESPACE_CLOSE

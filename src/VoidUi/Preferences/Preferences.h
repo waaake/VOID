@@ -15,17 +15,15 @@ VOID_NAMESPACE_OPEN
 namespace Settings
 {
     constexpr auto MissingFramesHandler = "player/missingFramesHandler";
+    constexpr auto UndoQueueSize = "general/undoQueueSize";
+    constexpr auto MediaViewType = "mediaView/viewType";
 }
 
 class VoidPreferences : public QObject
 {
     Q_OBJECT
 public:
-    static VoidPreferences& Instance()
-    {
-        static VoidPreferences instance;
-        return instance;
-    }
+    static VoidPreferences& Instance();
 
     VoidPreferences(QObject* parent = nullptr);
     ~VoidPreferences();
@@ -41,6 +39,8 @@ public:
 
     /* Helpers -> Exposing Setting Value natively */
     inline int GetMissingFrameHandler() const { return GetSetting(Settings::MissingFramesHandler).toInt(); }
+    inline int GetUndoQueueSizeHint() const { return GetSetting(Settings::UndoQueueSize).toInt(); }
+    inline int GetMediaViewType() const { return GetSetting(Settings::MediaViewType).toInt(); }
 
 signals:
     /**

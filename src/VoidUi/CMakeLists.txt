@@ -38,6 +38,8 @@ set(SOURCES
     # Preferences
     Preferences/Preferences.cpp
     Preferences/PreferencesUI.cpp
+    Preferences/GeneralPreferences.cpp
+    Preferences/MediaViewPreferences.cpp
     Preferences/PlayerPreferences.cpp
 
     # Timeline

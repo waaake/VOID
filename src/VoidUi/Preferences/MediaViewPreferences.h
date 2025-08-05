@@ -1,8 +1,8 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-#ifndef _VOID_PLAYER_PREFERENCES_H
-#define _VOID_PLAYER_PREFERENCES_H
+#ifndef _VOID_MEDIA_VIEW_PREFERENCES_H
+#define _VOID_MEDIA_VIEW_PREFERENCES_H
 
 /* Qt */
 #include <QComboBox>
@@ -15,11 +15,11 @@
 
 VOID_NAMESPACE_OPEN
 
-class PlayerPreferences : public BasicPreference
+class MediaViewPreferences : public BasicPreference
 {
 public:
-    PlayerPreferences(QWidget* parent = nullptr);
-    ~PlayerPreferences();
+    MediaViewPreferences(QWidget* parent = nullptr);
+    ~MediaViewPreferences();
 
     void Reset() override;
     void Save() override;
@@ -28,10 +28,10 @@ private: /* Members */
     /* Main Layout */
     QGridLayout* m_Layout;
 
-    /* Missing Frames */
-    QLabel* m_MissingFramesDescription;
-    QLabel* m_MissingFramesLabel;
-    QComboBox* m_MissingFramesBox;
+    /* View */
+    QLabel* m_ViewDescription;
+    QLabel* m_ViewLabel;
+    QComboBox* m_ViewBox;
 
 private: /* Methods */
     /**
@@ -48,4 +48,4 @@ private: /* Methods */
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_PLAYER_PREFERENCES_H
+#endif // _VOID_MEDIA_VIEW_PREFERENCES_H
