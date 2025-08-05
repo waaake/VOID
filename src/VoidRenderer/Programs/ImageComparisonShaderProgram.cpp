@@ -213,7 +213,7 @@ void main() {
             vec2 texCoordA = vec2(TexCoord.x * 2.0, TexCoord.y);
 
             // Fetch the color from the calculated Texture Coordinate
-            color = texture(uTexture, texCoordA);
+            color = Linearize(texture(uTexture, texCoordA), inputColorSpaceA);
         }
         else
         {
@@ -222,7 +222,7 @@ void main() {
             vec2 texCoordB = vec2((TexCoord.x - 0.5) * 2.0, TexCoord.y);
 
             // Fetch the color from the calculated Texture Coordinate
-            color = texture(uTextureB, texCoordB);
+            color = Linearize(texture(uTextureB, texCoordB), inputColorSpaceB);
         }
     }
     else
@@ -235,7 +235,7 @@ void main() {
             // When Multiplied gives the y range as [0.0 - 1.0]
             vec2 texCoordA = vec2(TexCoord.x, TexCoord.y * 2.0);
 
-            color = texture(uTexture, texCoordA);
+            color = Linearize(texture(uTexture, texCoordA), inputColorSpaceA);
         }
         else
         {   
@@ -243,7 +243,7 @@ void main() {
             // When Multiplied gives the y range as [0.0 - 1.0]
             vec2 texCoordB = vec2(TexCoord.x, (TexCoord.y - 0.5) * 2.0);
 
-            color = texture(uTextureB, texCoordB);
+            color = Linearize(texture(uTextureB, texCoordB), inputColorSpaceB);
         }
     }
 
