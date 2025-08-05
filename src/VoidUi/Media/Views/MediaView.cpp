@@ -5,6 +5,7 @@
 #include "MediaView.h"
 #include "VoidUi/Media/Delegates/ListDelegate.h"
 #include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -48,6 +48,9 @@ private: /* Methods */
     /* Connect Signals */
     void Connect();
 
+    /* ListItem */
+    QListWidgetItem* ListViewItem(const std::string& title, const std::string& icon) const;
+
     /* Save the settings for the current index */
     void SaveCurrentSettings();
     void SaveAndExit();

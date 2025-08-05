@@ -98,11 +98,13 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_list_view.svg
             ../icons/icon_maximize.svg
             ../icons/icon_minimize.svg
+            ../icons/icon_media_view.png
             ../icons/icon_missing_frame.svg
             ../icons/icon_pointer.svg
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg
             ../icons/icon_settings.svg
+            ../icons/icon_setting.png
             ../icons/icon_sort_abc.svg
             ../icons/icon_tab_options.svg
             ../icons/icon_text.svg

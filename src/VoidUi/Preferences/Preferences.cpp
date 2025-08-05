@@ -11,6 +11,12 @@ VoidPreferences::VoidPreferences(QObject* parent)
 {
 }
 
+VoidPreferences& VoidPreferences::Instance()
+{
+    static VoidPreferences instance;
+    return instance;
+}
+
 VoidPreferences::~VoidPreferences()
 {
 }

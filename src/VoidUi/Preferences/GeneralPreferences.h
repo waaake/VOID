@@ -1,8 +1,8 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-#ifndef _VOID_PLAYER_PREFERENCES_H
-#define _VOID_PLAYER_PREFERENCES_H
+#ifndef _VOID_GENERAL_PREFERENCES_H
+#define _VOID_GENERAL_PREFERENCES_H
 
 /* Qt */
 #include <QComboBox>
@@ -15,11 +15,11 @@
 
 VOID_NAMESPACE_OPEN
 
-class PlayerPreferences : public BasicPreference
+class GeneralPreferences : public BasicPreference
 {
 public:
-    PlayerPreferences(QWidget* parent = nullptr);
-    ~PlayerPreferences();
+    GeneralPreferences(QWidget* parent = nullptr);
+    ~GeneralPreferences();
 
     void Reset() override;
     void Save() override;
@@ -28,10 +28,10 @@ private: /* Members */
     /* Main Layout */
     QGridLayout* m_Layout;
 
-    /* Missing Frames */
-    QLabel* m_MissingFramesDescription;
-    QLabel* m_MissingFramesLabel;
-    QComboBox* m_MissingFramesBox;
+    /* Undo */
+    QLabel* m_UndoDescription;
+    QLabel* m_UndoLabel;
+    QComboBox* m_UndoBox;
 
 private: /* Methods */
     /**
@@ -48,4 +48,4 @@ private: /* Methods */
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_PLAYER_PREFERENCES_H
+#endif // _VOID_GENERAL_PREFERENCES_H

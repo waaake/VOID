@@ -5,6 +5,8 @@
 #include <QListWidgetItem>
 
 /* Internal */
+#include "GeneralPreferences.h"
+#include "MediaViewPreferences.h"
 #include "PreferencesUI.h"
 #include "PlayerPreferences.h"
 
@@ -24,6 +26,8 @@ VoidPreferencesWidget::VoidPreferencesWidget(QWidget* parent)
 
     /* Set Current Selection Index */
     m_SettingsList->setCurrentRow(0);
+
+    setWindowTitle("VOID Preferences");
 }
 
 VoidPreferencesWidget::~VoidPreferencesWidget()
@@ -65,19 +69,44 @@ void VoidPreferencesWidget::Build()
 
 void VoidPreferencesWidget::AddSettings()
 {
+    /* Add General Preferences */
+    GeneralPreferences* m_GeneralPrefs = new GeneralPreferences(this);
+
+    /* Reset the preferences from the saved config */
+    m_GeneralPrefs->Reset();
+
+    /* Add the item and the widget to the List and Stack */
+    m_SettingsList->addItem(ListViewItem("General", ":resources/icons/icon_setting.png"));
+    m_SettingsStacked->addWidget(m_GeneralPrefs);
+
     /* Add Player Preferences */
     PlayerPreferences* m_PlayerPrefs = new PlayerPreferences(this);
 
     /* Reset the preferences from the saved config */
     m_PlayerPrefs->Reset();
 
-    QListWidgetItem* item = new QListWidgetItem("Player Preferences", m_SettingsList);
-    item->setSizeHint(QSize(item->sizeHint().width(), 40));
-    item->setIcon(QIcon(":resources/icons/icon_video_player.png"));
+    /* Add the item and the widget to the List and Stack */
+    m_SettingsList->addItem(ListViewItem("Player", ":resources/icons/icon_video_player.png"));
+    m_SettingsStacked->addWidget(m_PlayerPrefs);
+
+    /* Add Media View Preferences */
+    MediaViewPreferences* m_MediaViewPrefs = new MediaViewPreferences(this);
+
+    /* Reset the preferences from the saved config */
+    m_MediaViewPrefs->Reset();
 
     /* Add the item and the widget to the List and Stack */
-    m_SettingsList->addItem(item);
-    m_SettingsStacked->addWidget(m_PlayerPrefs);
+    m_SettingsList->addItem(ListViewItem("Media View", ":resources/icons/icon_media_view.png"));
+    m_SettingsStacked->addWidget(m_MediaViewPrefs);
+}
+
+QListWidgetItem* VoidPreferencesWidget::ListViewItem(const std::string& title, const std::string& icon) const
+{
+    QListWidgetItem* item = new QListWidgetItem(title.c_str(), m_SettingsList);
+    item->setSizeHint(QSize(item->sizeHint().width(), 40));
+    item->setIcon(QIcon(icon.c_str()));
+
+    return item;
 }
 
 void VoidPreferencesWidget::SaveCurrentSettings()

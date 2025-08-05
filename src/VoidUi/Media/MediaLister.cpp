@@ -16,6 +16,7 @@
 #include "MediaLister.h"
 #include "VoidCore/Logging.h"
 #include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
@@ -28,11 +29,11 @@ VoidMediaLister::VoidMediaLister(QWidget* parent)
     /* Build Layout */
     Build();
 
-    /* Setup UI */
-    Setup();
-
     /* Connect Signals */
     Connect();
+
+    /* Setup UI */
+    Setup();
 
     /* Accept drops */
     setAcceptDrops(true);
@@ -172,8 +173,8 @@ void VoidMediaLister::Setup()
 
     this->setPalette(p);
 
-    /* Default View */
-    m_ListViewToggle->setChecked(true);
+    /* Load Settings from Preferences */
+    SetFromPreferences();
 }
 
 void VoidMediaLister::Connect()
@@ -187,11 +188,12 @@ void VoidMediaLister::Connect()
     connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
     
     /* View Changed */
-    #if _QT6_COMPAT
-    connect(m_ViewButtonGroup, &QButtonGroup::idPressed, this, [this](int index) { m_MediaView->SetViewType(static_cast<MediaView::ViewType>(index)); });
-    #else
-    connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonPressed), this, [this](int index) { m_MediaView->SetViewType(static_cast<MediaView::ViewType>(index)); });
-    #endif // _QT6_COMPAT
+    /* The call to buttonToggled is a slightly expensive as this gets called 2 times if we have n buttons (once for checked off and once for checked on) */
+    connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(QAbstractButton*, bool)>(&QButtonGroup::buttonToggled), this, [this](QAbstractButton* b, bool s)
+    { 
+        if (s)
+            m_MediaView->SetViewType(static_cast<MediaView::ViewType>(m_ViewButtonGroup->id(b)));
+    });
 
     /* List */
     connect(m_MediaView, &MediaView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
@@ -199,6 +201,9 @@ void VoidMediaLister::Connect()
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);
+
+    /* Preferences */
+    connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &VoidMediaLister::SetFromPreferences);
 }
 
 void VoidMediaLister::IndexSelected(const QModelIndex& index)
@@ -263,6 +268,15 @@ void VoidMediaLister::RemoveSelectedMedia()
 {
     /* Push all of the selected indexes for removal */
     MBridge::Instance().PushCommand(new MediaRemoveCommand(m_MediaView->SelectedIndexes()));
+}
+
+void VoidMediaLister::SetFromPreferences()
+{
+    /* Default View */
+    if (!VoidPreferences::Instance().GetMediaViewType())
+        m_ListViewToggle->setChecked(true);
+    else
+        m_ThumbnailViewToggle->setChecked(true);
 }
 
 VOID_NAMESPACE_CLOSE
