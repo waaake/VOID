@@ -113,7 +113,13 @@ public:
     inline virtual unsigned int GLType() const override { return VOID_GL_UNSIGNED_BYTE; }
 
     /**
-     * Returns OpenGL channel format
+     * Specifies the number of color components in the texture
+     * e.g. GL_RGBA32F | GL_RGBA32I | GL_RGBA32UI | GL_RGBA16 | GL_RGBA16F | GL_RGBA16I
+     */
+    inline virtual unsigned int GLInternalFormat() const override { return GLFormat(); }
+
+    /**
+     * Returns OpenGL format of pixel data
      * GL_RGBA | GL_RGB
      */
     inline virtual unsigned int GLFormat() const override { return (m_Channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
@@ -131,7 +137,7 @@ public:
      * Not all frames will be used so this function can create a vector on the fly if unsigned char
      * is not the base datatype of the class
      */
-    inline virtual const unsigned char* ThumbnailPixels() const override { return m_Pixels.data(); }
+    inline virtual const unsigned char* ThumbnailPixels() override { return m_Pixels.data(); }
 
     /**
      * Image Specifications

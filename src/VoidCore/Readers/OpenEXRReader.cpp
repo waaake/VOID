@@ -49,6 +49,30 @@ void OpenEXRReader::Clear()
     m_Pixels.shrink_to_fit();
 }
 
+const unsigned char* OpenEXRReader::ThumbnailPixels()
+{
+    /* This is always assuming that the frame has been read */
+    if (m_TPixels.empty())
+    {
+        /* Reserve the size on Thumbnail Data */
+        m_TPixels.reserve(m_Pixels.size());
+
+        unsigned char* dest = m_TPixels.data();
+
+        for (size_t i = 0; i < (m_Width * m_Height); ++i)
+        {
+            int index = i * 4;
+            dest[index + 0] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 0], 0.f, 1.f) * 255.f);
+            dest[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
+            dest[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
+            dest[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
+        }
+    }
+
+    /* Return the Thumbnail data */
+    return m_TPixels.data();
+}
+
 void OpenEXRReader::Read(const std::string& path, int framenumber)
 {
     /* Create an EXR Reader */
@@ -63,12 +87,15 @@ void OpenEXRReader::Read(const std::string& path, int framenumber)
     const Imf::Header& header = f.header();
     const Imf::ChannelList& channels = header.channels();
 
-    /*
-     * TODO: Check if we have a better way of reading channels rather than iterating here ?
-     * Update the channel count by reading the channels
-     */
-    for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
-        m_Channels++;
+    // /*
+    //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
+    //  * Update the channel count by reading the channels
+    //  */
+    // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+    //     m_Channels++;
+
+    /* Force 4 Channels */
+    m_Channels = 4;
 
     VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", m_Width, m_Height, m_Channels);
 
@@ -97,16 +124,10 @@ void OpenEXRReader::Read(const std::string& path, int framenumber)
             /* Find the index at which we will be writing to on the pixel buffer */
             int index = (y * m_Width + x) * m_Channels;
 
-            /* Convert half values into unsigned char (0-255) */
-            m_Pixels[index] = static_cast<unsigned char>(std::clamp(pixel.r * 255.f, 0.f, 255.f)); /* Red */
-            m_Pixels[index + 1] = static_cast<unsigned char>(std::clamp(pixel.g * 255.f, 0.f, 255.f)); /* Green */
-            m_Pixels[index + 2] = static_cast<unsigned char>(std::clamp(pixel.b * 255.f, 0.f, 255.f)); /* Blue */
-
-            /* In case we have Alpha channel, update the value accordingly */
-            if (m_Channels == 4)
-            {
-                m_Pixels[index + 3] = static_cast<unsigned char>(std::clamp(pixel.a * 255.f, 0.f, 255.f)); /* Alpha */
-            }
+            m_Pixels[index] = pixel.r;
+            m_Pixels[index + 1] = pixel.g;
+            m_Pixels[index + 2] = pixel.b;
+            m_Pixels[index + 3] = pixel.a;
         }
     }
 }

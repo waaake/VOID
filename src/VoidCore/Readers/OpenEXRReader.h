@@ -30,13 +30,19 @@ public:
      * Returns the OpenGL data type
      * e.g. GL_UNSIGNED_BYTE, GL_FLOAT
      */
-    inline virtual unsigned int GLType() const override { return VOID_GL_UNSIGNED_BYTE; }
+    inline virtual unsigned int GLType() const override { return VOID_GL_FLOAT; }
 
     /**
-     * Returns OpenGL channel format
+     * Specifies the number of color components in the texture
+     * e.g. GL_RGBA32F | GL_RGBA32I | GL_RGBA32UI | GL_RGBA16 | GL_RGBA16F | GL_RGBA16I
+     */
+    inline virtual unsigned int GLInternalFormat() const override { return VOID_GL_RGBA32F; }
+
+    /**
+     * Returns OpenGL format of the pixel data
      * GL_RGBA | GL_RGB
      */
-    inline virtual unsigned int GLFormat() const override { return (m_Channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
+    inline virtual unsigned int GLFormat() const override { return VOID_GL_RGBA; }
 
     /**
      * Returns the Pointer to the underlying pixel data which will be rendered on the Renderer
@@ -51,7 +57,7 @@ public:
      * Not all frames will be used so this function can create a vector on the fly if unsigned char
      * is not the base datatype of the class
      */
-    inline virtual const unsigned char* ThumbnailPixels() const override { return m_Pixels.data(); }
+    virtual const unsigned char* ThumbnailPixels() override;
 
     /**
      * Image Specifications
@@ -86,7 +92,8 @@ private: /* Methods */
     int m_Channels;
 
     /* Internal data store */
-    std::vector<unsigned char> m_Pixels;
+    std::vector<unsigned char> m_TPixels;
+    std::vector<float> m_Pixels;
 };
 
 VOID_NAMESPACE_CLOSE
