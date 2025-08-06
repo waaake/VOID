@@ -1,5 +1,6 @@
 # Package Config
 include(CMakePackageConfigHelpers)
+include(FreetypeInstallHelpers)
 
 # Build Core Library
 add_subdirectory(VoidCore)
@@ -169,3 +170,33 @@ install(
     DESTINATION ${VOID_INSTALL_CMAKE_DIR}
 )
 
+# Dll copier for windows
+if (WIN32)
+    set(DEPENDENCY_TARGETS
+        OpenEXR::OpenEXR
+        OpenEXR::OpenEXRCore
+        OpenImageIO::OpenImageIO
+        OpenImageIO::OpenImageIO_Util
+        OpenColorIO::OpenColorIO
+        GLEW::GLEW
+        zstd::libzstd_shared
+        OpenEXR::IlmThread
+        OpenEXR::Iex
+        Imath::Imath
+    )
+
+    # Install dlls for each of the dependency targets
+    foreach(dep ${DEPENDENCY_TARGETS})
+        install(FILES "$<TARGET_FILE:${dep}>" DESTINATION bin)
+    endforeach()
+
+    # FFmpeg dlls
+    install(FILES ${FFmpeg_dlls} DESTINATION bin)
+
+    # Freetype DLL
+    install(FILES "${FREETYPE_DLL}" DESTINATION bin)
+
+    # windeployqt.exe /path/to/install/dir/bin
+    set(QT_DEPLOY_TOOL "${QT_CMAKE_PATH}/../../../bin/windeployqt.exe")
+    install(CODE "execute_process(COMMAND ${QT_DEPLOY_TOOL} ${CMAKE_INSTALL_PREFIX}/bin)")
+endif()
