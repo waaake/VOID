@@ -44,6 +44,8 @@ if (Qt6_FOUND)
     add_library(Qt::Core ALIAS Qt6::Core)
     add_library(Qt::Widgets ALIAS Qt6::Widgets)
     add_library(Qt::OpenGLWidgets ALIAS Qt6::OpenGLWidgets)
+    # Format c:\some\path\to\qt\cmake -> c:/some/path/to/qt/cmake
+    file(TO_CMAKE_PATH ${Qt6_DIR} QT_CMAKE_PATH)
 else()
     find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
 
@@ -53,6 +55,8 @@ else()
     set(QT_MAJOR_VERSION 5)
     add_library(Qt::Core ALIAS Qt5::Core)
     add_library(Qt::Widgets ALIAS Qt5::Widgets)
+    # Format c:\some\path\to\qt\cmake -> c:/some/path/to/qt/cmake
+    file(TO_CMAKE_PATH ${Qt5_DIR} QT_CMAKE_PATH)
 endif()
 
 # GL

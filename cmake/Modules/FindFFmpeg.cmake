@@ -275,3 +275,17 @@ find_package_handle_standard_args(FFMPEG
   VERSION_VAR FFMPEG_VERSION
   HANDLE_COMPONENTS)
 unset(_ffmpeg_required_vars)
+
+if (WIN32 AND DEFINED FFMPEG_ROOT AND FFMPEG_ROOT)
+  file(TO_CMAKE_PATH "${FFMPEG_ROOT}" _FFMPEG_DIR)
+
+  # Since ffmpeg dlls are named -version that version varies per dll file
+  # eg. avformat-60.dll, avformat-62.dll, avutil-60.dll
+  file(GLOB FFmpeg_dlls
+        "${_FFMPEG_DIR}/bin/avcodec-*.dll"
+        "${_FFMPEG_DIR}/bin/avformat-*.dll"
+        "${_FFMPEG_DIR}/bin/avutil-*.dll"
+        "${_FFMPEG_DIR}/bin/swresample-*.dll"
+        "${_FFMPEG_DIR}/bin/swscale-*.dll"
+    )
+endif()
