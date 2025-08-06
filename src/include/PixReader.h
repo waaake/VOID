@@ -41,6 +41,22 @@ VOID_NAMESPACE_OPEN
 #define VOID_GL_RGBA 0x1908
 #define VOID_GL_LUMINANCE 0x1909
 #define VOID_GL_LUMINANCE_ALPHA 0x190A
+#define VOID_GL_RGBA32F 0x8814
+#define VOID_GL_RGB32F 0x8815
+#define VOID_GL_RGBA16F 0x881A
+#define VOID_GL_RGB16F 0x881B
+#define VOID_GL_RGBA32UI 0x8D70
+#define VOID_GL_RGB32UI 0x8D71
+#define VOID_GL_RGBA16UI 0x8D76
+#define VOID_GL_RGB16UI 0x8D77
+#define VOID_GL_RGBA8UI 0x8D7C
+#define VOID_GL_RGB8UI 0x8D7D
+#define VOID_GL_RGBA32I 0x8D82
+#define VOID_GL_RGB32I 0x8D83
+#define VOID_GL_RGBA16I 0x8D88
+#define VOID_GL_RGB16I 0x8D89
+#define VOID_GL_RGBA8I 0x8D8E
+#define VOID_GL_RGB8I 0x8D8F
 
 
 /* Typedefs */
@@ -61,7 +77,13 @@ public:
     virtual unsigned int GLType() const = 0;
 
     /**
-     * Returns OpenGL channel format
+     * Specifies the number of color components in the texture
+     * e.g. GL_RGBA32F | GL_RGBA32I | GL_RGBA32UI | GL_RGBA16 | GL_RGBA16F | GL_RGBA16I
+     */
+    virtual unsigned int GLInternalFormat() const = 0;
+
+    /**
+     * Specifies the format of the pixel data
      * GL_RGBA | GL_RGB
      */
     virtual unsigned int GLFormat() const = 0;
@@ -79,7 +101,7 @@ public:
      * Not all frames will be used so this function can create a vector on the fly if unsigned char
      * is not the base datatype of the class
      */
-    virtual const unsigned char* ThumbnailPixels() const = 0;
+    virtual const unsigned char* ThumbnailPixels() = 0;
 
     /**
      * Image Specifications
