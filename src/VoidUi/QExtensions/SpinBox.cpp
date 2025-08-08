@@ -35,7 +35,7 @@ void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     /* Text */
-    painter.setPen(QColor(210, 210, 210));
+    painter.setPen(palette().text().color());
     /* Show fixed point number with 1 decimal precision */
     painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignLeft | Qt::AlignVCenter, QString::number(value(), 'f', 1));
 
@@ -54,7 +54,7 @@ void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
         << QPoint(arrowCenter.x(), arrowCenter.y() - 5);
 
     /* Draw the Arrow polygon */
-    painter.setBrush(QColor(210, 210, 210));
+    painter.setBrush(palette().text());
     painter.drawPolygon(upArrow);
     painter.drawPolygon(downArrow);
 }

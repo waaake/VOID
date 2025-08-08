@@ -164,7 +164,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	/* }}} */
 
 	// painter.drawRect(r);
-	painter.fillRect(r, QColor(30, 30, 30));
+	painter.fillRect(r, palette().color(QPalette::Base));
 
 	/* Position Handle */
 	int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);

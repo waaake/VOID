@@ -28,7 +28,7 @@ void ControlCombo::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     /* Text */
-    painter.setPen(QColor(210, 210, 210));
+    painter.setPen(palette().text().color());
     painter.drawText(rect().adjusted(5, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter, currentText());
 
     /* Arrow Indicator */
@@ -41,7 +41,7 @@ void ControlCombo::paintEvent(QPaintEvent* event)
         << QPoint(arrowCenter.x(), arrowCenter.y() + 4);
 
     /* Draw the Arrow polygon */
-    painter.setBrush(QColor(210, 210, 210));
+    painter.setBrush(palette().text());
     painter.drawPolygon(downarrow);
 }
 
@@ -72,7 +72,7 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     /* Text */
-    painter.setPen(QColor(210, 210, 210));
+    painter.setPen(palette().text().color());
     painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignCenter, (QString::number(value()) + " %"));
 
     /* Draw Arrows */
@@ -90,7 +90,7 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
         << QPoint(arrowCenter.x(), arrowCenter.y() - 5);
 
     /* Draw the Arrow polygon */
-    painter.setBrush(QColor(210, 210, 210));
+    painter.setBrush(palette().text());
     painter.drawPolygon(upArrow);
     painter.drawPolygon(downArrow);
 }
@@ -258,7 +258,7 @@ void QuickSpinner::ValueChanged(const double value)
     }
     else
     {
-        p.setColor(QPalette::WindowText, QColor(210, 210, 210));
+        p.setColor(QPalette::WindowText, palette().text().color().darker(50));
     }
     
     /* Update the color on the Label to indicate when we're on the Default value */
