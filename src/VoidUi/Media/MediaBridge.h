@@ -15,16 +15,19 @@
 #include "Definition.h"
 #include "VoidUi/Media/MediaClip.h"
 #include "VoidUi/Media/Models/MediaModel.h"
+#include "VoidUi/Project/Project.h"
+#include "VoidUi/Project/Models/ProjectModel.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
  * This class acts as a singleton bridge between various components dealing with Media and MediaClips
- * The class holds all the MediaClips at any instant
- * Any Media which gets added, gets added to this instance
+ * The class holds all the Projects at any instant
+ * Any Media which gets added, gets added to the current active project
  * this then propagates the added clip to other components by emitting mediaAdded
  * similarly when the media gets removed, a mediaAboutToBeRemoved will be emitted for all components to get
- * rid of the media before the media pointer is finally deleted internally
+ * rid of the media before the media pointer is finally deleted internally after the media has been removed
+ * from the active project
  */
 class MBridge : public QObject
 {
@@ -50,6 +53,15 @@ public:
     MBridge& operator=(MBridge&&) = delete;
 
     /**
+     * Projects
+     */
+    void NewProject();
+    void NewProject(const std::string& name);
+
+    void SetCurrentProject(const QModelIndex& index);
+    void SetCurrentProject(int index);
+
+    /**
      * Adds Media to the Graph
      */
     bool AddMedia(const MediaStruct& mstruct);
@@ -63,7 +75,8 @@ public:
     bool Remove(SharedMediaClip clip);
     bool Remove(const QModelIndex& index);
 
-    MediaModel* DataModel() const { return m_Media; }
+    inline MediaModel* DataModel() const { return m_Project->DataModel(); }
+    inline ProjectModel* ProjectDataModel() const { return m_Projects; }
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);
@@ -84,12 +97,21 @@ signals:
     void updated();
     void mediaAdded(SharedMediaClip);
     void mediaAboutToBeRemoved(SharedMediaClip);
+    void projectCreated(const Project*);
+    void projectChanged(const Project*);
 
 private: /* Members */
-    MediaModel* m_Media;
+    /* All the Available Projects */
+    ProjectModel* m_Projects;
 
     /* Undo Stack */
     QUndoStack* m_UndoStack;
+
+    /* Current Active Project */
+    Project* m_Project;
+
+private: /* Methods */
+    void SetActiveProject(Project* project);
 };
 
 VOID_NAMESPACE_CLOSE

@@ -1,8 +1,8 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-#ifndef _VOID_MEDIA_MODEL_H
-#define _VOID_MEDIA_MODEL_H
+#ifndef _VOID_PROJECT_MODEL_H
+#define _VOID_PROJECT_MODEL_H
 
 /* STD */
 #include <vector>
@@ -13,14 +13,14 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/Media/MediaClip.h"
+#include "VoidUi/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
- * Describes how the Media is held in a Project/Subdirs
+ * Describes the Project
  */
-class MediaModel : public QAbstractItemModel
+class ProjectModel : public QAbstractItemModel
 {
     Q_OBJECT
 
@@ -28,22 +28,21 @@ public:
     /**
      * Roles for various fields of data from the MediaClip
      */
-    enum class MRoles
+    enum class Roles
     {
         Name = Qt::UserRole + 1001,
-        Framerate,
-        Extension,
-        FrameRange,
-        Thumbnail,
+        Active,
         Color,
     };
 
 public:
-    explicit MediaModel(QObject* parent = nullptr);
+    explicit ProjectModel(QObject* parent = nullptr);
+
+    ~ProjectModel();
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
-    
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
@@ -51,38 +50,37 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    /* Media */
-    void Add(const SharedMediaClip& media);
-    void Insert(const SharedMediaClip& media, const int index);
+    /* Project */
+    void Add(Project* media);
+    void Insert(Project* media, int index);
     void Remove(const QModelIndex& index);
-    
-    SharedMediaClip Media(const QModelIndex& index) const;
-    int MediaRow(const SharedMediaClip& clip) const;
 
-    void Clear() { m_Media.clear(); }
+    Project* GetProject(const QModelIndex& index) const;
+    int ProjectRow(const Project* clip) const;
+
+    void Clear();
+
+    inline void Refresh() { Update(); }
 
 private: /* Members */
-    std::vector<SharedMediaClip> m_Media;
+    std::vector<Project*> m_Projects;
 
 private: /* Methods */
-    std::string ItemFramerate(const SharedMediaClip& clip) const;
-    std::string ItemFramerange(const SharedMediaClip& clip) const;
-
     void Update();
 };
 
-class MediaProxyModel : public QSortFilterProxyModel
+class ProjectProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    explicit MediaProxyModel(QObject* parent = nullptr);
+    explicit ProjectProxyModel(QObject* parent = nullptr);
 
     /* Sets the key which needs to be searched in the data */
     void SetSearchText(const std::string& text);
 
     /* Sets to role to look at in the model index for data */
-    void SetSearchRole(const MediaModel::MRoles& role);
+    void SetSearchRole(const ProjectModel::Roles& role);
 
 protected:
     /* Returns true for the row that is valid for the search filter */
@@ -103,4 +101,4 @@ private: /* Members */
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_MEDIA_MODEL_H
+#endif // _VOID_PROJECT_MODEL_H

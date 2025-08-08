@@ -41,6 +41,10 @@ VoidMediaLister::VoidMediaLister(QWidget* parent)
 
 VoidMediaLister::~VoidMediaLister()
 {
+    m_ProjectView->deleteLater();
+    delete m_ProjectView;
+    m_ProjectView = nullptr;
+
     m_MediaView->deleteLater();
     delete m_MediaView;
     m_MediaView = nullptr;
@@ -148,12 +152,18 @@ void VoidMediaLister::Build()
     /* }}} */
 
     /* Views {{{ */
+    m_ViewSplitter = new QSplitter(Qt::Horizontal);
+
+    m_ProjectView = new ProjectView(this);
     m_MediaView = new MediaView(this);
+
+    m_ViewSplitter->addWidget(m_ProjectView);
+    m_ViewSplitter->addWidget(m_MediaView);
     /* }}} */
 
     /* Add to the base Layout */
     m_layout->addLayout(m_OptionsLayout);
-    m_layout->addWidget(m_MediaView);
+    m_layout->addWidget(m_ViewSplitter);
 
     /* Spacing */
     int left, top, right, bottom;
@@ -172,6 +182,12 @@ void VoidMediaLister::Setup()
     p.setColor(QPalette::Window, palette().color(QPalette::Dark));
 
     this->setPalette(p);
+
+    /* Splitter sizes */
+    int w = sizeHint().width();
+    int p_width = static_cast<int>(w * 0.3);
+    /* Project view is smaller than media view*/
+    m_ViewSplitter->setSizes({p_width, w - p_width});
 
     /* Load Settings from Preferences */
     SetFromPreferences();
@@ -198,6 +214,8 @@ void VoidMediaLister::Connect()
     /* List */
     connect(m_MediaView, &MediaView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
     connect(m_MediaView, &MediaView::customContextMenuRequested, this, &VoidMediaLister::ShowContextMenu);
+
+    connect(m_ProjectView, &ProjectView::itemClicked, this, [this](const QModelIndex& index) { MBridge::Instance().SetCurrentProject(index); });
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);

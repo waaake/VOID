@@ -107,6 +107,7 @@ private: /* Members */
     QMenu* m_FileMenu;
     QAction* m_ImportAction;
     QAction* m_ClearAction;
+    QAction* m_NewProjectAction;
     QAction* m_CloseAction;
 
     /* Edit Menu */

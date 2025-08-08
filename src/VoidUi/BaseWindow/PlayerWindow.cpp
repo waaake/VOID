@@ -40,7 +40,7 @@ DockerWindow::~DockerWindow()
 
 void DockerWindow::Build()
 {
-    m_DockSizes << 4 << 6;
+    m_DockSizes << 400 << 700;
 
     /* Docker */
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
@@ -177,6 +177,9 @@ void VoidMainWindow::Build()
 
     m_ImportAction = new QAction("Import Media...", m_FileMenu);
     m_ImportAction->setShortcut(QKeySequence("Ctrl+I"));
+    
+    m_NewProjectAction = new QAction("New Project", m_FileMenu);
+    m_NewProjectAction->setShortcut(QKeySequence("Ctrl+N"));
 
     m_ClearAction = new QAction("Clear", m_FileMenu);
 
@@ -184,6 +187,15 @@ void VoidMainWindow::Build()
     m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
 
     m_FileMenu->addAction(m_ImportAction);
+
+    /* -------------------------------- */
+    m_FileMenu->addSeparator();
+
+    m_FileMenu->addAction(m_NewProjectAction);
+
+    /* -------------------------------- */
+    m_FileMenu->addSeparator();
+
     m_FileMenu->addAction(m_ClearAction);
     m_FileMenu->addAction(m_CloseAction);
     /* }}} */
@@ -339,6 +351,7 @@ void VoidMainWindow::Connect()
     /* File Menu {{{ */
     connect(m_CloseAction, &QAction::triggered, this, &VoidMainWindow::close);
     connect(m_ImportAction, &QAction::triggered, this, &VoidMainWindow::Load);
+    connect(m_NewProjectAction, &QAction::triggered, this, [this]() { MBridge::Instance().NewProject(); });
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
