@@ -56,9 +56,8 @@ void ToggleStatePushButton::Update()
 /* }}} */
 
 /* Toggle State Push Button {{{ */
-HighlightToggleButton::HighlightToggleButton(const std::string& text, QWidget* parent, const QColor& color)
+HighlightToggleButton::HighlightToggleButton(const std::string& text, QWidget* parent)
     : QPushButton(text.c_str(), parent)
-    , m_Color(color)
 {
     /* This needs to be checkable */
     setCheckable(true);
@@ -66,8 +65,8 @@ HighlightToggleButton::HighlightToggleButton(const std::string& text, QWidget* p
     setFlat(true);
 }
 
-HighlightToggleButton::HighlightToggleButton(QWidget* parent, const QColor& color)
-    : HighlightToggleButton("", parent, color)
+HighlightToggleButton::HighlightToggleButton(QWidget* parent)
+    : HighlightToggleButton("", parent)
 {
 }
 
@@ -86,7 +85,7 @@ void HighlightToggleButton::paintEvent(QPaintEvent* event)
         QRectF r(rect());
         r.setTop(r.bottom() - 2);
 
-        painter.fillRect(r, m_Color);
+        painter.fillRect(r, palette().color(QPalette::Highlight));
     }
 }
 
