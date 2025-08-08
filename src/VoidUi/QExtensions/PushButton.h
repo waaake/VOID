@@ -14,7 +14,6 @@ VOID_NAMESPACE_OPEN
 
 /* Default Color for Toggle */
 const QColor TOGGLE_COLOR = QColor(200, 75, 60);
-const QColor HIGHLIGHT_COLOR = QColor(160, 190, 60);
 
 /**
  * This class just wraps over the standard push button to allow buttons to get a different
@@ -44,14 +43,11 @@ private: /* Methods */
 class HighlightToggleButton : public QPushButton
 {
 public:
-    HighlightToggleButton(const std::string& text, QWidget* parent = nullptr, const QColor& color = HIGHLIGHT_COLOR);
-    HighlightToggleButton(QWidget* parent = nullptr, const QColor& color = HIGHLIGHT_COLOR);
+    HighlightToggleButton(const std::string& text, QWidget* parent = nullptr);
+    HighlightToggleButton(QWidget* parent = nullptr);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
-
-private: /* Members */
-    QColor m_Color;
 };
 
 /**
