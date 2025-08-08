@@ -13,15 +13,72 @@ VOID_NAMESPACE_OPEN
 MBridge::MBridge(QObject* parent)
     : QObject(parent)
 {
-    m_Media = new MediaModel(this);
+    m_Projects = new ProjectModel(this);
     m_UndoStack = new QUndoStack(this);
+
+    /* Setup a Default Project */
+    NewProject();
 }
 
 MBridge::~MBridge()
 {
-    m_Media->deleteLater();
-    delete m_Media;
-    m_Media = nullptr;
+    m_Projects->deleteLater();
+    delete m_Projects;
+    m_Projects = nullptr;
+}
+
+void MBridge::NewProject()
+{
+    /* Use default name */
+    std::string name = "Project ";
+    name += std::to_string(m_Projects->rowCount() + 1);
+
+    NewProject(name);
+}
+
+void MBridge::NewProject(const std::string& name)
+{
+    SetActiveProject(new Project(name, this));
+
+    /* Add to the projects */
+    m_Projects->Add(m_Project);
+    emit projectCreated(m_Project);
+}
+
+void MBridge::SetCurrentProject(int index)
+{
+    /* Provided index is not valid */
+    if (index > m_Projects->rowCount() - 1)
+        return;
+
+    SetActiveProject(m_Projects->GetProject(m_Projects->index(index, 0)));
+    emit projectChanged(m_Project);
+}
+
+void MBridge::SetCurrentProject(const QModelIndex& index)
+{
+    /* Provided index is not valid */
+    if (!index.isValid())
+        return;
+
+    SetActiveProject(m_Projects->GetProject(index));
+    emit projectChanged(m_Project);
+}
+
+void MBridge::SetActiveProject(Project* project)
+{
+    if (!project)
+        return;
+
+    /* Mark the current one as inactive */
+    if (m_Project)
+        m_Project->SetActive(false);
+
+    m_Project = project;
+    m_Project->SetActive(true);
+
+    /* Force Update on the Model */
+    m_Projects->Refresh();
 }
 
 bool MBridge::AddMedia(const MediaStruct& mstruct)
@@ -37,7 +94,7 @@ bool MBridge::AddMedia(const MediaStruct& mstruct)
     }
 
     /* Add to the underlying struct */
-    m_Media->Add(clip);
+    m_Project->AddMedia(clip);
 
     /* Emit that we have added a new media clip now */
     emit mediaAdded(clip);
@@ -59,7 +116,7 @@ bool MBridge::InsertMedia(const MediaStruct& mstruct, const int index)
     }
 
     /* Add to the underlying struct */
-    m_Media->Insert(clip, index);
+    m_Project->InsertMedia(clip, index);
 
     /* Emit that we have added a new media clip now */
     emit mediaAdded(clip);
@@ -77,11 +134,8 @@ bool MBridge::Remove(SharedMediaClip clip)
     /* Ensure All events are Processed before deleting the Media Clip internally */
     QApplication::processEvents();
 
-    /* Create an index from the clip */
-    QModelIndex index = m_Media->index(m_Media->MediaRow(clip), 0);
-
     /* Remove this from the Underlying model */
-    m_Media->Remove(index);
+    m_Project->RemoveMedia(m_Project->ClipIndex(clip));
 
     return true;
 }
@@ -89,7 +143,11 @@ bool MBridge::Remove(SharedMediaClip clip)
 bool MBridge::Remove(const QModelIndex& index)
 {
     /* The Media Associated with the Model index */
-    SharedMediaClip clip = m_Media->Media(index);
+    SharedMediaClip clip = m_Project->Media(index);
+
+    /* Invalid Index */
+    if (!clip)
+        return false;
 
     /* Emit the mediaAboutToBeRemoved signal for all listeners to clear the item */
     emit mediaAboutToBeRemoved(clip);
@@ -98,7 +156,7 @@ bool MBridge::Remove(const QModelIndex& index)
     QApplication::processEvents();
 
     /* Remove this from the Underlying model */
-    m_Media->Remove(index);
+    m_Project->RemoveMedia(index);
 
     return true;
 }

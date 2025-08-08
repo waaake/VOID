@@ -15,6 +15,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QShortcut>
+#include <QSplitter>
 #include <QWidget>
 
 /* Internal */
@@ -22,6 +23,7 @@
 #include "MediaBridge.h"
 #include "MediaSearchBar.h"
 #include "VoidUi/Media/Views/MediaView.h"
+#include "VoidUi/Project/Views/ProjectView.h"
 #include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
@@ -67,6 +69,7 @@ private: /* Methods */
 private: /* Members */
     QVBoxLayout* m_layout;
     QHBoxLayout* m_OptionsLayout;
+    QSplitter* m_ViewSplitter;
 
     /* Options */
     HighlightToggleButton* m_ListViewToggle;
@@ -79,6 +82,7 @@ private: /* Members */
     HighlightToggleButton* m_SortButton;
 
     /* Views */
+    ProjectView* m_ProjectView;
     MediaView* m_MediaView;
 
     /* Context Menu */

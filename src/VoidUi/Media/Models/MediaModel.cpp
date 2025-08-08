@@ -139,7 +139,7 @@ void MediaModel::Remove(const QModelIndex& index)
     endRemoveRows();
 }
 
-SharedMediaClip MediaModel::Media(const QModelIndex& index)
+SharedMediaClip MediaModel::Media(const QModelIndex& index) const
 {
     if (!index.isValid())
         return nullptr;

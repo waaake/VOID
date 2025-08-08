@@ -42,6 +42,12 @@ set(SOURCES
     Preferences/MediaViewPreferences.cpp
     Preferences/PlayerPreferences.cpp
 
+    # Project
+    Project/Project.cpp
+    Project/Views/ProjectView.cpp
+    Project/Models/ProjectModel.cpp
+    Project/Delegates/ListDelegate.cpp
+
     # Timeline
     Timeline/Timeline.cpp
     Timeline/TimelineElements.cpp

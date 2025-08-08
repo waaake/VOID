@@ -99,11 +99,16 @@ void MediaView::ResetView()
 void MediaView::Connect()
 {
     connect(this, &QListView::doubleClicked, this, &MediaView::ItemDoubleClicked);
+
+    /* Media Bridge */
+    connect(&MBridge::Instance(), &MBridge::projectCreated, this, [this](const Project* project) { ResetModel(project->DataModel()); });
+    connect(&MBridge::Instance(), &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(project->DataModel()); });
 }
 
 void MediaView::ResetModel(MediaModel* model)
 {
     proxy->setSourceModel(model);
+    VOID_LOG_INFO("Source Model Updated");
 }
 
 void MediaView::ItemDoubleClicked(const QModelIndex& index)
