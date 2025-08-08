@@ -43,11 +43,16 @@ void VoidDark::drawPrimitive(PrimitiveElement element, const QStyleOption* optio
     {
         case PE_PanelButtonCommand:
             /* Dark buttons */
-            painter->fillRect(option->rect, QColor(53, 53, 53));
+            if (option->state & State_Sunken)
+                painter->fillRect(option->rect, option->palette.color(QPalette::Button).darker(150));
+            else if (option->state & State_MouseOver)
+                painter->fillRect(option->rect, option->palette.color(QPalette::Button).lighter(150));
+            else
+                painter->fillRect(option->rect, option->palette.color(QPalette::Button));
             break;
         case PE_FrameTabWidget:
             painter->save();
-            painter->setBrush(QColor(40, 40, 40));
+            painter->setBrush(option->palette.color(QPalette::Window));
             painter->setPen(Qt::NoPen);
             painter->drawRect(option->rect);
             painter->restore();
@@ -153,5 +158,34 @@ void VoidDark::polish(QPalette& palette)
 
     palette.setColor(QPalette::Disabled, QPalette::Text, VOID_FOREGROUND_DISABLED_COLOR);
 }
+
+/* Void Blue {{{ */
+
+VoidBlue::VoidBlue()
+    : VoidDark()
+{
+}
+
+void VoidBlue::polish(QPalette& palette)
+{
+    palette.setColor(QPalette::Window, QColor(50, 120, 170));
+    palette.setColor(QPalette::WindowText, QColor(30, 30, 30));
+    palette.setColor(QPalette::Base, QColor(10, 100, 150));
+    palette.setColor(QPalette::AlternateBase, QColor(30, 90, 140));
+    palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
+    palette.setColor(QPalette::ToolTipText, Qt::black);
+    palette.setColor(QPalette::Text, QColor(30, 30, 30));
+    palette.setColor(QPalette::Button, QColor(30, 90, 140));
+    palette.setColor(QPalette::ButtonText, QColor(30, 30, 30));
+    palette.setColor(QPalette::BrightText, Qt::red);
+    palette.setColor(QPalette::Link, QColor(32, 230, 218));
+    palette.setColor(QPalette::Highlight, QColor(200, 70, 150));
+    palette.setColor(QPalette::HighlightedText, Qt::black);
+    palette.setColor(QPalette::Dark, QColor(10, 80, 120));
+
+    palette.setColor(QPalette::Disabled, QPalette::Text, VOID_FOREGROUND_DISABLED_COLOR);
+}
+
+/* }}} */
 
 VOID_NAMESPACE_CLOSE

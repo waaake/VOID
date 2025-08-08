@@ -36,6 +36,14 @@ public:
     // void drawItemText(QPainter* painter, const QRect& rect, int flags, const QPalette& palette, bool enabled, const QString& text, QPalette::ColorRole textRole = QPalette::NoRole) const override;
     void drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget = nullptr) const override;
     void drawControl(ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget = nullptr) const override;
+    virtual void polish(QPalette& palette) override;
+};
+
+class VOID_API VoidBlue : public VoidDark
+{
+public:
+    VoidBlue();
+
     void polish(QPalette& palette) override;
 };
 
