@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.7.0)
 
-project(VOID VERSION 0.0.1 LANGUAGES CXX)
+project(VOID VERSION 0.2.0 LANGUAGES CXX)
 
 # C++17 and Above
-# Using std::filesystem
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -11,6 +10,12 @@ set(CMAKE_AUTOMOC ON)
 
 # USE CXX11 ABI
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
+
+# For macOS, GL has been marked deprecated
+# till we move to Metal specifically on apple, silence all of GL_DEPRECATION warnings
+if (APPLE)
+    add_definitions(-DGL_SILENCE_DEPRECATION=1)
+endif()
 
 # An explicit option to allow compiling the GUI frameless or with Window borders
 # it's a debate about whether the feature should be inbuilt and an option to switch to either

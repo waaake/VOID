@@ -5,14 +5,14 @@
 #define _VOID_TIMELINE_H
 
 /* STD */
-#include <vector>
-#include <unordered_map>
+#include <atomic>
+#include <future>
+#include <thread>
 
 /* Qt */
 #include <QComboBox>
 #include <QLayout>
 #include <QPushButton>
-#include <QTimer>
 #include <QWidget>
 
 /* Internal */
@@ -130,9 +130,6 @@ private: /* Members */
 
 	QDoubleValidator* m_DoubleValidator;
 
-	QTimer* m_ForwardsTimer;
-	QTimer* m_BackwardsTimer;
-
 	/**
 	 * Timeslider Min - Max
 	 * This is additionally maintained as to reduce the amount of overhead when
@@ -142,6 +139,12 @@ private: /* Members */
 
 	/* Loop mode for playback */
 	LoopType m_LoopType;
+
+	std::future<void> m_Worker;
+	std::atomic<bool> m_Playing;
+	int m_FrameInterval;
+
+	PlayState m_Playstate;
 
 protected: /* Methods */
 	void Build();
@@ -155,6 +158,9 @@ protected: /* Methods */
 	void Play(const PlayState& state = PlayState::FORWARDS);
 	void Stop();
 	void Replay();
+
+	void StartPlayback();
+	void PlaybackLoop();
 
 	void NextFrame();
 	void PreviousFrame();
