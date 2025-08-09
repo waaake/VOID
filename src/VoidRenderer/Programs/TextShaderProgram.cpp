@@ -13,7 +13,7 @@ VOID_NAMESPACE_OPEN
 /**
  * Shaders to be used for Text Rendering
  */
-static const std::string vertexShaderSrc = R"(
+static const char* s_VertexShaderSrc = R"(
 #version 330 core
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 vTexCoord;
@@ -28,7 +28,7 @@ void main() {
 }
 )";
 
-static const std::string fragmentShaderSrc = R"(
+static const char* s_FragmentShaderSrc = R"(
 #version 330 core
 in vec2 TexCoord;
 out vec4 FragColor;
@@ -63,8 +63,8 @@ void TextShaderProgram::Initialize()
 bool TextShaderProgram::SetupShaders()
 {
     /* Add Shaders */
-    m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
-    m_Program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc.c_str());
+    m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, s_VertexShaderSrc);
+    m_Program->addShaderFromSourceCode(QOpenGLShader::Fragment, s_FragmentShaderSrc);
 
     /* Try and Compile - Link Shaders */
     if (!m_Program->link())
