@@ -51,10 +51,10 @@ public:
     /**
      * Getters describing the Entry
      */
-    inline std::string Fullpath() const { return m_Path; }
-    inline std::string Basepath() const { return m_Basepath; }
-    inline std::string Name() const { return m_Name; }
-    inline std::string Extension() const { return m_Extension; }
+    inline const std::string& Fullpath() const { return m_Path; }
+    inline const std::string& Basepath() const { return m_Basepath; }
+    inline const std::string& Name() const { return m_Name; }
+    inline const std::string& Extension() const { return m_Extension; }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
     
     /**

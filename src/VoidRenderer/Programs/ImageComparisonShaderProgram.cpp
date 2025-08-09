@@ -17,7 +17,7 @@ VOID_NAMESPACE_OPEN
  * onto our renderer window
  */
 
-static const std::string vertexShaderSrc = R"(
+static const char* s_VertexShaderSrc = R"(
 #version 330 core
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 v_TexCoord;
@@ -325,7 +325,7 @@ bool ImageComparisonShaderProgram::SetupShaders()
     std::string fragmentShader = std::move(ComparisonFragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform")));
 
     /* Add Shaders */
-    m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
+    m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, s_VertexShaderSrc);
     m_Program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShader.c_str());
 
     /* Try and Compile - Link Shaders */

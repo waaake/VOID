@@ -31,9 +31,9 @@ public:
     void Set(const MEntry& e);
 
     /* Getters */
-    inline std::string Path() const { return m_MediaEntry.Fullpath(); }
-    inline std::string Name() const { return m_MediaEntry.Name(); }
-    inline std::string Extension() const { return m_MediaEntry.Extension(); }
+    inline const std::string& Path() const { return m_MediaEntry.Fullpath(); }
+    inline const std::string& Name() const { return m_MediaEntry.Name(); }
+    inline const std::string& Extension() const { return m_MediaEntry.Extension(); }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
 
     /* Returns the Pointer to the ImageData */

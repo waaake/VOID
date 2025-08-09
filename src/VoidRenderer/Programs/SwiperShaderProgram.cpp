@@ -13,7 +13,7 @@ VOID_NAMESPACE_OPEN
 /**
  * Lines Shaders -- The lines controlling the Actions on the Viewport
  */
-static const std::string vertexShaderSrc = R"(
+static const char* s_VertexShaderSrc = R"(
 #version 330 core
 layout (location = 0) in vec3 position;
 
@@ -24,7 +24,7 @@ void main() {
 }
 )";
 
-static const std::string fragmentShaderSrc = R"(
+static const char* s_FragmentShaderSrc = R"(
 #version 330 core
 out vec4 FragColor;
 
@@ -53,8 +53,8 @@ void SwiperShaderProgram::Initialize()
 bool SwiperShaderProgram::SetupShaders()
 {
     /* Add Shaders */
-    m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc.c_str());
-    m_Program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc.c_str());
+    m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, s_VertexShaderSrc);
+    m_Program->addShaderFromSourceCode(QOpenGLShader::Fragment, s_FragmentShaderSrc);
 
     /* Try and Compile - Link Shaders */
     if (!m_Program->link())

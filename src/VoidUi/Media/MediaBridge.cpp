@@ -38,7 +38,7 @@ void MBridge::NewProject()
 
 void MBridge::NewProject(const std::string& name)
 {
-    SetActiveProject(new Project(name, this));
+    SetActiveProject(new Project(name, true, this));
 
     /* Add to the projects */
     m_Projects->Add(m_Project);
