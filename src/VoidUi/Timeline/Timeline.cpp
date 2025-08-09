@@ -5,6 +5,7 @@
 #include <algorithm>
 
 /* Qt */
+#include <QElapsedTimer>
 #include <QIcon>
 #include <QLayout>
 #include <QStyle>
@@ -24,6 +25,8 @@ Timeline::Timeline(QWidget* parent)
 	, m_Start(0)
 	, m_End(0)
 	, m_LoopType(LoopType::LoopInfinitely)
+	, m_Playing(false)
+	, m_Playstate(PlayState::STOPPED)
 {
 	/* Build the layout of the widget */
 	Build();
@@ -44,9 +47,6 @@ Timeline::~Timeline()
 
 void Timeline::Build()
 {
-	m_ForwardsTimer = new QTimer;
-	m_BackwardsTimer = new QTimer;
-
 	/* Base Layout */
 	m_Layout = new QVBoxLayout(this);
 
@@ -180,11 +180,8 @@ void Timeline::Connect()
 {
 	connect(m_Timeslider, &QSlider::valueChanged, this, &Timeline::TimeUpdated);
 
-	connect(m_ForwardButton, &QPushButton::clicked, this, [this]() { Stop(); m_ForwardsTimer->start(1000 / Framerate()); });
-	connect(m_BackwardButton, &QPushButton::clicked, this, [this]() { Stop(); m_BackwardsTimer->start(1000 / Framerate()); });
-
-	connect(m_ForwardsTimer, &QTimer::timeout, this, [this]() { Play(Timeline::PlayState::FORWARDS); });
-	connect(m_BackwardsTimer, &QTimer::timeout, this, [this]() { Play(Timeline::PlayState::BACKWARDS); });
+	connect(m_ForwardButton, &QPushButton::clicked, this, [this]() { Play(Timeline::PlayState::FORWARDS); });
+	connect(m_BackwardButton, &QPushButton::clicked, this, [this]() { Play(Timeline::PlayState::BACKWARDS); });
 
 	connect(m_StopButton, &QPushButton::clicked, this, &Timeline::Stop);
 	connect(m_NextFrameButton, &QPushButton::clicked, this, &Timeline::NextFrame);
@@ -215,6 +212,41 @@ void Timeline::Setup()
 	/* Update the internal range */
 	m_Start = m_Timeslider->minimum();
 	m_End = m_Timeslider->maximum();
+}
+
+void Timeline::StartPlayback()
+{
+	m_FrameInterval = 1000 / Framerate();
+
+	bool expected = false;
+	if (!m_Playing.compare_exchange_strong(expected, true))
+	{
+		return;
+	}
+	/* Start Playback worker async */
+	m_Worker = std::async(std::launch::async, &Timeline::PlaybackLoop, this);
+}
+
+void Timeline::PlaybackLoop()
+{
+	QElapsedTimer timer;
+	timer.start();
+
+	while(m_Playing)
+	{
+		if (timer.elapsed() >= m_FrameInterval)
+		{
+			if (m_Playstate == PlayState::FORWARDS)
+				PlayNextFrame();
+			else if (m_Playstate == PlayState::BACKWARDS)
+				PlayPreviousFrame();
+
+			timer.restart();
+		}
+
+		/* Sleep to yield cpu */
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	}
 }
 
 void Timeline::SetFrame(const int frame)
@@ -340,31 +372,35 @@ void Timeline::ResetOutFrame()
 
 void Timeline::PlayForwards()
 {
-	/* Stop Before we start the timer */
 	Stop();
 
-	m_ForwardsTimer->start(1000 / Framerate());
+	m_Playstate = PlayState::FORWARDS;
+	StartPlayback();
 }
 
 void Timeline::PlayBackwards()
 {
-	/* Stop Before we start the timer */
 	Stop();
 
-	m_BackwardsTimer->start(1000 / Framerate());
+	m_Playstate = PlayState::BACKWARDS;
+	StartPlayback();
 }
 
 void Timeline::Stop()
 {
-	m_ForwardsTimer->stop();
-	m_BackwardsTimer->stop();
+	m_Playing = false;
+	m_Playstate = PlayState::STOPPED;
+
+	/* Wait for the task to complete */
+	if (m_Worker.valid())
+		m_Worker.get();
 }
 
 void Timeline::Replay()
 {
-	if (m_ForwardsTimer->isActive())
+	if (m_Playstate == PlayState::FORWARDS)
 		PlayForwards();
-	else if (m_BackwardsTimer->isActive())
+	else if (m_Playstate == PlayState::BACKWARDS)
 		PlayBackwards();
 }
 
@@ -467,11 +503,11 @@ void Timeline::Play(const Timeline::PlayState& state)
 	/* once the playhead is placed correctly -> We can begin playing */
 	if (state == Timeline::PlayState::FORWARDS)
 	{
-		PlayNextFrame();
+		PlayForwards();
 	}
 	else if (state == Timeline::PlayState::BACKWARDS)
 	{
-		PlayPreviousFrame();
+		PlayBackwards();
 	}
 }
 
