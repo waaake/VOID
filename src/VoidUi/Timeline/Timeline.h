@@ -8,8 +8,6 @@
 #include <atomic>
 #include <future>
 #include <thread>
-#include <vector>
-#include <unordered_map>
 
 /* Qt */
 #include <QComboBox>
