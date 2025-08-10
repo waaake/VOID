@@ -77,7 +77,6 @@ private: /* Methods */
     void RegisterDocks();
 
 protected:
-    void closeEvent(QCloseEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
 
     /* Caches the Media if Caching is allowed */

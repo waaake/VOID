@@ -5,6 +5,7 @@
 #include <algorithm>
 
 /* Qt */
+#include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QIcon>
 #include <QLayout>
@@ -40,6 +41,8 @@ Timeline::Timeline(QWidget* parent)
 
 Timeline::~Timeline()
 {
+	Stop();
+
 	m_Layout->deleteLater();
 	delete m_Layout;
 	m_Layout = nullptr;
