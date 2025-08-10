@@ -6,6 +6,7 @@
 #include <thread>
 
 /* Qt */
+#include <QCoreApplication>
 #include <QLayout>
 #include <QIcon>
 #include <QPainter>
@@ -100,6 +101,7 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
 
     /* Set the window title */
     setWindowTitle("VOID");
+    setAttribute(Qt::WA_QuitOnClose);
 
     /* Connect Signals -> Slots */
     Connect();
@@ -120,13 +122,6 @@ void VoidMainWindow::paintEvent(QPaintEvent* event)
 QSize VoidMainWindow::sizeHint() const
 {
     return QSize(1280, 760);
-}
-
-void VoidMainWindow::closeEvent(QCloseEvent* event)
-{
-    /* Close fullscreen if we're in that*/
-    if (m_Player->Fullscreen())
-        m_Player->ExitFullscreenRenderer();
 }
 
 void VoidMainWindow::Build()
@@ -344,12 +339,12 @@ void VoidMainWindow::Connect()
     /* Title Bar Actions */
     connect(m_TitleBar, &VoidTitleBar::requestMinimize, this, &QWidget::showMinimized);
     connect(m_TitleBar, &VoidTitleBar::requestMaximizeRestore, this, [this]() { isMaximized() ? showNormal() : showMaximized(); });
-    connect(m_TitleBar, &VoidTitleBar::requestClose, this, &QWidget::close);
+    connect(m_TitleBar, &VoidTitleBar::requestClose, this, &QCoreApplication::quit);
     #endif  // USE_FRAMED_WINDOW
 
     /* Menu Actions */
     /* File Menu {{{ */
-    connect(m_CloseAction, &QAction::triggered, this, &VoidMainWindow::close);
+    connect(m_CloseAction, &QAction::triggered, this, &QCoreApplication::quit);
     connect(m_ImportAction, &QAction::triggered, this, &VoidMainWindow::Load);
     connect(m_NewProjectAction, &QAction::triggered, this, [this]() { MBridge::Instance().NewProject(); });
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
