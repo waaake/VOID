@@ -9,6 +9,7 @@
 
 /* Qt */
 #include <QObject>
+#include <QUndoGroup>
 #include <QUndoStack>
 
 /* Internal */
@@ -81,12 +82,9 @@ public:
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);
 
-    // bool CanRedo() const { return m_UndoStack->canRedo(); }
-    // bool CarUndo() const { return m_UndoStack->canUndo(); }
-
     /* Returns the Menu Actions for Undo and Redo */
-    QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoStack->createUndoAction(parent, prefix); }
-    QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoStack->createRedoAction(parent, prefix); }
+    QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoGroup->createUndoAction(parent, prefix); }
+    QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoGroup->createRedoAction(parent, prefix); }
 
 signals:
     /**
@@ -103,9 +101,7 @@ signals:
 private: /* Members */
     /* All the Available Projects */
     ProjectModel* m_Projects;
-
-    /* Undo Stack */
-    QUndoStack* m_UndoStack;
+    QUndoGroup* m_UndoGroup;
 
     /* Current Active Project */
     Project* m_Project;

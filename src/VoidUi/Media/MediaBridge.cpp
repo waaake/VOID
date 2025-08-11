@@ -14,7 +14,7 @@ MBridge::MBridge(QObject* parent)
     : QObject(parent)
 {
     m_Projects = new ProjectModel(this);
-    m_UndoStack = new QUndoStack(this);
+    m_UndoGroup = new QUndoGroup(this);
 
     /* Setup a Default Project */
     NewProject();
@@ -76,6 +76,9 @@ void MBridge::SetActiveProject(Project* project)
 
     m_Project = project;
     m_Project->SetActive(true);
+
+    m_UndoGroup->addStack(m_Project->UndoStack());
+    m_UndoGroup->setActiveStack(m_Project->UndoStack());
 
     /* Force Update on the Model */
     m_Projects->Refresh();
@@ -163,8 +166,9 @@ bool MBridge::Remove(const QModelIndex& index)
 
 void MBridge::PushCommand(QUndoCommand* command)
 {
-    /* Push it on the Undo Stack */
-    m_UndoStack->push(command);
+    /* Push it on the Undo Stack of the active project */
+    if (m_Project)
+        m_Project->PushCommand(command);
 }
 
 VOID_NAMESPACE_CLOSE
