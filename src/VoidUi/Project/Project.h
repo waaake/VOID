@@ -5,6 +5,7 @@
 #define _VOID_PROJECT_H
 
 /* Qt */
+#include <QUndoStack>
 
 /* Internal */
 #include "Definition.h"
@@ -44,6 +45,9 @@ public:
         return m_Media->index(m_Media->MediaRow(clip), column); 
     }
 
+    inline void PushCommand(QUndoCommand* command) { m_UndoStack->push(command); }
+    inline QUndoStack* UndoStack() const { return m_UndoStack; }
+
 private: /* Members */
     /* The Project holds the media and anything linking to the media */
     MediaModel* m_Media;
@@ -53,6 +57,7 @@ private: /* Members */
 
     /* If the project is currently active */
     bool m_Active;
+    QUndoStack* m_UndoStack;
 };
 
 VOID_NAMESPACE_CLOSE
