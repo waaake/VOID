@@ -13,6 +13,7 @@
 #include <QComboBox>
 #include <QLayout>
 #include <QPushButton>
+#include <QTimer>
 #include <QWidget>
 
 /* Internal */
@@ -130,6 +131,8 @@ private: /* Members */
 
 	QDoubleValidator* m_DoubleValidator;
 
+	QTimer m_PlayTimer;
+
 	/**
 	 * Timeslider Min - Max
 	 * This is additionally maintained as to reduce the amount of overhead when
@@ -161,6 +164,7 @@ protected: /* Methods */
 
 	void StartPlayback();
 	void PlaybackLoop();
+	void TimerPlaybackLoop();
 
 	void NextFrame();
 	void PreviousFrame();

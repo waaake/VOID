@@ -186,6 +186,8 @@ void Timeline::Connect()
 	connect(m_ForwardButton, &QPushButton::clicked, this, [this]() { Play(Timeline::PlayState::FORWARDS); });
 	connect(m_BackwardButton, &QPushButton::clicked, this, [this]() { Play(Timeline::PlayState::BACKWARDS); });
 
+	connect(&m_PlayTimer, &QTimer::timeout, this, &Timeline::TimerPlaybackLoop, Qt::DirectConnection);
+
 	connect(m_StopButton, &QPushButton::clicked, this, &Timeline::Stop);
 	connect(m_NextFrameButton, &QPushButton::clicked, this, &Timeline::NextFrame);
 	connect(m_PrevFrameButton, &QPushButton::clicked, this, &Timeline::PreviousFrame);
@@ -221,13 +223,15 @@ void Timeline::StartPlayback()
 {
 	m_FrameInterval = 1000 / Framerate();
 
-	bool expected = false;
-	if (!m_Playing.compare_exchange_strong(expected, true))
-	{
-		return;
-	}
-	/* Start Playback worker async */
-	m_Worker = std::async(std::launch::async, &Timeline::PlaybackLoop, this);
+	// bool expected = false;
+	// if (!m_Playing.compare_exchange_strong(expected, true))
+	// {
+	// 	return;
+	// }
+	// /* Start Playback worker async */
+	// m_Worker = std::async(std::launch::async, &Timeline::PlaybackLoop, this);
+
+	m_PlayTimer.start(m_FrameInterval);
 }
 
 void Timeline::PlaybackLoop()
@@ -250,6 +254,14 @@ void Timeline::PlaybackLoop()
 		/* Sleep to yield cpu */
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
+}
+
+void Timeline::TimerPlaybackLoop()
+{
+	if (m_Playstate == PlayState::FORWARDS)
+		PlayNextFrame();
+	else if (m_Playstate == PlayState::BACKWARDS)
+		PlayPreviousFrame();
 }
 
 void Timeline::SetFrame(const int frame)
@@ -394,9 +406,11 @@ void Timeline::Stop()
 	m_Playing = false;
 	m_Playstate = PlayState::STOPPED;
 
-	/* Wait for the task to complete */
-	if (m_Worker.valid())
-		m_Worker.get();
+	m_PlayTimer.stop();
+
+	// /* Wait for the task to complete */
+	// if (m_Worker.valid())
+	// 	m_Worker.get();
 }
 
 void Timeline::Replay()
