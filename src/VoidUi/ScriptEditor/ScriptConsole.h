@@ -20,7 +20,7 @@ class LineNumberArea : public QWidget
 {
 public:
     explicit LineNumberArea(InputScriptConsole* console);
-    QSize sizeHint() const;
+    QSize sizeHint() const override;
 
 protected:
     void paintEvent(QPaintEvent* event) override;

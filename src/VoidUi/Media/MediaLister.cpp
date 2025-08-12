@@ -91,7 +91,11 @@ void VoidMediaLister::Build()
     m_RemoveAction = new QAction("Remove Selected");
 
     /* Shortcuts */
+#ifdef __APPLE__
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+#else
     m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+#endif
 
     /* Base */
     m_layout = new QVBoxLayout(this);

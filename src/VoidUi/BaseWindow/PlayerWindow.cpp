@@ -484,7 +484,7 @@ void VoidMainWindow::RegisterDocks()
     m_MediaLister = new VoidMediaLister(this);
 
     /* Python Script Editor */
-    m_ScriptEditor = new PyScriptEditor(this);
+    m_ScriptEditor = new PyScriptEditor();
 
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(m_Player, "Viewer");

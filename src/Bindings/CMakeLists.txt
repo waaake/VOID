@@ -19,3 +19,8 @@ target_link_libraries(
     Qt::Widgets
     Freetype::Freetype
 )
+
+# Qt6 needs OpenGLWidgets be included/linked separately
+if (QT_MAJOR_VERSION EQUAL 6)
+    target_link_libraries(voidpy PRIVATE Qt::OpenGLWidgets)
+endif()
