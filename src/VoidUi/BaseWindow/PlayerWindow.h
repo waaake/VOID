@@ -70,6 +70,7 @@ public:
     void PlayMedia(const std::vector<SharedMediaClip>& items);
 
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
+    Player* ActivePlayer() const { return m_Player; }
 
 private: /* Methods */
     void Build();

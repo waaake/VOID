@@ -22,7 +22,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class Player : public QWidget
+class VOID_API Player : public QWidget
 {
     Q_OBJECT
 

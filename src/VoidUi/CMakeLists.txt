@@ -9,6 +9,7 @@ set(SOURCES
     TrackItem.cpp
     ViewerBuffer.cpp
     VoidStyle.cpp
+    VoidGlobals.cpp
 
     # Base Window
     BaseWindow/BaseWindow.cpp

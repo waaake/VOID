@@ -9,12 +9,14 @@
 /* LOGGING */
 #include "VoidCore/Logging.h"
 /* Main Window for player */
+#include "VoidUi/VoidGlobals.h"
 #include "VoidUi/BaseWindow/PlayerWindow.h"
 /* Theme */
 #include "VoidUi/VoidStyle.h"
 /* Reader Registration */
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
+
 
 int main(int argc, char* argv[])
 {
@@ -33,6 +35,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("VOID");
 
     VOID_NAMESPACE::VoidMainWindow* imager = new voidplayer::VoidMainWindow;
+    VOID_NAMESPACE::g_VoidMainWindow = imager;
 
     VOID_LOG_INFO("Imager Initialized.");
 

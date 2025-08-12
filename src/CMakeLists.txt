@@ -11,6 +11,9 @@ add_subdirectory(VoidRenderer)
 # Build Ui Library
 add_subdirectory(VoidUi)
 
+# Python Bindings
+add_subdirectory(Bindings)
+
 # Depends on Qt
 target_include_directories(
     VoidUi
@@ -135,7 +138,7 @@ endif()
 # )
 
 # Install Libraries and Binaries
-install(TARGETS VoidCore VoidRenderer VoidUi VOID
+install(TARGETS VoidCore VoidRenderer VoidUi VOID voidpy
     EXPORT VOIDTargets
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib
