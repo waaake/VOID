@@ -52,17 +52,6 @@ void PySyntaxHighlighter::SetupRules()
     }
 
     /**
-     * Comments starting with #
-     */
-    QRegularExpression commentPattern("#[^\n]*");
-    QTextCharFormat commentFormat;
-    commentFormat.setForeground(QColor(130, 130, 130));      // Grey;
-    commentFormat.setFontItalic(true);
-    commentFormat.setFontWeight(QFont::Bold);
-
-    m_Rules.emplace_back(commentPattern, commentFormat);
-
-    /**
      * Self
      */
     QRegularExpression selfPattern("\\bself\\b");
@@ -83,6 +72,17 @@ void PySyntaxHighlighter::SetupRules()
     m_Rules.emplace_back(QRegularExpression("\"[^\"]*\""), stringFormat);
     /* '' */
     m_Rules.emplace_back(QRegularExpression("'[^']*'"), stringFormat);
+
+    /**
+     * Comments starting with #
+     */
+    QRegularExpression commentPattern("#[^\n]*");
+    QTextCharFormat commentFormat;
+    commentFormat.setForeground(QColor(130, 130, 130));      // Grey;
+    commentFormat.setFontItalic(true);
+    commentFormat.setFontWeight(QFont::Bold);
+
+    m_Rules.emplace_back(commentPattern, commentFormat);
 }
 
 VOID_NAMESPACE_CLOSE
