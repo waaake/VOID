@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="24px"
+   viewBox="0 -960 960 960"
+   width="24px"
+   fill="#b4b4b4"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="icon_save.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="33.625"
+     inkscape:cx="12"
+     inkscape:cy="12"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <path
+     d="m720-120 160-160-56-56-64 64v-167h-80v167l-64-64-56 56 160 160ZM560 0v-80h320V0H560ZM240-160q-33 0-56.5-23.5T160-240v-560q0-33 23.5-56.5T240-880h280l240 240v121h-80v-81H480v-200H240v560h240v80H240Zm0-80v-560 560Z"
+     id="path1" />
+  <path
+     style="fill:#1e8c82;stroke-width:0.0245353;stroke-linecap:square;stroke-linejoin:bevel;paint-order:stroke markers fill;fill-opacity:1"
+     d="M 5.7695167,19.969875 C 5.3323177,19.923569 4.8885136,19.699822 4.5737789,19.367037 4.239219,19.013289 4.0747236,18.650478 4.0261631,18.159215 4.0089446,17.985023 4.0013497,15.106621 4.0066943,10.780669 4.016495,2.8477939 3.9951435,3.5880516 4.2280051,3.1078067 4.3722969,2.8102248 4.7811448,2.3959761 5.0855019,2.2389826 5.5316718,2.0088392 5.2179176,2.0254183 9.3225734,2.0150906 l 3.6720156,-0.00924 2.997129,2.9970192 2.99713,2.9970192 V 9.5092384 11.018587 H 18.007435 17.026022 V 10.007435 8.9962825 H 14.513011 12 V 6.4981413 4 H 8.9962825 5.9925651 v 7.003717 7.003718 H 8.9962825 12 V 19.003717 20 L 8.9888476,19.996 C 7.3327138,19.9938 5.8840149,19.98204 5.7695167,19.96991 Z"
+     id="path2"
+     transform="matrix(40,0,0,40,0,-960)" />
+</svg>

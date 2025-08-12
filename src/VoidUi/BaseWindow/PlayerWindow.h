@@ -22,6 +22,7 @@
 #include "VoidUi/Track.h"
 #include "VoidUi/Media/MediaClip.h"
 #include "VoidUi/Media/MediaLister.h"
+#include "VoidUi/ScriptEditor/ScriptEditor.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -32,6 +33,7 @@ public: /* Enum */
     {
         MediaLister,
         Viewer,
+        ScriptEditor
     };
 
 public:
@@ -94,6 +96,7 @@ protected:
 private: /* Members */
     Player* m_Player;
     VoidMediaLister* m_MediaLister;
+    PyScriptEditor* m_ScriptEditor;
 
     DockerWindow* m_InternalDocker;
 
@@ -163,7 +166,7 @@ private: /* Members */
     /* The track which gets used on the Sequence */
     SharedPlaybackTrack m_Track;
 
-public slots:
+public:
     void Load();
     /* Clears and sets the provided media on the player */
     void SetMedia(const SharedMediaClip& media);

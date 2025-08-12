@@ -483,8 +483,12 @@ void VoidMainWindow::RegisterDocks()
     /* Media Lister Widget */
     m_MediaLister = new VoidMediaLister(this);
 
+    /* Python Script Editor */
+    m_ScriptEditor = new PyScriptEditor(this);
+
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(m_Player, "Viewer");
+    manager.RegisterDock(m_ScriptEditor, "Script Editor");
 }
 
 // Slots

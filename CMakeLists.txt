@@ -84,6 +84,10 @@ find_package(Imath REQUIRED)
 # Color
 find_package(OpenColorIO REQUIRED)
 
+# Python Execution/Bindings
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(pybind11 REQUIRED)
+
 # Add Modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 

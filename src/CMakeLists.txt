@@ -68,6 +68,7 @@ target_link_libraries(
     Qt::Widgets
     Qt::Core
     OpenGL::GL
+    Python::Python
 )
 
 # Qt5 Resources
@@ -89,6 +90,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_adjust.svg
             ../icons/icon_annotate.svg
             ../icons/icon_arrow_right.svg
+            ../icons/icon_backspace.svg
             ../icons/icon_brush.svg
             ../icons/icon_bounce.svg
             ../icons/icon_close.svg
@@ -96,14 +98,18 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_eraser.svg
             ../icons/icon_fullscreen.svg
             ../icons/icon_grid_view.svg
+            ../icons/icon_load.svg
             ../icons/icon_list_view.svg
             ../icons/icon_maximize.svg
             ../icons/icon_minimize.svg
             ../icons/icon_media_view.png
             ../icons/icon_missing_frame.svg
             ../icons/icon_pointer.svg
+            ../icons/icon_play.svg
+            ../icons/icon_play_selected.svg
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg
+            ../icons/icon_save.svg
             ../icons/icon_settings.svg
             ../icons/icon_setting.png
             ../icons/icon_sort_abc.svg
@@ -183,6 +189,7 @@ if (WIN32)
         OpenEXR::IlmThread
         OpenEXR::Iex
         Imath::Imath
+        Python::Python
     )
 
     # Install dlls for each of the dependency targets

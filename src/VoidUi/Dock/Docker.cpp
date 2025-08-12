@@ -106,6 +106,7 @@ void DockWidget::AddDock(QWidget* widget, const std::string& title, bool closabl
 	DockPanel* panel = new DockPanel(widget, this);
 	/* Add that to the tab widget */
 	int index = addTab(panel, title.c_str());
+	setCurrentIndex(index);
 
 	if (closable)
 		SetTabClosable(index);
