@@ -7,6 +7,7 @@
         <file>../icons/icon_adjust.svg</file>
         <file>../icons/icon_annotate.svg</file>
         <file>../icons/icon_arrow_right.svg</file>
+        <file>../icons/icon_backspace.svg</file>
         <file>../icons/icon_brush.svg</file>
         <file>../icons/icon_bounce.svg</file>
         <file>../icons/icon_close.svg</file>
@@ -15,13 +16,17 @@
         <file>../icons/icon_fullscreen.svg</file>
         <file>../icons/icon_grid_view.svg</file>
         <file>../icons/icon_list_view.svg</file>
+        <file>../icons/icon_load.svg</file>
         <file>../icons/icon_maximize.svg</file>
         <file>../icons/icon_media_view.png</file>
         <file>../icons/icon_minimize.svg</file>
         <file>../icons/icon_missing_frame.svg</file>
         <file>../icons/icon_pointer.svg</file>
+        <file>../icons/icon_play.svg</file>
+        <file>../icons/icon_play_selected.svg</file>
         <file>../icons/icon_repeat.svg</file>
         <file>../icons/icon_restore.svg</file>
+        <file>../icons/icon_save.svg</file>
         <file>../icons/icon_setting.png</file>
         <file>../icons/icon_settings.svg</file>
         <file>../icons/icon_sort_abc.svg</file>

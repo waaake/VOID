@@ -14,6 +14,7 @@ add_library(
     Media.cpp
     MediaFilesystem.cpp
     Profiler.h
+    PyExecutor.cpp
     VoidTools.cpp
 
     # Plugins
@@ -42,6 +43,8 @@ target_link_libraries(
     OpenImageIO::OpenImageIO
     ${FFMPEG_LIBRARIES}
     OpenColorIO::OpenColorIO
+    pybind11::embed
+    Python::Python
 )
 
 # Mac for some reason needs this explicitly

@@ -48,6 +48,11 @@ set(SOURCES
     Project/Models/ProjectModel.cpp
     Project/Delegates/ListDelegate.cpp
 
+    # ScriptEditor
+    ScriptEditor/ScriptConsole.cpp
+    ScriptEditor/ScriptEditor.cpp
+    ScriptEditor/SyntaxHighlighter.cpp
+
     # Timeline
     Timeline/Timeline.cpp
     Timeline/TimelineElements.cpp
@@ -99,6 +104,8 @@ target_link_libraries(
     Qt::Widgets
     Qt::Core
     OpenGL::GL
+    pybind11::embed
+    Python::Python
 )
 
 # Qt6 needs OpenGLWidgets be included/linked separately
