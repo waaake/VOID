@@ -57,13 +57,25 @@ void BindCore(py::module_& m)
         .def("is_valid", &MediaStruct::ValidMedia)
         .def("media_type", &MediaStruct::Type);
 
-    /* Media */
-    py::class_<Media>(m, "Media")
-        .def(py::init<const MediaStruct&>(), py::arg("media_struct"));
+    /* Frame */
+    py::class_<Frame>(m, "Frame")
+        .def(py::init<const MEntry&>(), py::arg("media_entry"))
+        .def("path", &Frame::Path)
+        .def("framenumber", &Frame::Framenumber);
 
-    /* MediaClip */
+    py::class_<MovieFrame>(m, "MovieFrame")
+        .def(py::init<const MEntry&, const v_frame_t>(), py::arg("media_entry"), py::arg("frame"))
+        .def("path", &Frame::Path)
+        .def("framenumber", &Frame::Framenumber);
+
+    // /* Media */
+    // py::class_<Media>(m, "Media")
+    //     .def(py::init<const MediaStruct&>(), py::arg("media_struct"))
+    //     .def("get_frame", &Media::GetFrame, py::arg("frame"));
+
+    // /* MediaClip */
     // py::class_<MediaClip>(m, "MediaClip")
-    //     .def(py::init<)
+    //     .def(py::init<const Media&>, py::arg("media"));
 }
 
 } // namespace bindings
