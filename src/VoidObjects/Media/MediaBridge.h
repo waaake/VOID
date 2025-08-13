@@ -34,6 +34,7 @@ class VOID_API MBridge : public QObject
 {
     Q_OBJECT
 
+protected:
     MBridge(QObject* parent = nullptr);
 
 public:

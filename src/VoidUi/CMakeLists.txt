@@ -4,9 +4,6 @@ set(SOURCES
     Browser.cpp
     Events.h
     PlayerWidget.cpp
-    # Sequence.cpp
-    # Track.cpp
-    # TrackItem.cpp
     ViewerBuffer.cpp
     VoidStyle.cpp
     VoidGlobals.cpp
@@ -27,11 +24,8 @@ set(SOURCES
     Dock/DockSplitter.cpp
 
     # Media
-    # Media/MediaBridge.cpp
-    # Media/MediaClip.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
-    # Media/Models/MediaModel.cpp
     Media/Views/MediaView.cpp
     Media/Delegates/ListDelegate.cpp
     Media/Delegates/ThumbnailDelegate.cpp
@@ -44,9 +38,7 @@ set(SOURCES
     Preferences/PlayerPreferences.cpp
 
     # Project
-    # Project/Project.cpp
     Project/Views/ProjectView.cpp
-    # Project/Models/ProjectModel.cpp
     Project/Delegates/ListDelegate.cpp
 
     # ScriptEditor

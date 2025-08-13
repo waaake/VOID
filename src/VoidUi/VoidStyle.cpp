@@ -106,12 +106,12 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
             if (!tab)
                 break;
 
-            QRect rect = tab->rect;
             painter->save();
 
             /* Background */
+            painter->fillRect(tab->rect, option->palette.color(QPalette::Window));
             QColor tabColor = tab->state & State_Selected ? option->palette.color(QPalette::Window) : option->palette.color(QPalette::Window).darker(200);
-            painter->fillRect(rect, tabColor);
+            painter->fillRect(tab->rect.adjusted(0, 0, 0, -2), tabColor);
 
             /* Text */
             QRect textRect = subElementRect(SE_TabBarTabText, tab, widget);
