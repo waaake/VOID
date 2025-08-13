@@ -62,6 +62,8 @@ public:
     void SetCurrentProject(const QModelIndex& index);
     void SetCurrentProject(int index);
 
+    inline Project* ActiveProject() const { return m_Project; }
+
     /**
      * Adds Media to the Graph
      */

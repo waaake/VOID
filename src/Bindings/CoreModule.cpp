@@ -7,6 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/MediaFilesystem.h"
+#include "VoidObjects/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -55,6 +56,14 @@ void BindCore(py::module_& m)
         .def("is_empty", &MediaStruct::Empty)
         .def("is_valid", &MediaStruct::ValidMedia)
         .def("media_type", &MediaStruct::Type);
+
+    /* Media */
+    py::class_<Media>(m, "Media")
+        .def(py::init<const MediaStruct&>(), py::arg("media_struct"));
+
+    /* MediaClip */
+    // py::class_<MediaClip>(m, "MediaClip")
+    //     .def(py::init<)
 }
 
 } // namespace bindings
