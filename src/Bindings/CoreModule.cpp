@@ -7,6 +7,9 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/MediaFilesystem.h"
+#include "VoidObjects/Media/MediaBridge.h"
+#include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -22,6 +25,8 @@ void BindCore(py::module_& m)
     // {
     //     VOID_LOG_INFO("test");
     // });
+
+    m.def("get_active_project", []() { return MBridge::Instance().ActiveProject(); }, py::return_value_policy::reference);
 
     /* Media Type */
     py::enum_<MediaType>(m, "MediaType")
@@ -55,6 +60,30 @@ void BindCore(py::module_& m)
         .def("is_empty", &MediaStruct::Empty)
         .def("is_valid", &MediaStruct::ValidMedia)
         .def("media_type", &MediaStruct::Type);
+
+    /* Frame */
+    py::class_<Frame>(m, "Frame")
+        .def(py::init<const MEntry&>(), py::arg("media_entry"))
+        .def("path", &Frame::Path)
+        .def("framenumber", &Frame::Framenumber);
+
+    py::class_<MovieFrame>(m, "MovieFrame")
+        .def(py::init<const MEntry&, const v_frame_t>(), py::arg("media_entry"), py::arg("frame"))
+        .def("path", &Frame::Path)
+        .def("framenumber", &Frame::Framenumber);
+
+    /* Media */
+    py::class_<Media>(m, "Media")
+        .def(py::init<const MediaStruct&>(), py::arg("media_struct"))
+        .def("get_frame", &Media::GetFrame, py::arg("frame"));
+
+    /* MediaClip */
+    py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")
+        .def(py::init<const Media&>(), py::arg("media"));
+
+    /* Project */
+    py::class_<Project>(m, "Project")
+        .def("add_media", &Project::AddMedia, py::arg("media_clip"));
 }
 
 } // namespace bindings

@@ -31,7 +31,8 @@ void BindUi(py::module_& m)
         .def("previous_frame", &Player::PreviousFrame)
         .def("move_to_start", &Player::MoveToStart)
         .def("move_to_end", &Player::MoveToEnd)
-        .def("set_frame", &Player::SetFrame, py::arg("frame"));
+        .def("set_frame", &Player::SetFrame, py::arg("frame"))
+        .def("load", py::overload_cast<const SharedMediaClip&>(&Player::Load), py::arg("media_clip"));
 }
 
 } // namespace bindings
