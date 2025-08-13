@@ -11,7 +11,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCommand.h"
-#include "VoidUi/Media/MediaBridge.h"
+#include "VoidObjects/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 

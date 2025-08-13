@@ -7,7 +7,7 @@
 /* Internal */
 #include "PlayerWidget.h"
 #include "Preferences/Preferences.h"
-#include "VoidUi/Media/MediaBridge.h"
+#include "VoidObjects/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 

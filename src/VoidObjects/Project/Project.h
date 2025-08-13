@@ -9,8 +9,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/VoidObject.h"
-#include "VoidUi/Media/Models/MediaModel.h"
+#include "VoidObjects/VoidObject.h"
+#include "VoidObjects/Models/MediaModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -19,7 +19,7 @@ VOID_NAMESPACE_OPEN
  * like Sequence and/or Playlist, it does not do anything apart from holding references
  * to the data via the MediaModel
  */
-class Project : public VoidObject
+class VOID_API Project : public VoidObject
 {
     Q_OBJECT
 

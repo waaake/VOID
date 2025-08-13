@@ -43,22 +43,24 @@ endif()
 
 # Ensure we have atleast both of them present
 # Find qt6 first
-find_package(Qt6 QUIET COMPONENTS Widgets Core OpenGLWidgets)
+find_package(Qt6 QUIET COMPONENTS Widgets Gui Core OpenGLWidgets)
 if (Qt6_FOUND)
     set(QT_MAJOR_VERSION 6)
     add_library(Qt::Core ALIAS Qt6::Core)
+    add_library(Qt::Gui ALIAS Qt6::Gui)
     add_library(Qt::Widgets ALIAS Qt6::Widgets)
     add_library(Qt::OpenGLWidgets ALIAS Qt6::OpenGLWidgets)
     # Format c:\some\path\to\qt\cmake -> c:/some/path/to/qt/cmake
     file(TO_CMAKE_PATH ${Qt6_DIR} QT_CMAKE_PATH)
 else()
-    find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
+    find_package(Qt5 REQUIRED COMPONENTS Widgets Gui Core)
 
     # Message to indicate we're falling back
     message(STATUS "Qt6 not found. Falling back to Qt5.")
 
     set(QT_MAJOR_VERSION 5)
     add_library(Qt::Core ALIAS Qt5::Core)
+    add_library(Qt::Gui ALIAS Qt5::Gui)
     add_library(Qt::Widgets ALIAS Qt5::Widgets)
     # Format c:\some\path\to\qt\cmake -> c:/some/path/to/qt/cmake
     file(TO_CMAKE_PATH ${Qt5_DIR} QT_CMAKE_PATH)

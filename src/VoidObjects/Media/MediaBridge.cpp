@@ -2,13 +2,22 @@
 // Licensed under the MIT License
 
 /* Qt */
-#include <QApplication>
+#include <QCoreApplication>
 
 /* Internal */
 #include "MediaBridge.h"
 #include "VoidCore/Logging.h"
 
+/* Commands */
+#include "VoidObjects/Commands/MediaCommands.h"
+
 VOID_NAMESPACE_OPEN
+
+MBridge& MBridge::Instance()
+{
+    static MBridge instance;
+    return instance;
+}
 
 MBridge::MBridge(QObject* parent)
     : QObject(parent)
@@ -84,6 +93,16 @@ void MBridge::SetActiveProject(Project* project)
     m_Projects->Refresh();
 }
 
+void MBridge::AddMedia(const std::string& filepath)
+{ 
+    PushCommand(new MediaImportCommand(filepath)); 
+}
+
+void MBridge::RemoveMedia(const std::vector<QModelIndex>& media)
+{ 
+    PushCommand(new MediaRemoveCommand(media)); 
+}
+
 bool MBridge::AddMedia(const MediaStruct& mstruct)
 {
     /* Create the Media Clip */
@@ -135,7 +154,7 @@ bool MBridge::Remove(SharedMediaClip clip)
     emit mediaAboutToBeRemoved(clip);
 
     /* Ensure All events are Processed before deleting the Media Clip internally */
-    QApplication::processEvents();
+    QCoreApplication::processEvents();
 
     /* Remove this from the Underlying model */
     m_Project->RemoveMedia(m_Project->ClipIndex(clip));
@@ -156,7 +175,7 @@ bool MBridge::Remove(const QModelIndex& index)
     emit mediaAboutToBeRemoved(clip);
 
     /* Ensure All events are Processed before deleting the Media Clip internally */
-    QApplication::processEvents();
+    QCoreApplication::processEvents();
 
     /* Remove this from the Underlying model */
     m_Project->RemoveMedia(index);

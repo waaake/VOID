@@ -8,6 +8,9 @@ add_subdirectory(VoidCore)
 # Build Renderer Library
 add_subdirectory(VoidRenderer)
 
+# Build Intermediate Objects Library
+add_subdirectory(VoidObjects)
+
 # Build Ui Library
 add_subdirectory(VoidUi)
 
@@ -66,6 +69,7 @@ target_link_libraries(
     VOID
     PRIVATE
     VoidCore
+    VoidObjects
     VoidRenderer
     VoidUi
     Qt::Widgets
@@ -138,7 +142,7 @@ endif()
 # )
 
 # Install Libraries and Binaries
-install(TARGETS VoidCore VoidRenderer VoidUi VOID voidpy
+install(TARGETS VoidCore VoidObjects VoidRenderer VoidUi VOID voidpy
     EXPORT VOIDTargets
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib

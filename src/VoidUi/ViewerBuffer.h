@@ -10,9 +10,9 @@
 
 /* Internal */
 #include "Definition.h"
-#include "Track.h"
-#include "Sequence.h"
-#include "VoidUi/Media/MediaClip.h"
+#include "VoidObjects/Sequence/Track.h"
+#include "VoidObjects/Sequence/Sequence.h"
+#include "VoidObjects/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 
