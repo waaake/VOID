@@ -13,14 +13,14 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/Media/MediaClip.h"
+#include "VoidObjects/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
  * Describes how the Media is held in a Project/Subdirs
  */
-class MediaModel : public QAbstractItemModel
+class VOID_API MediaModel : public QAbstractItemModel
 {
     Q_OBJECT
 
@@ -71,7 +71,7 @@ private: /* Methods */
     void Update();
 };
 
-class MediaProxyModel : public QSortFilterProxyModel
+class VOID_API MediaProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 

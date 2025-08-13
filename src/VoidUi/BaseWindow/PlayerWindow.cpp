@@ -16,13 +16,10 @@
 /* Internal */
 #include "PlayerWindow.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Media/MediaBridge.h"
 #include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/Browser.h"
-#include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Dock/DockManager.h"
-
-/* Commands */
-#include "VoidUi/Commands/MediaCommands.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -504,7 +501,7 @@ void VoidMainWindow::Load()
     }
 
     /* Read the File from the FileDialog */
-    m_Bridge.PushCommand(new MediaImportCommand(mediaBrowser.GetSelectedFile()));
+    m_Bridge.AddMedia(mediaBrowser.GetSelectedFile());
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)

@@ -13,14 +13,14 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/Project/Project.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
  * Describes the Project
  */
-class ProjectModel : public QAbstractItemModel
+class VOID_API ProjectModel : public QAbstractItemModel
 {
     Q_OBJECT
 
@@ -69,7 +69,7 @@ private: /* Methods */
     void Update();
 };
 
-class ProjectProxyModel : public QSortFilterProxyModel
+class VOID_API ProjectProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 

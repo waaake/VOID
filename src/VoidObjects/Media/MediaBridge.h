@@ -14,10 +14,10 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/Media/MediaClip.h"
-#include "VoidUi/Media/Models/MediaModel.h"
-#include "VoidUi/Project/Project.h"
-#include "VoidUi/Project/Models/ProjectModel.h"
+#include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/ProjectModel.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -30,7 +30,7 @@ VOID_NAMESPACE_OPEN
  * rid of the media before the media pointer is finally deleted internally after the media has been removed
  * from the active project
  */
-class MBridge : public QObject
+class VOID_API MBridge : public QObject
 {
     Q_OBJECT
 
@@ -38,11 +38,7 @@ class MBridge : public QObject
 
 public:
     /* Singleton Instance */
-    static MBridge& Instance()
-    {
-        static MBridge instance;
-        return instance;
-    }
+    static MBridge& Instance();
 
     ~MBridge();
 
@@ -52,6 +48,9 @@ public:
     /* Disable Move */
     MBridge(MBridge&&) = delete;
     MBridge& operator=(MBridge&&) = delete;
+
+    void AddMedia(const std::string& filepath);
+    void RemoveMedia(const std::vector<QModelIndex>& media);
 
     /**
      * Projects

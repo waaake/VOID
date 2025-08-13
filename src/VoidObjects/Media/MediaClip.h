@@ -16,7 +16,7 @@
 #include "Definition.h"
 #include "VoidCore/Media.h"
 #include "VoidRenderer/RenderTypes.h"
-#include "VoidUi/VoidObject.h"
+#include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -24,7 +24,7 @@ VOID_NAMESPACE_OPEN
 class MediaClip;
 typedef std::shared_ptr<MediaClip> SharedMediaClip;
 
-class MediaClip : public VoidObject
+class VOID_API MediaClip : public VoidObject
 {
     Q_OBJECT
 

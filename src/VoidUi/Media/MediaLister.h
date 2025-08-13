@@ -20,8 +20,8 @@
 
 /* Internal */
 #include "QDefinition.h"
-#include "MediaBridge.h"
 #include "MediaSearchBar.h"
+#include "VoidObjects/Media/MediaBridge.h"
 #include "VoidUi/Media/Views/MediaView.h"
 #include "VoidUi/Project/Views/ProjectView.h"
 #include "VoidUi/QExtensions/PushButton.h"

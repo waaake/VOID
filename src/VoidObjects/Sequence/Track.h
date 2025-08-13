@@ -16,8 +16,8 @@
 /* Internal */
 #include "Definition.h"
 #include "TrackItem.h"
-#include "VoidObject.h"
 #include "VoidCore/Media.h"
+#include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -31,7 +31,7 @@ class PlaybackTrack;
  */
 typedef std::shared_ptr<PlaybackTrack> SharedPlaybackTrack;
 
-class TrackMap
+class VOID_API TrackMap
 {
 public:
     /**
@@ -117,7 +117,7 @@ public: /* Iterator */
     Iterator end() { return Iterator(m_Items.end()); }
 };
 
-class PlaybackTrack : public VoidObject
+class VOID_API PlaybackTrack : public VoidObject
 {
     Q_OBJECT
 

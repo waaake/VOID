@@ -18,9 +18,6 @@
 #include "VoidUi/QExtensions/Tooltip.h"
 #include "VoidUi/Preferences/Preferences.h"
 
-/* Commands */
-#include "VoidUi/Commands/MediaCommands.h"
-
 VOID_NAMESPACE_OPEN
 
 VoidMediaLister::VoidMediaLister(QWidget* parent)
@@ -289,7 +286,7 @@ void VoidMediaLister::ShowContextMenu(const Point& position)
 void VoidMediaLister::RemoveSelectedMedia()
 {
     /* Push all of the selected indexes for removal */
-    MBridge::Instance().PushCommand(new MediaRemoveCommand(m_MediaView->SelectedIndexes()));
+    MBridge::Instance().RemoveMedia(m_MediaView->SelectedIndexes());
 }
 
 void VoidMediaLister::SetFromPreferences()
