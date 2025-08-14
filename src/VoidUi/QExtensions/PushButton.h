@@ -6,6 +6,7 @@
 
 /* Qt */
 #include <QPushButton>
+#include <QToolButton>
 
 /* Internal */
 #include "Definition.h"
@@ -79,6 +80,20 @@ private: /* Methods */
      * Gets invoked to allow selection of color and emits the selected color.
      */
     void SelectColor();
+};
+
+/**
+ * Creates a Close button
+ * When hovered will have red background giving an impression of something which
+ * should be approached with caution
+ */
+class CloseButton : public QToolButton
+{
+public:
+    explicit CloseButton(QWidget* parent = nullptr);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
 };
 
 VOID_NAMESPACE_CLOSE
