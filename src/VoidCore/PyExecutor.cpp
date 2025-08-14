@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <csignal>
+
 /* Internal */
 #include "PyExecutor.h"
 
@@ -13,6 +16,16 @@ PyExecutor::PyExecutor()
     , m_Globals(py::globals())
 {
     // py::initialize_interpreter();
+
+    /**
+     * When python is initialized/embedded within the application, it seems to hijack the SIGINT
+     * causing the app to not close when Ctrl+C (SIGINT) is triggered from the terminal
+     * this is caused as python isn't executing all the time and a signal received (SIGINT) is pushed
+     * to the queue rather than processed immediately causing the whole issue
+     * 
+     * The simplest fix is to restore the behaviour of the signal SIGINT after the scoped interpreter is initialized
+     */
+    signal(SIGINT, SIG_DFL);
 }
 
 PyExecutor::~PyExecutor()
