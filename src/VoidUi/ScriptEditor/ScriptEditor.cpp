@@ -130,7 +130,18 @@ void PyScriptEditor::ExecuteAll()
 void PyScriptEditor::ExecuteSelection()
 {
     m_OutputConsole->appendPlainText(m_InputConsole->textCursor().selectedText());
-    m_Executor->Execute(m_InputConsole->SelectedText());
+
+    const std::string& selected = m_InputConsole->SelectedText();
+    /**
+     * If the code has whitespace or brackets/braces, it surely is a statement and has to be exec'd
+     * on the contrary, if the code does not have it, it most likely is a case
+     * where the user has selected a variable or member and just wants to see its value
+     * and eval' could be the faster way
+     */
+    if (PotentialStatement(selected))
+        m_Executor->Execute(selected);
+    else
+        m_Executor->Evaluate(selected);
 }
 
 void PyScriptEditor::SaveScript()

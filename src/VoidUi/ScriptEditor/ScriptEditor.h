@@ -59,6 +59,17 @@ private: /* Methods */
 
     void SaveScript();
     void LoadScript();
+
+    /**
+     * Returns true if the code does not have any of the below characters
+     * this is to differentiate between a statement x = 10; import os; function();
+     * and a variable which can be eval'd in the interpreter to see results quickly
+     * on the out console
+     */
+    inline bool PotentialStatement(const std::string& code) const
+    { 
+        return code.find_first_of(" \t\n\r()[]{}.+-*/=<>!&|^,:") != std::string::npos;
+    }
 };
 
 VOID_NAMESPACE_CLOSE

@@ -63,4 +63,19 @@ void PyExecutor::Execute(const std::string& code)
     }
 }
 
+void PyExecutor::Evaluate(const std::string& code)
+{
+    try
+    {
+        py::object ret = py::eval(code, m_Globals);
+        if (m_Callback)
+            m_Callback(py::str(ret));
+    }
+    catch (py::error_already_set& e)
+    {
+        if (m_Callback)
+            m_Callback(std::string(e.what()));
+    }
+}
+
 VOID_NAMESPACE_CLOSE

@@ -29,6 +29,7 @@ public:
 
     void SetOutputCallback(std::function<void(const std::string&)> callback);
     void Execute(const std::string& code);
+    void Evaluate(const std::string& code);
 
 private: /* Members */
     pybind11::scoped_interpreter m_Guard;
