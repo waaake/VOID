@@ -47,24 +47,15 @@ InputScriptConsole::~InputScriptConsole()
 
 std::string InputScriptConsole::SelectedText() const
 {
-    const QTextCursor& c = textCursor();
-    if (!c.hasSelection())
-        return "";
+    QString text = textCursor().selectedText();
+    /**
+     * QTextCursor::selectedText() replaces line breaks with Unicode U+2029
+     * Replace the selected text's new line with \n so that our interpreter
+     * handles it correctly
+     */
+    text.replace(QChar(0x2029), "\n");
 
-    QTextCursor lineCursor = textCursor();
-    lineCursor.setPosition(c.selectionStart());
-    int start = lineCursor.blockNumber();
-
-    lineCursor.setPosition(c.selectionEnd());
-    int end = lineCursor.blockNumber();
-
-    QStringList lines;
-    for (int i = start; i <= end; ++i)
-    {
-        lines << document()->findBlockByNumber(i).text();
-    }
-
-    return lines.join("\n").toStdString();
+    return text.toStdString();
 }
 
 void InputScriptConsole::resizeEvent(QResizeEvent* event)
