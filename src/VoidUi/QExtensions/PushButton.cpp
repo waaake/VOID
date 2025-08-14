@@ -2,9 +2,11 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QColorDialog>
 #include <QPainter>
 #include <QPaintEvent>
-#include <QColorDialog>
+#include <QStyle>
+#include <QStyleOptionToolButton>
 
 /* Internal */
 #include "PushButton.h"
@@ -131,6 +133,36 @@ void ColorSelectionButton::SelectColor()
         /* And repaint */
         update();
     }
+}
+
+/* }}} */
+
+/* Close Button {{{ */
+
+CloseButton::CloseButton(QWidget* parent)
+    : QToolButton(parent)
+{
+    setAutoRaise(true);
+    setToolTip("Close");
+    setIcon(QIcon(":resources/icons/icon_close.svg"));
+}
+
+void CloseButton::paintEvent(QPaintEvent* event)
+{
+    QStyleOptionToolButton option;
+    initStyleOption(&option);
+
+    QPainter painter(this);
+
+    if (underMouse() || isDown())
+    {
+        painter.setBrush(underMouse() ? QColor(180, 50, 50) : QColor(130, 40, 40));
+        painter.setPen(Qt::NoPen);
+        painter.drawRect(rect());
+    }
+
+    QRect iconRect = style()->subControlRect(QStyle::CC_ToolButton, &option, QStyle::SC_ToolButton, this);
+    icon().paint(&painter, iconRect);
 }
 
 /* }}} */

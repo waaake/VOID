@@ -1,1 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#B4B4B4"><path d="M686-132 444-376q-20 8-40.5 12t-43.5 4q-100 0-170-70t-70-170q0-36 10-68.5t28-61.5l146 146 72-72-146-146q29-18 61.5-28t68.5-10q100 0 170 70t70 170q0 23-4 43.5T584-516l244 242q12 12 12 29t-12 29l-84 84q-12 12-29 12t-29-12Zm29-85 27-27-256-256q18-20 26-46.5t8-53.5q0-60-38.5-104.5T386-758l74 74q12 12 12 28t-12 28L332-500q-12 12-28 12t-28-12l-74-74q9 57 53.5 95.5T360-440q26 0 52-8t47-25l256 256ZM472-488Z"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   height="20px"
+   viewBox="0 -960 960 960"
+   width="20px"
+   fill="#828282"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="icon_settings.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="swatch2"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop2" />
+    </linearGradient>
+    <linearGradient
+       id="swatch1"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#828282;stop-opacity:1;"
+         offset="0"
+         id="stop1" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#swatch1"
+       id="linearGradient1"
+       x1="7"
+       y1="-508"
+       x2="944"
+       y2="-508"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#swatch2"
+       id="linearGradient2"
+       x1="7"
+       y1="-508"
+       x2="944"
+       y2="-508"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="40.35"
+     inkscape:cx="10"
+     inkscape:cy="10"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <path
+     d="M774-16q-11.91 0-23.95-5Q738-26 729-35L527-238q-9.18-7.93-14.59-20.68T507-283q0-11.57 5.41-24.32T527-329l102-103q8.93-9.18 21.68-15.09T675-453q11.57 0 24.82 5.91T721-432l203 203q9 9 14 21.07 5 12.06 5 24 0 11.93-5.41 25.03-5.41 13.1-13.59 21.9L820-34q-8.93 8.18-21.68 13.09T774-16Zm-585-1q-13 0-25.64-5.5Q150.71-28 142-37L39-139q-9-8.71-13.5-20.36Q21-171 21-183t5-24.6q5-12.6 14-20.4l202-202h113l46-46-155-155h-65L7-803l146-146 173 173v65l155 155 113-113-46-48 54-54h-89l-50-50 178-179 51 51v89l30-31 174.93 176.93Q918-693 931-665.07q13 27.92 13 57.07 0 34.65-16.5 66.32Q911-510 887-486L776-597l-54 54-46-47-241 240v113L234-36q-7.93 9-20.18 14T189-17Z"
+     id="path1"
+     style="fill:url(#linearGradient1);stroke:url(#linearGradient2);stroke-width:20.208;stroke-dasharray:none;paint-order:stroke markers fill" />
+</svg>

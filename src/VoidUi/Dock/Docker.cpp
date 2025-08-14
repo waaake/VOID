@@ -12,6 +12,7 @@
 #include "Docker.h"
 #include "DockManager.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -127,10 +128,8 @@ void DockWidget::AddDockManagerWidget(int index)
 
 void DockWidget::SetTabClosable(int index)
 {
-	QToolButton* closeButton = new QToolButton();
-	closeButton->setIcon(QIcon(":resources/icons/icon_close.svg"));
-    closeButton->setFixedSize(14, 14);
-	closeButton->setAutoRaise(true);
+	CloseButton* closeButton = new CloseButton();
+    closeButton->setFixedSize(12, 12);
 
 	// connect(closeButton, &QToolButton::clicked, this, [=]() { emit tabCloseRequested(index); });
 	connect(closeButton, &QToolButton::clicked, this, [=]() { CloseTab(index); });
@@ -184,7 +183,7 @@ void DockWidget::SetupOptions()
 	m_ClosePaneAction = new QAction("Close Pane");
 	m_SplitHorizontalAction = new QAction("Split Horizontally");
 	m_SplitVerticalAction = new QAction("Split Vertically");
-	
+
 	m_Options->addAction(m_ClosePaneAction);
 	m_Options->addAction(m_SplitHorizontalAction);
 	m_Options->addAction(m_SplitVerticalAction);

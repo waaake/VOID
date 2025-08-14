@@ -69,7 +69,6 @@ void AnnotationsController::Build()
 
     m_ClearButton = new QPushButton;
     m_ClearButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
-    m_ClearButton->setFlat(true);
     m_ClearButton->setToolTip(ToolTipString("Delete Annotation", "Deletes the annotation from the current frame.").c_str());
 
     m_ColorButton = new ColorSelectionButton({255, 255, 255}, this);
@@ -77,7 +76,6 @@ void AnnotationsController::Build()
 
     m_SizeAdjuster = new QPushButton;
     m_SizeAdjuster->setIcon(QIcon(":resources/icons/icon_adjust.svg"));
-    m_SizeAdjuster->setFlat(true);
     m_SizeAdjuster->setToolTip(ToolTipString("Adjust Size", "Adjust size of the Brush/Eraser.").c_str());
 
     /* Add to the button group */

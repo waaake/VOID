@@ -68,20 +68,18 @@ void VoidTitleBar::Build()
     /* Right Side Layout */
     m_RightLayout = new QHBoxLayout;
     
-    m_MinimizeButton = new QPushButton();
-    m_MinimizeButton->setFixedSize(18, 18);
-    m_MinimizeButton->setFlat(true);
+    m_MinimizeButton = new QToolButton();
+    m_MinimizeButton->setFixedSize(16, 16);
+    m_MinimizeButton->setAutoRaise(true);
     m_MinimizeButton->setIcon(QIcon(":resources/icons/icon_minimize.svg"));
 
-    m_MaximizeButton = new QPushButton();
-    m_MaximizeButton->setFixedSize(18, 18);
-    m_MaximizeButton->setFlat(true);
+    m_MaximizeButton = new QToolButton();
+    m_MaximizeButton->setFixedSize(16, 16);
+    m_MaximizeButton->setAutoRaise(true);
     m_MaximizeButton->setIcon(QIcon(":resources/icons/icon_restore.svg"));
 
-    m_CloseButton = new QPushButton();
-    m_CloseButton->setFixedSize(18, 18);
-    m_CloseButton->setFlat(true);
-    m_CloseButton->setIcon(QIcon(":resources/icons/icon_close.svg"));
+    m_CloseButton = new CloseButton;
+    m_CloseButton->setFixedSize(15, 15);
 
     /* Add to Layout */
     m_RightLayout->addWidget(m_MinimizeButton, 0, Qt::AlignTop);
@@ -104,9 +102,9 @@ void VoidTitleBar::Build()
 
 void VoidTitleBar::Connect()
 {
-    connect(m_MinimizeButton, &QPushButton::clicked, this, [this]() { emit requestMinimize(); });
-    connect(m_MaximizeButton, &QPushButton::clicked, this, [this]() { emit requestMaximizeRestore(); });
-    connect(m_CloseButton, &QPushButton::clicked, this, [this]() { emit requestClose(); });
+    connect(m_MinimizeButton, &QToolButton::clicked, this, [this]() { emit requestMinimize(); });
+    connect(m_MaximizeButton, &QToolButton::clicked, this, [this]() { emit requestMaximizeRestore(); });
+    connect(m_CloseButton, &CloseButton::clicked, this, [this]() { emit requestClose(); });
 }
 
 VOID_NAMESPACE_CLOSE

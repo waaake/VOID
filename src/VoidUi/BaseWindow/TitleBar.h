@@ -8,10 +8,11 @@
 #include <QLabel>
 #include <QLayout>
 #include <QMenuBar>
-#include <QPushButton>
+#include <QToolButton>
 
 /* Internal */
 #include "Definition.h"
+#include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -40,9 +41,9 @@ private: /* Members */
 
     /* Right side box -- minimize | maximize | close */
     QHBoxLayout* m_RightLayout;
-    QPushButton* m_MinimizeButton;
-    QPushButton* m_MaximizeButton;
-    QPushButton* m_CloseButton;
+    QToolButton* m_MinimizeButton;
+    QToolButton* m_MaximizeButton;
+    CloseButton* m_CloseButton;
 
     QHBoxLayout* m_MenuLayout;
 
