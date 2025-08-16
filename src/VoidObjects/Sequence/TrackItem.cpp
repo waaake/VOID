@@ -52,7 +52,7 @@ void TrackItem::SetRange(v_frame_t start, v_frame_t end)
 void TrackItem::Cache()
 {
     /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
-    for (std::pair<const v_frame_t, Frame>& it: m_Media->GetMedia())
+    for (std::pair<const v_frame_t, Frame>& it: *m_Media)
     {
         /* Cache the data for the frame */
         it.second.Cache();

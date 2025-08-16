@@ -221,12 +221,13 @@ public:
     /**
      * Returns whether the media struct is currently empty
      */
-    [[nodiscard]] inline bool Empty() const { return m_Entries.empty(); }
+    [[nodiscard]] inline bool Empty() const noexcept { return m_Entries.empty(); }
+    [[nodiscard]] inline size_t Size() const noexcept { return m_Entries.size(); }
 
     /**
      * Returns if the MediaStruct is a valid Media Type
      */
-    inline bool ValidMedia() const { return (m_MediaType == MediaType::Image) || (m_MediaType == MediaType::Movie); }
+    inline bool ValidMedia() const noexcept { return (m_MediaType == MediaType::Image) || (m_MediaType == MediaType::Movie); }
 
     /**
      * Returns an empty entry if the struct is empty

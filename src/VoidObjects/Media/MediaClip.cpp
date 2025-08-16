@@ -11,13 +11,14 @@ VOID_NAMESPACE_OPEN
 
 MediaClip::MediaClip(QObject* parent)
     : VoidObject(parent)
+    , Media()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
 }
 
-MediaClip::MediaClip(const Media& media, QObject* parent)
+MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     : VoidObject(parent)
-    , m_Media(media)
+    , Media(mstruct)
     , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
@@ -32,7 +33,7 @@ QPixmap MediaClip::Thumbnail()
     if (m_Thumbnail.isNull())
     {
         /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-        const SharedPixels im = m_Media.FirstImage();
+        const SharedPixels im = Media::FirstImage();
         QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
 
         m_Thumbnail = QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format));

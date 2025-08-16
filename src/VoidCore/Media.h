@@ -28,16 +28,18 @@ public:
 
     ~Frame();
 
-    void Set(const MEntry& e);
-
     /* Getters */
     inline const std::string& Path() const { return m_MediaEntry.Fullpath(); }
     inline const std::string& Name() const { return m_MediaEntry.Name(); }
     inline const std::string& Extension() const { return m_MediaEntry.Extension(); }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
 
-    /* Returns the Pointer to the ImageData */
-    SharedPixels Image();
+    /**
+     * Returns Shared Pointer to the ImageData
+     * cached defines whether the frame needs to be read before returning
+     * has no effect if the frame has already been read
+     */
+    SharedPixels Image(bool cached = true);
 
     /* Frame Caches */
     void Cache();
@@ -102,30 +104,30 @@ public:
      * i.e. between the first and the last frame of media
      * Any frame missing does not matter as this method only returns whether a frame is in the range or not
      */
-    [[nodiscard]] inline bool HasFrame(const v_frame_t frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
+    [[nodiscard]] inline bool HasFrame(v_frame_t frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
 
     /* 
      * Returns whether a given frame is available to read
      * There could be a scenario where the given frame is in the range of first - last but is not available
      * and is referred to as the missing frame.
      */
-    [[nodiscard]] inline bool Contains(const v_frame_t frame) const { return m_Mediaframes.find(frame) != m_Mediaframes.end(); }
+    [[nodiscard]] inline bool Contains(v_frame_t frame) const { return m_Mediaframes.find(frame) != m_Mediaframes.end(); }
 
     /*
      * Based on the available frames, returns the frame which is just lower than the provided frame
      * This is used when the current frame is not available but we want the neartest frame to be used in it's place
      */
-    v_frame_t NearestFrame(const v_frame_t frame) const;
+    v_frame_t NearestFrame(v_frame_t frame) const;
 
-    Frame GetFrame(const v_frame_t frame) const { return m_Mediaframes.at(frame); }
+    Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame); }
 
     Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
     Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
 
-    inline SharedPixels Image(const v_frame_t frame) { return m_Mediaframes.at(frame).Image(); }
+    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame).Image(cached); }
 
-    SharedPixels FirstImage() { return Image(FirstFrame()); }
-    SharedPixels LastImage() { return Image(LastFrame()); }
+    inline SharedPixels FirstImage() { return Image(FirstFrame()); }
+    inline SharedPixels LastImage() { return Image(LastFrame()); }
 
     inline double Framerate() const { return m_Framerate; }
     inline bool Empty() const { return m_Mediaframes.empty(); }
@@ -164,7 +166,7 @@ public:
     inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
     inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_Mediaframes.end(); }
 
-private: /* Members */
+protected: /* Members */
     /**
      * The Media structure for the Media
      */

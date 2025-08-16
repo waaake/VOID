@@ -16,15 +16,13 @@ VOID_NAMESPACE_OPEN
 class VOID_API OpenEXRReader : public VoidPixReader
 {
 public:
-    OpenEXRReader();
-    OpenEXRReader(const std::string& path);
-
+    OpenEXRReader(const std::string& path, v_frame_t framenumber = 0);
     virtual ~OpenEXRReader();
 
     /**
      * Reads the provided image file's data into underlying structs
      */
-    virtual void Read(const std::string& path, int framenumer) override;
+    virtual void Read() override;
 
     /**
      * Returns the OpenGL data type
@@ -84,8 +82,6 @@ public:
     inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::Linear; }
 
 private: /* Methods */
-    std::string m_Path;
-
     /* Image specifications */
     int m_Width, m_Height;
     /* Number of channels in the image */

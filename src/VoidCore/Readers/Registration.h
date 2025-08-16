@@ -41,7 +41,7 @@ struct OIIOReaderPlugin
          */
         f.extensions = { "tga", "tiff", "dpx", "png", "JPG", "jpg", "jpeg", "JPEG" };
         /* OpenImageIO Reader */
-        f.reader = []() -> std::unique_ptr<OIIOPixReader> { return std::make_unique<OIIOPixReader>(); };
+        f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<OIIOPixReader> { return std::make_unique<OIIOPixReader>(path, framenumber); };
 
         /* Register Plugin */
         Forge::Instance().Register(f);
@@ -61,7 +61,7 @@ struct OpenEXRReaderPlugin
         f.name = "EXR Reader";
         f.extensions = { "exr" };
         /* Open EXR Reader*/
-        f.reader = []() -> std::unique_ptr<OpenEXRReader> { return std::make_unique<OpenEXRReader>(); };
+        f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<OpenEXRReader> { return std::make_unique<OpenEXRReader>(path, framenumber); };
 
         /* Register Plugin */
         Forge::Instance().Register(f);
@@ -78,7 +78,7 @@ struct FFmpegReaderPlugin
         f.name = "FFmpeg Reader";
         f.extensions = { "mp4", "mov" };
         /* FFmpeg Reader */
-        f.reader = []() -> std::unique_ptr<FFmpegPixReader> { return std::make_unique<FFmpegPixReader>(); };
+        f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<FFmpegPixReader> { return std::make_unique<FFmpegPixReader>(path, framenumber); };
 
         /* Register Plugin */
         Forge::Instance().Register(f);

@@ -106,7 +106,7 @@ void MBridge::RemoveMedia(const std::vector<QModelIndex>& media)
 bool MBridge::AddMedia(const MediaStruct& mstruct)
 {
     /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(Media(mstruct), this);
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
 
     /* Check if the clip is valid, there could be cases we don't have a specific media reader */
     if (clip->Empty())
@@ -128,7 +128,7 @@ bool MBridge::AddMedia(const MediaStruct& mstruct)
 bool MBridge::InsertMedia(const MediaStruct& mstruct, const int index)
 {
     /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(Media(mstruct), this);
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
 
     /* Check if the clip is valid, there could be cases we don't have a specific media reader */
     if (clip->Empty())

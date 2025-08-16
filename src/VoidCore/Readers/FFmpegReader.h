@@ -96,15 +96,14 @@ private: /* Methods */
 class VOID_API FFmpegPixReader : public VoidMPixReader
 {
 public:
-    FFmpegPixReader();
-    FFmpegPixReader(const std::string& path);
+    FFmpegPixReader(const std::string& path, v_frame_t framenumber = 0);
 
     virtual ~FFmpegPixReader();
 
     /**
      * Reads the provided image file's data into underlying structs
      */
-    virtual void Read(const std::string& path, int framenumer) override;
+    virtual void Read() override;
 
     /**
      * Returns the OpenGL data type
@@ -159,11 +158,6 @@ public:
     inline virtual bool Empty() const override { return m_Pixels.empty(); }
 
     /**
-     * Updates the internal filepath to process needed information
-     */
-    inline virtual void UpdatePath(const std::string& path) override { m_Path = path; };
-
-    /**
      * Returns the frame range information of the Movie media
      */
     virtual MFrameRange Framerange() override;
@@ -179,8 +173,6 @@ public:
     inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::sRGB; }
 
 private: /* Members */
-    std::string m_Path;
-
     /* Image specifications */
     int m_Width, m_Height;
     /* Number of channels in the image */

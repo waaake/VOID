@@ -16,15 +16,14 @@ VOID_NAMESPACE_OPEN
 class VOID_API OIIOPixReader : public VoidPixReader
 {
 public:
-    OIIOPixReader();
-    OIIOPixReader(const std::string& path);
+    OIIOPixReader(const std::string& path, v_frame_t framenumer = 0);
 
     virtual ~OIIOPixReader();
 
     /**
      * Reads the provided image file's data into underlying structs
      */
-    virtual void Read(const std::string& path, int framenumer) override;
+    virtual void Read() override;
 
     /**
      * Returns the OpenGL data type
@@ -83,9 +82,7 @@ public:
      */
     inline virtual ColorSpace InputColorSpace() const override { return m_InputColorSpace; }
 
-private: /* Methods */
-    std::string m_Path;
-
+private: /* Members */
     /* Image specifications */
     int m_Width, m_Height;
     /* Number of channels in the image */
@@ -96,7 +93,6 @@ private: /* Methods */
 
     /* Internal data store */
     std::vector<unsigned char> m_Pixels;
-
 };
 
 VOID_NAMESPACE_CLOSE
