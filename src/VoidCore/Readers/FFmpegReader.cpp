@@ -227,8 +227,8 @@ v_frame_t FFmpegDecoder::DecodeNextFrame()
 /* }}} */
 
 /* FFmpegPixReader {{{ */
-FFmpegPixReader::FFmpegPixReader(const std::string& path)
-    : m_Path(path)
+FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
+    : VoidMPixReader(path, framenumber)
     , m_Width(0)
     , m_Height(0)
     , m_Channels(0)
@@ -236,11 +236,6 @@ FFmpegPixReader::FFmpegPixReader(const std::string& path)
     , m_Endframe(0)
     , m_Duration(0)
     , m_Framerate(0.0)
-{
-}
-
-FFmpegPixReader::FFmpegPixReader()
-    : FFmpegPixReader("")
 {
 }
 
@@ -313,19 +308,18 @@ double FFmpegPixReader::Framerate()
     return m_Framerate;
 }
 
-void FFmpegPixReader::Read(const std::string& path, int framenumber)
+void FFmpegPixReader::Read()
 {
-
     /* Decoder */
     FFmpegDecoder& decoder = FFmpegDecoder::Instance();
 
-    decoder.Decode(path, framenumber);
+    decoder.Decode(m_Path, m_Framenumber);
 
     /**
      * Once the decoding for the frame is completed
      * Swap the needed frame data with empty undelying pixel struct
      */
-    std::swap(decoder.GetData(framenumber), m_Pixels);
+    std::swap(decoder.GetData(m_Framenumber), m_Pixels);
 
     /* Read the Frame Dimensions */
     m_Width = decoder.Width();

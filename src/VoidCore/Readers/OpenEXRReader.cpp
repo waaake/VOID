@@ -24,16 +24,11 @@
 
 VOID_NAMESPACE_OPEN
 
-OpenEXRReader::OpenEXRReader(const std::string& path)
-    : m_Path(path)
+OpenEXRReader::OpenEXRReader(const std::string& path, v_frame_t framenumber)
+    : VoidPixReader(path, framenumber)
     , m_Width(0)
     , m_Height(0)
     , m_Channels(0)
-{
-}
-
-OpenEXRReader::OpenEXRReader()
-    : OpenEXRReader("")
 {
 }
 
@@ -73,10 +68,10 @@ const unsigned char* OpenEXRReader::ThumbnailPixels()
     return m_TPixels.data();
 }
 
-void OpenEXRReader::Read(const std::string& path, int framenumber)
+void OpenEXRReader::Read()
 {
     /* Create an EXR Reader */
-    Imf::RgbaInputFile f(path.c_str());
+    Imf::RgbaInputFile f(m_Path.c_str());
 
     /* Get Image Specifications */
     Imath::Box2i dw = f.dataWindow();

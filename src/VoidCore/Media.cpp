@@ -26,7 +26,11 @@ Frame::Frame(const MEntry& e, v_frame_t frame)
     /**
      * Since we have the Media Entry, we can now get the PixReader for the media type
      */
-    m_ImageData = std::move(Forge::Instance().GetImageReader(m_MediaEntry.Extension()));
+    m_ImageData = std::move(Forge::Instance().GetImageReader(
+        m_MediaEntry.Extension(),
+        m_MediaEntry.Fullpath(),
+        m_Framenumber
+    ));
 }
 
 Frame::~Frame()
@@ -54,7 +58,7 @@ void Frame::Cache()
     /* Read and load the image data onto the memory */
     if (m_ImageData->Empty())
     {
-        m_ImageData->Read(m_MediaEntry.Fullpath(), m_Framenumber);
+        m_ImageData->Read();
         VOID_LOG_INFO("Cached Frame: {0}", m_Framenumber);
     }
 }
@@ -80,7 +84,11 @@ MovieFrame::MovieFrame(const MEntry& e, const v_frame_t frame)
      * As of today there isn't a usecase to hold the movie reader in the Movie frame
      * as a SharedMPixReader as all the bits about reading are same
      */
-    m_ImageData = std::move(Forge::Instance().GetMovieReader(m_MediaEntry.Extension()));
+    m_ImageData = std::move(Forge::Instance().GetMovieReader(
+        m_MediaEntry.Extension(),
+        m_MediaEntry.Fullpath(),
+        m_Framenumber
+    ));
 }
 
 Media::Media()
@@ -145,7 +153,7 @@ void Media::Read(const MediaStruct& mstruct)
      * If not -> we can't proceed
      */
     Forge& f = Forge::Instance();
-    if (!(f.GetImageReader(mstruct.Extension()) || f.GetMovieReader(mstruct.Extension())))
+    if (!f.IsRegistered(mstruct.Extension()))
     {
         VOID_LOG_WARN("No Media Reader found for type {0}", mstruct.Extension());
         return;
@@ -157,12 +165,14 @@ void Media::Read(const MediaStruct& mstruct)
         return ProcessMovie(mstruct);
     }
 
+    m_Framenumbers.reserve(mstruct.Size());
+
     /* Iterate over the struct's internal Media Entry */
     for (const MEntry& e: mstruct)
     {
         /* Update internal structures with the frame information */
         m_Mediaframes[e.Framenumber()] = Frame(e);
-        m_Framenumbers.push_back(e.Framenumber());
+        m_Framenumbers.emplace_back(e.Framenumber());
     }
 
     /* Update Media Type */
@@ -183,10 +193,7 @@ void Media::ProcessMovie(const MediaStruct& mstruct)
         return;
 
     /* Media Reader */
-    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(mstruct.Extension());
-
-    /* Get the frame information */
-    r->UpdatePath(entry.Fullpath());
+    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(mstruct.Extension(), entry.Fullpath());
 
     MFrameRange frange = r->Framerange();
     VOID_LOG_INFO("Movie Media Range: {0}-{1}", frange.startframe, frange.endframe);
@@ -194,12 +201,14 @@ void Media::ProcessMovie(const MediaStruct& mstruct)
     /* Update internal framerate */
     m_Framerate = r->Framerate();
 
+    m_Framenumbers.reserve(frange.endframe - frange.startframe + 1);
+
     /* Add each of the Frame with the same entry and the varying frame number */
     for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
     {
         /* Update internal structures with the frame information */
         m_Mediaframes[i] = MovieFrame(entry, i);
-        m_Framenumbers.push_back(i);
+        m_Framenumbers.emplace_back(i);
     }
 
     /* Update Media Type */

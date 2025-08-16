@@ -10,17 +10,12 @@
 
 VOID_NAMESPACE_OPEN
 
-OIIOPixReader::OIIOPixReader(const std::string& path)
-    : m_Path(path)
+OIIOPixReader::OIIOPixReader(const std::string& path, v_frame_t framenumber)
+    : VoidPixReader(path, framenumber)
     , m_Width(0)
     , m_Height(0)
     , m_Channels(0)
     , m_InputColorSpace(ColorSpace::sRGB)
-{
-}
-
-OIIOPixReader::OIIOPixReader()
-    : OIIOPixReader("")
 {
 }
 
@@ -36,10 +31,8 @@ void OIIOPixReader::Clear()
     m_Pixels.shrink_to_fit();
 }
 
-void OIIOPixReader::Read(const std::string& path, int framenumber)
+void OIIOPixReader::Read()
 {
-    m_Path = path;
-
     /* As the underlying path is updated -> Invoke the actual Read */
     /* Open the file path */
     std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
@@ -65,10 +58,10 @@ void OIIOPixReader::Read(const std::string& path, int framenumber)
     m_Channels = spec.nchannels;
 
     /* Get the colorspace from the image spec {{{ */
-    std::string colorspace = spec.get_string_attribute("oiio:ColorSpace");
+    std::string_view colorspace = spec.get_string_attribute("oiio:ColorSpace");
 
     /* Our default Input ColorSpace points at sRGB, only cases where we want to update that */
-    if (colorspace.find("Rec.709") != std::string::npos)
+    if (colorspace.find("Rec.709") != std::string_view::npos)
         m_InputColorSpace = ColorSpace::Rec709;
     /* }}} */
 

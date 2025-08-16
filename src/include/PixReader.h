@@ -68,6 +68,7 @@ typedef std::shared_ptr<VoidMPixReader> SharedMPixels;
 class VoidPixReader
 {
 public:
+    VoidPixReader(const std::string& path, v_frame_t framenumber = 0) : m_Path(path), m_Framenumber(framenumber) {}
     virtual ~VoidPixReader() {}
 
     /**
@@ -126,21 +127,23 @@ public:
      * Reads the image at the given path
      * updates the underlying struct with the data
      */
-    virtual void Read(const std::string& path, int framenumber) = 0;
+    virtual void Read() = 0;
 
     /**
      * Retrieve the input colorspace of the media file
      */
     virtual ColorSpace InputColorSpace() const = 0;
+    virtual bool IsMovie() const { return false; }
+
+protected:
+    std::string m_Path;
+    v_frame_t m_Framenumber;
 };
 
 class VoidMPixReader : public VoidPixReader
 {
 public:
-    /**
-     * Updates the internal filepath to process information when needed
-     */
-    virtual void UpdatePath(const std::string& path) = 0;
+    VoidMPixReader(const std::string& path, v_frame_t framenumber = 0) : VoidPixReader(path, framenumber) {}
 
     /**
      * Returns the frame range information of the Movie media
@@ -151,7 +154,7 @@ public:
      * Returns the framerate of the movie media
      */
     virtual double Framerate() = 0;
-
+    virtual bool IsMovie() const { return true; }
 };
 
 VOID_NAMESPACE_CLOSE
