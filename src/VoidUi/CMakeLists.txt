@@ -37,6 +37,9 @@ set(SOURCES
     Preferences/MediaViewPreferences.cpp
     Preferences/PlayerPreferences.cpp
 
+    # Player
+    Player/ImageBuffer.cpp
+
     # Project
     Project/Views/ProjectView.cpp
     Project/Delegates/ListDelegate.cpp

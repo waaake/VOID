@@ -83,7 +83,8 @@ void BindCore(py::module_& m)
 
     /* Project */
     py::class_<Project>(m, "Project")
-        .def("add_media", &Project::AddMedia, py::arg("media_clip"));
+        .def("add_media", &Project::AddMedia, py::arg("media_clip"))
+        .def("name", &Project::Name);
 }
 
 } // namespace bindings

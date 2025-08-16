@@ -18,6 +18,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
+#include "VoidUi/Player/ImageBuffer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -86,6 +87,7 @@ public:
 
     /* Set a frame on the player based on the media */
     void SetFrame(int frame);
+    int Frame() const { return m_Timeline->Frame(); }
 
     /**
      * Updates the Handler for Missing frame
@@ -115,6 +117,7 @@ public:
 
     /* Mark a frame on the timeline as cached */
     inline void AddCacheFrame(int frame) { m_Timeline->AddCacheFrame(frame); }
+    inline void RemoveCachedFrame(int frame) { m_Timeline->RemoveCachedFrame(frame); }
     inline void ClearCachedFrames() { m_Timeline->ClearCachedFrames(); }
 
     /* Set Range on the timeline */
@@ -211,6 +214,8 @@ private:  /* Members */
     Timeline* m_Timeline;
 
     AnnotationsController* m_AnnotationsController;
+
+    FrameBuffer* m_FrameBuffer;
 
     /**
      * The control bar provides users tools to play around with the viewer

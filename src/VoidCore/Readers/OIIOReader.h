@@ -79,6 +79,11 @@ public:
     inline virtual bool Empty() const override { return m_Pixels.empty(); }
 
     /**
+     * Returns the Size of the frame data
+     */
+    virtual size_t FrameSize() const override { return sizeof(unsigned char) * m_Pixels.size(); }
+
+    /**
      * Retrieve the input colorspace of the media file
      */
     inline virtual ColorSpace InputColorSpace() const override { return m_InputColorSpace; }

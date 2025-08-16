@@ -34,6 +34,7 @@ public:
     virtual ~MediaClip();
 
     inline Media GetMedia() const { return m_Media; }
+    inline Media* GetMediaRef() { return &m_Media; }
 
     inline void SetColor(const QColor& color)
     {
@@ -54,7 +55,7 @@ public:
     inline QColor Color() const { return m_Color; }
 
     /* Overloading Base Media functions to allow frameCached be emit */
-    inline SharedPixels Image(const v_frame_t frame)
+    inline SharedPixels Image(v_frame_t frame)
     { 
         /* Emit that the frame was cached */
         emit frameCached(frame);
@@ -108,20 +109,20 @@ public:
      * i.e. between the first and the last frame of media
      * Any frame missing does not matter as this method only returns whether a frame is in the range or not
      */
-    [[nodiscard]] inline bool HasFrame(const v_frame_t frame) const { return m_Media.HasFrame(frame); }
+    [[nodiscard]] inline bool HasFrame(v_frame_t frame) const { return m_Media.HasFrame(frame); }
 
     /* 
      * Returns whether a given frame is available to read
      * There could be a scenario where the given frame is in the range of first - last but is not available
      * and is referred to as the missing frame.
      */
-    [[nodiscard]] inline bool Contains(const v_frame_t frame) const { return m_Media.Contains(frame); }
+    [[nodiscard]] inline bool Contains(v_frame_t frame) const { return m_Media.Contains(frame); }
 
     /*
      * Based on the available frames, returns the frame which is just lower than the provided frame
      * This is used when the current frame is not available but we want the neartest frame to be used in it's place
      */
-    inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media.NearestFrame(frame); };
+    inline v_frame_t NearestFrame(v_frame_t frame) const { return m_Media.NearestFrame(frame); };
 
     inline Frame FirstFrameData() const { return m_Media.FirstFrameData(); }
     inline Frame LastFrameData() const { return m_Media.LastFrameData(); }

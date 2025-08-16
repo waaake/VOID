@@ -10,25 +10,39 @@
 #include <algorithm>
 #include <unordered_map>
 
+/* Qt */
+#include <QThreadPool>
+#include <QRunnable>
+
 /* Internal */
 #include "Definition.h"
-#include "Media.h"
+#include "VoidCore/Media.h"
 
 VOID_NAMESPACE_OPEN
+
+/* Forward Decl */
+class Player;
 
 /**
  * Class holding Media frame caches and tracking the cache against the maximum
  * allowed memory usage for caching the image/movie frames.
  */
-class FrameBuffer
+class FrameBuffer : public QThreadPool
 {
+    Q_OBJECT
+
 public:
-    FrameBuffer();
+    FrameBuffer(Player* player, QObject* parent = nullptr);
     ~FrameBuffer();
 
     inline void SetMaxMemory(unsigned int size_in_gigs) { m_MaxMemory = size_in_gigs * 1024 * 1024 * 1024; }
 
-    inline void SetMedia(Media* media) { m_Media = media; }
+    void SetMedia(Media* media);
+
+    /**
+     * A Cache process which caches all frames till the memory size allows
+     */
+    void CacheAvailableFrames();
 
     /**
      * Request caching the next available frame depending on the direction
@@ -47,6 +61,26 @@ public:
      * of memory usage
      */
     void Cache(v_frame_t frame);
+
+    /**
+     * Based on the direction this returns the minimum frame (or maximum) frame which is the candidate for
+     * eviction in case that is necessary
+     */
+    inline v_frame_t MinFrame() const 
+    { 
+        if (m_Framenumbers.empty())
+            return StartFrame();
+
+        return m_Framenumbers.front(); 
+    }
+
+    inline v_frame_t StartFrame() const { return m_Media->FirstFrame(); }
+    inline v_frame_t EndFrame() const { return m_Media->LastFrame(); }
+
+    v_frame_t CurrentFrame() const;
+    void EnsureCached(v_frame_t frame);
+
+    void Clear();
 
 private: /* Members */
     /**
@@ -70,8 +104,41 @@ private: /* Members */
     std::deque<v_frame_t> m_Framenumbers;
     std::unordered_map<v_frame_t, Frame*> m_Frames;
 
+    Player* m_Player;
+
 private: /* Methods */
     void Evict(v_frame_t frame);
+};
+
+class CacheAvailableFramesTask : public QRunnable
+{
+public:
+    CacheAvailableFramesTask(FrameBuffer* framebuffer);
+    void run() override;
+
+private:
+    FrameBuffer* m_FrameBuffer;
+};
+
+class CacheAvailableMovieFramesTask : public QRunnable
+{
+public:
+    CacheAvailableMovieFramesTask(FrameBuffer* framebuffer);
+    void run() override;
+
+private:
+    FrameBuffer* m_FrameBuffer;
+};
+
+class CacheFramesTask : public QRunnable
+{
+public:
+    CacheFramesTask(FrameBuffer* framebuffer, v_frame_t frame);
+    void run() override;
+
+private:
+    FrameBuffer* m_FrameBuffer;
+    v_frame_t m_Frame;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -150,6 +150,8 @@ void Player::ClearCache()
 
 void Player::Build()
 {
+    m_FrameBuffer = new FrameBuffer(this, this);
+
     /* Base layout for the widget */
     QVBoxLayout* layout = new QVBoxLayout(this);
 
@@ -209,6 +211,9 @@ void Player::Load(const SharedMediaClip& media)
 {
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
+
+    m_FrameBuffer->SetMedia(media->GetMediaRef());
+    m_FrameBuffer->CacheAvailableFrames();
 
     /* Viewer Buffer - Clip -> Player - Add Cache Frame */
     ConnectMediaClipToTimeline(media);
@@ -379,8 +384,11 @@ void Player::SetMediaFrame(int frame)
      */
     if (clip->Contains(frame))
     {
+        m_FrameBuffer->EnsureCached(frame);
+        // VOID_LOG_INFO("Frame Size: {0}", clip->Image(frame)->FrameSize());
         /* Read the image for the frame from the sequence and set it on the player */
-        m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
+        // m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
+        m_Renderer->Render(clip->Image(frame));
     }
     else
     {

@@ -1,205 +1,97 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-/* STD */
-#include <filesystem>
-#include <chrono>
-
 /* Internal */
 #include "ImageBuffer.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
-VoidImage::VoidImage(const std::string& basePath, const std::string& name, const std::string& extension, int frame)
-    : m_BasePath(basePath)
-    , m_Name(name)
-    , m_Extension(extension)
-    , m_Frame(frame)
-    , m_FullPath("")
+FrameBuffer::FrameBuffer()
+    : m_MaxMemory(1 * 1024 * 1024 * 1024) // 1 GB by default
+    , m_FrameSize(0)
 {
-    m_ImageData = new VoidImageData;
 }
 
-VoidImage::VoidImage(const std::string& path)
-    : VoidImage("", "", "", -1)
+FrameBuffer::~FrameBuffer()
 {
-    m_FullPath = path;
-    ConstructFromPath(path);
 }
 
-VoidImage::~VoidImage()
+bool FrameBuffer::Request(bool evict)
 {
-    // delete m_ImageData;
-}
+    /**
+     * Size isn't yet set so we can definitely go for caching the first frame
+     * well, unless the first frame itself is more than the max available memory
+     * (highly unlikely unless we're on 256 MB allocation)
+     */
+    if (!m_FrameSize)
+        return true;
 
-bool VoidImage::ValidFrame(const std::string& frame) const
-{
-    if (frame.empty())
-        return false;
-    
-    for (char c: frame)
+    if (m_FrameSize > (m_MaxMemory - m_UsedMemory))
     {
-        if (!std::isdigit(c))
-            return false;
+        if (evict)
+        {
+            Evict(m_Framenumbers.front());
+            m_Framenumbers.pop_front();
+            return true;
+        }
+
+        /* Can't cache as it might overflow the allowed memory usage */
+        return false;
     }
 
-    /* Valid frame */
+    /* Good to be cached */
     return true;
 }
 
-void VoidImage::ConstructFromPath(const std::string& path)
+void FrameBuffer::Cache(v_frame_t frame)
 {
-    std::filesystem::path filepath(path);
+    VOID_LOG_INFO("Image Buffer Caching Frame {0}", frame);
+    VOID_LOG_INFO("Available Memory {0} bytes", (m_MaxMemory - m_UsedMemory));
+    Tools::VoidProfiler<std::chrono::duration<double>> p("Frame Cache");
 
-    m_BasePath = filepath.parent_path().string();
+    /* Cache already exists for the frame */
+    if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) != m_Framenumbers.end())
+        return;
 
-    std::string filename = filepath.filename().string();
-
-    size_t lastDot = filename.find_last_of(".");
-    std::string remaining = filename.substr(0, lastDot);
-
-    m_Extension = filename.substr(lastDot + 1);
-
-    lastDot = remaining.find_last_of(".");
-    std::string framestring = remaining.substr(lastDot + 1);
-
-    /* Image is a sequence or atleast follows a sequential naming convention */
-    if (ValidFrame(framestring))
+    if (m_Frames.find(frame) != m_Frames.end())
     {
-        m_Frame = std::stoi(framestring);
-        m_Name = remaining.substr(0, lastDot);
-    }
-    else // In case we don't have an image sequence, just a standard image
-    {
-        m_Name = remaining;
-    }
-}
+        Frame* f = m_Frames.at(frame);
+        f->Cache();
 
-std::string VoidImage::FullPath()
-{
-    if (m_FullPath.empty())
-    {
-        std::filesystem::path p = m_BasePath;
-        
-        /* Create a fullname for appending with the basepath */
-        std::string fullname;
+        m_FrameSize = f->FrameSize();
+        m_UsedMemory += m_FrameSize;
 
-        /* We have a valid frame number */
-        if (m_Frame != -1)
-        {
-            fullname = m_Name + "." + std::to_string(m_Frame) + "." + m_Extension;
-        }
-        else
-        {
-            fullname = m_Name + "." + m_Extension;
-        }
-
-        p.append(fullname);
-
-        m_FullPath = p.string();
-    }
-    
-    return m_FullPath;
-}
-
-VoidImageData* VoidImage::GetImageData()
-{
-    /*
-        * If the frame data has not yet been fetched
-        * Read the frame data and return the pointer to the data
-        */
-    if (m_ImageData->Empty())
-        m_ImageData->Read(m_FullPath);
-
-    return m_ImageData;
-}
-
-VoidImageSequence::VoidImageSequence()
-    : m_BasePath("")
-{
-
-}
-
-VoidImageSequence::VoidImageSequence(const std::string& path)
-{
-    Read(path);
-}
-
-// VoidImageSequence::VoidImageSequence(const VoidImageSequence& other)
-// {
-
-//     // std::unordered_map<int, VoidImage> m_Images;
-//     // std::string m_BasePath;
-//     // std::vector<int> m_Frames;
-
-//     for (std::unordered_map<int, VoidImage>::const_iterator it = other.m_Images.begin(); it != other.m_Images.end(); ++it)
-//     {
-//         m_Images[it->first] = it->second;
-//     }
-
-//     /* Since we know the size of the vector use it to reserve */
-//     m_Frames.reserve(other.m_Frames.size());
-
-//     for (int frame: other.m_Frames)
-//     {
-//         m_Frames.emplace_back(frame);
-//     }
-
-//     /* Update the base path */
-//     m_BasePath = other.m_BasePath;
-// }
-
-void VoidImageSequence::Read(const std::string& path)
-{
-    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
-
-    /* Update the base path */
-    m_BasePath = path;
-
-    try
-    {
-        for (std::filesystem::directory_entry entry: std::filesystem::directory_iterator(path))
-        {
-            VoidImage image = entry.path().string();
-            // Map against the frame
-            int frame = image.GetFrame();
-            m_Images[frame] = image;
-            m_Frames.push_back(frame);
-        }
-    }
-    catch (const std::filesystem::filesystem_error& e)
-    {
+        m_Framenumbers.push_back(frame);
+        return;
     }
 
-    std::chrono::time_point end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
+    Frame* f = m_Media->GetFrameRef(frame);
+    f->Cache();
 
-    VOID_LOG_INFO("Time Taken to Load : {0}", duration.count());
+    m_FrameSize = f->FrameSize();
+    m_UsedMemory += m_FrameSize;
+
+    m_Frames[frame] = f;
+    m_Framenumbers.push_back(frame);
 }
 
-int VoidImageSequence::FirstFrame() const
+void FrameBuffer::Evict(v_frame_t frame)
 {
-    std::vector<int>::const_iterator fIt = std::min_element(m_Frames.begin(), m_Frames.end());
-
-    if (fIt != m_Frames.end())
+    VOID_LOG_INFO("Evicting Frame: {0}", frame);
+    /**
+     * Since the map is just holding a reference to the frame
+     * we don't need to get rid of the frame reference itself, just clear it's underlying
+     * data and we can have our free memory back
+     */
+    if (m_Frames.find(frame) != m_Frames.end())
     {
-        return *fIt;
+        Frame* f = m_Frames.at(frame);
+
+        m_UsedMemory -= f->FrameSize();
+        f->ClearCache();
     }
-
-    return -1;
-}
-
-int VoidImageSequence::LastFrame() const
-{
-    std::vector<int>::const_iterator fIt = std::max_element(m_Frames.begin(), m_Frames.end());
-
-    if (fIt != m_Frames.end())
-    {
-        return *fIt;
-    }
-
-    return -1;
 }
 
 VOID_NAMESPACE_CLOSE

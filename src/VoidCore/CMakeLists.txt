@@ -9,6 +9,7 @@ add_library(
     ColorProcessor.cpp
     FormatForge.cpp
     Identity.h
+    ImageBuffer.cpp
     ImageData.cpp
     Logging.cpp
     Media.cpp

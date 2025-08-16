@@ -13,6 +13,7 @@
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Media/MediaClip.h"
+// #include "VoidCore/ImageBuffer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -200,6 +201,11 @@ private: /* Members */
      * Whether the buffer is active or not at the moment
      */
     bool m_Active;
+
+    // /**
+    //  * Image buffer data
+    //  */
+    // FrameBuffer m_FrameBuffer;
 
 private: /* Methods */
     /**
