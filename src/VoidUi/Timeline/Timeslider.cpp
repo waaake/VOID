@@ -356,6 +356,22 @@ void Timeslider::AddCacheFrame(int frame)
 	update();
 }
 
+void Timeslider::RemoveCachedFrame(int frame)
+{
+	std::vector<int>::iterator it = std::find(m_CachedFrames.begin(), m_CachedFrames.end(), frame);
+
+	/*
+	 * If the value is not present in cached frames already
+	 * Add it to the set
+	 */
+	if (it != m_CachedFrames.end())
+	{
+		m_CachedFrames.erase(it);
+		/* Repaint after a frame has been cached to redraw the cache line */
+		update();
+	}
+}
+
 void Timeslider::ClearCachedFrames()
 {
 	/* Clears the contents of the cached frames */

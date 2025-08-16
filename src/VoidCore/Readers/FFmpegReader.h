@@ -172,6 +172,11 @@ public:
      */
     inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::sRGB; }
 
+    /**
+     * Returns the Size of the frame data
+     */
+    virtual size_t FrameSize() const override { return sizeof(unsigned char) * m_Pixels.size(); }
+
 private: /* Members */
     /* Image specifications */
     int m_Width, m_Height;

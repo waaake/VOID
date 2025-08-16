@@ -41,6 +41,7 @@ public:
 
 	/* Adds a cache marker on the frame */
 	void AddCacheFrame(int frame);
+	void RemoveCachedFrame(int frame);
 	void ClearCachedFrames();
 
 	/* Adds an annotation marker on the frame */
