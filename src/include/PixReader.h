@@ -130,6 +130,11 @@ public:
     virtual void Read() = 0;
 
     /**
+     * Returns the Size of the frame data
+     */
+    virtual size_t FrameSize() const = 0;
+
+    /**
      * Retrieve the input colorspace of the media file
      */
     virtual ColorSpace InputColorSpace() const = 0;

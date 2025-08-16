@@ -76,6 +76,7 @@ public:
 	 * Mark Cached frames on the Timeslider visually
 	 */
 	inline void AddCacheFrame(int frame) { m_Timeslider->AddCacheFrame(frame); }
+	inline void RemoveCachedFrame(int frame) { m_Timeslider->RemoveCachedFrame(frame); }
 	inline void ClearCachedFrames() { m_Timeslider->ClearCachedFrames(); }
 
 	/**
