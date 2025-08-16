@@ -42,13 +42,14 @@ Frame::~Frame()
     // }
 }
 
-SharedPixels Frame::Image()
+SharedPixels Frame::Image(bool cached)
 {
     /*
      * If the frame data has not yet been fetched
      * Read the frame data and return the pointer to the data
      */
-    Cache();
+    if (cached)
+        Cache();
 
     return m_ImageData;
 }
