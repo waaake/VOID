@@ -92,6 +92,7 @@ signals:
 	void PlayedBackwards();
 	void TimeChanged(int time);
 	void fullscreenRequested();
+	void playbackStateChanged(const PlayState&);
 
 private: /* Members */
 	/* Main Layout */

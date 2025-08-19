@@ -391,6 +391,7 @@ void Timeline::PlayForwards()
 
 	m_Playstate = PlayState::FORWARDS;
 	StartPlayback();
+	emit playbackStateChanged(m_Playstate);
 }
 
 void Timeline::PlayBackwards()
@@ -399,6 +400,7 @@ void Timeline::PlayBackwards()
 
 	m_Playstate = PlayState::BACKWARDS;
 	StartPlayback();
+	emit playbackStateChanged(m_Playstate);
 }
 
 void Timeline::Stop()
@@ -407,6 +409,7 @@ void Timeline::Stop()
 	m_Playstate = PlayState::STOPPED;
 
 	m_PlayTimer.stop();
+	emit playbackStateChanged(m_Playstate);
 
 	// /* Wait for the task to complete */
 	// if (m_Worker.valid())
