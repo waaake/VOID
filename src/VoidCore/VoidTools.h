@@ -28,6 +28,27 @@ namespace Tools {
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value);
 
+    /**
+     * RAII based scoping class, allows boolean values to be set during
+     * its scope and reset to false once the scope is finished
+     */
+    class ScopedFlag
+    {
+    public:
+        ScopedFlag(bool& flag) : m_Flag(flag)
+        {
+            m_Flag = true;
+        }
+
+        ~ScopedFlag()
+        {
+            m_Flag = false;
+        }
+
+    private:
+        bool& m_Flag;    
+    };
+
 } // namespace Tools
 
 VOID_NAMESPACE_CLOSE

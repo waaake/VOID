@@ -41,8 +41,9 @@ class VOID_API ChronoFlux : public QObject
 public:
     enum class Direction
     {
-        Forwards    = -1,
-        Backwards   = 1
+        None,
+		Forwards,
+		Backwards
     };
 
 public:
@@ -66,9 +67,9 @@ public:
     /**
      * A Cache process which caches all frames till the memory size allows
      */
-    void CacheAvailableFrames();
+    void CacheAvailable();
 
-    void StartPlaybackCache();
+    void StartPlaybackCache(const Direction& direction = Direction::Forwards);
     void StopPlaybackCache();
 
     /**
@@ -88,10 +89,8 @@ public:
      * of memory usage
      */
     void Cache(v_frame_t frame);
-
     void EnsureCached(v_frame_t frame);
 
-    void CacheAvailable();
     void CacheNextFrame();
     void CachePreviousFrame();
 
@@ -120,7 +119,6 @@ private: /* Members */
      */
     size_t m_MaxMemory;
     size_t m_UsedMemory;
-
     size_t m_FrameSize;
 
     std::deque<v_frame_t> m_Framenumbers;
@@ -129,12 +127,12 @@ private: /* Members */
     v_frame_t m_EndFrame;
     unsigned int m_Duration;
 
-    v_frame_t m_Current;
+    // v_frame_t m_Current;
     v_frame_t m_LastCached;
 
-    std::atomic<bool> m_Cache;
+    // std::atomic<bool> m_Cache;
 
-    QTimer m_ForwardsTimer;
+    // QTimer m_ForwardsTimer;
     QTimer m_CacheTimer;
 
     std::mutex m_Mutex;
@@ -142,12 +140,20 @@ private: /* Members */
 private: /* Methods */
     inline long AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
     inline v_frame_t MinFrame() const { return m_Framenumbers.front(); }
+
     v_frame_t CurrentFrame() const;
 
+    /**
+     * Frame Eviction from the cached array
+     */
     void Evict(v_frame_t frame);
     void EvictFront();
     void EvictBack();
 
+    /**
+     * Update to refresh the cache to available frames after removing the frames
+     * that may no longer be required
+     */
     void Update();
 
     inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
@@ -155,7 +161,15 @@ private: /* Methods */
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();
 
-    inline int Distance(int from, int to, int max) { return ( (from - to) + max) % max; }
+    /**
+     * Find circular distance between frames accoding to the timeline
+     * from - the frame from which the distance is required
+     * to - the frame to which distance is required
+     * max - total frames of the timeline
+     */
+    inline int Distance(int from, int to, int max) const { return ( (from - to) + max) % max; }
+
+    inline bool Cached(v_frame_t frame) const { return std::find(m_Framenumbers.cbegin(), m_Framenumbers.cend(), frame) != m_Framenumbers.cend(); }
 
 private: /* Task Classes */
     class CacheFrameTask : public QRunnable
@@ -250,93 +264,6 @@ private: /* Task Classes */
     private:
         int m_Count;
         bool m_Threaded;
-        ChronoFlux* m_Parent;
-    };
-
-    
-
-    class CacheAvailableFramesTask : public QRunnable
-    {
-    public:
-        CacheAvailableFramesTask(ChronoFlux* parent)
-            : m_Parent(parent)
-        {
-        }
-
-        void run()
-        {
-            for(size_t frame = m_Parent->m_StartFrame; frame <= m_Parent->m_EndFrame; ++frame)
-            {
-                if (m_Parent->Request(frame, false))
-                {
-                    m_Parent->AddTask(new CacheFrameTask(frame, m_Parent));
-                }
-            }
-        }
-
-    private:
-        ChronoFlux* m_Parent;
-    };
-
-    class CachePlayingFramesTask : public QRunnable
-    {
-    public:
-        CachePlayingFramesTask(ChronoFlux* parent)
-            : m_Parent(parent)
-        {
-        }
-
-        void run()
-        {
-            bool evict;
-
-            v_frame_t frame = m_Parent->m_StartFrame;
-
-            while (m_Parent->m_Cache)
-            {
-                VOID_LOG_INFO("P C: {0}--{1}", frame, m_Parent->CurrentFrame());
-
-                evict = (m_Parent->CurrentFrame() - m_Parent->MinFrame()) > 2;
-                VOID_LOG_INFO("P C b: {0}--{1}", evict, m_Parent->CurrentFrame());
-
-                if (m_Parent->Request(frame, evict))
-                {
-                    m_Parent->AddTask(new CacheFrameTask(frame, m_Parent));
-                    frame++;
-                }
-
-                // if (std::find(m_Parent->m_Framenumbers.begin(), m_Parent->m_Framenumbers.end(), frame) == m_Parent->m_Framenumbers.end())
-                // {
-                //     evict = (m_Parent->CurrentFrame() - m_Parent->MinFrame()) > 2;
-                //     VOID_LOG_INFO("P C b: {0}--{1}", evict, m_Parent->CurrentFrame());
-
-                //     if (m_Parent->Request(frame, evict))
-                //     {
-                //         m_Parent->AddTask(new CacheFrameTask(frame, m_Parent));
-                //         frame++;
-                //     }
-                // }
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                // frame++;
-
-                if (frame > m_Parent->m_EndFrame)
-                {
-                    /* Restart */
-                    frame = m_Parent->m_StartFrame;
-                }
-            }
-            // for(size_t frame = m_Parent->m_StartFrame; frame <= m_Parent->m_EndFrame; ++frame)
-            // {
-            //     if (m_Parent->Request(frame, false))
-            //     {
-            //         m_Parent->AddTask(new CacheFrameTask(frame, m_Parent));
-            //     }
-            // }
-
-        }
-
-    private:
         ChronoFlux* m_Parent;
     };
 };

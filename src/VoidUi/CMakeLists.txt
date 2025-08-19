@@ -24,6 +24,7 @@ set(SOURCES
     Dock/DockSplitter.cpp
 
     # Media
+    Media/MediaCache.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
     Media/Views/MediaView.cpp

@@ -65,12 +65,10 @@ void Player::Connect()
     connect(m_Timeline, &Timeline::fullscreenRequested, this, &Player::SetRendererFullscreen);
     connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state)
     {
-        if (state == Timeline::PlayState::FORWARDS)
-            m_CacheProcessor.StartPlaybackCache();
-        else if (state == Timeline::PlayState::STOPPED)
+        if (state == Timeline::PlayState::STOPPED)
             m_CacheProcessor.StopPlaybackCache();
-        else if (state == Timeline::PlayState::BACKWARDS)
-            m_CacheProcessor.StartPlaybackCache();
+        else
+            m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
     });
 
     /* ControlBar - ZoomChange -> Renderer - UpdateZoom */

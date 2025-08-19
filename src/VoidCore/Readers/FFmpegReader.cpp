@@ -119,6 +119,14 @@ std::vector<unsigned char>& FFmpegDecoder::GetVector(const int frame)
 
 void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
 {
+    /**
+     * At the moment, this is not accessible concurrently throught multiple threads
+     * Rather than handling this specifically at the cache level, using a guard here
+     * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
+     * still this shouldn't cause any issues...
+     */
+    std::lock_guard<std::mutex> m_Guard(m_Mutex);
+
     /* The framenumber was already decoded as stored */
     if (!GetVector(framenumber).empty())
     {
