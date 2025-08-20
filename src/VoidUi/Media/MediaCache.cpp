@@ -6,7 +6,6 @@
 /* Internal */
 #include "MediaCache.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
 #include "VoidCore/VoidTools.h"
 #include "VoidUi/PlayerWidget.h"
 #include "VoidUi/Preferences/Preferences.h"
@@ -84,8 +83,11 @@ void ChronoFlux::StartPlaybackCache(const Direction& direction)
     m_CacheDirection = direction;
     m_CacheTimer.start(1000);
 
-    /* Update the last frame for the Cache process to begin from */
-    m_LastCached = m_CacheDirection == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
+    if (!m_ThreadPool.activeThreadCount())
+    {
+        /* Update the last frame for the Cache process to begin from */
+        m_LastCached = m_CacheDirection == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
+    }
 }
 
 void ChronoFlux::StopPlaybackCache()
@@ -300,11 +302,11 @@ void ChronoFlux::EnsureCached(v_frame_t frame)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    /* Evict a frame if necessary as this needs to be cached */
-    if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) == m_Framenumbers.end())
+    if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) == m_Framenumbers.end() && m_LastCached != frame)
     {
         std::cout << m_Framenumbers << std::endl;
-
+        
+        /* Evict a frame if necessary as this needs to be cached */
         Request(frame, true);
         Cache(frame);
 
