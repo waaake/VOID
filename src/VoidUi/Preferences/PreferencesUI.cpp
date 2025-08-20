@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 
 /* Internal */
+#include "CachePreferences.h"
 #include "GeneralPreferences.h"
 #include "MediaViewPreferences.h"
 #include "PreferencesUI.h"
@@ -88,6 +89,16 @@ void VoidPreferencesWidget::AddSettings()
     /* Add the item and the widget to the List and Stack */
     m_SettingsList->addItem(ListViewItem("Player", ":resources/icons/icon_video_player.png"));
     m_SettingsStacked->addWidget(m_PlayerPrefs);
+
+    /* Add Cache Preferences */
+    CachePreferences* m_CachePreferences = new CachePreferences(this);
+
+    /* Reset the preferences from the saved config */
+    m_CachePreferences->Reset();
+
+    /* Add the item and the widget to the List and Stack */
+    m_SettingsList->addItem(ListViewItem("Caching", ":resources/icons/icon_cache.png"));
+    m_SettingsStacked->addWidget(m_CachePreferences);
 
     /* Add Media View Preferences */
     MediaViewPreferences* m_MediaViewPrefs = new MediaViewPreferences(this);

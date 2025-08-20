@@ -17,6 +17,8 @@ namespace Settings
     constexpr auto MissingFramesHandler = "player/missingFramesHandler";
     constexpr auto UndoQueueSize = "general/undoQueueSize";
     constexpr auto MediaViewType = "mediaView/viewType";
+    constexpr auto CacheMemory = "cache/memory";
+    constexpr auto CacheThreads = "cache/threads";
 }
 
 class VoidPreferences : public QObject
@@ -41,6 +43,8 @@ public:
     inline int GetMissingFrameHandler() const { return GetSetting(Settings::MissingFramesHandler).toInt(); }
     inline int GetUndoQueueSizeHint() const { return GetSetting(Settings::UndoQueueSize).toInt(); }
     inline int GetMediaViewType() const { return GetSetting(Settings::MediaViewType).toInt(); }
+    inline unsigned int GetCacheMemory() const { return GetSetting(Settings::CacheMemory).toUInt(); }
+    inline unsigned int GetCacheThreads() const { return GetSetting(Settings::CacheThreads).toUInt(); }
 
 signals:
     /**

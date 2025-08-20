@@ -69,7 +69,8 @@ public:
     void SetMedia(const SharedMediaClip& media);
     // void SetTrack(const SharedPlaybackTrack& track);
 
-    inline void SetMaxMemory(unsigned int size_in_gigs) { m_MaxMemory = size_in_gigs * 1024 * 1024 * 1024; }
+    inline void SetMaxMemory(unsigned int gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
+    inline void SetMaxThreads(unsigned int count) { m_ThreadPool.setMaxThreadCount(count); }
 
     /**
      * A Cache process which caches all frames till the memory size allows
@@ -195,6 +196,8 @@ private: /* Methods */
     inline int Distance(int from, int to, int max) const { return ( (from - to) + max) % max; }
 
     inline bool Cached(v_frame_t frame) const { return std::find(m_Framenumbers.cbegin(), m_Framenumbers.cend(), frame) != m_Framenumbers.cend(); }
+
+    void SettingsUpdated();
 
 private: /* Task Classes */
     class CacheNextFrameTask : public QRunnable

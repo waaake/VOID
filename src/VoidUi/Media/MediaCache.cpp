@@ -9,6 +9,7 @@
 #include "VoidCore/Profiler.h"
 #include "VoidCore/VoidTools.h"
 #include "VoidUi/PlayerWidget.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -54,7 +55,7 @@ ChronoFlux::ChronoFlux(QObject* parent)
     : QObject(parent)
     , m_CacheDirection(Direction::None)
     , m_State(State::Enabled)
-    , m_MaxMemory(1 * 1024 * 1024 * 1024) // 1 GB by default
+    , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
     , m_UsedMemory(0)
     , m_FrameSize(0)
     , m_StartFrame(0)
@@ -62,8 +63,10 @@ ChronoFlux::ChronoFlux(QObject* parent)
     , m_Duration(1)
     , m_LastCached(0)
 {
-    m_ThreadPool.setMaxThreadCount(5);
+    m_ThreadPool.setMaxThreadCount(VoidPreferences::Instance().GetCacheThreads());
+
     connect(&m_CacheTimer, &QTimer::timeout, this, &ChronoFlux::Update);
+    connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &ChronoFlux::SettingsUpdated);
 }
 
 ChronoFlux::~ChronoFlux()
@@ -462,6 +465,14 @@ v_frame_t ChronoFlux::CurrentFrame() const
         return m_Player->Frame();
 
     return 0;
+}
+
+void ChronoFlux::SettingsUpdated()
+{
+    SetMaxMemory(VoidPreferences::Instance().GetCacheMemory());
+    SetMaxThreads(VoidPreferences::Instance().GetCacheThreads());
+
+    VOID_LOG_INFO("Cache Settings Updated.");
 }
 
 VOID_NAMESPACE_CLOSE
