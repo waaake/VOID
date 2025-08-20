@@ -3,15 +3,12 @@
 
 /* STD */
 #include <string>
-#include <thread>
 
 /* Qt */
 #include <QCoreApplication>
 #include <QLayout>
 #include <QIcon>
 #include <QPainter>
-#include <QStyle>
-#include <QValidator>
 
 /* Internal */
 #include "PlayerWindow.h"
@@ -219,6 +216,7 @@ void VoidMainWindow::Build()
     m_EnableCacheAction = new QAction("Enable Look Ahead Caching", m_PlaybackMenu);
     m_DisableCacheAction = new QAction("Disable Look Ahead Caching", m_PlaybackMenu);
     m_StopCacheAction = new QAction("Stop Caching Media", m_PlaybackMenu);
+    m_RefreshCacheAction = new QAction("Refresh Media Cache", m_PlaybackMenu);
     m_ResumeCacheAction = new QAction("Resume Caching Media", m_PlaybackMenu);
     m_ClearCacheAction = new QAction("Clear Cache", m_PlaybackMenu);
 
@@ -256,6 +254,7 @@ void VoidMainWindow::Build()
     m_PlaybackMenu->addAction(m_EnableCacheAction);
     m_PlaybackMenu->addAction(m_DisableCacheAction);
     m_PlaybackMenu->addAction(m_StopCacheAction);
+    m_PlaybackMenu->addAction(m_RefreshCacheAction);
     m_PlaybackMenu->addAction(m_ResumeCacheAction);
     m_PlaybackMenu->addAction(m_ClearCacheAction);
 
@@ -352,10 +351,12 @@ void VoidMainWindow::Connect()
     /* }}} */
 
     /* Playback Menu {{{ */
-    connect(m_EnableCacheAction, &QAction::triggered, this, [this](){ ToggleLookAheadCache(true); });
-    connect(m_DisableCacheAction, &QAction::triggered, this, [this](){ ToggleLookAheadCache(false); });
-    connect(m_StopCacheAction, &QAction::triggered, this, [this](){ m_Media.StopCaching(); });
-    connect(m_ClearCacheAction, &QAction::triggered, this, &VoidMainWindow::ClearLookAheadCache);
+    connect(m_EnableCacheAction, &QAction::triggered, m_Player, &Player::ResumeCache);
+    connect(m_DisableCacheAction, &QAction::triggered, m_Player, &Player::DisableCache);
+    connect(m_StopCacheAction, &QAction::triggered, m_Player, &Player::StopCache);
+    connect(m_RefreshCacheAction, &QAction::triggered, m_Player, &Player::Recache);
+    connect(m_ResumeCacheAction, &QAction::triggered, m_Player, &Player::ResumeCache);
+    connect(m_ClearCacheAction, &QAction::triggered, m_Player, &Player::ClearCache);
 
     connect(m_PlayForwardsAction, &QAction::triggered, m_Player, &Player::PlayForwards);
     connect(m_PlayBackwardsAction, &QAction::triggered, m_Player, &Player::PlayBackwards);
@@ -395,48 +396,6 @@ void VoidMainWindow::Connect()
     /* Track */
     connect(m_Track.get(), &PlaybackTrack::frameCached, m_Player, &Player::AddCacheFrame);
     connect(m_Track.get(), &PlaybackTrack::cacheCleared, m_Player, &Player::ClearCachedFrames);
-}
-
-void VoidMainWindow::CacheLookAhead()
-{
-    /*
-     * Check if we're supposed to cache look ahead for the media
-     * and if we're not already caching the media
-     */
-    if (m_CacheMedia)
-    {
-        std::thread t;
-
-        /* Cache the active Buffers */
-        t = std::thread(&Player::CacheBuffer, m_Player);
-
-        /* TODO: Replace with threadpool */
-        /*
-        * This shouldn't be all bad here but we can still have issues if the media is caching and
-        * it was changed, at the moment, we can always call stop caching before chaning media
-        */
-        /* Detach so that this continues on irrespective of the scope of the function */
-        t.detach();
-    }
-}
-
-void VoidMainWindow::ClearLookAheadCache()
-{
-    /* Clear any data from the memory which was cached to improve playback */
-    m_Player->ClearCache();
-}
-
-void VoidMainWindow::ToggleLookAheadCache(const bool toggle)
-{
-    /* Update the State for Caching media */
-    m_CacheMedia = toggle;
-
-    /*
-     * Since there is no explicit user-option provided to begin cache
-     * Calling CacheLookAhead here to begin the cache if CacheMedia was set to 1
-     * Setting CacheMedia to 0, should not clear any existing cache so this case should suffice it
-     */
-    CacheLookAhead();
 }
 
 void VoidMainWindow::ImportMedia(const MediaStruct& mstruct)

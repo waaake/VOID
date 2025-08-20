@@ -34,7 +34,7 @@ class Player;
  * and ready for playback
  */
 
-class VOID_API ChronoFlux : public QObject
+class ChronoFlux : public QObject
 {
     Q_OBJECT
 
@@ -44,6 +44,13 @@ public:
         None,
 		Forwards,
 		Backwards
+    };
+
+    enum class State
+    {
+        Paused,
+        Enabled,
+        Disabled,
     };
 
 public:
@@ -60,7 +67,7 @@ public:
      * The media to currently look at actively to cache
      */
     void SetMedia(const SharedMediaClip& media);
-    // void SetTrack(std::weak_ptr<Track> track);
+    // void SetTrack(const SharedPlaybackTrack& track);
 
     inline void SetMaxMemory(unsigned int size_in_gigs) { m_MaxMemory = size_in_gigs * 1024 * 1024 * 1024; }
 
@@ -71,6 +78,24 @@ public:
 
     void StartPlaybackCache(const Direction& direction = Direction::Forwards);
     void StopPlaybackCache();
+
+    /**
+     * Pauses the cache till it is manually resumed or another media set as
+     * active on the processor
+     */
+    void PauseCaching();
+
+    /**
+     * Stops the Cache Process completely and it is enabled only when it is resumed manually
+     */
+    void DisableCaching();
+
+    /**
+     * Stops the cache process completely
+     */
+    void StopCaching();
+    void ResumeCaching();
+
 
     /**
      * Request caching the next available frame depending on the direction
@@ -90,14 +115,14 @@ public:
      */
     void Cache(v_frame_t frame);
     void EnsureCached(v_frame_t frame);
+    void ClearCache();
+    void Recache();
 
     void CacheNextFrame();
     void CachePreviousFrame();
 
-    void CacheNextq();
-    void CachePreviousq();
-    void CacheNext(int count, bool threaded = false) { AddTask(new CacheNextFramesTask(count, threaded, this)); }
-    void CachePrevious(int count, bool threaded = false) { AddTask(new CachePreviousFramesTask(count, threaded, this)); }
+    void CacheNext();
+    void CachePrevious();
 
 private: /* Members */
     Player* m_Player;
@@ -107,10 +132,10 @@ private: /* Members */
      * This is a non-owning pointer to the Media coming in from either the viewer buffer or some other
      * component that might need the media to be cache for some reason
      */
-    // std::weak_ptr<MediaClip> m_Media;
-    SharedMediaClip m_Media;
+    std::weak_ptr<MediaClip> m_Media;
 
     Direction m_CacheDirection;
+    State m_State;
 
     /**
      * Bytes representation of the amount of maximum available memory for caching media
@@ -172,25 +197,6 @@ private: /* Methods */
     inline bool Cached(v_frame_t frame) const { return std::find(m_Framenumbers.cbegin(), m_Framenumbers.cend(), frame) != m_Framenumbers.cend(); }
 
 private: /* Task Classes */
-    class CacheFrameTask : public QRunnable
-    {
-    public:
-        CacheFrameTask(v_frame_t frame, ChronoFlux* parent)
-            : m_Frame(frame)
-            , m_Parent(parent)
-        {
-        }
-
-        void run()
-        {
-            m_Parent->Cache(m_Frame);
-        }
-
-    private:
-        v_frame_t m_Frame;
-        ChronoFlux* m_Parent;
-    };
-
     class CacheNextFrameTask : public QRunnable
     {
     public:
@@ -206,29 +212,6 @@ private: /* Task Classes */
         ChronoFlux* m_Parent;
     };
 
-    class CacheNextFramesTask : public QRunnable
-    {
-    public:
-        CacheNextFramesTask(int count, bool threaded, ChronoFlux* parent)
-            : m_Count(count), m_Threaded(threaded), m_Parent(parent) {}
-
-        void run() override
-        {
-            for (int i = 0; i < m_Count; ++i)
-            {
-                if (m_Threaded)
-                    m_Parent->AddTask(new CacheNextFrameTask(m_Parent));
-                else
-                    m_Parent->CacheNextFrame();
-            }
-        }
-
-    private:
-        int m_Count;
-        bool m_Threaded;
-        ChronoFlux* m_Parent;
-    };
-
     class CachePreviousFrameTask : public QRunnable
     {
     public:
@@ -241,29 +224,6 @@ private: /* Task Classes */
         }
 
     private:
-        ChronoFlux* m_Parent;
-    };
-
-    class CachePreviousFramesTask : public QRunnable
-    {
-    public:
-        CachePreviousFramesTask(int count, bool threaded, ChronoFlux* parent)
-            : m_Count(count), m_Threaded(threaded), m_Parent(parent) {}
-
-        void run() override
-        {
-            for (int i = 0; i < m_Count; ++i)
-            {
-                if (m_Threaded)
-                    m_Parent->AddTask(new CachePreviousFrameTask(m_Parent));
-                else
-                    m_Parent->CachePreviousFrame();
-            }
-        }
-
-    private:
-        int m_Count;
-        bool m_Threaded;
         ChronoFlux* m_Parent;
     };
 };

@@ -53,6 +53,7 @@ std::ostream& operator<<(std::ostream& stream, const std::deque<v_frame_t>& d)
 ChronoFlux::ChronoFlux(QObject* parent)
     : QObject(parent)
     , m_CacheDirection(Direction::None)
+    , m_State(State::Enabled)
     , m_MaxMemory(1 * 1024 * 1024 * 1024) // 1 GB by default
     , m_UsedMemory(0)
     , m_FrameSize(0)
@@ -62,17 +63,17 @@ ChronoFlux::ChronoFlux(QObject* parent)
     , m_LastCached(0)
 {
     m_ThreadPool.setMaxThreadCount(5);
-
     connect(&m_CacheTimer, &QTimer::timeout, this, &ChronoFlux::Update);
 }
 
 ChronoFlux::~ChronoFlux()
 {
+    ClearCache();
 }
 
 void ChronoFlux::StartPlaybackCache(const Direction& direction)
 {
-    if (m_Framenumbers.size() >= m_Duration)
+    if (m_Framenumbers.size() >= m_Duration || m_State != State::Enabled)
     {
         return;
     }
@@ -90,6 +91,35 @@ void ChronoFlux::StopPlaybackCache()
     m_CacheTimer.stop();
 }
 
+void ChronoFlux::PauseCaching()
+{
+    StopCaching();
+    m_State = State::Paused;
+}
+
+void ChronoFlux::DisableCaching()
+{
+    StopCaching();
+    m_State = State::Disabled;
+}
+
+void ChronoFlux::StopCaching()
+{
+    /* Clear all the function threads that have not yet started */
+    m_ThreadPool.clear();
+    /* Wait for the remaining to be done */
+    m_ThreadPool.waitForDone();
+
+    m_Player->ClearCachedFrames();
+    m_LastCached = m_Player->Frame();
+}
+
+void ChronoFlux::ResumeCaching()
+{
+    m_State = State::Enabled;
+    CacheAvailable();
+}
+
 void ChronoFlux::Update()
 {
     /**
@@ -103,9 +133,9 @@ void ChronoFlux::Update()
     }
 
     if (m_CacheDirection == Direction::Forwards)
-        CacheNextq();
+        CacheNext();
     else if (m_CacheDirection == Direction::Backwards)
-        CachePreviousq();
+        CachePrevious();
     else
         m_CacheTimer.stop();
 
@@ -114,19 +144,30 @@ void ChronoFlux::Update()
 
 void ChronoFlux::SetMedia(const SharedMediaClip& media)
 {
+    /* Clear Existing Media cache if present */
+    ClearCache();
+
     m_Media = media;
 
-    m_StartFrame = m_Media->FirstFrame();
-    m_EndFrame = m_Media->LastFrame();
-    m_Duration = m_Media->Duration();
+    m_StartFrame = media->FirstFrame();
+    m_EndFrame = media->LastFrame();
+    m_Duration = media->Duration();
 
     /**
      * Ensure that the first frame is cached
      * This helps with the understanding of the frame size of the media
      */
-    EnsureCached(m_Media->FirstFrame());
+    EnsureCached(media->FirstFrame());
+    m_FrameSize = media->FrameSize();
 
-    m_FrameSize = m_Media->FrameSize();
+    /**
+     * Cache all of the available frames what the memory limit allows to
+     */
+    CacheAvailable();
+
+    /* If the Cache was paused, it can be resumed now */
+    if (m_State == State::Paused)
+        m_State = State::Enabled;
 }
 
 bool ChronoFlux::Request(v_frame_t frame, bool evict)
@@ -193,12 +234,15 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
 
 void ChronoFlux::Cache(v_frame_t frame)
 {
-    if (m_Media->HasFrame(frame))
+    if (SharedMediaClip media = m_Media.lock())
     {
-        m_Media->CacheFrame(frame);
+        if (media->HasFrame(frame))
+        {
+            media->CacheFrame(frame);
 
-        /* Mark that the frame has been cached now */
-        m_Player->AddCacheFrame(frame);
+            /* Mark that the frame has been cached now */
+            m_Player->AddCacheFrame(frame);
+        }
     }
 }
 
@@ -206,13 +250,16 @@ void ChronoFlux::Evict(v_frame_t frame)
 {
     auto it = std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
 
-    if (it != m_Framenumbers.end())
+    if (SharedMediaClip media = m_Media.lock())
     {
-        m_Media->UncacheFrame(frame);
-        m_UsedMemory -= m_FrameSize;
+        if (it != m_Framenumbers.end())
+        {
+            media->UncacheFrame(frame);
+            m_UsedMemory -= m_FrameSize;
 
-        m_Framenumbers.erase(it);
-        m_Player->RemoveCachedFrame(frame);
+            m_Framenumbers.erase(it);
+            m_Player->RemoveCachedFrame(frame);
+        }
     }
 }
 
@@ -220,22 +267,30 @@ void ChronoFlux::EvictFront()
 {
     v_frame_t frame = m_Framenumbers.front();
 
-    m_Media->UncacheFrame(frame);
-    m_UsedMemory -= m_FrameSize;
+    if (SharedMediaClip media = m_Media.lock())
+    {
+        media->UncacheFrame(frame);
+        m_UsedMemory -= m_FrameSize;
 
-    m_Framenumbers.pop_front();
-    m_Player->RemoveCachedFrame(frame);
+        m_Framenumbers.pop_front();
+        m_Player->RemoveCachedFrame(frame);
+
+        VOID_LOG_INFO("Removing Cached Frame: {0}", frame);
+    }
 }
 
 void ChronoFlux::EvictBack()
 {
     v_frame_t frame = m_Framenumbers.back();
 
-    m_Media->UncacheFrame(frame);
-    m_UsedMemory -= m_FrameSize;
+    if (SharedMediaClip media = m_Media.lock())
+    {
+        media->UncacheFrame(frame);
+        m_UsedMemory -= m_FrameSize;
 
-    m_Framenumbers.pop_back();
-    m_Player->RemoveCachedFrame(frame);
+        m_Framenumbers.pop_back();
+        m_Player->RemoveCachedFrame(frame);
+    }
 }
 
 void ChronoFlux::EnsureCached(v_frame_t frame)
@@ -249,11 +304,35 @@ void ChronoFlux::EnsureCached(v_frame_t frame)
 
         Request(frame, true);
         Cache(frame);
+
+        m_LastCached = frame;
     }
+}
+
+void ChronoFlux::ClearCache()
+{
+    if (SharedMediaClip media = m_Media.lock())
+    {
+        media->ClearCache();
+    }
+
+    m_Framenumbers.clear();
+    m_UsedMemory = 0;
+
+    StopCaching();
+}
+
+void ChronoFlux::Recache()
+{
+    ClearCache();
+    CacheAvailable();
 }
 
 void ChronoFlux::CacheAvailable()
 {
+    if (m_State == State::Disabled)
+        return;
+
     int count = 0;
 
     /**
@@ -275,7 +354,7 @@ void ChronoFlux::CacheAvailable()
     }
     else
     {
-        for (v_frame_t frame = std::max(m_LastCached, m_StartFrame); frame <= m_EndFrame; ++frame)
+        for (v_frame_t frame = m_StartFrame; frame <= m_EndFrame; ++frame)
         {
             if (Cached(frame))
                 continue;
@@ -331,7 +410,7 @@ void ChronoFlux::CachePreviousFrame()
     Cache(GetPreviousFrame());
 }
 
-void ChronoFlux::CacheNextq()
+void ChronoFlux::CacheNext()
 {
     /* Determine how many frames are used up and can be removed */
     int count = Distance((m_Player->Frame() - 15), m_Framenumbers.front(), m_Duration);
@@ -354,7 +433,7 @@ void ChronoFlux::CacheNextq()
     }
 }
 
-void ChronoFlux::CachePreviousq()
+void ChronoFlux::CachePrevious()
 {
     /* Determine how many frames are used up and can be removed */
     int count = Distance(m_Framenumbers.back(), (m_Player->Frame() + 15), m_Duration);

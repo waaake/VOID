@@ -107,7 +107,6 @@ public:
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
     void CacheBuffer();
-    void ClearCache();
 
     /* Zoom on the Viewport */
     inline void ZoomIn() { m_Renderer->ZoomIn(); }
@@ -159,7 +158,12 @@ public:
     inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
     inline void ResetRange() { m_Timeline->ResetRange(); }
 
-    inline ChronoFlux* CacheProcessor() { return &m_CacheProcessor; }
+    inline void PauseCache() { m_CacheProcessor.PauseCaching(); }
+    inline void DisableCache() { m_CacheProcessor.DisableCaching(); }
+    inline void StopCache() { m_CacheProcessor.StopCaching(); }
+    inline void Recache() { m_CacheProcessor.Recache(); }
+    inline void ResumeCache() { m_CacheProcessor.ResumeCaching(); }
+    inline void ClearCache() { m_CacheProcessor.ClearCache(); }
 
 public:
     void Clear();

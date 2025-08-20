@@ -82,18 +82,6 @@ private: /* Methods */
 protected:
     void paintEvent(QPaintEvent* event) override;
 
-    /* Caches the Media if Caching is allowed */
-    void CacheLookAhead();
-
-    /* Clears ahe cache for the media */
-    void ClearLookAheadCache();
-
-    /**
-     * Toggles the Caching behaviour for the media
-     * Should the media be cache upfront?
-     */
-    void ToggleLookAheadCache(const bool toggle);
-
 private: /* Members */
     Player* m_Player;
     VoidMediaLister* m_MediaLister;
@@ -125,6 +113,7 @@ private: /* Members */
     QAction* m_DisableCacheAction;
     QAction* m_StopCacheAction;
     QAction* m_ClearCacheAction;
+    QAction* m_RefreshCacheAction;
     QAction* m_ResumeCacheAction;
     QAction* m_PlayForwardsAction;
     QAction* m_StopPlayingAction;

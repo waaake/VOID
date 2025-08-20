@@ -150,13 +150,6 @@ void Player::CacheBuffer()
         m_ViewBufferB->Cache();
 }
 
-void Player::ClearCache()
-{
-    /* Dump cache from both the viewer Buffers */
-    m_ViewBufferA->ClearCache();
-    m_ViewBufferB->ClearCache();
-}
-
 void Player::Build()
 {
     /* Base layout for the widget */
@@ -219,8 +212,6 @@ void Player::Load(const SharedMediaClip& media)
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
     m_CacheProcessor.SetMedia(media);
-    // m_CacheProcessor.CacheAvailableFrames();
-    m_CacheProcessor.CacheAvailable();
 
     /* Viewer Buffer - Clip -> Player - Add Cache Frame */
     ConnectMediaClipToTimeline(media);
