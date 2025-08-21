@@ -219,7 +219,7 @@ void ChronoFlux::Cache(v_frame_t frame)
 {
     if (SharedMediaClip media = m_Media.lock())
     {
-        if (media->HasFrame(frame))
+        if (media->Valid() && media->HasFrame(frame))
         {
             media->CacheFrame(frame);
             m_FrameSize = media->FrameSize();

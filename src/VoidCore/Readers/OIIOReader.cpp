@@ -65,7 +65,7 @@ void OIIOPixReader::Read()
         m_InputColorSpace = ColorSpace::Rec709;
     /* }}} */
 
-    VOID_LOG_INFO("OIIOPixReader ( Width: {0}, Height: {1}, Channels: {2} )", m_Width, m_Height, m_Channels);
+    // VOID_LOG_INFO("OIIOPixReader ( Width: {0}, Height: {1}, Channels: {2} )", m_Width, m_Height, m_Channels);
 
     /* Read requisites */
     int subimage = 0;

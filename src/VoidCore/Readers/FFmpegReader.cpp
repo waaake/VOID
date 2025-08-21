@@ -109,11 +109,13 @@ void FFmpegDecoder::Close()
 
 std::vector<unsigned char>& FFmpegDecoder::GetVector(const int frame)
 {
-    if (m_DecodedFrames.find(frame) != m_DecodedFrames.end())
+    if (m_DecodedFrames.find(frame) == m_DecodedFrames.end())
+    {
+        /* Assign a new vector to the decoded frames */
+        m_DecodedFrames[frame] = {};
         return m_DecodedFrames.at(frame);
+    }
 
-    /* Assign a new vector to the decoded frames */
-    m_DecodedFrames[frame] = {};
     return m_DecodedFrames.at(frame);
 }
 

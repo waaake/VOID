@@ -493,6 +493,7 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
     m_Renderer->Clear();
 
     /* Refresh the player with the updated content from the Buffer */
+    ResetCacheMedia();
     Refresh();
 
     /* Update the frame range */

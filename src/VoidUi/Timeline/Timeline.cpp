@@ -283,7 +283,7 @@ void Timeline::SetRange(const int min, const int max)
 
 	/* Update timeslider range */
 	m_Timeslider->setRange(min, max);
-
+	
 	/* Update internal range */
 	m_Start = min;
 	m_End = max;

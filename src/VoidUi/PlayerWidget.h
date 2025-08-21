@@ -106,6 +106,7 @@ public:
     void SetViewBuffer(const PlayerViewBuffer& buffer);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
+    inline void ResetCacheMedia() { m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip()); }
     void CacheBuffer();
 
     /* Zoom on the Viewport */

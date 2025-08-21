@@ -92,7 +92,7 @@ void Frame::Cache()
     if (m_ImageData->Empty())
     {
         m_ImageData->Read();
-        VOID_LOG_INFO("Cached Frame: {0}", m_Framenumber);
+        // VOID_LOG_INFO("Cached Frame: {0}", m_Framenumber);
     }
 }
 
@@ -101,7 +101,7 @@ void Frame::ClearCache()
     if (!m_ImageData->Empty())
     {
         m_ImageData->Clear();
-        VOID_LOG_INFO("Cleared Frame Cache: {0}", m_Framenumber);
+        // VOID_LOG_INFO("Cleared Frame Cache: {0}", m_Framenumber);
     }
 }
 
