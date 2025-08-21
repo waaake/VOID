@@ -12,42 +12,18 @@
 
 VOID_NAMESPACE_OPEN
 
-std::ostream& operator<<(std::ostream& stream, const std::deque<v_frame_t>& d)
-{
-    stream << "[";
-
-    for (v_frame_t frame : d)
-    {
-        stream << frame << ", ";
-    }
-
-    stream << "]";
-
-    return stream;
-}
-
-// int ForwardDistance(const std::deque<v_frame_t>& d, v_frame_t a, v_frame_t b)
+// std::ostream& operator<<(std::ostream& stream, const std::deque<v_frame_t>& d)
 // {
-//     auto itA = std::lower_bound(d.cbegin(), d.cend(), a);
-//     auto itB = std::find(d.cbegin(), d.cend(), b);
+//     stream << "[";
 
-//     return std::distance<std::deque<v_frame_t>::const_iterator>(itA, itB);
-// }
-
-// int ReverseDistance(const std::deque<v_frame_t>& d, v_frame_t a, v_frame_t b)
-// {
-//     auto itA = std::find(d.cbegin(), d.cend(), a);
-//     if (itA == d.end())
+//     for (v_frame_t frame : d)
 //     {
-//         itA = std::upper_bound(d.cbegin(), d.cend(), a);
+//         stream << frame << ", ";
 //     }
 
-//     auto itB = std::find(d.cbegin(), d.cend(), b);
+//     stream << "]";
 
-//     v_frame_t from = std::distance<std::deque<v_frame_t>::const_iterator>(d.cbegin(), itA);
-//     v_frame_t to = std::distance<std::deque<v_frame_t>::const_iterator>(d.cbegin(), itB);
-
-//     return (from - to + d.size()) % d.size();
+//     return stream;
 // }
 
 ChronoFlux::ChronoFlux(QObject* parent)
@@ -61,6 +37,7 @@ ChronoFlux::ChronoFlux(QObject* parent)
     , m_EndFrame(0)
     , m_Duration(1)
     , m_LastCached(0)
+    , m_BackBuffer(3)
 {
     m_ThreadPool.setMaxThreadCount(VoidPreferences::Instance().GetCacheThreads());
 
@@ -158,12 +135,13 @@ void ChronoFlux::SetMedia(const SharedMediaClip& media)
     m_EndFrame = media->LastFrame();
     m_Duration = media->Duration();
 
+    m_BackBuffer = std::max(3, static_cast<int>(m_Duration * 0.02));
+
     /**
      * Ensure that the first frame is cached
      * This helps with the understanding of the frame size of the media
      */
     EnsureCached(media->FirstFrame());
-    m_FrameSize = media->FrameSize();
 
     /**
      * Cache all of the available frames what the memory limit allows to
@@ -244,6 +222,7 @@ void ChronoFlux::Cache(v_frame_t frame)
         if (media->HasFrame(frame))
         {
             media->CacheFrame(frame);
+            m_FrameSize = media->FrameSize();
 
             /* Mark that the frame has been cached now */
             m_Player->AddCacheFrame(frame);
@@ -302,8 +281,8 @@ void ChronoFlux::EnsureCached(v_frame_t frame)
 {
     if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) == m_Framenumbers.end())
     {
-        std::cout << m_Framenumbers << std::endl;
-        
+        // std::cout << m_Framenumbers << std::endl;
+        VOID_LOG_INFO("Force Caching Frame: {0}", frame);
         {
             std::lock_guard<std::mutex> lock(m_Mutex);
             m_LastCached = frame;
@@ -418,17 +397,15 @@ void ChronoFlux::CachePreviousFrame()
 
 void ChronoFlux::CacheNext()
 {
-    /* Determine how many frames are used up and can be removed */
-    int count = Distance((m_Player->Frame() - 15), m_Framenumbers.front(), m_Duration);
-
-    /* Cannot proceed */
-    if (count < 1)
-        return;
-
     v_frame_t frame = m_LastCached;
-
-    for (int i = 0; i < count; ++i)
+    
+    /* Determine how many frames are used up and can be removed */
+    while (!m_Framenumbers.empty())
     {
+        /* Ensure the cached frame is just between the current frame and the back buffer */
+        if (m_Player->Frame() - m_BackBuffer < m_Framenumbers.front() && m_Framenumbers.front() < m_Player->Frame())
+            break;
+
         frame++;
 
         if (frame > m_EndFrame)
@@ -441,17 +418,15 @@ void ChronoFlux::CacheNext()
 
 void ChronoFlux::CachePrevious()
 {
-    /* Determine how many frames are used up and can be removed */
-    int count = Distance(m_Framenumbers.back(), (m_Player->Frame() + 15), m_Duration);
-
-    /* Cannot proceed */
-    if (count < 1)
-        return;
-
     v_frame_t frame = m_LastCached;
 
-    for (int i = 0; i < count; ++i)
+    /* Determine how many frames are used up and can be removed */
+    while (!m_Framenumbers.empty())
     {
+        /* Ensure the cached frame is just between the current frame and the back buffer */
+        if (m_Player->Frame() + m_BackBuffer > m_Framenumbers.back() && m_Framenumbers.back() > m_Player->Frame())
+            break;
+        
         frame--;
 
         if (frame < m_StartFrame)
@@ -460,14 +435,6 @@ void ChronoFlux::CachePrevious()
         Request(frame, true);
         AddTask(new CachePreviousFrameTask(this));
     }
-}
-
-v_frame_t ChronoFlux::CurrentFrame() const
-{
-    if (m_Player)
-        return m_Player->Frame();
-
-    return 0;
 }
 
 void ChronoFlux::SettingsUpdated()

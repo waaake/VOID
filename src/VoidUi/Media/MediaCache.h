@@ -153,12 +153,14 @@ private: /* Members */
     v_frame_t m_EndFrame;
     unsigned int m_Duration;
 
-    // v_frame_t m_Current;
     v_frame_t m_LastCached;
+    /**
+     * The amount of frames that can be kept on the opposite side of the current sync direction
+     * this is kept to atleast support playback till the cache starts updating in the other direction
+     * this is being set to a minimum of 3 frames and upto a max of 2% of the overall length of the media
+     */
+    int m_BackBuffer;
 
-    // std::atomic<bool> m_Cache;
-
-    // QTimer m_ForwardsTimer;
     QTimer m_CacheTimer;
 
     std::mutex m_Mutex;
@@ -166,8 +168,6 @@ private: /* Members */
 private: /* Methods */
     inline long AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
     inline v_frame_t MinFrame() const { return m_Framenumbers.front(); }
-
-    v_frame_t CurrentFrame() const;
 
     /**
      * Frame Eviction from the cached array
@@ -187,15 +187,10 @@ private: /* Methods */
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();
 
-    /**
-     * Find circular distance between frames accoding to the timeline
-     * from - the frame from which the distance is required
-     * to - the frame to which distance is required
-     * max - total frames of the timeline
-     */
-    inline int Distance(int from, int to, int max) const { return ( (from - to) + max) % max; }
-
-    inline bool Cached(v_frame_t frame) const { return std::find(m_Framenumbers.cbegin(), m_Framenumbers.cend(), frame) != m_Framenumbers.cend(); }
+    inline bool Cached(v_frame_t frame) const
+    { 
+        return std::find(m_Framenumbers.cbegin(), m_Framenumbers.cend(), frame) != m_Framenumbers.cend(); 
+    }
 
     void SettingsUpdated();
 
