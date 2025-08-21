@@ -42,6 +42,25 @@ Frame::~Frame()
     // }
 }
 
+Frame::Frame(const Frame& other)
+    : m_MediaEntry(other.m_MediaEntry)
+    , m_ImageData(other.m_ImageData)
+    , m_Framenumber(other.m_Framenumber)
+{
+}
+
+Frame& Frame::operator=(const Frame& other)
+{
+    if (this != &other)
+    {
+        m_MediaEntry = other.m_MediaEntry;
+        m_ImageData = other.m_ImageData;
+        m_Framenumber = other.m_Framenumber;
+    }
+
+    return *this;
+}
+
 SharedPixels Frame::Image(bool cached)
 {
     /*
@@ -56,6 +75,19 @@ SharedPixels Frame::Image(bool cached)
 
 void Frame::Cache()
 {
+    /**
+     * Don't allow mutliple threads to cache the same frame
+     * if one thread has the file open, that should be then allowed to be closed
+     * before the other thread tries to read it again, this comes from caching frame
+     * with threads as there could be a possiblitity that the main thread has reached
+     * this frame and has requested the frame data where as the frame isn't fully ready yet
+     * which is then checking whether the image data is empty, it could be partially filled
+     * allowing the conditional check to fail and render a partially read frame, or worse case
+     * try to open the file again and result in unexpected behaviour including malloc or free related
+     * crashes
+     */
+    std::lock_guard<std::mutex> guard(m_Mutex);
+
     /* Read and load the image data onto the memory */
     if (m_ImageData->Empty())
     {
@@ -172,7 +204,7 @@ void Media::Read(const MediaStruct& mstruct)
     for (const MEntry& e: mstruct)
     {
         /* Update internal structures with the frame information */
-        m_Mediaframes[e.Framenumber()] = Frame(e);
+        m_Mediaframes[e.Framenumber()] = std::move(Frame(e));
         m_Framenumbers.emplace_back(e.Framenumber());
     }
 
@@ -225,7 +257,7 @@ void Media::Cache()
     m_Caching = true;
 
     /* For all the frames in the media frames */
-    for (std::pair<v_frame_t, Frame> it: m_Mediaframes)
+    for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
     {
         /* Check if we're supposed to stop caching frames further */
         if (m_StopCaching)
@@ -246,7 +278,7 @@ void Media::Cache()
 void Media::ClearCache()
 {
     /* For all the frames in the media frames */
-    for (std::pair<v_frame_t, Frame> it: m_Mediaframes)
+    for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
     {
         /* Clear the Data for the Frame from the memory */
         it.second.ClearCache();

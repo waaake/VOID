@@ -300,17 +300,18 @@ void ChronoFlux::EvictBack()
 
 void ChronoFlux::EnsureCached(v_frame_t frame)
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) == m_Framenumbers.end() && m_LastCached != frame)
+    if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) == m_Framenumbers.end())
     {
         std::cout << m_Framenumbers << std::endl;
         
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_LastCached = frame;
+        }
+
         /* Evict a frame if necessary as this needs to be cached */
         Request(frame, true);
         Cache(frame);
-
-        m_LastCached = frame;
     }
 }
 

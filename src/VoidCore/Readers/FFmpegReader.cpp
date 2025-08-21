@@ -125,7 +125,7 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
      * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
      * still this shouldn't cause any issues...
      */
-    std::lock_guard<std::mutex> m_Guard(m_Mutex);
+    std::lock_guard<std::mutex> guard(m_Mutex);
 
     /* The framenumber was already decoded as stored */
     if (!GetVector(framenumber).empty())
