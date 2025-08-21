@@ -7,6 +7,9 @@
 #else
 #include <unistd.h>
 #include <sys/types.h>
+#endif
+
+#if defined(__APPLE__)
 #include <sys/sysctl.h>
 #endif
 
@@ -56,14 +59,14 @@ void CachePreferences::Build()
     m_CacheDescription = new QLabel("Controls the amount of memory (RAM) reserved for temporary data (cache) storage during processing.\n\n\
 A larger cache can improve performance by reducing the need to recompute or reload frequently accessed data.\n\
  Lower Values: Running on a low memory system or want to conserve for other processes.\n\
- Higher Values: If you have plenty of RAM or viewing High resolution content.\n");
+ Higher Values: If you have plenty of RAM or viewing High resolution content.");
 
     m_CacheLabel = new QLabel("Cache Memory Size");
     m_CacheBox = new QSpinBox;
 
     m_ThreadsDescription = new QLabel("Sets the maximum number of threads that can run concurrently in the thread pool.\n\n\
  Lower Count: Running on a lower power device with lesser overall cores.\n\
- Higher Count: Want faster throughput for cache operations and have plenty cores available for multiprocessing.\n");
+ Higher Count: Want faster throughput for cache operations and have plenty cores available for multiprocessing.");
 
     m_ThreadsLabel = new QLabel("Read Threads");
     m_ThreadsBox = new QSpinBox;
@@ -73,7 +76,7 @@ A larger cache can improve performance by reducing the need to recompute or relo
     m_Layout->addWidget(m_CacheLabel, 1, 0);
     m_Layout->addWidget(m_CacheBox, 1, 1);
 
-    m_Layout->setRowStretch(2, 1);
+    m_Layout->addItem(new QSpacerItem(10, 20), 2, 3);
 
     m_Layout->addWidget(m_ThreadsDescription, 3, 0, 1, 5);
     m_Layout->addWidget(m_ThreadsLabel, 4, 0);
