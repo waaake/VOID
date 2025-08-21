@@ -111,7 +111,7 @@ FramerateBox::FramerateBox(QWidget* parent)
 	: QComboBox(parent)
 {
 	/* Validator */
-	m_DoubleValidator = new QDoubleValidator;
+	m_DoubleValidator = new QDoubleValidator(this);
 	m_DoubleValidator->setBottom(0.0);
 	m_DoubleValidator->setTop(2000.0);
 

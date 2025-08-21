@@ -44,7 +44,7 @@ void ProjectView::Setup()
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setUniformItemSizes(true);
      /* Set Delegate */
-    setItemDelegate(new ProjectItemDelegate());
+    setItemDelegate(new ProjectItemDelegate(this));
     /* Spacing between entries */
     setSpacing(1);
 

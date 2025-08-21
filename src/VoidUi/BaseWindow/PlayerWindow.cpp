@@ -281,19 +281,19 @@ void VoidMainWindow::Build()
     /* Viewer Contols Menu {{{ */
     m_ViewerMenu = new QMenu("Viewer", menuBar);
 
-    m_ZoomInAction = new QAction("Zoom In");
+    m_ZoomInAction = new QAction("Zoom In", m_ViewerMenu);
     m_ZoomInAction->setShortcut(QKeySequence(Qt::Key_Plus));
 
-    m_ZoomOutAction = new QAction("Zoom Out");
+    m_ZoomOutAction = new QAction("Zoom Out", m_ViewerMenu);
     m_ZoomOutAction->setShortcut(QKeySequence(Qt::Key_Minus));
 
-    m_ZoomToFitAction = new QAction("Zoom to Fit");
+    m_ZoomToFitAction = new QAction("Zoom to Fit", m_ViewerMenu);
     m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
 
-    m_FullscreenAction = new QAction("Show Fullscreen");
+    m_FullscreenAction = new QAction("Show Fullscreen", m_ViewerMenu);
     m_FullscreenAction->setShortcut(QKeySequence("Ctrl+F"));
     
-    m_ExitFullscreenAction = new QAction("Exit Fullscreen");
+    m_ExitFullscreenAction = new QAction("Exit Fullscreen", m_ViewerMenu);
 
     m_ViewerMenu->addAction(m_ZoomInAction);
     m_ViewerMenu->addAction(m_ZoomOutAction);
@@ -315,7 +315,7 @@ void VoidMainWindow::Build()
     /* Help Menu {{{ */
     m_HelpMenu = new QMenu("Help", menuBar);
 
-    m_AboutAction = new QAction("About VOID");
+    m_AboutAction = new QAction("About VOID", menuBar);
 
     m_HelpMenu->addAction(m_AboutAction);
     /* }}} */

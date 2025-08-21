@@ -36,7 +36,7 @@ void SplitSectionSelector::AddPrimaryItems(const QStringList& texts)
     for (int i = 0; i < texts.size(); i++)
     {
         QString text = texts[i];
-        QAction* action = new QAction(text);
+        QAction* action = new QAction(text, m_Menu);
 
         /* Any Item selection would trigger a signal to invoke that the Primary Item has been selected */
         connect(action, &QAction::triggered, this, [=]() { PrimaryItemSelected(text, i); });
@@ -60,7 +60,7 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
     for (int i = 0; i < texts.size(); i++)
     {
         QString text = texts[i];
-        QAction* action = new QAction(text);
+        QAction* action = new QAction(text, m_Menu);
         action->setCheckable(true);
         action->setActionGroup(m_RadioGroup);
 
