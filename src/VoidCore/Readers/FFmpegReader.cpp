@@ -109,16 +109,26 @@ void FFmpegDecoder::Close()
 
 std::vector<unsigned char>& FFmpegDecoder::GetVector(const int frame)
 {
-    if (m_DecodedFrames.find(frame) != m_DecodedFrames.end())
+    if (m_DecodedFrames.find(frame) == m_DecodedFrames.end())
+    {
+        /* Assign a new vector to the decoded frames */
+        m_DecodedFrames[frame] = {};
         return m_DecodedFrames.at(frame);
+    }
 
-    /* Assign a new vector to the decoded frames */
-    m_DecodedFrames[frame] = {};
     return m_DecodedFrames.at(frame);
 }
 
 void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
 {
+    /**
+     * At the moment, this is not accessible concurrently throught multiple threads
+     * Rather than handling this specifically at the cache level, using a guard here
+     * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
+     * still this shouldn't cause any issues...
+     */
+    std::lock_guard<std::mutex> guard(m_Mutex);
+
     /* The framenumber was already decoded as stored */
     if (!GetVector(framenumber).empty())
     {

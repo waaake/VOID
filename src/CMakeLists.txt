@@ -101,6 +101,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_brush.svg
             ../icons/icon_bounce.svg
             ../icons/icon_close.svg
+            ../icons/icon_cache.png
             ../icons/icon_close_small.svg
             ../icons/icon_delete.svg
             ../icons/icon_eraser.svg

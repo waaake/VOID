@@ -5,6 +5,7 @@
 #define _VOID_FFMPEG_READER_H
 
 /* STD */
+#include <mutex>
 #include <vector>
 #include <unordered_map>
 
@@ -78,6 +79,7 @@ private: /* Members */
      * The Map to save Data for each of the frame
      */
     std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
+    std::mutex m_Mutex;
 
 private: /* Methods */
     void Open();

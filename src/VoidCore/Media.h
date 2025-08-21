@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <vector>
+#include <mutex>
 
 /* Internal */
 #include "Definition.h"
@@ -27,6 +28,10 @@ public:
     Frame(const MEntry& e, v_frame_t frame);
 
     ~Frame();
+
+    /* Copy */
+    Frame(const Frame& other);
+    Frame& operator=(const Frame& other);
 
     /* Getters */
     inline const std::string& Path() const { return m_MediaEntry.Fullpath(); }
@@ -52,6 +57,8 @@ protected: /* Members */
     /* Internally associated framenumer */
     v_frame_t m_Framenumber;
 
+private: /* Members*/
+    std::mutex m_Mutex;
 };
 
 class VOID_API MovieFrame : public Frame

@@ -28,6 +28,8 @@ Player::Player(QWidget* parent)
     m_ActiveViewBuffer = m_ViewBufferA;
     m_ViewBufferA->SetActive(true);
 
+    m_CacheProcessor.SetActivePlayer(this);
+
     /* Setup the OpenGL Profile before the OpenGL Context is initialised */
     VoidRenderer::SetProfile();
 
@@ -61,6 +63,13 @@ void Player::Connect()
     connect(m_Timeline, &Timeline::TimeChanged, this, &Player::SetFrame);
     /* Timeline - fullscreenRequested -> Player - SetRendererFullscreen */
     connect(m_Timeline, &Timeline::fullscreenRequested, this, &Player::SetRendererFullscreen);
+    connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state)
+    {
+        if (state == Timeline::PlayState::STOPPED)
+            m_CacheProcessor.StopPlaybackCache();
+        else
+            m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
+    });
 
     /* ControlBar - ZoomChange -> Renderer - UpdateZoom */
     connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::UpdateZoom);
@@ -141,13 +150,6 @@ void Player::CacheBuffer()
         m_ViewBufferB->Cache();
 }
 
-void Player::ClearCache()
-{
-    /* Dump cache from both the viewer Buffers */
-    m_ViewBufferA->ClearCache();
-    m_ViewBufferB->ClearCache();
-}
-
 void Player::Build()
 {
     /* Base layout for the widget */
@@ -209,6 +211,7 @@ void Player::Load(const SharedMediaClip& media)
 {
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
+    m_CacheProcessor.SetMedia(media);
 
     /* Viewer Buffer - Clip -> Player - Add Cache Frame */
     ConnectMediaClipToTimeline(media);
@@ -379,6 +382,7 @@ void Player::SetMediaFrame(int frame)
      */
     if (clip->Contains(frame))
     {
+        m_CacheProcessor.EnsureCached(frame);
         /* Read the image for the frame from the sequence and set it on the player */
         m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
     }
@@ -489,6 +493,7 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
     m_Renderer->Clear();
 
     /* Refresh the player with the updated content from the Buffer */
+    ResetCacheMedia();
     Refresh();
 
     /* Update the frame range */

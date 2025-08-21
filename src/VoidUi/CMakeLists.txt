@@ -24,6 +24,7 @@ set(SOURCES
     Dock/DockSplitter.cpp
 
     # Media
+    Media/MediaCache.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
     Media/Views/MediaView.cpp
@@ -33,6 +34,8 @@ set(SOURCES
     # Preferences
     Preferences/Preferences.cpp
     Preferences/PreferencesUI.cpp
+
+    Preferences/CachePreferences.cpp
     Preferences/GeneralPreferences.cpp
     Preferences/MediaViewPreferences.cpp
     Preferences/PlayerPreferences.cpp

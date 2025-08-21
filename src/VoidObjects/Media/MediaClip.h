@@ -70,6 +70,11 @@ public:
         }
     }
 
+    void CacheFrame(v_frame_t frame);
+    void UncacheFrame(v_frame_t frame);
+
+    inline size_t FrameSize() { return Media::Image(m_FirstFrame)->FrameSize(); }
+
     /* Add Annotation for a Frame */
     void SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation);
     /* Remove Anotation for the frame */
@@ -100,6 +105,7 @@ signals: /* Signals defining any change that has happened */
      * Or if the frame is queried by the viewport
      */
     void frameCached(v_frame_t frame);
+    void frameUncached(v_frame_t frame);
 
 private: /* Members */
     QColor m_Color;

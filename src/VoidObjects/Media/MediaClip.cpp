@@ -77,4 +77,16 @@ void MediaClip::RemoveAnnotation(const v_frame_t frame)
     VOID_LOG_INFO("Annotation Removed. Frame {0}", frame);
 }
 
+void MediaClip::CacheFrame(v_frame_t frame)
+{
+    m_Mediaframes.at(frame).Cache();
+    // emit frameCached(frame);
+}
+
+void MediaClip::UncacheFrame(v_frame_t frame)
+{
+    m_Mediaframes.at(frame).ClearCache();
+    // emit frameUncached(frame);
+}
+
 VOID_NAMESPACE_CLOSE

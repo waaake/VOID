@@ -18,6 +18,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
+#include "VoidUi/Media/MediaCache.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -105,8 +106,8 @@ public:
     void SetViewBuffer(const PlayerViewBuffer& buffer);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
+    inline void ResetCacheMedia() { m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip()); }
     void CacheBuffer();
-    void ClearCache();
 
     /* Zoom on the Viewport */
     inline void ZoomIn() { m_Renderer->ZoomIn(); }
@@ -115,6 +116,7 @@ public:
 
     /* Mark a frame on the timeline as cached */
     inline void AddCacheFrame(int frame) { m_Timeline->AddCacheFrame(frame); }
+    inline void RemoveCachedFrame(int frame) { m_Timeline->RemoveCachedFrame(frame); }
     inline void ClearCachedFrames() { m_Timeline->ClearCachedFrames(); }
 
     /* Set Range on the timeline */
@@ -138,6 +140,7 @@ public:
 
     inline void Stop() { m_Timeline->Stop(); }
 
+    inline v_frame_t Frame() const { return m_Timeline->Frame(); }
     inline void NextFrame() { m_Timeline->NextFrame(); }
     inline void PreviousFrame() { m_Timeline->PreviousFrame(); }
 
@@ -155,6 +158,13 @@ public:
     inline void ResetInFrame() { m_Timeline->ResetInFrame(); }
     inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
     inline void ResetRange() { m_Timeline->ResetRange(); }
+
+    inline void PauseCache() { m_CacheProcessor.PauseCaching(); }
+    inline void DisableCache() { m_CacheProcessor.DisableCaching(); }
+    inline void StopCache() { m_CacheProcessor.StopCaching(); }
+    inline void Recache() { m_CacheProcessor.Recache(); }
+    inline void ResumeCache() { m_CacheProcessor.ResumeCaching(); }
+    inline void ClearCache() { m_CacheProcessor.ClearCache(); }
 
 public:
     void Clear();
@@ -184,6 +194,7 @@ private:  /* Methods */
     inline void ConnectMediaClipToTimeline(const SharedMediaClip& clip)
     {
         connect(clip.get(), &MediaClip::frameCached, this, &Player::AddCacheFrame);
+        connect(clip.get(), &MediaClip::frameUncached, this, &Player::RemoveCachedFrame);
     }
 
     /**
@@ -243,6 +254,8 @@ private:  /* Members */
 
     /* Internal Layout to hold Renderer -- For when the renderer has returned from it's fullscreen view */
     QVBoxLayout* m_RendererLayout;
+
+    ChronoFlux m_CacheProcessor;
 };
 
 VOID_NAMESPACE_CLOSE
