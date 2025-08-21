@@ -45,6 +45,14 @@ VoidMediaLister::~VoidMediaLister()
     m_MediaView->deleteLater();
     delete m_MediaView;
     m_MediaView = nullptr;
+
+    m_PlayAction->deleteLater();
+    delete m_PlayAction;
+    m_PlayAction = nullptr;
+
+    m_RemoveAction->deleteLater();
+    delete m_RemoveAction;
+    m_RemoveAction = nullptr;
 }
 
 QSize VoidMediaLister::sizeHint() const

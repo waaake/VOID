@@ -180,9 +180,9 @@ void DockWidget::SetupOptions()
 	m_Options = new QMenu(m_PanelOptions);
 	m_DockMenu = new QMenu("Docks", m_PanelOptions);
 
-	m_ClosePaneAction = new QAction("Close Pane");
-	m_SplitHorizontalAction = new QAction("Split Horizontally");
-	m_SplitVerticalAction = new QAction("Split Vertically");
+	m_ClosePaneAction = new QAction("Close Pane", m_Options);
+	m_SplitHorizontalAction = new QAction("Split Horizontally", m_Options);
+	m_SplitVerticalAction = new QAction("Split Vertically", m_Options);
 
 	m_Options->addAction(m_ClosePaneAction);
 	m_Options->addAction(m_SplitHorizontalAction);
@@ -235,7 +235,7 @@ void DockWidget::ResetDockMenu()
 	/* From the Available docks in the Dock Manager, setup Menu Actions */
 	for (const std::pair<int, DockStruct>& it: DockManager::Instance().AvailableDocks())
 	{
-		QAction* action = new QAction(it.second.name.c_str());
+		QAction* action = new QAction(it.second.name.c_str(), m_DockMenu);
 		connect(action, &QAction::triggered, this, [=]() { AddDockManagerWidget(it.first); });
 
 		m_DockMenu->addAction(action);

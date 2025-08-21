@@ -60,7 +60,7 @@ void MediaView::ResetView()
     if (m_ViewType == ViewType::ListView)
     {
         /* Set Delegate */
-        setItemDelegate(new MediaItemDelegate());
+        setItemDelegate(new MediaItemDelegate(this));
 
         /* List View */
         setViewMode(QListView::ListMode);
@@ -77,7 +77,7 @@ void MediaView::ResetView()
     else
     {
         /* Set Delegate */
-        setItemDelegate(new MediaThumbnailDelegate());
+        setItemDelegate(new MediaThumbnailDelegate(this));
 
         /* Selection Mode */
         setSelectionMode(QAbstractItemView::ExtendedSelection);
