@@ -167,4 +167,24 @@ void CloseButton::paintEvent(QPaintEvent* event)
 
 /* }}} */
 
+/* Menu Tool Button {{{ */
+
+MenuToolButton::MenuToolButton(QWidget* parent)
+    : QToolButton(parent)
+{
+}
+
+void MenuToolButton::paintEvent(QPaintEvent* event)
+{
+    QStyleOptionToolButton option;
+    initStyleOption(&option);
+
+    option.features &= ~QStyleOptionToolButton::HasMenu;
+
+    QPainter painter(this);
+    style()->drawComplexControl(QStyle::CC_ToolButton, &option, &painter, this);
+}
+
+/* }}} */
+
 VOID_NAMESPACE_CLOSE

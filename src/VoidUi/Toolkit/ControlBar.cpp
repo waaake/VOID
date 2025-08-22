@@ -10,6 +10,7 @@
 
 /* Internal */
 #include "ControlBar.h"
+#include "VoidUi/QExtensions/Frame.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
@@ -148,7 +149,9 @@ void ControlBar::Build()
     /* Add to Left Controls */
     m_LeftLayout->addWidget(m_ChannelModeController);
     m_LeftLayout->addWidget(m_ExposureSpinner);
+    m_LeftLayout->addWidget(new VLine(this));
     m_LeftLayout->addWidget(m_GammaSpinner);
+    m_LeftLayout->addWidget(new VLine(this));
     m_LeftLayout->addWidget(m_GainSpinner);
 
     /* And a spacer at the end */

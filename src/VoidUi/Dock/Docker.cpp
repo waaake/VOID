@@ -12,7 +12,6 @@
 #include "Docker.h"
 #include "DockManager.h"
 #include "VoidCore/Logging.h"
-#include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -167,9 +166,10 @@ void DockWidget::UndockTab(int index, const QPoint& position)
 void DockWidget::SetupOptions()
 {
 	/* Options Button */
-	m_PanelOptions = new QToolButton;
+	m_PanelOptions = new MenuToolButton;
 	m_PanelOptions->setIcon(QIcon(":resources/icons/icon_tab_options.svg"));
 	m_PanelOptions->setAutoRaise(true);
+	m_PanelOptions->setPopupMode(QToolButton::InstantPopup);
 
 	/* Add to the Tab Widget, just before the tabs start */
 	setCornerWidget(m_PanelOptions, Qt::TopLeftCorner);
@@ -192,6 +192,7 @@ void DockWidget::SetupOptions()
 	m_Options->addSeparator();
 
 	m_Options->addMenu(m_DockMenu);
+	m_PanelOptions->setMenu(m_Options);
 
 	/* Setup Dock Menu from available options */
 	ResetDockMenu();
@@ -203,7 +204,6 @@ void DockWidget::Connect()
 	connect(m_DockTab, &DockTab::tabDetachRequested, this, &DockWidget::UndockTab);
 
 	/* Panel Options */
-	connect(m_PanelOptions, &QToolButton::clicked, this, [this]() { m_Options->popup(m_PanelOptions->mapToGlobal(m_PanelOptions->rect().center())); });
 	connect(m_ClosePaneAction, &QAction::triggered, this, &DockWidget::ClosePane);
 	connect(m_SplitHorizontalAction, &QAction::triggered, this, [this]() { emit splitRequested(Qt::Horizontal); });
 	connect(m_SplitVerticalAction, &QAction::triggered, this, [this]() { emit splitRequested(Qt::Vertical); });

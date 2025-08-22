@@ -110,7 +110,7 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
 
             /* Background */
             painter->fillRect(tab->rect, option->palette.color(QPalette::Window));
-            QColor tabColor = tab->state & State_Selected ? option->palette.color(QPalette::Window) : option->palette.color(QPalette::Window).darker(200);
+            QColor tabColor = tab->state & State_Selected ? option->palette.color(QPalette::Window) : option->palette.color(QPalette::Window).darker(125);
             painter->fillRect(tab->rect.adjusted(0, 0, 0, -2), tabColor);
 
             /* Text */

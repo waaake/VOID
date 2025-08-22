@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QLineEdit>
+#include <QStyleOptionSpinBox>
 
 /* Internal */
 #include "SpinBox.h"
@@ -17,14 +18,7 @@ ControlDoubleSpinner::ControlDoubleSpinner(QWidget* parent)
     , m_LastX(0)
     , m_Threshold(10)
 {
-    /* Use Simple arrows */
-    setButtonSymbols(QAbstractSpinBox::PlusMinus);
-
-    /* Hide the text input */
-    lineEdit()->setVisible(false);
-
-    /* Set Focus to never stay on it */
-    setFocusPolicy(Qt::NoFocus);
+    Setup();
 }
 
 void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
@@ -37,7 +31,7 @@ void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
     /* Text */
     painter.setPen(palette().text().color());
     /* Show fixed point number with 1 decimal precision */
-    painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignLeft | Qt::AlignVCenter, QString::number(value(), 'f', 1));
+    painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignCenter, QString::number(value(), 'f', 1));
 
     /* Draw Arrows */
     QPoint arrowCenter(width() - 8, height() / 2);
@@ -45,16 +39,16 @@ void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
     QPolygon upArrow;
 
     /* Add Points */
-    downArrow << QPoint(arrowCenter.x() - 3, arrowCenter.y() + 1)
-        << QPoint(arrowCenter.x() + 3, arrowCenter.y() + 1)
-        << QPoint(arrowCenter.x(), arrowCenter.y() + 5);
+    downArrow << QPoint(arrowCenter.x() - 2, arrowCenter.y() + 1)
+        << QPoint(arrowCenter.x() + 2, arrowCenter.y() + 1)
+        << QPoint(arrowCenter.x(), arrowCenter.y() + 4);
     
-    upArrow << QPoint(arrowCenter.x() - 3, arrowCenter.y() - 1)
-        << QPoint(arrowCenter.x() + 3, arrowCenter.y() - 1)
-        << QPoint(arrowCenter.x(), arrowCenter.y() - 5);
+    upArrow << QPoint(arrowCenter.x() - 2, arrowCenter.y() - 1)
+        << QPoint(arrowCenter.x() + 2, arrowCenter.y() - 1)
+        << QPoint(arrowCenter.x(), arrowCenter.y() - 4);
 
     /* Draw the Arrow polygon */
-    painter.setBrush(palette().text());
+    painter.setBrush(palette().text().color().darker(150));
     painter.drawPolygon(upArrow);
     painter.drawPolygon(downArrow);
 }
@@ -142,8 +136,26 @@ void ControlDoubleSpinner::enterEvent(EnterEvent* event)
 
 void ControlDoubleSpinner::leaveEvent(QEvent* event)
 {
-    setCursor(Qt::ArrowCursor);
+    unsetCursor();
     QDoubleSpinBox::leaveEvent(event);
+}
+
+void ControlDoubleSpinner::Setup()
+{
+    /* Use Simple arrows */
+    setButtonSymbols(QAbstractSpinBox::PlusMinus);
+
+    /* Hide the text input */
+    lineEdit()->setVisible(false);
+
+    /* Set Focus to never stay on it */
+    setFocusPolicy(Qt::NoFocus);
+
+    /* Size */
+    QFontMetrics fm(font());
+
+    int width = fm.horizontalAdvance(QString::number(maximum()));
+    setFixedWidth(width + 4);
 }
 
 /* }}} */
