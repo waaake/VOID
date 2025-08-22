@@ -7,13 +7,14 @@
 
 VOID_NAMESPACE_OPEN
 
+namespace Core {
+
 Project::Project(const std::string& name, bool active, QObject* parent)
     : VoidObject(parent)
     , m_Name(name)
     , m_Active(active)
 {
     m_Media = new MediaModel(this);
-    m_UndoStack = new QUndoStack(this);
     VOID_LOG_INFO("Project {0} Created: {1}", name, Vuid());
 }
 
@@ -24,11 +25,11 @@ Project::Project(bool active, QObject* parent)
 
 Project::~Project()
 {
-    m_UndoStack->deleteLater();
-
     m_Media->deleteLater();
     delete m_Media;
     m_Media = nullptr;
 }
+
+} // namespace Core
 
 VOID_NAMESPACE_CLOSE

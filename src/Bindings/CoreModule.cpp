@@ -7,9 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/MediaFilesystem.h"
-#include "VoidObjects/Media/MediaBridge.h"
 #include "VoidObjects/Media/MediaClip.h"
-#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -25,8 +23,6 @@ void BindCore(py::module_& m)
     // {
     //     VOID_LOG_INFO("test");
     // });
-
-    m.def("get_active_project", []() { return MBridge::Instance().ActiveProject(); }, py::return_value_policy::reference);
 
     /* Media Type */
     py::enum_<MediaType>(m, "MediaType")
@@ -80,10 +76,6 @@ void BindCore(py::module_& m)
     /* MediaClip */
     py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")
         .def(py::init<const MediaStruct&>(), py::arg("media"));
-
-    /* Project */
-    py::class_<Project>(m, "Project")
-        .def("add_media", &Project::AddMedia, py::arg("media_clip"));
 }
 
 } // namespace bindings

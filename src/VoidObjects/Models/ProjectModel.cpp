@@ -19,7 +19,7 @@ ProjectModel::~ProjectModel()
 {
     for (int i = m_Projects.size() - 1; i >= 0; --i)
     {
-        Project* project = m_Projects.at(i);
+        Core::Project* project = m_Projects.at(i);
 
         VOID_LOG_INFO("Deleting: {0}", project->Name());
         /* Delete the project */
@@ -34,7 +34,7 @@ ProjectModel::~ProjectModel()
 QModelIndex ProjectModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!parent.isValid() && row >= 0 && row < static_cast<int>(m_Projects.size()))
-        return createIndex(row, column, const_cast<Project*>(m_Projects[row]));  // Non-const
+        return createIndex(row, column, const_cast<Core::Project*>(m_Projects[row]));  // Non-const
 
     /* Empty */
     return QModelIndex();
@@ -69,7 +69,7 @@ QVariant ProjectModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || index.row() >= static_cast<int>(m_Projects.size()))
         return QVariant();
 
-    const Project* project = m_Projects.at(index.row());
+    const Core::Project* project = m_Projects.at(index.row());
 
     switch (static_cast<Roles>(role))
     {
@@ -92,7 +92,7 @@ Qt::ItemFlags ProjectModel::flags(const QModelIndex& index) const
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-void ProjectModel::Add(Project* project)
+void ProjectModel::Add(Core::Project* project)
 {
     /* Where the project will be inserted */
     int insertidx = static_cast<int>(m_Projects.size());
@@ -102,7 +102,7 @@ void ProjectModel::Add(Project* project)
     endInsertRows();
 }
 
-void ProjectModel::Insert(Project* project, int index)
+void ProjectModel::Insert(Core::Project* project, int index)
 {
     beginInsertRows(QModelIndex(), index, index);
     m_Projects.insert(m_Projects.begin() + index, project);
@@ -120,7 +120,7 @@ void ProjectModel::Remove(const QModelIndex& index)
     beginRemoveRows(index.parent(), row, row);
 
     /* Project at the row */
-    Project* project = m_Projects.at(row);
+    Core::Project* project = m_Projects.at(row);
 
     /* Remove from the vector */
     m_Projects.erase(std::remove(m_Projects.begin(), m_Projects.end(), project));
@@ -134,7 +134,7 @@ void ProjectModel::Remove(const QModelIndex& index)
     endRemoveRows();
 }
 
-Project* ProjectModel::GetProject(const QModelIndex& index) const
+Core::Project* ProjectModel::GetProject(const QModelIndex& index) const
 {
     if (!index.isValid())
         return nullptr;
@@ -143,7 +143,7 @@ Project* ProjectModel::GetProject(const QModelIndex& index) const
     return m_Projects.at(index.row());
 }
 
-int ProjectModel::ProjectRow(const Project* project) const
+int ProjectModel::ProjectRow(const Core::Project* project) const
 {
     auto it = std::find(m_Projects.begin(), m_Projects.end(), project);
 

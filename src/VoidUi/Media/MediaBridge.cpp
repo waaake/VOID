@@ -9,7 +9,7 @@
 #include "VoidCore/Logging.h"
 
 /* Commands */
-#include "VoidObjects/Commands/MediaCommands.h"
+#include "VoidUi/Commands/MediaCommands.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -60,7 +60,7 @@ void MBridge::SetCurrentProject(int index)
     if (index > m_Projects->rowCount() - 1)
         return;
 
-    SetActiveProject(m_Projects->GetProject(m_Projects->index(index, 0)));
+    SetActiveProject(dynamic_cast<Project*>(m_Projects->GetProject(m_Projects->index(index, 0))));
     emit projectChanged(m_Project);
 }
 
@@ -70,7 +70,7 @@ void MBridge::SetCurrentProject(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    SetActiveProject(m_Projects->GetProject(index));
+    SetActiveProject(dynamic_cast<Project*>(m_Projects->GetProject(index)));
     emit projectChanged(m_Project);
 }
 

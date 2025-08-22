@@ -17,7 +17,7 @@
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Models/MediaModel.h"
 #include "VoidObjects/Models/ProjectModel.h"
-#include "VoidObjects/Project/Project.h"
+#include "VoidUi/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 

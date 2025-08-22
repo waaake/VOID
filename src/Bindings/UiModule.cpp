@@ -6,8 +6,10 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/VoidGlobals.h"
+#include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/PlayerWidget.h"
+#include "VoidUi/Project/Project.h"
+#include "VoidUi/VoidGlobals.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -20,6 +22,7 @@ void BindUi(py::module_& m)
     m.doc() = "Void UI Module.";
 
     m.def("active_player", &GetActivePlayer, py::return_value_policy::reference);
+    m.def("active_project", []() { return MBridge::Instance().ActiveProject(); }, py::return_value_policy::reference);
 
     /* Player */
     py::class_<Player>(m, "Player")
@@ -33,6 +36,10 @@ void BindUi(py::module_& m)
         .def("move_to_end", &Player::MoveToEnd)
         .def("set_frame", &Player::SetFrame, py::arg("frame"))
         .def("load", py::overload_cast<const SharedMediaClip&>(&Player::Load), py::arg("media_clip"));
+
+    /* Project */
+    py::class_<Project>(m, "Project")
+        .def("add_media", &Project::AddMedia, py::arg("media_clip"));
 }
 
 } // namespace bindings
