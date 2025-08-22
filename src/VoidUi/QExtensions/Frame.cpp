@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QPainter>
+
 /* Internal */
 #include "Frame.h"
 
@@ -89,5 +92,27 @@ void SplitSectionSelector::RadioItemSelected(const QString& text, const int inde
     /* Emit the index */
     emit radioIndexChanged(index);
 }
+
+/* VLine {{{ */
+
+VLine::VLine(QWidget* parent)
+    : QWidget(parent)
+{
+    setFixedWidth(2);
+}
+
+void VLine::paintEvent(QPaintEvent* event)
+{
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    painter.fillRect(rect(), palette().color(QPalette::Window).darker(150));
+    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 2));
+
+    painter.drawLine(0, 0, 0, height());
+    painter.drawLine(width() - 1, 0, width(), height());
+}
+
+/* }}} */
 
 VOID_NAMESPACE_CLOSE

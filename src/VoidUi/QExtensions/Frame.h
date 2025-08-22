@@ -69,6 +69,17 @@ private: /* Methods */
 
 };
 
+/**
+ * Vertical Line similar to a QFrame with sunken shadow
+ */
+class VLine : public QWidget
+{
+public:
+    VLine(QWidget* parent = nullptr);
+protected:
+    void paintEvent(QPaintEvent* event) override;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_Q_EXT_FRAME_H

@@ -81,16 +81,16 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
     QPolygon upArrow;
 
     /* Add Points */
-    downArrow << QPoint(arrowCenter.x() - 3, arrowCenter.y() + 1)
-        << QPoint(arrowCenter.x() + 3, arrowCenter.y() + 1)
-        << QPoint(arrowCenter.x(), arrowCenter.y() + 5);
+    downArrow << QPoint(arrowCenter.x() - 2, arrowCenter.y() + 1)
+        << QPoint(arrowCenter.x() + 2, arrowCenter.y() + 1)
+        << QPoint(arrowCenter.x(), arrowCenter.y() + 4);
     
-    upArrow << QPoint(arrowCenter.x() - 3, arrowCenter.y() - 1)
-        << QPoint(arrowCenter.x() + 3, arrowCenter.y() - 1)
-        << QPoint(arrowCenter.x(), arrowCenter.y() - 5);
+    upArrow << QPoint(arrowCenter.x() - 2, arrowCenter.y() - 1)
+        << QPoint(arrowCenter.x() + 2, arrowCenter.y() - 1)
+        << QPoint(arrowCenter.x(), arrowCenter.y() - 4);
 
     /* Draw the Arrow polygon */
-    painter.setBrush(palette().text());
+    painter.setBrush(palette().text().color().darker(150));
     painter.drawPolygon(upArrow);
     painter.drawPolygon(downArrow);
 }

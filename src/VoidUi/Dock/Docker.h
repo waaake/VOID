@@ -10,12 +10,12 @@
 #include <QSplitter>
 #include <QTabBar>
 #include <QTabWidget>
-#include <QToolButton>
 
 /* Internal */
 #include "Definition.h"
 #include "DockPanel.h"
 #include "DockSplitter.h"
+#include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -76,7 +76,7 @@ signals:
 
 private: /* Members */
 	DockTab* m_DockTab;
-	QToolButton* m_PanelOptions;
+	MenuToolButton* m_PanelOptions;
 
 	QMenu* m_Options;
 	QMenu* m_DockMenu;

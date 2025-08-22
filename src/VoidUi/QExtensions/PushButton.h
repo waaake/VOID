@@ -96,6 +96,20 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 };
 
+/**
+ * Creates a Tool Button and a Menu can be attached to it,
+ * this only overrides the behaviour which adds arrow to the right side
+ * indicating that this button has a menu to not be added
+ */
+class MenuToolButton : public QToolButton
+{
+public:
+    explicit MenuToolButton(QWidget* parent = nullptr);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif

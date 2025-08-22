@@ -35,6 +35,9 @@ private: /* Members */
 
     /* Scroll threshold */
     int m_Threshold;
+
+private: /* Methods */
+    void Setup();
 };
 
 
