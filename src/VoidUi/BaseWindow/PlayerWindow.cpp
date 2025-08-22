@@ -13,7 +13,7 @@
 /* Internal */
 #include "PlayerWindow.h"
 #include "VoidCore/Logging.h"
-#include "VoidObjects/Media/MediaBridge.h"
+#include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/Browser.h"
 #include "VoidUi/Dock/DockManager.h"

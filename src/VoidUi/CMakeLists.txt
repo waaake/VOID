@@ -14,8 +14,8 @@ set(SOURCES
     BaseWindow/TitleBar.cpp
 
     # Commands
-    # Commands/VoidCommand.cpp
-    # Commands/MediaCommands.cpp
+    Commands/VoidCommand.cpp
+    Commands/MediaCommands.cpp
 
     # Dock
     Dock/Docker.cpp
@@ -24,6 +24,7 @@ set(SOURCES
     Dock/DockSplitter.cpp
 
     # Media
+    Media/MediaBridge.cpp
     Media/MediaCache.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
@@ -41,6 +42,7 @@ set(SOURCES
     Preferences/PlayerPreferences.cpp
 
     # Project
+    Project/Project.cpp
     Project/Views/ProjectView.cpp
     Project/Delegates/ListDelegate.cpp
 
@@ -79,14 +81,11 @@ if (WIN32)
 
         # # Objects   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
         # # the staticMetaObject for MediaClip, Track, TrackItem, Sequence and MediaBridge to be present at compile time rather link time
-        ../VoidObjects/Media/MediaBridge.h
         ../VoidObjects/Media/MediaClip.h
 
         ../VoidObjects/Sequence/Sequence.h
         ../VoidObjects/Sequence/Track.h
         ../VoidObjects/Sequence/TrackItem.h
-
-        ../VoidObjects/Project/Project.h
 
         ../VoidObjects/Models/ProjectModel.h
         ../VoidObjects/Models/MediaModel.h

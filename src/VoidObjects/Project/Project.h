@@ -4,15 +4,14 @@
 #ifndef _VOID_PROJECT_H
 #define _VOID_PROJECT_H
 
-/* Qt */
-#include <QUndoStack>
-
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/VoidObject.h"
 #include "VoidObjects/Models/MediaModel.h"
 
 VOID_NAMESPACE_OPEN
+
+namespace Core {
 
 /**
  * A Project is essentially, just the store for Media and Media entities or collection
@@ -21,13 +20,11 @@ VOID_NAMESPACE_OPEN
  */
 class VOID_API Project : public VoidObject
 {
-    Q_OBJECT
-
 public:
     Project(bool active = true, QObject* parent = nullptr);
     Project(const std::string& name, bool active = true, QObject* parent = nullptr);
 
-    ~Project();
+    virtual ~Project();
 
     inline const std::string& Name() const { return m_Name; }
 
@@ -45,10 +42,7 @@ public:
         return m_Media->index(m_Media->MediaRow(clip), column); 
     }
 
-    inline void PushCommand(QUndoCommand* command) { m_UndoStack->push(command); }
-    inline QUndoStack* UndoStack() const { return m_UndoStack; }
-
-private: /* Members */
+protected: /* Members */
     /* The Project holds the media and anything linking to the media */
     MediaModel* m_Media;
 
@@ -57,8 +51,9 @@ private: /* Members */
 
     /* If the project is currently active */
     bool m_Active;
-    QUndoStack* m_UndoStack;
 };
+
+} // namespace Core
 
 VOID_NAMESPACE_CLOSE
 

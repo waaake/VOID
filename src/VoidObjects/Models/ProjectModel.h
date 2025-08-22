@@ -51,19 +51,19 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     /* Project */
-    void Add(Project* media);
-    void Insert(Project* media, int index);
+    void Add(Core::Project* media);
+    void Insert(Core::Project* media, int index);
     void Remove(const QModelIndex& index);
 
-    Project* GetProject(const QModelIndex& index) const;
-    int ProjectRow(const Project* clip) const;
+    Core::Project* GetProject(const QModelIndex& index) const;
+    int ProjectRow(const Core::Project* clip) const;
 
     void Clear();
 
     inline void Refresh() { Update(); }
 
 private: /* Members */
-    std::vector<Project*> m_Projects;
+    std::vector<Core::Project*> m_Projects;
 
 private: /* Methods */
     void Update();
@@ -97,7 +97,6 @@ private: /* Members */
     /* Sorting role */
     int m_SortRole;
 };
-
 
 VOID_NAMESPACE_CLOSE
 

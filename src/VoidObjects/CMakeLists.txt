@@ -1,9 +1,5 @@
 # Build Intermediate Objects Library
 set(SOURCES
-    Commands/VoidCommand.cpp
-    Commands/MediaCommands.cpp
-
-    Media/MediaBridge.cpp
     Media/MediaClip.cpp
 
     Models/MediaModel.cpp
@@ -35,10 +31,8 @@ target_link_libraries(
     PRIVATE
     Qt::Core
 
-    # Media bridge relies on undo commands and stack, which are GUI entities
-    # TODO: Strip out core Bridge from Media bridge which can be in the GUI lib
+    # TODO: Check if MediaClip can be pushed without a thumbnail
     Qt::Gui
-    Qt::Widgets
 )
 
 # Export symbols for windows
