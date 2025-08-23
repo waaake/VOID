@@ -24,6 +24,48 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
 }
 
+MediaClip::MediaClip(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        QObject* parent
+    )
+    : VoidObject(parent)
+    , Media(basepath, name, extension)
+    , m_Thumbnail()
+{
+    VOID_LOG_INFO("Clip Created: {0}", Vuid());
+}
+
+MediaClip::MediaClip(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        v_frame_t start,
+        v_frame_t end,
+        QObject* parent
+    )
+    : VoidObject(parent)
+    , Media(basepath, name, extension, start, end)
+    , m_Thumbnail()
+{
+    VOID_LOG_INFO("Clip Created: {0}", Vuid());
+}
+
+MediaClip::MediaClip(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        v_frame_t start,
+        v_frame_t end,
+        const std::vector<v_frame_t>& missing,
+        QObject* parent
+    )
+    : VoidObject(parent)
+    , Media(basepath, name, extension, start, end, missing)
+    , m_Thumbnail()
+{
+    VOID_LOG_INFO("Clip Created: {0}", Vuid());
+}
+
+
 MediaClip::~MediaClip()
 {
 }

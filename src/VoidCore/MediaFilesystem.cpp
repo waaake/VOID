@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <unordered_set>
+
 /* Internal */
 #include "MediaFilesystem.h"
 #include "Logging.h"
@@ -45,6 +48,21 @@ MEntry::MEntry(const std::string& path)
 {
     /* Parse the provided path and update internal token */
     Parse(path);
+}
+
+MEntry::MEntry(const std::string& basepath, const std::string& name, const std::string& extension, v_frame_t frame, bool singlefile)
+    : m_Basepath(basepath)
+    , m_Name(name)
+    , m_Extension(extension)
+    , m_Framenumber(frame)
+    , m_SingleFile(singlefile)
+{
+    std::filesystem::path path = std::filesystem::path(m_Basepath) / name;
+    if (!singlefile)
+        path += "." + std::to_string(frame);
+
+    path += "." + extension;
+    m_Path = path.string();
 }
 
 MEntry::~MEntry()
@@ -132,6 +150,65 @@ MediaStruct::MediaStruct(const MEntry& entry, const MediaType& type)
 
 MediaStruct::~MediaStruct()
 {
+}
+
+MediaStruct::MediaStruct(const std::string& basepath, const std::string& name, const std::string& extension)
+{
+    /* This is a Single file */
+    MEntry e = MEntry(basepath, name, extension, 0, true);
+    Reset(e, MHelper::GetMediaType(e));
+}
+
+MediaStruct::MediaStruct(const std::string& basepath,
+                    const std::string& name,
+                    const std::string& extension,
+                    v_frame_t start,
+                    v_frame_t end
+                )
+{
+    /* Clear underlying structs */
+    if (!Empty())
+        Clear();
+
+    m_Frames.reserve(end - start + 1);
+
+    for (v_frame_t frame = start; frame <= end; ++frame)
+    {
+        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, false));
+        m_Frames.emplace_back(frame);
+    }
+
+    /* Update the media type */
+    m_MediaType = MediaType::Image;
+}
+
+MediaStruct::MediaStruct(const std::string& basepath,
+                    const std::string& name,
+                    const std::string& extension,
+                    v_frame_t start,
+                    v_frame_t end,
+                    const std::vector<v_frame_t>& missing
+                )
+{
+    /* Clear underlying structs */
+    if (!Empty())
+        Clear();
+
+    m_Frames.reserve((end - start + 1) - missing.size());
+
+    std::unordered_set<v_frame_t> missingSet(missing.begin(), missing.end());
+
+    for (v_frame_t frame = start; frame <= end; ++frame)
+    {
+        if (missingSet.count(frame))
+            continue;
+
+        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, false));
+        m_Frames.emplace_back(frame);
+    }
+
+    /* Update the media type */
+    m_MediaType = MediaType::Image;
 }
 
 MediaStruct::MediaStruct(const MediaStruct& other)

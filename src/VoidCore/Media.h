@@ -84,6 +84,28 @@ public:
     Media();
     Media(const MediaStruct& mstruct);
 
+    /**
+     * Constructors that would mostly be used to construct Media from serialized data
+     * 1. Singlefile
+     * 2. Sequence without missing frames
+     * 3. Sequence with missing frames
+     */
+    Media(const std::string& basepath, const std::string& name, const std::string& extension);
+
+    Media(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        v_frame_t start,
+        v_frame_t end
+    );
+    Media(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        v_frame_t start,
+        v_frame_t end,
+        const std::vector<v_frame_t>& missing
+    );
+
     virtual ~Media();
 
     /**
