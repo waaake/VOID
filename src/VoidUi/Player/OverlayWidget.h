@@ -26,7 +26,7 @@ public:
     PlayerOverlay(QWidget* parent = nullptr);
 
     void ResetRect();
-    void SetHoveredBuffer(const Point& pos);
+    void SetHoveredBuffer(const QPoint& pos);
     void SetHoveredBuffer(const HoveredViewerBuffer& buffer);
 
     inline HoveredViewerBuffer HoveredBuffer() const { return m_HoveredViewerBuffer; }

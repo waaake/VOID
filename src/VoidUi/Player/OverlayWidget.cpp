@@ -60,7 +60,7 @@ void PlayerOverlay::resizeEvent(QResizeEvent* event)
     QWidget::resizeEvent(event);
 }
 
-void PlayerOverlay::SetHoveredBuffer(const Point& pos)
+void PlayerOverlay::SetHoveredBuffer(const QPoint& pos)
 {
     if (m_RectA.contains(pos))
         m_HoveredViewerBuffer = HoveredViewerBuffer::A;

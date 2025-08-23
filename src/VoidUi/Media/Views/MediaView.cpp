@@ -5,10 +5,12 @@
 #include <QByteArray>
 #include <QDataStream>
 #include <QDrag>
+#include <QIODevice>
 #include <QMimeData>
 
 /* Internal */
 #include "MediaView.h"
+#include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/Delegates/ListDelegate.h"
 #include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
 #include "VoidUi/Preferences/Preferences.h"
@@ -50,7 +52,7 @@ void MediaView::startDrag(Qt::DropActions supportedActions)
     QDataStream stream(&transferData, QIODevice::WriteOnly);
     stream << index.row() << index.column();
 
-    data->setData("void/x-mediaItem", transferData);
+    data->setData(MimeTypes::MediaItem, transferData);
 
     QDrag* drag = new QDrag(this);
     drag->setMimeData(data);

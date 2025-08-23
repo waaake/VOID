@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "PlayerWidget.h"
+#include "VoidUi/Descriptors.h"
 #include "VoidUi/Preferences/Preferences.h"
 #include "VoidUi/Media/MediaBridge.h"
 
@@ -526,7 +527,7 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
 
 void Player::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (event->mimeData()->hasFormat("void/x-mediaItem"))
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
     {
         /* Show Overlay */
         m_Overlay->setVisible(true);
@@ -545,25 +546,29 @@ void Player::dragLeaveEvent(QDragLeaveEvent* event)
 void Player::dragMoveEvent(QDragMoveEvent* event)
 {
     /* Update the Hovered Buffer based on the event Position */
-    #if _QT6_COMPAT
-    m_Overlay->SetHoveredBuffer(event->position());
+    #if _QT6
+    m_Overlay->SetHoveredBuffer(event->position().toPoint());
     #else
     m_Overlay->SetHoveredBuffer(event->pos());
-    #endif // _QT6_COMPAT
+    #endif // _QT6
 }
 
 void Player::dropEvent(QDropEvent* event)
 {
-    if (event->mimeData()->hasFormat("void/x-mediaItem"))
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
     {
-        QByteArray data = event->mimeData()->data("void/x-mediaItem");
+        QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
 
         /* Read Input data */
         QDataStream stream(&data, QIODevice::ReadOnly);
         int row, column;
         stream >> row >> column;
 
-        /* Media from the Media Bridge */
+        /**
+         * Media from the Media Bridge
+         * The media is always retrieved from the active project
+         * the assumption is that a drag-drop event would always happen when the project is active
+         */
         SharedMediaClip media = MBridge::Instance().Media(row, column);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
@@ -572,6 +577,7 @@ void Player::dropEvent(QDropEvent* event)
             Load(media, PlayerViewBuffer::B);
     }
 
+    /* Reset Overlay */
     m_Overlay->SetHoveredBuffer(PlayerOverlay::HoveredViewerBuffer::None);
     m_Overlay->setVisible(false);
 }
