@@ -45,6 +45,12 @@ class VOID_API MEntry
 public:
     MEntry();
     MEntry(const std::string& path);
+    MEntry(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        v_frame_t frame = 0,
+        bool singlefile = false
+    );
 
     ~MEntry();
 
@@ -176,6 +182,25 @@ public:
      * like comparison by the name, and extension
      */
     MediaStruct(const MEntry& entry, const MediaType& type);
+
+    /**
+     * Deserialization constructors
+     */
+    MediaStruct(const std::string& basepath, const std::string& name, const std::string& extension);
+
+    MediaStruct(const std::string& basepath,
+            const std::string& name,
+            const std::string& extension,
+            v_frame_t start,
+            v_frame_t end
+    );
+    MediaStruct(const std::string& basepath,
+            const std::string& name,
+            const std::string& extension,
+            v_frame_t start,
+            v_frame_t end,
+            const std::vector<v_frame_t>& missing
+    );
 
     ~MediaStruct();
 

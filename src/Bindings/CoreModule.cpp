@@ -3,6 +3,7 @@
 
 /* Pybind11 */
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 /* Internal */
 #include "Definition.h"
@@ -46,6 +47,10 @@ void BindCore(py::module_& m)
     /* MediaStruct */
     py::class_<MediaStruct>(m, "MediaStruct")
         .def(py::init<const MEntry&, const MediaType&>(), py::arg("media_entry"), py::arg("media_type"))
+    
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t>(), 
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"))
+
         .def_static("from_file", &MediaStruct::FromFile, py::arg("filepath"))
         .def("add", &MediaStruct::Add, py::arg("media_entry"))
         .def("validate", &MediaStruct::Validate, py::arg("media_entry"))
@@ -71,11 +76,30 @@ void BindCore(py::module_& m)
     /* Media */
     py::class_<Media>(m, "Media")
         .def(py::init<const MediaStruct&>(), py::arg("media_struct"))
+
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t>(),
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"))
+
         .def("get_frame", &Media::GetFrame, py::arg("frame"));
 
     /* MediaClip */
     py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")
-        .def(py::init<const MediaStruct&>(), py::arg("media"));
+        .def(py::init<const MediaStruct&>(), py::arg("media"))
+
+        .def(py::init<const std::string&, const std::string&, const std::string&>(), py::arg("basepath"),
+                                                                                py::arg("name"), py::arg("extension"))
+
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t>(),
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"))
+
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, const std::vector<v_frame_t>&>(),
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("missing"))
+
+        .def("basepath", &MediaClip::Path)
+        .def("name", &MediaClip::Name)
+        .def("extension", &MediaClip::Extension)
+        .def("startframe", &MediaClip::FirstFrame)
+        .def("endframe", &MediaClip::LastFrame);
 }
 
 } // namespace bindings

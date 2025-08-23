@@ -144,6 +144,36 @@ Media::~Media()
 {
 }
 
+Media::Media(const std::string& basepath, const std::string& name, const std::string& extension)
+    : Media()
+{
+    Read(MediaStruct(basepath, name, extension));
+}
+
+Media::Media(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        v_frame_t start,
+        v_frame_t end
+    )
+    : Media()
+{
+    Read(MediaStruct(basepath, name, extension, start, end));
+}
+
+Media::Media(const std::string& basepath,
+        const std::string& name,
+        const std::string& extension,
+        v_frame_t start,
+        v_frame_t end,
+        const std::vector<v_frame_t>& missing
+    )
+    : Media()
+{
+    Read(MediaStruct(basepath, name, extension, start, end, missing));
+}
+
+
 void Media::UpdateRange()
 {
     /* Check if we have any frames to arrange */

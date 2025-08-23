@@ -31,6 +31,26 @@ class VOID_API MediaClip : public VoidObject, public Media
 public:
     MediaClip(QObject* parent = nullptr);
     MediaClip(const MediaStruct& mstruct, QObject* parent = nullptr);
+    MediaClip(const std::string& basepath,
+            const std::string& name,
+            const std::string& extension,
+            QObject* parent = nullptr
+    );
+    MediaClip(const std::string& basepath,
+            const std::string& name,
+            const std::string& extension,
+            v_frame_t start,
+            v_frame_t end,
+            QObject* parent = nullptr
+    );
+    MediaClip(const std::string& basepath,
+            const std::string& name,
+            const std::string& extension,
+            v_frame_t start,
+            v_frame_t end,
+            const std::vector<v_frame_t>& missing,
+            QObject* parent = nullptr
+    );
     virtual ~MediaClip();
 
     inline void SetColor(const QColor& color)
