@@ -3,8 +3,6 @@ set(SOURCES
     About.cpp
     Browser.cpp
     Events.h
-    PlayerWidget.cpp
-    ViewerBuffer.cpp
     VoidStyle.cpp
     VoidGlobals.cpp
 
@@ -40,6 +38,11 @@ set(SOURCES
     Preferences/GeneralPreferences.cpp
     Preferences/MediaViewPreferences.cpp
     Preferences/PlayerPreferences.cpp
+
+    # Player
+    Player/OverlayWidget.cpp
+    Player/PlayerWidget.cpp
+    Player/ViewerBuffer.cpp
 
     # Project
     Project/Project.cpp

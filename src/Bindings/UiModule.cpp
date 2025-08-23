@@ -7,7 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/PlayerWidget.h"
+#include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Project/Project.h"
 #include "VoidUi/VoidGlobals.h"
 

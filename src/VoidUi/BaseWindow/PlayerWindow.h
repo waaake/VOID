@@ -20,7 +20,7 @@
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidUi/About.h"
 #include "VoidUi/Dock/Docker.h"
-#include "VoidUi/PlayerWidget.h"
+#include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Media/MediaLister.h"
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
 

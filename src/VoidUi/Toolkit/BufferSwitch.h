@@ -11,7 +11,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidUi/QExtensions/Frame.h"
-#include "VoidUi/ViewerBuffer.h"
+#include "VoidUi/Player/ViewerBuffer.h"
 #include "VoidRenderer/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN

@@ -78,7 +78,7 @@ Qt::ItemFlags MediaModel::flags(const QModelIndex& index) const
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
 }
 
 std::string MediaModel::ItemFramerate(const SharedMediaClip& clip) const

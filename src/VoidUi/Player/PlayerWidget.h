@@ -5,19 +5,20 @@
 #define _VOID_PLAYER_WIDGET_H
 
 /* Qt */
-#include <QWidget>
 #include <QLayout>
+#include <QWidget>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "ViewerBuffer.h"
-#include "Timeline/Timeline.h"
-#include "Toolkit/AnnotationController.h"
-#include "Toolkit/ControlBar.h"
+#include "OverlayWidget.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
+#include "VoidUi/Timeline/Timeline.h"
+#include "VoidUi/Toolkit/AnnotationController.h"
+#include "VoidUi/Toolkit/ControlBar.h"
 #include "VoidUi/Media/MediaCache.h"
 
 VOID_NAMESPACE_OPEN
@@ -71,6 +72,7 @@ public:
 
     /* Loads a Playable Media (clip) on the Player */
     void Load(const SharedMediaClip& media);
+    void Load(const SharedMediaClip& media, const PlayerViewBuffer& buffer);
 
     /* Loads a Playable Track on the Player */
     void Load(const SharedPlaybackTrack& track);
@@ -166,6 +168,12 @@ public:
     inline void ResumeCache() { m_CacheProcessor.ResumeCaching(); }
     inline void ClearCache() { m_CacheProcessor.ClearCache(); }
 
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+
 public:
     void Clear();
 
@@ -220,6 +228,8 @@ private:  /* Members */
     VoidRenderer* m_Renderer;
     VoidPlaceholderRenderer* m_PlaceholderRenderer;
     Timeline* m_Timeline;
+
+    PlayerOverlay* m_Overlay;
 
     AnnotationsController* m_AnnotationsController;
 
