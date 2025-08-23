@@ -45,6 +45,9 @@ public:
     /* Set the View Type */
     void SetViewType(const ViewType& type);
 
+protected:
+    void startDrag(Qt::DropActions supportedActions) override;
+
 signals:
     /* Sends the Source Model Index mapped from the proxy model */
     void itemDoubleClicked(const QModelIndex&);

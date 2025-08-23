@@ -7,7 +7,7 @@
 #include "MediaCache.h"
 #include "VoidCore/Logging.h"
 #include "VoidCore/VoidTools.h"
-#include "VoidUi/PlayerWidget.h"
+#include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN

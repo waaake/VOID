@@ -3,10 +3,14 @@
 
 /* Qt */
 #include <QKeyEvent>
+#include <QMimeData>
+#include <QPaintEvent>
+#include <QPainter>
 
 /* Internal */
 #include "PlayerWidget.h"
-#include "Preferences/Preferences.h"
+#include "VoidUi/Descriptors.h"
+#include "VoidUi/Preferences/Preferences.h"
 #include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
@@ -38,6 +42,9 @@ Player::Player(QWidget* parent)
 
     /* Connect Signals */
     Connect();
+
+    /* Accept drops */
+    setAcceptDrops(true);
 }
 
 Player::~Player()
@@ -175,6 +182,9 @@ void Player::Build()
     m_PlaceholderRenderer->setVisible(false);
     m_Timeline = new Timeline(this);
 
+    m_Overlay = new PlayerOverlay(m_Renderer);
+    m_Overlay->setVisible(false);
+
     /**
      * The way how this renderer will be setup in UI is
      * First Row will have any controls related to the viewport and anything which can show any information
@@ -185,6 +195,7 @@ void Player::Build()
     /* Add to the Renderer Layout */
     m_RendererLayout->addWidget(m_Renderer);
     m_RendererLayout->addWidget(m_PlaceholderRenderer);
+
     horizontalInternal->addLayout(m_RendererLayout);
     horizontalInternal->addWidget(m_AnnotationsController);
 
@@ -225,6 +236,20 @@ void Player::Load(const SharedMediaClip& media)
     m_Timeline->ClearCachedFrames();
     /* Then set the First Image on the Player */
     m_Renderer->Render(media->FirstImage());
+}
+
+void Player::Load(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
+{
+    if (buffer == PlayerViewBuffer::A)
+        m_ViewBufferA->Set(media);
+    else if (buffer == PlayerViewBuffer::B)
+        m_ViewBufferB->Set(media);
+
+    /* Update or Reset Buffer */
+    if (Comparing())
+        Refresh();
+    else
+        SetViewBuffer(buffer);
 }
 
 void Player::Load(const SharedPlaybackTrack& track)
@@ -278,7 +303,7 @@ void Player::SetFrame(int frame)
     if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Sequence)
         return SetSequenceFrame(frame);
     else if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Track)
-        return SetTrackFrame(frame);        
+        return SetTrackFrame(frame);
 
     return SetMediaFrame(frame);
 }
@@ -500,6 +525,63 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
 }
 
+void Player::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        /* Show Overlay */
+        m_Overlay->setVisible(true);
+        m_Overlay->setGeometry(m_Renderer->rect());
+
+        event->acceptProposedAction();
+    }
+}
+
+void Player::dragLeaveEvent(QDragLeaveEvent* event)
+{
+    m_Overlay->SetHoveredBuffer(PlayerOverlay::HoveredViewerBuffer::None);
+    m_Overlay->setVisible(false);
+}
+
+void Player::dragMoveEvent(QDragMoveEvent* event)
+{
+    /* Update the Hovered Buffer based on the event Position */
+    #if _QT6
+    m_Overlay->SetHoveredBuffer(event->position().toPoint());
+    #else
+    m_Overlay->SetHoveredBuffer(event->pos());
+    #endif // _QT6
+}
+
+void Player::dropEvent(QDropEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
+
+        /* Read Input data */
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        int row, column;
+        stream >> row >> column;
+
+        /**
+         * Media from the Media Bridge
+         * The media is always retrieved from the active project
+         * the assumption is that a drag-drop event would always happen when the project is active
+         */
+        SharedMediaClip media = MBridge::Instance().Media(row, column);
+
+        if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
+            Load(media, PlayerViewBuffer::A);
+        else if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::B)
+            Load(media, PlayerViewBuffer::B);
+    }
+
+    /* Reset Overlay */
+    m_Overlay->SetHoveredBuffer(PlayerOverlay::HoveredViewerBuffer::None);
+    m_Overlay->setVisible(false);
+}
+
 void Player::SetRendererFullscreen()
 {
     /* Set Renderer as Fullscreen */
@@ -537,7 +619,7 @@ void Player::ToggleAnnotations(const bool state)
     m_Renderer->ToggleAnnotation(state);
 
     /**
-     * Also Make the Render view as default to allow annotating correctly 
+     * Also Make the Render view as default to allow annotating correctly
      * TODO: At a later stage we can enable panning with Annotations
      * allowing to pan with ALT + Click Drag
      */

@@ -80,6 +80,7 @@ public:
 
     inline MediaModel* DataModel() const { return m_Project->DataModel(); }
     inline ProjectModel* ProjectDataModel() const { return m_Projects; }
+    inline SharedMediaClip Media(int row, int column) const { return m_Project->Media(row, column); }
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);

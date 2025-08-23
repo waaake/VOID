@@ -1,8 +1,16 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QByteArray>
+#include <QDataStream>
+#include <QDrag>
+#include <QIODevice>
+#include <QMimeData>
+
 /* Internal */
 #include "MediaView.h"
+#include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/Delegates/ListDelegate.h"
 #include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
 #include "VoidUi/Preferences/Preferences.h"
@@ -32,6 +40,28 @@ MediaView::~MediaView()
     proxy = nullptr;
 }
 
+void MediaView::startDrag(Qt::DropActions supportedActions)
+{
+    QModelIndex index = currentIndex();
+    if (!index.isValid())
+        return;
+
+    QMimeData* data = new QMimeData();
+
+    QByteArray transferData;
+    QDataStream stream(&transferData, QIODevice::WriteOnly);
+    stream << index.row() << index.column();
+
+    data->setData(MimeTypes::MediaItem, transferData);
+
+    QDrag* drag = new QDrag(this);
+    drag->setMimeData(data);
+    QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+    drag->setPixmap(p.scaledToWidth(100, Qt::SmoothTransformation));
+
+    drag->exec();
+}
+
 void MediaView::Setup()
 {
     /* Set Model */
@@ -53,6 +83,8 @@ void MediaView::Setup()
 
     /* Context Menu */
     setContextMenuPolicy(Qt::CustomContextMenu);
+
+    setDragEnabled(true);
 }
 
 void MediaView::ResetView()

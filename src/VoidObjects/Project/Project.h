@@ -35,6 +35,7 @@ public:
     inline void InsertMedia(const SharedMediaClip& media, const int index) { m_Media->Insert(media, index); }
     inline void RemoveMedia(const QModelIndex& index) { m_Media->Remove(index); }
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
+    inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
 
     inline MediaModel* DataModel() const { return m_Media; }
     inline QModelIndex ClipIndex(const SharedMediaClip& clip, int column = 0) const
