@@ -25,10 +25,7 @@ void PlayerOverlay::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
     if (m_HoveredViewerBuffer == HoveredViewerBuffer::None)
-    {
-        painter.fillRect(rect(), QColor(200, 0, 120));
         return;
-    }
 
     QColor colorA = (m_HoveredViewerBuffer == HoveredViewerBuffer::A) ? QColor(130, 110, 190, 150) : QColor(130, 110, 190, 80);
     QColor colorB = (m_HoveredViewerBuffer == HoveredViewerBuffer::B) ? QColor(70, 180, 220, 150) : QColor(70, 180, 220, 80);

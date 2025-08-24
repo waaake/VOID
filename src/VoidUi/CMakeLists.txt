@@ -1,12 +1,7 @@
 # Build Ui Library
 set(SOURCES
-    About.cpp
-    Browser.cpp
-    Events.h
-    VoidStyle.cpp
-    VoidGlobals.cpp
-
     # Base Window
+    BaseWindow/About.cpp
     BaseWindow/BaseWindow.cpp
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
@@ -14,14 +9,18 @@ set(SOURCES
     # Commands
     Commands/VoidCommand.cpp
     Commands/MediaCommands.cpp
-
+    
     # Dock
     Dock/Docker.cpp
     Dock/DockManager.cpp
     Dock/DockPanel.cpp
     Dock/DockSplitter.cpp
-
+    
+    # Core Engine Globals
+    Engine/Globals.cpp
+    
     # Media
+    Media/Browser.cpp
     Media/MediaBridge.cpp
     Media/MediaCache.cpp
     Media/MediaLister.cpp

@@ -61,6 +61,9 @@ include_directories(
 # Main Executable
 add_executable(
     VOID
+    # Core Application Engine
+    VoidApplication/Engine/VoidStyle.cpp
+    VoidApplication/Engine/Engine.cpp
     Application.cpp
 )
 

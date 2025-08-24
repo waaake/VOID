@@ -9,7 +9,7 @@
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Project/Project.h"
-#include "VoidUi/VoidGlobals.h"
+#include "VoidUi/Engine/Globals.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -21,7 +21,7 @@ void BindUi(py::module_& m)
 {
     m.doc() = "Void UI Module.";
 
-    m.def("active_player", &GetActivePlayer, py::return_value_policy::reference);
+    m.def("active_player", &UIGlobals::GetActivePlayer, py::return_value_policy::reference);
     m.def("active_project", []() { return MBridge::Instance().ActiveProject(); }, py::return_value_policy::reference);
 
     /* Player */

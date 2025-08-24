@@ -2,9 +2,11 @@
 // Licensed under the MIT License
 
 /* Internal */
-#include "VoidGlobals.h"
+#include "Globals.h"
 
 VOID_NAMESPACE_OPEN
+
+namespace UIGlobals {
 
 VoidMainWindow* g_VoidMainWindow = nullptr;
 
@@ -20,5 +22,7 @@ Player* GetActivePlayer()
 
     return nullptr;
 }
+
+} // namespace UIGlobals
 
 VOID_NAMESPACE_CLOSE
