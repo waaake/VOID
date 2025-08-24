@@ -17,7 +17,8 @@ DockSplitter::DockSplitter(Qt::Orientation orientation, QWidget* parent)
 
 void DockSplitter::AddPane()
 {
-	addWidget(new DockWidget(this));
+	DockWidget* docker = new DockWidget(this);
+	AddWidget(docker);
 }
 
 void DockSplitter::AddPane(int id)
@@ -25,17 +26,7 @@ void DockSplitter::AddPane(int id)
 	DockWidget* docker = new DockWidget(this);
 	/* Add the Widget from the DockManager to the dock */
 	docker->AddDockManagerWidget(id);
-
-	/* This is the index on which the next widget will get added to */
-	int index = count() - 1;
-
-	/* Connect for removal */
-	connect(docker, &DockWidget::closureRequested, this, [=]() { RemovePane(index); });
-	/* Connect for split */
-	connect(docker, &DockWidget::splitRequested, this, [=](const Qt::Orientation& orientation) { Resplit(index, orientation); });
-
-	/* Add the docker to the pane */
-	addWidget(docker);
+	AddWidget(docker);
 }
 
 void DockSplitter::AddPane(QWidget* widget, const std::string& name, bool closable)
@@ -43,22 +34,14 @@ void DockSplitter::AddPane(QWidget* widget, const std::string& name, bool closab
 	DockWidget* docker = new DockWidget(this);
 	/* Add the Widget to the dock */
 	docker->AddDock(widget, name, closable);
-
-	/* This is the index on which the next widget will get added to */
-	int index = count() - 1;
-
-	/* Connect for removal */
-	connect(docker, &DockWidget::closureRequested, this, [=]() { RemovePane(index); });
-
-	/* Add the docker to the pane */
-	addWidget(docker);
+	AddWidget(docker);
 }
 
 void DockSplitter::RemovePane(int index)
 {
 	VOID_LOG_INFO("INDEX: {0}", index);
 
-	QWidget* w = widget(index);
+	QWidget* w = findChild<QWidget*>(QString::number(index));
 	/* Remove Widget */
 	w->hide();
 	w->deleteLater();
@@ -87,6 +70,21 @@ void DockSplitter::Resplit(int index, const Qt::Orientation& orientation)
 
 	/* And Another Pane to the splitter */
 	splitter->AddPane();
+}
+
+void DockSplitter::AddWidget(DockWidget* widget)
+{
+	/* This is the index on which the next widget will get added to */
+	int index = count() - 1;
+	widget->setObjectName(QString::number(index));
+
+	/* Connect for removal */
+	connect(widget, &DockWidget::closureRequested, this, [=]() { RemovePane(index); });
+	/* Connect for split */
+	connect(widget, &DockWidget::splitRequested, this, [=](const Qt::Orientation& orientation) { Resplit(index, orientation); });
+
+	/* Add the docker to the pane */
+	addWidget(widget);
 }
 
 VOID_NAMESPACE_CLOSE

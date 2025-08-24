@@ -43,6 +43,9 @@ public:
      * - Adds an empty pane to the other side of the Split
      */
 	void Resplit(int index, const Qt::Orientation& orientation);
+
+private: /* Methods */
+    void AddWidget(DockWidget* widget);
 };
 
 VOID_NAMESPACE_CLOSE
