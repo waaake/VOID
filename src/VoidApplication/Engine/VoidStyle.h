@@ -28,7 +28,7 @@ const QColor VOID_HIGHLIGHT_GREEN = {160, 190, 60};
 const QColor VOID_FOREGROUND_COLOR = {190, 190, 190};
 const QColor VOID_FOREGROUND_DISABLED_COLOR = {80, 80, 80};
 
-class VOID_API VoidDark : public QProxyStyle
+class VoidDark : public QProxyStyle
 {
 public:
     VoidDark();
@@ -39,7 +39,7 @@ public:
     virtual void polish(QPalette& palette) override;
 };
 
-class VOID_API VoidBlue : public VoidDark
+class VoidBlue : public VoidDark
 {
 public:
     VoidBlue();

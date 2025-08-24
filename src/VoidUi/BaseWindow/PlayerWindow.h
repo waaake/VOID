@@ -11,6 +11,7 @@
 #include <QList>
 
 /* Internal */
+#include "About.h"
 #include "Definition.h"
 #include "BaseWindow.h"
 #include "TitleBar.h"
@@ -18,7 +19,6 @@
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
-#include "VoidUi/About.h"
 #include "VoidUi/Dock/Docker.h"
 #include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Media/MediaLister.h"
