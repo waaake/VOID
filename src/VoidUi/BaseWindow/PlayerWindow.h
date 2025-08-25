@@ -97,6 +97,7 @@ private: /* Members */
     /* File Menu */
     QMenu* m_FileMenu;
     QAction* m_ImportAction;
+    QAction* m_ImportDirectoryAction;
     QAction* m_ClearAction;
     QAction* m_NewProjectAction;
     QAction* m_CloseAction;
@@ -158,6 +159,7 @@ private: /* Members */
 
 public:
     void Load();
+    void LoadDirectory();
     /* Clears and sets the provided media on the player */
     void SetMedia(const SharedMediaClip& media);
     /* Adds media onto the existing track */

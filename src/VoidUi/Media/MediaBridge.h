@@ -52,6 +52,7 @@ public:
 
     void AddMedia(const std::string& filepath);
     void RemoveMedia(const std::vector<QModelIndex>& media);
+    void ImportDirectory(const std::string& directory) { m_Project->ImportDirectory(directory); }
 
     /**
      * Projects
@@ -67,7 +68,7 @@ public:
     /**
      * Adds Media to the Graph
      */
-    bool AddMedia(const MediaStruct& mstruct);
+    bool AddMedia(const MediaStruct& mstruct);    
     bool InsertMedia(const MediaStruct& mstruct, const int index);
 
     /**

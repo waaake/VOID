@@ -19,6 +19,13 @@ VoidMediaBrowser::~VoidMediaBrowser()
 
 bool VoidMediaBrowser::Browse()
 {
+    setFileMode(QFileDialog::FileMode::ExistingFile);
+    return exec();
+}
+
+bool VoidMediaBrowser::BrowseDirectory()
+{
+    setFileMode(QFileDialog::FileMode::Directory);
     return exec();
 }
 

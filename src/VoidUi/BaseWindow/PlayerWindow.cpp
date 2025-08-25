@@ -166,6 +166,8 @@ void VoidMainWindow::Build()
 
     m_ImportAction = new QAction("Import Media...", m_FileMenu);
     m_ImportAction->setShortcut(QKeySequence("Ctrl+I"));
+
+    m_ImportDirectoryAction = new QAction("Import Directory...", m_FileMenu);
     
     m_NewProjectAction = new QAction("New Project", m_FileMenu);
     m_NewProjectAction->setShortcut(QKeySequence("Ctrl+N"));
@@ -176,6 +178,7 @@ void VoidMainWindow::Build()
     m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
 
     m_FileMenu->addAction(m_ImportAction);
+    m_FileMenu->addAction(m_ImportDirectoryAction);
 
     /* -------------------------------- */
     m_FileMenu->addSeparator();
@@ -342,6 +345,7 @@ void VoidMainWindow::Connect()
     /* File Menu {{{ */
     connect(m_CloseAction, &QAction::triggered, this, &QCoreApplication::quit);
     connect(m_ImportAction, &QAction::triggered, this, &VoidMainWindow::Load);
+    connect(m_ImportDirectoryAction, &QAction::triggered, this, &VoidMainWindow::LoadDirectory);
     connect(m_NewProjectAction, &QAction::triggered, this, [this]() { MBridge::Instance().NewProject(); });
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
@@ -461,6 +465,20 @@ void VoidMainWindow::Load()
 
     /* Read the File from the FileDialog */
     m_Bridge.AddMedia(mediaBrowser.GetSelectedFile());
+}
+
+void VoidMainWindow::LoadDirectory()
+{
+    VoidMediaBrowser mediaBrowser;
+
+    if (!mediaBrowser.BrowseDirectory())
+    {
+        VOID_LOG_INFO("User Cancelled Importing");
+        return;
+    }
+
+    /* Import the Media from the directory */
+    m_Bridge.ImportDirectory(mediaBrowser.SelectedDirectory());
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)

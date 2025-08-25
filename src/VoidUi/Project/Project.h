@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Importer.h"
 #include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
@@ -31,8 +32,13 @@ public:
     inline void PushCommand(QUndoCommand* command) { m_UndoStack->push(command); }
     inline QUndoStack* UndoStack() const { return m_UndoStack; }
 
+    void ImportDirectory(const std::string& directory);
+
 private: /* Members */
     QUndoStack* m_UndoStack;
+
+private: /* Friends */
+    friend class DirectoryImporter;
 };
 
 VOID_NAMESPACE_CLOSE

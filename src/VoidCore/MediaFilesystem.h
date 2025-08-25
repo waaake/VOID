@@ -331,6 +331,7 @@ public:
      * Provides a vector of MediaStructs for a provided Directory
      */
     std::vector<MediaStruct> FromDirectory(const std::string& directory);
+    static std::vector<MediaStruct> GetAllMedia(const std::string& directory, int level = 0, int maxLevel = 4);
 };
 
 VOID_NAMESPACE_CLOSE

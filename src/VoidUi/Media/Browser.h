@@ -25,9 +25,11 @@ public:
      * will wait executing other instructions below and returns back a bool value telling if the browse
      * was successful or not.
      */
-    [[nodiscard]] bool Browse();     
+    [[nodiscard]] bool Browse();
+    [[nodiscard]] bool BrowseDirectory();
 
     inline std::string GetDirectory() const { return directory().absolutePath().toStdString(); }
+    inline std::string SelectedDirectory() const { return selectedFiles().first().toStdString(); }
     std::string GetSelectedFile() const;
     MediaStruct GetMediaStruct() const;
 };
