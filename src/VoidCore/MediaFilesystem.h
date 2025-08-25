@@ -129,7 +129,7 @@ private: /* Methods */
     bool ValidFrame(const std::string& framestring) const;
 };
 
-struct MHelper
+struct VOID_API MHelper
 {
     static MediaType GetMediaType(const MEntry& entry);
 

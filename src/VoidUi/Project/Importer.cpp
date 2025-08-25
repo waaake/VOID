@@ -1,6 +1,8 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#include <thread>
+
 /* Internal */
 #include "Importer.h"
 #include "Project.h"
@@ -19,33 +21,27 @@ DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel,
 
 DirectoryImporter::~DirectoryImporter()
 {
-    m_ProgressTask->deleteLater();
-    delete m_ProgressTask;
-    m_ProgressTask = nullptr;
 }
 
 void DirectoryImporter::process()
 {
-    m_ProgressTask = new ProgressTask;
-    m_ProgressTask->show();
-
-    m_ProgressTask->SetTaskType("Searching");
-    m_ProgressTask->SetMaximum(0);
-
     const std::vector<MediaStruct> media = std::move(GetMedia(m_Directory));
 
     if (media.empty())
         return;
 
-    m_ProgressTask->SetTaskType("Importing");
+    // std::this_thread::sleep_for(std::chrono::seconds(2));
     emit started();
+    emit maxCount(media.size());
 
+    int count = 0;
     for (MediaStruct m : media)
     {
-        const std::string path = m.FirstPath();
+        emit progressUpdated(++count);
+        emit mediaFound(QString::fromStdString(m.FirstPath()));
 
-        m_ProgressTask->SetCurrentTask(path.c_str());
-        emit mediaFound(path);
+        /* Add delay to make it look like the media is imported as is being shown */
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     emit finished();
 }
@@ -54,8 +50,8 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
 {
     std::vector<MediaStruct> vec;
 
-    Tools::VoidProfiler<std::chrono::duration<double>> p("Recursive Media Search");
-    VOID_LOG_INFO("Searching Directory {0} at Level: {1}/{2}", directory, level, m_MaxLevel);
+    // Tools::VoidProfiler<std::chrono::duration<double>> p("Recursive Media Search");
+    // VOID_LOG_INFO("Searching Directory {0} at Level: {1}/{2}", directory, level, m_MaxLevel);
 
     try
     {
@@ -69,9 +65,15 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
 
                 vec.reserve(vec.size() + out.size());
                 vec.insert(vec.end(), std::make_move_iterator(out.begin()), std::make_move_iterator(out.end()));
+
+                continue;
             }
 
             MEntry e(entry.path().string());
+            MediaType type = MHelper::GetMediaType(e);
+
+            if (type == MediaType::NonMedia)
+                continue;
 
             /* Flag to control what happens with the entry */
             bool new_entry = true;
@@ -98,7 +100,7 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
             /* Check if no entry in the MediaStruct adopted our newly created Media entry */
             if (new_entry)
             {
-                vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
+                vec.push_back(MediaStruct(e, type));
             }
         }
     }

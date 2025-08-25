@@ -11,6 +11,7 @@
 #include "Definition.h"
 #include "Importer.h"
 #include "VoidObjects/Project/Project.h"
+#include "VoidUi/QExtensions/ProgressTask.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -36,9 +37,11 @@ public:
 
 private: /* Members */
     QUndoStack* m_UndoStack;
+    ProgressTask* m_ProgressTask;
 
-private: /* Friends */
-    friend class DirectoryImporter;
+private: /* Methods */
+    void SetupProgressTask();
+    void DeleteProgressTask();
 };
 
 VOID_NAMESPACE_CLOSE

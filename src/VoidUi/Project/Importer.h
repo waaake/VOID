@@ -13,7 +13,6 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/MediaFilesystem.h"
-#include "VoidUi/QExtensions/ProgressTask.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -28,13 +27,14 @@ public:
 
 signals:
     void started();
-    void mediaFound(const std::string&);
+    void maxCount(int);
+    void progressUpdated(int);
+    void mediaFound(const QString&);
     void finished();
 
 private: /* Members */
     std::string m_Directory;
     int m_MaxLevel;
-    ProgressTask* m_ProgressTask;
 
 private: /* Methods */
     std::vector<MediaStruct> GetMedia(const std::string& directory, int level = 0) const;

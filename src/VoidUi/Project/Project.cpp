@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* Qt */
+// #include <QApplication>
 #include <QThread>
 
 /* Internal */
@@ -24,6 +25,7 @@ Project::Project(bool active, QObject* parent)
 Project::~Project()
 {
     m_UndoStack->deleteLater();
+    DeleteProgressTask();
 }
 
 // void AddMedia(const std::string& directory)
@@ -36,36 +38,58 @@ Project::~Project()
 
 void Project::ImportDirectory(const std::string& directory)
 {
-    // std::vector<MediaStruct> media = MediaFS().FromDirectory(directory);
-    // std::vector<MediaStruct> media = MediaFS::GetAllMedia(directory);
-
-    // if (media.empty())
-    //     return;
-    
-    // m_UndoStack->beginMacro("Import Directory");
-    // for (MediaStruct m : media)
-    // {
-    //     m_UndoStack->push(new MediaImportCommand(m.FirstPath()));
-    // }
-    // m_UndoStack->endMacro();
+    SetupProgressTask();
 
     QThread* thread = new QThread;
-    DirectoryImporter* importer = new DirectoryImporter(directory, 5, this);
+    DirectoryImporter* importer = new DirectoryImporter(directory, 5);
+
+    importer->moveToThread(thread);
 
     /* Thread */
     connect(thread, &QThread::started, importer, &DirectoryImporter::process);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
 
     /* Importer */
-    connect(importer, &DirectoryImporter::started, this, [this]() { m_UndoStack->beginMacro("Import Directory"); });
-    connect(importer, &DirectoryImporter::finished, this, [this](){ m_UndoStack->endMacro(); });
-    connect(importer, &DirectoryImporter::finished, importer, &DirectoryImporter::deleteLater);
-    connect(importer, &DirectoryImporter::mediaFound, this, [this](const std::string& path)
+    connect(importer, &DirectoryImporter::started, this, [this]()
     {
-        m_UndoStack->push(new MediaImportCommand(path)); 
+        m_UndoStack->beginMacro("Import Directory");
     });
 
+    connect(importer, &DirectoryImporter::finished, this, [this]()
+    {
+        m_UndoStack->endMacro();
+        DeleteProgressTask();
+    });
+
+    connect(importer, &DirectoryImporter::finished, importer, &DirectoryImporter::deleteLater);
+    connect(importer, &DirectoryImporter::mediaFound, this, [this](const QString& path)
+    {
+        m_ProgressTask->SetCurrentTask(path.toStdString().c_str());
+        m_UndoStack->push(new MediaImportCommand(path.toStdString()));
+    });
+    connect(importer, &DirectoryImporter::maxCount, m_ProgressTask, &ProgressTask::SetMaximum);
+    connect(importer, &DirectoryImporter::progressUpdated, m_ProgressTask, &ProgressTask::SetValue);
+
     thread->start();
+}
+
+void Project::SetupProgressTask()
+{
+    m_ProgressTask = new ProgressTask;
+    m_ProgressTask->show();
+
+    m_ProgressTask->SetTaskType("Searching");
+    m_ProgressTask->SetMaximum(0);
+}
+
+void Project::DeleteProgressTask()
+{
+    if (m_ProgressTask)
+    {
+        m_ProgressTask->deleteLater();
+        delete m_ProgressTask;
+        m_ProgressTask = nullptr;
+    }
 }
 
 VOID_NAMESPACE_CLOSE
