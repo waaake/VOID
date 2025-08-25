@@ -7,7 +7,7 @@
 VOID_NAMESPACE_OPEN
 
 ProgressTask::ProgressTask(QWidget* parent)
-    : QWidget(parent)
+    : QDialog(parent)
 {
     Build();
     Setup();

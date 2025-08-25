@@ -5,7 +5,7 @@
 #define _VOID_Q_EXT_PROGRESS_TASK_H
 
 /* Qt */
-#include <QWidget>
+#include <QDialog>
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
@@ -16,7 +16,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class ProgressTask : public QWidget
+class ProgressTask : public QDialog
 {
     Q_OBJECT
 
@@ -49,8 +49,6 @@ private: /* Members */
     QLabel* m_CurrentTaskLabel;
 
     QProgressBar* m_ProgressBar;
-
-    QActionGroup* m_RadioGroup;
 
 private: /* Methods */
     void Build();
