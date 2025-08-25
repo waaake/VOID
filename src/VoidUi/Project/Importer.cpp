@@ -10,27 +10,26 @@
 
 VOID_NAMESPACE_OPEN
 
-DirectoryImporter::DirectoryImporter(Project* project, const std::string& directory, int maxLevel)
-    : QRunnable()
-    , m_Project(project)
+DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel, QObject* parent)
+    : QObject(parent)
     , m_Directory(directory)
     , m_MaxLevel(maxLevel)
 {
 }
 
-void DirectoryImporter::run()
+void DirectoryImporter::process()
 {
     const std::vector<MediaStruct> media = std::move(GetMedia(m_Directory));
 
     if (media.empty())
         return;
 
-    m_Project->m_UndoStack->beginMacro("Import Directory");
+    emit started();
     for (MediaStruct m : media)
     {
-        m_Project->m_UndoStack->push(new MediaImportCommand(m.FirstPath()));
+        emit mediaFound(m.FirstPath());
     }
-    m_Project->m_UndoStack->endMacro();
+    emit finished();
 }
 
 std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& directory, int level) const

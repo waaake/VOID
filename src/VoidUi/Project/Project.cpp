@@ -2,10 +2,11 @@
 // Licensed under the MIT License
 
 /* Qt */
-#include <QThreadPool>
+#include <QThread>
 
 /* Internal */
 #include "Project.h"
+#include "VoidUi/Commands/MediaCommands.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -47,7 +48,24 @@ void Project::ImportDirectory(const std::string& directory)
     //     m_UndoStack->push(new MediaImportCommand(m.FirstPath()));
     // }
     // m_UndoStack->endMacro();
-    QThreadPool::globalInstance()->start(new DirectoryImporter(this, directory, 5));
+
+    QThread* thread = new QThread;
+    DirectoryImporter* importer = new DirectoryImporter(directory, 5, this);
+
+    /* Thread */
+    connect(thread, &QThread::started, importer, &DirectoryImporter::process);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+
+    /* Importer */
+    connect(importer, &DirectoryImporter::started, this, [this]() { m_UndoStack->beginMacro("Import Directory"); });
+    connect(importer, &DirectoryImporter::finished, this, [this](){ m_UndoStack->endMacro(); });
+    connect(importer, &DirectoryImporter::finished, importer, &DirectoryImporter::deleteLater);
+    connect(importer, &DirectoryImporter::mediaFound, this, [this](const std::string& path)
+    {
+        m_UndoStack->push(new MediaImportCommand(path)); 
+    });
+
+    thread->start();
 }
 
 VOID_NAMESPACE_CLOSE

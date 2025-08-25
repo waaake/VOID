@@ -168,6 +168,7 @@ void VoidMainWindow::Build()
     m_ImportAction->setShortcut(QKeySequence("Ctrl+I"));
 
     m_ImportDirectoryAction = new QAction("Import Directory...", m_FileMenu);
+    m_ImportDirectoryAction->setShortcut(QKeySequence("Ctrl+Alt+I"));
     
     m_NewProjectAction = new QAction("New Project", m_FileMenu);
     m_NewProjectAction->setShortcut(QKeySequence("Ctrl+N"));

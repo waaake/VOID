@@ -8,7 +8,7 @@
 #include <vector>
 
 /* Qt */
-#include <QRunnable>
+#include <QObject>
 
 /* Internal */
 #include "Definition.h"
@@ -16,17 +16,20 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Forward Declaration of Project */
-class Project;
-
-class DirectoryImporter : public QRunnable
+class DirectoryImporter : public QObject
 {
+    Q_OBJECT
+
 public:
-    DirectoryImporter(Project* project, const std::string& directory, int maxLevel = 5);
-    void run() override;
+    DirectoryImporter(const std::string& directory, int maxLevel = 5, QObject* parent = nullptr);
+    void process();
+
+signals:
+    void started();
+    void mediaFound(const std::string&);
+    void finished();
 
 private: /* Members */
-    Project* m_Project;
     std::string m_Directory;
     int m_MaxLevel;
 
