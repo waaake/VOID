@@ -13,6 +13,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/MediaFilesystem.h"
+#include "VoidUi/QExtensions/ProgressTask.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -22,6 +23,7 @@ class DirectoryImporter : public QObject
 
 public:
     DirectoryImporter(const std::string& directory, int maxLevel = 5, QObject* parent = nullptr);
+    ~DirectoryImporter();
     void process();
 
 signals:
@@ -32,6 +34,7 @@ signals:
 private: /* Members */
     std::string m_Directory;
     int m_MaxLevel;
+    ProgressTask* m_ProgressTask;
 
 private: /* Methods */
     std::vector<MediaStruct> GetMedia(const std::string& directory, int level = 0) const;

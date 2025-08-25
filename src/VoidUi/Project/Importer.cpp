@@ -17,17 +17,35 @@ DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel,
 {
 }
 
+DirectoryImporter::~DirectoryImporter()
+{
+    m_ProgressTask->deleteLater();
+    delete m_ProgressTask;
+    m_ProgressTask = nullptr;
+}
+
 void DirectoryImporter::process()
 {
+    m_ProgressTask = new ProgressTask;
+    m_ProgressTask->show();
+
+    m_ProgressTask->SetTaskType("Searching");
+    m_ProgressTask->SetMaximum(0);
+
     const std::vector<MediaStruct> media = std::move(GetMedia(m_Directory));
 
     if (media.empty())
         return;
 
+    m_ProgressTask->SetTaskType("Importing");
     emit started();
+
     for (MediaStruct m : media)
     {
-        emit mediaFound(m.FirstPath());
+        const std::string path = m.FirstPath();
+
+        m_ProgressTask->SetCurrentTask(path.c_str());
+        emit mediaFound(path);
     }
     emit finished();
 }
