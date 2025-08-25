@@ -36,7 +36,6 @@ void ProgressTask::Build()
     m_TaskLayout->addWidget(m_CurrentTaskLabel);
 
     m_ProgressBar = new QProgressBar;
-
     m_CancelButton = new QPushButton("Cancel");
 
     m_ButtonLayout->addStretch(1);
@@ -52,15 +51,19 @@ void ProgressTask::Setup()
     m_ProgressBar->setAlignment(Qt::AlignCenter);
 }
 
+void ProgressTask::Cancel()
+{
+    m_Cancelled = true;
+    
+    m_TaskTypeLabel->setText("Cancelling...");
+    m_CancelButton->setEnabled(false);
+
+    emit cancelled();
+}
+
 void ProgressTask::Connect()
 {
-    connect(m_CancelButton, &QPushButton::clicked, this, [this]()
-    {
-        m_Cancelled = true;
-        
-        m_TaskTypeLabel->setText("Cancelling...");
-        m_CancelButton->setEnabled(false);
-    });
+    connect(m_CancelButton, &QPushButton::clicked, this, &ProgressTask::Cancel);
 }
 
 VOID_NAMESPACE_CLOSE

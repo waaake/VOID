@@ -38,10 +38,13 @@ public:
 private: /* Members */
     QUndoStack* m_UndoStack;
     ProgressTask* m_ProgressTask;
+    DirectoryImporter* m_DirectoryImporter;
 
 private: /* Methods */
     void SetupProgressTask();
     void DeleteProgressTask();
+    void DeleteImporter();
+    void CancelImporting();
 };
 
 VOID_NAMESPACE_CLOSE

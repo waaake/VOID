@@ -27,7 +27,7 @@ public:
     inline QSize sizeHint() const { return QSize(400, 40); }
 
     inline bool Cancelled() const { return m_Cancelled; }
-    inline void Cancel() { m_Cancelled = true; }
+    void Cancel();
 
     inline void SetTaskType(const char* text) { m_TaskTypeLabel->setText(text); }
     inline void SetCurrentTask(const char* text) { m_CurrentTaskLabel->setText(text); }
@@ -35,6 +35,9 @@ public:
     inline void SetMaximum(int max) { m_ProgressBar->setMaximum(max); }
     inline void SetValue(int value) { m_ProgressBar->setValue(value); }
     inline int Value() const { return m_ProgressBar->value(); }
+
+signals:
+    void cancelled();
 
 protected: /* Members */
     bool m_Cancelled;

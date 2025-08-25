@@ -6,9 +6,6 @@
 /* Internal */
 #include "Importer.h"
 #include "Project.h"
-#include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
-#include "VoidUi/Commands/MediaCommands.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -16,6 +13,7 @@ DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel,
     : QObject(parent)
     , m_Directory(directory)
     , m_MaxLevel(maxLevel)
+    , m_Cancelled(false)
 {
 }
 
@@ -23,26 +21,29 @@ DirectoryImporter::~DirectoryImporter()
 {
 }
 
-void DirectoryImporter::process()
+void DirectoryImporter::Process()
 {
     const std::vector<MediaStruct> media = std::move(GetMedia(m_Directory));
 
-    if (media.empty())
+    if (media.empty() || m_Cancelled)
         return;
 
-    // std::this_thread::sleep_for(std::chrono::seconds(2));
     emit started();
     emit maxCount(media.size());
 
     int count = 0;
     for (MediaStruct m : media)
     {
+        if (m_Cancelled)
+            break;
+
         emit progressUpdated(++count);
         emit mediaFound(QString::fromStdString(m.FirstPath()));
 
         /* Add delay to make it look like the media is imported as is being shown */
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
     emit finished();
 }
 
@@ -50,13 +51,14 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
 {
     std::vector<MediaStruct> vec;
 
-    // Tools::VoidProfiler<std::chrono::duration<double>> p("Recursive Media Search");
-    // VOID_LOG_INFO("Searching Directory {0} at Level: {1}/{2}", directory, level, m_MaxLevel);
-
     try
     {
         for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator(directory))
         {
+
+            if (m_Cancelled)
+                return vec;
+
             /* Recurse through the directory if the level allows */
             if (entry.is_directory() && level <= m_MaxLevel)
             {

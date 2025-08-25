@@ -23,7 +23,8 @@ class DirectoryImporter : public QObject
 public:
     DirectoryImporter(const std::string& directory, int maxLevel = 5, QObject* parent = nullptr);
     ~DirectoryImporter();
-    void process();
+    void Process();
+    inline void Cancel() { m_Cancelled = true; }
 
 signals:
     void started();
@@ -35,6 +36,7 @@ signals:
 private: /* Members */
     std::string m_Directory;
     int m_MaxLevel;
+    bool m_Cancelled;
 
 private: /* Methods */
     std::vector<MediaStruct> GetMedia(const std::string& directory, int level = 0) const;
