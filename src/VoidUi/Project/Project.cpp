@@ -42,18 +42,17 @@ void Project::ImportDirectory(const std::string& directory)
     /* Thread */
     connect(thread, &QThread::started, m_DirectoryImporter, &DirectoryImporter::Process);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-    // connect(thread, &QThread::finished, this, &Project::DeleteProgressTask);
 
     /* Importer */
-    connect(m_DirectoryImporter, &DirectoryImporter::started, this, [this]()
+    connect(m_DirectoryImporter, &DirectoryImporter::startedImporting, this, [this]()
     {
         m_UndoStack->beginMacro("Import Directory");
-        m_ProgressTask->SetTaskType("Importing");
+        m_ProgressTask->SetTaskType("Importing...");
     });
+    connect(m_DirectoryImporter, &DirectoryImporter::finishedImporting, this, [this]() { m_UndoStack->endMacro(); });
 
     connect(m_DirectoryImporter, &DirectoryImporter::finished, this, [this]()
     {
-        m_UndoStack->endMacro();
         DeleteProgressTask();
         DeleteImporter();
     });
@@ -76,7 +75,7 @@ void Project::SetupProgressTask()
     m_ProgressTask = new ProgressTask;
     m_ProgressTask->show();
 
-    m_ProgressTask->SetTaskType("Searching");
+    m_ProgressTask->SetTaskType("Searching...");
     m_ProgressTask->SetMaximum(0);
 
     connect(m_ProgressTask, &ProgressTask::cancelled, this, &Project::CancelImporting);

@@ -27,10 +27,13 @@ public:
     inline void Cancel() { m_Cancelled = true; }
 
 signals:
-    void started();
     void maxCount(int);
     void progressUpdated(int);
     void mediaFound(const QString&);
+
+    void startedImporting();
+    void finishedImporting();
+
     void finished();
 
 private: /* Members */

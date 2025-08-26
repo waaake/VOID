@@ -423,14 +423,7 @@ void VoidMainWindow::ImportMedia(const MediaStruct& mstruct)
 
 void VoidMainWindow::ImportDirectory(const std::string& path)
 {
-    std::vector<MediaStruct> medias = MediaFS().FromDirectory(path);
-
-    /**
-     * Import all the media struct retrived from the Filesystem 
-     * the ImportMedia function itself validates if the item is not a valid media and logs information
-     */
-    for (const MediaStruct& m: medias)
-        ImportMedia(m);
+    m_Bridge.ImportDirectory(path);
 }
 
 void VoidMainWindow::RegisterDocks()

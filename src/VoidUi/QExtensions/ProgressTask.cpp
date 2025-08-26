@@ -49,6 +49,7 @@ void ProgressTask::Build()
 void ProgressTask::Setup()
 {
     m_ProgressBar->setAlignment(Qt::AlignCenter);
+    m_CurrentTaskLabel->setFixedWidth(180);
 }
 
 void ProgressTask::Cancel()
@@ -64,6 +65,12 @@ void ProgressTask::Cancel()
 void ProgressTask::Connect()
 {
     connect(m_CancelButton, &QPushButton::clicked, this, &ProgressTask::Cancel);
+}
+
+void ProgressTask::SetLabelTask(const char* text)
+{
+    QFontMetrics fm = m_CurrentTaskLabel->fontMetrics();
+    m_CurrentTaskLabel->setText(fm.elidedText(text, Qt::ElideLeft, m_CurrentTaskLabel->width()));
 }
 
 VOID_NAMESPACE_CLOSE

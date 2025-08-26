@@ -26,9 +26,13 @@ void DirectoryImporter::Process()
     const std::vector<MediaStruct> media = std::move(GetMedia(m_Directory));
 
     if (media.empty() || m_Cancelled)
+    {
+        emit finished();
         return;
+    }
 
-    emit started();
+    emit startedImporting();
+    /* Sets up the progress maximum count */
     emit maxCount(media.size());
 
     int count = 0;
@@ -41,9 +45,10 @@ void DirectoryImporter::Process()
         emit mediaFound(QString::fromStdString(m.FirstPath()));
 
         /* Add delay to make it look like the media is imported as is being shown */
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
+    emit finishedImporting();
     emit finished();
 }
 
