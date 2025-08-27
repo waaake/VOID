@@ -166,11 +166,22 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
     bool found = false;
     int retryCount = 0;
 
+    int distance = 0;
+    bool seeked = false;
+
     /* Retry seeking for 3 times before giving up */
     while (!found && retryCount < 3)
     {
+        /**
+         * Calculate the distance between the requested and the last frame which was read 
+         * this helps us determine whether or not to save any data and also if we need to seek forwards in order
+         * to reach the frame quickly
+         * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
+         * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
+         */
+        distance = framenumber - m_CurrentFrame;
         /* Decode the next frame and it returns back either a negative value or the decoded frame */
-        v_frame_t ret = DecodeNextFrame();
+        v_frame_t ret = DecodeNextFrame((distance < 10));
 
         /**
          * Then we check if the return value was greater than the requested frame
@@ -195,10 +206,23 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
             found = true;
             break;
         }
+        else if (distance > 20 && !seeked)
+        {
+            /* Seek */
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            /**
+             * Seek the framenumber
+             * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
+             */
+            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
+            avcodec_flush_buffers(m_CodecContext);
+
+            seeked = true;
+        }
     }
 }
 
-v_frame_t FFmpegDecoder::DecodeNextFrame()
+v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
 {
     /* Read the next frame from the packet */
     int status = av_read_frame(m_FormatContext, m_Packet);
@@ -220,18 +244,21 @@ v_frame_t FFmpegDecoder::DecodeNextFrame()
     if (status != 0)
         return -3;
 
-    int64_t currentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
-    sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+    m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
 
-    // VOID_LOG_INFO("FRAME--> {0}", currentFrame);
-    std::vector<unsigned char>& v = GetVector(currentFrame);
-    v = m_Pixels;
+    if (save)
+    {
+        sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+
+        std::vector<unsigned char>& v = GetVector(m_CurrentFrame);
+        v = m_Pixels;
+    }
 
     /* Dereference the buffer */
     av_packet_unref(m_Packet);
 
     /* The decoded frame number*/
-    return currentFrame;
+    return m_CurrentFrame;
 }
 
 /* }}} */
