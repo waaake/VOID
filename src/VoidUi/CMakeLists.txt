@@ -45,6 +45,7 @@ set(SOURCES
 
     # Project
     Project/Project.cpp
+    Project/Importer.cpp
     Project/Views/ProjectView.cpp
     Project/Delegates/ListDelegate.cpp
 
@@ -68,6 +69,7 @@ set(SOURCES
     # QExtensions
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
+    QExtensions/ProgressTask.cpp
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp
     QExtensions/SpinBox.cpp

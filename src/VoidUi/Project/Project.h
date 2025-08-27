@@ -9,7 +9,9 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Importer.h"
 #include "VoidObjects/Project/Project.h"
+#include "VoidUi/QExtensions/ProgressTask.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -31,8 +33,18 @@ public:
     inline void PushCommand(QUndoCommand* command) { m_UndoStack->push(command); }
     inline QUndoStack* UndoStack() const { return m_UndoStack; }
 
+    void ImportDirectory(const std::string& directory);
+
 private: /* Members */
     QUndoStack* m_UndoStack;
+    ProgressTask* m_ProgressTask;
+    DirectoryImporter* m_DirectoryImporter;
+
+private: /* Methods */
+    void SetupProgressTask();
+    void DeleteProgressTask();
+    void DeleteImporter();
+    void CancelImporting();
 };
 
 VOID_NAMESPACE_CLOSE

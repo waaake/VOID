@@ -476,6 +476,66 @@ std::vector<MediaStruct> MediaFS::FromDirectory(const std::string& path)
     return vec;
 }
 
+std::vector<MediaStruct> MediaFS::GetAllMedia(const std::string& path, int level, int maxLevel)
+{
+    std::vector<MediaStruct> vec;
+
+    Tools::VoidProfiler<std::chrono::duration<double>> p("Recursive Media Search");
+    VOID_LOG_INFO("Searching Directory {0} at Level: {1}/{2}", path, level, maxLevel);
+
+    try
+    {
+        for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator(path))
+        {
+            /* Recurse through the directory if the level allows */
+            if (entry.is_directory() && level <= maxLevel)
+            {
+                /* Get all media inside the directory */
+                std::vector<MediaStruct> out = std::move(GetAllMedia(entry.path().string(), level + 1, maxLevel));
+
+                vec.reserve(vec.size() + out.size());
+                vec.insert(vec.end(), std::make_move_iterator(out.begin()), std::make_move_iterator(out.end()));
+            }
+
+            MEntry e(entry.path().string());
+
+            /* Flag to control what happens with the entry */
+            bool new_entry = true;
+
+            /**
+             * Iterate over what we have in our vector currently
+             * i.e. the media structs to see if this entry belongs to any one of them
+             * if so, this gets added there, else we create a new media struct from it
+             */
+            for (MediaStruct& m : vec)
+            {
+                /**
+                 * The entry belongs to this Media Struct don't have to add it again
+                 * this search is going to be used to import media via the UndoQueue
+                 * which only needs path of a single media from it
+                 */
+                if (m.Validate(e))
+                {
+                    new_entry = false;
+                    break;
+                }
+            }
+
+            /* Check if no entry in the MediaStruct adopted our newly created Media entry */
+            if (new_entry)
+            {
+                vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e)
+    {
+        VOID_LOG_ERROR(e.what());
+    }
+
+    return vec;
+}
+
 /* }}} */
 
 VOID_NAMESPACE_CLOSE

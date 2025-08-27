@@ -9,7 +9,7 @@ VOID_NAMESPACE_OPEN
 VoidMediaBrowser::VoidMediaBrowser(QWidget* parent)
     : QFileDialog(parent)
 {
-
+    setOption(QFileDialog::DontUseNativeDialog);
 }
 
 VoidMediaBrowser::~VoidMediaBrowser()
@@ -19,6 +19,13 @@ VoidMediaBrowser::~VoidMediaBrowser()
 
 bool VoidMediaBrowser::Browse()
 {
+    setFileMode(QFileDialog::FileMode::ExistingFile);
+    return exec();
+}
+
+bool VoidMediaBrowser::BrowseDirectory()
+{
+    setFileMode(QFileDialog::FileMode::Directory);
     return exec();
 }
 

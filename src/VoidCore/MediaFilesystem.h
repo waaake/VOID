@@ -129,7 +129,7 @@ private: /* Methods */
     bool ValidFrame(const std::string& framestring) const;
 };
 
-struct MHelper
+struct VOID_API MHelper
 {
     static MediaType GetMediaType(const MEntry& entry);
 
@@ -331,6 +331,7 @@ public:
      * Provides a vector of MediaStructs for a provided Directory
      */
     std::vector<MediaStruct> FromDirectory(const std::string& directory);
+    static std::vector<MediaStruct> GetAllMedia(const std::string& directory, int level = 0, int maxLevel = 4);
 };
 
 VOID_NAMESPACE_CLOSE
