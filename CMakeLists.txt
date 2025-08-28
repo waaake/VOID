@@ -99,6 +99,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 # Try and find ffmpeg
 find_package(FFMPEG REQUIRED COMPONENTS avcodec avformat avutil swscale)
 
+find_package(TurboJPEG REQUIRED)
+
 # Used for Logging
 find_package(spdlog QUIET)
 
