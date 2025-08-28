@@ -24,6 +24,7 @@ add_library(
     Readers/OIIOReader.cpp
     Readers/OpenEXRReader.cpp
     Readers/FFmpegReader.cpp
+    Readers/TurboJpegReader.cpp
 )
 
 target_include_directories(
@@ -32,6 +33,7 @@ target_include_directories(
     ${Boost_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
     ${OpenColorIO_INCLUDE_DIRS}
+    ${TurboJPEG_INCLUDE_DIRS}
 )
 
 # Link to this library
@@ -45,6 +47,7 @@ target_link_libraries(
     OpenColorIO::OpenColorIO
     pybind11::embed
     Python::Python
+    ${TurboJPEG_LIBRARIES}
 )
 
 # Mac for some reason needs this explicitly

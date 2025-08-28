@@ -215,6 +215,9 @@ if (WIN32)
     # Freetype DLL
     install(FILES "${FREETYPE_DLL}" DESTINATION bin)
 
+    # Turbojpeg
+    install(FILES "${TurboJPEG_DLL}" DESTINATION bin)
+
     # windeployqt.exe /path/to/install/dir/bin
     set(QT_DEPLOY_TOOL "${QT_CMAKE_PATH}/../../../bin/windeployqt.exe")
     install(CODE "execute_process(COMMAND ${QT_DEPLOY_TOOL} ${CMAKE_INSTALL_PREFIX}/bin)")
