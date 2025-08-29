@@ -75,10 +75,12 @@ QPixmap MediaClip::Thumbnail()
     if (m_Thumbnail.isNull())
     {
         /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-        const SharedPixels im = Media::FirstImage();
+        SharedPixels im = Media::FirstImage();
         QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
 
-        m_Thumbnail = QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format));
+        m_Thumbnail = QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format)).scaledToWidth(400, Qt::SmoothTransformation);
+        /* Clear the data for when required */
+        im->Clear();
     }
 
     return m_Thumbnail;
