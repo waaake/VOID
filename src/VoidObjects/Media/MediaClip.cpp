@@ -141,8 +141,8 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("basepath", rapidjson::Value(m_MediaStruct.Basepath().c_str(), allocator), allocator);
     out.AddMember("name", rapidjson::Value(m_MediaStruct.Name().c_str(), allocator), allocator);
     out.AddMember("extension", rapidjson::Value(m_MediaStruct.Extension().c_str(), allocator), allocator);
-    out.AddMember("start", m_FirstFrame, allocator);
-    out.AddMember("end", m_LastFrame, allocator);
+    out.AddMember("start", static_cast<int64_t>(m_FirstFrame), allocator);
+    out.AddMember("end", static_cast<int64_t>(m_LastFrame), allocator);
     out.AddMember("singlefile", static_cast<int>(m_MediaStruct.SingleFile()), allocator);
 }
 
