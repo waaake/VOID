@@ -43,12 +43,34 @@ public:
         return m_Media->index(m_Media->MediaRow(clip), column); 
     }
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+    
+    const char* TypeName() const override { return "Project"; }
+    
+    /**
+     * Serialize the Project into a string which can be saved anywhere
+     */
+    std::string Document(const std::string& name) const;
+    /**
+     * The serialized string for the project can be used to construct the project from it
+     */
+    static Project* FromDocument(const std::string& document);
+
+    /**
+     * Save Processor: Saves the current State of the Project into the provided file
+     * The provided name is the underlying name of the project to which it will be saved
+     */
+    bool Save();
+    bool Save(const std::string& path, const std::string& name);
+
 protected: /* Members */
     /* The Project holds the media and anything linking to the media */
     MediaModel* m_Media;
 
     /* Name of the Project */
     std::string m_Name;
+    std::string m_Path;
 
     /* If the project is currently active */
     bool m_Active;

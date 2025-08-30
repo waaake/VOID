@@ -133,4 +133,44 @@ void MediaClip::UncacheFrame(v_frame_t frame)
     // emit frameUncached(frame);
 }
 
+void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
+{
+    out.SetObject();
+
+    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+    out.AddMember("basepath", rapidjson::Value(m_MediaStruct.Basepath().c_str(), allocator), allocator);
+    out.AddMember("name", rapidjson::Value(m_MediaStruct.Name().c_str(), allocator), allocator);
+    out.AddMember("extension", rapidjson::Value(m_MediaStruct.Extension().c_str(), allocator), allocator);
+    out.AddMember("start", m_FirstFrame, allocator);
+    out.AddMember("end", m_LastFrame, allocator);
+    out.AddMember("singlefile", static_cast<int>(m_MediaStruct.SingleFile()), allocator);
+}
+
+void MediaClip::Deserialize(const rapidjson::Value& in)
+{
+    /* A Single file is just something like a single image or maybe an audio and a movie like like .mp4, .mov etc. */
+    if (in["singlefile"].GetInt())
+    {
+        Read(
+            MediaStruct(
+                in["basepath"].GetString(),
+                in["name"].GetString(),
+                in["extension"].GetString()
+            )
+        );
+    }
+    else
+    {
+        Read(
+            MediaStruct(
+                in["basepath"].GetString(),
+                in["name"].GetString(),
+                in["extension"].GetString(),
+                in["start"].GetInt64(),
+                in["end"].GetInt64()
+            )
+        );
+    }
+}
+
 VOID_NAMESPACE_CLOSE

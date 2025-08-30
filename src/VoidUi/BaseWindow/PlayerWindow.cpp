@@ -16,6 +16,7 @@
 #include "VoidUi/Media/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Preferences/PreferencesUI.h"
+#include "VoidUi/Project/Browser.h"
 #include "VoidUi/Dock/DockManager.h"
 
 VOID_NAMESPACE_OPEN
@@ -173,6 +174,15 @@ void VoidMainWindow::Build()
     m_NewProjectAction = new QAction("New Project", m_FileMenu);
     m_NewProjectAction->setShortcut(QKeySequence("Ctrl+N"));
 
+    m_SaveProjectAction = new QAction("Save Project", m_FileMenu);
+    m_SaveProjectAction->setShortcut(QKeySequence("Ctrl+S"));
+
+    m_SaveAsProjectAction = new QAction("Save Project As...", m_FileMenu);
+    m_SaveAsProjectAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
+
+    m_LoadProjectAction = new QAction("Open Project...", m_FileMenu);
+    m_LoadProjectAction->setShortcut(QKeySequence("Ctrl+O"));
+
     m_ClearAction = new QAction("Clear", m_FileMenu);
 
     m_CloseAction = new QAction("Close Player", m_FileMenu);
@@ -185,6 +195,9 @@ void VoidMainWindow::Build()
     m_FileMenu->addSeparator();
 
     m_FileMenu->addAction(m_NewProjectAction);
+    m_FileMenu->addAction(m_SaveProjectAction);
+    m_FileMenu->addAction(m_SaveAsProjectAction);
+    m_FileMenu->addAction(m_LoadProjectAction);
 
     /* -------------------------------- */
     m_FileMenu->addSeparator();
@@ -348,6 +361,9 @@ void VoidMainWindow::Connect()
     connect(m_ImportAction, &QAction::triggered, this, &VoidMainWindow::Load);
     connect(m_ImportDirectoryAction, &QAction::triggered, this, &VoidMainWindow::LoadDirectory);
     connect(m_NewProjectAction, &QAction::triggered, this, [this]() { MBridge::Instance().NewProject(); });
+    connect(m_SaveProjectAction, &QAction::triggered, this, &VoidMainWindow::SaveProject);
+    connect(m_SaveAsProjectAction, &QAction::triggered, this, &VoidMainWindow::SaveProjectAs);
+    connect(m_LoadProjectAction, &QAction::triggered, this, &VoidMainWindow::OpenProject);
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
@@ -473,6 +489,53 @@ void VoidMainWindow::LoadDirectory()
 
     /* Import the Media from the directory */
     m_Bridge.ImportDirectory(mediaBrowser.SelectedDirectory());
+}
+
+void VoidMainWindow::OpenProject()
+{
+    VoidProjectBrowser browser;
+    
+    if (!browser.Browse())
+    {
+        VOID_LOG_INFO("User Cancelled Opening.");
+        return;
+    }
+
+    VoidFileDescriptor d = browser.File();
+    m_Bridge.Load(d.path);
+}
+
+void VoidMainWindow::SaveProject()
+{
+    if (!m_Bridge.Save())
+    {
+        VOID_LOG_INFO("Not able to save project. Opening Save As Dialog...");
+
+        VoidProjectBrowser browser;
+        
+        if (!browser.Save())
+        {
+            VOID_LOG_INFO("User Cancelled Saving.");
+            return;
+        }
+    
+        VoidFileDescriptor d = browser.File();
+        m_Bridge.Save(d.path, d.name);
+    }
+}
+
+void VoidMainWindow::SaveProjectAs()
+{
+    VoidProjectBrowser browser;
+    
+    if (!browser.Save())
+    {
+        VOID_LOG_INFO("User Cancelled Saving.");
+        return;
+    }
+
+    VoidFileDescriptor d = browser.File();
+    m_Bridge.Save(d.path, d.name);
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)

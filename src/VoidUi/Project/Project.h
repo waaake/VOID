@@ -35,6 +35,11 @@ public:
 
     void ImportDirectory(const std::string& directory);
 
+    /**
+     * The serialized string for the project can be used to construct the project from it
+     */
+    static Project* FromDocument(const std::string& document);
+
 private: /* Members */
     QUndoStack* m_UndoStack;
     ProgressTask* m_ProgressTask;

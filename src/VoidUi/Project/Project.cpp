@@ -13,6 +13,8 @@ VOID_NAMESPACE_OPEN
 
 Project::Project(const std::string& name, bool active, QObject* parent)
     : Core::Project(name, active, parent)
+    , m_ProgressTask(nullptr)
+    , m_DirectoryImporter(nullptr)
 {
     m_UndoStack = new QUndoStack(this);
 }
@@ -68,6 +70,17 @@ void Project::ImportDirectory(const std::string& directory)
 
     /* Start Import process */
     thread->start();
+}
+
+Project* Project::FromDocument(const std::string& document)
+{
+    rapidjson::Document doc;
+    doc.Parse(document.c_str());
+
+    Project* p = new Project(doc["name"].GetString(), true);
+    p->Deserialize(doc["Project"]);
+
+    return p;
 }
 
 void Project::SetupProgressTask()

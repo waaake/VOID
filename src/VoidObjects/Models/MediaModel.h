@@ -61,6 +61,13 @@ public:
 
     void Clear() { m_Media.clear(); }
 
+    /* Iterator */
+    inline std::vector<SharedMediaClip>::const_iterator cbegin() const noexcept { return m_Media.cbegin(); }
+    inline std::vector<SharedMediaClip>::const_iterator cend() const noexcept { return m_Media.cend(); }
+
+    inline std::vector<SharedMediaClip>::iterator begin() noexcept { return m_Media.begin(); }
+    inline std::vector<SharedMediaClip>::iterator end() noexcept { return m_Media.end(); }
+
 private: /* Members */
     std::vector<SharedMediaClip> m_Media;
 

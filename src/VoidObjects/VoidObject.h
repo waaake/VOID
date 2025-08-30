@@ -4,6 +4,10 @@
 #ifndef _VOID_OBJECT_H
 #define _VOID_OBJECT_H
 
+/* JSON */
+#include <rapidjson/document.h>
+#include <rapidjson/allocators.h>
+
 /* Qt*/
 #include <QObject>
 
@@ -25,6 +29,11 @@ public:
         result.append(m_Vuid.str()).append("}");
         return result;
     }
+
+    virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const {}
+    virtual void Deserialize(const rapidjson::Value& in) {}
+    /* The type name in the serialization document */
+    virtual const char* TypeName() const { return "VoidObject"; }
 
 private: /* Members */
     VUID m_Vuid;

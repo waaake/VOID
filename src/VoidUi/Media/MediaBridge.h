@@ -90,6 +90,13 @@ public:
     QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoGroup->createUndoAction(parent, prefix); }
     QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoGroup->createRedoAction(parent, prefix); }
 
+    /**
+     * Project I/O processors
+     */
+    bool Save();
+    bool Save(const std::string& path, const std::string& name);
+    void Load(const std::string& path);
+
 signals:
     /**
      * Media Graph Signals

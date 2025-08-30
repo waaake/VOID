@@ -44,6 +44,7 @@ set(SOURCES
     Player/ViewerBuffer.cpp
 
     # Project
+    Project/Browser.cpp
     Project/Project.cpp
     Project/Importer.cpp
     Project/Views/ProjectView.cpp

@@ -190,4 +190,53 @@ void MBridge::PushCommand(QUndoCommand* command)
         m_Project->PushCommand(command);
 }
 
+bool MBridge::Save()
+{
+    if (!m_Project)
+        return false;
+
+    if (m_Project->Save())
+    {
+        /* Force Update on the Model */
+        m_Projects->Refresh();
+        return true;
+    }
+
+    return false;
+}
+
+bool MBridge::Save(const std::string& path, const std::string& name)
+{
+    if (!m_Project)
+        return false;
+
+    if (m_Project->Save(path, name))
+    {
+        /* Force Update on the Model */
+        m_Projects->Refresh();
+        return true;
+    }
+
+    return false;
+}
+
+void MBridge::Load(const std::string& path)
+{
+    std::ifstream in(path);
+
+    if (!in.is_open())
+    {
+        VOID_LOG_ERROR("Failed to Open File {0}", path);
+        return;
+    }
+
+    std::stringstream buffer;
+    buffer << in.rdbuf();
+    SetActiveProject(Project::FromDocument(buffer.str()));
+
+    /* Add to the projects */
+    m_Projects->Add(m_Project);
+    emit projectCreated(m_Project);
+}
+
 VOID_NAMESPACE_CLOSE

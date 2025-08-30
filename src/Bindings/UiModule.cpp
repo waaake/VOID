@@ -23,6 +23,7 @@ void BindUi(py::module_& m)
 
     m.def("active_player", &UIGlobals::GetActivePlayer, py::return_value_policy::reference);
     m.def("active_project", []() { return MBridge::Instance().ActiveProject(); }, py::return_value_policy::reference);
+    m.def("load_project", [](const std::string& path) { MBridge::Instance().Load(path); }, py::arg("path"));
 
     /* Player */
     py::class_<Player>(m, "Player")
@@ -39,7 +40,9 @@ void BindUi(py::module_& m)
 
     /* Project */
     py::class_<Project>(m, "Project")
-        .def("add_media", &Project::AddMedia, py::arg("media_clip"));
+        .def("add_media", &Project::AddMedia, py::arg("media_clip"))
+        .def("document", &Project::Document, py::arg("name"))
+        .def("save", static_cast<bool (Project::*)(const std::string&, const std::string&)>(&Project::Save), py::arg("path"), py::arg("name"));
 }
 
 } // namespace bindings

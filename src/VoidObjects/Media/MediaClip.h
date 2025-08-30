@@ -112,6 +112,11 @@ public:
     inline SharedPixels FirstImage() { return Image(FirstFrame()); }
     inline SharedPixels LastImage() { return Image(LastFrame()); }
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+
+    const char* TypeName() const override { return "Media"; }
+
 signals: /* Signals defining any change that has happened */
     /*
      * Defines if the media or any entity internally has been updated
