@@ -70,6 +70,7 @@ set(SOURCES
     # QExtensions
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
+    QExtensions/MessageBox.cpp
     QExtensions/ProgressTask.cpp
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp

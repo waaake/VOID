@@ -103,6 +103,7 @@ private: /* Members */
     QAction* m_SaveProjectAction;
     QAction* m_SaveAsProjectAction;
     QAction* m_LoadProjectAction;
+    QAction* m_CloseProjectAction;
     QAction* m_CloseAction;
 
     /* Edit Menu */
@@ -167,6 +168,7 @@ public:
     void SaveProject();
     void SaveProjectAs();
     void OpenProject();
+    void CloseProject();
 
     /* Clears and sets the provided media on the player */
     void SetMedia(const SharedMediaClip& media);

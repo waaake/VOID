@@ -96,6 +96,7 @@ public:
     bool Save();
     bool Save(const std::string& path, const std::string& name);
     void Load(const std::string& path);
+    bool Close(bool force = false);
 
 signals:
     /**

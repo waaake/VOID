@@ -236,7 +236,35 @@ void MBridge::Load(const std::string& path)
 
     /* Add to the projects */
     m_Projects->Add(m_Project);
+    m_Project->SetSavePath(path);
+
     emit projectCreated(m_Project);
+}
+
+bool MBridge::Close(bool force)
+{
+    if (!m_Project)
+        return true; // No project to close
+
+    /* Project needs saving if not forced*/
+    if (m_Project->Modified() && !force)
+        return false;
+
+    /* Case where the current project is the last one */
+    bool create = m_Projects->rowCount() == 1;
+    
+    int row = m_Projects->ProjectRow(m_Project);
+    QModelIndex index = m_Projects->index(row, 0);
+
+    /* Remove the targeted project */
+    m_Projects->Remove(index);
+
+    if (create)
+        NewProject();
+    else
+        SetCurrentProject(m_Projects->index(row == 0 ? ++row : --row, 0));
+
+    return true;
 }
 
 VOID_NAMESPACE_CLOSE

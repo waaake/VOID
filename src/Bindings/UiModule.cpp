@@ -42,6 +42,7 @@ void BindUi(py::module_& m)
     py::class_<Project>(m, "Project")
         .def("add_media", &Project::AddMedia, py::arg("media_clip"))
         .def("document", &Project::Document, py::arg("name"))
+        .def("modified", &Project::Modified)
         .def("save", static_cast<bool (Project::*)(const std::string&, const std::string&)>(&Project::Save), py::arg("path"), py::arg("name"));
 }
 

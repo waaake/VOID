@@ -18,6 +18,7 @@
 #include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/Project/Browser.h"
 #include "VoidUi/Dock/DockManager.h"
+#include "VoidUi/QExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -183,6 +184,9 @@ void VoidMainWindow::Build()
     m_LoadProjectAction = new QAction("Open Project...", m_FileMenu);
     m_LoadProjectAction->setShortcut(QKeySequence("Ctrl+O"));
 
+    m_CloseProjectAction = new QAction("Close Project", m_FileMenu);
+    m_CloseProjectAction->setShortcut(QKeySequence("Ctrl+W"));
+
     m_ClearAction = new QAction("Clear", m_FileMenu);
 
     m_CloseAction = new QAction("Close Player", m_FileMenu);
@@ -198,6 +202,7 @@ void VoidMainWindow::Build()
     m_FileMenu->addAction(m_SaveProjectAction);
     m_FileMenu->addAction(m_SaveAsProjectAction);
     m_FileMenu->addAction(m_LoadProjectAction);
+    m_FileMenu->addAction(m_CloseProjectAction);
 
     /* -------------------------------- */
     m_FileMenu->addSeparator();
@@ -364,6 +369,7 @@ void VoidMainWindow::Connect()
     connect(m_SaveProjectAction, &QAction::triggered, this, &VoidMainWindow::SaveProject);
     connect(m_SaveAsProjectAction, &QAction::triggered, this, &VoidMainWindow::SaveProjectAs);
     connect(m_LoadProjectAction, &QAction::triggered, this, &VoidMainWindow::OpenProject);
+    connect(m_CloseProjectAction, &QAction::triggered, this, &VoidMainWindow::CloseProject);
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
@@ -536,6 +542,24 @@ void VoidMainWindow::SaveProjectAs()
 
     VoidFileDescriptor d = browser.File();
     m_Bridge.Save(d.path, d.name);
+}
+
+void VoidMainWindow::CloseProject()
+{
+    /* Any modifications in the project which needs to be saved */
+    if (!m_Bridge.Close())
+    {
+        SaveMessageBox box;
+        QMessageBox::StandardButton ret = box.Prompt();
+
+        if (ret == QMessageBox::Save)
+            SaveProject();
+        else if (ret == QMessageBox::Cancel)
+            return;
+    }
+
+    /* Force Close the project*/
+    m_Bridge.Close(true);
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)

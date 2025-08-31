@@ -22,6 +22,7 @@ Project::Project(const std::string& name, bool active, QObject* parent)
     , m_Name(name)
     , m_Path("")
     , m_Active(active)
+    , m_Modified(false)
 {
     m_Media = new MediaModel(this);
     VOID_LOG_INFO("Project {0} Created: {1}", name, Vuid());
@@ -37,6 +38,27 @@ Project::~Project()
     m_Media->deleteLater();
     delete m_Media;
     m_Media = nullptr;
+}
+
+void Project::AddMedia(const SharedMediaClip& media)
+{
+    m_Media->Add(media);
+    /* Update the modification state for the project */
+    m_Modified = true;
+}
+
+void Project::InsertMedia(const SharedMediaClip& media, const int index)
+{
+    m_Media->Insert(media, index);
+    /* Update the modification state for the project */
+    m_Modified = true;
+}
+
+void Project::RemoveMedia(const QModelIndex& index)
+{
+    m_Media->Remove(index);
+    /* Update the modification state for the project */
+    m_Modified = true;
 }
 
 void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
@@ -113,21 +135,10 @@ bool Project::Save()
     if (m_Path.empty())
         return false;
 
-    std::ofstream out(m_Path);
-    if (!out.is_open())
-    {
-        VOID_LOG_ERROR("Not Able to save to Path: {0}", m_Path);
-        return false;
-    }
-
-    /* Serialize and onto the file */
-    out << Document(m_Name);
-    out.close();
-
-    return true;    
+    return SaveInternal(m_Path, m_Name);
 }
 
-bool Project::Save(const std::string& path, const std::string& name)
+bool Project::SaveInternal(const std::string& path, const std::string& name)
 {
     std::ofstream out(path);
     if (!out.is_open())
@@ -144,6 +155,8 @@ bool Project::Save(const std::string& path, const std::string& name)
     out << Document(name);
     out.close();
 
+    /* The project is No longer modified */
+    m_Modified = false;
     return true;
 }
 

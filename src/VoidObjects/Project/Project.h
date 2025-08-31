@@ -30,10 +30,17 @@ public:
 
     inline bool Active() const { return m_Active; }
     inline void SetActive(bool active) { m_Active = active; }
+   
+    /**
+     * Returns whether any changes have been made to the project since it was last saved
+     * (or hasn't been saved at all) or modified since it was created
+     */
+    inline bool Modified() const { return m_Modified; }
     
-    inline void AddMedia(const SharedMediaClip& media) { m_Media->Add(media); }
-    inline void InsertMedia(const SharedMediaClip& media, const int index) { m_Media->Insert(media, index); }
-    inline void RemoveMedia(const QModelIndex& index) { m_Media->Remove(index); }
+    void AddMedia(const SharedMediaClip& media);
+    void InsertMedia(const SharedMediaClip& media, const int index);
+    void RemoveMedia(const QModelIndex& index);
+
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
 
@@ -62,7 +69,13 @@ public:
      * The provided name is the underlying name of the project to which it will be saved
      */
     bool Save();
-    bool Save(const std::string& path, const std::string& name);
+    inline bool Save(const std::string& path, const std::string& name) { return SaveInternal(path, name); }
+    
+    /**
+     * Update the path for the project on which it will save to
+     * if this is defined, the project can directly be saved without explicitly providing a path to save onto
+     */
+    inline void SetSavePath(const std::string& path) { m_Path = path; }
 
 protected: /* Members */
     /* The Project holds the media and anything linking to the media */
@@ -74,6 +87,10 @@ protected: /* Members */
 
     /* If the project is currently active */
     bool m_Active;
+    bool m_Modified;
+
+private: /* Methods */
+    bool SaveInternal(const std::string& path, const std::string& name);
 };
 
 } // namespace Core
