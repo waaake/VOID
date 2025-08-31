@@ -49,6 +49,7 @@ public:
         const std::string& name,
         const std::string& extension,
         v_frame_t frame = 0,
+        unsigned int padding = 0,
         bool singlefile = false
     );
 
@@ -62,7 +63,8 @@ public:
     inline const std::string& Name() const { return m_Name; }
     inline const std::string& Extension() const { return m_Extension; }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
-    
+    inline unsigned int Framepadding() const { return m_FramePadding; }
+
     /**
      * Returns True if the Media does not have a frame number on it to denote that this
      * file is a separate single entity
@@ -90,6 +92,12 @@ private: /* Members */
     std::string m_Basepath;
     std::string m_Name;
     std::string m_Extension;
+
+    /**
+     * Describes how many 0's are present pre-frame number
+     * e.g. frame 1 can be 1 with 1 padding and 001 with 3 padding
+     */
+    unsigned int m_FramePadding;
 
     /**
      *  Not All files would have this
@@ -127,6 +135,7 @@ private: /* Methods */
      * not allow it to be converted to an integer frame number
      */
     bool ValidFrame(const std::string& framestring) const;
+    std::string PaddedFrame(v_frame_t frame) const;
 };
 
 struct VOID_API MHelper
@@ -192,13 +201,15 @@ public:
             const std::string& name,
             const std::string& extension,
             v_frame_t start,
-            v_frame_t end
+            v_frame_t end,
+            unsigned int padding
     );
     MediaStruct(const std::string& basepath,
             const std::string& name,
             const std::string& extension,
             v_frame_t start,
             v_frame_t end,
+            unsigned int padding,
             const std::vector<v_frame_t>& missing
     );
 
@@ -242,6 +253,8 @@ public:
 
     std::string FirstPath() const;
     [[nodiscard]] bool SingleFile() const;
+
+    unsigned int Framepadding() const;
 
     /**
      * Returns whether the media struct is currently empty

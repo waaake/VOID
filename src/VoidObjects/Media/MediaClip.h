@@ -41,6 +41,7 @@ public:
             const std::string& extension,
             v_frame_t start,
             v_frame_t end,
+            unsigned int padding,
             QObject* parent = nullptr
     );
     MediaClip(const std::string& basepath,
@@ -48,6 +49,7 @@ public:
             const std::string& extension,
             v_frame_t start,
             v_frame_t end,
+            unsigned int padding,
             const std::vector<v_frame_t>& missing,
             QObject* parent = nullptr
     );

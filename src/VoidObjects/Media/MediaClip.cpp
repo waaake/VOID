@@ -41,10 +41,11 @@ MediaClip::MediaClip(const std::string& basepath,
         const std::string& extension,
         v_frame_t start,
         v_frame_t end,
+        unsigned int padding,
         QObject* parent
     )
     : VoidObject(parent)
-    , Media(basepath, name, extension, start, end)
+    , Media(basepath, name, extension, start, end, padding)
     , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
@@ -55,11 +56,12 @@ MediaClip::MediaClip(const std::string& basepath,
         const std::string& extension,
         v_frame_t start,
         v_frame_t end,
+        unsigned int padding,
         const std::vector<v_frame_t>& missing,
         QObject* parent
     )
     : VoidObject(parent)
-    , Media(basepath, name, extension, start, end, missing)
+    , Media(basepath, name, extension, start, end, padding, missing)
     , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
@@ -144,6 +146,7 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("start", static_cast<int64_t>(m_FirstFrame), allocator);
     out.AddMember("end", static_cast<int64_t>(m_LastFrame), allocator);
     out.AddMember("singlefile", static_cast<int>(m_MediaStruct.SingleFile()), allocator);
+    out.AddMember("framePadding", static_cast<unsigned int>(m_MediaStruct.Framepadding()), allocator);
 }
 
 void MediaClip::Deserialize(const rapidjson::Value& in)
@@ -167,7 +170,8 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
                 in["name"].GetString(),
                 in["extension"].GetString(),
                 in["start"].GetInt64(),
-                in["end"].GetInt64()
+                in["end"].GetInt64(),
+                in["framePadding"].GetUint()
             )
         );
     }

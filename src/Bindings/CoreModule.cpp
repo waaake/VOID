@@ -48,8 +48,8 @@ void BindCore(py::module_& m)
     py::class_<MediaStruct>(m, "MediaStruct")
         .def(py::init<const MEntry&, const MediaType&>(), py::arg("media_entry"), py::arg("media_type"))
     
-        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t>(), 
-                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"))
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int>(), 
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"))
 
         .def_static("from_file", &MediaStruct::FromFile, py::arg("filepath"))
         .def("add", &MediaStruct::Add, py::arg("media_entry"))
@@ -77,8 +77,8 @@ void BindCore(py::module_& m)
     py::class_<Media>(m, "Media")
         .def(py::init<const MediaStruct&>(), py::arg("media_struct"))
 
-        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t>(),
-                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"))
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int>(),
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"))
 
         .def("get_frame", &Media::GetFrame, py::arg("frame"));
 
@@ -89,11 +89,11 @@ void BindCore(py::module_& m)
         .def(py::init<const std::string&, const std::string&, const std::string&>(), py::arg("basepath"),
                                                                                 py::arg("name"), py::arg("extension"))
 
-        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t>(),
-                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"))
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int>(),
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"))
 
-        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, const std::vector<v_frame_t>&>(),
-                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("missing"))
+        .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int, const std::vector<v_frame_t>&>(),
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"), py::arg("missing"))
 
         .def("basepath", &MediaClip::Path)
         .def("name", &MediaClip::Name)
