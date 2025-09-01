@@ -147,10 +147,22 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("end", static_cast<int64_t>(m_LastFrame), allocator);
     out.AddMember("singlefile", static_cast<int>(m_MediaStruct.SingleFile()), allocator);
     out.AddMember("framePadding", static_cast<unsigned int>(m_MediaStruct.Framepadding()), allocator);
+
+    /* Save any missing frames from the media */
+    rapidjson::Value missingFrames(rapidjson::kArrayType);
+    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    {
+        if (m_Mediaframes.find(i) == m_Mediaframes.end())
+            missingFrames.PushBack(static_cast<int64_t>(i), allocator);
+    }
+
+    out.AddMember("missingFrames", missingFrames, allocator);
 }
 
 void MediaClip::Deserialize(const rapidjson::Value& in)
 {
+    const rapidjson::Value::ConstArray missingFrames = in["missingFrames"].GetArray();
+
     /* A Single file is just something like a single image or maybe an audio and a movie like like .mp4, .mov etc. */
     if (in["singlefile"].GetInt())
     {
@@ -162,7 +174,7 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
             )
         );
     }
-    else
+    else if (missingFrames.Empty())
     {
         Read(
             MediaStruct(
@@ -174,6 +186,26 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
                 in["framePadding"].GetUint()
             )
         );
+    }
+    else
+    {
+        std::vector<v_frame_t> missing;
+        missing.reserve(missingFrames.Size());
+
+        for (int i = 0; i < missingFrames.Size(); ++i)
+            missing.emplace_back(missingFrames[i].GetInt64());
+
+        Read(
+            MediaStruct(
+                in["basepath"].GetString(),
+                in["name"].GetString(),
+                in["extension"].GetString(),
+                in["start"].GetInt64(),
+                in["end"].GetInt64(),
+                in["framePadding"].GetUint(),
+                missing
+            )
+        );   
     }
 }
 
