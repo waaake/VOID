@@ -7,6 +7,7 @@
 /* Internal */
 #include "Browser.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -14,7 +15,7 @@ VoidProjectBrowser::VoidProjectBrowser(QWidget* parent)
     : QFileDialog(parent)
 {
     setOption(QFileDialog::DontUseNativeDialog);
-    setNameFilter("VOID State Files (*.vois)");
+    setNameFilter("VOID Element State (*.ether)");
 }
 
 VoidProjectBrowser::~VoidProjectBrowser()
@@ -42,9 +43,9 @@ VoidFileDescriptor VoidProjectBrowser::File() const
     QString filepath = selectedFiles().first();
 
     /* Add Extension if not already added */
-    if (!filepath.endsWith(".vois", Qt::CaseSensitive))
+    if (!filepath.endsWith(EtherFormat::AsciiExt, Qt::CaseSensitive))
     {
-        filepath += ".vois";
+        filepath += EtherFormat::AsciiExt;
     }
 
     std::filesystem::path p(filepath.toStdString());

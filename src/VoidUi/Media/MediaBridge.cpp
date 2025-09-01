@@ -222,11 +222,20 @@ bool MBridge::Save(const std::string& path, const std::string& name)
 
 void MBridge::Load(const std::string& path)
 {
-    std::ifstream in(path);
-
+    std::ifstream in(path, std::ios::binary);
     if (!in.is_open())
     {
         VOID_LOG_ERROR("Failed to Open File {0}", path);
+        return;
+    }
+
+    /* Read the File header to understand whether this is a valid file */
+    char header[EtherFormat::MAGIC_SIZE] = {};
+    in.read(header, EtherFormat::MAGIC_SIZE);
+
+    if (!EtherFormat::ValidateHeader(header))
+    {
+        VOID_LOG_INFO("Invalid File format");
         return;
     }
 

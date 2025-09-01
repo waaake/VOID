@@ -152,6 +152,8 @@ bool Project::SaveInternal(const std::string& path, const std::string& name)
     m_Name = name;
 
     /* Serialize and onto the file */
+    out.write(EtherFormat::ASCII_MAGIC, EtherFormat::MAGIC_SIZE);
+    out << '\n';
     out << Document(name);
     out.close();
 
