@@ -5,7 +5,7 @@ add_library(
     Renderer.h
     Renderer.cpp
     RendererStatus.cpp
-    RenderTypes.h
+    RenderTypes.cpp
     VoidRenderer.h
     VoidRenderer.cpp
 

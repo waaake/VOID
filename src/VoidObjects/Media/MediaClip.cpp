@@ -157,6 +157,22 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     }
 
     out.AddMember("missingFrames", missingFrames, allocator);
+
+    rapidjson::Value annotations(rapidjson::kArrayType);
+    for (const auto& data: m_Annotations)
+    {
+        rapidjson::Value entry(rapidjson::kObjectType);
+        entry.AddMember("frame", static_cast<int64_t>(data.first), allocator);
+
+        /* Serialize Annotation Data */
+        rapidjson::Value annotation;
+        data.second->Serialize(annotation, allocator);
+        entry.AddMember("data", annotation, allocator);
+
+        annotations.PushBack(entry, allocator);
+    }
+
+    out.AddMember("annotations", annotations, allocator);
 }
 
 void MediaClip::Deserialize(const rapidjson::Value& in)
@@ -206,6 +222,18 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
                 missing
             )
         );   
+    }
+
+    const rapidjson::Value::ConstArray annotations = in["annotations"].GetArray();
+    if (!annotations.Empty())
+    {
+        for (int i = 0; i < annotations.Size(); ++i)
+        {
+            Renderer::SharedAnnotation annotation = std::make_shared<Renderer::Annotation>();
+            annotation->Deserialize(annotations[i]["data"]);
+
+            m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
+        }
     }
 }
 
