@@ -7,7 +7,7 @@
 /* Internal */
 #include "Browser.h"
 #include "VoidCore/Logging.h"
-#include "VoidObjects/VoidObject.h"
+#include "VoidCore/Serialization.h"
 
 VOID_NAMESPACE_OPEN
 

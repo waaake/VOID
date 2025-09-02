@@ -14,7 +14,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidObject : public QObject
+class VoidObject : public QObject, public SerializableEntity
 {
 public:
     VoidObject(QObject* parent = nullptr) : QObject(parent), m_Vuid() {}
@@ -27,10 +27,9 @@ public:
         return result;
     }
 
-    virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const {}
-    virtual void Deserialize(const rapidjson::Value& in) {}
-    /* The type name in the serialization document */
-    virtual const char* TypeName() const { return "VoidObject"; }
+    virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override {}
+    virtual void Deserialize(const rapidjson::Value& in) override {}
+    virtual const char* TypeName() const override { return "VoidObject"; }
 
 private: /* Members */
     VUID m_Vuid;

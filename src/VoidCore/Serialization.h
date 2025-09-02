@@ -41,6 +41,8 @@ class VOID_API SerializableEntity
 public:
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const = 0;
     virtual void Deserialize(const rapidjson::Value& in) = 0;
+
+    /* The type name in the serialization document */
     virtual const char* TypeName() const = 0;
 };
 
