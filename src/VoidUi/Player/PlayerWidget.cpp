@@ -234,8 +234,8 @@ void Player::Load(const SharedMediaClip& media)
     m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
     /* Clear any cached frame markings from the timeline */
     m_Timeline->ClearCachedFrames();
-    /* Then set the First Image on the Player */
-    m_Renderer->Render(media->FirstImage());
+
+    SetMediaFrame(m_Timeline->Frame());
 }
 
 void Player::Load(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
