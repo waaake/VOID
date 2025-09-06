@@ -100,6 +100,10 @@ private: /* Members */
     QAction* m_ImportDirectoryAction;
     QAction* m_ClearAction;
     QAction* m_NewProjectAction;
+    QAction* m_SaveProjectAction;
+    QAction* m_SaveAsProjectAction;
+    QAction* m_LoadProjectAction;
+    QAction* m_CloseProjectAction;
     QAction* m_CloseAction;
 
     /* Edit Menu */
@@ -160,6 +164,12 @@ private: /* Members */
 public:
     void Load();
     void LoadDirectory();
+
+    void SaveProject();
+    void SaveProjectAs();
+    void OpenProject();
+    void CloseProject();
+
     /* Clears and sets the provided media on the player */
     void SetMedia(const SharedMediaClip& media);
     /* Adds media onto the existing track */

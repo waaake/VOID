@@ -44,6 +44,7 @@ set(SOURCES
     Player/ViewerBuffer.cpp
 
     # Project
+    Project/Browser.cpp
     Project/Project.cpp
     Project/Importer.cpp
     Project/Views/ProjectView.cpp
@@ -69,6 +70,7 @@ set(SOURCES
     # QExtensions
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
+    QExtensions/MessageBox.cpp
     QExtensions/ProgressTask.cpp
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp

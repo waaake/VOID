@@ -17,6 +17,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidCore/Serialization.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -68,12 +69,20 @@ static const std::map<BlendMode, std::string> BlendModesMap =
 /**
  * Holds information about the Annotation Vertex
  */
-struct AnnotatedVertex
+struct VOID_API AnnotatedVertex
 {
     /* Position of the Vertex */
     glm::vec2 position;
     /* Normal direction of the Vertex */
     glm::vec2 normal;
+
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const;
+    void Serialize(std::ostream& out) const;
+
+    void Deserialize(const rapidjson::Value& in);
+    void Deserialize(std::istream& in);
+
+    inline const char* TypeName() const { return "Vertex"; }
 };
 
 /**
@@ -82,7 +91,7 @@ struct AnnotatedVertex
  * defined color and brush size (thickness)
  * The brush size defines how thick will the line be drawn on the viewport
  */
-struct Stroke
+struct VOID_API Stroke : public SerializableEntity
 {
     /* All of the Annotated Vertices (points) */
     std::vector<AnnotatedVertex> vertices;
@@ -97,13 +106,21 @@ struct Stroke
     inline int Size() const noexcept { return vertices.size(); }
     inline const AnnotatedVertex* Data() const noexcept { return vertices.data(); }
     inline void Clear() { vertices.clear(); }
+
+    virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    virtual void Serialize(std::ostream& out) const override;
+
+    virtual void Deserialize(const rapidjson::Value& in) override;
+    virtual void Deserialize(std::istream& in) override;
+
+    inline virtual const char* TypeName() const override { return "Stroke"; }
 };
 
 /**
  * RenderText is a collection of Characters to be rendered
  * as annoatated text
  */
-struct RenderText
+struct VOID_API RenderText : public SerializableEntity
 {
     /* The Text to be rendered on the screen */
     std::string text;
@@ -119,6 +136,14 @@ struct RenderText
 
     inline bool Empty() const noexcept { return text.empty(); }
     inline void Clear() { text.clear(); }
+
+    virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    virtual void Serialize(std::ostream& out) const override;
+
+    virtual void Deserialize(const rapidjson::Value& in) override;
+    virtual void Deserialize(std::istream& in) override;
+
+    inline virtual const char* TypeName() const override { return "RenderText"; }
 };
 
 /**
@@ -127,7 +152,7 @@ struct RenderText
  * Current Set of AnnotatedVertices
  * Committed/Saved Strokes (the Annotated Vertices with information like color and size)
  */
-struct VOID_API Annotation
+struct VOID_API Annotation : public SerializableEntity
 {
     /**
      * Collection of Strokes
@@ -168,6 +193,14 @@ struct VOID_API Annotation
         texts.clear();
         draft.Clear();
     }
+
+    virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    virtual void Serialize(std::ostream& out) const override;
+
+    virtual void Deserialize(const rapidjson::Value& in) override;
+    virtual void Deserialize(std::istream& in) override;
+
+    inline virtual const char* TypeName() const override { return "Annotation"; }
 };
 
 typedef std::shared_ptr<Annotation> SharedAnnotation;

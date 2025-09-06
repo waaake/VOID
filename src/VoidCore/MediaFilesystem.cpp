@@ -2,6 +2,8 @@
 // Licensed under the MIT License
 
 /* STD */
+#include <iomanip>
+#include <sstream>
 #include <unordered_set>
 
 /* Internal */
@@ -39,6 +41,7 @@ MEntry::MEntry()
     , m_Name("")
     , m_Extension("")
     , m_Framenumber(0)
+    , m_FramePadding(0)
     , m_SingleFile(false)
 {
 }
@@ -50,16 +53,17 @@ MEntry::MEntry(const std::string& path)
     Parse(path);
 }
 
-MEntry::MEntry(const std::string& basepath, const std::string& name, const std::string& extension, v_frame_t frame, bool singlefile)
+MEntry::MEntry(const std::string& basepath, const std::string& name, const std::string& extension, v_frame_t frame, unsigned int padding, bool singlefile)
     : m_Basepath(basepath)
     , m_Name(name)
     , m_Extension(extension)
     , m_Framenumber(frame)
+    , m_FramePadding(padding)
     , m_SingleFile(singlefile)
 {
     std::filesystem::path path = std::filesystem::path(m_Basepath) / name;
     if (!singlefile)
-        path += "." + std::to_string(frame);
+        path += "." + PaddedFrame(frame);
 
     path += "." + extension;
     m_Path = path.string();
@@ -107,6 +111,7 @@ void MEntry::Parse(const std::string& path)
      */
     if (ValidFrame(framestring))
     {
+        m_FramePadding = framestring.size();
         m_Framenumber = std::stol(framestring);
         m_Name = remaining.substr(0, lastDot);
     }
@@ -133,6 +138,13 @@ bool MEntry::ValidFrame(const std::string& framestring) const
     return true;
 }
 
+std::string MEntry::PaddedFrame(v_frame_t frame) const
+{
+    std::stringstream ss;
+    ss << std::setw(m_FramePadding) << std::setfill('0') << frame;
+    return ss.str();
+}
+
 /* }}} */
 
 /* Media Struct {{{ */
@@ -155,7 +167,7 @@ MediaStruct::~MediaStruct()
 MediaStruct::MediaStruct(const std::string& basepath, const std::string& name, const std::string& extension)
 {
     /* This is a Single file */
-    MEntry e = MEntry(basepath, name, extension, 0, true);
+    MEntry e = MEntry(basepath, name, extension, 0, 0, true);
     Reset(e, MHelper::GetMediaType(e));
 }
 
@@ -163,7 +175,8 @@ MediaStruct::MediaStruct(const std::string& basepath,
                     const std::string& name,
                     const std::string& extension,
                     v_frame_t start,
-                    v_frame_t end
+                    v_frame_t end,
+                    unsigned int padding
                 )
 {
     /* Clear underlying structs */
@@ -174,7 +187,7 @@ MediaStruct::MediaStruct(const std::string& basepath,
 
     for (v_frame_t frame = start; frame <= end; ++frame)
     {
-        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, false));
+        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, padding,false));
         m_Frames.emplace_back(frame);
     }
 
@@ -187,6 +200,7 @@ MediaStruct::MediaStruct(const std::string& basepath,
                     const std::string& extension,
                     v_frame_t start,
                     v_frame_t end,
+                    unsigned int padding,
                     const std::vector<v_frame_t>& missing
                 )
 {
@@ -203,7 +217,7 @@ MediaStruct::MediaStruct(const std::string& basepath,
         if (missingSet.count(frame))
             continue;
 
-        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, false));
+        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, padding,false));
         m_Frames.emplace_back(frame);
     }
 
@@ -312,6 +326,15 @@ bool MediaStruct::SingleFile() const
         return false;
 
     return m_Entries.begin()->second.SingleFile();
+}
+
+unsigned int MediaStruct::Framepadding() const
+{
+    /* Empty container */
+    if (m_Entries.empty())
+        return 0;
+
+    return m_Entries.begin()->second.Framepadding();
 }
 
 MEntry MediaStruct::First() const

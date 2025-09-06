@@ -35,6 +35,7 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
     ${OpenImageIO_INCLUDE_DIRS}
+    ${RapidJSON_INCLUDE_DIRS}
 )
 
 # Logging

@@ -56,7 +56,7 @@ public:
     void Remove(const QModelIndex& index);
 
     Core::Project* GetProject(const QModelIndex& index) const;
-    int ProjectRow(const Core::Project* clip) const;
+    int ProjectRow(const Core::Project* project) const;
 
     void Clear();
 

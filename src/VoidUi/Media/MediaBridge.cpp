@@ -190,4 +190,98 @@ void MBridge::PushCommand(QUndoCommand* command)
         m_Project->PushCommand(command);
 }
 
+bool MBridge::Save()
+{
+    if (!m_Project)
+        return false;
+
+    if (m_Project->Save())
+    {
+        /* Force Update on the Model */
+        m_Projects->Refresh();
+        return true;
+    }
+
+    return false;
+}
+
+bool MBridge::Save(const std::string& path, const std::string& name, const EtherFormat::Type& type)
+{
+    if (!m_Project)
+        return false;
+
+    if (m_Project->Save(path, name, type))
+    {
+        /* Force Update on the Model */
+        m_Projects->Refresh();
+        return true;
+    }
+
+    return false;
+}
+
+void MBridge::Load(const std::string& path)
+{
+    std::ifstream in(path, std::ios::binary);
+    if (!in.is_open())
+    {
+        VOID_LOG_ERROR("Failed to Open File {0}", path);
+        return;
+    }
+
+    /* Read the File header to understand whether this is a valid file */
+    char header[EtherFormat::MAGIC_SIZE] = {};
+    in.read(header, EtherFormat::MAGIC_SIZE);
+
+    EtherFormat::Type type = EtherFormat::FileType(header);
+    if (type == EtherFormat::Type::INVALID)
+    {
+        VOID_LOG_INFO("Invalid File format");
+        return;
+    }
+
+    if (type == EtherFormat::Type::ASCII)
+    {
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        SetActiveProject(Project::FromDocument(buffer.str()));
+    }
+    else
+    {
+        SetActiveProject(Project::FromStream(in));
+    }
+
+    /* Add to the projects */
+    m_Projects->Add(m_Project);
+    m_Project->SetSavePath(path);
+
+    emit projectCreated(m_Project);
+}
+
+bool MBridge::Close(bool force)
+{
+    if (!m_Project)
+        return true; // No project to close
+
+    /* Project needs saving if not forced*/
+    if (m_Project->Modified() && !force)
+        return false;
+
+    /* Case where the current project is the last one */
+    bool create = m_Projects->rowCount() == 1;
+    
+    int row = m_Projects->ProjectRow(m_Project);
+    QModelIndex index = m_Projects->index(row, 0);
+
+    /* Remove the targeted project */
+    m_Projects->Remove(index);
+
+    if (create)
+        NewProject();
+    else
+        SetCurrentProject(m_Projects->index(row == 0 ? ++row : --row, 0));
+
+    return true;
+}
+
 VOID_NAMESPACE_CLOSE

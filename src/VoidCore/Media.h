@@ -96,13 +96,15 @@ public:
         const std::string& name,
         const std::string& extension,
         v_frame_t start,
-        v_frame_t end
+        v_frame_t end,
+        unsigned int padding
     );
     Media(const std::string& basepath,
         const std::string& name,
         const std::string& extension,
         v_frame_t start,
         v_frame_t end,
+        unsigned int padding,
         const std::vector<v_frame_t>& missing
     );
 

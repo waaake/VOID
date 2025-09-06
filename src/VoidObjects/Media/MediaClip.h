@@ -41,6 +41,7 @@ public:
             const std::string& extension,
             v_frame_t start,
             v_frame_t end,
+            unsigned int padding,
             QObject* parent = nullptr
     );
     MediaClip(const std::string& basepath,
@@ -48,6 +49,7 @@ public:
             const std::string& extension,
             v_frame_t start,
             v_frame_t end,
+            unsigned int padding,
             const std::vector<v_frame_t>& missing,
             QObject* parent = nullptr
     );
@@ -111,6 +113,14 @@ public:
 
     inline SharedPixels FirstImage() { return Image(FirstFrame()); }
     inline SharedPixels LastImage() { return Image(LastFrame()); }
+
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+
+    void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
+
+    const char* TypeName() const override { return "Media"; }
 
 signals: /* Signals defining any change that has happened */
     /*

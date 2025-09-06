@@ -154,11 +154,12 @@ Media::Media(const std::string& basepath,
         const std::string& name,
         const std::string& extension,
         v_frame_t start,
-        v_frame_t end
+        v_frame_t end,
+        unsigned int padding
     )
     : Media()
 {
-    Read(MediaStruct(basepath, name, extension, start, end));
+    Read(MediaStruct(basepath, name, extension, start, end, padding));
 }
 
 Media::Media(const std::string& basepath,
@@ -166,11 +167,12 @@ Media::Media(const std::string& basepath,
         const std::string& extension,
         v_frame_t start,
         v_frame_t end,
+        unsigned int padding,
         const std::vector<v_frame_t>& missing
     )
     : Media()
 {
-    Read(MediaStruct(basepath, name, extension, start, end, missing));
+    Read(MediaStruct(basepath, name, extension, start, end, padding, missing));
 }
 
 
