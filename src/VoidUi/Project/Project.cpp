@@ -83,6 +83,19 @@ Project* Project::FromDocument(const std::string& document)
     return p;
 }
 
+Project* Project::FromStream(std::istream& in)
+{
+    const std::string name = ReadString(in);
+    
+    int version;
+    in.read(reinterpret_cast<char*>(&version), sizeof(version));
+
+    Project* p = new Project(name, true);
+    p->Deserialize(in);
+
+    return p;
+}
+
 void Project::SetupProgressTask()
 {
     m_ProgressTask = new ProgressTask;

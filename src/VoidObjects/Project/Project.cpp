@@ -21,6 +21,7 @@ Project::Project(const std::string& name, bool active, QObject* parent)
     : VoidObject(parent)
     , m_Name(name)
     , m_Path("")
+    , m_Type(EtherFormat::Type::ASCII)
     , m_Active(active)
     , m_Modified(false)
 {
@@ -78,17 +79,43 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
     out.AddMember("Clips", clips, allocator);
 }
 
+void Project::Serialize(std::ostream& out) const
+{
+    uint32_t count = static_cast<uint32_t>(m_Media->rowCount());
+    out.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    /* Serialize each of the clip data */
+    for (const SharedMediaClip& clip : *m_Media)
+        clip->Serialize(out);
+}
+
 void Project::Deserialize(const rapidjson::Value& in)
 {
     Tools::VoidProfiler<std::chrono::duration<double>> p("Deserialize Project");
 
     const rapidjson::Value::ConstArray clips = in["Clips"].GetArray();
-    VOID_LOG_INFO("Loading Clips: {0}", clips.Size());
 
     for (int i = 0; i < clips.Size(); ++i)
     {
         SharedMediaClip clip = std::make_shared<MediaClip>();
         clip->Deserialize(clips[i]);
+
+        /* Add the Deserialized clip back */
+        m_Media->Add(clip);
+    }
+}
+
+void Project::Deserialize(std::istream& in)
+{
+    Tools::VoidProfiler<std::chrono::duration<double>> p("Deserialize Project");
+
+    uint32_t count;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        SharedMediaClip clip = std::make_shared<MediaClip>();
+        clip->Deserialize(in);
 
         /* Add the Deserialized clip back */
         m_Media->Add(clip);
@@ -118,6 +145,16 @@ std::string Project::Document(const std::string& name) const
     return buffer.GetString();
 }
 
+void Project::ToStream(std::ostream& out, const std::string& name) const
+{
+    WriteString(out, name);
+
+    int version = VOID_VERSION_NUMBER;
+    out.write(reinterpret_cast<const char*>(&version), sizeof(version));
+
+    Serialize(out);
+}
+
 Project* Project::FromDocument(const std::string& document)
 {
     rapidjson::Document doc;
@@ -129,16 +166,37 @@ Project* Project::FromDocument(const std::string& document)
     return p;
 }
 
+Project* Project::FromStream(std::istream& in)
+{
+    const std::string name = ReadString(in);
+
+    int version;
+    in.read(reinterpret_cast<char*>(&version), sizeof(version));
+
+    Project* p = new Project(name, true);
+    p->Deserialize(in);
+
+    return p;
+}
+
 bool Project::Save()
 {
     /* The project hasn't been saved yet */
     if (m_Path.empty())
         return false;
 
-    return SaveInternal(m_Path, m_Name);
+    return SaveInternal(m_Path, m_Name, m_Type);
 }
 
-bool Project::SaveInternal(const std::string& path, const std::string& name)
+bool Project::SaveInternal(const std::string& path, const std::string& name, const EtherFormat::Type& type)
+{
+    if (type == EtherFormat::Type::ASCII)
+        return SaveAscii(path, name);
+
+    return SaveBinary(path, name);
+}
+
+bool Project::SaveAscii(const std::string& path, const std::string& name)
 {
     std::ofstream out(path);
     if (!out.is_open())
@@ -150,11 +208,36 @@ bool Project::SaveInternal(const std::string& path, const std::string& name)
     /* Update internals */
     m_Path = path;
     m_Name = name;
+    m_Type = EtherFormat::Type::ASCII;
 
     /* Serialize and onto the file */
     out.write(EtherFormat::ASCII_MAGIC, EtherFormat::MAGIC_SIZE);
     out << '\n';
     out << Document(name);
+    out.close();
+
+    /* The project is No longer modified */
+    m_Modified = false;
+    return true;
+}
+
+bool Project::SaveBinary(const std::string& path, const std::string& name)
+{
+    std::ofstream out(path, std::ios::binary);
+    if (!out.is_open())
+    {
+        VOID_LOG_ERROR("Not Able to save to Path: {0}", path);
+        return false;
+    }
+
+    /* Update Internals */
+    m_Path = path;
+    m_Name = name;
+    m_Type = EtherFormat::Type::BINARY;
+
+    out.write(EtherFormat::BINARY_MAGIC, EtherFormat::MAGIC_SIZE);
+    /* Now serialize all content on the binary */
+    ToStream(out, name);
     out.close();
 
     /* The project is No longer modified */

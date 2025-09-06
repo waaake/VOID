@@ -526,7 +526,7 @@ void VoidMainWindow::SaveProject()
         }
     
         VoidFileDescriptor d = browser.File();
-        m_Bridge.Save(d.path, d.name);
+        m_Bridge.Save(d.path, d.name, d.type);
     }
 }
 
@@ -541,7 +541,7 @@ void VoidMainWindow::SaveProjectAs()
     }
 
     VoidFileDescriptor d = browser.File();
-    m_Bridge.Save(d.path, d.name);
+    m_Bridge.Save(d.path, d.name, d.type);
 }
 
 void VoidMainWindow::CloseProject()

@@ -7,15 +7,17 @@
 /* Internal */
 #include "Browser.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Serialization.h"
 
 VOID_NAMESPACE_OPEN
+
+const QString ascii = "VOID Element State (*.ether)";
+const QString binary = "VOID Dark State (*.nether)";
 
 VoidProjectBrowser::VoidProjectBrowser(QWidget* parent)
     : QFileDialog(parent)
 {
     setOption(QFileDialog::DontUseNativeDialog);
-    setNameFilter("VOID Element State (*.ether)");
+    setNameFilters({ ascii, binary });
 }
 
 VoidProjectBrowser::~VoidProjectBrowser()
@@ -41,15 +43,29 @@ bool VoidProjectBrowser::Save()
 VoidFileDescriptor VoidProjectBrowser::File() const
 {
     QString filepath = selectedFiles().first();
+    QString filter = selectedNameFilter();
 
-    /* Add Extension if not already added */
-    if (!filepath.endsWith(EtherFormat::AsciiExt, Qt::CaseSensitive))
+    EtherFormat::Type type;
+
+    if (filter == ascii)
     {
-        filepath += EtherFormat::AsciiExt;
+        type = EtherFormat::Type::ASCII;
+
+        /* Add Extension if not already added */
+        if (!filepath.endsWith(EtherFormat::AsciiExt, Qt::CaseSensitive))
+            filepath += EtherFormat::AsciiExt;
+    }
+    else
+    {
+        type = EtherFormat::Type::BINARY;
+
+        /* Add Extension if not already added */
+        if (!filepath.endsWith(EtherFormat::BinaryExt, Qt::CaseSensitive))
+            filepath += EtherFormat::BinaryExt;
     }
 
     std::filesystem::path p(filepath.toStdString());
-    return { p.string(), p.stem().string() };
+    return { p.string(), p.stem().string(), type };
 }
 
 VOID_NAMESPACE_CLOSE

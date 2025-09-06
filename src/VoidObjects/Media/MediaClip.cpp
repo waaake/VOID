@@ -175,6 +175,21 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("annotations", annotations, allocator);
 }
 
+void MediaClip::Serialize(std::ostream& out) const
+{   
+    WriteString(out, m_MediaStruct.Basepath());
+    WriteString(out, m_MediaStruct.Name());
+    WriteString(out, m_MediaStruct.Extension());
+
+    bool singlefile = m_MediaStruct.SingleFile();
+    unsigned int padding = m_MediaStruct.Framepadding();
+
+    out.write(reinterpret_cast<const char*>(&m_FirstFrame), sizeof(v_frame_t));
+    out.write(reinterpret_cast<const char*>(&m_LastFrame), sizeof(v_frame_t));
+    out.write(reinterpret_cast<const char*>(&singlefile), sizeof(singlefile));
+    out.write(reinterpret_cast<const char*>(&padding), sizeof(padding));
+}
+
 void MediaClip::Deserialize(const rapidjson::Value& in)
 {
     const rapidjson::Value::ConstArray missingFrames = in["missingFrames"].GetArray();
@@ -234,6 +249,31 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
 
             m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
         }
+    }
+}
+
+void MediaClip::Deserialize(std::istream& in)
+{
+    std::string path = ReadString(in);
+    std::string name = ReadString(in);
+    std::string extension = ReadString(in);
+
+    v_frame_t start, end;
+    bool singlefile;
+    unsigned int padding;
+
+    in.read(reinterpret_cast<char*>(&start), sizeof(v_frame_t));
+    in.read(reinterpret_cast<char*>(&end), sizeof(v_frame_t));
+    in.read(reinterpret_cast<char*>(&singlefile), sizeof(bool));
+    in.read(reinterpret_cast<char*>(&padding), sizeof(unsigned int));
+
+    if (singlefile)
+    {
+        Read(MediaStruct(path, name, extension));
+    }
+    else
+    {
+        Read(MediaStruct(path, name, extension, start, end, padding));
     }
 }
 

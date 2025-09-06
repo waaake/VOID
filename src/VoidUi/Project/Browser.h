@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidCore/Serialization.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -16,6 +17,7 @@ struct VoidFileDescriptor
 {
     std::string path;
     std::string name;
+    EtherFormat::Type type;
 };
 
 class VoidProjectBrowser : public QFileDialog

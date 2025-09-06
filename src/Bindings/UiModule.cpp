@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidCore/Serialization.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Project/Project.h"
@@ -39,11 +40,23 @@ void BindUi(py::module_& m)
         .def("load", py::overload_cast<const SharedMediaClip&>(&Player::Load), py::arg("media_clip"));
 
     /* Project */
-    py::class_<Project>(m, "Project")
+    py::class_<Project> project(m, "Project");
+
+    /* Project Save Type*/
+    py::enum_<EtherFormat::Type>(project, "EtherFormat")
+        .value("Ascii", EtherFormat::Type::ASCII)
+        .value("Binary", EtherFormat::Type::BINARY)
+        .export_values();
+
+    project
         .def("add_media", &Project::AddMedia, py::arg("media_clip"))
         .def("document", &Project::Document, py::arg("name"))
         .def("modified", &Project::Modified)
-        .def("save", static_cast<bool (Project::*)(const std::string&, const std::string&)>(&Project::Save), py::arg("path"), py::arg("name"));
+        .def(
+            "save",
+            static_cast<bool (Project::*)(const std::string&, const std::string&, const EtherFormat::Type&)>(&Project::Save),
+            py::arg("path"), py::arg("name"), py::arg("type")
+        );
 }
 
 } // namespace bindings

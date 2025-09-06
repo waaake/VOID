@@ -39,6 +39,10 @@ public:
      * The serialized string for the project can be used to construct the project from it
      */
     static Project* FromDocument(const std::string& document);
+    /**
+     * Construct the Project from the input stream of the data
+     */
+    static Project* FromStream(std::istream& in);
 
 private: /* Members */
     QUndoStack* m_UndoStack;

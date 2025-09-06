@@ -205,12 +205,12 @@ bool MBridge::Save()
     return false;
 }
 
-bool MBridge::Save(const std::string& path, const std::string& name)
+bool MBridge::Save(const std::string& path, const std::string& name, const EtherFormat::Type& type)
 {
     if (!m_Project)
         return false;
 
-    if (m_Project->Save(path, name))
+    if (m_Project->Save(path, name, type))
     {
         /* Force Update on the Model */
         m_Projects->Refresh();
@@ -233,15 +233,23 @@ void MBridge::Load(const std::string& path)
     char header[EtherFormat::MAGIC_SIZE] = {};
     in.read(header, EtherFormat::MAGIC_SIZE);
 
-    if (!EtherFormat::ValidateHeader(header))
+    EtherFormat::Type type = EtherFormat::FileType(header);
+    if (type == EtherFormat::Type::INVALID)
     {
         VOID_LOG_INFO("Invalid File format");
         return;
     }
 
-    std::stringstream buffer;
-    buffer << in.rdbuf();
-    SetActiveProject(Project::FromDocument(buffer.str()));
+    if (type == EtherFormat::Type::ASCII)
+    {
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        SetActiveProject(Project::FromDocument(buffer.str()));
+    }
+    else
+    {
+        SetActiveProject(Project::FromStream(in));
+    }
 
     /* Add to the projects */
     m_Projects->Add(m_Project);

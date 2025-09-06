@@ -115,7 +115,10 @@ public:
     inline SharedPixels LastImage() { return Image(LastFrame()); }
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+
     void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
 
     const char* TypeName() const override { return "Media"; }
 

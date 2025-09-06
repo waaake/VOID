@@ -28,7 +28,11 @@ public:
     }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override {}
+    virtual void Serialize(std::ostream& out) const override {}
+
     virtual void Deserialize(const rapidjson::Value& in) override {}
+    virtual void Deserialize(std::istream& in) override {}
+
     virtual const char* TypeName() const override { return "VoidObject"; }
 
 private: /* Members */

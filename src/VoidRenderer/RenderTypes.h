@@ -104,7 +104,11 @@ struct VOID_API Stroke : public SerializableEntity
     inline void Clear() { vertices.clear(); }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
-    virtual void Deserialize(const rapidjson::Value& in);
+    virtual void Serialize(std::ostream& out) const override {}
+
+    virtual void Deserialize(const rapidjson::Value& in) override;
+    virtual void Deserialize(std::istream& out) override {}
+
     inline virtual const char* TypeName() const override { return "Stroke"; }
 };
 
@@ -130,7 +134,11 @@ struct VOID_API RenderText : public SerializableEntity
     inline void Clear() { text.clear(); }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    virtual void Serialize(std::ostream& out) const override {}
+
     virtual void Deserialize(const rapidjson::Value& in) override;
+    virtual void Deserialize(std::istream& out) override {}
+
     inline virtual const char* TypeName() const override { return "RenderText"; }
 };
 
@@ -183,7 +191,11 @@ struct VOID_API Annotation : public SerializableEntity
     }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    virtual void Serialize(std::ostream& out) const override {}    
+
     virtual void Deserialize(const rapidjson::Value& in) override;
+    virtual void Deserialize(std::istream& out) override {}
+
     inline virtual const char* TypeName() const override { return "Annotation"; }
 };
 

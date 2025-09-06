@@ -94,7 +94,7 @@ public:
      * Project I/O processors
      */
     bool Save();
-    bool Save(const std::string& path, const std::string& name);
+    bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type = EtherFormat::Type::ASCII);
     void Load(const std::string& path);
     bool Close(bool force = false);
 

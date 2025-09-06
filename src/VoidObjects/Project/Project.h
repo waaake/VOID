@@ -51,7 +51,10 @@ public:
     }
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+
     void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
     
     const char* TypeName() const override { return "Project"; }
     
@@ -65,11 +68,20 @@ public:
     static Project* FromDocument(const std::string& document);
 
     /**
+     * Serialize the Project into an output stream which can be saved anywhere
+     */
+    void ToStream(std::ostream& out, const std::string& name) const;
+    /**
+     * Construct the Project from the input stream of the data
+     */
+    static Project* FromStream(std::istream& in);
+    
+    /**
      * Save Processor: Saves the current State of the Project into the provided file
      * The provided name is the underlying name of the project to which it will be saved
      */
     bool Save();
-    inline bool Save(const std::string& path, const std::string& name) { return SaveInternal(path, name); }
+    inline bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type) { return SaveInternal(path, name, type); }
     
     /**
      * Update the path for the project on which it will save to
@@ -81,16 +93,19 @@ protected: /* Members */
     /* The Project holds the media and anything linking to the media */
     MediaModel* m_Media;
 
-    /* Name of the Project */
+    /* Project Descriptors */
     std::string m_Name;
     std::string m_Path;
+    EtherFormat::Type m_Type;
 
     /* If the project is currently active */
     bool m_Active;
     bool m_Modified;
 
 private: /* Methods */
-    bool SaveInternal(const std::string& path, const std::string& name);
+    bool SaveInternal(const std::string& path, const std::string& name, const EtherFormat::Type& type);
+    bool SaveAscii(const std::string& path, const std::string& name);
+    bool SaveBinary(const std::string& path, const std::string& name);
 };
 
 } // namespace Core
