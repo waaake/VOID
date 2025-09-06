@@ -77,7 +77,11 @@ struct VOID_API AnnotatedVertex
     glm::vec2 normal;
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const;
+    void Serialize(std::ostream& out) const;
+
     void Deserialize(const rapidjson::Value& in);
+    void Deserialize(std::istream& in);
+
     inline const char* TypeName() const { return "Vertex"; }
 };
 
@@ -104,10 +108,10 @@ struct VOID_API Stroke : public SerializableEntity
     inline void Clear() { vertices.clear(); }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
-    virtual void Serialize(std::ostream& out) const override {}
+    virtual void Serialize(std::ostream& out) const override;
 
     virtual void Deserialize(const rapidjson::Value& in) override;
-    virtual void Deserialize(std::istream& out) override {}
+    virtual void Deserialize(std::istream& in) override;
 
     inline virtual const char* TypeName() const override { return "Stroke"; }
 };
@@ -134,10 +138,10 @@ struct VOID_API RenderText : public SerializableEntity
     inline void Clear() { text.clear(); }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
-    virtual void Serialize(std::ostream& out) const override {}
+    virtual void Serialize(std::ostream& out) const override;
 
     virtual void Deserialize(const rapidjson::Value& in) override;
-    virtual void Deserialize(std::istream& out) override {}
+    virtual void Deserialize(std::istream& in) override;
 
     inline virtual const char* TypeName() const override { return "RenderText"; }
 };
@@ -191,10 +195,10 @@ struct VOID_API Annotation : public SerializableEntity
     }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
-    virtual void Serialize(std::ostream& out) const override {}    
+    virtual void Serialize(std::ostream& out) const override;
 
     virtual void Deserialize(const rapidjson::Value& in) override;
-    virtual void Deserialize(std::istream& out) override {}
+    virtual void Deserialize(std::istream& in) override;
 
     inline virtual const char* TypeName() const override { return "Annotation"; }
 };

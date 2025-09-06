@@ -188,6 +188,40 @@ void MediaClip::Serialize(std::ostream& out) const
     out.write(reinterpret_cast<const char*>(&m_LastFrame), sizeof(v_frame_t));
     out.write(reinterpret_cast<const char*>(&singlefile), sizeof(singlefile));
     out.write(reinterpret_cast<const char*>(&padding), sizeof(padding));
+
+    /**
+     * We do not know at this point about how many frames are missing,
+     * so reserve the space to hold the count of how many frames are missing
+     * once we know the count after the loop -> come back at this position and write back at this
+     */
+    std::streampos countPos = out.tellp();
+    uint32_t count = 0;
+    out.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    {
+        if (m_Mediaframes.find(i) == m_Mediaframes.end())
+        {
+            out.write(reinterpret_cast<const char*>(&i), sizeof(i));
+            count++;
+        }
+    }
+
+    /* Seek back and write the count on the missing frames */
+    out.seekp(countPos);
+    out.write(reinterpret_cast<const char*>(&count), sizeof(count));
+    /* Back to the end to contine for other data/clips */
+    out.seekp(0, std::ios::end);
+
+    /* Annotations */
+    int64_t annotationCount = m_Annotations.size();
+    out.write(reinterpret_cast<const char*>(&annotationCount), sizeof(annotationCount));
+
+    for (const auto& data : m_Annotations)
+    {
+        out.write(reinterpret_cast<const char*>(&data.first), sizeof(v_frame_t));
+        data.second->Serialize(out);
+    }
 }
 
 void MediaClip::Deserialize(const rapidjson::Value& in)
@@ -261,19 +295,41 @@ void MediaClip::Deserialize(std::istream& in)
     v_frame_t start, end;
     bool singlefile;
     unsigned int padding;
+    uint32_t missingCount = 0;
+    uint64_t annotationCount = 0;
 
     in.read(reinterpret_cast<char*>(&start), sizeof(v_frame_t));
     in.read(reinterpret_cast<char*>(&end), sizeof(v_frame_t));
-    in.read(reinterpret_cast<char*>(&singlefile), sizeof(bool));
-    in.read(reinterpret_cast<char*>(&padding), sizeof(unsigned int));
+    in.read(reinterpret_cast<char*>(&singlefile), sizeof(singlefile));
+    in.read(reinterpret_cast<char*>(&padding), sizeof(padding));
+    in.read(reinterpret_cast<char*>(&missingCount), sizeof(missingCount));
 
     if (singlefile)
     {
         Read(MediaStruct(path, name, extension));
     }
+    else if (missingCount)
+    {
+        std::vector<v_frame_t> missing(missingCount);
+        in.read(reinterpret_cast<char*>(missing.data()), missingCount * sizeof(v_frame_t));
+
+        Read(MediaStruct(path, name, extension, start, end, padding, missing));
+    }
     else
     {
         Read(MediaStruct(path, name, extension, start, end, padding));
+    }
+
+    in.read(reinterpret_cast<char*>(&annotationCount), sizeof(annotationCount));
+    for (uint64_t i = 0; i < annotationCount; ++i)
+    {
+        v_frame_t f;
+        in.read(reinterpret_cast<char*>(&f), sizeof(f));
+
+        Renderer::SharedAnnotation annotation = std::make_shared<Renderer::Annotation>();
+        annotation->Deserialize(in);
+
+        m_Annotations[f] = annotation;
     }
 }
 
