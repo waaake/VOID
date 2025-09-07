@@ -108,6 +108,7 @@ public:
      */
     Renderer::SharedAnnotation Annotation(const v_frame_t frame) const;
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
+    std::vector<int> AnnotatedFrames() const;
 
     QPixmap Thumbnail();
 

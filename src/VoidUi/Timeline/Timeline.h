@@ -85,6 +85,10 @@ public:
 	inline void AddAnnotatedFrame(int frame) { m_Timeslider->AddAnnotatedFrame(frame); }
 	inline void RemoveAnnotatedFrame(int frame) { m_Timeslider->RemoveAnnotatedFrame(frame); }
 	inline void ClearAnnotatedFrames() { m_Timeslider->ClearAnnotatedFrames(); }
+	inline void SetAnnotatedFrames(const std::vector<int>& frames) { m_Timeslider->SetAnnotatedFrames(frames); }
+	inline void SetAnnotatedFrames(std::vector<int>&& frames) { m_Timeslider->SetAnnotatedFrames(std::move(frames)); }
+
+	void Clear();
 
 signals:
 	void Played(const PlayState& type = PlayState::FORWARDS);

@@ -48,6 +48,8 @@ public:
 	void AddAnnotatedFrame(int frame);
 	void RemoveAnnotatedFrame(int frame);
 	void ClearAnnotatedFrames();
+	void SetAnnotatedFrames(const std::vector<int>& frames);
+	void SetAnnotatedFrames(std::vector<int>&& frame);
 
 	/**
 	 * Checks whether a given frame is in Playable range

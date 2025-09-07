@@ -215,6 +215,7 @@ void Player::Clear()
      * Clear the data from the player
      */
     m_Timeline->SetRange(0, 1);
+    m_Timeline->Clear();
     m_Renderer->Clear();
 }
 
@@ -233,7 +234,8 @@ void Player::Load(const SharedMediaClip& media)
      */
     m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
     /* Clear any cached frame markings from the timeline */
-    m_Timeline->ClearCachedFrames();
+    m_Timeline->Clear();
+    m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
 }
@@ -263,7 +265,7 @@ void Player::Load(const SharedPlaybackTrack& track)
      */
     m_Timeline->SetRange(track->StartFrame(), track->EndFrame());
     /* Clear any cached frame markings from the timeline */
-    m_Timeline->ClearCachedFrames();
+    m_Timeline->Clear();
     /* Then set the First Image on the Player */
     SetTrackFrame(m_Timeline->Frame());
 }
@@ -279,7 +281,7 @@ void Player::Load(const SharedPlaybackSequence& sequence)
      */
     m_Timeline->SetRange(sequence->StartFrame(), sequence->EndFrame());
     /* Clear any cached frame markings from the timeline */
-    m_Timeline->ClearCachedFrames();
+    m_Timeline->Clear();
 
     /* Render the current frame from the seqeunce */
     SetSequenceFrame(m_Timeline->Frame());
