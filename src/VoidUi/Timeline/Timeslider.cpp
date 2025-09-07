@@ -412,6 +412,20 @@ void Timeslider::RemoveAnnotatedFrame(int frame)
 	}
 }
 
+void Timeslider::SetAnnotatedFrames(const std::vector<int>& frames)
+{
+	m_AnnotatedFrames = frames;
+	/* Redraw */
+	update();
+}
+
+void Timeslider::SetAnnotatedFrames(std::vector<int>&& frames)
+{
+	m_AnnotatedFrames = std::move(frames);
+	/* Redraw */
+	update();
+}
+
 void Timeslider::ClearAnnotatedFrames()
 {
 	/* Clear All frames that were marked annotated */

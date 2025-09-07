@@ -123,6 +123,17 @@ void MediaClip::RemoveAnnotation(const v_frame_t frame)
     VOID_LOG_INFO("Annotation Removed. Frame {0}", frame);
 }
 
+std::vector<int> MediaClip::AnnotatedFrames() const
+{
+    std::vector<int> frames;
+    frames.reserve(m_Annotations.size());
+
+    for (const auto& [key, _] : m_Annotations)
+        frames.emplace_back(key);
+
+    return frames;
+}
+
 void MediaClip::CacheFrame(v_frame_t frame)
 {
     m_Mediaframes.at(frame).Cache();

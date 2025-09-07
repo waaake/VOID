@@ -307,6 +307,12 @@ void Timeline::ResetRange()
 	m_OutFrameButton->Toggle(false);
 }
 
+void Timeline::Clear()
+{
+	m_Timeslider->ClearAnnotatedFrames();
+	m_Timeslider->ClearCachedFrames();
+}
+
 void Timeline::SetUserFirstframe(int frame)
 {
 	/* Check if the end frame is lesser than the provided start frame */
