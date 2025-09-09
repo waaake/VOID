@@ -100,6 +100,10 @@ void Frame::ClearCache()
 {
     if (!m_ImageData->Empty())
     {
+        /**
+         * Don't allow concurrent access when clearing the underlying data vector
+         */
+        std::lock_guard<std::mutex> guard(m_Mutex);
         m_ImageData->Clear();
         // VOID_LOG_INFO("Cleared Frame Cache: {0}", m_Framenumber);
     }

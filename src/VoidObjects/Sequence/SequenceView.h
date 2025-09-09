@@ -24,7 +24,7 @@ VOID_NAMESPACE_OPEN
  * range of the current track item, and returns accordingly
  * This improves the overall accessing complexity in terms of time
  */
-class SequenceView : public QObject
+class VOID_API SequenceView : public QObject
 {
 public:
     SequenceView(const SharedPlaybackSequence& sequence, QObject* parent = nullptr);

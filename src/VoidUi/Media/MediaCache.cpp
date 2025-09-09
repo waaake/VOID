@@ -75,7 +75,7 @@ void ChronoFlux::StartPlaybackCache(const Direction& direction)
     }
 
     m_CacheDirection = direction;
-    m_CacheTimer.start(1000);
+    m_CacheTimer.start(10);
 
     if (!m_ThreadPool.activeThreadCount())
     {
@@ -278,8 +278,6 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
     {
         if (evict)
         {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-
             if (m_CacheDirection == Direction::Backwards)
             {
                 EvictBack();
@@ -432,7 +430,6 @@ void ChronoFlux::EnsureCached(v_frame_t frame)
 {
     if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) == m_Framenumbers.end())
     {
-        // std::cout << m_Framenumbers << std::endl;
         VOID_LOG_INFO("Force Caching Frame: {0}", frame);
         {
             std::lock_guard<std::mutex> lock(m_Mutex);
@@ -557,7 +554,7 @@ void ChronoFlux::CacheNext()
     while (!m_Framenumbers.empty())
     {
         /* Ensure the cached frame is just between the current frame and the back buffer */
-        if (m_Player->Frame() - m_BackBuffer < m_Framenumbers.front() && m_Framenumbers.front() < m_Player->Frame())
+        if (m_Player->Frame() - m_BackBuffer < m_Framenumbers.front() && m_Framenumbers.front() <= m_Player->Frame())
             break;
 
         frame++;
@@ -567,7 +564,6 @@ void ChronoFlux::CacheNext()
 
         Request(frame, true);
         AddTask(new CacheNextFrameTask(this));
-        // CacheNextFrameTask(this).run();
     }
 }
 
@@ -579,7 +575,7 @@ void ChronoFlux::CachePrevious()
     while (!m_Framenumbers.empty())
     {
         /* Ensure the cached frame is just between the current frame and the back buffer */
-        if (m_Player->Frame() + m_BackBuffer > m_Framenumbers.back() && m_Framenumbers.back() > m_Player->Frame())
+        if (m_Player->Frame() + m_BackBuffer > m_Framenumbers.back() && m_Framenumbers.back() >= m_Player->Frame())
             break;
 
         frame--;

@@ -24,7 +24,7 @@ VOID_NAMESPACE_OPEN
  * range of the current track item, and returns accordingly
  * This improves the overall accessing complexity in terms of time
  */
-class TrackView : public QObject
+class VOID_API TrackView : public QObject
 {
 public:
     TrackView(const SharedPlaybackTrack& track, QObject* parent = nullptr);
