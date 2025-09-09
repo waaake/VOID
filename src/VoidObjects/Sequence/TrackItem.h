@@ -56,6 +56,10 @@ public:
      */
     void Cache();
 
+    void CacheFrame(v_frame_t frame);
+    void UncacheFrame(v_frame_t frame);
+    inline size_t FrameSize() { return m_Media->FrameSize(); }
+
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }

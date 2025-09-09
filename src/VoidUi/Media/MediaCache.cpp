@@ -28,8 +28,11 @@ VOID_NAMESPACE_OPEN
 
 ChronoFlux::ChronoFlux(QObject* parent)
     : QObject(parent)
+    , m_TrackView(nullptr)
+    , m_SequenceView(nullptr)
     , m_CacheDirection(Direction::None)
     , m_State(State::Enabled)
+    , m_CacheEntity(Entity::Media)
     , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
     , m_UsedMemory(0)
     , m_FrameSize(0)
@@ -48,6 +51,20 @@ ChronoFlux::ChronoFlux(QObject* parent)
 ChronoFlux::~ChronoFlux()
 {
     ClearCache();
+
+    if (m_TrackView)
+    {
+        m_TrackView->deleteLater();
+        delete m_TrackView;
+        m_TrackView = nullptr;
+    }
+
+    if (m_SequenceView)
+    {
+        m_SequenceView->deleteLater();
+        delete m_SequenceView;
+        m_SequenceView = nullptr;
+    }
 }
 
 void ChronoFlux::StartPlaybackCache(const Direction& direction)
@@ -124,24 +141,99 @@ void ChronoFlux::Update()
     VOID_LOG_INFO("Update Cache.....");
 }
 
+void ChronoFlux::UpdateRange(v_frame_t start, v_frame_t end)
+{
+    m_StartFrame = start;
+    m_EndFrame = end;
+    m_Duration = (m_EndFrame - m_StartFrame) + 1;
+
+    /**
+     * The Back buffer refers to the amount of frames which stay behind the playhead
+     * This needs to be between 3 - 10 depending on the overall size of the entity
+     * being played
+     */
+    m_BackBuffer = std::min(10, std::max(3, static_cast<int>(m_Duration * 0.02)));
+}
+
 void ChronoFlux::SetMedia(const SharedMediaClip& media)
 {
+    m_CacheEntity = Entity::Media;
     /* Clear Existing Media cache if present */
     ClearCache();
 
     m_Media = media;
-
-    m_StartFrame = media->FirstFrame();
-    m_EndFrame = media->LastFrame();
-    m_Duration = media->Duration();
-
-    m_BackBuffer = std::max(3, static_cast<int>(m_Duration * 0.02));
+    UpdateRange(media->FirstFrame(), media->LastFrame());
 
     /**
      * Ensure that the first frame is cached
      * This helps with the understanding of the frame size of the media
      */
     EnsureCached(media->FirstFrame());
+
+    /**
+     * Cache all of the available frames what the memory limit allows to
+     */
+    CacheAvailable();
+
+    /* If the Cache was paused, it can be resumed now */
+    if (m_State == State::Paused)
+        m_State = State::Enabled;
+}
+
+void ChronoFlux::SetTrack(const SharedPlaybackTrack& track)
+{
+    m_CacheEntity = Entity::Track;
+    /* Clear Existing Media cache if present */
+    ClearCache();
+
+    if (m_TrackView)
+    {
+        m_TrackView->deleteLater();
+        delete m_TrackView;
+        m_TrackView = nullptr;
+    }
+
+    // m_Track = track;
+    m_TrackView = new TrackView(track);
+    UpdateRange(track->StartFrame(), track->EndFrame());
+
+    /**
+     * Ensure that the first frame is cached
+     * This helps with the understanding of the frame size of the media
+     */
+    EnsureCached(track->StartFrame());
+
+    /**
+     * Cache all of the available frames what the memory limit allows to
+     */
+    CacheAvailable();
+
+    /* If the Cache was paused, it can be resumed now */
+    if (m_State == State::Paused)
+        m_State = State::Enabled;
+}
+
+void ChronoFlux::SetSequence(const SharedPlaybackSequence& sequence)
+{
+    m_CacheEntity = Entity::Sequence;
+    /* Clear Existing Media cache if present */
+    ClearCache();
+
+    if (m_SequenceView)
+    {
+        m_SequenceView->deleteLater();
+        delete m_SequenceView;
+        m_SequenceView = nullptr;
+    }
+
+    m_SequenceView = new SequenceView(sequence);
+    UpdateRange(sequence->StartFrame(), sequence->EndFrame());
+
+    /**
+     * Ensure that the first frame is cached
+     * This helps with the understanding of the frame size of the media
+     */
+    EnsureCached(sequence->StartFrame());
 
     /**
      * Cache all of the available frames what the memory limit allows to
@@ -186,6 +278,8 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
     {
         if (evict)
         {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+
             if (m_CacheDirection == Direction::Backwards)
             {
                 EvictBack();
@@ -217,15 +311,56 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
 
 void ChronoFlux::Cache(v_frame_t frame)
 {
+    if (m_CacheEntity == Entity::Track)
+    {
+        SharedTrackItem item = m_TrackView->ItemAt(frame);
+
+        if (!item)
+            return;
+
+        item->CacheFrame(frame);
+        m_FrameSize = item->FrameSize();
+
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            /* Mark that the frame has been cached now */
+            m_Player->AddCacheFrame(frame);
+        }
+
+        return;
+    }
+
+    if (m_CacheEntity == Entity::Sequence)
+    {
+        SharedTrackItem item = m_SequenceView->ItemAt(frame);
+
+        if (!item)
+            return;
+
+        item->CacheFrame(frame);
+        m_FrameSize = item->FrameSize();
+
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            /* Mark that the frame has been cached now */
+            m_Player->AddCacheFrame(frame);
+        }
+
+        return;
+    }
+
     if (SharedMediaClip media = m_Media.lock())
     {
-        if (media->Valid() && media->HasFrame(frame))
+        if (media->Valid() && media->Contains(frame))
         {
             media->CacheFrame(frame);
             m_FrameSize = media->FrameSize();
 
-            /* Mark that the frame has been cached now */
-            m_Player->AddCacheFrame(frame);
+            {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+                /* Mark that the frame has been cached now */
+                m_Player->AddCacheFrame(frame);
+            }
         }
     }
 }
@@ -251,30 +386,46 @@ void ChronoFlux::EvictFront()
 {
     v_frame_t frame = m_Framenumbers.front();
 
-    if (SharedMediaClip media = m_Media.lock())
+    switch (m_CacheEntity)
     {
-        media->UncacheFrame(frame);
-        m_UsedMemory -= m_FrameSize;
-
-        m_Framenumbers.pop_front();
-        m_Player->RemoveCachedFrame(frame);
-
-        VOID_LOG_INFO("Removing Cached Frame: {0}", frame);
+        case Entity::Track:
+            m_TrackView->ItemAt(frame)->UncacheFrame(frame);
+        case Entity::Sequence:
+            m_SequenceView->ItemAt(frame)->UncacheFrame(frame);
+        case Entity::Media:
+        default:
+        {
+            if (SharedMediaClip media = m_Media.lock())
+                media->UncacheFrame(frame);
+        }
     }
+
+    m_UsedMemory -= m_FrameSize;
+    m_Framenumbers.pop_front();
+    m_Player->RemoveCachedFrame(frame);
 }
 
 void ChronoFlux::EvictBack()
 {
     v_frame_t frame = m_Framenumbers.back();
 
-    if (SharedMediaClip media = m_Media.lock())
+    switch (m_CacheEntity)
     {
-        media->UncacheFrame(frame);
-        m_UsedMemory -= m_FrameSize;
-
-        m_Framenumbers.pop_back();
-        m_Player->RemoveCachedFrame(frame);
+        case Entity::Track:
+            m_TrackView->ItemAt(frame)->UncacheFrame(frame);
+        case Entity::Sequence:
+            m_SequenceView->ItemAt(frame)->UncacheFrame(frame);
+        case Entity::Media:
+        default:
+        {
+            if (SharedMediaClip media = m_Media.lock())
+                media->UncacheFrame(frame);
+        }
     }
+
+    m_UsedMemory -= m_FrameSize;
+    m_Framenumbers.pop_back();
+    m_Player->RemoveCachedFrame(frame);
 }
 
 void ChronoFlux::EnsureCached(v_frame_t frame)
@@ -296,10 +447,13 @@ void ChronoFlux::EnsureCached(v_frame_t frame)
 
 void ChronoFlux::ClearCache()
 {
-    if (SharedMediaClip media = m_Media.lock())
-    {
+
+    if (m_CacheEntity == Entity::Track && m_TrackView)
+        m_TrackView->Track()->ClearCache();
+    else if (m_CacheEntity == Entity::Sequence && m_SequenceView)
+        m_SequenceView->Sequence()->ClearCache();
+    else if (SharedMediaClip media = m_Media.lock())
         media->ClearCache();
-    }
 
     m_Framenumbers.clear();
     m_UsedMemory = 0;
@@ -413,6 +567,7 @@ void ChronoFlux::CacheNext()
 
         Request(frame, true);
         AddTask(new CacheNextFrameTask(this));
+        // CacheNextFrameTask(this).run();
     }
 }
 
@@ -426,7 +581,7 @@ void ChronoFlux::CachePrevious()
         /* Ensure the cached frame is just between the current frame and the back buffer */
         if (m_Player->Frame() + m_BackBuffer > m_Framenumbers.back() && m_Framenumbers.back() > m_Player->Frame())
             break;
-        
+
         frame--;
 
         if (frame < m_StartFrame)

@@ -258,6 +258,7 @@ void Player::Load(const SharedPlaybackTrack& track)
 {
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(track);
+    m_CacheProcessor.SetTrack(track);
 
     /**
      * Once we have the image sequence,
@@ -274,6 +275,7 @@ void Player::Load(const SharedPlaybackSequence& sequence)
 {
     /* Update what is being played on the Active Viewer Buffer */
     m_ActiveViewBuffer->Set(sequence);
+    m_CacheProcessor.SetSequence(sequence);
 
     /**
      * Once we have the image sequence,
@@ -354,6 +356,7 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
      * This GetImage itself runs a check if Media.Contains(frame) as it has to offset values internally
      * based on where the trackitem is present in the sequence
      */
+    m_CacheProcessor.EnsureCached(frame);
     SharedPixels data = item->GetImage(frame);
 
     /* A standard frame which is available for any trackitem/media */

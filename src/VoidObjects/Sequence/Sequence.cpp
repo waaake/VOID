@@ -166,4 +166,10 @@ SharedTrackItem PlaybackSequence::GetTrackItem(const int frame) const
     return nullptr;
 }
 
+void PlaybackSequence::ClearCache()
+{
+    for (SharedPlaybackTrack& track : m_VideoTracks)
+        track->ClearCache();
+}
+
 VOID_NAMESPACE_CLOSE
