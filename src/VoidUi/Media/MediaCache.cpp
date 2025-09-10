@@ -52,19 +52,8 @@ ChronoFlux::~ChronoFlux()
 {
     ClearCache();
 
-    if (m_TrackView)
-    {
-        m_TrackView->deleteLater();
-        delete m_TrackView;
-        m_TrackView = nullptr;
-    }
-
-    if (m_SequenceView)
-    {
-        m_SequenceView->deleteLater();
-        delete m_SequenceView;
-        m_SequenceView = nullptr;
-    }
+    ClearTrackView();
+    ClearSequenceView();
 }
 
 void ChronoFlux::StartPlaybackCache(const Direction& direction)
@@ -117,6 +106,26 @@ void ChronoFlux::ResumeCaching()
 {
     m_State = State::Enabled;
     CacheAvailable();
+}
+
+void ChronoFlux::ClearTrackView()
+{
+    if (m_TrackView)
+    {
+        m_TrackView->deleteLater();
+        delete m_TrackView;
+        m_TrackView = nullptr;
+    }
+}
+
+void ChronoFlux::ClearSequenceView()
+{
+    if (m_SequenceView)
+    {
+        m_SequenceView->deleteLater();
+        delete m_SequenceView;
+        m_SequenceView = nullptr;
+    }
 }
 
 void ChronoFlux::Update()
@@ -185,15 +194,8 @@ void ChronoFlux::SetTrack(const SharedPlaybackTrack& track)
     m_CacheEntity = Entity::Track;
     /* Clear Existing Media cache if present */
     ClearCache();
+    ClearTrackView();    
 
-    if (m_TrackView)
-    {
-        m_TrackView->deleteLater();
-        delete m_TrackView;
-        m_TrackView = nullptr;
-    }
-
-    // m_Track = track;
     m_TrackView = new TrackView(track);
     UpdateRange(track->StartFrame(), track->EndFrame());
 
@@ -218,13 +220,7 @@ void ChronoFlux::SetSequence(const SharedPlaybackSequence& sequence)
     m_CacheEntity = Entity::Sequence;
     /* Clear Existing Media cache if present */
     ClearCache();
-
-    if (m_SequenceView)
-    {
-        m_SequenceView->deleteLater();
-        delete m_SequenceView;
-        m_SequenceView = nullptr;
-    }
+    ClearSequenceView();
 
     m_SequenceView = new SequenceView(sequence);
     UpdateRange(sequence->StartFrame(), sequence->EndFrame());

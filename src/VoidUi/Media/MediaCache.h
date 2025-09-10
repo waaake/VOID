@@ -191,6 +191,9 @@ private: /* Methods */
     void EvictFront();
     void EvictBack();
 
+    void ClearTrackView();
+    void ClearSequenceView();
+
     /**
      * Update to refresh the cache to available frames after removing the frames
      * that may no longer be required
@@ -215,13 +218,8 @@ private: /* Task Classes */
     class CacheNextFrameTask : public QRunnable
     {
     public:
-        explicit CacheNextFrameTask(ChronoFlux* parent)
-            : m_Parent(parent) {}
-
-        void run() override
-        {
-            m_Parent->CacheNextFrame();
-        }
+        explicit CacheNextFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
+        inline void run() override { m_Parent->CacheNextFrame(); }
 
     private:
         ChronoFlux* m_Parent;
@@ -230,13 +228,8 @@ private: /* Task Classes */
     class CachePreviousFrameTask : public QRunnable
     {
     public:
-        explicit CachePreviousFrameTask(ChronoFlux* parent)
-            : m_Parent(parent) {}
-
-        void run() override
-        {
-            m_Parent->CachePreviousFrame();
-        }
+        explicit CachePreviousFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
+        inline void run() override {  m_Parent->CachePreviousFrame(); }
 
     private:
         ChronoFlux* m_Parent;
