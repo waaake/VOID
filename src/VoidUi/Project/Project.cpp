@@ -32,7 +32,12 @@ Project::~Project()
     DeleteImporter();
 }
 
-void Project::ImportDirectory(const std::string& directory)
+void Project::ImportDirectory(const std::string& directory, bool progressive)
+{
+    progressive ? ImportDirectoryP(directory) : ImportDirectory_(directory);
+}
+
+void Project::ImportDirectoryP(const std::string& directory)
 {
     SetupProgressTask();
 
@@ -70,6 +75,64 @@ void Project::ImportDirectory(const std::string& directory)
 
     /* Start Import process */
     thread->start();
+}
+
+
+void Project::ImportDirectory_(const std::string& path)
+{
+    std::vector<MediaStruct> vec;
+
+    try
+    {
+        for (std::filesystem::directory_entry entry : std::filesystem::recursive_directory_iterator(path))
+        {
+            if (entry.is_regular_file())
+            {
+                MEntry e(entry.path().string());
+    
+                /* Flag to control what happens with the entry */
+                bool new_entry = true;
+    
+                if (!e.SingleFile())
+                {
+                    /**
+                     * Iterate over what we have in our vector currently
+                     * i.e. the media structs to see if this entry belongs to any one of them
+                     * if so, this gets added there, else we create a new media struct from it
+                     */
+                    for (MediaStruct& m : vec)
+                    {
+                        /**
+                         * The entry belongs to this Media Struct don't have to add it again
+                         * this search is going to be used to import media via the UndoQueue
+                         * which only needs path of a single media from it
+                         */
+                        if (m.Validate(e))
+                        {
+                            new_entry = false;
+                            break;
+                        }
+                    }
+                }
+    
+                /* Check if no entry in the MediaStruct adopted our newly created Media entry */
+                if (new_entry)
+                    vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e)
+    {
+        VOID_LOG_ERROR(e.what());
+    }
+
+    m_UndoStack->beginMacro("Import Directory");
+
+    /* Add All the found media */
+    for (MediaStruct m : vec)
+        m_UndoStack->push(new MediaImportCommand(m.FirstPath()));
+
+    m_UndoStack->endMacro();
 }
 
 Project* Project::FromDocument(const std::string& document)

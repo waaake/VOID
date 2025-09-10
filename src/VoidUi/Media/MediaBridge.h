@@ -52,7 +52,7 @@ public:
 
     void AddMedia(const std::string& filepath);
     void RemoveMedia(const std::vector<QModelIndex>& media);
-    void ImportDirectory(const std::string& directory) { m_Project->ImportDirectory(directory); }
+    void ImportDirectory(const std::string& directory, bool progressive = true) { m_Project->ImportDirectory(directory, progressive); }
 
     /**
      * Projects

@@ -33,7 +33,7 @@ public:
     inline void PushCommand(QUndoCommand* command) { m_UndoStack->push(command); }
     inline QUndoStack* UndoStack() const { return m_UndoStack; }
 
-    void ImportDirectory(const std::string& directory);
+    void ImportDirectory(const std::string& directory, bool progressive = true);
 
     /**
      * The serialized string for the project can be used to construct the project from it
@@ -54,6 +54,14 @@ private: /* Methods */
     void DeleteProgressTask();
     void DeleteImporter();
     void CancelImporting();
+    /**
+     * Imports Directory with progress and allowing users to cancel the operation
+     */
+    void ImportDirectoryP(const std::string& path);
+    /**
+     * Imports Directory without any progress or allowing cancellations
+     */
+    void ImportDirectory_(const std::string& path);
 };
 
 VOID_NAMESPACE_CLOSE

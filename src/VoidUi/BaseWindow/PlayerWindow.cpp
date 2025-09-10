@@ -414,7 +414,6 @@ void VoidMainWindow::Connect()
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
-    connect(m_MediaLister, &VoidMediaLister::mediaDropped, this, &VoidMainWindow::ImportDirectory);
     connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
 
     /* Sequence */
@@ -441,11 +440,6 @@ void VoidMainWindow::ImportMedia(const MediaStruct& mstruct)
 
     /* Add to the Media Bridge */
     MBridge::Instance().AddMedia(mstruct);
-}
-
-void VoidMainWindow::ImportDirectory(const std::string& path)
-{
-    m_Bridge.ImportDirectory(path);
 }
 
 void VoidMainWindow::RegisterDocks()
