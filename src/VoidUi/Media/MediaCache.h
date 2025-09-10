@@ -20,7 +20,8 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
-#include "VoidObjects/Sequence/Track.h"
+#include "VoidObjects/Sequence/TrackView.h"
+#include "VoidObjects/Sequence/SequenceView.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -53,6 +54,13 @@ public:
         Disabled,
     };
 
+    enum class Entity
+    {
+        Media,
+        Track,
+        Sequence
+    };
+
 public:
     explicit ChronoFlux(QObject* parent = nullptr);
     ~ChronoFlux();
@@ -67,7 +75,8 @@ public:
      * The media to currently look at actively to cache
      */
     void SetMedia(const SharedMediaClip& media);
-    // void SetTrack(const SharedPlaybackTrack& track);
+    void SetTrack(const SharedPlaybackTrack& track);
+    void SetSequence(const SharedPlaybackSequence& sequence);
 
     inline void SetMaxMemory(unsigned int gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
     inline void SetMaxThreads(unsigned int count) { m_ThreadPool.setMaxThreadCount(count); }
@@ -129,14 +138,21 @@ private: /* Members */
     Player* m_Player;
     QThreadPool m_ThreadPool;
 
+    TrackView* m_TrackView;
+    SequenceView* m_SequenceView;
+
     /**
      * This is a non-owning pointer to the Media coming in from either the viewer buffer or some other
      * component that might need the media to be cache for some reason
      */
     std::weak_ptr<MediaClip> m_Media;
+    std::weak_ptr<PlaybackTrack> m_Track;
+    // std::weak_ptr<SharedTrackItem> m_TrackItem;
+
 
     Direction m_CacheDirection;
     State m_State;
+    Entity m_CacheEntity;
 
     /**
      * Bytes representation of the amount of maximum available memory for caching media
@@ -162,7 +178,6 @@ private: /* Members */
     int m_BackBuffer;
 
     QTimer m_CacheTimer;
-
     std::mutex m_Mutex;
 
 private: /* Methods */
@@ -176,11 +191,16 @@ private: /* Methods */
     void EvictFront();
     void EvictBack();
 
+    void ClearTrackView();
+    void ClearSequenceView();
+
     /**
      * Update to refresh the cache to available frames after removing the frames
      * that may no longer be required
      */
     void Update();
+
+    void UpdateRange(v_frame_t start, v_frame_t end);
 
     inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
 
@@ -198,13 +218,8 @@ private: /* Task Classes */
     class CacheNextFrameTask : public QRunnable
     {
     public:
-        explicit CacheNextFrameTask(ChronoFlux* parent)
-            : m_Parent(parent) {}
-
-        void run() override
-        {
-            m_Parent->CacheNextFrame();
-        }
+        explicit CacheNextFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
+        inline void run() override { m_Parent->CacheNextFrame(); }
 
     private:
         ChronoFlux* m_Parent;
@@ -213,13 +228,8 @@ private: /* Task Classes */
     class CachePreviousFrameTask : public QRunnable
     {
     public:
-        explicit CachePreviousFrameTask(ChronoFlux* parent)
-            : m_Parent(parent) {}
-
-        void run() override
-        {
-            m_Parent->CachePreviousFrame();
-        }
+        explicit CachePreviousFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
+        inline void run() override {  m_Parent->CachePreviousFrame(); }
 
     private:
         ChronoFlux* m_Parent;

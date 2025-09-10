@@ -8,8 +8,10 @@ set(SOURCES
     Project/Project.cpp
 
     Sequence/Sequence.cpp
+    Sequence/SequenceView.cpp
     Sequence/Track.cpp
     Sequence/TrackItem.cpp
+    Sequence/TrackView.cpp
 )
 
 add_library(

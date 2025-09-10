@@ -35,6 +35,8 @@ public:
 
     /* Clears the Sequence of any tracks that have been added */
     void Clear();
+    /* Clears the underlying Tracks' cached data */
+    void ClearCache();
 
     void AddVideoTrack(const SharedPlaybackTrack& track);
     void AddAudioTrack(const SharedPlaybackTrack& track);
