@@ -84,7 +84,7 @@ void VoidMediaLister::dropEvent(QDropEvent* event)
             VOID_LOG_INFO("Dropped Media Directory: {0}", path);
 
             /* Emit the media dropped signal */
-            emit mediaDropped(path);
+            MBridge::Instance().ImportDirectory(path, false);
         }
     }
 }
