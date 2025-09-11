@@ -4,6 +4,7 @@
 /* Internal */
 #include "FFmpegReader.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -302,7 +303,10 @@ void FFmpegPixReader::ProcessInformation()
         for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
         {
             if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
-                vidStream = formatContext->streams[i]; break;
+            {
+                vidStream = formatContext->streams[i];
+                break;
+            }
         }
 
         /* This always has been 2 less than the total number of frames, need a bit more information here... */
