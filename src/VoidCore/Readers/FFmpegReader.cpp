@@ -4,6 +4,7 @@
 /* Internal */
 #include "FFmpegReader.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -296,36 +297,27 @@ void FFmpegPixReader::ProcessInformation()
 
     AVFormatContext* formatContext = nullptr;
 
-    /* Try opening the file */
-    if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) < 0)
-        return;
+    if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
+    {
+        AVStream* vidStream = nullptr;
+        for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
+        {
+            if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+            {
+                vidStream = formatContext->streams[i];
+                break;
+            }
+        }
 
-    /* Find a Stream to read */
-    if (avformat_find_stream_info(formatContext, nullptr) < 0)
-        return;
+        /* This always has been 2 less than the total number of frames, need a bit more information here... */
+        m_Endframe = vidStream->nb_frames - 2;
 
-    /* Find the best video stream of the movie */
-    int streamId = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+        AVRational framerate = vidStream->r_frame_rate;
+        m_Framerate = av_q2d(framerate);
 
-    /* Could not find a stream to read from */
-    if (streamId < 0)
-        return;
-
-    AVStream* stream = formatContext->streams[streamId];
-    AVRational framerate = av_guess_frame_rate(formatContext, stream, nullptr);
-
-    double seconds = static_cast<double>(formatContext->duration) / AV_TIME_BASE;
-
-    /* Update internal framerate with the converted time base framerate */
-    m_Framerate = av_q2d(framerate);
-
-    /* Update the range */
-    m_Duration = (seconds * m_Framerate) - 1; // There is always a frame extra (atleast at 60fps, so need to confirm this and check on as well)
-    m_Startframe = av_rescale_q(formatContext->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
-    m_Endframe = m_Duration - 1;
-
-    /* Deallocate */
-    avformat_close_input(&formatContext);
+        /* Deallocate internals */
+        avformat_close_input(&formatContext);
+    }
 }
 
 MFrameRange FFmpegPixReader::Framerange()
