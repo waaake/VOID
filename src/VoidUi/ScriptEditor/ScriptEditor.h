@@ -68,7 +68,7 @@ private: /* Methods */
      */
     inline bool PotentialStatement(const std::string& code) const
     { 
-        return code.find_first_of(" \t\n\r()[]{}.+-*/=<>!&|^,:") != std::string::npos;
+        return code.find_first_of(" \t\n\r{}+-*/=<>!&|^,:") != std::string::npos;
     }
 };
 
