@@ -92,6 +92,10 @@ void PyScriptEditor::Build()
 
 void PyScriptEditor::Connect()
 {
+    /* Needed when queueing singals from thread to write on the output console */
+    qRegisterMetaType<QTextBlock>("QTextBlock");
+    qRegisterMetaType<QTextCursor>("QTextCursor");
+
     connect(m_ExecAllButton, &QPushButton::clicked, this, &PyScriptEditor::ExecuteAll);
     connect(m_InputConsole, &InputScriptConsole::execute, this, &PyScriptEditor::ExecuteAll);
 
