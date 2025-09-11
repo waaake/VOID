@@ -357,6 +357,12 @@ void FFmpegPixReader::Read()
     m_Channels = decoder.Channels();
 }
 
+const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
+{
+    std::map<std::string, std::string> m;
+    return m;
+}
+
 /* }}} */
 
 VOID_NAMESPACE_CLOSE

@@ -127,4 +127,10 @@ void OpenEXRReader::Read()
     }
 }
 
+const std::map<std::string, std::string> OpenEXRReader::Metadata() const
+{
+    std::map<std::string, std::string> m;
+    return m;
+}
+
 VOID_NAMESPACE_CLOSE

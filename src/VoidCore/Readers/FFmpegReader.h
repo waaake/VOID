@@ -179,6 +179,13 @@ public:
      */
     virtual size_t FrameSize() const override { return sizeof(unsigned char) * m_Pixels.size(); }
 
+    /**
+     * Read the metadata from the underlying image/frame
+     * Returns with all the keys that can be read from the metadata
+     * so keys might not be same/static
+     */
+    virtual const std::map<std::string, std::string> Metadata() const override;
+
 private: /* Members */
     /* Image specifications */
     int m_Width, m_Height;

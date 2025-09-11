@@ -5,6 +5,7 @@
 #define _VOID_PIX_READER_H
 
 /* STD */
+#include <map>
 #include <memory>
 #include <string>
 
@@ -139,6 +140,13 @@ public:
      */
     virtual ColorSpace InputColorSpace() const = 0;
     virtual bool IsMovie() const { return false; }
+
+    /**
+     * Read the metadata from the underlying image/frame
+     * Returns with all the keys that can be read from the metadata
+     * so keys might not be same/static
+     */
+    virtual const std::map<std::string, std::string> Metadata() const = 0;
 
 protected:
     std::string m_Path;

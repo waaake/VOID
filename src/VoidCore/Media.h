@@ -46,6 +46,11 @@ public:
      */
     SharedPixels Image(bool cached = true);
 
+    /**
+     * Returns the underlying metadata from the image
+     */
+    inline const std::map<std::string, std::string> Metadata() const { return m_ImageData->Metadata(); }
+
     /* Frame Caches */
     void Cache();
     void ClearCache();
@@ -159,6 +164,8 @@ public:
 
     inline SharedPixels FirstImage() { return Image(FirstFrame()); }
     inline SharedPixels LastImage() { return Image(LastFrame()); }
+
+    inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.at(m_FirstFrame).Metadata(); }
 
     inline double Framerate() const { return m_Framerate; }
     inline bool Empty() const { return m_Mediaframes.empty(); }

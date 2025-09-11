@@ -456,9 +456,13 @@ void VoidMainWindow::RegisterDocks()
     /* Python Script Editor */
     m_ScriptEditor = new PyScriptEditor();
 
+    /* Media Metadata Viewer */
+    m_MetadataViewer = new MetadataViewer();
+
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(m_Player, "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
+    manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
 }
 
 // Slots

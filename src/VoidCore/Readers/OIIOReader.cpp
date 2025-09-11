@@ -83,4 +83,38 @@ void OIIOPixReader::Read()
     input->close();
 }
 
+const std::map<std::string, std::string> OIIOPixReader::Metadata() const
+{
+    std::map<std::string, std::string> m;
+
+    std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
+    if (!input)
+    {
+        VOID_LOG_INFO("Unable to load image. Path: {0}", m_Path);
+        /* Log the original error from OpenImageIO */
+        VOID_LOG_ERROR(OIIO::geterror());
+        return m;
+    }
+
+    const OIIO::ImageSpec spec = input->spec();
+
+    /* Basic Metadata */
+    m["filepath"] = m_Path;
+    m["width"] = std::to_string(spec.width);
+    m["height"] = std::to_string(spec.height);
+    m["channels"] = std::to_string(spec.nchannels);
+    m["colorspace"] = spec.get_string_attribute("oiio::ColorSpace");
+    m["bit_depth"] = std::to_string(spec.get_int_attribute("BitsPerSample", 8));
+    m["format"] = spec.format.c_str();
+
+    /* Additional */
+    for (const OIIO::ParamValue& attr : spec.extra_attribs)
+    {
+        if (attr.type() == OIIO::TypeDesc::STRING)
+            m[attr.name().c_str()] = *(const char**)attr.data();
+    }
+
+    return m;
+}
+
 VOID_NAMESPACE_CLOSE
