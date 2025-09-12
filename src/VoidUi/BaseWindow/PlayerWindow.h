@@ -22,6 +22,7 @@
 #include "VoidUi/Dock/Docker.h"
 #include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Media/MediaLister.h"
+#include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
 
 VOID_NAMESPACE_OPEN
@@ -65,8 +66,12 @@ public:
     void ImportMedia(const MediaStruct& mstruct);
     void PlayMedia(const std::vector<SharedMediaClip>& items);
 
+    /* Inspect Media Information */
+    void InspectMetadata(const SharedMediaClip& media);
+
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
     Player* ActivePlayer() const { return m_Player; }
+    MetadataViewer* GetMetadataViewer() const { return m_MetadataViewer; }
 
 private: /* Methods */
     void Build();
@@ -82,6 +87,7 @@ private: /* Members */
     Player* m_Player;
     VoidMediaLister* m_MediaLister;
     PyScriptEditor* m_ScriptEditor;
+    MetadataViewer* m_MetadataViewer;
 
     DockerWindow* m_InternalDocker;
 

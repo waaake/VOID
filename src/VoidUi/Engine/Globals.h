@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/BaseWindow/PlayerWindow.h"
 
 VOID_NAMESPACE_OPEN
@@ -17,6 +18,7 @@ namespace UIGlobals {
 
     VOID_API VoidMainWindow* GetMainWindow();
     VOID_API Player* GetActivePlayer();
+    VOID_API MetadataViewer* GetMetadataViewer();
 
 } // namespace Globals
 

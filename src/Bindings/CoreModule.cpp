@@ -99,7 +99,8 @@ void BindCore(py::module_& m)
         .def("name", &MediaClip::Name)
         .def("extension", &MediaClip::Extension)
         .def("startframe", &MediaClip::FirstFrame)
-        .def("endframe", &MediaClip::LastFrame);
+        .def("endframe", &MediaClip::LastFrame)
+        .def("metadata", &MediaClip::Metadata);
 }
 
 } // namespace bindings

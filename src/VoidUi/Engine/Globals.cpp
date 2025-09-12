@@ -23,6 +23,14 @@ Player* GetActivePlayer()
     return nullptr;
 }
 
+MetadataViewer* GetMetadataViewer()
+{
+    if (g_VoidMainWindow)
+        return g_VoidMainWindow->GetMetadataViewer();
+
+    return nullptr;
+}
+
 } // namespace UIGlobals
 
 VOID_NAMESPACE_CLOSE

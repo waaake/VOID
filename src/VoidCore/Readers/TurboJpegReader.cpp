@@ -93,4 +93,10 @@ void TurboJpegReader::Read()
     tjDestroy(handle);
 }
 
+const std::map<std::string, std::string> TurboJpegReader::Metadata() const
+{
+    std::map<std::string, std::string> m;
+    return m;
+}
+
 VOID_NAMESPACE_CLOSE

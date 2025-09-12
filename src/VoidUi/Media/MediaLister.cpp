@@ -53,6 +53,10 @@ VoidMediaLister::~VoidMediaLister()
     m_RemoveAction->deleteLater();
     delete m_RemoveAction;
     m_RemoveAction = nullptr;
+
+    m_InspectMetadataAction->deleteLater();
+    delete m_InspectMetadataAction;
+    m_InspectMetadataAction = nullptr;
 }
 
 QSize VoidMediaLister::sizeHint() const
@@ -94,6 +98,7 @@ void VoidMediaLister::Build()
     /* Menu Actions */
     m_PlayAction = new QAction("Play Selected As Sequence");
     m_RemoveAction = new QAction("Remove Selected");
+    m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
 
     /* Shortcuts */
 #ifdef __APPLE__
@@ -207,6 +212,7 @@ void VoidMediaLister::Connect()
     /* Context Menu */
     connect(m_PlayAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToSequence);
     connect(m_RemoveAction, &QAction::triggered, this, &VoidMediaLister::RemoveSelectedMedia);
+    connect(m_InspectMetadataAction, &QAction::triggered, this, &VoidMediaLister::InspectMetadata);
 
     /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
@@ -280,6 +286,10 @@ void VoidMediaLister::ShowContextMenu(const Point& position)
     contextMenu.addAction(m_PlayAction);
     contextMenu.addAction(m_RemoveAction);
 
+    contextMenu.addSeparator();
+
+    contextMenu.addAction(m_InspectMetadataAction);
+
     /* Show Menu */
     #if _QT6
     /**
@@ -295,6 +305,16 @@ void VoidMediaLister::RemoveSelectedMedia()
 {
     /* Push all of the selected indexes for removal */
     MBridge::Instance().RemoveMedia(m_MediaView->SelectedIndexes());
+}
+
+void VoidMediaLister::InspectMetadata()
+{
+    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
+    if (selected.empty())
+        return;
+
+    /* We can only inspect one item at a time */
+    emit metadataInspected(*(static_cast<SharedMediaClip*>(selected[0].internalPointer())));
 }
 
 void VoidMediaLister::SetFromPreferences()

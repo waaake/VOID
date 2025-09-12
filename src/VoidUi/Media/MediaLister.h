@@ -40,10 +40,12 @@ public:
     QSize sizeHint() const override;
 
 signals:
-    void mediaChanged(const SharedMediaClip& media);
+    void mediaChanged(const SharedMediaClip&);
     /* For a bunch of media is set to be played */
-    void playlistChanged(const std::vector<SharedMediaClip>& media);
-    void mediaDropped(const std::string& path);
+    void playlistChanged(const std::vector<SharedMediaClip>&);
+    void mediaDropped(const std::string&);
+    /* When a Media is inspected of its Metdata */
+    void metadataInspected(const SharedMediaClip&);
 
 protected: /* Methods */
     void dragEnterEvent(QDragEnterEvent* event) override;
@@ -63,6 +65,7 @@ private: /* Methods */
 
     void AddSelectionToSequence();
     void RemoveSelectedMedia();
+    void InspectMetadata();
 
     void IndexSelected(const QModelIndex& index);
 
@@ -88,6 +91,7 @@ private: /* Members */
     /* Context Menu */
     QAction* m_PlayAction;
     QAction* m_RemoveAction;
+    QAction* m_InspectMetadataAction;
 
     /* Shortcuts */
     QShortcut* m_DeleteShortcut;

@@ -415,6 +415,7 @@ void VoidMainWindow::Connect()
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
     connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
+    connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
 
     /* Sequence */
     connect(m_Sequence.get(), &PlaybackSequence::rangeChanged, m_Player, &Player::SetRange);
@@ -456,9 +457,13 @@ void VoidMainWindow::RegisterDocks()
     /* Python Script Editor */
     m_ScriptEditor = new PyScriptEditor();
 
+    /* Media Metadata Viewer */
+    m_MetadataViewer = new MetadataViewer();
+
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(m_Player, "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
+    manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
 }
 
 // Slots
@@ -593,6 +598,11 @@ void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
 
     /* Set the sequence on the Player */
     m_Player->Load(m_Sequence);
+}
+
+void VoidMainWindow::InspectMetadata(const SharedMediaClip& media)
+{
+    m_MetadataViewer->SetFromMedia(media);
 }
 
 VOID_NAMESPACE_CLOSE
