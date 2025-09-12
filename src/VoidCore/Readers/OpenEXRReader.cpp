@@ -14,9 +14,15 @@
 #include <algorithm>
 
 /* OpenEXR */
-#include <OpenEXR/ImfRgbaFile.h>
 #include <OpenEXR/ImfArray.h>
 #include <OpenEXR/ImfChannelList.h>
+#include <OpenEXR/ImfCompression.h>
+#include <OpenEXR/ImfFloatAttribute.h>
+#include <OpenEXR/ImfHeader.h>
+#include <OpenEXR/ImfInputFile.h>
+#include <OpenEXR/ImfIntAttribute.h>
+#include <OpenEXR/ImfRgbaFile.h>
+#include <OpenEXR/ImfStringAttribute.h>
 
 /* Internal */
 #include "OpenEXRReader.h"
@@ -130,6 +136,70 @@ void OpenEXRReader::Read()
 const std::map<std::string, std::string> OpenEXRReader::Metadata() const
 {
     std::map<std::string, std::string> m;
+
+    Imf::InputFile f(m_Path.c_str());
+    const Imf::Header& header = f.header();
+
+    /* Basic Metadata */
+    m["filepath"] = m_Path;
+
+    int channelCount = 0;
+    const Imf::ChannelList& channels = header.channels();
+
+    Imf::PixelType pixelType = Imf::PixelType::HALF;
+    for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++it)
+    {
+        channelCount++;
+        pixelType = it.channel().type;
+    }
+
+    /**
+     * UINT  = 0, // unsigned int (32 bit)
+     * HALF  = 1, // half (16 bit floating point)
+     * FLOAT = 2, // float (32 bit floating point)
+     */
+    if (pixelType == Imf::PixelType::HALF)
+        m["pixelType"] = "16 bit floating point";
+    else if (pixelType == Imf::PixelType::FLOAT)
+        m["pixelType"] = "32 bit floating point";
+    else
+        m["pixelType"] = "32 bit";
+
+    Imath::Box2i dw = header.dataWindow();
+    int width = dw.max.x - dw.min.x + 1;
+    int height = dw.max.y - dw.min.y + 1;
+
+    m["width"] = std::to_string(width);
+    m["height"] = std::to_string(height);
+    m["channels"] = std::to_string(channelCount);
+
+    const Imf::Compression& compression = header.compression();
+    std::string compressionType;
+    Imf::getCompressionNameFromId(compression, compressionType);
+    m["compression"] = compressionType;
+
+    /* Specific metadata */
+    for (Imf::Header::ConstIterator it = header.begin(); it != header.end(); ++it)
+    {
+        const Imf::Attribute& attr = it.attribute();
+
+        if (std::strcmp(attr.typeName(), "string") == 0)
+        {
+            const Imf::StringAttribute& sattr = static_cast<const Imf::StringAttribute&>(attr);
+            m[it.name()] = sattr.value();
+        }
+        else if (std::strcmp(attr.typeName(), "float") == 0)
+        {
+            const Imf::FloatAttribute& fattr = static_cast<const Imf::FloatAttribute&>(attr);
+            m[it.name()] = std::to_string(fattr.value());
+        }
+        else if (std::strcmp(attr.typeName(), "int") == 0)
+        {
+            const Imf::IntAttribute& iattr = static_cast<const Imf::IntAttribute&>(attr);
+            m[it.name()] = std::to_string(iattr.value());
+        }
+    }
+
     return m;
 }
 

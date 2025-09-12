@@ -360,6 +360,56 @@ void FFmpegPixReader::Read()
 const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 {
     std::map<std::string, std::string> m;
+
+    AVFormatContext* formatContext = nullptr;
+
+    if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
+    {
+        /* Get Stream info */
+        if (avformat_find_stream_info(formatContext, nullptr) < 0)
+        {
+            avformat_close_input(&formatContext);
+            return m;
+        }
+
+        AVStream* vidStream = nullptr;
+        int streamId = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+
+        /* Not found */
+        if (streamId < 0)
+        {
+            avformat_close_input(&formatContext);
+            return m;
+        }
+
+        /* Iterate over all metadata for the file */
+        AVDictionaryEntry* tag = nullptr;
+        /* Match the starting component of the key to get the find the tag --> None will match every */
+        while((tag = av_dict_get(formatContext->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
+        {
+            m[tag->key] = tag->value;
+        }
+
+        vidStream = formatContext->streams[streamId];
+
+        /* This always has been 2 less than the total number of frames, need a bit more information here... */
+        int endframe = vidStream->nb_frames - 2;
+        double framerate = av_q2d(vidStream->r_frame_rate);
+        m["end_frame"] = std::to_string(endframe);
+        m["duration"] = std::to_string(endframe - m_Startframe + 1);
+        m["framerate"] = std::to_string(framerate);
+
+        /* Deallocate internals */
+        avformat_close_input(&formatContext);
+    }
+
+    /* Basic Metadata */
+    m["filepath"] = m_Path;
+    m["width"] = std::to_string(m_Height);
+    m["height"] = std::to_string(m_Width);
+    m["channels"] = std::to_string(m_Channels);
+    m["start_frame"] = std::to_string(m_Startframe);
+
     return m;
 }
 
