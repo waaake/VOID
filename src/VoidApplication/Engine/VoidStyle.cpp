@@ -143,11 +143,11 @@ void VoidDark::polish(QPalette& palette)
     palette.setColor(QPalette::Window, QColor(40, 40, 40));
     palette.setColor(QPalette::WindowText, VOID_FOREGROUND_COLOR);
     palette.setColor(QPalette::Base, QColor(30, 30, 30));
-    palette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
+    palette.setColor(QPalette::AlternateBase, QColor(43, 43, 43));
     palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
     palette.setColor(QPalette::ToolTipText, Qt::black);
     palette.setColor(QPalette::Text, VOID_FOREGROUND_COLOR);
-    palette.setColor(QPalette::Button, QColor(53, 53, 53));
+    palette.setColor(QPalette::Button, QColor(48, 48, 48));
     palette.setColor(QPalette::ButtonText, VOID_FOREGROUND_COLOR);
     palette.setColor(QPalette::BrightText, Qt::red);
     palette.setColor(QPalette::Link, QColor(42, 130, 218));

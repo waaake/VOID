@@ -21,7 +21,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class MetadataViewer : public QWidget
+class VOID_API MetadataViewer : public QWidget
 {
 public:
     explicit MetadataViewer(QWidget* parent = nullptr);
