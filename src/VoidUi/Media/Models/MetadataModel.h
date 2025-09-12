@@ -20,6 +20,7 @@ class MetadataModel : public QAbstractItemModel
 public:
     explicit MetadataModel(QObject* parent = nullptr);
     void SetMetadata(const std::map<std::string, std::string>& metadata);
+    void Clear();
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex&) const override { return QModelIndex(); }

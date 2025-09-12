@@ -26,8 +26,8 @@ public:
     explicit MetadataTree(QWidget* parent = nullptr);
     ~MetadataTree();
 
-    inline void SetFromMedia(const SharedMediaClip& clip) { m_Metadata->SetMetadata(clip->Metadata()); }
     inline void SetMetadata(const std::map<std::string, std::string>& metadata) { m_Metadata->SetMetadata(metadata); }
+    inline void Clear() { m_Metadata->Clear(); }
 
 private: /* Members */
     MetadataModel* m_Metadata;

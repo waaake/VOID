@@ -18,6 +18,13 @@ void MetadataModel::SetMetadata(const std::map<std::string, std::string>& metada
     endResetModel();
 }
 
+void MetadataModel::Clear()
+{
+    beginResetModel();
+    m_Metadata.clear();
+    endResetModel();
+}
+
 QModelIndex MetadataModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!parent.isValid() && row >= 0 && row < m_Metadata.size())

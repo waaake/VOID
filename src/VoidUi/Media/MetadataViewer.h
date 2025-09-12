@@ -8,6 +8,7 @@
 #include <map>
 
 /* Qt */
+#include <QDropEvent>
 #include <QLayout>
 #include <QPushButton>
 #include <QTreeView>
@@ -31,10 +32,14 @@ public:
     /* Set the Metadata on the viewer from the provided map of data */
     inline void SetMetadata(const std::map<std::string, std::string>& metadata) { m_Tree->SetMetadata(metadata); }
 
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+
 private: /* Members */
     QVBoxLayout* m_Layout;
     QHBoxLayout* m_ButtonLayout;
-    QPushButton* m_RefreshButton;
+    QPushButton* m_ClearButton;
     MetadataTree* m_Tree;
 
 private: /* Methods */
