@@ -22,6 +22,7 @@
 #include "VoidUi/Dock/Docker.h"
 #include "VoidUi/Player/PlayerWidget.h"
 #include "VoidUi/Media/MediaLister.h"
+#include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
 
@@ -86,6 +87,7 @@ protected:
 private: /* Members */
     Player* m_Player;
     VoidMediaLister* m_MediaLister;
+    VoidPlayLister* m_PlayLister;
     PyScriptEditor* m_ScriptEditor;
     MetadataViewer* m_MetadataViewer;
 

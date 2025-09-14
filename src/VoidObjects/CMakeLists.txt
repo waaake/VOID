@@ -4,8 +4,11 @@ set(SOURCES
 
     Models/MediaModel.cpp
     Models/ProjectModel.cpp
+    Models/PlaylistModel.cpp
 
     Project/Project.cpp
+
+    Playlist/Playlist.cpp
 
     Sequence/Sequence.cpp
     Sequence/SequenceView.cpp

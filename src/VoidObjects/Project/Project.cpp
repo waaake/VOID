@@ -19,6 +19,7 @@ namespace Core {
 
 Project::Project(const std::string& name, bool active, QObject* parent)
     : VoidObject(parent)
+    , m_Playlist(nullptr)
     , m_Name(name)
     , m_Path("")
     , m_Type(EtherFormat::Type::ASCII)
@@ -26,6 +27,7 @@ Project::Project(const std::string& name, bool active, QObject* parent)
     , m_Modified(false)
 {
     m_Media = new MediaModel(this);
+    m_Playlists = new PlaylistModel(this);
     VOID_LOG_INFO("Project {0} Created: {1}", name, Vuid());
 }
 
@@ -39,6 +41,10 @@ Project::~Project()
     m_Media->deleteLater();
     delete m_Media;
     m_Media = nullptr;
+
+    m_Playlists->deleteLater();
+    delete m_Playlists;
+    m_Playlists = nullptr;
 }
 
 void Project::AddMedia(const SharedMediaClip& media)

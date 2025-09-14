@@ -183,6 +183,18 @@ bool MBridge::Remove(const QModelIndex& index)
     return true;
 }
 
+void MBridge::NewPlaylist()
+{
+    if (m_Project)
+        m_Project->NewPlaylist();
+}
+
+void MBridge::NewPlaylist(const std::string& name)
+{
+    if (m_Project)
+        m_Project->NewPlaylist(name);
+}
+
 void MBridge::PushCommand(QUndoCommand* command)
 {
     /* Push it on the Undo Stack of the active project */

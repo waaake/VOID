@@ -1,8 +1,8 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-#ifndef _VOID_PROJECT_MODEL_H
-#define _VOID_PROJECT_MODEL_H
+#ifndef _VOID_PLAYLIST_MODEL_H
+#define _VOID_PLAYLIST_MODEL_H
 
 /* STD */
 #include <vector>
@@ -13,20 +13,20 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidObjects/Project/Project.h"
+#include "VoidObjects/Playlist/Playlist.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
- * Describes the Project
+ * Describes the Playlist
  */
-class VOID_API ProjectModel : public QAbstractItemModel
+class VOID_API PlaylistModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
     /**
-     * Roles for various fields of data from the Project
+     * Roles for various fields of data from the Playlist
      */
     enum class Roles
     {
@@ -36,9 +36,9 @@ public:
     };
 
 public:
-    explicit ProjectModel(QObject* parent = nullptr);
+    explicit PlaylistModel(QObject* parent = nullptr);
 
-    ~ProjectModel();
+    ~PlaylistModel();
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
@@ -50,37 +50,42 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    /* Project */
-    void Add(Core::Project* project);
-    void Insert(Core::Project* project, int index);
+    /* Playlist */
+    void Add(Playlist* playlist);
+    void Insert(Playlist* media, int index);
     void Remove(const QModelIndex& index);
 
-    Core::Project* GetProject(const QModelIndex& index) const;
-    int ProjectRow(const Core::Project* project) const;
+    Playlist* GetPlaylist(const QModelIndex& index) const;
+    int PlaylistRow(const Playlist* playlist) const;
 
     void Clear();
-
     inline void Refresh() { Update(); }
 
+    inline const std::vector<Playlist*>::const_iterator cbegin() const noexcept { return m_Playlists.cbegin(); }
+    inline const std::vector<Playlist*>::const_iterator cend() const noexcept { return m_Playlists.cend(); }
+
+    inline std::vector<Playlist*>::iterator begin() noexcept { return m_Playlists.begin(); }
+    inline std::vector<Playlist*>::iterator end() noexcept { return m_Playlists.end(); }
+
 private: /* Members */
-    std::vector<Core::Project*> m_Projects;
+    std::vector<Playlist*> m_Playlists;
 
 private: /* Methods */
     void Update();
 };
 
-class VOID_API ProjectProxyModel : public QSortFilterProxyModel
+class VOID_API PlaylistProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    explicit ProjectProxyModel(QObject* parent = nullptr);
+    explicit PlaylistProxyModel(QObject* parent = nullptr);
 
     /* Sets the key which needs to be searched in the data */
     void SetSearchText(const std::string& text);
 
     /* Sets to role to look at in the model index for data */
-    void SetSearchRole(const ProjectModel::Roles& role);
+    void SetSearchRole(const PlaylistModel::Roles& role);
 
 protected:
     /* Returns true for the row that is valid for the search filter */
@@ -100,4 +105,4 @@ private: /* Members */
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_PROJECT_MODEL_H
+#endif // _VOID_PLAYLIST_MODEL_H

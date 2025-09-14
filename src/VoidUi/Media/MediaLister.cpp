@@ -54,6 +54,10 @@ VoidMediaLister::~VoidMediaLister()
     delete m_RemoveAction;
     m_RemoveAction = nullptr;
 
+    m_PlaylistMenu->deleteLater();
+    delete m_PlaylistMenu;
+    m_PlaylistMenu = nullptr;
+
     m_InspectMetadataAction->deleteLater();
     delete m_InspectMetadataAction;
     m_InspectMetadataAction = nullptr;
@@ -99,6 +103,10 @@ void VoidMediaLister::Build()
     m_PlayAction = new QAction("Play Selected As Sequence");
     m_RemoveAction = new QAction("Remove Selected");
     m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
+    
+    m_PlaylistMenu = new QMenu("Add to Playlist");
+    /* Add any playlists which are present in the active project */
+    RebuildPlaylistMenu();
 
     /* Shortcuts */
 #ifdef __APPLE__
@@ -230,7 +238,11 @@ void VoidMediaLister::Connect()
     connect(m_MediaView, &MediaView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
     connect(m_MediaView, &MediaView::customContextMenuRequested, this, &VoidMediaLister::ShowContextMenu);
 
-    connect(m_ProjectView, &ProjectView::itemClicked, this, [this](const QModelIndex& index) { MBridge::Instance().SetCurrentProject(index); });
+    connect(m_ProjectView, &ProjectView::itemClicked, this, [this](const QModelIndex& index)
+    {
+        MBridge::Instance().SetCurrentProject(index);
+        RebuildPlaylistMenu();
+    });
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);
@@ -263,7 +275,7 @@ void VoidMediaLister::AddSelectionToSequence()
     /* Already aware of the amount of items which are to be copied */
     m.reserve(selected.size());
 
-    for (const QModelIndex& index: selected)
+    for (const QModelIndex& index : selected)
     {
         /* Add the Media to the vector */
         m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
@@ -287,8 +299,10 @@ void VoidMediaLister::ShowContextMenu(const Point& position)
     contextMenu.addAction(m_RemoveAction);
 
     contextMenu.addSeparator();
-
     contextMenu.addAction(m_InspectMetadataAction);
+
+    contextMenu.addSeparator();
+    contextMenu.addMenu(m_PlaylistMenu);
 
     /* Show Menu */
     #if _QT6
@@ -324,6 +338,36 @@ void VoidMediaLister::SetFromPreferences()
         m_ListViewToggle->setChecked(true);
     else
         m_ThumbnailViewToggle->setChecked(true);
+}
+
+void VoidMediaLister::RebuildPlaylistMenu()
+{
+    m_PlaylistMenu->clear();
+
+    m_CreatePlaylistAction = new QAction("Create Playlist...", m_PlaylistMenu);
+    m_PlaylistMenu->addAction(m_CreatePlaylistAction);
+
+    for (Playlist* playlist : *MBridge::Instance().ActiveProject()->PlaylistMediaModel())
+    {
+        QAction* action = new QAction(playlist->Name().c_str(), m_PlaylistMenu);
+        connect(action, &QAction::triggered, this, [=]() { AddSelectionToPlaylist(playlist); });
+        m_PlaylistMenu->addAction(action);
+    }
+}
+
+void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
+{
+    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
+
+    /* Nothing is selected */
+    if (selected.empty())
+        return;
+
+    for (const QModelIndex& index : selected)
+    {
+        /* Add the Media to the Playlist */
+        playlist->AddMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 }
 
 VOID_NAMESPACE_CLOSE

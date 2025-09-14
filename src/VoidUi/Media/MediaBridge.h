@@ -72,6 +72,12 @@ public:
     bool InsertMedia(const MediaStruct& mstruct, const int index);
 
     /**
+     * Playlist
+     */
+    void NewPlaylist();
+    void NewPlaylist(const std::string& name);
+
+    /**
      * Removes MediaClip
      * Emits a mediaAboutTobeRemoved signal before removing from the underlying struct
      * to allow components listening to this instance's updates to remove the entity from their structure
