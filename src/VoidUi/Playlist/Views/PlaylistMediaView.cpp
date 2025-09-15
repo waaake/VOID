@@ -63,15 +63,8 @@ void PlaylistMediaView::startDrag(Qt::DropActions supportedActions)
 
 void PlaylistMediaView::Setup()
 {
-    /* Set Model */
-    /* Source Model */
-    MediaModel* model = MBridge::Instance().DataModel();
-
     /* Proxy */
     proxy = new MediaProxyModel(this);
-    /* Setup the Proxy's Source Model */
-    ResetModel(model);
-
     setModel(proxy);
 
     /* Selection Mode */
@@ -89,7 +82,7 @@ void PlaylistMediaView::Setup()
 void PlaylistMediaView::ResetView()
 {
     /* Set Delegate */
-    setItemDelegate(new PlaylistItemDelegate(this));
+    setItemDelegate(new PlaylistMediaItemDelegate(this));
 
     /* Spacing */
     setSpacing(1);
@@ -101,8 +94,9 @@ void PlaylistMediaView::Connect()
     connect(this, &QListView::doubleClicked, this, &PlaylistMediaView::ItemDoubleClicked);
 
     /* Media Bridge */
-    connect(&MBridge::Instance(), &MBridge::projectCreated, this, [this](const Project* project) { ResetModel(project->DataModel()); });
-    connect(&MBridge::Instance(), &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(project->DataModel()); });
+    connect(&MBridge::Instance(), &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(nullptr); });
+    connect(&MBridge::Instance(), &MBridge::playlistCreated, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
+    connect(&MBridge::Instance(), &MBridge::playlistChanged, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
 }
 
 void PlaylistMediaView::ResetModel(MediaModel* model)

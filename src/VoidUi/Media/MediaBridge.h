@@ -76,6 +76,8 @@ public:
      */
     void NewPlaylist();
     void NewPlaylist(const std::string& name);
+    void SetCurrentPlaylist(const QModelIndex& index);
+    void SetCurrentPlaylist(int row);
 
     /**
      * Removes MediaClip
@@ -115,6 +117,8 @@ signals:
     void mediaAboutToBeRemoved(SharedMediaClip);
     void projectCreated(const Project*);
     void projectChanged(const Project*);
+    void playlistCreated(const Playlist*);
+    void playlistChanged(const Playlist*);
 
 private: /* Members */
     /* All the Available Projects */

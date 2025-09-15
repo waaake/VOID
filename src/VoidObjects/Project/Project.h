@@ -50,6 +50,7 @@ public:
     }
 
     inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
+    inline void RefreshPlaylist() { m_Playlists->Refresh(); }
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;

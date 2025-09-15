@@ -243,6 +243,7 @@ void VoidMediaLister::Connect()
         MBridge::Instance().SetCurrentProject(index);
         RebuildPlaylistMenu();
     });
+    connect(&MBridge::Instance(), &MBridge::playlistCreated, this, &VoidMediaLister::RebuildPlaylistMenu); 
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);
@@ -368,6 +369,8 @@ void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
         /* Add the Media to the Playlist */
         playlist->AddMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
     }
+
+    MBridge::Instance().ActiveProject()->RefreshPlaylist();
 }
 
 VOID_NAMESPACE_CLOSE

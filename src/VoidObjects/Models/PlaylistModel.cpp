@@ -69,12 +69,14 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || index.row() >= static_cast<int>(m_Playlists.size()))
         return QVariant();
 
-    const Playlist* project = m_Playlists.at(index.row());
+    const Playlist* playlist = m_Playlists.at(index.row());
 
     switch (static_cast<Roles>(role))
     {
         case Roles::Name:
-            return QVariant(project->Name().c_str());
+            return QVariant(playlist->Name().c_str());
+        case Roles::MediaCount:
+            return QVariant(playlist->MediaCount());
         default:
             return QVariant();
     }

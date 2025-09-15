@@ -52,6 +52,9 @@ void MBridge::NewProject(const std::string& name)
     /* Add to the projects */
     m_Projects->Add(m_Project);
     emit projectCreated(m_Project);
+    /* Connect Project Signals */
+    connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
+    connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
 }
 
 void MBridge::SetCurrentProject(int index)
@@ -193,6 +196,18 @@ void MBridge::NewPlaylist(const std::string& name)
 {
     if (m_Project)
         m_Project->NewPlaylist(name);
+}
+
+void MBridge::SetCurrentPlaylist(const QModelIndex& index)
+{
+    if (m_Project)
+        m_Project->SetCurrentPlaylist(index);
+}
+
+void MBridge::SetCurrentPlaylist(int row)
+{
+    if (m_Project)
+        m_Project->SetCurrentPlaylist(row);
 }
 
 void MBridge::PushCommand(QUndoCommand* command)

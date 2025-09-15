@@ -158,6 +158,7 @@ void VoidPlayLister::Connect()
 
     /* List */
     connect(m_MediaView, &PlaylistMediaView::itemDoubleClicked, this, &VoidPlayLister::IndexSelected);
+    connect(m_PlaylistView, &PlaylistView::itemClicked, this, [this](const QModelIndex& index) { MBridge::Instance().SetCurrentPlaylist(index); });
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidPlayLister::RemoveSelectedMedia);
