@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QLineEdit>
 #include <QPainter>
 
 /* Internal */
@@ -26,7 +27,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     /**
      * The main Rect for the Item will used as is for the name | item count
      * ------------------------------
-     * |    Name                123 |
+     * |  [Icon]  Name          123 |
      * ------------------------------
      */
 
@@ -41,11 +42,16 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
-    {        
+    {   
+        /* Gradient */
+        QLinearGradient gradient(0, 0, rect.width(), 0);
+        gradient.setColorAt(0, bg);
+        gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
+
         painter->save();
 
         /* Draw the Background */
-        painter->setBrush(option.palette.color(QPalette::Highlight).darker(180));
+        painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
         painter->drawRect(rect);
 
@@ -64,15 +70,19 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());
     painter->fillRect(siderect, bg.lighter(250));
 
+    /* Icon */
+    QRect iconrect = QRect(rect.left() + 10, rect.top(), 30, rect.height());
+    painter->drawPixmap(iconrect, QPixmap(":resources/icons/icon_playlist.svg"));
+
     /* Name */
-    QRect namerect = QRect(rect.left() + 10, rect.top(), rect.right(), rect.height());
+    QRect namerect = QRect(iconrect.right() + 10, rect.top(), rect.width() - 90, rect.height());
     QString name = index.data(static_cast<int>(PlaylistModel::Roles::Name)).toString();
     painter->drawText(namerect, Qt::AlignLeft | Qt::AlignVCenter, name);
 
     /* Media Count */
-    QRect countrect = QRect(namerect.left(), rect.top(), rect.right() - 20, rect.height());
+    QRect countrect = QRect(namerect.right(), rect.top(), 50, rect.height());
     QString count = QString::number(index.data(static_cast<int>(PlaylistModel::Roles::MediaCount)).toInt());
-    painter->drawText(countrect, Qt::AlignRight | Qt::AlignVCenter, count);
+    painter->drawText(countrect, Qt::AlignLeft | Qt::AlignCenter, count);
 
     /* Restore for other use */
     painter->restore();
@@ -80,7 +90,19 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
 QSize PlaylistItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 40);
+    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 30);
+}
+
+QWidget* PlaylistItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void PlaylistItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(PlaylistModel::Roles::Name)).toString());
 }
 
 /* }}} */
@@ -112,11 +134,16 @@ void PlaylistMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
-    {        
+    {   
+        /* Gradient */
+        QLinearGradient gradient(0, 0, rect.width(), 0);
+        gradient.setColorAt(0, bg);
+        gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
+
         painter->save();
 
         /* Draw the Background */
-        painter->setBrush(option.palette.color(QPalette::Highlight).darker(180));
+        painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
         painter->drawRect(rect);
 

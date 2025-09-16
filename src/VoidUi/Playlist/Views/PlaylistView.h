@@ -8,7 +8,7 @@
 #include <QListView>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidObjects/Models/PlaylistModel.h"
 
@@ -33,6 +33,11 @@ public:
 
     /* Toggle sorting on the Model */
     void EnableSorting(bool state, const Qt::SortOrder& order = Qt::AscendingOrder);
+
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 signals:
     /* Sends the Source Model Index mapped from the proxy model */

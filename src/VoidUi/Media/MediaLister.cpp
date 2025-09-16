@@ -346,6 +346,7 @@ void VoidMediaLister::RebuildPlaylistMenu()
     m_PlaylistMenu->clear();
 
     m_CreatePlaylistAction = new QAction("Create Playlist...", m_PlaylistMenu);
+    connect(m_CreatePlaylistAction, &QAction::triggered, this, [this]() { AddSelectionToPlaylist(MBridge::Instance().NewPlaylist()); });
     m_PlaylistMenu->addAction(m_CreatePlaylistAction);
 
     for (Playlist* playlist : *MBridge::Instance().ActiveProject()->PlaylistMediaModel())
@@ -358,6 +359,9 @@ void VoidMediaLister::RebuildPlaylistMenu()
 
 void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
 {
+    if (!playlist)
+        return;
+
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
 
     /* Nothing is selected */

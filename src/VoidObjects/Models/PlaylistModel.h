@@ -48,6 +48,7 @@ public:
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
@@ -56,7 +57,8 @@ public:
     void Insert(Playlist* media, int index);
     void Remove(const QModelIndex& index);
 
-    Playlist* GetPlaylist(const QModelIndex& index) const;
+    Playlist* PlaylistAt(const QModelIndex& index) const;
+    Playlist* PlaylistAt(int row, int column) const;
     int PlaylistRow(const Playlist* playlist) const;
 
     void Clear();

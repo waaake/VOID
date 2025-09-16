@@ -1,8 +1,13 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QDragEnterEvent>
+#include <QMimeData>
+
 /* Internal */
 #include "PlaylistView.h"
+#include "VoidUi/Descriptors.h"
 #include "VoidUi/Playlist/Delegates/ListDelegate.h"
 
 VOID_NAMESPACE_OPEN
@@ -51,6 +56,62 @@ void PlaylistView::Setup()
 
     /* Context Menu */
     setContextMenuPolicy(Qt::CustomContextMenu);
+
+    setAcceptDrops(true);
+    setDropIndicatorShown(true);
+}
+
+void PlaylistView::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void PlaylistView::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void PlaylistView::dropEvent(QDropEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        #if _QT6
+        QModelIndex index = indexAt(event->position());
+        #else
+        QModelIndex index = indexAt(event->pos());
+        #endif // _QT6
+
+        if (!index.isValid())
+            return;
+
+        Playlist* playlist = MBridge::Instance().PlaylistAt(index);
+        
+        if (!playlist)
+            return;
+
+        QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
+        
+        /* Read Input data */
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        int row, column;
+        stream >> row >> column;
+        
+        /**
+         * Media from the Media Bridge
+         * The media is always retrieved from the active project
+         * the assumption is that a drag-drop event would always happen when the project is active
+         */
+        SharedMediaClip media = MBridge::Instance().Media(row, column);
+
+        playlist->AddMedia(media);
+        MBridge::Instance().ActiveProject()->RefreshPlaylist();
+    }
 }
 
 void PlaylistView::Connect()

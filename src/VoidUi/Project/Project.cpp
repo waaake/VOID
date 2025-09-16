@@ -221,7 +221,7 @@ void Project::SetCurrentPlaylist(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    SetActivePlaylist(m_Playlists->GetPlaylist(index));
+    SetActivePlaylist(m_Playlists->PlaylistAt(index));
     emit playlistChanged(m_Playlist);
 }
 
@@ -231,7 +231,7 @@ void Project::SetCurrentPlaylist(int index)
     if (index > m_Playlists->rowCount() - 1)
         return;
 
-    SetActivePlaylist(m_Playlists->GetPlaylist(m_Playlists->index(index, 0)));
+    SetActivePlaylist(m_Playlists->PlaylistAt(index, 0));
     emit playlistChanged(m_Playlist);
 }
 

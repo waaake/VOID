@@ -38,6 +38,7 @@ public:
     inline bool Modified() const { return m_Modified; }
 
     std::string Name() const { return m_Name; }
+    void SetName(const std::string& name) { m_Name = name; }
 
 protected: /* Members */
     MediaModel* m_Media;

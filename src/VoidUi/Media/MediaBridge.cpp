@@ -97,13 +97,13 @@ void MBridge::SetActiveProject(Project* project)
 }
 
 void MBridge::AddMedia(const std::string& filepath)
-{ 
-    PushCommand(new MediaImportCommand(filepath)); 
+{
+    PushCommand(new MediaImportCommand(filepath));
 }
 
 void MBridge::RemoveMedia(const std::vector<QModelIndex>& media)
-{ 
-    PushCommand(new MediaRemoveCommand(media)); 
+{
+    PushCommand(new MediaRemoveCommand(media));
 }
 
 bool MBridge::AddMedia(const MediaStruct& mstruct)
@@ -186,16 +186,20 @@ bool MBridge::Remove(const QModelIndex& index)
     return true;
 }
 
-void MBridge::NewPlaylist()
+Playlist* MBridge::NewPlaylist()
 {
     if (m_Project)
-        m_Project->NewPlaylist();
+        return m_Project->NewPlaylist();
+
+    return nullptr;
 }
 
-void MBridge::NewPlaylist(const std::string& name)
+Playlist* MBridge::NewPlaylist(const std::string& name)
 {
     if (m_Project)
-        m_Project->NewPlaylist(name);
+        return m_Project->NewPlaylist(name);
+
+    return nullptr;
 }
 
 void MBridge::SetCurrentPlaylist(const QModelIndex& index)
@@ -296,7 +300,7 @@ bool MBridge::Close(bool force)
 
     /* Case where the current project is the last one */
     bool create = m_Projects->rowCount() == 1;
-    
+
     int row = m_Projects->ProjectRow(m_Project);
     QModelIndex index = m_Projects->index(row, 0);
 

@@ -7,6 +7,7 @@
 #include <QDrag>
 #include <QIODevice>
 #include <QMimeData>
+#include <QDragEnterEvent>
 
 /* Internal */
 #include "PlaylistMediaView.h"
@@ -51,7 +52,7 @@ void PlaylistMediaView::startDrag(Qt::DropActions supportedActions)
     QDataStream stream(&transferData, QIODevice::WriteOnly);
     stream << index.row() << index.column();
 
-    data->setData(MimeTypes::MediaItem, transferData);
+    data->setData(MimeTypes::PlaylistItem, transferData);
 
     QDrag* drag = new QDrag(this);
     drag->setMimeData(data);
@@ -59,6 +60,50 @@ void PlaylistMediaView::startDrag(Qt::DropActions supportedActions)
     drag->setPixmap(p.scaledToWidth(100, Qt::SmoothTransformation));
 
     drag->exec();
+}
+
+void PlaylistMediaView::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void PlaylistMediaView::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void PlaylistMediaView::dropEvent(QDropEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        Playlist* playlist = MBridge::Instance().ActivePlaylist();
+
+        if (!playlist)
+            return;
+
+        QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
+
+        /* Read Input data */
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        int row, column;
+        stream >> row >> column;
+
+        /**
+         * Media from the Media Bridge
+         * The media is always retrieved from the active project
+         * the assumption is that a drag-drop event would always happen when the project is active
+         */
+        SharedMediaClip media = MBridge::Instance().Media(row, column);
+
+        playlist->AddMedia(media);
+        MBridge::Instance().ActiveProject()->RefreshPlaylist();
+    }
 }
 
 void PlaylistMediaView::Setup()
@@ -77,6 +122,7 @@ void PlaylistMediaView::Setup()
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     setDragEnabled(true);
+    setAcceptDrops(true);
 }
 
 void PlaylistMediaView::ResetView()

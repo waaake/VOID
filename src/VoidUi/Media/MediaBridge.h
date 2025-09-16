@@ -74,10 +74,14 @@ public:
     /**
      * Playlist
      */
-    void NewPlaylist();
-    void NewPlaylist(const std::string& name);
+    Playlist* NewPlaylist();
+    Playlist* NewPlaylist(const std::string& name);
     void SetCurrentPlaylist(const QModelIndex& index);
     void SetCurrentPlaylist(int row);
+
+    inline Playlist* ActivePlaylist() const { return m_Project->ActivePlaylist(); }
+    inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Project->PlaylistAt(index); }
+    inline Playlist* PlaylistAt(int row, int column) const { return m_Project->PlaylistAt(row, column); }
 
     /**
      * Removes MediaClip
@@ -90,6 +94,7 @@ public:
     inline MediaModel* DataModel() const { return m_Project->DataModel(); }
     inline ProjectModel* ProjectDataModel() const { return m_Projects; }
     inline SharedMediaClip Media(int row, int column) const { return m_Project->Media(row, column); }
+    inline SharedMediaClip PlaylistMedia(int row, int column) const { return m_Project->PlaylistMedia(row, column); }
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);

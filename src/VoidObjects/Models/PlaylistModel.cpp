@@ -84,12 +84,24 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
+bool PlaylistModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (role == Qt::EditRole)
+    {
+        m_Playlists[index.row()]->SetName(value.toString().toStdString());
+        emit dataChanged(index, index);
+        return true;
+    }
+
+    return false;
+}
+
 Qt::ItemFlags PlaylistModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsEditable;
 }
 
 void PlaylistModel::Add(Playlist* playlist)
@@ -134,13 +146,19 @@ void PlaylistModel::Remove(const QModelIndex& index)
     endRemoveRows();
 }
 
-Playlist* PlaylistModel::GetPlaylist(const QModelIndex& index) const
+Playlist* PlaylistModel::PlaylistAt(const QModelIndex& index) const
 {
     if (!index.isValid())
         return nullptr;
 
     /* Return the playlist at the index from the underlying vector */
     return m_Playlists.at(index.row());
+}
+
+Playlist* PlaylistModel::PlaylistAt(int row, int column) const
+{
+    /* Return the playlist at the index from the underlying vector */
+    return m_Playlists.at(row);
 }
 
 int PlaylistModel::PlaylistRow(const Playlist* playlist) const

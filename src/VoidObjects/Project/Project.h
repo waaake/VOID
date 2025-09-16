@@ -43,6 +43,8 @@ public:
     void RemoveMedia(const QModelIndex& index);
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
+    SharedMediaClip PlaylistMedia(const QModelIndex& index) const;
+    SharedMediaClip PlaylistMedia(int row, int column) const;
     inline MediaModel* DataModel() const { return m_Media; }
     inline QModelIndex ClipIndex(const SharedMediaClip& clip, int column = 0) const
     { 
@@ -50,6 +52,9 @@ public:
     }
 
     inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
+    inline Playlist* ActivePlaylist() const { return m_Playlist; }
+    inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Playlists->PlaylistAt(index); }
+    inline Playlist* PlaylistAt(int row, int column) const { return m_Playlists->PlaylistAt(row, column); }
     inline void RefreshPlaylist() { m_Playlists->Refresh(); }
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;

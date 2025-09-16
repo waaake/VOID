@@ -100,8 +100,12 @@ void VoidPlayLister::Build()
         ).c_str()
     );
 
-    m_CreateButton = new QPushButton("+");
-    m_DeleteButton = new QPushButton("-");
+    m_CreateButton = new QPushButton;
+    m_CreateButton->setIcon(QIcon(":resources/icons/icon_add.svg"));
+    m_CreateButton->setFixedWidth(26);
+    m_DeleteButton = new QPushButton;
+    m_DeleteButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
+    m_DeleteButton->setFixedWidth(26);
 
     m_OptionsLayout->addWidget(m_SearchBar);
     m_OptionsLayout->addWidget(m_CreateButton);
