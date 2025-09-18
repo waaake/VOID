@@ -1,8 +1,8 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-#ifndef _VOID_MEDIA_MODEL_H
-#define _VOID_MEDIA_MODEL_H
+#ifndef _VOID_PLAYLIST_MODEL_H
+#define _VOID_PLAYLIST_MODEL_H
 
 /* STD */
 #include <vector>
@@ -13,85 +13,82 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Playlist/Playlist.h"
 
 VOID_NAMESPACE_OPEN
 
 /**
- * Describes how the Media is held in a Project/Subdirs
+ * Describes the Playlist
  */
-class VOID_API MediaModel : public QAbstractItemModel
+class VOID_API PlaylistModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
     /**
-     * Roles for various fields of data from the MediaClip
+     * Roles for various fields of data from the Playlist
      */
-    enum class MRoles
+    enum class Roles
     {
         Name = Qt::UserRole + 1001,
-        Framerate,
-        Extension,
-        FrameRange,
-        Thumbnail,
+        Active,
         Color,
+        MediaCount
     };
 
 public:
-    explicit MediaModel(QObject* parent = nullptr);
+    explicit PlaylistModel(QObject* parent = nullptr);
+
+    ~PlaylistModel();
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
-    
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    /* Media */
-    void Add(const SharedMediaClip& media);
-    void Insert(const SharedMediaClip& media, const int index);
+    /* Playlist */
+    void Add(Playlist* playlist);
+    void Insert(Playlist* media, int index);
     void Remove(const QModelIndex& index);
-    
-    SharedMediaClip Media(const QModelIndex& index) const;
-    int MediaRow(const SharedMediaClip& clip) const;
 
-    void Clear() { m_Media.clear(); }
+    Playlist* PlaylistAt(const QModelIndex& index) const;
+    Playlist* PlaylistAt(int row, int column) const;
+    int PlaylistRow(const Playlist* playlist) const;
 
-    /* Iterator */
-    inline std::vector<SharedMediaClip>::const_iterator cbegin() const noexcept { return m_Media.cbegin(); }
-    inline std::vector<SharedMediaClip>::const_iterator cend() const noexcept { return m_Media.cend(); }
+    void Clear();
+    inline void Refresh() { Update(); }
 
-    inline std::vector<SharedMediaClip>::iterator begin() noexcept { return m_Media.begin(); }
-    inline std::vector<SharedMediaClip>::iterator end() noexcept { return m_Media.end(); }
+    inline const std::vector<Playlist*>::const_iterator cbegin() const noexcept { return m_Playlists.cbegin(); }
+    inline const std::vector<Playlist*>::const_iterator cend() const noexcept { return m_Playlists.cend(); }
 
-    const std::vector<SharedMediaClip> AllMedia() const { return m_Media; }
+    inline std::vector<Playlist*>::iterator begin() noexcept { return m_Playlists.begin(); }
+    inline std::vector<Playlist*>::iterator end() noexcept { return m_Playlists.end(); }
 
 private: /* Members */
-    std::vector<SharedMediaClip> m_Media;
+    std::vector<Playlist*> m_Playlists;
 
 private: /* Methods */
-    std::string ItemFramerate(const SharedMediaClip& clip) const;
-    std::string ItemFramerange(const SharedMediaClip& clip) const;
-
     void Update();
 };
 
-class VOID_API MediaProxyModel : public QSortFilterProxyModel
+class VOID_API PlaylistProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    explicit MediaProxyModel(QObject* parent = nullptr);
+    explicit PlaylistProxyModel(QObject* parent = nullptr);
 
     /* Sets the key which needs to be searched in the data */
     void SetSearchText(const std::string& text);
 
     /* Sets to role to look at in the model index for data */
-    void SetSearchRole(const MediaModel::MRoles& role);
+    void SetSearchRole(const PlaylistModel::Roles& role);
 
 protected:
     /* Returns true for the row that is valid for the search filter */
@@ -109,7 +106,6 @@ private: /* Members */
     int m_SortRole;
 };
 
-
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_MEDIA_MODEL_H
+#endif // _VOID_PLAYLIST_MODEL_H

@@ -196,4 +196,67 @@ void Project::CancelImporting()
         m_DirectoryImporter->Cancel();
 }
 
+Playlist* Project::NewPlaylist()
+{
+    /* Use default name */
+    std::string name = "Playlist ";
+    name += std::to_string(m_Playlists->rowCount() + 1);
+    return NewPlaylist(name);
+}
+
+Playlist* Project::NewPlaylist(const std::string& name)
+{
+    SetActivePlaylist(new Playlist(name, this));
+
+    /* Add to the playlists */
+    m_Playlists->Add(m_Playlist);
+    emit playlistCreated(m_Playlist);
+
+    return m_Playlist;
+}
+
+void Project::SetCurrentPlaylist(const QModelIndex& index)
+{
+    /* Provided index is not valid */
+    if (!index.isValid())
+        return;
+
+    SetActivePlaylist(m_Playlists->PlaylistAt(index));
+    emit playlistChanged(m_Playlist);
+}
+
+void Project::SetCurrentPlaylist(int index)
+{
+    if (index < 0 || index > m_Playlists->rowCount() - 1)
+        return;
+
+    SetActivePlaylist(m_Playlists->PlaylistAt(index, 0));
+    emit playlistChanged(m_Playlist);
+}
+
+void Project::RemovePlaylist(const QModelIndex& index)
+{
+    int row = index.row();
+    m_Playlists->Remove(index);
+
+    /* Based on whether this is the last row or any from the beginning */
+    SetCurrentPlaylist(row >= m_Playlists->rowCount() ? [](int x) { return --x; }(m_Playlists->rowCount()) : row);
+}
+
+void Project::SetActivePlaylist(Playlist* playlist)
+{
+    if (!playlist)
+        return;
+
+    /* Mark the current one as inactive */
+    if (m_Playlist)
+        m_Playlist->SetActive(false);
+
+    m_Playlist = playlist;
+    m_Playlist->SetActive(true);
+
+    /* Force Update on the Model */
+    m_Playlists->Refresh();
+}
+
 VOID_NAMESPACE_CLOSE

@@ -98,6 +98,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             # Icons
             ../images/VOID_Logo.svg
             ../images/VOID_Logo_900x200.png
+            ../icons/icon_add.svg
             ../icons/icon_adjust.svg
             ../icons/icon_annotate.svg
             ../icons/icon_arrow_right.svg
@@ -119,6 +120,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_missing_frame.svg
             ../icons/icon_pointer.svg
             ../icons/icon_play.svg
+            ../icons/icon_playlist.svg
             ../icons/icon_play_selected.svg
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg

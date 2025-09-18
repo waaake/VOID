@@ -72,6 +72,18 @@ public:
     bool InsertMedia(const MediaStruct& mstruct, const int index);
 
     /**
+     * Playlist
+     */
+    Playlist* NewPlaylist();
+    Playlist* NewPlaylist(const std::string& name);
+    void SetCurrentPlaylist(const QModelIndex& index);
+    void SetCurrentPlaylist(int row);
+
+    inline Playlist* ActivePlaylist() const { return m_Project->ActivePlaylist(); }
+    inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Project->PlaylistAt(index); }
+    inline Playlist* PlaylistAt(int row, int column) const { return m_Project->PlaylistAt(row, column); }
+
+    /**
      * Removes MediaClip
      * Emits a mediaAboutTobeRemoved signal before removing from the underlying struct
      * to allow components listening to this instance's updates to remove the entity from their structure
@@ -82,6 +94,8 @@ public:
     inline MediaModel* DataModel() const { return m_Project->DataModel(); }
     inline ProjectModel* ProjectDataModel() const { return m_Projects; }
     inline SharedMediaClip Media(int row, int column) const { return m_Project->Media(row, column); }
+    inline SharedMediaClip PlaylistMedia(const QModelIndex& index) const { return m_Project->PlaylistMedia(index); }
+    inline SharedMediaClip PlaylistMedia(int row, int column) const { return m_Project->PlaylistMedia(row, column); }
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);
@@ -109,6 +123,8 @@ signals:
     void mediaAboutToBeRemoved(SharedMediaClip);
     void projectCreated(const Project*);
     void projectChanged(const Project*);
+    void playlistCreated(const Playlist*);
+    void playlistChanged(const Playlist*);
 
 private: /* Members */
     /* All the Available Projects */

@@ -26,7 +26,7 @@ class VOID_API ProjectModel : public QAbstractItemModel
 
 public:
     /**
-     * Roles for various fields of data from the MediaClip
+     * Roles for various fields of data from the Project
      */
     enum class Roles
     {
@@ -51,8 +51,8 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     /* Project */
-    void Add(Core::Project* media);
-    void Insert(Core::Project* media, int index);
+    void Add(Core::Project* project);
+    void Insert(Core::Project* project, int index);
     void Remove(const QModelIndex& index);
 
     Core::Project* GetProject(const QModelIndex& index) const;

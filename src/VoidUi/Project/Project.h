@@ -44,6 +44,16 @@ public:
      */
     static Project* FromStream(std::istream& in);
 
+    Playlist* NewPlaylist();
+    Playlist* NewPlaylist(const std::string& name);
+    void SetCurrentPlaylist(const QModelIndex& index);
+    void SetCurrentPlaylist(int index);
+    void RemovePlaylist(const QModelIndex& index);
+
+signals:
+    void playlistCreated(const Playlist*);
+    void playlistChanged(const Playlist*);
+
 private: /* Members */
     QUndoStack* m_UndoStack;
     ProgressTask* m_ProgressTask;
@@ -62,6 +72,7 @@ private: /* Methods */
      * Imports Directory without any progress or allowing cancellations
      */
     void ImportDirectory_(const std::string& path);
+    void SetActivePlaylist(Playlist* playlist);
 };
 
 VOID_NAMESPACE_CLOSE

@@ -417,6 +417,9 @@ void VoidMainWindow::Connect()
     connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
 
+    /* Play Lister */
+    connect(m_PlayLister, &VoidPlayLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
+
     /* Sequence */
     connect(m_Sequence.get(), &PlaybackSequence::rangeChanged, m_Player, &Player::SetRange);
 
@@ -453,6 +456,7 @@ void VoidMainWindow::RegisterDocks()
 
     /* Media Lister Widget */
     m_MediaLister = new VoidMediaLister(this);
+    m_PlayLister = new VoidPlayLister(this);
 
     /* Python Script Editor */
     m_ScriptEditor = new PyScriptEditor();
@@ -464,6 +468,7 @@ void VoidMainWindow::RegisterDocks()
     manager.RegisterDock(m_Player, "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
     manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
+    manager.RegisterDock(m_PlayLister, "Playlist View");
 }
 
 // Slots

@@ -532,7 +532,7 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
 
 void Player::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem) || event->mimeData()->hasFormat(MimeTypes::PlaylistItem))
     {
         /* Show Overlay */
         m_Overlay->setVisible(true);
@@ -575,6 +575,27 @@ void Player::dropEvent(QDropEvent* event)
          * the assumption is that a drag-drop event would always happen when the project is active
          */
         SharedMediaClip media = MBridge::Instance().Media(row, column);
+
+        if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
+            Load(media, PlayerViewBuffer::A);
+        else if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::B)
+            Load(media, PlayerViewBuffer::B);
+    }
+    else if (event->mimeData()->hasFormat(MimeTypes::PlaylistItem))
+    {
+        QByteArray data = event->mimeData()->data(MimeTypes::PlaylistItem);
+
+        /* Read Input data */
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        int row, column;
+        stream >> row >> column;
+
+        /**
+         * Media from the Media Bridge
+         * The media is always retrieved from the active project
+         * the assumption is that a drag-drop event would always happen when the project is active
+         */
+        SharedMediaClip media = MBridge::Instance().PlaylistMedia(row, column);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
             Load(media, PlayerViewBuffer::A);

@@ -92,6 +92,8 @@ private: /* Members */
     QAction* m_PlayAction;
     QAction* m_RemoveAction;
     QAction* m_InspectMetadataAction;
+    QMenu* m_PlaylistMenu;
+    QAction* m_CreatePlaylistAction;
 
     /* Shortcuts */
     QShortcut* m_DeleteShortcut;
@@ -99,6 +101,9 @@ private: /* Members */
 private: /* Methods */
     /* Set values from User preferences */
     void SetFromPreferences();
+    // void ProjectChanged();
+    void RebuildPlaylistMenu();
+    void AddSelectionToPlaylist(Playlist* playlist);
 };
 
 VOID_NAMESPACE_CLOSE

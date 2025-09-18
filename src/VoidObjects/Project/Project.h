@@ -8,6 +8,7 @@
 #include "Definition.h"
 #include "VoidObjects/VoidObject.h"
 #include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/PlaylistModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -40,22 +41,26 @@ public:
     void AddMedia(const SharedMediaClip& media);
     void InsertMedia(const SharedMediaClip& media, const int index);
     void RemoveMedia(const QModelIndex& index);
-
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
-
+    SharedMediaClip PlaylistMedia(const QModelIndex& index) const;
+    SharedMediaClip PlaylistMedia(int row, int column) const;
     inline MediaModel* DataModel() const { return m_Media; }
     inline QModelIndex ClipIndex(const SharedMediaClip& clip, int column = 0) const
     { 
         return m_Media->index(m_Media->MediaRow(clip), column); 
     }
 
+    inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
+    inline Playlist* ActivePlaylist() const { return m_Playlist; }
+    inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Playlists->PlaylistAt(index); }
+    inline Playlist* PlaylistAt(int row, int column) const { return m_Playlists->PlaylistAt(row, column); }
+    inline void RefreshPlaylist() { m_Playlists->Refresh(); }
+
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;
-
     void Deserialize(const rapidjson::Value& in) override;
     void Deserialize(std::istream& in) override;
-    
     const char* TypeName() const override { return "Project"; }
     
     /**
@@ -92,6 +97,10 @@ public:
 protected: /* Members */
     /* The Project holds the media and anything linking to the media */
     MediaModel* m_Media;
+    /* Any Playlists in the project */
+    PlaylistModel* m_Playlists;
+    /* Currently Active Playlist */
+    Playlist* m_Playlist;
 
     /* Project Descriptors */
     std::string m_Name;

@@ -12,6 +12,7 @@ VOID_NAMESPACE_OPEN
 namespace MimeTypes {
 
     constexpr const char* MediaItem = "application-void/x-MediaItem";
+    constexpr const char* PlaylistItem = "application-void/x-PlaylistItem";
 
 } // namespace MimeTypes
 

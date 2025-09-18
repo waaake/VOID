@@ -32,6 +32,12 @@ set(SOURCES
     Media/Delegates/ListDelegate.cpp
     Media/Delegates/ThumbnailDelegate.cpp
 
+    # Playlist
+    Playlist/PlayLister.cpp
+    Playlist/Views/PlaylistView.cpp
+    Playlist/Views/PlaylistMediaView.cpp
+    Playlist/Delegates/ListDelegate.cpp
+
     # Preferences
     Preferences/Preferences.cpp
     Preferences/PreferencesUI.cpp
