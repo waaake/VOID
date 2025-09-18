@@ -102,8 +102,9 @@ if (WIN32)
         ../VoidObjects/Sequence/Track.h
         ../VoidObjects/Sequence/TrackItem.h
 
-        ../VoidObjects/Models/ProjectModel.h
         ../VoidObjects/Models/MediaModel.h
+        ../VoidObjects/Models/PlaylistModel.h
+        ../VoidObjects/Models/ProjectModel.h
         # TODO: Find a better way around this....
     )
 endif()
