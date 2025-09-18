@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QDragEnterEvent>
+#include <QMenu>
 #include <QMimeData>
 
 /* Internal */
@@ -15,6 +16,9 @@ VOID_NAMESPACE_OPEN
 PlaylistView::PlaylistView(QWidget* parent)
     : QListView(parent)
 {
+    m_PlayAction = new QAction("Play");
+    m_RemoveAction = new QAction("Remove Playlist");
+
     Setup();
 
     /* Connect Signals */
@@ -32,6 +36,14 @@ PlaylistView::~PlaylistView()
     proxy->deleteLater();
     delete proxy;
     proxy = nullptr;
+
+    m_PlayAction->deleteLater();
+    delete m_PlayAction;
+    m_PlayAction = nullptr;
+
+    m_RemoveAction->deleteLater();
+    delete m_RemoveAction;
+    m_RemoveAction = nullptr;
 }
 
 void PlaylistView::Setup()
@@ -40,14 +52,13 @@ void PlaylistView::Setup()
     proxy = new PlaylistProxyModel(this);
 
     /* Source Model */
-    // ProjectModel* model = MBridge::Instance().ProjectDataModel();
     Project* project = MBridge::Instance().ActiveProject();
 
     /* Setup the Proxy's Source Model */
     ResetModel(project->PlaylistMediaModel());
 
     /* Selection Mode */
-    setSelectionMode(QAbstractItemView::ExtendedSelection);
+    setSelectionMode(QAbstractItemView::SingleSelection);
     setUniformItemSizes(true);
     /* Set Delegate */
     setItemDelegate(new PlaylistItemDelegate(this));
@@ -119,6 +130,10 @@ void PlaylistView::Connect()
     connect(this, &QListView::clicked, this, &PlaylistView::ItemClicked);
     connect(&MBridge::Instance(), &MBridge::projectCreated, this, &PlaylistView::ProjectChanged);
     connect(&MBridge::Instance(), &MBridge::projectChanged, this, &PlaylistView::ProjectChanged);
+    connect(this, &QListView::customContextMenuRequested, this, &PlaylistView::ShowContextMenu);
+
+    connect(m_PlayAction, &QAction::triggered, this, &PlaylistView::Play);
+    connect(m_RemoveAction, &QAction::triggered, this, &PlaylistView::RemoveSelected);
 }
 
 void PlaylistView::ResetModel(PlaylistModel* model)
@@ -184,6 +199,51 @@ void PlaylistView::EnableSorting(bool state, const Qt::SortOrder& order)
 void PlaylistView::ProjectChanged(const Project* project)
 {
     ResetModel(project->PlaylistMediaModel());   
+}
+
+void PlaylistView::ShowContextMenu(const Point& position)
+{
+    /* Show up only if we have selection */
+    if (!HasSelection())
+        return;
+
+    /* Create a context menu */
+    QMenu contextMenu(this);
+
+    /* Add the Defined actions */
+    contextMenu.addAction(m_PlayAction);
+    contextMenu.addAction(m_RemoveAction);
+
+    /* Show Menu */
+    #if _QT6
+    /**
+     * Qt6 mapToGlobal returns QPointF while menu.exec expects QPoint
+     */
+    contextMenu.exec(mapToGlobal(position).toPoint());
+    #else
+    contextMenu.exec(mapToGlobal(position));
+    #endif // _QT6
+}
+
+void PlaylistView::Play()
+{
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return;
+
+    Playlist* playlist = MBridge::Instance().PlaylistAt(proxy->mapToSource(selection->currentIndex()));
+
+    if (playlist)
+        emit played(playlist);
+}
+
+void PlaylistView::RemoveSelected()
+{
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return;
+
+    MBridge::Instance().ActiveProject()->RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
 }
 
 VOID_NAMESPACE_CLOSE

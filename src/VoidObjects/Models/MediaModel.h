@@ -68,6 +68,8 @@ public:
     inline std::vector<SharedMediaClip>::iterator begin() noexcept { return m_Media.begin(); }
     inline std::vector<SharedMediaClip>::iterator end() noexcept { return m_Media.end(); }
 
+    const std::vector<SharedMediaClip> AllMedia() const { return m_Media; }
+
 private: /* Members */
     std::vector<SharedMediaClip> m_Media;
 

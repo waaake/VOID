@@ -227,12 +227,20 @@ void Project::SetCurrentPlaylist(const QModelIndex& index)
 
 void Project::SetCurrentPlaylist(int index)
 {
-    /* Provided index is not valid */
-    if (index > m_Playlists->rowCount() - 1)
+    if (index < 0 || index > m_Playlists->rowCount() - 1)
         return;
 
     SetActivePlaylist(m_Playlists->PlaylistAt(index, 0));
     emit playlistChanged(m_Playlist);
+}
+
+void Project::RemovePlaylist(const QModelIndex& index)
+{
+    int row = index.row();
+    m_Playlists->Remove(index);
+
+    /* Based on whether this is the last row or any from the beginning */
+    SetCurrentPlaylist(row >= m_Playlists->rowCount() ? [](int x) { return --x; }(m_Playlists->rowCount()) : row);
 }
 
 void Project::SetActivePlaylist(Playlist* playlist)

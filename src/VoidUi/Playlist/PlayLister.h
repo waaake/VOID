@@ -54,6 +54,9 @@ private: /* Methods */
 
     void IndexSelected(const QModelIndex& index);
 
+    void Play(const Playlist* playlist);
+    void Play(const std::vector<SharedMediaClip>& media);
+
 private: /* Members */
     QVBoxLayout* m_layout;
     QHBoxLayout* m_OptionsLayout;

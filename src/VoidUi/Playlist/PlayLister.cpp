@@ -159,10 +159,13 @@ void VoidPlayLister::Connect()
     /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &PlaylistMediaView::Search);
     connect(m_CreateButton, &QPushButton::clicked, this, []() { MBridge::Instance().NewPlaylist(); });
+    connect(m_DeleteButton, &QPushButton::clicked, m_PlaylistView, &PlaylistView::RemoveSelected);
 
     /* List */
     connect(m_MediaView, &PlaylistMediaView::itemDoubleClicked, this, &VoidPlayLister::IndexSelected);
     connect(m_PlaylistView, &PlaylistView::itemClicked, this, [this](const QModelIndex& index) { MBridge::Instance().SetCurrentPlaylist(index); });
+    connect(m_PlaylistView, &PlaylistView::played, this, static_cast<void (VoidPlayLister::*)(const Playlist*)>(&VoidPlayLister::Play));
+    connect(m_MediaView, &PlaylistMediaView::played, this, static_cast<void (VoidPlayLister::*)(const std::vector<SharedMediaClip>&)>(&VoidPlayLister::Play));
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidPlayLister::RemoveSelectedMedia);
@@ -206,6 +209,17 @@ void VoidPlayLister::RemoveSelectedMedia()
 {
     /* Push all of the selected indexes for removal */
     MBridge::Instance().RemoveMedia(m_MediaView->SelectedIndexes());
+}
+
+void VoidPlayLister::Play(const Playlist* playlist)
+{
+    /* All of the Media from the playlist */
+    emit playlistChanged(playlist->DataModel()->AllMedia());
+}
+
+void VoidPlayLister::Play(const std::vector<SharedMediaClip>& media)
+{
+    emit playlistChanged(media);
 }
 
 VOID_NAMESPACE_CLOSE

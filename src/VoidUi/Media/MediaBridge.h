@@ -94,6 +94,7 @@ public:
     inline MediaModel* DataModel() const { return m_Project->DataModel(); }
     inline ProjectModel* ProjectDataModel() const { return m_Projects; }
     inline SharedMediaClip Media(int row, int column) const { return m_Project->Media(row, column); }
+    inline SharedMediaClip PlaylistMedia(const QModelIndex& index) const { return m_Project->PlaylistMedia(index); }
     inline SharedMediaClip PlaylistMedia(int row, int column) const { return m_Project->PlaylistMedia(row, column); }
 
     /* Push an Undo Command on to the stack */

@@ -6,6 +6,7 @@
 #include <QDataStream>
 #include <QDrag>
 #include <QIODevice>
+#include <QMenu>
 #include <QMimeData>
 #include <QDragEnterEvent>
 
@@ -21,6 +22,8 @@ PlaylistMediaView::PlaylistMediaView(QWidget* parent)
     : QListView(parent)
     , m_ViewType(ViewType::ListView)
 {
+    m_PlayAction = new QAction("Play Selected Media");
+    m_RemoveAction = new QAction("Remove Selected Media from playlist");
     Setup();
 
     /* Connect Signals */
@@ -38,6 +41,14 @@ PlaylistMediaView::~PlaylistMediaView()
     proxy->deleteLater();
     delete proxy;
     proxy = nullptr;
+
+    m_PlayAction->deleteLater();
+    delete m_PlayAction;
+    m_PlayAction = nullptr;
+
+    m_RemoveAction->deleteLater();
+    delete m_RemoveAction;
+    m_RemoveAction = nullptr;
 }
 
 void PlaylistMediaView::startDrag(Qt::DropActions supportedActions)
@@ -137,7 +148,11 @@ void PlaylistMediaView::ResetView()
 
 void PlaylistMediaView::Connect()
 {
+    connect(m_PlayAction, &QAction::triggered, this, &PlaylistMediaView::PlaySelected);
+    connect(m_RemoveAction, &QAction::triggered, this, &PlaylistMediaView::RemoveSelected);
+
     connect(this, &QListView::doubleClicked, this, &PlaylistMediaView::ItemDoubleClicked);
+    connect(this, &QListView::customContextMenuRequested, this, &PlaylistMediaView::ShowContextMenu);
 
     /* Media Bridge */
     connect(&MBridge::Instance(), &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(nullptr); });
@@ -158,6 +173,30 @@ void PlaylistMediaView::ItemDoubleClicked(const QModelIndex& index)
 
     /* The source index */
     emit itemDoubleClicked(proxy->mapToSource(index));
+}
+
+void PlaylistMediaView::ShowContextMenu(const Point& position)
+{
+     /* Show up only if we have selection */
+    if (!HasSelection())
+        return;
+
+    /* Create a context menu */
+    QMenu contextMenu(this);
+
+    /* Add the Defined actions */
+    contextMenu.addAction(m_PlayAction);
+    contextMenu.addAction(m_RemoveAction);
+
+    /* Show Menu */
+    #if _QT6
+    /**
+     * Qt6 mapToGlobal returns QPointF while menu.exec expects QPoint
+     */
+    contextMenu.exec(mapToGlobal(position).toPoint());
+    #else
+    contextMenu.exec(mapToGlobal(position));
+    #endif // _QT6
 }
 
 const std::vector<QModelIndex> PlaylistMediaView::SelectedIndexes() const
@@ -211,6 +250,57 @@ void PlaylistMediaView::SetViewType(const ViewType& type)
 
     /* Reset the view */
     ResetView();
+}
+
+void PlaylistMediaView::PlaySelected()
+{
+    std::vector<SharedMediaClip> clips;
+
+    /* Get the selection model */
+    QItemSelectionModel* selection = selectionModel();
+
+    /* Nothing is selected at the moment */
+    if (!selection)
+        return;
+
+    const QModelIndexList proxyindexes = selection->selectedRows();
+    /* We know how many items are selected */
+    clips.reserve(proxyindexes.size());
+
+    for (const QModelIndex& index: proxyindexes)
+    {
+        QModelIndex source = proxy->mapToSource(index);
+        if (source.isValid())
+            clips.emplace_back(MBridge::Instance().PlaylistMedia(source));
+    }
+
+    emit played(clips);
+}
+
+void PlaylistMediaView::RemoveSelected()
+{
+    /* Get the selection model */
+    QItemSelectionModel* selection = selectionModel();
+
+    /* Nothing is selected at the moment */
+    if (!selection)
+        return;
+
+    const QModelIndexList proxyindexes = selection->selectedRows();
+
+    Playlist* playlist = MBridge::Instance().ActivePlaylist();
+    // for (const QModelIndex& index: proxyindexes)
+    // {
+    //     QModelIndex source = proxy->mapToSource(index);
+    //     if (source.isValid())
+    //         playlist->RemoveMedia(source);
+    // }
+    for (int i = proxyindexes.size() - 1; i >=0; --i)
+    {
+        QModelIndex source = proxy->mapToSource(proxyindexes.at(i));
+        if (source.isValid())
+            playlist->RemoveMedia(source);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

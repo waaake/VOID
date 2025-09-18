@@ -417,6 +417,9 @@ void VoidMainWindow::Connect()
     connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
 
+    /* Play Lister */
+    connect(m_PlayLister, &VoidPlayLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
+
     /* Sequence */
     connect(m_Sequence.get(), &PlaybackSequence::rangeChanged, m_Player, &Player::SetRange);
 

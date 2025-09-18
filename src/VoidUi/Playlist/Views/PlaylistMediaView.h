@@ -5,10 +5,11 @@
 #define _VOID_PLAYLIST_MEDIA_LIST_VIEW_H
 
 /* Qt */
+#include <QAction>
 #include <QListView>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
@@ -54,6 +55,7 @@ protected:
 signals:
     /* Sends the Source Model Index mapped from the proxy model */
     void itemDoubleClicked(const QModelIndex&);
+    void played(const std::vector<SharedMediaClip>&);
 
 private: /* Models */
     /* Proxy for filtering and sorting */
@@ -61,6 +63,9 @@ private: /* Models */
 
     /* View Type for display */
     ViewType m_ViewType;
+
+    QAction* m_PlayAction;
+    QAction* m_RemoveAction;
 
 private: /* Methods */
     /* Setup the View */
@@ -72,11 +77,11 @@ private: /* Methods */
     /* Setup Signals */
     void Connect();
 
-    /* (Re)sets the Media Model */
     void ResetModel(MediaModel* model);
-
-    /* Maps the Proxy Index to the source Model index before emitting */
     void ItemDoubleClicked(const QModelIndex& index);
+    void ShowContextMenu(const Point& position);
+    void PlaySelected();
+    void RemoveSelected();
 };
 
 VOID_NAMESPACE_CLOSE

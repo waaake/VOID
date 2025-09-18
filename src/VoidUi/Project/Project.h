@@ -48,6 +48,7 @@ public:
     Playlist* NewPlaylist(const std::string& name);
     void SetCurrentPlaylist(const QModelIndex& index);
     void SetCurrentPlaylist(int index);
+    void RemovePlaylist(const QModelIndex& index);
 
 signals:
     void playlistCreated(const Playlist*);
