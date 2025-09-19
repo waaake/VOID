@@ -93,7 +93,7 @@ void PlaylistView::dropEvent(QDropEvent* event)
     if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
     {
         #if _QT6
-        QModelIndex index = indexAt(event->position());
+        QModelIndex index = indexAt(event->position().toPoint());
         #else
         QModelIndex index = indexAt(event->pos());
         #endif // _QT6
