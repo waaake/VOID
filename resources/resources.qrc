@@ -40,6 +40,7 @@
         <file>../icons/icon_zoom_in.svg</file>
         <file>../icons/icon_zoom_out.svg</file>
         <!-- Font -->
+        <file>../fonts/MaterialIcons-Regular.ttf</file>
         <file>../fonts/Roboto-Regular.ttf</file>
         <!-- Config -->
         <file>../config/void-default.ocio</file>
