@@ -173,10 +173,10 @@ const std::map<std::string, std::string> OpenEXRReader::Metadata() const
     m["height"] = std::to_string(height);
     m["channels"] = std::to_string(channelCount);
 
-    const Imf::Compression& compression = header.compression();
-    std::string compressionType;
-    Imf::getCompressionNameFromId(compression, compressionType);
-    m["compression"] = compressionType;
+    // const Imf::Compression& compression = header.compression();
+    // std::string compressionType;
+    // Imf::getCompressionNameFromId(compression, compressionType);
+    // m["compression"] = compressionType;
 
     /* Specific metadata */
     for (Imf::Header::ConstIterator it = header.begin(); it != header.end(); ++it)
