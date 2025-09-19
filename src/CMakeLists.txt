@@ -135,7 +135,7 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_zoom_out.svg
 
             # Fonts
-            ../fonts/MaterialIcons-Regular.ttf
+            ../fonts/MaterialSymbolsSharp-Regular.ttf
             ../fonts/Roboto-Regular.ttf
 
             # Configs

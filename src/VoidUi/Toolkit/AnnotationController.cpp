@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "AnnotationController.h"
+#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
@@ -56,7 +57,8 @@ void AnnotationsController::Build()
     m_PointerButton->setToolTip("<b>Pointer</b>");
 
     m_BrushButton = new HighlightToggleButton;
-    m_BrushButton->setIcon(QIcon(":resources/icons/icon_brush.svg"));
+    // m_BrushButton->setIcon(QIcon(":resources/icons/icon_brush.svg"));
+    m_BrushButton->setIcon(IconForge::Instance().Icon(IconType::icon_brush, 26, palette().color(QPalette::Text).darker(150)));
     m_BrushButton->setToolTip(ToolTipString("Brush Tool", "Annotate free hand using the Brush tool.").c_str());
 
     m_TextButton = new HighlightToggleButton;

@@ -12,6 +12,7 @@
 #include "Docker.h"
 #include "DockManager.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -167,7 +168,8 @@ void DockWidget::SetupOptions()
 {
 	/* Options Button */
 	m_PanelOptions = new MenuToolButton;
-	m_PanelOptions->setIcon(QIcon(":resources/icons/icon_tab_options.svg"));
+	// m_PanelOptions->setIcon(QIcon(":resources/icons/icon_tab_options.svg"));
+	m_PanelOptions->setIcon(IconForge::Instance().Icon(IconType::icon_browse, 40, palette().color(QPalette::Text).darker(140)));
 	m_PanelOptions->setAutoRaise(true);
 	m_PanelOptions->setPopupMode(QToolButton::InstantPopup);
 

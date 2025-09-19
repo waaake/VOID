@@ -25,6 +25,8 @@ private:
 public:
     static IconForge& Instance();
     QIcon Icon(const IconType& icon, int size = 24, const QColor& color = Qt::black);
+    // QIcon Icon(const IconType& icon, int size = 24);
+    static QIcon GetIcon(const IconType& icon, const QColor& color = Qt::black, int size = 26);
 
 private: /* Members */  
     QString m_FontFamily;

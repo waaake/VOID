@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QApplication>
 #include <QFontDatabase>
 #include <QPainter>
 #include <QPixmap>
@@ -25,7 +26,7 @@ IconForge& IconForge::Instance()
 
 void IconForge::InitFont()
 {
-    int fontId = QFontDatabase::addApplicationFont(":resources/fonts/MaterialIcons-Regular.ttf");
+    int fontId = QFontDatabase::addApplicationFont(":resources/fonts/MaterialSymbolsSharp-Regular.ttf");
     if (fontId == -1)
     {
         VOID_LOG_WARN("Failed to Load Icon Font");
@@ -36,6 +37,11 @@ void IconForge::InitFont()
         VOID_LOG_INFO("Icon Font Loaded {0}", m_FontFamily.toStdString());
     }
 }
+
+// QIcon IconForge::Icon(const IconType& icon, int size)
+// {
+//     return Icon(icon, size,)
+// }
 
 QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
 {
@@ -51,6 +57,7 @@ QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
     VOID_LOG_INFO("Constructing Icon.");
     QFont font(m_FontFamily);
     font.setPointSize(size);
+    // font.setBold(true);
 
     QPixmap pixmap(size, size);
     pixmap.fill(Qt::transparent);
@@ -66,6 +73,11 @@ QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
 
     m_Cache[key] = icon_;
     return icon_;
+}
+
+QIcon GetIcon(const IconType& icon, const QColor& color, int size)
+{
+    return IconForge::Instance().Icon(icon, size, color);
 }
 
 VOID_NAMESPACE_CLOSE
