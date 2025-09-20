@@ -75,7 +75,7 @@ void LoopTypeButton::Build()
 
 void LoopTypeButton::Update()
 {
-	setIcon(IconForge::GetIcon(m_LoopState.at(m_LoopType).icon, _DARK_COLOR(QPalette::Text, 140), 20));
+	setIcon(IconForge::GetIcon(m_LoopState.at(m_LoopType).icon, _DARK_COLOR(QPalette::Text, 140)));
 }
 
 /* }}} */

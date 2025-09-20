@@ -168,7 +168,7 @@ void DockWidget::SetupOptions()
 {
 	/* Options Button */
 	m_PanelOptions = new MenuToolButton;
-	m_PanelOptions->setIcon(IconForge::GetIcon(IconType::icon_browse, _DARK_COLOR(QPalette::Text, 140), 18));
+	m_PanelOptions->setIcon(IconForge::GetIcon(IconType::icon_browse, _DARK_COLOR(QPalette::Text, 140)));
 	m_PanelOptions->setAutoRaise(true);
 	m_PanelOptions->setPopupMode(QToolButton::InstantPopup);
 
