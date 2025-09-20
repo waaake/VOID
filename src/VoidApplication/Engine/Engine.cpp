@@ -50,7 +50,7 @@ void VoidEngine::InitLogging()
 void VoidEngine::Setup(QApplication& app)
 {
     /* Setup Theme for the Player */
-    app.setStyle(new VoidDark());
+    app.setStyle(new Obsidian());
 
     /* App Settings */
     QCoreApplication::setOrganizationName("VOID");
@@ -58,7 +58,7 @@ void VoidEngine::Setup(QApplication& app)
 
     /* Set Application icon */
     QImage icon(":resources/images/VOID_Logo.svg");
-    app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation))));
+    app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation))));
 }
 
 void VoidEngine::Initialize()

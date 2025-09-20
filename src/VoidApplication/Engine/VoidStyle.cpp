@@ -159,31 +159,89 @@ void VoidDark::polish(QPalette& palette)
     palette.setColor(QPalette::Disabled, QPalette::Text, VOID_FOREGROUND_DISABLED_COLOR);
 }
 
-/* Void Blue {{{ */
+/* Blue Shore {{{ */
 
-VoidBlue::VoidBlue()
+BlueShore::BlueShore()
     : VoidDark()
 {
 }
 
-void VoidBlue::polish(QPalette& palette)
+void BlueShore::polish(QPalette& palette)
 {
-    palette.setColor(QPalette::Window, QColor(50, 120, 170));
-    palette.setColor(QPalette::WindowText, QColor(30, 30, 30));
-    palette.setColor(QPalette::Base, QColor(10, 100, 150));
-    palette.setColor(QPalette::AlternateBase, QColor(30, 90, 140));
-    palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
-    palette.setColor(QPalette::ToolTipText, Qt::black);
-    palette.setColor(QPalette::Text, QColor(30, 30, 30));
-    palette.setColor(QPalette::Button, QColor(30, 90, 140));
-    palette.setColor(QPalette::ButtonText, QColor(30, 30, 30));
-    palette.setColor(QPalette::BrightText, Qt::red);
-    palette.setColor(QPalette::Link, QColor(32, 230, 218));
-    palette.setColor(QPalette::Highlight, QColor(200, 70, 150));
-    palette.setColor(QPalette::HighlightedText, Qt::black);
-    palette.setColor(QPalette::Dark, QColor(10, 80, 120));
+    palette.setColor(QPalette::Window, QColor(122, 174, 209));
+    palette.setColor(QPalette::WindowText, QColor(47, 62, 78));
+    palette.setColor(QPalette::Base, QColor(227, 240, 250));
+    palette.setColor(QPalette::AlternateBase, QColor(216, 234, 247));
+    palette.setColor(QPalette::ToolTipBase, QColor(240, 248, 255));
+    palette.setColor(QPalette::ToolTipText, QColor(60, 79, 92));
+    palette.setColor(QPalette::Text, QColor(42, 58, 74));
+    palette.setColor(QPalette::Button, QColor(180, 205, 230));
+    palette.setColor(QPalette::ButtonText, QColor(47, 62, 78));
+    palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
+    palette.setColor(QPalette::Link, QColor(74, 144, 226));
+    palette.setColor(QPalette::Highlight, QColor(108, 160, 220));
+    palette.setColor(QPalette::HighlightedText, QColor(248, 252, 255));
+    palette.setColor(QPalette::Dark, QColor(90, 107, 122));
 
-    palette.setColor(QPalette::Disabled, QPalette::Text, VOID_FOREGROUND_DISABLED_COLOR);
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(138, 155, 170));
+}
+
+/* }}} */
+
+/* Sakura Pink {{{ */
+
+SakuraPink::SakuraPink()
+    : VoidDark()
+{
+}
+
+void SakuraPink::polish(QPalette& palette)
+{
+    palette.setColor(QPalette::Window, QColor(239, 202, 214));
+    palette.setColor(QPalette::WindowText, QColor(75, 44, 58));
+    palette.setColor(QPalette::Base, QColor(246, 217, 221));
+    palette.setColor(QPalette::AlternateBase, QColor(250, 218, 221));
+    palette.setColor(QPalette::ToolTipBase, QColor(255, 240, 245));
+    palette.setColor(QPalette::ToolTipText, QColor(92, 75, 81));
+    palette.setColor(QPalette::Text, QColor(90, 58, 69));
+    palette.setColor(QPalette::Button, QColor(244, 194, 194));
+    palette.setColor(QPalette::ButtonText, QColor(75, 59, 71));
+    palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
+    palette.setColor(QPalette::Link, QColor(201, 124, 158));
+    palette.setColor(QPalette::Highlight, QColor(212, 138, 156));
+    palette.setColor(QPalette::HighlightedText, QColor(75, 44, 58));
+    palette.setColor(QPalette::Dark, QColor(107, 86, 93));
+
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(160, 138, 149));
+}
+
+/* }}} */
+
+/* Obsidian {{{ */
+
+Obsidian::Obsidian()
+    : VoidDark()
+{
+}
+
+void Obsidian::polish(QPalette& palette)
+{
+    palette.setColor(QPalette::Window, QColor(30, 30, 30));
+    palette.setColor(QPalette::WindowText, QColor(208, 208, 208));
+    palette.setColor(QPalette::Base, QColor(42, 42, 42));
+    palette.setColor(QPalette::AlternateBase, QColor(51, 51, 51));
+    palette.setColor(QPalette::ToolTipBase, QColor(46, 46, 46));
+    palette.setColor(QPalette::ToolTipText, QColor(192, 192, 192));
+    palette.setColor(QPalette::Text, QColor(185, 185, 185));
+    palette.setColor(QPalette::Button, QColor(47, 47, 47));
+    palette.setColor(QPalette::ButtonText, QColor(208, 208, 208));
+    palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
+    palette.setColor(QPalette::Link, QColor(102, 255, 153));
+    palette.setColor(QPalette::Highlight, QColor(160, 190, 60));
+    palette.setColor(QPalette::HighlightedText, QColor(26, 26, 26));
+    palette.setColor(QPalette::Dark, QColor(42, 42, 42));
+
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(128, 128, 128));
 }
 
 /* }}} */
