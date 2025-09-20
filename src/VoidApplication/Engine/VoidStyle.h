@@ -39,11 +39,24 @@ public:
     virtual void polish(QPalette& palette) override;
 };
 
-class VoidBlue : public VoidDark
+class BlueShore : public VoidDark
 {
 public:
-    VoidBlue();
+    BlueShore();
+    void polish(QPalette& palette) override;
+};
 
+class SakuraPink : public VoidDark
+{
+public:
+    SakuraPink();
+    void polish(QPalette& palette) override;
+};
+
+class Obsidian : public VoidDark
+{
+public:
+    Obsidian();
     void polish(QPalette& palette) override;
 };
 

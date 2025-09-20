@@ -123,13 +123,22 @@ void RendererStatusBar::Build()
     m_YLabel = new QLabel("Y=");
     m_YValue = new QLabel;
 
+    QPalette p = m_ResolutionLabel->palette();
+    p.setColor(QPalette::WindowText, QColor(185, 185, 185));
+    m_ResolutionLabel->setPalette(p);
+    m_ResolutionValue->setPalette(p);
+    m_XLabel->setPalette(p);
+    m_XValue->setPalette(p);
+    m_YLabel->setPalette(p);
+    m_YValue->setPalette(p);
+
     m_RValue = new QLabel;
     m_GValue = new QLabel;
     m_BValue = new QLabel;
     m_AValue = new QLabel;
 
     /* Red Color */
-    QPalette p = m_RValue->palette();
+    p = m_RValue->palette();
     p.setColor(QPalette::WindowText, QColor(255, 0, 0));
     m_RValue->setPalette(p);
 
