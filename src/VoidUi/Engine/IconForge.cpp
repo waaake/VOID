@@ -38,11 +38,6 @@ void IconForge::InitFont()
     }
 }
 
-// QIcon IconForge::Icon(const IconType& icon, int size)
-// {
-//     return Icon(icon, size,)
-// }
-
 QPixmap IconForge::Pixmap(const IconType& icon, int size, const QColor& color)
 {
     QString key = QString("%1_%2_%3").arg(static_cast<char16_t>(icon)).arg(size).arg(color.name());
