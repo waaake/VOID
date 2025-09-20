@@ -145,8 +145,7 @@ CloseButton::CloseButton(QWidget* parent)
 {
     setAutoRaise(true);
     setToolTip("Close");
-    // setIcon(QIcon(":resources/icons/icon_close.svg"));
-    setIcon(IconForge::Instance().Icon(IconType::icon_close, 20, palette().color(QPalette::Text).darker(150)));
+    setIcon(IconForge::GetIcon(IconType::icon_close, _DARK_COLOR(QPalette::Text, 150), 20));
 }
 
 void CloseButton::paintEvent(QPaintEvent* event)

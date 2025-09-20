@@ -43,7 +43,7 @@ void IconForge::InitFont()
 //     return Icon(icon, size,)
 // }
 
-QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
+QPixmap IconForge::Pixmap(const IconType& icon, int size, const QColor& color)
 {
     QString key = QString("%1_%2_%3").arg(static_cast<char16_t>(icon)).arg(size).arg(color.name());
 
@@ -54,12 +54,12 @@ QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
         return m_Cache[key];
     }
 
-    VOID_LOG_INFO("Constructing Icon.");
+    VOID_LOG_INFO("Constructing pixmap.");
     QFont font(m_FontFamily);
     font.setPointSize(size);
     // font.setBold(true);
 
-    QPixmap pixmap(size, size);
+    QPixmap pixmap(size + 2, size + 2);
     pixmap.fill(Qt::transparent);
 
     QPainter painter(&pixmap);
@@ -67,17 +67,25 @@ QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
     painter.setPen(color);
     painter.drawText(pixmap.rect(), Qt::AlignCenter, QChar(static_cast<char16_t>(icon)));
 
-    pixmap.save("/mnt/c/Skids/zework/s_imgs/test.png");
-
-    QIcon icon_(pixmap);
-
-    m_Cache[key] = icon_;
-    return icon_;
+    m_Cache[key] = pixmap;
+    return pixmap;
 }
 
-QIcon GetIcon(const IconType& icon, const QColor& color, int size)
+QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
 {
-    return IconForge::Instance().Icon(icon, size, color);
+    return QIcon(Pixmap(icon, size, color));
+}
+
+QPixmap IconForge::GetPixmap(const IconType& icon, const QColor& color, int size)
+{
+    static IconForge instance;
+    return instance.Pixmap(icon, size, color);
+}
+
+QIcon IconForge::GetIcon(const IconType& icon, const QColor& color, int size)
+{
+    static IconForge instance;
+    return instance.Icon(icon, size, color);
 }
 
 VOID_NAMESPACE_CLOSE

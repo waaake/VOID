@@ -18,6 +18,7 @@
 #include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/Project/Browser.h"
 #include "VoidUi/Dock/DockManager.h"
+#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
@@ -221,7 +222,10 @@ void VoidMainWindow::Build()
     m_RedoAction->setShortcut(QKeySequence("Ctrl+Shift+Z"));
 
     m_EditPrefsAction = new QAction("Preferences...", m_EditMenu);
-    m_EditPrefsAction->setIcon(QIcon(":resources/icons/icon_settings.svg"));
+    QIcon icon;
+    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _DARK_COLOR(QPalette::Text, 150), 18), QIcon::Normal);
+    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _COLOR(QPalette::Dark), 18), QIcon::Active);
+    m_EditPrefsAction->setIcon(icon);
     
     m_EditMenu->addAction(m_UndoAction);
     m_EditMenu->addAction(m_RedoAction);

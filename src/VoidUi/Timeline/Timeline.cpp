@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "Timeline.h"
+#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
 static const int BUTTON_WIDTH = 30;
@@ -125,7 +126,7 @@ void Timeline::Build()
 
 	/* Fullscreen Button */
 	m_FullscreenButton = new QPushButton;
-	m_FullscreenButton->setIcon(QIcon(":resources/icons/icon_fullscreen.svg"));
+	m_FullscreenButton->setIcon(IconForge::GetIcon(IconType::icon_pageless, _DARK_COLOR(QPalette::Text, 150), 18));
 	m_FullscreenButton->setFlat(true);
 	m_FullscreenButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 	m_FullscreenButton->setToolTip(ToolTipString("Fullscreen", "Plays media in fullscreen.").c_str());

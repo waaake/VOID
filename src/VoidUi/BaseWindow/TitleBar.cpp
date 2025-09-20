@@ -8,6 +8,7 @@
 /* Internal */
 #include "TitleBar.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -71,12 +72,12 @@ void VoidTitleBar::Build()
     m_MinimizeButton = new QToolButton();
     m_MinimizeButton->setFixedSize(16, 16);
     m_MinimizeButton->setAutoRaise(true);
-    m_MinimizeButton->setIcon(QIcon(":resources/icons/icon_minimize.svg"));
+    m_MinimizeButton->setIcon(IconForge::GetIcon(IconType::icon_minimize, _DARK_COLOR(QPalette::Text, 150), 18));
 
     m_MaximizeButton = new QToolButton();
     m_MaximizeButton->setFixedSize(16, 16);
     m_MaximizeButton->setAutoRaise(true);
-    m_MaximizeButton->setIcon(QIcon(":resources/icons/icon_restore.svg"));
+    m_MaximizeButton->setIcon(IconForge::GetIcon(IconType::icon_square, _DARK_COLOR(QPalette::Text, 150), 18));
 
     m_CloseButton = new CloseButton;
     m_CloseButton->setFixedSize(15, 15);

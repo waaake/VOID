@@ -10,6 +10,7 @@
 /* Internal */
 #include "ScriptEditor.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
@@ -49,23 +50,23 @@ void PyScriptEditor::Build()
     m_ButtonLayout = new QHBoxLayout();
 
     m_ExecAllButton = new QPushButton;
-    m_ExecAllButton->setIcon(QIcon(":resources/icons/icon_play.svg"));
+    m_ExecAllButton->setIcon(IconForge::GetIcon(IconType::icon_play_arrow, _DARK_COLOR(QPalette::Text, 150), 18));
     m_ExecAllButton->setToolTip(ToolTipString("Execute", "Execute all code.").c_str());
 
     m_ExecSelectionButton = new QPushButton;
-    m_ExecSelectionButton->setIcon(QIcon(":resources/icons/icon_play_selected.svg"));
+    m_ExecSelectionButton->setIcon(IconForge::GetIcon(IconType::icon_segment, _DARK_COLOR(QPalette::Text, 150), 18));
     m_ExecSelectionButton->setToolTip(ToolTipString("Execute Selected", "Execute selected code.").c_str());
 
     m_SaveScriptButton = new QPushButton;
-    m_SaveScriptButton->setIcon(QIcon(":resources/icons/icon_save.svg"));
+    m_SaveScriptButton->setIcon(IconForge::GetIcon(IconType::icon_save, _DARK_COLOR(QPalette::Text, 150), 18));
     m_SaveScriptButton->setToolTip(ToolTipString("Save Script", "Saves current Script.").c_str());
 
     m_LoadScriptButton = new QPushButton;
-    m_LoadScriptButton->setIcon(QIcon(":resources/icons/icon_load.svg"));
+    m_LoadScriptButton->setIcon(IconForge::GetIcon(IconType::icon_file_open, _DARK_COLOR(QPalette::Text, 150), 18));
     m_LoadScriptButton->setToolTip(ToolTipString("Open Script", "Open a python script.").c_str());
 
     m_ClearOutputButton = new QPushButton;
-    m_ClearOutputButton->setIcon(QIcon(":resources/icons/icon_backspace.svg"));
+    m_ClearOutputButton->setIcon(IconForge::GetIcon(IconType::icon_computer_cancel, _DARK_COLOR(QPalette::Text, 150), 18));
     m_ClearOutputButton->setToolTip(ToolTipString("Clear Output", "Clears the output window.").c_str());
 
     m_ButtonLayout->addWidget(m_ExecAllButton);
@@ -118,7 +119,7 @@ void PyScriptEditor::Setup()
     m_OutputConsole->setReadOnly(true);
 
     QPalette p = m_OutputConsole->palette();
-    p.setColor(QPalette::Text, palette().color(QPalette::Text).darker(150));
+    p.setColor(QPalette::Text, _DARK_COLOR(QPalette::Text, 150));
     m_OutputConsole->setPalette(p);
 
     /* Setup syntax highlighting */

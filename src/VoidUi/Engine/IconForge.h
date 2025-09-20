@@ -17,6 +17,10 @@
 
 VOID_NAMESPACE_OPEN
 
+#define _COLOR(x) palette().color(x)
+#define _DARK_COLOR(x, y) palette().color(x).darker(y)
+#define _LIGHT_COLOR(x, y) palette().color(x).lighter(y)
+
 class IconForge
 {
 private:
@@ -24,13 +28,15 @@ private:
 
 public:
     static IconForge& Instance();
+    QPixmap Pixmap(const IconType& icon, int size = 24, const QColor& color = Qt::black);
     QIcon Icon(const IconType& icon, int size = 24, const QColor& color = Qt::black);
-    // QIcon Icon(const IconType& icon, int size = 24);
+
+    static QPixmap GetPixmap(const IconType& icon, const QColor& color = Qt::black, int size = 26);
     static QIcon GetIcon(const IconType& icon, const QColor& color = Qt::black, int size = 26);
 
 private: /* Members */  
     QString m_FontFamily;
-    std::map<QString, QIcon> m_Cache;
+    std::map<QString, QPixmap> m_Cache;
 
 private: /* Methods */
     void InitFont();
