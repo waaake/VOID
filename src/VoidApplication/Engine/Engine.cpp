@@ -11,7 +11,6 @@
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
 #include "VoidUi/Engine/Globals.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -64,7 +63,6 @@ void VoidEngine::Setup(QApplication& app)
 
 void VoidEngine::Initialize()
 {
-    Tools::VoidProfiler<std::chrono::duration<double>> p("Application Initiailization");
     m_Imager = new VoidMainWindow;
     UIGlobals::g_VoidMainWindow = m_Imager;
 
