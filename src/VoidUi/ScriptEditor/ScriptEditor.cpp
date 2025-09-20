@@ -111,11 +111,15 @@ void PyScriptEditor::Connect()
 
 void PyScriptEditor::Setup()
 {
-    QFont courier("Courier");
-    m_InputConsole->setFont(courier);
+    #ifdef __APPLE__
+    QFont scriptf("Arial");
+    #else
+    QFont scriptf("Courier");
+    #endif
+    m_InputConsole->setFont(scriptf);
 
     /* Outconsole formatting */
-    m_OutputConsole->setFont(courier);
+    m_OutputConsole->setFont(scriptf);
     m_OutputConsole->setReadOnly(true);
 
     QPalette p = m_OutputConsole->palette();
