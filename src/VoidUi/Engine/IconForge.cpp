@@ -49,12 +49,8 @@ QPixmap IconForge::Pixmap(const IconType& icon, int size, const QColor& color)
 
     /* Already Exists in Cache */
     if (m_Cache.find(key) != m_Cache.end())
-    {
-        VOID_LOG_INFO("FOUND in Cache.");
         return m_Cache[key];
-    }
 
-    VOID_LOG_INFO("Constructing pixmap.");
     QFont font(m_FontFamily);
     font.setPointSize(size);
     // font.setBold(true);
