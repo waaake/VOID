@@ -66,7 +66,7 @@ void ChronoFlux::StartPlaybackCache(const Direction& direction)
     m_CacheDirection = direction;
     m_CacheTimer.start(10);
 
-    if (!m_ThreadPool.activeThreadCount())
+    if (!m_ThreadPool.activeThreadCount() && !m_Framenumbers.empty())
     {
         /* Update the last frame for the Cache process to begin from */
         m_LastCached = m_CacheDirection == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
