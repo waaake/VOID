@@ -10,6 +10,7 @@
 
 /* Internal */
 #include "PushButton.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -144,7 +145,7 @@ CloseButton::CloseButton(QWidget* parent)
 {
     setAutoRaise(true);
     setToolTip("Close");
-    setIcon(QIcon(":resources/icons/icon_close.svg"));
+    setIcon(IconForge::GetIcon(IconType::icon_close, _DARK_COLOR(QPalette::Text, 150), 20));
 }
 
 void CloseButton::paintEvent(QPaintEvent* event)

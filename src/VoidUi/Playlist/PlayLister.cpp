@@ -15,6 +15,7 @@
 /* Internal */
 #include "PlayLister.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 #include "VoidUi/Preferences/Preferences.h"
 
@@ -101,10 +102,10 @@ void VoidPlayLister::Build()
     );
 
     m_CreateButton = new QPushButton;
-    m_CreateButton->setIcon(QIcon(":resources/icons/icon_add.svg"));
+    m_CreateButton->setIcon(IconForge::GetIcon(IconType::icon_library_add, palette().color(QPalette::Text).darker(150), 16));
     m_CreateButton->setFixedWidth(26);
     m_DeleteButton = new QPushButton;
-    m_DeleteButton->setIcon(QIcon(":resources/icons/icon_delete.svg"));
+    m_DeleteButton->setIcon(IconForge::GetIcon(IconType::icon_delete, palette().color(QPalette::Text).darker(150), 16));
     m_DeleteButton->setFixedWidth(26);
 
     m_OptionsLayout->addWidget(m_SearchBar);

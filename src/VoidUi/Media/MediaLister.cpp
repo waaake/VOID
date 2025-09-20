@@ -15,6 +15,7 @@
 /* Internal */
 #include "MediaLister.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 #include "VoidUi/Preferences/Preferences.h"
 
@@ -126,7 +127,7 @@ void VoidMediaLister::Build()
 
     /* View Toggle Buttons */
     m_ListViewToggle = new HighlightToggleButton(this);
-    m_ListViewToggle->setIcon(QIcon(":resources/icons/icon_list_view.svg"));
+    m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 150), 14));
     m_ListViewToggle->setToolTip(
         ToolTipString(
             "Detailed List View",
@@ -135,7 +136,7 @@ void VoidMediaLister::Build()
     );
 
     m_ThumbnailViewToggle = new HighlightToggleButton(this);
-    m_ThumbnailViewToggle->setIcon(QIcon(":resources/icons/icon_grid_view.svg"));
+    m_ThumbnailViewToggle->setIcon(IconForge::GetIcon(IconType::icon_grid_view, _DARK_COLOR(QPalette::Text, 150), 14));
     m_ThumbnailViewToggle->setToolTip(
         ToolTipString(
             "Thumbnail View",
@@ -147,7 +148,7 @@ void VoidMediaLister::Build()
     m_ViewButtonGroup->addButton(m_ThumbnailViewToggle, 1);
 
     m_SortButton = new HighlightToggleButton(this);
-    m_SortButton->setIcon(QIcon(":resources/icons/icon_sort_abc.svg"));
+    m_SortButton->setIcon(IconForge::GetIcon(IconType::icon_sort_by_alpha, _DARK_COLOR(QPalette::Text, 150), 14));
     m_SortButton->setFixedWidth(26);
     m_SortButton->setToolTip(
         ToolTipString(

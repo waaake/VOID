@@ -11,6 +11,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -29,7 +30,8 @@ enum class LoopType : short
 
 struct LoopState
 {
-	std::string text, icon;	
+	std::string text;
+	IconType icon;
 };
 
 class LoopTypeButton : public QPushButton
@@ -56,8 +58,7 @@ private: /* Members */
 
 private: /* Methods */
 	void Build();
-	inline void Update() { setIcon(QIcon(m_LoopState.at(m_LoopType).icon.c_str())); }
-
+	void Update();
 };
 
 class TimeDisplay : public QLabel

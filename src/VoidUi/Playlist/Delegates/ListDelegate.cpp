@@ -9,6 +9,7 @@
 #include "ListDelegate.h"
 #include "VoidObjects/Models/MediaModel.h"
 #include "VoidObjects/Models/PlaylistModel.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -72,7 +73,10 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
     /* Icon */
     QRect iconrect = QRect(rect.left() + 10, rect.top(), 30, rect.height());
-    painter->drawPixmap(iconrect, QPixmap(":resources/icons/icon_playlist.svg"));
+    painter->drawPixmap(
+        iconrect,
+        IconForge::GetPixmap(IconType::icon_playlist_play, option.palette.color(QPalette::Text).darker(140), 28)
+    );
 
     /* Name */
     QRect namerect = QRect(iconrect.right() + 10, rect.top(), rect.width() - 90, rect.height());

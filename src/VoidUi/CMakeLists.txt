@@ -18,6 +18,7 @@ set(SOURCES
     
     # Core Engine Globals
     Engine/Globals.cpp
+    Engine/IconForge.cpp
     
     # Media
     Media/Browser.cpp
