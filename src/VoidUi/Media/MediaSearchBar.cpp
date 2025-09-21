@@ -29,7 +29,7 @@ void MediaSearchBar::Setup()
     setPlaceholderText("Search");
 
     /* Add the Clear Action */
-    m_ClearAction = new QAction(IconForge::GetIcon(IconType::icon_close, _DARK_COLOR(QPalette::Text, 150), 16), "", this);
+    m_ClearAction = new QAction(IconForge::GetIcon(IconType::icon_close, _DARK_COLOR(QPalette::Text, 150)), "", this);
     m_ClearAction->setToolTip("Clears Search field");
 
     /* Add at the end */
