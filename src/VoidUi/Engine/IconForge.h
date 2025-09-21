@@ -22,9 +22,9 @@ VOID_NAMESPACE_OPEN
 #define _LIGHT_COLOR(x, y) palette().color(x).lighter(y)
 
 #ifdef __APPLE__
-constexpr int _default_size = 38;
+static constexpr int _default_size = 38;
 #else
-constexpr int _default_size = 18;
+static constexpr int _default_size = 18;
 #endif
 
 class IconForge
