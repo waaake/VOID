@@ -41,17 +41,20 @@ public:
     void AddMedia(const SharedMediaClip& media);
     void InsertMedia(const SharedMediaClip& media, const int index);
     void RemoveMedia(const QModelIndex& index);
-    inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
-    inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
-    SharedMediaClip PlaylistMedia(const QModelIndex& index) const;
-    SharedMediaClip PlaylistMedia(int row, int column) const;
+
+    inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Media->Media(index); }
+    inline SharedMediaClip MediaAt(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
+    SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const;
+    SharedMediaClip PlaylistMediaAt(int row, int column) const;
+
     inline MediaModel* DataModel() const { return m_Media; }
+    inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
+
     inline QModelIndex ClipIndex(const SharedMediaClip& clip, int column = 0) const
     { 
         return m_Media->index(m_Media->MediaRow(clip), column); 
     }
 
-    inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
     inline Playlist* ActivePlaylist() const { return m_Playlist; }
     inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Playlists->PlaylistAt(index); }
     inline Playlist* PlaylistAt(int row, int column) const { return m_Playlists->PlaylistAt(row, column); }

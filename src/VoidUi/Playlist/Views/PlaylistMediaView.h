@@ -46,6 +46,8 @@ public:
     /* Set the View Type */
     void SetViewType(const ViewType& type);
 
+    void Refresh();
+
 protected:
     void startDrag(Qt::DropActions supportedActions) override;
     void dragEnterEvent(QDragEnterEvent* event) override;

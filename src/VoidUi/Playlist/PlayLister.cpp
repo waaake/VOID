@@ -167,6 +167,7 @@ void VoidPlayLister::Connect()
     connect(m_PlaylistView, &PlaylistView::itemClicked, this, [this](const QModelIndex& index) { MBridge::Instance().SetCurrentPlaylist(index); });
     connect(m_PlaylistView, &PlaylistView::played, this, static_cast<void (VoidPlayLister::*)(const Playlist*)>(&VoidPlayLister::Play));
     connect(m_MediaView, &PlaylistMediaView::played, this, static_cast<void (VoidPlayLister::*)(const std::vector<SharedMediaClip>&)>(&VoidPlayLister::Play));
+    connect(m_PlaylistView, &PlaylistView::updated, m_MediaView, &PlaylistMediaView::Refresh);
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidPlayLister::RemoveSelectedMedia);

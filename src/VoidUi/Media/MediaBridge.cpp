@@ -168,7 +168,7 @@ bool MBridge::Remove(SharedMediaClip clip)
 bool MBridge::Remove(const QModelIndex& index)
 {
     /* The Media Associated with the Model index */
-    SharedMediaClip clip = m_Project->Media(index);
+    SharedMediaClip clip = m_Project->MediaAt(index);
 
     /* Invalid Index */
     if (!clip)

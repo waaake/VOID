@@ -68,7 +68,7 @@ void Project::RemoveMedia(const QModelIndex& index)
     m_Modified = true;
 }
 
-SharedMediaClip Project::PlaylistMedia(const QModelIndex& index) const
+SharedMediaClip Project::PlaylistMediaAt(const QModelIndex& index) const
 {
     if (m_Playlist)
         return m_Playlist->Media(index);
@@ -76,7 +76,7 @@ SharedMediaClip Project::PlaylistMedia(const QModelIndex& index) const
     return nullptr;
 }
 
-SharedMediaClip Project::PlaylistMedia(int row, int column) const
+SharedMediaClip Project::PlaylistMediaAt(int row, int column) const
 {
     if (m_Playlist)
         return m_Playlist->Media(row, column);

@@ -110,11 +110,21 @@ void PlaylistMediaView::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().Media(row, column);
+        SharedMediaClip media = MBridge::Instance().MediaAt(row, column);
 
         playlist->AddMedia(media);
         MBridge::Instance().ActiveProject()->RefreshPlaylist();
     }
+}
+
+void PlaylistMediaView::Refresh()
+{
+    Playlist* playlist = MBridge::Instance().ActivePlaylist();
+    if (playlist)
+        ResetModel(playlist->DataModel());
+    else
+        ResetModel(nullptr);
+    VOID_LOG_INFO("Refreshed");
 }
 
 void PlaylistMediaView::Setup()
@@ -271,7 +281,7 @@ void PlaylistMediaView::PlaySelected()
     {
         QModelIndex source = proxy->mapToSource(index);
         if (source.isValid())
-            clips.emplace_back(MBridge::Instance().PlaylistMedia(source));
+            clips.emplace_back(MBridge::Instance().PlaylistMediaAt(source));
     }
 
     emit played(clips);

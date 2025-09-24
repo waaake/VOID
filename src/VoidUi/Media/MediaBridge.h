@@ -93,9 +93,10 @@ public:
 
     inline MediaModel* DataModel() const { return m_Project->DataModel(); }
     inline ProjectModel* ProjectDataModel() const { return m_Projects; }
-    inline SharedMediaClip Media(int row, int column) const { return m_Project->Media(row, column); }
-    inline SharedMediaClip PlaylistMedia(const QModelIndex& index) const { return m_Project->PlaylistMedia(index); }
-    inline SharedMediaClip PlaylistMedia(int row, int column) const { return m_Project->PlaylistMedia(row, column); }
+    inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Project->MediaAt(index); }
+    inline SharedMediaClip MediaAt(int row, int column) const { return m_Project->MediaAt(row, column); }
+    inline SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const { return m_Project->PlaylistMediaAt(index); }
+    inline SharedMediaClip PlaylistMediaAt(int row, int column) const { return m_Project->PlaylistMediaAt(row, column); }
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);

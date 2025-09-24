@@ -5,10 +5,11 @@
 #define _VOID_PROJECT_VIEW_H
 
 /* Qt */
+#include <QAction>
 #include <QListView>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
@@ -41,6 +42,10 @@ private: /* Models */
     /* Proxy for filtering and sorting */
     ProjectProxyModel* proxy;
 
+    QAction* m_ImportMediaAction;
+    QAction* m_ImportDirectoryAction;
+    QAction* m_CloseProjectAction;
+
 private: /* Methods */
     /* Setup the View */
     void Setup();
@@ -53,6 +58,8 @@ private: /* Methods */
 
     /* Maps the Proxy Index to the source Model index before emitting */
     void ItemClicked(const QModelIndex& index);
+
+    void ShowContextMenu(const Point& position);
 };
 
 VOID_NAMESPACE_CLOSE

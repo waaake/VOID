@@ -574,7 +574,7 @@ void Player::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().Media(row, column);
+        SharedMediaClip media = MBridge::Instance().MediaAt(row, column);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
             Load(media, PlayerViewBuffer::A);
@@ -595,7 +595,7 @@ void Player::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().PlaylistMedia(row, column);
+        SharedMediaClip media = MBridge::Instance().PlaylistMediaAt(row, column);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
             Load(media, PlayerViewBuffer::A);
