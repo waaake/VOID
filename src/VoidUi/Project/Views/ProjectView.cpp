@@ -7,6 +7,7 @@
 /* Internal */
 #include "ProjectView.h"
 #include "VoidUi/Project/Delegates/ListDelegate.h"
+#include "VoidUi/Project/ProjectBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -62,7 +63,9 @@ void ProjectView::Setup()
 void ProjectView::Connect()
 {
     /* Menu */
-    // connect(m_ImportMediaAction)
+    connect(m_ImportMediaAction, &QAction::triggered, this, &ProjectView::ImportMedia);
+    connect(m_ImportDirectoryAction, &QAction::triggered, this, &ProjectView::ImportDirectory);
+    connect(m_CloseProjectAction, &QAction::triggered, this, &ProjectView::CloseProject);
 
     /* View */
     connect(this, &QListView::clicked, this, &ProjectView::ItemClicked);
@@ -149,6 +152,39 @@ void ProjectView::ShowContextMenu(const Point& position)
     #else
     contextMenu.exec(mapToGlobal(position));
     #endif // _QT6
+}
+
+Project* ProjectView::HighlightedProject()
+{
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return nullptr;
+
+    return ProjectBridge::Instance().ProjectAt(selection->currentIndex());
+}
+
+void ProjectView::ImportMedia()
+{
+    Project* project = HighlightedProject();
+
+    if (project)
+        ProjectBridge::Instance().ImportMedia(project);
+}
+
+void ProjectView::ImportDirectory()
+{
+    Project* project = HighlightedProject();
+
+    if (project)
+        ProjectBridge::Instance().ImportDirectory(project);   
+}
+
+void ProjectView::CloseProject()
+{
+    Project* project = HighlightedProject();
+
+    if (project)
+        ProjectBridge::Instance().Close(project);
 }
 
 VOID_NAMESPACE_CLOSE

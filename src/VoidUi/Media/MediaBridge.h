@@ -21,6 +21,9 @@
 
 VOID_NAMESPACE_OPEN
 
+/* Forward Decl to make this a friend */
+class ProjectBridge;
+
 /**
  * This class acts as a singleton bridge between various components dealing with Media and MediaClips
  * The class holds all the Projects at any instant
@@ -62,6 +65,7 @@ public:
 
     void SetCurrentProject(const QModelIndex& index);
     void SetCurrentProject(int index);
+    void SetCurrentProject(Project* project);
 
     inline Project* ActiveProject() const { return m_Project; }
 
@@ -111,7 +115,8 @@ public:
     bool Save();
     bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type = EtherFormat::Type::ASCII);
     void Load(const std::string& path);
-    bool Close(bool force = false);
+    bool CloseProject(bool force = false);
+    bool CloseProject(Project* project, bool force = false);
 
 signals:
     /**
@@ -137,6 +142,7 @@ private: /* Members */
 
 private: /* Methods */
     void SetActiveProject(Project* project);
+    friend class ProjectBridge;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -60,6 +60,11 @@ private: /* Methods */
     void ItemClicked(const QModelIndex& index);
 
     void ShowContextMenu(const Point& position);
+
+    Project* HighlightedProject();
+    void ImportMedia();
+    void ImportDirectory();
+    void CloseProject();
 };
 
 VOID_NAMESPACE_CLOSE
