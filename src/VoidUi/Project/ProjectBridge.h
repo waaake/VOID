@@ -47,6 +47,8 @@ private:
     MBridge& m_Bridge;
 };
 
+#define _ProjectBridge ProjectBridge::Instance()
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_PROJECT_BRIDGE_H

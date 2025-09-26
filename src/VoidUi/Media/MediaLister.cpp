@@ -93,7 +93,7 @@ void VoidMediaLister::dropEvent(QDropEvent* event)
             VOID_LOG_INFO("Dropped Media Directory: {0}", path);
 
             /* Emit the media dropped signal */
-            MBridge::Instance().ImportDirectory(path, false);
+            _MediaBridge.ImportDirectory(path, false);
         }
     }
 }
@@ -241,10 +241,10 @@ void VoidMediaLister::Connect()
 
     connect(m_ProjectView, &ProjectView::itemClicked, this, [this](const QModelIndex& index)
     {
-        MBridge::Instance().SetCurrentProject(index);
+        _MediaBridge.SetCurrentProject(index);
         RebuildPlaylistMenu();
     });
-    connect(&MBridge::Instance(), &MBridge::playlistCreated, this, &VoidMediaLister::RebuildPlaylistMenu); 
+    connect(&_MediaBridge, &MBridge::playlistCreated, this, &VoidMediaLister::RebuildPlaylistMenu); 
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);
@@ -320,7 +320,7 @@ void VoidMediaLister::ShowContextMenu(const Point& position)
 void VoidMediaLister::RemoveSelectedMedia()
 {
     /* Push all of the selected indexes for removal */
-    MBridge::Instance().RemoveMedia(m_MediaView->SelectedIndexes());
+    _MediaBridge.RemoveMedia(m_MediaView->SelectedIndexes());
 }
 
 void VoidMediaLister::InspectMetadata()
@@ -347,10 +347,10 @@ void VoidMediaLister::RebuildPlaylistMenu()
     m_PlaylistMenu->clear();
 
     m_CreatePlaylistAction = new QAction("Create Playlist...", m_PlaylistMenu);
-    connect(m_CreatePlaylistAction, &QAction::triggered, this, [this]() { AddSelectionToPlaylist(MBridge::Instance().NewPlaylist()); });
+    connect(m_CreatePlaylistAction, &QAction::triggered, this, [this]() { AddSelectionToPlaylist(_MediaBridge.NewPlaylist()); });
     m_PlaylistMenu->addAction(m_CreatePlaylistAction);
 
-    for (Playlist* playlist : *MBridge::Instance().ActiveProject()->PlaylistMediaModel())
+    for (Playlist* playlist : *_MediaBridge.ActiveProject()->PlaylistMediaModel())
     {
         QAction* action = new QAction(playlist->Name().c_str(), m_PlaylistMenu);
         connect(action, &QAction::triggered, this, [=]() { AddSelectionToPlaylist(playlist); });
@@ -375,7 +375,7 @@ void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
         playlist->AddMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
     }
 
-    MBridge::Instance().ActiveProject()->RefreshPlaylist();
+    _MediaBridge.ActiveProject()->RefreshPlaylist();
 }
 
 VOID_NAMESPACE_CLOSE

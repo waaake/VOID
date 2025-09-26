@@ -40,7 +40,7 @@ void ProjectView::Setup()
     m_CloseProjectAction = new QAction("Close Project");
 
     /* Source Model */
-    ProjectModel* model = MBridge::Instance().ProjectDataModel();
+    ProjectModel* model = _MediaBridge.ProjectDataModel();
 
     /* Proxy */
     proxy = new ProjectProxyModel(this);
@@ -160,7 +160,7 @@ Project* ProjectView::HighlightedProject()
     if (!selection)
         return nullptr;
 
-    return ProjectBridge::Instance().ProjectAt(selection->currentIndex());
+    return _ProjectBridge.ProjectAt(selection->currentIndex());
 }
 
 void ProjectView::ImportMedia()
@@ -168,7 +168,7 @@ void ProjectView::ImportMedia()
     Project* project = HighlightedProject();
 
     if (project)
-        ProjectBridge::Instance().ImportMedia(project);
+        _ProjectBridge.ImportMedia(project);
 }
 
 void ProjectView::ImportDirectory()
@@ -176,7 +176,7 @@ void ProjectView::ImportDirectory()
     Project* project = HighlightedProject();
 
     if (project)
-        ProjectBridge::Instance().ImportDirectory(project);   
+        _ProjectBridge.ImportDirectory(project);   
 }
 
 void ProjectView::CloseProject()
@@ -184,7 +184,7 @@ void ProjectView::CloseProject()
     Project* project = HighlightedProject();
 
     if (project)
-        ProjectBridge::Instance().Close(project);
+        _ProjectBridge.Close(project);
 }
 
 VOID_NAMESPACE_CLOSE

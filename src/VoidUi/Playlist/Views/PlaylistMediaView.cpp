@@ -93,7 +93,7 @@ void PlaylistMediaView::dropEvent(QDropEvent* event)
 {
     if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
     {
-        Playlist* playlist = MBridge::Instance().ActivePlaylist();
+        Playlist* playlist = _MediaBridge.ActivePlaylist();
 
         if (!playlist)
             return;
@@ -110,16 +110,16 @@ void PlaylistMediaView::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().MediaAt(row, column);
+        SharedMediaClip media = _MediaBridge.MediaAt(row, column);
 
         playlist->AddMedia(media);
-        MBridge::Instance().ActiveProject()->RefreshPlaylist();
+        _MediaBridge.ActiveProject()->RefreshPlaylist();
     }
 }
 
 void PlaylistMediaView::Refresh()
 {
-    Playlist* playlist = MBridge::Instance().ActivePlaylist();
+    Playlist* playlist = _MediaBridge.ActivePlaylist();
     if (playlist)
         ResetModel(playlist->DataModel());
     else
@@ -165,9 +165,9 @@ void PlaylistMediaView::Connect()
     connect(this, &QListView::customContextMenuRequested, this, &PlaylistMediaView::ShowContextMenu);
 
     /* Media Bridge */
-    connect(&MBridge::Instance(), &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(nullptr); });
-    connect(&MBridge::Instance(), &MBridge::playlistCreated, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
-    connect(&MBridge::Instance(), &MBridge::playlistChanged, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
+    connect(&_MediaBridge, &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(nullptr); });
+    connect(&_MediaBridge, &MBridge::playlistCreated, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
+    connect(&_MediaBridge, &MBridge::playlistChanged, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
 }
 
 void PlaylistMediaView::ResetModel(MediaModel* model)
@@ -281,7 +281,7 @@ void PlaylistMediaView::PlaySelected()
     {
         QModelIndex source = proxy->mapToSource(index);
         if (source.isValid())
-            clips.emplace_back(MBridge::Instance().PlaylistMediaAt(source));
+            clips.emplace_back(_MediaBridge.PlaylistMediaAt(source));
     }
 
     emit played(clips);
@@ -296,7 +296,7 @@ void PlaylistMediaView::RemoveSelected()
     if (!selection)
         return;
 
-    Playlist* playlist = MBridge::Instance().ActivePlaylist();
+    Playlist* playlist = _MediaBridge.ActivePlaylist();
         
     const QModelIndexList proxyindexes = selection->selectedRows();
     for (int i = proxyindexes.size() - 1; i >=0; --i)

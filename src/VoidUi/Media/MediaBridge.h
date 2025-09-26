@@ -145,6 +145,8 @@ private: /* Methods */
     friend class ProjectBridge;
 };
 
+#define _MediaBridge MBridge::Instance()
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_MEDIA_GRAPH_H

@@ -9,13 +9,11 @@
 
 /* Internal */
 #include "PlayerWindow.h"
-#include "VoidCore/Logging.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Dock/DockManager.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/Project/ProjectBridge.h"
 #include "VoidUi/Preferences/PreferencesUI.h"
-#include "VoidUi/QExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -361,13 +359,13 @@ void VoidMainWindow::Connect()
     /* Menu Actions */
     /* File Menu {{{ */
     connect(m_CloseAction, &QAction::triggered, this, &QCoreApplication::quit);
-    connect(m_ImportAction, &QAction::triggered, this, []() -> void { ProjectBridge::Instance().ImportMedia(); });
-    connect(m_ImportDirectoryAction, &QAction::triggered, this, []() -> void { ProjectBridge::Instance().ImportDirectory(); });
-    connect(m_NewProjectAction, &QAction::triggered, this, [this]() { MBridge::Instance().NewProject(); });
-    connect(m_SaveProjectAction, &QAction::triggered, this, []() -> void { ProjectBridge::Instance().Save(); });
-    connect(m_SaveAsProjectAction, &QAction::triggered, this, []() -> void { ProjectBridge::Instance().SaveAs(); });
-    connect(m_LoadProjectAction, &QAction::triggered, this, []() -> void { ProjectBridge::Instance().Open(); });
-    connect(m_CloseProjectAction, &QAction::triggered, this, []() -> void { ProjectBridge::Instance().Close(); });
+    connect(m_ImportAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
+    connect(m_ImportDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
+    connect(m_NewProjectAction, &QAction::triggered, this, [this]() { _MediaBridge.NewProject(); });
+    connect(m_SaveProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Save(); });
+    connect(m_SaveAsProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.SaveAs(); });
+    connect(m_LoadProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Open(); });
+    connect(m_CloseProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Close(); });
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
@@ -480,11 +478,8 @@ void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
     /* Clear the track */
     m_Track->Clear();
 
-    for (SharedMediaClip m: media)
-    {
-        /* Add Media to the track */
+    for (SharedMediaClip m : media)
         m_Track->AddMedia(m);
-    }
 
     /* Set the sequence on the Player */
     m_Player->Load(m_Sequence);

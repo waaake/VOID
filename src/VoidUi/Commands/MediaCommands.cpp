@@ -13,7 +13,7 @@ MediaImportCommand::MediaImportCommand(const std::string& path, QUndoCommand* pa
     , m_Path(path)
 {
     /* The current index on which the Media Will be inserted */
-    m_InsertIndex = MBridge::Instance().DataModel()->rowCount();
+    m_InsertIndex = _MediaBridge.DataModel()->rowCount();
 
     setText("Import Media");
 }
@@ -21,10 +21,10 @@ MediaImportCommand::MediaImportCommand(const std::string& path, QUndoCommand* pa
 void MediaImportCommand::undo()
 {
     /* Index at which the Media was inserted and now needs removal */
-    QModelIndex index = MBridge::Instance().DataModel()->index(m_InsertIndex, 0);
+    QModelIndex index = _MediaBridge.DataModel()->index(m_InsertIndex, 0);
 
     /* Remove the Media at the index */
-    MBridge::Instance().Remove(index);
+    _MediaBridge.Remove(index);
 }
 
 bool MediaImportCommand::Redo()
@@ -46,7 +46,7 @@ bool MediaImportCommand::Redo()
     }
 
     /* Add the Media to the Model */
-    return MBridge::Instance().AddMedia(mstruct);
+    return _MediaBridge.AddMedia(mstruct);
 }
 
 /* }}} */
@@ -82,7 +82,7 @@ void MediaRemoveCommand::undo()
         }
 
         /* Add the Media to the Model */
-        MBridge::Instance().InsertMedia(mstruct, item.first);
+        _MediaBridge.InsertMedia(mstruct, item.first);
     }
 }
 
@@ -103,7 +103,7 @@ bool MediaRemoveCommand::Redo()
         QModelIndex index = m_Indexes.at(i);
 
         /* Update the internal struct so that we know where each clip was and it's path */
-        const SharedMediaClip clip = MBridge::Instance().DataModel()->Media(index);
+        const SharedMediaClip clip = _MediaBridge.DataModel()->Media(index);
 
         /**
          * Basepath from the clip, which will be used to create the clip back
@@ -111,7 +111,7 @@ bool MediaRemoveCommand::Redo()
         m_Paths[index.row()] = clip->FirstFrameData().Path();
 
         /* Now Set this media for being removed */
-        MBridge::Instance().Remove(index);
+        _MediaBridge.Remove(index);
     }
 
     return true;
