@@ -288,6 +288,9 @@ void MBridge::Load(const std::string& path)
         SetActiveProject(Project::FromStream(in));
     }
 
+    connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
+    connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
+
     /* Add to the projects */
     m_Projects->Add(m_Project);
     m_Project->SetSavePath(path);

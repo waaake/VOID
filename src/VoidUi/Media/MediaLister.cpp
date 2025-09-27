@@ -374,8 +374,6 @@ void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
         /* Add the Media to the Playlist */
         playlist->AddMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
     }
-
-    _MediaBridge.ActiveProject()->RefreshPlaylist();
 }
 
 VOID_NAMESPACE_CLOSE

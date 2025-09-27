@@ -109,6 +109,8 @@ void PlaylistModel::Add(Playlist* playlist)
     /* Where the playlist will be inserted */
     int insertidx = static_cast<int>(m_Playlists.size());
 
+    connect(playlist, &Playlist::updated, this, &PlaylistModel::PlaylistUpdated);
+
     beginInsertRows(QModelIndex(), insertidx, insertidx);
     m_Playlists.push_back(playlist);
     endInsertRows();
@@ -116,6 +118,8 @@ void PlaylistModel::Add(Playlist* playlist)
 
 void PlaylistModel::Insert(Playlist* playlist, int index)
 {
+    connect(playlist, &Playlist::updated, this, &PlaylistModel::PlaylistUpdated);
+
     beginInsertRows(QModelIndex(), index, index);
     m_Playlists.insert(m_Playlists.begin() + index, playlist);
     endInsertRows();
@@ -184,6 +188,12 @@ void PlaylistModel::Update()
 
     /* Emit that all the data has now been changed */
     emit dataChanged(top, bottom);
+}
+
+void PlaylistModel::PlaylistUpdated(const Playlist* playlist)
+{
+    QModelIndex updated = index(PlaylistRow(playlist), 0);
+    emit dataChanged(updated, updated);
 }
 
 /* }}} */

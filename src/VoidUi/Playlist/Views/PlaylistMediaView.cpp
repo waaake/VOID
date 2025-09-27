@@ -113,7 +113,6 @@ void PlaylistMediaView::dropEvent(QDropEvent* event)
         SharedMediaClip media = _MediaBridge.MediaAt(row, column);
 
         playlist->AddMedia(media);
-        _MediaBridge.ActiveProject()->RefreshPlaylist();
     }
 }
 
@@ -173,7 +172,7 @@ void PlaylistMediaView::Connect()
 void PlaylistMediaView::ResetModel(MediaModel* model)
 {
     proxy->setSourceModel(model);
-    VOID_LOG_INFO("Source Model Updated");
+    VOID_LOG_INFO("Playlist Media Source Model Updated");
 }
 
 void PlaylistMediaView::ItemDoubleClicked(const QModelIndex& index)

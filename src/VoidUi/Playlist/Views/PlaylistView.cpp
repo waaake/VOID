@@ -121,7 +121,6 @@ void PlaylistView::dropEvent(QDropEvent* event)
         SharedMediaClip media = _MediaBridge.MediaAt(row, column);
 
         playlist->AddMedia(media);
-        _MediaBridge.ActiveProject()->RefreshPlaylist();
     }
 }
 
