@@ -1,9 +1,13 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QMenu>
+
 /* Internal */
 #include "ProjectView.h"
 #include "VoidUi/Project/Delegates/ListDelegate.h"
+#include "VoidUi/Project/ProjectBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -31,8 +35,12 @@ ProjectView::~ProjectView()
 
 void ProjectView::Setup()
 {
+    m_ImportMediaAction = new QAction("Import Media...");
+    m_ImportDirectoryAction = new QAction("Import Directory...");
+    m_CloseProjectAction = new QAction("Close Project");
+
     /* Source Model */
-    ProjectModel* model = MBridge::Instance().ProjectDataModel();
+    ProjectModel* model = _MediaBridge.ProjectDataModel();
 
     /* Proxy */
     proxy = new ProjectProxyModel(this);
@@ -54,7 +62,14 @@ void ProjectView::Setup()
 
 void ProjectView::Connect()
 {
+    /* Menu */
+    connect(m_ImportMediaAction, &QAction::triggered, this, &ProjectView::ImportMedia);
+    connect(m_ImportDirectoryAction, &QAction::triggered, this, &ProjectView::ImportDirectory);
+    connect(m_CloseProjectAction, &QAction::triggered, this, &ProjectView::CloseProject);
+
+    /* View */
     connect(this, &QListView::clicked, this, &ProjectView::ItemClicked);
+    connect(this, &QListView::customContextMenuRequested, this, &ProjectView::ShowContextMenu);
 }
 
 void ProjectView::ResetModel(ProjectModel* model)
@@ -114,6 +129,62 @@ bool ProjectView::HasSelection()
 void ProjectView::EnableSorting(bool state, const Qt::SortOrder& order)
 {
     proxy->sort(state ? 0 : -1, order);
+}
+
+void ProjectView::ShowContextMenu(const Point& position)
+{
+    if (!HasSelection())
+        return;
+
+    QMenu contextMenu(this);
+    contextMenu.addAction(m_ImportMediaAction);
+    contextMenu.addAction(m_ImportDirectoryAction);
+
+    contextMenu.addSeparator();
+    contextMenu.addAction(m_CloseProjectAction);
+
+    /* Show Menu */
+    #if _QT6
+    /**
+     * Qt6 mapToGlobal returns QPointF while menu.exec expects QPoint
+     */
+    contextMenu.exec(mapToGlobal(position).toPoint());
+    #else
+    contextMenu.exec(mapToGlobal(position));
+    #endif // _QT6
+}
+
+Project* ProjectView::HighlightedProject()
+{
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return nullptr;
+
+    return _ProjectBridge.ProjectAt(selection->currentIndex());
+}
+
+void ProjectView::ImportMedia()
+{
+    Project* project = HighlightedProject();
+
+    if (project)
+        _ProjectBridge.ImportMedia(project);
+}
+
+void ProjectView::ImportDirectory()
+{
+    Project* project = HighlightedProject();
+
+    if (project)
+        _ProjectBridge.ImportDirectory(project);   
+}
+
+void ProjectView::CloseProject()
+{
+    Project* project = HighlightedProject();
+
+    if (project)
+        _ProjectBridge.Close(project);
 }
 
 VOID_NAMESPACE_CLOSE

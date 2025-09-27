@@ -21,6 +21,9 @@
 
 VOID_NAMESPACE_OPEN
 
+/* Forward Decl to make this a friend */
+class ProjectBridge;
+
 /**
  * This class acts as a singleton bridge between various components dealing with Media and MediaClips
  * The class holds all the Projects at any instant
@@ -62,6 +65,7 @@ public:
 
     void SetCurrentProject(const QModelIndex& index);
     void SetCurrentProject(int index);
+    void SetCurrentProject(Project* project);
 
     inline Project* ActiveProject() const { return m_Project; }
 
@@ -93,9 +97,10 @@ public:
 
     inline MediaModel* DataModel() const { return m_Project->DataModel(); }
     inline ProjectModel* ProjectDataModel() const { return m_Projects; }
-    inline SharedMediaClip Media(int row, int column) const { return m_Project->Media(row, column); }
-    inline SharedMediaClip PlaylistMedia(const QModelIndex& index) const { return m_Project->PlaylistMedia(index); }
-    inline SharedMediaClip PlaylistMedia(int row, int column) const { return m_Project->PlaylistMedia(row, column); }
+    inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Project->MediaAt(index); }
+    inline SharedMediaClip MediaAt(int row, int column) const { return m_Project->MediaAt(row, column); }
+    inline SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const { return m_Project->PlaylistMediaAt(index); }
+    inline SharedMediaClip PlaylistMediaAt(int row, int column) const { return m_Project->PlaylistMediaAt(row, column); }
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);
@@ -110,7 +115,8 @@ public:
     bool Save();
     bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type = EtherFormat::Type::ASCII);
     void Load(const std::string& path);
-    bool Close(bool force = false);
+    bool CloseProject(bool force = false);
+    bool CloseProject(Project* project, bool force = false);
 
 signals:
     /**
@@ -136,7 +142,10 @@ private: /* Members */
 
 private: /* Methods */
     void SetActiveProject(Project* project);
+    friend class ProjectBridge;
 };
+
+#define _MediaBridge MBridge::Instance()
 
 VOID_NAMESPACE_CLOSE
 

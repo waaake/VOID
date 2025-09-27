@@ -52,7 +52,7 @@ void PlaylistView::Setup()
     proxy = new PlaylistProxyModel(this);
 
     /* Source Model */
-    Project* project = MBridge::Instance().ActiveProject();
+    Project* project = _MediaBridge.ActiveProject();
 
     /* Setup the Proxy's Source Model */
     ResetModel(project->PlaylistMediaModel());
@@ -101,7 +101,7 @@ void PlaylistView::dropEvent(QDropEvent* event)
         if (!index.isValid())
             return;
 
-        Playlist* playlist = MBridge::Instance().PlaylistAt(index);
+        Playlist* playlist = _MediaBridge.PlaylistAt(index);
         
         if (!playlist)
             return;
@@ -118,18 +118,17 @@ void PlaylistView::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().Media(row, column);
+        SharedMediaClip media = _MediaBridge.MediaAt(row, column);
 
         playlist->AddMedia(media);
-        MBridge::Instance().ActiveProject()->RefreshPlaylist();
     }
 }
 
 void PlaylistView::Connect()
 {
     connect(this, &QListView::clicked, this, &PlaylistView::ItemClicked);
-    connect(&MBridge::Instance(), &MBridge::projectCreated, this, &PlaylistView::ProjectChanged);
-    connect(&MBridge::Instance(), &MBridge::projectChanged, this, &PlaylistView::ProjectChanged);
+    connect(&_MediaBridge, &MBridge::projectCreated, this, &PlaylistView::ProjectChanged);
+    connect(&_MediaBridge, &MBridge::projectChanged, this, &PlaylistView::ProjectChanged);
     connect(this, &QListView::customContextMenuRequested, this, &PlaylistView::ShowContextMenu);
 
     connect(m_PlayAction, &QAction::triggered, this, &PlaylistView::Play);
@@ -231,7 +230,7 @@ void PlaylistView::Play()
     if (!selection)
         return;
 
-    Playlist* playlist = MBridge::Instance().PlaylistAt(proxy->mapToSource(selection->currentIndex()));
+    Playlist* playlist = _MediaBridge.PlaylistAt(proxy->mapToSource(selection->currentIndex()));
 
     if (playlist)
         emit played(playlist);
@@ -243,7 +242,8 @@ void PlaylistView::RemoveSelected()
     if (!selection)
         return;
 
-    MBridge::Instance().ActiveProject()->RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
+    _MediaBridge.ActiveProject()->RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
+    emit updated();
 }
 
 VOID_NAMESPACE_CLOSE

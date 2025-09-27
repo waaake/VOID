@@ -56,6 +56,7 @@ set(SOURCES
     # Project
     Project/Browser.cpp
     Project/Project.cpp
+    Project/ProjectBridge.cpp
     Project/Importer.cpp
     Project/Views/ProjectView.cpp
     Project/Delegates/ListDelegate.cpp

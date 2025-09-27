@@ -17,6 +17,8 @@ VOID_NAMESPACE_OPEN
 
 class VOID_API Playlist : public VoidObject
 {
+    Q_OBJECT
+
 public:
     Playlist(const std::string& name, QObject* parent = nullptr);
     Playlist(QObject* parent = nullptr);
@@ -39,6 +41,9 @@ public:
 
     std::string Name() const { return m_Name; }
     void SetName(const std::string& name) { m_Name = name; }
+
+signals:
+    void updated(const Playlist*);
 
 protected: /* Members */
     MediaModel* m_Media;

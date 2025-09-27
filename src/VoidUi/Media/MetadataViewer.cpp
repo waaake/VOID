@@ -65,7 +65,7 @@ void MetadataViewer::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().Media(row, column);
+        SharedMediaClip media = _MediaBridge.MediaAt(row, column);
         SetFromMedia(media);
     }
 }

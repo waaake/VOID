@@ -134,7 +134,7 @@ void ProjectModel::Remove(const QModelIndex& index)
     endRemoveRows();
 }
 
-Core::Project* ProjectModel::GetProject(const QModelIndex& index) const
+Core::Project* ProjectModel::ProjectAt(const QModelIndex& index) const
 {
     if (!index.isValid())
         return nullptr;

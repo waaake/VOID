@@ -126,7 +126,7 @@ void Player::Connect()
     connect(m_Renderer, &VoidRenderer::annotationDeleted, this, &Player::RemoveAnnotation);
 
     /* When a MediaClip is about to be removed from the MediaBride */
-    connect(&MBridge::Instance(), &MBridge::mediaAboutToBeRemoved, this, &Player::RemoveMedia);
+    connect(&_MediaBridge, &MBridge::mediaAboutToBeRemoved, this, &Player::RemoveMedia);
 }
 
 void Player::RemoveMedia(const SharedMediaClip& media)
@@ -574,7 +574,7 @@ void Player::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().Media(row, column);
+        SharedMediaClip media = _MediaBridge.MediaAt(row, column);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
             Load(media, PlayerViewBuffer::A);
@@ -595,7 +595,7 @@ void Player::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = MBridge::Instance().PlaylistMedia(row, column);
+        SharedMediaClip media = _MediaBridge.PlaylistMediaAt(row, column);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
             Load(media, PlayerViewBuffer::A);

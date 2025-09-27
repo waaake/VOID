@@ -15,7 +15,6 @@
 #include "Definition.h"
 #include "BaseWindow.h"
 #include "TitleBar.h"
-#include "VoidCore/Media.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
@@ -63,8 +62,6 @@ public:
 
     virtual QSize sizeHint() const override;
 
-    /* Reads Media Directory and Loads Media onto the components */
-    void ImportMedia(const MediaStruct& mstruct);
     void PlayMedia(const std::vector<SharedMediaClip>& items);
 
     /* Inspect Media Information */
@@ -151,14 +148,8 @@ private: /* Members */
     QMenu* m_HelpMenu;
     QAction* m_AboutAction;
 
-    /* State determining whether to cache the current media upfront or not */
-    bool m_CacheMedia;
-
     /* Media Bridge Instance */
     MBridge& m_Bridge;
-
-    /* Image Sequence */
-    Media m_Media;
 
     /* Playback Sequence holding Media entities internally */
     SharedPlaybackSequence m_Sequence;
@@ -166,14 +157,6 @@ private: /* Members */
     SharedPlaybackTrack m_Track;
 
 public:
-    void Load();
-    void LoadDirectory();
-
-    void SaveProject();
-    void SaveProjectAs();
-    void OpenProject();
-    void CloseProject();
-
     /* Clears and sets the provided media on the player */
     void SetMedia(const SharedMediaClip& media);
     /* Adds media onto the existing track */

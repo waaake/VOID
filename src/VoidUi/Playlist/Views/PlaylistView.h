@@ -46,6 +46,7 @@ signals:
     /* Sends the Source Model Index mapped from the proxy model */
     void itemClicked(const QModelIndex&);
     void played(const Playlist*);
+    void updated();
 
 private: /* Models */
     /* Proxy for filtering and sorting */

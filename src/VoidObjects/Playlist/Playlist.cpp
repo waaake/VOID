@@ -33,6 +33,8 @@ void Playlist::AddMedia(const SharedMediaClip& media)
     m_Media->Add(media);
     /* Update the modification state for the playlist */
     m_Modified = true;
+
+    emit updated(this);
 }
 
 void Playlist::InsertMedia(const SharedMediaClip& media, const int index)
@@ -40,6 +42,8 @@ void Playlist::InsertMedia(const SharedMediaClip& media, const int index)
     m_Media->Insert(media, index);
     /* Update the modification state for the playlist */
     m_Modified = true;
+
+    emit updated(this);
 }
 
 void Playlist::RemoveMedia(const QModelIndex& index)
@@ -47,6 +51,8 @@ void Playlist::RemoveMedia(const QModelIndex& index)
     m_Media->Remove(index);
     /* Update the modification state for the playlist */
     m_Modified = true;
+
+    emit updated(this);
 }
 
 VOID_NAMESPACE_CLOSE

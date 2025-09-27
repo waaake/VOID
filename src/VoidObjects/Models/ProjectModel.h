@@ -55,7 +55,7 @@ public:
     void Insert(Core::Project* project, int index);
     void Remove(const QModelIndex& index);
 
-    Core::Project* GetProject(const QModelIndex& index) const;
+    Core::Project* ProjectAt(const QModelIndex& index) const;
     int ProjectRow(const Core::Project* project) const;
 
     void Clear();

@@ -63,7 +63,7 @@ void MBridge::SetCurrentProject(int index)
     if (index > m_Projects->rowCount() - 1)
         return;
 
-    SetActiveProject(dynamic_cast<Project*>(m_Projects->GetProject(m_Projects->index(index, 0))));
+    SetActiveProject(dynamic_cast<Project*>(m_Projects->ProjectAt(m_Projects->index(index, 0))));
     emit projectChanged(m_Project);
 }
 
@@ -73,7 +73,13 @@ void MBridge::SetCurrentProject(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    SetActiveProject(dynamic_cast<Project*>(m_Projects->GetProject(index)));
+    SetActiveProject(dynamic_cast<Project*>(m_Projects->ProjectAt(index)));
+    emit projectChanged(m_Project);
+}
+
+void MBridge::SetCurrentProject(Project* project)
+{
+    SetActiveProject(project);
     emit projectChanged(m_Project);
 }
 
@@ -168,7 +174,7 @@ bool MBridge::Remove(SharedMediaClip clip)
 bool MBridge::Remove(const QModelIndex& index)
 {
     /* The Media Associated with the Model index */
-    SharedMediaClip clip = m_Project->Media(index);
+    SharedMediaClip clip = m_Project->MediaAt(index);
 
     /* Invalid Index */
     if (!clip)
@@ -282,6 +288,9 @@ void MBridge::Load(const std::string& path)
         SetActiveProject(Project::FromStream(in));
     }
 
+    connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
+    connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
+
     /* Add to the projects */
     m_Projects->Add(m_Project);
     m_Project->SetSavePath(path);
@@ -289,7 +298,7 @@ void MBridge::Load(const std::string& path)
     emit projectCreated(m_Project);
 }
 
-bool MBridge::Close(bool force)
+bool MBridge::CloseProject(bool force)
 {
     if (!m_Project)
         return true; // No project to close
@@ -311,6 +320,31 @@ bool MBridge::Close(bool force)
         NewProject();
     else
         SetCurrentProject(m_Projects->index(row == 0 ? ++row : --row, 0));
+
+    return true;
+}
+
+bool MBridge::CloseProject(Project* project, bool force)
+{
+    /* It's the current project */
+    if (project == m_Project)
+        return CloseProject(force);
+
+    /* Project needs saving if not forced*/
+    if (m_Project->Modified() && !force)
+        return false;
+
+    /* Case where the current project is the last one */
+    bool create = m_Projects->rowCount() == 1;
+
+    int row = m_Projects->ProjectRow(project);
+    QModelIndex index = m_Projects->index(row, 0);
+
+    /* Remove the targeted project */
+    m_Projects->Remove(index);
+
+    if (create)
+        NewProject();
 
     return true;
 }

@@ -1,9 +1,6 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-/* STD */
-#include <string>
-
 /* Qt */
 #include <QCoreApplication>
 #include <QLayout>
@@ -12,14 +9,11 @@
 
 /* Internal */
 #include "PlayerWindow.h"
-#include "VoidCore/Logging.h"
-#include "VoidUi/Media/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/Preferences/PreferencesUI.h"
-#include "VoidUi/Project/Browser.h"
 #include "VoidUi/Dock/DockManager.h"
 #include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/MessageBox.h"
+#include "VoidUi/Project/ProjectBridge.h"
+#include "VoidUi/Preferences/PreferencesUI.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -79,9 +73,7 @@ void DockerWindow::ToggleComponent(const Component& component, const bool state)
 
 VoidMainWindow::VoidMainWindow(QWidget* parent)
     : BaseWindow(parent)
-    , m_CacheMedia(false)
     , m_Bridge(MBridge::Instance())
-    , m_Media()
 {
     /* The default playback sequence */
     m_Sequence = std::make_shared<PlaybackSequence>();
@@ -367,18 +359,18 @@ void VoidMainWindow::Connect()
     /* Menu Actions */
     /* File Menu {{{ */
     connect(m_CloseAction, &QAction::triggered, this, &QCoreApplication::quit);
-    connect(m_ImportAction, &QAction::triggered, this, &VoidMainWindow::Load);
-    connect(m_ImportDirectoryAction, &QAction::triggered, this, &VoidMainWindow::LoadDirectory);
-    connect(m_NewProjectAction, &QAction::triggered, this, [this]() { MBridge::Instance().NewProject(); });
-    connect(m_SaveProjectAction, &QAction::triggered, this, &VoidMainWindow::SaveProject);
-    connect(m_SaveAsProjectAction, &QAction::triggered, this, &VoidMainWindow::SaveProjectAs);
-    connect(m_LoadProjectAction, &QAction::triggered, this, &VoidMainWindow::OpenProject);
-    connect(m_CloseProjectAction, &QAction::triggered, this, &VoidMainWindow::CloseProject);
+    connect(m_ImportAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
+    connect(m_ImportDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
+    connect(m_NewProjectAction, &QAction::triggered, this, [this]() { _MediaBridge.NewProject(); });
+    connect(m_SaveProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Save(); });
+    connect(m_SaveAsProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.SaveAs(); });
+    connect(m_LoadProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Open(); });
+    connect(m_CloseProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Close(); });
     connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
     /* Edit Menu {{{ */
-    connect(m_EditPrefsAction, &QAction::triggered, this, [this]() {VoidPreferencesWidget(this).exec(); } );
+    connect(m_EditPrefsAction, &QAction::triggered, this, [this]() { VoidPreferencesWidget(this).exec(); } );
     /* }}} */
 
     /* Playback Menu {{{ */
@@ -432,24 +424,6 @@ void VoidMainWindow::Connect()
     connect(m_Track.get(), &PlaybackTrack::cacheCleared, m_Player, &Player::ClearCachedFrames);
 }
 
-void VoidMainWindow::ImportMedia(const MediaStruct& mstruct)
-{
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return;
-    }
-
-    /* Add to the Media Bridge */
-    MBridge::Instance().AddMedia(mstruct);
-}
-
 void VoidMainWindow::RegisterDocks()
 {
     /* Register Dock Widgets in the Dock Manager */
@@ -460,7 +434,7 @@ void VoidMainWindow::RegisterDocks()
 
     /* Media Lister Widget */
     m_MediaLister = new VoidMediaLister(this);
-    m_PlayLister = new VoidPlayLister(this);
+    m_PlayLister = new VoidPlayLister();
 
     /* Python Script Editor */
     m_ScriptEditor = new PyScriptEditor();
@@ -473,101 +447,6 @@ void VoidMainWindow::RegisterDocks()
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
     manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
     manager.RegisterDock(m_PlayLister, "Playlist View");
-}
-
-// Slots
-void VoidMainWindow::Load()
-{
-    VoidMediaBrowser mediaBrowser;
-
-    /* In case the dialog was not accepted */
-    if (!mediaBrowser.Browse())
-    {
-        VOID_LOG_INFO("User Cancelled Browsing.");
-        return;
-    }
-
-    /* Read the File from the FileDialog */
-    m_Bridge.AddMedia(mediaBrowser.GetSelectedFile());
-}
-
-void VoidMainWindow::LoadDirectory()
-{
-    VoidMediaBrowser mediaBrowser;
-
-    if (!mediaBrowser.BrowseDirectory())
-    {
-        VOID_LOG_INFO("User Cancelled Importing");
-        return;
-    }
-
-    /* Import the Media from the directory */
-    m_Bridge.ImportDirectory(mediaBrowser.SelectedDirectory());
-}
-
-void VoidMainWindow::OpenProject()
-{
-    VoidProjectBrowser browser;
-    
-    if (!browser.Browse())
-    {
-        VOID_LOG_INFO("User Cancelled Opening.");
-        return;
-    }
-
-    VoidFileDescriptor d = browser.File();
-    m_Bridge.Load(d.path);
-}
-
-void VoidMainWindow::SaveProject()
-{
-    if (!m_Bridge.Save())
-    {
-        VOID_LOG_INFO("Not able to save project. Opening Save As Dialog...");
-
-        VoidProjectBrowser browser;
-        
-        if (!browser.Save())
-        {
-            VOID_LOG_INFO("User Cancelled Saving.");
-            return;
-        }
-    
-        VoidFileDescriptor d = browser.File();
-        m_Bridge.Save(d.path, d.name, d.type);
-    }
-}
-
-void VoidMainWindow::SaveProjectAs()
-{
-    VoidProjectBrowser browser;
-    
-    if (!browser.Save())
-    {
-        VOID_LOG_INFO("User Cancelled Saving.");
-        return;
-    }
-
-    VoidFileDescriptor d = browser.File();
-    m_Bridge.Save(d.path, d.name, d.type);
-}
-
-void VoidMainWindow::CloseProject()
-{
-    /* Any modifications in the project which needs to be saved */
-    if (!m_Bridge.Close())
-    {
-        SaveMessageBox box;
-        QMessageBox::StandardButton ret = box.Prompt();
-
-        if (ret == QMessageBox::Save)
-            SaveProject();
-        else if (ret == QMessageBox::Cancel)
-            return;
-    }
-
-    /* Force Close the project*/
-    m_Bridge.Close(true);
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)
@@ -599,11 +478,8 @@ void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
     /* Clear the track */
     m_Track->Clear();
 
-    for (SharedMediaClip m: media)
-    {
-        /* Add Media to the track */
+    for (SharedMediaClip m : media)
         m_Track->AddMedia(m);
-    }
 
     /* Set the sequence on the Player */
     m_Player->Load(m_Sequence);

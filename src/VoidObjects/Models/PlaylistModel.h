@@ -54,7 +54,7 @@ public:
 
     /* Playlist */
     void Add(Playlist* playlist);
-    void Insert(Playlist* media, int index);
+    void Insert(Playlist* playlist, int index);
     void Remove(const QModelIndex& index);
 
     Playlist* PlaylistAt(const QModelIndex& index) const;
@@ -75,6 +75,7 @@ private: /* Members */
 
 private: /* Methods */
     void Update();
+    void PlaylistUpdated(const Playlist* playlist);
 };
 
 class VOID_API PlaylistProxyModel : public QSortFilterProxyModel

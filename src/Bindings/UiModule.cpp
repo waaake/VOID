@@ -25,8 +25,8 @@ void BindUi(py::module_& m)
     m.doc() = "Void UI Module.";
 
     m.def("active_player", &UIGlobals::GetActivePlayer, py::return_value_policy::reference);
-    m.def("active_project", []() { return MBridge::Instance().ActiveProject(); }, py::return_value_policy::reference);
-    m.def("load_project", [](const std::string& path) { MBridge::Instance().Load(path); }, py::arg("path"));
+    m.def("active_project", []() { return _MediaBridge.ActiveProject(); }, py::return_value_policy::reference);
+    m.def("load_project", [](const std::string& path) { _MediaBridge.Load(path); }, py::arg("path"));
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
 
     /* Player */
