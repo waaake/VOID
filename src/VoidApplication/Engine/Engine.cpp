@@ -35,6 +35,7 @@ int VoidEngine::Exec(int argc, char** argv)
     int result = app.exec();
 
     /* Cleanup */
+    delete m_MenuSystem;
     delete m_Imager;
     return result;
 }
@@ -65,6 +66,11 @@ void VoidEngine::Initialize()
 {
     m_Imager = new VoidMainWindow;
     UIGlobals::g_VoidMainWindow = m_Imager;
+
+    /* Init Menu */
+    m_MenuSystem = new MenuSystem(m_Imager);
+    UIGlobals::g_MenuSystem = m_MenuSystem;
+    m_Imager->InitMenu(m_MenuSystem);
 
     VOID_LOG_INFO("Imager Initialized.");
 }

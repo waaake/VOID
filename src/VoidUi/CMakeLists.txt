@@ -3,6 +3,7 @@ set(SOURCES
     # Base Window
     BaseWindow/About.cpp
     BaseWindow/BaseWindow.cpp
+    BaseWindow/MenuSystem.cpp
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
 

@@ -82,13 +82,9 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
     /* Update the sequence with this track */
     m_Sequence->AddVideoTrack(m_Track);
 
-    /* Register Dock Widgets */
     RegisterDocks();
-
-    /* Build the UI */
     Build();
 
-    /* Set the window title */
     setWindowTitle("VOID");
     setAttribute(Qt::WA_QuitOnClose);
 
@@ -111,6 +107,16 @@ void VoidMainWindow::paintEvent(QPaintEvent* event)
 QSize VoidMainWindow::sizeHint() const
 {
     return QSize(1280, 760);
+}
+
+QMenuBar* VoidMainWindow::MenuBar() const
+{
+    #ifdef USE_FRAMED_WINDOW
+    return menuBar();
+    #else
+    /* Menubar from the TitleBar */
+    return m_TitleBar->MenuBar();
+    #endif // USE_FRAMED_WINDOW
 }
 
 void VoidMainWindow::Build()
@@ -156,195 +162,195 @@ void VoidMainWindow::Build()
     QMenuBar* menuBar = m_TitleBar->MenuBar();
     #endif // USE_FRAMED_WINDOW
 
-    /* File Menu {{{ */
-    m_FileMenu = new QMenu("File", menuBar);
+    // /* File Menu {{{ */
+    // m_FileMenu = new QMenu("File", menuBar);
 
-    m_ImportAction = new QAction("Import Media...", m_FileMenu);
-    m_ImportAction->setShortcut(QKeySequence("Ctrl+I"));
+    // m_ImportAction = new QAction("Import Media...", m_FileMenu);
+    // m_ImportAction->setShortcut(QKeySequence("Ctrl+I"));
 
-    m_ImportDirectoryAction = new QAction("Import Directory...", m_FileMenu);
-    m_ImportDirectoryAction->setShortcut(QKeySequence("Ctrl+Alt+I"));
+    // m_ImportDirectoryAction = new QAction("Import Directory...", m_FileMenu);
+    // m_ImportDirectoryAction->setShortcut(QKeySequence("Ctrl+Alt+I"));
     
-    m_NewProjectAction = new QAction("New Project", m_FileMenu);
-    m_NewProjectAction->setShortcut(QKeySequence("Ctrl+N"));
+    // m_NewProjectAction = new QAction("New Project", m_FileMenu);
+    // m_NewProjectAction->setShortcut(QKeySequence("Ctrl+N"));
 
-    m_SaveProjectAction = new QAction("Save Project", m_FileMenu);
-    m_SaveProjectAction->setShortcut(QKeySequence("Ctrl+S"));
+    // m_SaveProjectAction = new QAction("Save Project", m_FileMenu);
+    // m_SaveProjectAction->setShortcut(QKeySequence("Ctrl+S"));
 
-    m_SaveAsProjectAction = new QAction("Save Project As...", m_FileMenu);
-    m_SaveAsProjectAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
+    // m_SaveAsProjectAction = new QAction("Save Project As...", m_FileMenu);
+    // m_SaveAsProjectAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
 
-    m_LoadProjectAction = new QAction("Open Project...", m_FileMenu);
-    m_LoadProjectAction->setShortcut(QKeySequence("Ctrl+O"));
+    // m_LoadProjectAction = new QAction("Open Project...", m_FileMenu);
+    // m_LoadProjectAction->setShortcut(QKeySequence("Ctrl+O"));
 
-    m_CloseProjectAction = new QAction("Close Project", m_FileMenu);
-    m_CloseProjectAction->setShortcut(QKeySequence("Ctrl+W"));
+    // m_CloseProjectAction = new QAction("Close Project", m_FileMenu);
+    // m_CloseProjectAction->setShortcut(QKeySequence("Ctrl+W"));
 
-    m_ClearAction = new QAction("Clear", m_FileMenu);
+    // m_ClearAction = new QAction("Clear", m_FileMenu);
 
-    m_CloseAction = new QAction("Close Player", m_FileMenu);
-    m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
+    // m_CloseAction = new QAction("Close Player", m_FileMenu);
+    // m_CloseAction->setShortcut(QKeySequence("Ctrl+Q"));
 
-    m_FileMenu->addAction(m_ImportAction);
-    m_FileMenu->addAction(m_ImportDirectoryAction);
+    // m_FileMenu->addAction(m_ImportAction);
+    // m_FileMenu->addAction(m_ImportDirectoryAction);
 
-    /* -------------------------------- */
-    m_FileMenu->addSeparator();
+    // /* -------------------------------- */
+    // m_FileMenu->addSeparator();
 
-    m_FileMenu->addAction(m_NewProjectAction);
-    m_FileMenu->addAction(m_SaveProjectAction);
-    m_FileMenu->addAction(m_SaveAsProjectAction);
-    m_FileMenu->addAction(m_LoadProjectAction);
-    m_FileMenu->addAction(m_CloseProjectAction);
+    // m_FileMenu->addAction(m_NewProjectAction);
+    // m_FileMenu->addAction(m_SaveProjectAction);
+    // m_FileMenu->addAction(m_SaveAsProjectAction);
+    // m_FileMenu->addAction(m_LoadProjectAction);
+    // m_FileMenu->addAction(m_CloseProjectAction);
 
-    /* -------------------------------- */
-    m_FileMenu->addSeparator();
+    // /* -------------------------------- */
+    // m_FileMenu->addSeparator();
 
-    m_FileMenu->addAction(m_ClearAction);
-    m_FileMenu->addAction(m_CloseAction);
-    /* }}} */
+    // m_FileMenu->addAction(m_ClearAction);
+    // m_FileMenu->addAction(m_CloseAction);
+    // /* }}} */
 
-    /* Edit Menu {{{ */
-    m_EditMenu = new QMenu("Edit", menuBar);
+    // /* Edit Menu {{{ */
+    // m_EditMenu = new QMenu("Edit", menuBar);
 
-    m_UndoAction = m_Bridge.CreateUndoAction(m_EditMenu);
-    m_UndoAction->setShortcut(QKeySequence("Ctrl+Z"));
+    // m_UndoAction = m_Bridge.CreateUndoAction(m_EditMenu);
+    // m_UndoAction->setShortcut(QKeySequence("Ctrl+Z"));
     
-    m_RedoAction = m_Bridge.CreateRedoAction(m_EditMenu);
-    m_RedoAction->setShortcut(QKeySequence("Ctrl+Shift+Z"));
+    // m_RedoAction = m_Bridge.CreateRedoAction(m_EditMenu);
+    // m_RedoAction->setShortcut(QKeySequence("Ctrl+Shift+Z"));
 
-    m_EditPrefsAction = new QAction("Preferences...", m_EditMenu);
-    QIcon icon;
-    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _DARK_COLOR(QPalette::Text, 150), 18), QIcon::Normal);
-    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _COLOR(QPalette::Dark), 18), QIcon::Active);
-    m_EditPrefsAction->setIcon(icon);
+    // m_EditPrefsAction = new QAction("Preferences...", m_EditMenu);
+    // QIcon icon;
+    // icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _DARK_COLOR(QPalette::Text, 150), 18), QIcon::Normal);
+    // icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _COLOR(QPalette::Dark), 18), QIcon::Active);
+    // m_EditPrefsAction->setIcon(icon);
     
-    m_EditMenu->addAction(m_UndoAction);
-    m_EditMenu->addAction(m_RedoAction);
+    // m_EditMenu->addAction(m_UndoAction);
+    // m_EditMenu->addAction(m_RedoAction);
 
-    /* -------------------------------- */
-    m_EditMenu->addSeparator();
+    // /* -------------------------------- */
+    // m_EditMenu->addSeparator();
 
-    m_EditMenu->addAction(m_EditPrefsAction);
-    /* }}} */
+    // m_EditMenu->addAction(m_EditPrefsAction);
+    // /* }}} */
 
-    /* Playback Menu {{{ */
-    m_PlaybackMenu = new QMenu("Playback", menuBar);
+    // /* Playback Menu {{{ */
+    // m_PlaybackMenu = new QMenu("Playback", menuBar);
 
-    m_EnableCacheAction = new QAction("Enable Look Ahead Caching", m_PlaybackMenu);
-    m_DisableCacheAction = new QAction("Disable Look Ahead Caching", m_PlaybackMenu);
-    m_StopCacheAction = new QAction("Stop Caching Media", m_PlaybackMenu);
-    m_RefreshCacheAction = new QAction("Refresh Media Cache", m_PlaybackMenu);
-    m_ResumeCacheAction = new QAction("Resume Caching Media", m_PlaybackMenu);
-    m_ClearCacheAction = new QAction("Clear Cache", m_PlaybackMenu);
+    // m_EnableCacheAction = new QAction("Enable Look Ahead Caching", m_PlaybackMenu);
+    // m_DisableCacheAction = new QAction("Disable Look Ahead Caching", m_PlaybackMenu);
+    // m_StopCacheAction = new QAction("Stop Caching Media", m_PlaybackMenu);
+    // m_RefreshCacheAction = new QAction("Refresh Media Cache", m_PlaybackMenu);
+    // m_ResumeCacheAction = new QAction("Resume Caching Media", m_PlaybackMenu);
+    // m_ClearCacheAction = new QAction("Clear Cache", m_PlaybackMenu);
 
-    m_PlayForwardsAction = new QAction("Play Forwards", m_PlaybackMenu);
-    m_PlayForwardsAction->setShortcut(QKeySequence(Qt::Key_L));
+    // m_PlayForwardsAction = new QAction("Play Forwards", m_PlaybackMenu);
+    // m_PlayForwardsAction->setShortcut(QKeySequence(Qt::Key_L));
 
-    m_StopPlayingAction = new QAction("Stop Playing", m_PlaybackMenu);
-    m_StopPlayingAction->setShortcut(QKeySequence(Qt::Key_K));
+    // m_StopPlayingAction = new QAction("Stop Playing", m_PlaybackMenu);
+    // m_StopPlayingAction->setShortcut(QKeySequence(Qt::Key_K));
 
-    m_PlayBackwardsAction = new QAction("Play Backwards", m_PlaybackMenu);
-    m_PlayBackwardsAction->setShortcut(QKeySequence(Qt::Key_J));
+    // m_PlayBackwardsAction = new QAction("Play Backwards", m_PlaybackMenu);
+    // m_PlayBackwardsAction->setShortcut(QKeySequence(Qt::Key_J));
 
-    m_ForwardsAction = new QAction("Go to Next Frame", m_PlaybackMenu);
-    m_ForwardsAction->setShortcut(QKeySequence(Qt::Key_Period));
+    // m_ForwardsAction = new QAction("Go to Next Frame", m_PlaybackMenu);
+    // m_ForwardsAction->setShortcut(QKeySequence(Qt::Key_Period));
 
-    m_BackwardsAction = new QAction("Go to Previous Frame", m_PlaybackMenu);
-    m_BackwardsAction->setShortcut(QKeySequence(Qt::Key_Comma));
+    // m_BackwardsAction = new QAction("Go to Previous Frame", m_PlaybackMenu);
+    // m_BackwardsAction->setShortcut(QKeySequence(Qt::Key_Comma));
 
-    m_EndFrameAction = new QAction("Go to End", m_PlaybackMenu);
-    m_EndFrameAction->setShortcut(QKeySequence(Qt::Key_PageDown));
+    // m_EndFrameAction = new QAction("Go to End", m_PlaybackMenu);
+    // m_EndFrameAction->setShortcut(QKeySequence(Qt::Key_PageDown));
 
-    m_StartFrameAction = new QAction("Go to Start", m_PlaybackMenu);
-    m_StartFrameAction->setShortcut(QKeySequence(Qt::Key_PageUp));
+    // m_StartFrameAction = new QAction("Go to Start", m_PlaybackMenu);
+    // m_StartFrameAction->setShortcut(QKeySequence(Qt::Key_PageUp));
 
-    m_SetInFrameAction = new QAction("Set In Frame", m_PlaybackMenu);
-    m_SetInFrameAction->setShortcut(QKeySequence(Qt::Key_BracketLeft));
+    // m_SetInFrameAction = new QAction("Set In Frame", m_PlaybackMenu);
+    // m_SetInFrameAction->setShortcut(QKeySequence(Qt::Key_BracketLeft));
 
-    m_SetOutFrameAction = new QAction("Set Out Frame", m_PlaybackMenu);
-    m_SetOutFrameAction->setShortcut(QKeySequence(Qt::Key_BracketRight));
+    // m_SetOutFrameAction = new QAction("Set Out Frame", m_PlaybackMenu);
+    // m_SetOutFrameAction->setShortcut(QKeySequence(Qt::Key_BracketRight));
 
-    m_ResetRangeAction = new QAction("Reset In/Out Frames", m_PlaybackMenu);
-    m_ResetRangeAction->setShortcut(QKeySequence(Qt::Key_Backslash));
+    // m_ResetRangeAction = new QAction("Reset In/Out Frames", m_PlaybackMenu);
+    // m_ResetRangeAction->setShortcut(QKeySequence(Qt::Key_Backslash));
 
-    /* Playback Cache Actions */
-    m_PlaybackMenu->addAction(m_EnableCacheAction);
-    m_PlaybackMenu->addAction(m_DisableCacheAction);
-    m_PlaybackMenu->addAction(m_StopCacheAction);
-    m_PlaybackMenu->addAction(m_RefreshCacheAction);
-    m_PlaybackMenu->addAction(m_ResumeCacheAction);
-    m_PlaybackMenu->addAction(m_ClearCacheAction);
+    // /* Playback Cache Actions */
+    // m_PlaybackMenu->addAction(m_EnableCacheAction);
+    // m_PlaybackMenu->addAction(m_DisableCacheAction);
+    // m_PlaybackMenu->addAction(m_StopCacheAction);
+    // m_PlaybackMenu->addAction(m_RefreshCacheAction);
+    // m_PlaybackMenu->addAction(m_ResumeCacheAction);
+    // m_PlaybackMenu->addAction(m_ClearCacheAction);
 
-    /* -------------------------------- */
-    m_PlaybackMenu->insertSeparator(m_PlayForwardsAction);
+    // /* -------------------------------- */
+    // m_PlaybackMenu->insertSeparator(m_PlayForwardsAction);
 
-    /* Playback Actions */
-    m_PlaybackMenu->addAction(m_PlayForwardsAction);
-    m_PlaybackMenu->addAction(m_PlayBackwardsAction);
-    m_PlaybackMenu->addAction(m_StopPlayingAction);
-    m_PlaybackMenu->addAction(m_ForwardsAction);
-    m_PlaybackMenu->addAction(m_BackwardsAction);
-    m_PlaybackMenu->addAction(m_StartFrameAction);
-    m_PlaybackMenu->addAction(m_EndFrameAction);
+    // /* Playback Actions */
+    // m_PlaybackMenu->addAction(m_PlayForwardsAction);
+    // m_PlaybackMenu->addAction(m_PlayBackwardsAction);
+    // m_PlaybackMenu->addAction(m_StopPlayingAction);
+    // m_PlaybackMenu->addAction(m_ForwardsAction);
+    // m_PlaybackMenu->addAction(m_BackwardsAction);
+    // m_PlaybackMenu->addAction(m_StartFrameAction);
+    // m_PlaybackMenu->addAction(m_EndFrameAction);
 
-    /* -------------------------------- */
-    m_PlaybackMenu->insertSeparator(m_SetInFrameAction);
+    // /* -------------------------------- */
+    // m_PlaybackMenu->insertSeparator(m_SetInFrameAction);
 
-    m_PlaybackMenu->addAction(m_SetInFrameAction);
-    m_PlaybackMenu->addAction(m_SetOutFrameAction);
-    m_PlaybackMenu->addAction(m_ResetRangeAction);
-    /* }}} */
+    // m_PlaybackMenu->addAction(m_SetInFrameAction);
+    // m_PlaybackMenu->addAction(m_SetOutFrameAction);
+    // m_PlaybackMenu->addAction(m_ResetRangeAction);
+    // /* }}} */
 
-    /* Viewer Contols Menu {{{ */
-    m_ViewerMenu = new QMenu("Viewer", menuBar);
+    // /* Viewer Contols Menu {{{ */
+    // m_ViewerMenu = new QMenu("Viewer", menuBar);
 
-    m_ZoomInAction = new QAction("Zoom In", m_ViewerMenu);
-    m_ZoomInAction->setShortcut(QKeySequence(Qt::Key_Plus));
+    // m_ZoomInAction = new QAction("Zoom In", m_ViewerMenu);
+    // m_ZoomInAction->setShortcut(QKeySequence(Qt::Key_Plus));
 
-    m_ZoomOutAction = new QAction("Zoom Out", m_ViewerMenu);
-    m_ZoomOutAction->setShortcut(QKeySequence(Qt::Key_Minus));
+    // m_ZoomOutAction = new QAction("Zoom Out", m_ViewerMenu);
+    // m_ZoomOutAction->setShortcut(QKeySequence(Qt::Key_Minus));
 
-    m_ZoomToFitAction = new QAction("Zoom to Fit", m_ViewerMenu);
-    m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
+    // m_ZoomToFitAction = new QAction("Zoom to Fit", m_ViewerMenu);
+    // m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
 
-    m_FullscreenAction = new QAction("Show Fullscreen", m_ViewerMenu);
-    m_FullscreenAction->setShortcut(QKeySequence("Ctrl+F"));
+    // m_FullscreenAction = new QAction("Show Fullscreen", m_ViewerMenu);
+    // m_FullscreenAction->setShortcut(QKeySequence("Ctrl+F"));
     
-    m_ExitFullscreenAction = new QAction("Exit Fullscreen", m_ViewerMenu);
+    // m_ExitFullscreenAction = new QAction("Exit Fullscreen", m_ViewerMenu);
 
-    m_ViewerMenu->addAction(m_ZoomInAction);
-    m_ViewerMenu->addAction(m_ZoomOutAction);
-    m_ViewerMenu->addAction(m_ZoomToFitAction);
-    m_ViewerMenu->addAction(m_FullscreenAction);
-    m_ViewerMenu->addAction(m_ExitFullscreenAction);
-    /* }}} */
+    // m_ViewerMenu->addAction(m_ZoomInAction);
+    // m_ViewerMenu->addAction(m_ZoomOutAction);
+    // m_ViewerMenu->addAction(m_ZoomToFitAction);
+    // m_ViewerMenu->addAction(m_FullscreenAction);
+    // m_ViewerMenu->addAction(m_ExitFullscreenAction);
+    // /* }}} */
 
-    /* Window Menu {{{ */
-    m_WindowMenu = new QMenu("Window", menuBar);
+    // /* Window Menu {{{ */
+    // m_WindowMenu = new QMenu("Window", menuBar);
 
-    /* All Window/Component Menu Actions are checkable */
-    m_MediaListerAction = new QAction("Media View", m_WindowMenu);
-    m_MediaListerAction->setCheckable(true);
+    // /* All Window/Component Menu Actions are checkable */
+    // m_MediaListerAction = new QAction("Media View", m_WindowMenu);
+    // m_MediaListerAction->setCheckable(true);
 
-    m_WindowMenu->addAction(m_MediaListerAction);
-    /* }}} */
+    // m_WindowMenu->addAction(m_MediaListerAction);
+    // /* }}} */
 
-    /* Help Menu {{{ */
-    m_HelpMenu = new QMenu("Help", menuBar);
+    // /* Help Menu {{{ */
+    // m_HelpMenu = new QMenu("Help", menuBar);
 
-    m_AboutAction = new QAction("About VOID", menuBar);
+    // m_AboutAction = new QAction("About VOID", menuBar);
 
-    m_HelpMenu->addAction(m_AboutAction);
-    /* }}} */
+    // m_HelpMenu->addAction(m_AboutAction);
+    // /* }}} */
 
-    /* Add to the Menubar */
-    menuBar->addMenu(m_FileMenu);
-    menuBar->addMenu(m_EditMenu);
-    menuBar->addMenu(m_PlaybackMenu);
-    menuBar->addMenu(m_ViewerMenu);
-    menuBar->addMenu(m_WindowMenu);
-    menuBar->addMenu(m_HelpMenu);
+    // /* Add to the Menubar */
+    // menuBar->addMenu(m_FileMenu);
+    // menuBar->addMenu(m_EditMenu);
+    // menuBar->addMenu(m_PlaybackMenu);
+    // menuBar->addMenu(m_ViewerMenu);
+    // menuBar->addMenu(m_WindowMenu);
+    // menuBar->addMenu(m_HelpMenu);
 }
 
 void VoidMainWindow::Connect()
@@ -358,55 +364,55 @@ void VoidMainWindow::Connect()
 
     /* Menu Actions */
     /* File Menu {{{ */
-    connect(m_CloseAction, &QAction::triggered, this, &QCoreApplication::quit);
-    connect(m_ImportAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
-    connect(m_ImportDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
-    connect(m_NewProjectAction, &QAction::triggered, this, [this]() { _MediaBridge.NewProject(); });
-    connect(m_SaveProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Save(); });
-    connect(m_SaveAsProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.SaveAs(); });
-    connect(m_LoadProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Open(); });
-    connect(m_CloseProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Close(); });
-    connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
+    // connect(m_CloseAction, &QAction::triggered, this, &QCoreApplication::quit);
+    // connect(m_ImportAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
+    // connect(m_ImportDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
+    // connect(m_NewProjectAction, &QAction::triggered, this, [this]() { _MediaBridge.NewProject(); });
+    // connect(m_SaveProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Save(); });
+    // connect(m_SaveAsProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.SaveAs(); });
+    // connect(m_LoadProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Open(); });
+    // connect(m_CloseProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Close(); });
+    // connect(m_ClearAction, &QAction::triggered, m_Player, &Player::Clear);
     /* }}} */
 
-    /* Edit Menu {{{ */
-    connect(m_EditPrefsAction, &QAction::triggered, this, [this]() { VoidPreferencesWidget(this).exec(); } );
-    /* }}} */
+    // /* Edit Menu {{{ */
+    // connect(m_EditPrefsAction, &QAction::triggered, this, [this]() { VoidPreferencesWidget(this).exec(); } );
+    // /* }}} */
 
-    /* Playback Menu {{{ */
-    connect(m_EnableCacheAction, &QAction::triggered, m_Player, &Player::ResumeCache);
-    connect(m_DisableCacheAction, &QAction::triggered, m_Player, &Player::DisableCache);
-    connect(m_StopCacheAction, &QAction::triggered, m_Player, &Player::StopCache);
-    connect(m_RefreshCacheAction, &QAction::triggered, m_Player, &Player::Recache);
-    connect(m_ResumeCacheAction, &QAction::triggered, m_Player, &Player::ResumeCache);
-    connect(m_ClearCacheAction, &QAction::triggered, m_Player, &Player::ClearCache);
+    // /* Playback Menu {{{ */
+    // connect(m_EnableCacheAction, &QAction::triggered, m_Player, &Player::ResumeCache);
+    // connect(m_DisableCacheAction, &QAction::triggered, m_Player, &Player::DisableCache);
+    // connect(m_StopCacheAction, &QAction::triggered, m_Player, &Player::StopCache);
+    // connect(m_RefreshCacheAction, &QAction::triggered, m_Player, &Player::Recache);
+    // connect(m_ResumeCacheAction, &QAction::triggered, m_Player, &Player::ResumeCache);
+    // connect(m_ClearCacheAction, &QAction::triggered, m_Player, &Player::ClearCache);
 
-    connect(m_PlayForwardsAction, &QAction::triggered, m_Player, &Player::PlayForwards);
-    connect(m_PlayBackwardsAction, &QAction::triggered, m_Player, &Player::PlayBackwards);
-    connect(m_StopPlayingAction, &QAction::triggered, m_Player, &Player::Stop);
-    connect(m_ForwardsAction, &QAction::triggered, m_Player, &Player::NextFrame);
-    connect(m_BackwardsAction, &QAction::triggered, m_Player, &Player::PreviousFrame);
-    connect(m_StartFrameAction, &QAction::triggered, m_Player, &Player::MoveToStart);
-    connect(m_EndFrameAction, &QAction::triggered, m_Player, &Player::MoveToEnd);
-    connect(m_SetInFrameAction, &QAction::triggered, m_Player, &Player::ResetInFrame);
-    connect(m_SetOutFrameAction, &QAction::triggered, m_Player, &Player::ResetOutFrame);
-    connect(m_ResetRangeAction, &QAction::triggered, m_Player, &Player::ResetRange);
-    /* }}} */
+    // connect(m_PlayForwardsAction, &QAction::triggered, m_Player, &Player::PlayForwards);
+    // connect(m_PlayBackwardsAction, &QAction::triggered, m_Player, &Player::PlayBackwards);
+    // connect(m_StopPlayingAction, &QAction::triggered, m_Player, &Player::Stop);
+    // connect(m_ForwardsAction, &QAction::triggered, m_Player, &Player::NextFrame);
+    // connect(m_BackwardsAction, &QAction::triggered, m_Player, &Player::PreviousFrame);
+    // connect(m_StartFrameAction, &QAction::triggered, m_Player, &Player::MoveToStart);
+    // connect(m_EndFrameAction, &QAction::triggered, m_Player, &Player::MoveToEnd);
+    // connect(m_SetInFrameAction, &QAction::triggered, m_Player, &Player::ResetInFrame);
+    // connect(m_SetOutFrameAction, &QAction::triggered, m_Player, &Player::ResetOutFrame);
+    // connect(m_ResetRangeAction, &QAction::triggered, m_Player, &Player::ResetRange);
+    // /* }}} */
 
-    /* Viewer Menu {{{ */
-    connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
-    connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
-    connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
-    connect(m_FullscreenAction, &QAction::triggered, m_Player, &Player::SetRendererFullscreen);
-    connect(m_ExitFullscreenAction, &QAction::triggered, m_Player, &Player::ExitFullscreenRenderer);
-    /* }}} */
+    // /* Viewer Menu {{{ */
+    // connect(m_ZoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
+    // connect(m_ZoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
+    // connect(m_ZoomToFitAction, &QAction::triggered, m_Player, &Player::ZoomToFit);
+    // connect(m_FullscreenAction, &QAction::triggered, m_Player, &Player::SetRendererFullscreen);
+    // connect(m_ExitFullscreenAction, &QAction::triggered, m_Player, &Player::ExitFullscreenRenderer);
+    // /* }}} */
 
-    connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });
-    /* }}} */
+    // connect(m_MediaListerAction, &QAction::toggled, this, [this](bool checked) { m_InternalDocker->ToggleComponent(DockerWindow::Component::MediaLister, checked); });
+    // /* }}} */
 
-    /* Help Menu {{{ */
-    connect(m_AboutAction, &QAction::triggered, this, [this]() { AboutVoid(this).exec(); });
-    /* }}} */
+    // /* Help Menu {{{ */
+    // connect(m_AboutAction, &QAction::triggered, this, [this]() { AboutVoid(this).exec(); });
+    // /* }}} */
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
@@ -447,6 +453,212 @@ void VoidMainWindow::RegisterDocks()
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
     manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
     manager.RegisterDock(m_PlayLister, "Playlist View");
+}
+
+void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
+{
+    /* File Menu {{{ */
+    QMenu* fileMenu = menuSystem->AddMenu("File");
+
+    QAction* importAction = new QAction("Import Media...", fileMenu);
+    importAction->setShortcut(QKeySequence("Ctrl+I"));
+
+    QAction* importDirectoryAction = new QAction("Import Directory...", fileMenu);
+    importDirectoryAction->setShortcut(QKeySequence("Ctrl+Alt+I"));
+    
+    QAction* newProjectAction = new QAction("New Project", fileMenu);
+    newProjectAction->setShortcut(QKeySequence("Ctrl+N"));
+
+    QAction* saveProjectAction = new QAction("Save Project", fileMenu);
+    saveProjectAction->setShortcut(QKeySequence("Ctrl+S"));
+
+    QAction* saveAsProjectAction = new QAction("Save Project As...", fileMenu);
+    saveAsProjectAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
+
+    QAction* loadProjectAction = new QAction("Open Project...", fileMenu);
+    loadProjectAction->setShortcut(QKeySequence("Ctrl+O"));
+
+    QAction* closeProjectAction = new QAction("Close Project", fileMenu);
+    closeProjectAction->setShortcut(QKeySequence("Ctrl+W"));
+
+    QAction* clearAction = new QAction("Clear", fileMenu);
+
+    QAction* closeAction = new QAction("Close Player", fileMenu);
+    closeAction->setShortcut(QKeySequence("Ctrl+Q"));
+
+    fileMenu->addAction(importAction);
+    fileMenu->addAction(importDirectoryAction);
+
+    /* -------------------------------- */
+    fileMenu->addSeparator();
+
+    fileMenu->addAction(newProjectAction);
+    fileMenu->addAction(saveProjectAction);
+    fileMenu->addAction(saveAsProjectAction);
+    fileMenu->addAction(loadProjectAction);
+    fileMenu->addAction(closeProjectAction);
+
+    /* -------------------------------- */
+    fileMenu->addSeparator();
+
+    fileMenu->addAction(clearAction);
+    fileMenu->addAction(closeAction);
+
+    connect(closeAction, &QAction::triggered, this, &QCoreApplication::quit);
+    connect(importAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
+    connect(importDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
+    connect(newProjectAction, &QAction::triggered, this, [this]() { _MediaBridge.NewProject(); });
+    connect(saveProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Save(); });
+    connect(saveAsProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.SaveAs(); });
+    connect(loadProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Open(); });
+    connect(closeProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Close(); });
+    connect(clearAction, &QAction::triggered, m_Player, &Player::Clear);
+
+    /* }}} */
+
+    /* Edit Menu {{{ */
+    QMenu* editMenu = menuSystem->AddMenu("Edit");
+
+    QAction* undoAction = m_Bridge.CreateUndoAction(editMenu);
+    undoAction->setShortcut(QKeySequence("Ctrl+Z"));
+    
+    QAction* redoAction = m_Bridge.CreateRedoAction(editMenu);
+    redoAction->setShortcut(QKeySequence("Ctrl+Shift+Z"));
+
+    QAction* editPrefsAction = new QAction("Preferences...", editMenu);
+    QIcon icon;
+    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _DARK_COLOR(QPalette::Text, 150), 18), QIcon::Normal);
+    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _COLOR(QPalette::Dark), 18), QIcon::Active);
+    editPrefsAction->setIcon(icon);
+    
+    editMenu->addAction(undoAction);
+    editMenu->addAction(redoAction);
+
+    /* -------------------------------- */
+    editMenu->addSeparator();
+
+    editMenu->addAction(editPrefsAction);
+
+    connect(editPrefsAction, &QAction::triggered, this, [this]() { VoidPreferencesWidget(this).exec(); } );
+    /* }}} */
+
+    // /* Playback Menu {{{ */
+    // m_PlaybackMenu = new QMenu("Playback", menuBar);
+
+    // m_EnableCacheAction = new QAction("Enable Look Ahead Caching", m_PlaybackMenu);
+    // m_DisableCacheAction = new QAction("Disable Look Ahead Caching", m_PlaybackMenu);
+    // m_StopCacheAction = new QAction("Stop Caching Media", m_PlaybackMenu);
+    // m_RefreshCacheAction = new QAction("Refresh Media Cache", m_PlaybackMenu);
+    // m_ResumeCacheAction = new QAction("Resume Caching Media", m_PlaybackMenu);
+    // m_ClearCacheAction = new QAction("Clear Cache", m_PlaybackMenu);
+
+    // m_PlayForwardsAction = new QAction("Play Forwards", m_PlaybackMenu);
+    // m_PlayForwardsAction->setShortcut(QKeySequence(Qt::Key_L));
+
+    // m_StopPlayingAction = new QAction("Stop Playing", m_PlaybackMenu);
+    // m_StopPlayingAction->setShortcut(QKeySequence(Qt::Key_K));
+
+    // m_PlayBackwardsAction = new QAction("Play Backwards", m_PlaybackMenu);
+    // m_PlayBackwardsAction->setShortcut(QKeySequence(Qt::Key_J));
+
+    // m_ForwardsAction = new QAction("Go to Next Frame", m_PlaybackMenu);
+    // m_ForwardsAction->setShortcut(QKeySequence(Qt::Key_Period));
+
+    // m_BackwardsAction = new QAction("Go to Previous Frame", m_PlaybackMenu);
+    // m_BackwardsAction->setShortcut(QKeySequence(Qt::Key_Comma));
+
+    // m_EndFrameAction = new QAction("Go to End", m_PlaybackMenu);
+    // m_EndFrameAction->setShortcut(QKeySequence(Qt::Key_PageDown));
+
+    // m_StartFrameAction = new QAction("Go to Start", m_PlaybackMenu);
+    // m_StartFrameAction->setShortcut(QKeySequence(Qt::Key_PageUp));
+
+    // m_SetInFrameAction = new QAction("Set In Frame", m_PlaybackMenu);
+    // m_SetInFrameAction->setShortcut(QKeySequence(Qt::Key_BracketLeft));
+
+    // m_SetOutFrameAction = new QAction("Set Out Frame", m_PlaybackMenu);
+    // m_SetOutFrameAction->setShortcut(QKeySequence(Qt::Key_BracketRight));
+
+    // m_ResetRangeAction = new QAction("Reset In/Out Frames", m_PlaybackMenu);
+    // m_ResetRangeAction->setShortcut(QKeySequence(Qt::Key_Backslash));
+
+    // /* Playback Cache Actions */
+    // m_PlaybackMenu->addAction(m_EnableCacheAction);
+    // m_PlaybackMenu->addAction(m_DisableCacheAction);
+    // m_PlaybackMenu->addAction(m_StopCacheAction);
+    // m_PlaybackMenu->addAction(m_RefreshCacheAction);
+    // m_PlaybackMenu->addAction(m_ResumeCacheAction);
+    // m_PlaybackMenu->addAction(m_ClearCacheAction);
+
+    // /* -------------------------------- */
+    // m_PlaybackMenu->insertSeparator(m_PlayForwardsAction);
+
+    // /* Playback Actions */
+    // m_PlaybackMenu->addAction(m_PlayForwardsAction);
+    // m_PlaybackMenu->addAction(m_PlayBackwardsAction);
+    // m_PlaybackMenu->addAction(m_StopPlayingAction);
+    // m_PlaybackMenu->addAction(m_ForwardsAction);
+    // m_PlaybackMenu->addAction(m_BackwardsAction);
+    // m_PlaybackMenu->addAction(m_StartFrameAction);
+    // m_PlaybackMenu->addAction(m_EndFrameAction);
+
+    // /* -------------------------------- */
+    // m_PlaybackMenu->insertSeparator(m_SetInFrameAction);
+
+    // m_PlaybackMenu->addAction(m_SetInFrameAction);
+    // m_PlaybackMenu->addAction(m_SetOutFrameAction);
+    // m_PlaybackMenu->addAction(m_ResetRangeAction);
+    // /* }}} */
+
+    // /* Viewer Contols Menu {{{ */
+    // m_ViewerMenu = new QMenu("Viewer", menuBar);
+
+    // m_ZoomInAction = new QAction("Zoom In", m_ViewerMenu);
+    // m_ZoomInAction->setShortcut(QKeySequence(Qt::Key_Plus));
+
+    // m_ZoomOutAction = new QAction("Zoom Out", m_ViewerMenu);
+    // m_ZoomOutAction->setShortcut(QKeySequence(Qt::Key_Minus));
+
+    // m_ZoomToFitAction = new QAction("Zoom to Fit", m_ViewerMenu);
+    // m_ZoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
+
+    // m_FullscreenAction = new QAction("Show Fullscreen", m_ViewerMenu);
+    // m_FullscreenAction->setShortcut(QKeySequence("Ctrl+F"));
+    
+    // m_ExitFullscreenAction = new QAction("Exit Fullscreen", m_ViewerMenu);
+
+    // m_ViewerMenu->addAction(m_ZoomInAction);
+    // m_ViewerMenu->addAction(m_ZoomOutAction);
+    // m_ViewerMenu->addAction(m_ZoomToFitAction);
+    // m_ViewerMenu->addAction(m_FullscreenAction);
+    // m_ViewerMenu->addAction(m_ExitFullscreenAction);
+    // /* }}} */
+
+    // /* Window Menu {{{ */
+    // m_WindowMenu = new QMenu("Window", menuBar);
+
+    // /* All Window/Component Menu Actions are checkable */
+    // m_MediaListerAction = new QAction("Media View", m_WindowMenu);
+    // m_MediaListerAction->setCheckable(true);
+
+    // m_WindowMenu->addAction(m_MediaListerAction);
+    // /* }}} */
+
+    // /* Help Menu {{{ */
+    // m_HelpMenu = new QMenu("Help", menuBar);
+
+    // m_AboutAction = new QAction("About VOID", menuBar);
+
+    // m_HelpMenu->addAction(m_AboutAction);
+    // /* }}} */
+
+    // /* Add to the Menubar */
+    // menuBar->addMenu(m_FileMenu);
+    // menuBar->addMenu(m_EditMenu);
+    // menuBar->addMenu(m_PlaybackMenu);
+    // menuBar->addMenu(m_ViewerMenu);
+    // menuBar->addMenu(m_WindowMenu);
+    // menuBar->addMenu(m_HelpMenu);
 }
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)

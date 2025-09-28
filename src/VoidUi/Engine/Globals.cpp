@@ -9,10 +9,16 @@ VOID_NAMESPACE_OPEN
 namespace UIGlobals {
 
 VoidMainWindow* g_VoidMainWindow = nullptr;
+MenuSystem* g_MenuSystem = nullptr;
 
 VoidMainWindow* GetMainWindow()
 {
     return g_VoidMainWindow;
+}
+
+MenuSystem* InternalMenuSystem()
+{
+    return g_MenuSystem;
 }
 
 Player* GetActivePlayer()
