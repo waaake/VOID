@@ -4,6 +4,7 @@
 /* Pybind11 */
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/functional.h>
 
 /* Internal */
 #include "Definition.h"
@@ -28,6 +29,22 @@ void BindUi(py::module_& m)
     m.def("active_project", []() { return _MediaBridge.ActiveProject(); }, py::return_value_policy::reference);
     m.def("load_project", [](const std::string& path) { _MediaBridge.Load(path); }, py::arg("path"));
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
+    m.def("menu_system", &UIGlobals::InternalMenuSystem, py::return_value_policy::reference);
+
+    auto register_action = []
+    (const std::string& m, const std::string& action, std::function<void()> f, const std::string& shortcut = "") -> void
+    {
+        UIGlobals::InternalMenuSystem()->RegisterAction(m, action, f, shortcut);
+    };
+
+    m.def(
+        "register_action",
+        register_action,
+        py::arg("menu"),
+        py::arg("action"),
+        py::arg("function"),
+        py::arg("shortcut") = ""
+    );
 
     /* Player */
     py::class_<Player>(m, "Player")
@@ -46,6 +63,11 @@ void BindUi(py::module_& m)
     py::class_<MetadataViewer>(m, "MetadataViewer")
         .def("set_from_media", &MetadataViewer::SetFromMedia)
         .def("set_metadata", &MetadataViewer::SetMetadata);
+    
+    /* Menu System */
+    py::class_<MenuSystem>(m, "MenuSystem")
+        .def("add_menu", [](MenuSystem* self, const std::string& name) { self->AddMenu(name); }, py::arg("name"))
+        .def("register_action", &MenuSystem::RegisterAction, py::arg("menu"), py::arg("action"), py::arg("function"), py::arg("shortcut") = "");
 
     /* Project */
     py::class_<Project> project(m, "Project");

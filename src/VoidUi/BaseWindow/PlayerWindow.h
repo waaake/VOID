@@ -6,8 +6,6 @@
 
 /* Qt */
 #include <QMainWindow>
-#include <QMenu>
-#include <QAction>
 #include <QList>
 
 /* Internal */
@@ -15,6 +13,7 @@
 #include "Definition.h"
 #include "BaseWindow.h"
 #include "TitleBar.h"
+#include "MenuSystem.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
@@ -62,6 +61,7 @@ public:
 
     virtual QSize sizeHint() const override;
 
+    void InitMenu(MenuSystem* menuSystem);
     void PlayMedia(const std::vector<SharedMediaClip>& items);
 
     /* Inspect Media Information */
@@ -70,6 +70,7 @@ public:
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
     Player* ActivePlayer() const { return m_Player; }
     MetadataViewer* GetMetadataViewer() const { return m_MetadataViewer; }
+    QMenuBar* MenuBar() const;
 
 private: /* Methods */
     void Build();
@@ -89,64 +90,7 @@ private: /* Members */
     MetadataViewer* m_MetadataViewer;
 
     DockerWindow* m_InternalDocker;
-
     VoidTitleBar* m_TitleBar;
-
-    /* Window Menu */
-    QLabel* m_VoidMenuIcon;
-
-    /* File Menu */
-    QMenu* m_FileMenu;
-    QAction* m_ImportAction;
-    QAction* m_ImportDirectoryAction;
-    QAction* m_ClearAction;
-    QAction* m_NewProjectAction;
-    QAction* m_SaveProjectAction;
-    QAction* m_SaveAsProjectAction;
-    QAction* m_LoadProjectAction;
-    QAction* m_CloseProjectAction;
-    QAction* m_CloseAction;
-
-    /* Edit Menu */
-    QMenu* m_EditMenu;
-    QAction* m_UndoAction;
-    QAction* m_RedoAction;
-    QAction* m_EditPrefsAction;
-    
-    /* Playback Menu */
-    QMenu* m_PlaybackMenu;
-    QAction* m_EnableCacheAction;
-    QAction* m_DisableCacheAction;
-    QAction* m_StopCacheAction;
-    QAction* m_ClearCacheAction;
-    QAction* m_RefreshCacheAction;
-    QAction* m_ResumeCacheAction;
-    QAction* m_PlayForwardsAction;
-    QAction* m_StopPlayingAction;
-    QAction* m_PlayBackwardsAction;
-    QAction* m_ForwardsAction;
-    QAction* m_BackwardsAction;
-    QAction* m_EndFrameAction;
-    QAction* m_StartFrameAction;
-    QAction* m_SetInFrameAction;
-    QAction* m_SetOutFrameAction;
-    QAction* m_ResetRangeAction;
-
-    /* Viewer Menu */
-    QMenu* m_ViewerMenu;
-    QAction* m_ZoomInAction;
-    QAction* m_ZoomOutAction;
-    QAction* m_ZoomToFitAction;
-    QAction* m_FullscreenAction;
-    QAction* m_ExitFullscreenAction;
-
-    /* Window Menu */
-    QMenu* m_WindowMenu;
-    QAction* m_MediaListerAction;
-
-    /* Help Menu */
-    QMenu* m_HelpMenu;
-    QAction* m_AboutAction;
 
     /* Media Bridge Instance */
     MBridge& m_Bridge;

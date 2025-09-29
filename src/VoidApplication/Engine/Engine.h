@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidUi/BaseWindow/MenuSystem.h"
 #include "VoidUi/BaseWindow/PlayerWindow.h"
 
 VOID_NAMESPACE_OPEN
@@ -30,6 +31,7 @@ public:
 
 private: /* Members */
     VoidMainWindow* m_Imager;
+    MenuSystem* m_MenuSystem;
 
 private: /* Methods */
     void InitLogging();
