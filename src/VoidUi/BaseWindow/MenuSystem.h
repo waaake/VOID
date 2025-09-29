@@ -29,7 +29,7 @@ public:
     explicit MenuSystem(VoidMainWindow* parent);
     QMenu* AddMenu(const std::string& name);
     QAction* AddAction(const std::string& menu, const std::string& action);
-    void RegisterAction(const std::string& menu, const std::string& action, std::function<void()> callback);
+    void RegisterAction(const std::string& menu, const std::string& action, std::function<void()> callback, const std::string& shortcut = "");
 
 private: /* Members */
     VoidMainWindow* m_Window;

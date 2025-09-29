@@ -31,6 +31,21 @@ void BindUi(py::module_& m)
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
     m.def("menu_system", &UIGlobals::InternalMenuSystem, py::return_value_policy::reference);
 
+    auto register_action = []
+    (const std::string& m, const std::string& action, std::function<void()> f, const std::string& shortcut = "") -> void
+    {
+        UIGlobals::InternalMenuSystem()->RegisterAction(m, action, f, shortcut);
+    };
+
+    m.def(
+        "register_action",
+        register_action,
+        py::arg("menu"),
+        py::arg("action"),
+        py::arg("function"),
+        py::arg("shortcut") = ""
+    );
+
     /* Player */
     py::class_<Player>(m, "Player")
         .def("play_forwards", &Player::PlayForwards)
@@ -52,7 +67,7 @@ void BindUi(py::module_& m)
     /* Menu System */
     py::class_<MenuSystem>(m, "MenuSystem")
         .def("add_menu", [](MenuSystem* self, const std::string& name) { self->AddMenu(name); }, py::arg("name"))
-        .def("register_action", &MenuSystem::RegisterAction, py::arg("menu"), py::arg("action"), py::arg("function"));
+        .def("register_action", &MenuSystem::RegisterAction, py::arg("menu"), py::arg("action"), py::arg("function"), py::arg("shortcut") = "");
 
     /* Project */
     py::class_<Project> project(m, "Project");

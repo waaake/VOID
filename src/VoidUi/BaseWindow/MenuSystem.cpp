@@ -29,11 +29,14 @@ QAction* MenuSystem::AddAction(const std::string& menu, const std::string& actio
     return a;
 }
 
-void MenuSystem::RegisterAction(const std::string& menu, const std::string& action, std::function<void()> callback)
+void MenuSystem::RegisterAction(const std::string& menu, const std::string& action, std::function<void()> callback, const std::string& shortcut)
 {
     QMenu* m = AddMenu(menu);
     QAction* a = new QAction(action.c_str(), m);
     m->addAction(a);
+
+    if (!shortcut.empty())
+        a->setShortcut(QKeySequence(shortcut.c_str()));
 
     connect(a, &QAction::triggered, this, [=]() { callback(); });
 }
