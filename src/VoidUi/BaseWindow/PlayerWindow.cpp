@@ -218,51 +218,24 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* File Menu {{{ */
     QMenu* fileMenu = menuSystem->AddMenu("File");
 
-    QAction* importAction = new QAction("Import Media...", fileMenu);
-    importAction->setShortcut(QKeySequence("Ctrl+I"));
-
-    QAction* importDirectoryAction = new QAction("Import Directory...", fileMenu);
-    importDirectoryAction->setShortcut(QKeySequence("Ctrl+Alt+I"));
-    
-    QAction* newProjectAction = new QAction("New Project", fileMenu);
-    newProjectAction->setShortcut(QKeySequence("Ctrl+N"));
-
-    QAction* saveProjectAction = new QAction("Save Project", fileMenu);
-    saveProjectAction->setShortcut(QKeySequence("Ctrl+S"));
-
-    QAction* saveAsProjectAction = new QAction("Save Project As...", fileMenu);
-    saveAsProjectAction->setShortcut(QKeySequence("Ctrl+Shift+S"));
-
-    QAction* loadProjectAction = new QAction("Open Project...", fileMenu);
-    loadProjectAction->setShortcut(QKeySequence("Ctrl+O"));
-
-    QAction* closeProjectAction = new QAction("Close Project", fileMenu);
-    closeProjectAction->setShortcut(QKeySequence("Ctrl+W"));
-
-    QAction* clearAction = new QAction("Clear", fileMenu);
-
-    QAction* closeAction = new QAction("Close Player", fileMenu);
-    closeAction->setShortcut(QKeySequence("Ctrl+Q"));
-
-    fileMenu->addAction(importAction);
-    fileMenu->addAction(importDirectoryAction);
+    QAction* importAction = menuSystem->AddAction(fileMenu, "Import Media...", QKeySequence("Ctrl+I"));
+    QAction* importDirectoryAction = menuSystem->AddAction(fileMenu, "Import Directory...", QKeySequence("Ctrl+Alt+I"));
 
     /* -------------------------------- */
     fileMenu->addSeparator();
 
-    fileMenu->addAction(newProjectAction);
-    fileMenu->addAction(saveProjectAction);
-    fileMenu->addAction(saveAsProjectAction);
-    fileMenu->addAction(loadProjectAction);
-    fileMenu->addAction(closeProjectAction);
+    QAction* newProjectAction = menuSystem->AddAction(fileMenu, "New Project", QKeySequence("Ctrl+N"));
+    QAction* saveProjectAction = menuSystem->AddAction(fileMenu, "Save Project", QKeySequence("Ctrl+S"));
+    QAction* saveAsProjectAction = menuSystem->AddAction(fileMenu, "Save Project As...", QKeySequence("Ctrl+Shift+S"));
+    QAction* loadProjectAction = menuSystem->AddAction(fileMenu, "Open Project", QKeySequence("Ctrl+O"));
+    QAction* closeProjectAction = menuSystem->AddAction(fileMenu, "Close Project", QKeySequence("Ctrl+W"));
 
     /* -------------------------------- */
     fileMenu->addSeparator();
 
-    fileMenu->addAction(clearAction);
-    fileMenu->addAction(closeAction);
+    QAction* clearAction = menuSystem->AddAction(fileMenu, "Clear Viewer");
+    QAction* closeAction = menuSystem->AddAction(fileMenu, "Quit VOID", QKeySequence("Ctrl+Q"));
 
-    connect(closeAction, &QAction::triggered, this, &QCoreApplication::quit);
     connect(importAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
     connect(importDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
     connect(newProjectAction, &QAction::triggered, this, [this]() { _MediaBridge.NewProject(); });
@@ -271,6 +244,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     connect(loadProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Open(); });
     connect(closeProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Close(); });
     connect(clearAction, &QAction::triggered, m_Player, &Player::Clear);
+    connect(closeAction, &QAction::triggered, this, &QCoreApplication::quit);
 
     /* }}} */
 
@@ -288,7 +262,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _DARK_COLOR(QPalette::Text, 150), 18), QIcon::Normal);
     icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _COLOR(QPalette::Dark), 18), QIcon::Active);
     editPrefsAction->setIcon(icon);
-    
+
     editMenu->addAction(undoAction);
     editMenu->addAction(redoAction);
 
@@ -303,69 +277,30 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* Playback Menu {{{ */
     QMenu* playbackMenu = menuSystem->AddMenu("Playback");
 
-    QAction* enableCacheAction = new QAction("Enable Look Ahead Caching", playbackMenu);
-    QAction* disableCacheAction = new QAction("Disable Look Ahead Caching", playbackMenu);
-    QAction* stopCacheAction = new QAction("Stop Caching Media", playbackMenu);
-    QAction* refreshCacheAction = new QAction("Refresh Media Cache", playbackMenu);
-    QAction* resumeCacheAction = new QAction("Resume Caching Media", playbackMenu);
-    QAction* clearCacheAction = new QAction("Clear Cache", playbackMenu);
-
-    QAction* playForwardsAction = new QAction("Play Forwards", playbackMenu);
-    playForwardsAction->setShortcut(QKeySequence(Qt::Key_L));
-
-    QAction* stopPlayingAction = new QAction("Stop Playing", playbackMenu);
-    stopPlayingAction->setShortcut(QKeySequence(Qt::Key_K));
-
-    QAction* playBackwardsAction = new QAction("Play Backwards", playbackMenu);
-    playBackwardsAction->setShortcut(QKeySequence(Qt::Key_J));
-
-    QAction* forwardsAction = new QAction("Go to Next Frame", playbackMenu);
-    forwardsAction->setShortcut(QKeySequence(Qt::Key_Period));
-
-    QAction* backwardsAction = new QAction("Go to Previous Frame", playbackMenu);
-    backwardsAction->setShortcut(QKeySequence(Qt::Key_Comma));
-
-    QAction* endFrameAction = new QAction("Go to End", playbackMenu);
-    endFrameAction->setShortcut(QKeySequence(Qt::Key_PageDown));
-
-    QAction* startFrameAction = new QAction("Go to Start", playbackMenu);
-    startFrameAction->setShortcut(QKeySequence(Qt::Key_PageUp));
-
-    QAction* setInFrameAction = new QAction("Set In Frame", playbackMenu);
-    setInFrameAction->setShortcut(QKeySequence(Qt::Key_BracketLeft));
-
-    QAction* setOutFrameAction = new QAction("Set Out Frame", playbackMenu);
-    setOutFrameAction->setShortcut(QKeySequence(Qt::Key_BracketRight));
-
-    QAction* resetRangeAction = new QAction("Reset In/Out Frames", playbackMenu);
-    resetRangeAction->setShortcut(QKeySequence(Qt::Key_Backslash));
-
-    /* Playback Cache Actions */
-    playbackMenu->addAction(enableCacheAction);
-    playbackMenu->addAction(disableCacheAction);
-    playbackMenu->addAction(stopCacheAction);
-    playbackMenu->addAction(refreshCacheAction);
-    playbackMenu->addAction(resumeCacheAction);
-    playbackMenu->addAction(clearCacheAction);
+    QAction* enableCacheAction = menuSystem->AddAction(playbackMenu, "Enable Look Ahead Caching");
+    QAction* disableCacheAction = menuSystem->AddAction(playbackMenu, "Disable Look Ahead Caching");
+    QAction* stopCacheAction = menuSystem->AddAction(playbackMenu, "Stop Caching Media");
+    QAction* refreshCacheAction = menuSystem->AddAction(playbackMenu, "Refresh Media Cache");
+    QAction* resumeCacheAction = menuSystem->AddAction(playbackMenu, "Resume Caching Media");
+    QAction* clearCacheAction = menuSystem->AddAction(playbackMenu, "Clear Cache");
 
     /* -------------------------------- */
-    playbackMenu->insertSeparator(playForwardsAction);
+    playbackMenu->addSeparator();
 
-    /* Playback Actions */
-    playbackMenu->addAction(playForwardsAction);
-    playbackMenu->addAction(playBackwardsAction);
-    playbackMenu->addAction(stopPlayingAction);
-    playbackMenu->addAction(forwardsAction);
-    playbackMenu->addAction(backwardsAction);
-    playbackMenu->addAction(startFrameAction);
-    playbackMenu->addAction(endFrameAction);
+    QAction* playForwardsAction = menuSystem->AddAction(playbackMenu, "Play Forwards", QKeySequence(Qt::Key_L));
+    QAction* stopPlayingAction = menuSystem->AddAction(playbackMenu, "Stop Playing", QKeySequence(Qt::Key_K));
+    QAction* playBackwardsAction = menuSystem->AddAction(playbackMenu, "Play Backwards", QKeySequence(Qt::Key_J));
+    QAction* forwardsAction = menuSystem->AddAction(playbackMenu, "Go to Next Frame", QKeySequence(Qt::Key_Period));
+    QAction* backwardsAction = menuSystem->AddAction(playbackMenu, "Go to Previous Frame", QKeySequence(Qt::Key_Comma));
+    QAction* endFrameAction = menuSystem->AddAction(playbackMenu, "Go to End", QKeySequence(Qt::Key_PageDown));
 
     /* -------------------------------- */
-    playbackMenu->insertSeparator(setInFrameAction);
+    playbackMenu->addSeparator();
 
-    playbackMenu->addAction(setInFrameAction);
-    playbackMenu->addAction(setOutFrameAction);
-    playbackMenu->addAction(resetRangeAction);
+    QAction* startFrameAction = menuSystem->AddAction(playbackMenu, "Go to Start", QKeySequence(Qt::Key_PageUp));
+    QAction* setInFrameAction = menuSystem->AddAction(playbackMenu, "Set In Frame", QKeySequence(Qt::Key_BracketLeft));
+    QAction* setOutFrameAction = menuSystem->AddAction(playbackMenu, "Set Out Frame", QKeySequence(Qt::Key_BracketRight));
+    QAction* resetRangeAction = menuSystem->AddAction(playbackMenu, "Reset In/Out Frames", QKeySequence(Qt::Key_Backslash));
 
     connect(enableCacheAction, &QAction::triggered, m_Player, &Player::ResumeCache);
     connect(disableCacheAction, &QAction::triggered, m_Player, &Player::DisableCache);
@@ -389,25 +324,11 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* Viewer Contols Menu {{{ */
     QMenu* viewerMenu = menuSystem->AddMenu("Viewer");
 
-    QAction* zoomInAction = new QAction("Zoom In", viewerMenu);
-    zoomInAction->setShortcut(QKeySequence(Qt::Key_Plus));
-
-    QAction* zoomOutAction = new QAction("Zoom Out", viewerMenu);
-    zoomOutAction->setShortcut(QKeySequence(Qt::Key_Minus));
-
-    QAction* zoomToFitAction = new QAction("Zoom to Fit", viewerMenu);
-    zoomToFitAction->setShortcut(QKeySequence(Qt::Key_F));
-
-    QAction* fullscreenAction = new QAction("Show Fullscreen", viewerMenu);
-    fullscreenAction->setShortcut(QKeySequence("Ctrl+F"));
-    
-    QAction* exitFullscreenAction = new QAction("Exit Fullscreen", viewerMenu);
-
-    viewerMenu->addAction(zoomInAction);
-    viewerMenu->addAction(zoomOutAction);
-    viewerMenu->addAction(zoomToFitAction);
-    viewerMenu->addAction(fullscreenAction);
-    viewerMenu->addAction(exitFullscreenAction);
+    QAction* zoomInAction = menuSystem->AddAction(viewerMenu, "Zoom In", QKeySequence(Qt::Key_Plus));
+    QAction* zoomOutAction = menuSystem->AddAction(viewerMenu, "Zoom Out", QKeySequence(Qt::Key_Minus));
+    QAction* zoomToFitAction = menuSystem->AddAction(viewerMenu, "Zoom to Fit", QKeySequence(Qt::Key_F));
+    QAction* fullscreenAction = menuSystem->AddAction(viewerMenu, "Show Fullscreen", QKeySequence("Ctrl+F"));
+    QAction* exitFullscreenAction = menuSystem->AddAction(viewerMenu, "Exit Fullscreen");
 
     connect(zoomInAction, &QAction::triggered, m_Player, &Player::ZoomIn);
     connect(zoomOutAction, &QAction::triggered, m_Player, &Player::ZoomOut);
@@ -418,9 +339,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
 
     /* Help Menu {{{ */
     QMenu* helpMenu = menuSystem->AddMenu("Help");
-
-    QAction* aboutAction = new QAction("About VOID", helpMenu);
-    helpMenu->addAction(aboutAction);
+    QAction* aboutAction = menuSystem->AddAction(helpMenu, "About VOID");
 
     connect(aboutAction, &QAction::triggered, this, [this]() { AboutVoid(this).exec(); });
     /* }}} */

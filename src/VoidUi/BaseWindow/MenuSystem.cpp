@@ -29,6 +29,23 @@ QAction* MenuSystem::AddAction(const std::string& menu, const std::string& actio
     return a;
 }
 
+QAction* MenuSystem::AddAction(QMenu* menu, const std::string& action)
+{
+    QAction* a = new QAction(action.c_str(), menu);
+    menu->addAction(a);
+
+    return a;
+}
+
+QAction* MenuSystem::AddAction(QMenu* menu, const std::string& action, const QKeySequence& shortcut)
+{
+    QAction* a = new QAction(action.c_str(), menu);
+    menu->addAction(a);
+    a->setShortcut(shortcut);
+
+    return a;
+}
+
 void MenuSystem::RegisterAction(const std::string& menu, const std::string& action, std::function<void()> callback, const std::string& shortcut)
 {
     QMenu* m = AddMenu(menu);
