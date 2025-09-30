@@ -50,6 +50,7 @@ private: /* Methods */
 
     /* Connects Signals across the componets of the widget */
     void Connect();
+    void SetFromPreferences();
 
     void AddSelectionToSequence();
     void RemoveSelectedMedia();

@@ -347,8 +347,7 @@ void VoidMediaLister::InspectMetadata()
 void VoidMediaLister::SetFromPreferences()
 {
     /* Default View */
-    MediaView::ViewType t = static_cast<MediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType());
-    switch(t)
+    switch(static_cast<MediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType()))
     {
         case MediaView::ViewType::DetailedListView:
             m_DetailedListViewToggle->setChecked(true);

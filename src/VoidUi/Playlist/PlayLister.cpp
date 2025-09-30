@@ -177,7 +177,7 @@ void VoidPlayLister::Build()
 
 void VoidPlayLister::Setup()
 {
-    m_ListViewToggle->setChecked(true);
+    SetFromPreferences();
 
     /* Size Policy */
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
@@ -270,6 +270,21 @@ void VoidPlayLister::Play(const Playlist* playlist)
 void VoidPlayLister::Play(const std::vector<SharedMediaClip>& media)
 {
     emit playlistChanged(media);
+}
+
+void VoidPlayLister::SetFromPreferences()
+{
+    /* Default View */
+    switch(static_cast<PlaylistMediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType()))
+    {
+        case PlaylistMediaView::ViewType::DetailedListView:
+            m_DetailedListViewToggle->setChecked(true);
+        case PlaylistMediaView::ViewType::ThumbnailView:
+            m_ThumbnailViewToggle->setChecked(true);
+        case PlaylistMediaView::ViewType::ListView:
+        default:
+            m_ListViewToggle->setChecked(true);    
+    }
 }
 
 VOID_NAMESPACE_CLOSE
