@@ -43,7 +43,7 @@ void PyExecutor::SetOutputCallback(std::function<void(const std::string&)> callb
 void PyExecutor::RedirectStdout()
 {
     py::module sys = py::module::import("sys");
-    py::class_<py::object> redirector(py::module::import("__main__"), "VoidPyStdout");
+    py::class_<py::object> redirector(py::module::import("__main__"), "VortexStdout");
 
     /**
      * Define the stdout methods

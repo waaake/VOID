@@ -19,7 +19,7 @@ namespace bindings {
 
 } // namespace bindings
 
-PYBIND11_MODULE(voidpy, m)
+PYBIND11_MODULE(vortex, m)
 {
     m.doc() = "Void Python Binding";
 
