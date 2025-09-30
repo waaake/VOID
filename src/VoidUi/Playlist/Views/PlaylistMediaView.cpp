@@ -13,7 +13,8 @@
 /* Internal */
 #include "PlaylistMediaView.h"
 #include "VoidUi/Descriptors.h"
-#include "VoidUi/Playlist/Delegates/ListDelegate.h"
+#include "VoidUi/Media/Delegates/ListDelegate.h"
+#include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
 #include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
@@ -147,12 +148,36 @@ void PlaylistMediaView::Setup()
 
 void PlaylistMediaView::ResetView()
 {
-    /* Set Delegate */
-    setItemDelegate(new PlaylistMediaItemDelegate(this));
+    if (m_ViewType == ViewType::ListView)
+    {
+        setItemDelegate(new BasicMediaItemDelegate(this));
+        setViewMode(QListView::ListMode);
+        setSpacing(1);
+        setResizeMode(QListView::Fixed);
 
-    /* Spacing */
-    setSpacing(1);
-    setResizeMode(QListView::Fixed);
+        /* Reset Grid Size */
+        setGridSize(QSize());
+    }
+    else if (m_ViewType == ViewType::DetailedListView)
+    {
+        setItemDelegate(new MediaItemDelegate(this));
+        setViewMode(QListView::ListMode);
+        setSpacing(1);
+        setResizeMode(QListView::Fixed);
+
+        /* Reset Grid Size */
+        setGridSize(QSize());
+    }
+    else
+    {
+        setItemDelegate(new MediaThumbnailDelegate(this));
+        setViewMode(QListView::IconMode);
+        setSpacing(2);
+        setResizeMode(QListView::Adjust);
+
+        /* Grid Size */
+        setGridSize(QSize(154, 150)); // Delegate Item::SizeHint().width() + 4, .Height() + 4;
+    }
 }
 
 void PlaylistMediaView::Connect()

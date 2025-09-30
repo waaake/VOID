@@ -26,17 +26,6 @@ public:
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
 };
 
-class PlaylistMediaItemDelegate : public QStyledItemDelegate
-{
-    Q_OBJECT
-
-public:
-    explicit PlaylistMediaItemDelegate(QObject* parent = nullptr);
-
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-};
-
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_PLAYLIST_LIST_DELEGATE_H

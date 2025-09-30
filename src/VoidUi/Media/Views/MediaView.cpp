@@ -92,6 +92,23 @@ void MediaView::ResetView()
     if (m_ViewType == ViewType::ListView)
     {
         /* Set Delegate */
+        setItemDelegate(new BasicMediaItemDelegate(this));
+
+        /* List View */
+        setViewMode(QListView::ListMode);
+
+        /* Spacing between entries */
+        setSpacing(1);
+
+        /* Resize Mode */
+        setResizeMode(QListView::Fixed);
+
+        /* Reset Grid Size */
+        setGridSize(QSize());
+    }
+    else if (m_ViewType == ViewType::DetailedListView)
+    {
+        /* Set Delegate */
         setItemDelegate(new MediaItemDelegate(this));
 
         /* List View */
@@ -110,9 +127,6 @@ void MediaView::ResetView()
     {
         /* Set Delegate */
         setItemDelegate(new MediaThumbnailDelegate(this));
-
-        /* Selection Mode */
-        setSelectionMode(QAbstractItemView::ExtendedSelection);
         
         /* Icon View */
         setViewMode(QListView::IconMode);

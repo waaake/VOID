@@ -76,6 +76,7 @@ private: /* Members */
 
     /* Options */
     HighlightToggleButton* m_ListViewToggle;
+    HighlightToggleButton* m_DetailedListViewToggle;
     HighlightToggleButton* m_ThumbnailViewToggle;
 
     /* Button Group to allow exclusive (single) selection */
