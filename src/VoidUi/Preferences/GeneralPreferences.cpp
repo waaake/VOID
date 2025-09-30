@@ -4,6 +4,7 @@
 /* Internal */
 #include "GeneralPreferences.h"
 #include "Preferences.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -25,12 +26,16 @@ void GeneralPreferences::Reset()
 {
     int index = VoidPreferences::Instance().GetSetting(Settings::UndoQueueSize).toInt();
     m_UndoBox->setCurrentIndex(index);
+
+    index = VoidPreferences::Instance().GetSetting(Settings::ColorStyle).toInt();
+    m_ColorStyleBox->setCurrentIndex(index);
 }
 
 void GeneralPreferences::Save()
 {
     /* Get and save the value of the Undo Queue size */
     VoidPreferences::Instance().Set(Settings::UndoQueueSize, QVariant(m_UndoBox->currentIndex()));
+    VoidPreferences::Instance().Set(Settings::ColorStyle, QVariant(m_ColorStyleBox->currentIndex()));
 }
 
 void GeneralPreferences::Build()
@@ -47,13 +52,26 @@ void GeneralPreferences::Build()
     m_UndoLabel = new QLabel("Undo Queue Size");
     m_UndoBox = new QComboBox;
 
+    m_ColorStyleDescription = new QLabel("Personalize the look and feel of VOID player by selecting a custom color theme.\n\
+ This setting allows you to change the interface to match your preferences.\n\
+ Changes will take effect the next time the application is restarted.");
+
+    m_ColorStyleLabel = new QLabel("Color Style");
+    m_ColorStyleBox = new QComboBox;
+
     /* Add to the layout */
     m_Layout->addWidget(m_UndoDescription, 0, 0, 1, 3);
     m_Layout->addWidget(m_UndoLabel, 1, 0);
     m_Layout->addWidget(m_UndoBox, 1, 1);
 
+    m_Layout->addItem(new QSpacerItem(10, 20), 2, 3);
+
+    m_Layout->addWidget(m_ColorStyleDescription, 3, 0, 1, 3);
+    m_Layout->addWidget(m_ColorStyleLabel, 4, 0);
+    m_Layout->addWidget(m_ColorStyleBox, 4, 1);
+
     /* Spacer */
-    m_Layout->setRowStretch(2, 1);
+    m_Layout->setRowStretch(5, 1);
 }
 
 void GeneralPreferences::Setup()
@@ -61,6 +79,9 @@ void GeneralPreferences::Setup()
     /* Default values */
     m_UndoBox->addItems({"50", "100", "200", "Unlimited"});
     m_UndoBox->setCurrentIndex(0);
+
+    m_ColorStyleBox->addItems({"Default Dark", "Shore Blue", "Sakura Pink", "Obsidian"});
+    m_ColorStyleBox->setCurrentIndex(0);
 }
 
 VOID_NAMESPACE_CLOSE

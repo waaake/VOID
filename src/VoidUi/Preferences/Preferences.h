@@ -16,14 +16,16 @@ namespace Settings
 {
     constexpr auto MissingFramesHandler = "player/missingFramesHandler";
     constexpr auto UndoQueueSize = "general/undoQueueSize";
+    constexpr auto ColorStyle = "theme/colorStyle";
     constexpr auto MediaViewType = "mediaView/viewType";
     constexpr auto CacheMemory = "cache/memory";
     constexpr auto CacheThreads = "cache/threads";
 }
 
-class VoidPreferences : public QObject
+class VOID_API VoidPreferences : public QObject
 {
     Q_OBJECT
+
 public:
     static VoidPreferences& Instance();
 
@@ -45,6 +47,7 @@ public:
     inline int GetMediaViewType() const { return GetSetting(Settings::MediaViewType).toInt(); }
     inline unsigned int GetCacheMemory() const { return GetSetting(Settings::CacheMemory).toUInt(); }
     inline unsigned int GetCacheThreads() const { return GetSetting(Settings::CacheThreads).toUInt(); }
+    inline int GetColorStyle() const { return GetSetting(Settings::ColorStyle).toInt(); }
 
 signals:
     /**
@@ -58,7 +61,6 @@ signals:
 
 private:
     QSettings settings;
-
 };
 
 VOID_NAMESPACE_CLOSE

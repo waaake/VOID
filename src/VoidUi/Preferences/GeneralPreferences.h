@@ -33,6 +33,11 @@ private: /* Members */
     QLabel* m_UndoLabel;
     QComboBox* m_UndoBox;
 
+    /* ColorTheme */
+    QLabel* m_ColorStyleDescription;
+    QLabel* m_ColorStyleLabel;
+    QComboBox* m_ColorStyleBox;
+
 private: /* Methods */
     /**
      * Build UI layout

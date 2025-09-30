@@ -101,6 +101,8 @@ if (WIN32)
         # # the staticMetaObject for MediaClip, Track, TrackItem, Sequence and MediaBridge to be present at compile time rather link time
         ../VoidObjects/Media/MediaClip.h
 
+        ../VoidObjects/Playlist/Playlist.h
+
         ../VoidObjects/Sequence/Sequence.h
         ../VoidObjects/Sequence/Track.h
         ../VoidObjects/Sequence/TrackItem.h

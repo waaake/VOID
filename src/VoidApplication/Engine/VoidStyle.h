@@ -60,6 +60,20 @@ public:
     void polish(QPalette& palette) override;
 };
 
+namespace VoidColorStyle {
+
+    enum class StyleType
+    {
+        DefaultDark,
+        ShoreBlue,
+        SakuraPink,
+        Obsidian
+    };
+
+    VoidDark* GetProxyStyle(const StyleType& type);
+
+} // namespace VoidColorStyle
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_STYLE_H
