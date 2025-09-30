@@ -148,12 +148,6 @@ void PlaylistMediaView::Setup()
 
 void PlaylistMediaView::ResetView()
 {
-    // /* Set Delegate */
-    // setItemDelegate(new PlaylistMediaItemDelegate(this));
-
-    // /* Spacing */
-    // setSpacing(1);
-    // setResizeMode(QListView::Fixed);
     if (m_ViewType == ViewType::ListView)
     {
         setItemDelegate(new BasicMediaItemDelegate(this));
