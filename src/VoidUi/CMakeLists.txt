@@ -38,7 +38,6 @@ set(SOURCES
     Playlist/PlayLister.cpp
     Playlist/Views/PlaylistView.cpp
     Playlist/Views/PlaylistMediaView.cpp
-    Playlist/Delegates/ListDelegate.cpp
 
     # Preferences
     Preferences/Preferences.cpp

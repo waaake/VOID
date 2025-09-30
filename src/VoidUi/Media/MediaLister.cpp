@@ -130,6 +130,15 @@ void VoidMediaLister::Build()
     m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 150)));
     m_ListViewToggle->setToolTip(
         ToolTipString(
+            "List View",
+            "Shows items in a Vertical List."
+        ).c_str()
+    );
+
+    m_DetailedListViewToggle = new HighlightToggleButton(this);
+    m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 150)));
+    m_DetailedListViewToggle->setToolTip(
+        ToolTipString(
             "Detailed List View",
             "Shows items in a Vertical List with details."
         ).c_str()
@@ -145,7 +154,8 @@ void VoidMediaLister::Build()
     );
 
     m_ViewButtonGroup->addButton(m_ListViewToggle, 0);
-    m_ViewButtonGroup->addButton(m_ThumbnailViewToggle, 1);
+    m_ViewButtonGroup->addButton(m_DetailedListViewToggle, 1);
+    m_ViewButtonGroup->addButton(m_ThumbnailViewToggle, 2);
 
     m_SortButton = new HighlightToggleButton(this);
     m_SortButton->setIcon(IconForge::GetIcon(IconType::icon_sort_by_alpha, _DARK_COLOR(QPalette::Text, 150)));
@@ -166,6 +176,7 @@ void VoidMediaLister::Build()
     );
 
     m_OptionsLayout->addWidget(m_ListViewToggle);
+    m_OptionsLayout->addWidget(m_DetailedListViewToggle);
     m_OptionsLayout->addWidget(m_ThumbnailViewToggle);
     m_OptionsLayout->addWidget(m_SearchBar);
     m_OptionsLayout->addWidget(m_SortButton);
@@ -336,10 +347,17 @@ void VoidMediaLister::InspectMetadata()
 void VoidMediaLister::SetFromPreferences()
 {
     /* Default View */
-    if (!VoidPreferences::Instance().GetMediaViewType())
-        m_ListViewToggle->setChecked(true);
-    else
-        m_ThumbnailViewToggle->setChecked(true);
+    MediaView::ViewType t = static_cast<MediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType());
+    switch(t)
+    {
+        case MediaView::ViewType::DetailedListView:
+            m_DetailedListViewToggle->setChecked(true);
+        case MediaView::ViewType::ThumbnailView:
+            m_ThumbnailViewToggle->setChecked(true);
+        case MediaView::ViewType::ListView:
+        default:
+            m_ListViewToggle->setChecked(true);    
+    }
 }
 
 void VoidMediaLister::RebuildPlaylistMenu()

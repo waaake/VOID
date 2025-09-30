@@ -5,6 +5,7 @@
 #define _VOID_PLAY_LISTER_H
 
 /* Qt */
+#include <QButtonGroup>
 #include <QLayout>
 #include <QPushButton>
 #include <QShortcut>
@@ -17,6 +18,7 @@
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Playlist/Views/PlaylistView.h"
 #include "VoidUi/Playlist/Views/PlaylistMediaView.h"
+#include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -61,6 +63,14 @@ private: /* Members */
     QVBoxLayout* m_layout;
     QHBoxLayout* m_OptionsLayout;
     QSplitter* m_ViewSplitter;
+
+    /* Options */
+    HighlightToggleButton* m_ListViewToggle;
+    HighlightToggleButton* m_DetailedListViewToggle;
+    HighlightToggleButton* m_ThumbnailViewToggle;
+
+    /* Button Group to allow exclusive (single) selection */
+    QButtonGroup* m_ViewButtonGroup;
 
     MediaSearchBar* m_SearchBar;
 

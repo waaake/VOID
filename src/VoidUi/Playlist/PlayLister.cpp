@@ -93,6 +93,41 @@ void VoidPlayLister::Build()
     /* Options {{{ */
     m_OptionsLayout = new QHBoxLayout;
 
+    m_ViewButtonGroup = new QButtonGroup(this);
+    m_ViewButtonGroup->setExclusive(true);
+
+    /* View Toggle Buttons */
+    m_ListViewToggle = new HighlightToggleButton(this);
+    m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 150)));
+    m_ListViewToggle->setToolTip(
+        ToolTipString(
+            "List View",
+            "Shows items in a Vertical List."
+        ).c_str()
+    );
+
+    m_DetailedListViewToggle = new HighlightToggleButton(this);
+    m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 150)));
+    m_DetailedListViewToggle->setToolTip(
+        ToolTipString(
+            "Detailed List View",
+            "Shows items in a Vertical List with details."
+        ).c_str()
+    );
+
+    m_ThumbnailViewToggle = new HighlightToggleButton(this);
+    m_ThumbnailViewToggle->setIcon(IconForge::GetIcon(IconType::icon_grid_view, _DARK_COLOR(QPalette::Text, 150)));
+    m_ThumbnailViewToggle->setToolTip(
+        ToolTipString(
+            "Thumbnail View",
+            "Shows items in a dynamic Thumbnail Grid."
+        ).c_str()
+    );
+
+    m_ViewButtonGroup->addButton(m_ListViewToggle, 0);
+    m_ViewButtonGroup->addButton(m_DetailedListViewToggle, 1);
+    m_ViewButtonGroup->addButton(m_ThumbnailViewToggle, 2);
+
     m_SearchBar = new MediaSearchBar(this);
     m_SearchBar->setToolTip(
         ToolTipString(
@@ -108,6 +143,9 @@ void VoidPlayLister::Build()
     m_DeleteButton->setIcon(IconForge::GetIcon(IconType::icon_delete, palette().color(QPalette::Text).darker(150)));
     m_DeleteButton->setFixedWidth(26);
 
+    m_OptionsLayout->addWidget(m_ListViewToggle);
+    m_OptionsLayout->addWidget(m_DetailedListViewToggle);
+    m_OptionsLayout->addWidget(m_ThumbnailViewToggle);
     m_OptionsLayout->addWidget(m_SearchBar);
     m_OptionsLayout->addWidget(m_CreateButton);
     m_OptionsLayout->addWidget(m_DeleteButton);
@@ -139,6 +177,8 @@ void VoidPlayLister::Build()
 
 void VoidPlayLister::Setup()
 {
+    m_ListViewToggle->setChecked(true);
+
     /* Size Policy */
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
@@ -167,7 +207,15 @@ void VoidPlayLister::Connect()
     connect(m_PlaylistView, &PlaylistView::itemClicked, this, [this](const QModelIndex& index) { _MediaBridge.SetCurrentPlaylist(index); });
     connect(m_PlaylistView, &PlaylistView::played, this, static_cast<void (VoidPlayLister::*)(const Playlist*)>(&VoidPlayLister::Play));
     connect(m_MediaView, &PlaylistMediaView::played, this, static_cast<void (VoidPlayLister::*)(const std::vector<SharedMediaClip>&)>(&VoidPlayLister::Play));
+    /* View Changed */
+    /* The call to buttonToggled is a slightly expensive as this gets called 2 times if we have n buttons (once for checked off and once for checked on) */
+    connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(QAbstractButton*, bool)>(&QButtonGroup::buttonToggled), this, [this](QAbstractButton* b, bool s)
+    {
+        if (s)
+            m_MediaView->SetViewType(static_cast<PlaylistMediaView::ViewType>(m_ViewButtonGroup->id(b)));
+    });
     connect(m_PlaylistView, &PlaylistView::updated, m_MediaView, &PlaylistMediaView::Refresh);
+
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidPlayLister::RemoveSelectedMedia);

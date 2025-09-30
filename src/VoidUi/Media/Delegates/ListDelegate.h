@@ -12,6 +12,17 @@
 
 VOID_NAMESPACE_OPEN
 
+class BasicMediaItemDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+
+public:
+    explicit BasicMediaItemDelegate(QObject* parent = nullptr);
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+};
+
 class MediaItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT

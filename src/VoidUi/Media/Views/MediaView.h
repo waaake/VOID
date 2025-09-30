@@ -22,6 +22,7 @@ public: /* enums */
     enum class ViewType
     {
         ListView,
+        DetailedListView,
         ThumbnailView
     };
 

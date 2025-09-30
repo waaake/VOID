@@ -40,7 +40,8 @@ void MediaViewPreferences::Build()
 
     /* Add Preferences */
     m_ViewDescription = new QLabel("This setting describes the default view on Media View.\n\n\
- Detailed List: Shows imported media items as list with few details.\n\
+ List: Shows imported media items as list with few details.\n\
+ Detailed List: Shows imported media items as list with thumbnail and details.\n\
  Thumbnail: Shows imported media items in a thumbnail style.\n");
 
     m_ViewLabel = new QLabel("Default View");
@@ -58,7 +59,7 @@ void MediaViewPreferences::Build()
 void MediaViewPreferences::Setup()
 {
     /* Default values */
-    m_ViewBox->addItems({"Detailed List", "Thumbnail"});
+    m_ViewBox->addItems({"List", "Detailed List", "Thumbnail"});
     m_ViewBox->setCurrentIndex(0);
 }
 
