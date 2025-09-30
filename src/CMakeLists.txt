@@ -151,7 +151,7 @@ endif()
 # )
 
 # Install Libraries and Binaries
-install(TARGETS VoidCore VoidObjects VoidRenderer VoidUi VOID voidpy
+install(TARGETS VoidCore VoidObjects VoidRenderer VoidUi VOID vortex
     EXPORT VOIDTargets
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib
