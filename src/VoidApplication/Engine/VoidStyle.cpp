@@ -246,4 +246,19 @@ void Obsidian::polish(QPalette& palette)
 
 /* }}} */
 
+VoidDark* VoidColorStyle::GetProxyStyle(const VoidColorStyle::StyleType& type)
+{
+    switch (type)
+    {
+        case VoidColorStyle::StyleType::Obsidian:
+            return new Obsidian;
+        case VoidColorStyle::StyleType::SakuraPink:
+            return new SakuraPink;
+        case VoidColorStyle::StyleType::ShoreBlue:
+            return new BlueShore;
+        default:
+            return new VoidDark;
+    }
+}
+
 VOID_NAMESPACE_CLOSE

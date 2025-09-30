@@ -11,6 +11,7 @@
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
 #include "VoidUi/Engine/Globals.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -50,12 +51,14 @@ void VoidEngine::InitLogging()
 
 void VoidEngine::Setup(QApplication& app)
 {
-    /* Setup Theme for the Player */
-    app.setStyle(new Obsidian());
-
     /* App Settings */
     QCoreApplication::setOrganizationName("VOID");
     QCoreApplication::setApplicationName("VOID");
+
+    /* Setup Theme for the Player */
+    app.setStyle(VoidColorStyle::GetProxyStyle(
+        static_cast<VoidColorStyle::StyleType>(VoidPreferences::Instance().GetColorStyle())
+    ));
 
     /* Set Application icon */
     QImage icon(":resources/images/VOID_Logo.svg");
