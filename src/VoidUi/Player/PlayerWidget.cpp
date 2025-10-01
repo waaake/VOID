@@ -412,7 +412,7 @@ void Player::SetMediaFrame(int frame)
      */
     if (clip->Contains(frame))
     {
-        m_CacheProcessor.EnsureCached(frame);
+        m_CacheProcessor.EnsureCached(frame);        
         /* Read the image for the frame from the sequence and set it on the player */
         m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
     }

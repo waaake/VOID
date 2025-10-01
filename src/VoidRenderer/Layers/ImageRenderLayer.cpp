@@ -11,6 +11,7 @@ VOID_NAMESPACE_OPEN
 
 ImageRenderLayer::ImageRenderLayer()
     : m_Texture(0)
+    , m_InternalFormat(0)
 {
     /* Data to be shared across with the Renderer */
     m_ImageData = new Renderer::ImageRenderData;
@@ -54,6 +55,13 @@ void ImageRenderLayer::Initialize()
     m_ImageData->textureA = m_Texture;
 }
 
+void ImageRenderLayer::InitTexture(const SharedPixels& image)
+{
+    /* Init the bound tex with null image for Tex*/
+    glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), nullptr);
+    m_InternalFormat = image->GLInternalFormat();
+}
+
 void ImageRenderLayer::SetImage(const SharedPixels& image)
 {
     /* Nothing to load */
@@ -65,7 +73,11 @@ void ImageRenderLayer::SetImage(const SharedPixels& image)
     /**
      * Load the image data onto the Texture 2D
      */
-    glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), image->Pixels());
+    if (m_InternalFormat != image->GLInternalFormat())
+        InitTexture(image);
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), image->Pixels());
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
