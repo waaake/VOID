@@ -617,12 +617,17 @@ void VoidRenderer::CalculateModelViewProjection()
 void VoidRenderer::ReloadTextures()
 {
     /* Based on the Image Data available -> Load the Textures */
-    /* Update Image Render Buffer */
-    m_ImageRenderer->SetImage(m_ImageA);
-
-    /* Set The Image Buffer with the Images */
-    m_ImageComparisonRenderer->SetImageA(m_ImageA);
-    m_ImageComparisonRenderer->SetImageB(m_ImageB);
+    if (m_CompareMode != ComparisonMode::NONE)
+    {
+        /* Set The Image Buffer with the Images */
+        m_ImageComparisonRenderer->SetImageA(m_ImageA);
+        m_ImageComparisonRenderer->SetImageB(m_ImageB);
+    }
+    else
+    {
+        /* Update Image Render Buffer */
+        m_ImageRenderer->SetImage(m_ImageA);
+    }
 }
 
 void VoidRenderer::ToggleAnnotation(bool t)

@@ -45,6 +45,10 @@ private: /* Members */
 
     /* Render Texture */
     unsigned int m_Texture;
+    unsigned int m_InternalFormat;
+
+private: /* Methods */
+    void InitTexture(const SharedPixels& image);
 };
 
 VOID_NAMESPACE_CLOSE
