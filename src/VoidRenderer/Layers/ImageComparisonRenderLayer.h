@@ -61,6 +61,14 @@ private: /* Members */
     /* Render Texture */
     unsigned int m_TextureA;
     unsigned int m_TextureB;
+
+    /* Internal Formats for GL */
+    unsigned int m_InternalFormatA;
+    unsigned int m_InternalFormatB;
+
+private: /* Members */
+    void InitTextureA(const SharedPixels& image);
+    void InitTextureB(const SharedPixels& image);
 };
 
 VOID_NAMESPACE_CLOSE

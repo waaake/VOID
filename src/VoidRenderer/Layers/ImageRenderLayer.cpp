@@ -11,7 +11,6 @@ VOID_NAMESPACE_OPEN
 
 ImageRenderLayer::ImageRenderLayer()
     : m_Texture(0)
-    , m_InternalFormat(0)
 {
     /* Data to be shared across with the Renderer */
     m_ImageData = new Renderer::ImageRenderData;
@@ -45,6 +44,8 @@ ImageRenderLayer::~ImageRenderLayer()
 
 void ImageRenderLayer::Initialize()
 {
+    m_InternalFormat = 0;
+
     /* Initialize the Image Render Component */
     m_ImageRenderer->Initialize();
 
