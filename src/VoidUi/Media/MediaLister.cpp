@@ -385,12 +385,8 @@ void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
     /* Nothing is selected */
     if (selected.empty())
         return;
-
-    for (const QModelIndex& index : selected)
-    {
-        /* Add the Media to the Playlist */
-        playlist->AddMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
-    }
+    
+    _MediaBridge.AddToPlaylist(selected);
 }
 
 VOID_NAMESPACE_CLOSE

@@ -28,31 +28,34 @@ Playlist::~Playlist()
     m_Media->Clear();
 }
 
-void Playlist::AddMedia(const SharedMediaClip& media)
+bool Playlist::AddMedia(const SharedMediaClip& media)
 {
     m_Media->Add(media);
     /* Update the modification state for the playlist */
     m_Modified = true;
 
     emit updated(this);
+    return true;
 }
 
-void Playlist::InsertMedia(const SharedMediaClip& media, const int index)
+bool Playlist::InsertMedia(const SharedMediaClip& media, const int index)
 {
     m_Media->Insert(media, index);
     /* Update the modification state for the playlist */
     m_Modified = true;
 
     emit updated(this);
+    return true;
 }
 
-void Playlist::RemoveMedia(const QModelIndex& index)
+bool Playlist::RemoveMedia(const QModelIndex& index)
 {
-    m_Media->Remove(index);
+    m_Media->Remove(index, false);
     /* Update the modification state for the playlist */
     m_Modified = true;
 
     emit updated(this);
+    return true;
 }
 
 VOID_NAMESPACE_CLOSE

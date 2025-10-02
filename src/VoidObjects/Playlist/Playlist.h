@@ -27,9 +27,9 @@ public:
     inline bool Active() const { return m_Active; }
     inline void SetActive(bool active) { m_Active = active; }
 
-    void AddMedia(const SharedMediaClip& media);
-    void InsertMedia(const SharedMediaClip& media, const int index);
-    void RemoveMedia(const QModelIndex& index);
+    bool AddMedia(const SharedMediaClip& media);
+    bool InsertMedia(const SharedMediaClip& media, const int index);
+    bool RemoveMedia(const QModelIndex& index);
 
     inline MediaModel* DataModel() const { return m_Media; }
 

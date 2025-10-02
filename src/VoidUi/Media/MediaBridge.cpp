@@ -10,6 +10,7 @@
 
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
+#include "VoidUi/Commands/PlaylistCommands.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -110,6 +111,44 @@ void MBridge::AddMedia(const std::string& filepath)
 void MBridge::RemoveMedia(const std::vector<QModelIndex>& media)
 {
     PushCommand(new MediaRemoveCommand(media));
+}
+
+void MBridge::AddToPlaylist(const QModelIndex& index)
+{
+    PushCommand(new PlaylistAddMediaCommand(index));
+}
+
+void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Add Media to Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistAddMediaCommand(index));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::AddToPlaylist(const QModelIndex& index, Playlist* playlist)
+{
+    PushCommand(new PlaylistAddMediaCommand(index, playlist));
+}
+
+void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Add Media to Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistAddMediaCommand(index, playlist));
+
+        stack->endMacro();
+    }
 }
 
 bool MBridge::AddMedia(const MediaStruct& mstruct)

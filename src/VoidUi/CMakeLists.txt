@@ -10,6 +10,7 @@ set(SOURCES
     # Commands
     Commands/VoidCommand.cpp
     Commands/MediaCommands.cpp
+    Commands/PlaylistCommands.cpp
     
     # Dock
     Dock/Docker.cpp

@@ -55,6 +55,10 @@ public:
 
     void AddMedia(const std::string& filepath);
     void RemoveMedia(const std::vector<QModelIndex>& media);
+    void AddToPlaylist(const QModelIndex& index);
+    void AddToPlaylist(const std::vector<QModelIndex>& indexes);
+    void AddToPlaylist(const QModelIndex& index, Playlist* playlist);
+    void AddToPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist);
     void ImportDirectory(const std::string& directory, bool progressive = true) { m_Project->ImportDirectory(directory, progressive); }
 
     /**
