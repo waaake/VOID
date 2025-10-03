@@ -34,18 +34,14 @@ private: /* Members */
 class MediaRemoveCommand : public VoidUndoCommand
 {
 public:
-    MediaRemoveCommand(const std::vector<QModelIndex>& indexes, QUndoCommand* parent = nullptr);
+    MediaRemoveCommand(const QModelIndex& index, QUndoCommand* parent = nullptr);
 
-    /* Define the Undo Action */
     void undo() override;
-    /* The return status governs if the command needs to be marked as obsolete when failed */
     bool Redo() override;
 
 private: /* Members */
-    /* Mapped to the index of the Clip and the path required to create the Media */
-    std::map<int, std::string> m_Paths;
-    /* Item indexes which are to be removed */
-    std::vector<QModelIndex> m_Indexes;
+    std::string m_Path;
+    QModelIndex m_Index;
 };
 
 VOID_NAMESPACE_CLOSE

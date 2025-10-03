@@ -108,9 +108,31 @@ void MBridge::AddMedia(const std::string& filepath)
     PushCommand(new MediaImportCommand(filepath));
 }
 
-void MBridge::RemoveMedia(const std::vector<QModelIndex>& media)
+void MBridge::RemoveMedia(const QModelIndex& index)
 {
-    PushCommand(new MediaRemoveCommand(media));
+    PushCommand(new MediaRemoveCommand(index));
+}
+
+void MBridge::RemoveMedia(const std::vector<QModelIndex>& indexes)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Remove Media");
+
+        /**
+         * Loop over in a a reverse way as forward iteration would shift the model indexes and
+         * result in wrong indexes being deleted, or a worst case scenario result in crashes as
+         * the second model index doesn't even exist after the first has been deleted
+         */
+        for (int i = indexes.size() - 1; i >= 0; --i)
+        {
+            QModelIndex idx = indexes.at(i);
+            stack->push(new MediaRemoveCommand(idx));
+        }
+
+        stack->endMacro();
+    }
 }
 
 void MBridge::AddToPlaylist(const QModelIndex& index)
@@ -146,6 +168,44 @@ void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes, Playlist* p
 
         for (const QModelIndex& index : indexes)
             stack->push(new PlaylistAddMediaCommand(index, playlist));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::RemoveFromPlaylist(const QModelIndex& index)
+{
+    PushCommand(new PlaylistRemoveMediaCommand(index));
+}
+
+void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Remove Media from Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistRemoveMediaCommand(index));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::RemoveFromPlaylist(const QModelIndex& index, Playlist* playlist)
+{
+    PushCommand(new PlaylistRemoveMediaCommand(index, playlist));
+}
+
+void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Remove Media from Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistRemoveMediaCommand(index, playlist));
 
         stack->endMacro();
     }

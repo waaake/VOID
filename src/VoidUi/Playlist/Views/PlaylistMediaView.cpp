@@ -320,15 +320,15 @@ void PlaylistMediaView::RemoveSelected()
     if (!selection)
         return;
 
-    Playlist* playlist = _MediaBridge.ActivePlaylist();
-        
     const QModelIndexList proxyindexes = selection->selectedRows();
+
+    std::vector<QModelIndex> sources;
+    sources.reserve(proxyindexes.size());
+
     for (int i = proxyindexes.size() - 1; i >=0; --i)
-    {
-        QModelIndex source = proxy->mapToSource(proxyindexes.at(i));
-        if (source.isValid())
-            playlist->RemoveMedia(source);
-    }
+        sources.emplace_back(proxy->mapToSource(proxyindexes.at(i)));
+
+    _MediaBridge.RemoveFromPlaylist(sources);
 }
 
 VOID_NAMESPACE_CLOSE

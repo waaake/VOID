@@ -27,8 +27,21 @@ private: /* Members */
     QModelIndex m_Index;
     Playlist* m_Playlist;
     unsigned int m_InsertIndex;
-    /* Item's vuid to match against the index */
-    std::string m_Vuid;
+};
+
+class PlaylistRemoveMediaCommand : public VoidUndoCommand
+{
+public:
+    PlaylistRemoveMediaCommand(const QModelIndex& index, QUndoCommand* parent = nullptr);
+    PlaylistRemoveMediaCommand(const QModelIndex& index, Playlist* playlist, QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    bool Redo() override;
+
+private: /* Members */
+    QModelIndex m_Index;
+    QModelIndex m_MediaIndex;
+    Playlist* m_Playlist;
 };
 
 VOID_NAMESPACE_CLOSE

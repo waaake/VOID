@@ -53,68 +53,41 @@ bool MediaImportCommand::Redo()
 
 /* Media Remove Command {{{ */
 
-MediaRemoveCommand::MediaRemoveCommand(const std::vector<QModelIndex>& indexes, QUndoCommand* parent)
+MediaRemoveCommand::MediaRemoveCommand(const QModelIndex& index, QUndoCommand* parent)
     : VoidUndoCommand(parent)
-    , m_Indexes(indexes)
+    , m_Index(index)
 {
-    setText("Remove Media(s)");
+    setText("Remove Media");
 }
 
 void MediaRemoveCommand::undo()
 {
-    /* Add each Item back from its original source */
-    for (std::pair<int, std::string> item : m_Paths)
+    MediaStruct mstruct = MediaStruct::FromFile(m_Path);
+
+    /* Validate before adding */
+    if (mstruct.Empty())
     {
-        /* Construct the media struct from the file path */
-        MediaStruct mstruct = MediaStruct::FromFile(item.second);
-
-        /* Validate before adding */
-        if (mstruct.Empty())
-        {
-            VOID_LOG_INFO("Invalid Media");
-            return;
-        }
-
-        if (!mstruct.ValidMedia())
-        {
-            VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-            return;
-        }
-
-        /* Add the Media to the Model */
-        _MediaBridge.InsertMedia(mstruct, item.first);
+        VOID_LOG_INFO("Invalid Media");
+        return;
     }
+
+    if (!mstruct.ValidMedia())
+    {
+        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
+        return;
+    }
+
+    /* Add the Media to the Model */
+    _MediaBridge.InsertMedia(mstruct, m_Index.row());
 }
 
 bool MediaRemoveCommand::Redo()
 {
-    /* Don't have anything to do */
-    if (m_Indexes.empty())
-        return false;
+    /* Update the internal struct so that we know where each clip was and it's path */
+    const SharedMediaClip clip = _MediaBridge.DataModel()->Media(m_Index);
+    m_Path = clip->FirstFrameData().Path();
 
-    /**
-     * Loop over in a a reverse way as forward iteration would shift the model indexes and
-     * result in wrong indexes being deleted, or a worst case scenario result in crashes as
-     * the second model index doesn't even exist after the first has been deleted
-     */
-    for (int i = m_Indexes.size() - 1; i >= 0; --i)
-    {
-
-        QModelIndex index = m_Indexes.at(i);
-
-        /* Update the internal struct so that we know where each clip was and it's path */
-        const SharedMediaClip clip = _MediaBridge.DataModel()->Media(index);
-
-        /**
-         * Basepath from the clip, which will be used to create the clip back
-         */
-        m_Paths[index.row()] = clip->FirstFrameData().Path();
-
-        /* Now Set this media for being removed */
-        _MediaBridge.Remove(index);
-    }
-
-    return true;
+    return _MediaBridge.Remove(m_Index);
 }
 
 /* }}} */
