@@ -215,6 +215,16 @@ Playlist* Project::NewPlaylist(const std::string& name)
     return m_Playlist;
 }
 
+Playlist* Project::NewPlaylist(const std::string& name, int index)
+{
+    SetActivePlaylist(new Playlist(name, this));
+    
+    m_Playlists->Insert(m_Playlist, index);
+    emit playlistCreated(m_Playlist);
+
+    return m_Playlist;
+}
+
 void Project::SetCurrentPlaylist(const QModelIndex& index)
 {
     /* Provided index is not valid */
@@ -238,6 +248,9 @@ void Project::RemovePlaylist(const QModelIndex& index)
 {
     int row = index.row();
     m_Playlists->Remove(index);
+
+    /* Set to null before resetting the current playlist*/
+    m_Playlist = nullptr;
 
     /* Based on whether this is the last row or any from the beginning */
     SetCurrentPlaylist(row >= m_Playlists->rowCount() ? [](int x) { return --x; }(m_Playlists->rowCount()) : row);

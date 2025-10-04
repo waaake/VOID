@@ -83,7 +83,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 
     /* Media Count */
     QRect countrect = QRect(namerect.right(), rect.top(), 50, rect.height());
-    QString count = QString::number(index.data(static_cast<int>(PlaylistModel::Roles::MediaCount)).toInt());
+    QString count = QString::number(index.data(static_cast<int>(PlaylistModel::Roles::Size)).toInt());
     painter->drawText(countrect, Qt::AlignLeft | Qt::AlignCenter, count);
 
     /* Restore for other use */

@@ -54,7 +54,16 @@ public:
     MBridge& operator=(MBridge&&) = delete;
 
     void AddMedia(const std::string& filepath);
-    void RemoveMedia(const std::vector<QModelIndex>& media);
+    void RemoveMedia(const QModelIndex& index);
+    void RemoveMedia(const std::vector<QModelIndex>& indexes);
+    void AddToPlaylist(const QModelIndex& index);
+    void AddToPlaylist(const std::vector<QModelIndex>& indexes);
+    void AddToPlaylist(const QModelIndex& index, Playlist* playlist);
+    void AddToPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist);
+    void RemoveFromPlaylist(const QModelIndex& index);
+    void RemoveFromPlaylist(const std::vector<QModelIndex>& indexes);
+    void RemoveFromPlaylist(const QModelIndex& index, Playlist* playlist);
+    void RemoveFromPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist);
     void ImportDirectory(const std::string& directory, bool progressive = true) { m_Project->ImportDirectory(directory, progressive); }
 
     /**
@@ -80,6 +89,7 @@ public:
      */
     Playlist* NewPlaylist();
     Playlist* NewPlaylist(const std::string& name);
+    void RemovePlaylist(const QModelIndex& index);
     void SetCurrentPlaylist(const QModelIndex& index);
     void SetCurrentPlaylist(int row);
 

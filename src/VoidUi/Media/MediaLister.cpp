@@ -104,7 +104,7 @@ void VoidMediaLister::Build()
     m_PlayAction = new QAction("Play Selected As Sequence");
     m_RemoveAction = new QAction("Remove Selected");
     m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
-    
+
     m_PlaylistMenu = new QMenu("Add to Playlist");
     /* Add any playlists which are present in the active project */
     RebuildPlaylistMenu();
@@ -237,11 +237,11 @@ void VoidMediaLister::Connect()
     /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
     connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
-    
+
     /* View Changed */
     /* The call to buttonToggled is a slightly expensive as this gets called 2 times if we have n buttons (once for checked off and once for checked on) */
     connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(QAbstractButton*, bool)>(&QButtonGroup::buttonToggled), this, [this](QAbstractButton* b, bool s)
-    { 
+    {
         if (s)
             m_MediaView->SetViewType(static_cast<MediaView::ViewType>(m_ViewButtonGroup->id(b)));
     });
@@ -255,7 +255,7 @@ void VoidMediaLister::Connect()
         _MediaBridge.SetCurrentProject(index);
         RebuildPlaylistMenu();
     });
-    connect(&_MediaBridge, &MBridge::playlistCreated, this, &VoidMediaLister::RebuildPlaylistMenu); 
+    connect(&_MediaBridge, &MBridge::playlistCreated, this, &VoidMediaLister::RebuildPlaylistMenu);
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);
@@ -268,7 +268,7 @@ void VoidMediaLister::IndexSelected(const QModelIndex& index)
 {
     if (!index.isValid())
         return;
- 
+
     /* Emit the Media Clip dereferenced from the internal pointer */
     emit mediaChanged(*(static_cast<SharedMediaClip*>(index.internalPointer())));
 }
@@ -355,7 +355,7 @@ void VoidMediaLister::SetFromPreferences()
             m_ThumbnailViewToggle->setChecked(true);
         case MediaView::ViewType::ListView:
         default:
-            m_ListViewToggle->setChecked(true);    
+            m_ListViewToggle->setChecked(true);
     }
 }
 
@@ -386,11 +386,7 @@ void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
     if (selected.empty())
         return;
 
-    for (const QModelIndex& index : selected)
-    {
-        /* Add the Media to the Playlist */
-        playlist->AddMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
-    }
+    _MediaBridge.AddToPlaylist(selected, playlist);
 }
 
 VOID_NAMESPACE_CLOSE

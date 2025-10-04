@@ -27,16 +27,17 @@ public:
     inline bool Active() const { return m_Active; }
     inline void SetActive(bool active) { m_Active = active; }
 
-    void AddMedia(const SharedMediaClip& media);
-    void InsertMedia(const SharedMediaClip& media, const int index);
-    void RemoveMedia(const QModelIndex& index);
+    bool AddMedia(const SharedMediaClip& media);
+    bool InsertMedia(const SharedMediaClip& media, const int index);
+    bool RemoveMedia(const QModelIndex& index);
 
     inline MediaModel* DataModel() const { return m_Media; }
+    const std::vector<SharedMediaClip> AllMedia() const { return m_Media->AllMedia(); }
 
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
 
-    inline int MediaCount() const { return static_cast<int>(m_Media->rowCount()); }
+    inline int Size() const { return static_cast<int>(m_Media->rowCount()); }
     inline bool Modified() const { return m_Modified; }
 
     std::string Name() const { return m_Name; }

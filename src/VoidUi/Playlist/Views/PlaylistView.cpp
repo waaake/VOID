@@ -118,9 +118,7 @@ void PlaylistView::dropEvent(QDropEvent* event)
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = _MediaBridge.MediaAt(row, column);
-
-        playlist->AddMedia(media);
+        _MediaBridge.AddToPlaylist(_MediaBridge.DataModel()->index(row, column), playlist);
     }
 }
 
@@ -242,7 +240,7 @@ void PlaylistView::RemoveSelected()
     if (!selection)
         return;
 
-    _MediaBridge.ActiveProject()->RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
+    _MediaBridge.RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
     emit updated();
 }
 

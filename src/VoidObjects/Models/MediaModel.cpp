@@ -116,7 +116,7 @@ void MediaModel::Insert(const SharedMediaClip& media, const int index)
     endInsertRows();
 }
 
-void MediaModel::Remove(const QModelIndex& index)
+void MediaModel::Remove(const QModelIndex& index, bool destroy)
 {
     if (!index.isValid())
         return;
@@ -128,12 +128,11 @@ void MediaModel::Remove(const QModelIndex& index)
 
     /* Media Clip at the row */
     SharedMediaClip clip = m_Media.at(row);
-
-    /* Remove from the vector */
     m_Media.erase(std::remove(m_Media.begin(), m_Media.end(), clip));
 
     /* Now Kill the clip */
-    clip.get()->deleteLater();
+    if (destroy)
+        clip.get()->deleteLater();
 
     /* End Remove Process */
     endRemoveRows();
