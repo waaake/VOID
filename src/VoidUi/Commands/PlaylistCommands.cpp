@@ -65,9 +65,7 @@ void PlaylistRemoveCommand::undo()
     if (playlist)
     {
         for (const QModelIndex& index : m_MediaIndexes)
-        {
             playlist->AddMedia(project->MediaAt(index));
-        }
     }
 }
 

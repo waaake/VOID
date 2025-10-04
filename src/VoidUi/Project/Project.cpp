@@ -249,6 +249,9 @@ void Project::RemovePlaylist(const QModelIndex& index)
     int row = index.row();
     m_Playlists->Remove(index);
 
+    /* Set to null before resetting the current playlist*/
+    m_Playlist = nullptr;
+
     /* Based on whether this is the last row or any from the beginning */
     SetCurrentPlaylist(row >= m_Playlists->rowCount() ? [](int x) { return --x; }(m_Playlists->rowCount()) : row);
 }
