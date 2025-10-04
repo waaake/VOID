@@ -240,7 +240,7 @@ void PlaylistView::RemoveSelected()
     if (!selection)
         return;
 
-    _MediaBridge.ActiveProject()->RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
+    _MediaBridge.RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
     emit updated();
 }
 

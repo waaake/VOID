@@ -75,8 +75,8 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
     {
         case Roles::Name:
             return QVariant(playlist->Name().c_str());
-        case Roles::MediaCount:
-            return QVariant(playlist->MediaCount());
+        case Roles::Size:
+            return QVariant(playlist->Size());
         default:
             return QVariant();
     }

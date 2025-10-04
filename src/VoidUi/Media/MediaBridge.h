@@ -89,6 +89,7 @@ public:
      */
     Playlist* NewPlaylist();
     Playlist* NewPlaylist(const std::string& name);
+    void RemovePlaylist(const QModelIndex& index);
     void SetCurrentPlaylist(const QModelIndex& index);
     void SetCurrentPlaylist(int row);
 

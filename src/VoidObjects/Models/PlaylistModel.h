@@ -33,7 +33,7 @@ public:
         Name = Qt::UserRole + 1001,
         Active,
         Color,
-        MediaCount
+        Size
     };
 
 public:

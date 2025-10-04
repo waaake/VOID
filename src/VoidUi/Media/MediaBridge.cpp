@@ -294,7 +294,10 @@ bool MBridge::Remove(const QModelIndex& index)
 Playlist* MBridge::NewPlaylist()
 {
     if (m_Project)
-        return m_Project->NewPlaylist();
+    {
+        m_Project->UndoStack()->push(new PlaylistAddCommand());
+        return m_Project->ActivePlaylist();
+    }
 
     return nullptr;
 }
@@ -302,9 +305,17 @@ Playlist* MBridge::NewPlaylist()
 Playlist* MBridge::NewPlaylist(const std::string& name)
 {
     if (m_Project)
-        return m_Project->NewPlaylist(name);
+    {
+        m_Project->UndoStack()->push(new PlaylistAddCommand(name));
+        return m_Project->ActivePlaylist();
+    }
 
     return nullptr;
+}
+
+void MBridge::RemovePlaylist(const QModelIndex& index)
+{
+    PushCommand(new PlaylistRemoveCommand(index));
 }
 
 void MBridge::SetCurrentPlaylist(const QModelIndex& index)
