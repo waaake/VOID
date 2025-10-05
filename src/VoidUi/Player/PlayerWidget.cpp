@@ -89,7 +89,7 @@ void Player::Connect()
     /* ControlBar - ChannelModeChanged -> Renderer - SetChannelMode */
     connect(m_ControlBar, &ControlBar::channelModeChanged, m_Renderer, &VoidRenderer::SetChannelMode);
     /* ControlBar - Viewer Buffer Switched -> Player - Set View Buffer */
-    connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::SetViewBuffer);
+    connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
     /* ControlBar - Comparison Mode Changed -> Player - Set Comparison mode */
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
     /* ControlBar - Blend Mode Changed -> Player - Set Blend mode */
@@ -247,11 +247,7 @@ void Player::Load(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
     else if (buffer == PlayerViewBuffer::B)
         m_ViewBufferB->Set(media);
 
-    /* Update or Reset Buffer */
-    if (Comparing())
-        Refresh();
-    else
-        SetViewBuffer(buffer);
+    Comparing() ? Refresh() : ResetViewBuffer(buffer);
 }
 
 void Player::Load(const SharedPlaybackTrack& track)
@@ -269,6 +265,16 @@ void Player::Load(const SharedPlaybackTrack& track)
     m_Timeline->Clear();
     /* Then set the First Image on the Player */
     SetTrackFrame(m_Timeline->Frame());
+}
+
+void Player::Load(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer)
+{
+    if (buffer == PlayerViewBuffer::A)
+        m_ViewBufferA->Set(track);
+    else if (buffer == PlayerViewBuffer::B)
+        m_ViewBufferB->Set(track);
+
+    Comparing() ? Refresh() : ResetViewBuffer(buffer);
 }
 
 void Player::Load(const SharedPlaybackSequence& sequence)
@@ -492,7 +498,7 @@ void Player::SetBlendMode(const int mode)
     }
 }
 
-void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
+void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)
 {
     /**
      * If we're currently comparing -> Then reset the Compare Mode to be None and select the buffer
@@ -501,23 +507,16 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
     if (Comparing())
         m_ControlBar->SetCompareMode(Renderer::ComparisonMode::NONE);
 
-    /* Update the active buffer based on the provided buffer enum */
-    if (buffer == PlayerViewBuffer::A)
-    {
-        m_ActiveViewBuffer = m_ViewBufferA;
-        /* Set its Active state */
-        m_ViewBufferA->SetActive(true);
-        /* Reset the active state for the other buffer */
-        m_ViewBufferB->SetActive(false);
-    }
-    else
-    {
-        m_ActiveViewBuffer = m_ViewBufferB;
-        /* Set its Active state */
-        m_ViewBufferB->SetActive(true);
-        /* Reset the active state for the other buffer */
-        m_ViewBufferA->SetActive(false);
-    }
+    ViewerBuffer *active, *inactive;
+
+    buffer == PlayerViewBuffer::A 
+        ? (active = m_ViewBufferA, inactive = m_ViewBufferB)
+        : (active = m_ViewBufferB, inactive = m_ViewBufferA);
+
+    m_ActiveViewBuffer = active;
+    /* Update active states for the buffers */
+    active->SetActive(true);
+    inactive->SetActive(false);
 
     /* Clear the viewport */
     m_Renderer->Clear();
@@ -528,6 +527,22 @@ void Player::SetViewBuffer(const PlayerViewBuffer& buffer)
 
     /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+}
+
+void Player::ResetCacheMedia()
+{
+    switch (m_ActiveViewBuffer->PlayingComponent())
+    {
+        case ViewerBuffer::PlayableComponent::Sequence:
+            m_CacheProcessor.SetSequence(m_ActiveViewBuffer->GetSequence());
+            break;
+        case ViewerBuffer::PlayableComponent::Track:
+            m_CacheProcessor.SetTrack(m_ActiveViewBuffer->GetTrack());
+            break;
+        case ViewerBuffer::PlayableComponent::Clip:
+        default:
+            m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip());
+    }
 }
 
 void Player::dragEnterEvent(QDragEnterEvent* event)
@@ -564,43 +579,49 @@ void Player::dropEvent(QDropEvent* event)
     {
         QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
 
-        /* Read Input data */
-        QDataStream stream(&data, QIODevice::ReadOnly);
-        int row, column;
-        stream >> row >> column;
-
         /**
          * Media from the Media Bridge
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = _MediaBridge.MediaAt(row, column);
+        const std::vector<SharedMediaClip>& media = _MediaBridge.UnpackProjectMedia(data);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
-            Load(media, PlayerViewBuffer::A);
+        {
+            media.size() == 1
+                ? Load(media.at(0), PlayerViewBuffer::A)
+                : Load(_MediaBridge.AsTrack(media), PlayerViewBuffer::A);
+        }
         else if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::B)
-            Load(media, PlayerViewBuffer::B);
+        {
+            media.size() == 1
+                ? Load(media.at(0), PlayerViewBuffer::B)
+                : Load(_MediaBridge.AsTrack(media), PlayerViewBuffer::B);
+        }
     }
     else if (event->mimeData()->hasFormat(MimeTypes::PlaylistItem))
     {
         QByteArray data = event->mimeData()->data(MimeTypes::PlaylistItem);
 
-        /* Read Input data */
-        QDataStream stream(&data, QIODevice::ReadOnly);
-        int row, column;
-        stream >> row >> column;
-
         /**
          * Media from the Media Bridge
          * The media is always retrieved from the active project
          * the assumption is that a drag-drop event would always happen when the project is active
          */
-        SharedMediaClip media = _MediaBridge.PlaylistMediaAt(row, column);
+        const std::vector<SharedMediaClip>& media = _MediaBridge.UnpackPlaylistMedia(data);
 
         if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::A)
-            Load(media, PlayerViewBuffer::A);
+        {
+            media.size() == 1
+                ? Load(media.at(0), PlayerViewBuffer::A)
+                : Load(_MediaBridge.AsTrack(media), PlayerViewBuffer::A);
+        }
         else if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::B)
-            Load(media, PlayerViewBuffer::B);
+        {
+            media.size() == 1
+                ? Load(media.at(0), PlayerViewBuffer::B)
+                : Load(_MediaBridge.AsTrack(media), PlayerViewBuffer::B);
+        }
     }
 
     /* Reset Overlay */
