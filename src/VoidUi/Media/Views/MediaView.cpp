@@ -7,6 +7,7 @@
 #include <QDrag>
 #include <QIODevice>
 #include <QMimeData>
+#include <QPainter>
 
 /* Internal */
 #include "MediaView.h"
@@ -42,23 +43,36 @@ MediaView::~MediaView()
 
 void MediaView::startDrag(Qt::DropActions supportedActions)
 {
-    QModelIndex index = currentIndex();
-    if (!index.isValid())
+    std::vector<QModelIndex> indexes = SelectedIndexes();
+    if (indexes.empty())
         return;
 
     QMimeData* data = new QMimeData();
-
-    QByteArray transferData;
-    QDataStream stream(&transferData, QIODevice::WriteOnly);
-    stream << index.row() << index.column();
-
-    data->setData(MimeTypes::MediaItem, transferData);
+    data->setData(MimeTypes::MediaItem, _MediaBridge.PackIndexes(indexes));
 
     QDrag* drag = new QDrag(this);
     drag->setMimeData(data);
-    QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
-    drag->setPixmap(p.scaledToWidth(100, Qt::SmoothTransformation));
 
+    /* Stacked pixmaps */
+    const int count = std::min(static_cast<int>(indexes.size()), 4);
+    const int thumbsize = 100;
+    const int offset = 10;
+
+    QSize canvas(thumbsize + offset * (count - 1), thumbsize + offset * (count - 1));
+
+    QPixmap stack(canvas);
+    stack.fill(Qt::transparent);
+
+    QPainter painter(&stack);
+    for (int i = 0; i < count; ++i)
+    {
+        QPoint pos(i * offset, i * offset);
+        QPixmap p = indexes.at(i).data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+        painter.drawPixmap(pos, p.scaled(thumbsize, thumbsize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    }
+    painter.end();
+
+    drag->setPixmap(stack);
     drag->exec();
 }
 

@@ -107,18 +107,7 @@ void PlaylistView::dropEvent(QDropEvent* event)
             return;
 
         QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
-        
-        /* Read Input data */
-        QDataStream stream(&data, QIODevice::ReadOnly);
-        int row, column;
-        stream >> row >> column;
-        
-        /**
-         * Media from the Media Bridge
-         * The media is always retrieved from the active project
-         * the assumption is that a drag-drop event would always happen when the project is active
-         */
-        _MediaBridge.AddToPlaylist(_MediaBridge.DataModel()->index(row, column), playlist);
+        _MediaBridge.AddToPlaylist(data, playlist);
     }
 }
 

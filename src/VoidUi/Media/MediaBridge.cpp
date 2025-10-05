@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QCoreApplication>
+#include <QDataStream>
 
 /* Internal */
 #include "MediaBridge.h"
@@ -168,6 +169,34 @@ void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes, Playlist* p
 
         for (const QModelIndex& index : indexes)
             stack->push(new PlaylistAddMediaCommand(index, playlist));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::AddToPlaylist(QByteArray& data)
+{
+    AddToPlaylist(data, ActivePlaylist());
+}
+
+void MBridge::AddToPlaylist(QByteArray& data, Playlist* playlist)
+{
+    if (m_Project)
+    {
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        int count;
+        stream >> count;
+    
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Add Media to Playlist");
+
+        for (int i = 0; i < count; ++i)
+        {
+            int row, column;
+            stream >> row >> column;
+
+            stack->push(new PlaylistAddMediaCommand(m_Project->DataModel()->index(row, column), playlist));
+        }
 
         stack->endMacro();
     }
@@ -365,6 +394,69 @@ bool MBridge::Save(const std::string& path, const std::string& name, const Ether
     }
 
     return false;
+}
+
+QByteArray MBridge::PackIndexes(const std::vector<QModelIndex>& indexes) const
+{
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+
+    /* Save the count of the Media first -- followed by media indices */
+    stream << static_cast<int>(indexes.size());
+    for (const QModelIndex& index : indexes)
+        stream << index.row() << index.column();
+
+    return data;
+}
+
+std::vector<SharedMediaClip> MBridge::UnpackProjectMedia(QByteArray& data) const
+{
+    QDataStream stream(&data, QIODevice::ReadOnly);
+    int count;
+    stream >> count;
+
+    std::vector<SharedMediaClip> clips;
+    clips.reserve(count);
+
+    for (int i = 0; i < count; ++i)
+    {
+        int row, column;
+        stream >> row >> column;
+
+        clips.emplace_back(m_Project->MediaAt(row, column));
+    }
+
+    return clips;
+}
+
+std::vector<SharedMediaClip> MBridge::UnpackPlaylistMedia(QByteArray& data) const
+{
+    QDataStream stream(&data, QIODevice::ReadOnly);
+    int count;
+    stream >> count;
+
+    std::vector<SharedMediaClip> clips;
+    clips.reserve(count);
+
+    for (int i = 0; i < count; ++i)
+    {
+        int row, column;
+        stream >> row >> column;
+
+        clips.emplace_back(m_Project->ActivePlaylist()->Media(row, column));
+    }
+
+    return clips;
+}
+
+SharedPlaybackTrack MBridge::AsTrack(const std::vector<SharedMediaClip>& media) const
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>();
+
+    for (const SharedMediaClip& clip : media)
+        track->AddMedia(clip);
+
+    return track;
 }
 
 void MBridge::Load(const std::string& path)

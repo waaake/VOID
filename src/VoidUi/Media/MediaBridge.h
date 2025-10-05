@@ -8,6 +8,7 @@
 #include <vector>
 
 /* Qt */
+#include <QByteArray>
 #include <QObject>
 #include <QUndoGroup>
 #include <QUndoStack>
@@ -15,6 +16,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Models/MediaModel.h"
 #include "VoidObjects/Models/ProjectModel.h"
 #include "VoidUi/Project/Project.h"
@@ -56,10 +58,14 @@ public:
     void AddMedia(const std::string& filepath);
     void RemoveMedia(const QModelIndex& index);
     void RemoveMedia(const std::vector<QModelIndex>& indexes);
+
     void AddToPlaylist(const QModelIndex& index);
     void AddToPlaylist(const std::vector<QModelIndex>& indexes);
     void AddToPlaylist(const QModelIndex& index, Playlist* playlist);
     void AddToPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist);
+    void AddToPlaylist(QByteArray& data);
+    void AddToPlaylist(QByteArray& data, Playlist* playlist);
+
     void RemoveFromPlaylist(const QModelIndex& index);
     void RemoveFromPlaylist(const std::vector<QModelIndex>& indexes);
     void RemoveFromPlaylist(const QModelIndex& index, Playlist* playlist);
@@ -111,6 +117,18 @@ public:
     inline SharedMediaClip MediaAt(int row, int column) const { return m_Project->MediaAt(row, column); }
     inline SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const { return m_Project->PlaylistMediaAt(index); }
     inline SharedMediaClip PlaylistMediaAt(int row, int column) const { return m_Project->PlaylistMediaAt(row, column); }
+
+    /**
+     * Packs the media indexes from the project/playlist into a byteArray which can be sent
+     * over to other components this data is packed for use in drag-drop operations and any other places required
+     */
+    QByteArray PackIndexes(const std::vector<QModelIndex>& indexes) const;
+    /* Unpacks incoming ByteArray stream to fetch media based on the indexes from the current project */
+    std::vector<SharedMediaClip> UnpackProjectMedia(QByteArray& data) const;
+    /* Unpacks incoming ByteArray stream to fetch media based on the indexes from the current active playlist */
+    std::vector<SharedMediaClip> UnpackPlaylistMedia(QByteArray& data) const;
+    /* Creates a track with the provided set of media */
+    SharedPlaybackTrack AsTrack(const std::vector<SharedMediaClip>& media) const;
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);

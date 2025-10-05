@@ -76,6 +76,7 @@ public:
 
     /* Loads a Playable Track on the Player */
     void Load(const SharedPlaybackTrack& track);
+    void Load(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer);
 
     /* Load a Sequence to be played on the Player */
     void Load(const SharedPlaybackSequence& sequence);
@@ -104,11 +105,12 @@ public:
 
     /**
      * Sets the provided viewer buffer on the player
+     * @param buffer: The play buffer to set on the viewer
      */
-    void SetViewBuffer(const PlayerViewBuffer& buffer);
+    void ResetViewBuffer(const PlayerViewBuffer& buffer);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
-    inline void ResetCacheMedia() { m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip()); }
+    void ResetCacheMedia();
     void CacheBuffer();
 
     /* Zoom on the Viewport */
