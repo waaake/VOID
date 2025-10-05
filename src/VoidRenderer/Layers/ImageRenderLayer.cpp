@@ -42,9 +42,14 @@ ImageRenderLayer::~ImageRenderLayer()
     glDeleteTextures(1, &m_Texture);
 }
 
-void ImageRenderLayer::Initialize()
+void ImageRenderLayer::Reset()
 {
     m_InternalFormat = 0;
+}
+
+void ImageRenderLayer::Initialize()
+{
+    Reset();
 
     /* Initialize the Image Render Component */
     m_ImageRenderer->Initialize();

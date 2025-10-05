@@ -57,10 +57,15 @@ ImageComparisonRenderLayer::~ImageComparisonRenderLayer()
     glDeleteTextures(1, &m_TextureB);
 }
 
-void ImageComparisonRenderLayer::Initialize()
+void ImageComparisonRenderLayer::Reset()
 {
     m_InternalFormatA = 0;
     m_InternalFormatB = 0;
+}
+
+void ImageComparisonRenderLayer::Initialize()
+{
+    Reset();
 
     /* Initialize the Image Render Component */
     m_ImageRenderer->Initialize();

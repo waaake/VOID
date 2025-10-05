@@ -21,6 +21,7 @@ public:
     /* Sets up the Render Components (Gears) */
     void Initialize();
 
+    void Reset();
     void SetImage(const SharedPixels& image);
 
     /* Set Attributes for Render */
