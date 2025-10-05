@@ -481,6 +481,10 @@ void VoidRenderer::Clear()
     /* Hide the Error Label */
     SetMessage("");
 
+    /* Reset Buffers */
+    m_ImageRenderer->Reset();
+    m_ImageComparisonRenderer->Reset();
+
     /*
      * Trigger a Re-paint
      * This will draw nothing but just clears COLOR and DEPTH
