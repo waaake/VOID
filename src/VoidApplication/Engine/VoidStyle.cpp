@@ -97,7 +97,38 @@ void VoidDark::drawControl(ControlElement element, const QStyleOption* option, Q
             painter->setPen(VOID_FOREGROUND_DISABLED_COLOR);
             painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, item->text);
             break;
+        }
+        case CE_MenuBarItem:
+        {
+            const QStyleOptionMenuItem* item = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
 
+            if (!item)
+                break;
+   
+            if (item->state & QStyle::State_Sunken)
+            {
+                painter->save();
+                painter->fillRect(item->rect, option->palette.color(QPalette::Highlight));
+                
+                painter->setPen(option->palette.color(QPalette::Highlight).lighter(80));
+                painter->drawRect(item->rect.adjusted(0, 0, -1, -1));
+                painter->restore();
+            }
+
+            painter->save();
+            painter->setPen(QPen(item->state & QStyle::State_Sunken
+                ? option->palette.color(QPalette::HighlightedText)
+                : option->palette.color(QPalette::WindowText)));
+            painter->drawText(item->rect, Qt::AlignCenter, item->text);
+            painter->restore();
+            break;
+        }
+        case CE_MenuBarEmptyArea:
+        {
+            painter->save();
+            painter->fillRect(option->rect, option->palette.window());
+            painter->restore();
+            break;
         }
         case CE_TabBarTab:
         {
