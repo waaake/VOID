@@ -3,18 +3,20 @@
 
 /* Internal */
 #include "Playlist.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
-Playlist::Playlist(const std::string& name, QObject* parent)
+Playlist::Playlist(const std::string& name, Core::Project* parent)
     : VoidObject(parent)
     , m_Name(name)
     , m_Modified(false)
+    , m_Project(parent)
 {
     m_Media = new MediaModel(this);
 }
 
-Playlist::Playlist(QObject* parent)
+Playlist::Playlist(Core::Project* parent)
     : Playlist("Untitled", parent)
 {
 }
@@ -56,6 +58,67 @@ bool Playlist::RemoveMedia(const QModelIndex& index)
 
     emit updated(this);
     return true;
+}
+
+void Playlist::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
+{
+    out.SetObject();
+    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+    out.AddMember("name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
+    
+    rapidjson::Value media(rapidjson::kArrayType);
+
+    for (const SharedMediaClip& clip : *m_Media)
+    {
+        rapidjson::Value clipObject;
+        clipObject.SetObject();
+
+        clipObject.AddMember("row", m_Project->DataModel()->MediaRow(clip), allocator);
+        media.PushBack(clipObject, allocator);
+    }
+
+    out.AddMember("Clips", media, allocator);
+}
+
+void Playlist::Serialize(std::ostream& out) const
+{
+    WriteString(out, m_Name);
+    uint32_t count = static_cast<uint32_t>(m_Media->rowCount());
+    out.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    for (const SharedMediaClip& clip : *m_Media)
+    {
+        int row = m_Project->DataModel()->MediaRow(clip);
+        out.write(reinterpret_cast<const char*>(&row), sizeof(row));
+    }
+}
+
+void Playlist::Deserialize(const rapidjson::Value& in)
+{
+    m_Name = in["name"].GetString();
+    const rapidjson::Value::ConstArray media = in["Clips"].GetArray();
+
+    for (int i = 0; i < media.Size(); ++i)
+        m_Media->Add(m_Project->MediaAt(media[i]["row"].GetInt(), 0));
+
+    emit updated(this);
+}
+
+void Playlist::Deserialize(std::istream& in)
+{
+    m_Name = ReadString(in);
+
+    uint32_t count;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        int row;
+        in.read(reinterpret_cast<char*>(&row), sizeof(row));
+        m_Media->Add(m_Project->MediaAt(row, 0));
+    }
+
+    emit updated(this);
 }
 
 VOID_NAMESPACE_CLOSE
