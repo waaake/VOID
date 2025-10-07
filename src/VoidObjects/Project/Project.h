@@ -64,7 +64,7 @@ public:
     void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
     void Deserialize(std::istream& in) override;
-    const char* TypeName() const override { return "Project"; }
+    inline const char* TypeName() const override { return "Project"; }
     
     /**
      * Serialize the Project into a string which can be saved anywhere

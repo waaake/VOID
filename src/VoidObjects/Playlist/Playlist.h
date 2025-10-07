@@ -15,13 +15,18 @@
 
 VOID_NAMESPACE_OPEN
 
+/* Forward Decl for Project as the parent entity */
+namespace Core {
+    class Project;
+} // namespace Core
+
 class VOID_API Playlist : public VoidObject
 {
     Q_OBJECT
 
 public:
-    Playlist(const std::string& name, QObject* parent = nullptr);
-    Playlist(QObject* parent = nullptr);
+    Playlist(const std::string& name, Core::Project* parent);
+    Playlist(Core::Project* parent);
     ~Playlist();
 
     inline bool Active() const { return m_Active; }
@@ -43,6 +48,12 @@ public:
     std::string Name() const { return m_Name; }
     void SetName(const std::string& name) { m_Name = name; }
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
+    inline const char* TypeName() const override { return "Playlist"; }
+
 signals:
     void updated(const Playlist*);
 
@@ -51,6 +62,7 @@ protected: /* Members */
     std::string m_Name;
     bool m_Modified;
     bool m_Active;
+    Core::Project* m_Project;
 };
 
 VOID_NAMESPACE_CLOSE

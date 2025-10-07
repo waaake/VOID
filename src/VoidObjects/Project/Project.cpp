@@ -89,6 +89,7 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
     out.SetObject();
     out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
 
+    /* Media {{{ */
     rapidjson::Value clips(rapidjson::kArrayType);
 
     for (const SharedMediaClip& clip : *m_Media)
@@ -99,6 +100,20 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
     }
 
     out.AddMember("Clips", clips, allocator);
+    /* }}} */
+
+    /* Playlists {{{ */
+    rapidjson::Value playlists(rapidjson::kArrayType);
+
+    for (const Playlist* playlist : *m_Playlists)
+    {
+        rapidjson::Value playlistObject;
+        playlist->Serialize(playlistObject, allocator);
+        playlists.PushBack(playlistObject, allocator);
+    }
+
+    out.AddMember("Playlists", playlists, allocator);
+    /* }}} */
 }
 
 void Project::Serialize(std::ostream& out) const
@@ -109,12 +124,19 @@ void Project::Serialize(std::ostream& out) const
     /* Serialize each of the clip data */
     for (const SharedMediaClip& clip : *m_Media)
         clip->Serialize(out);
+
+    count = static_cast<uint32_t>(m_Playlists->rowCount());
+    out.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    for (const Playlist* playlist : *m_Playlists)
+        playlist->Serialize(out);
 }
 
 void Project::Deserialize(const rapidjson::Value& in)
 {
     Tools::VoidProfiler<std::chrono::duration<double>> p("Deserialize Project");
 
+    /* Media {{{ */
     const rapidjson::Value::ConstArray clips = in["Clips"].GetArray();
 
     for (int i = 0; i < clips.Size(); ++i)
@@ -125,6 +147,19 @@ void Project::Deserialize(const rapidjson::Value& in)
         /* Add the Deserialized clip back */
         m_Media->Add(clip);
     }
+    /* }}} */
+
+    /* Playlist {{{ */
+    const rapidjson::Value::ConstArray playlists = in["Playlists"].GetArray();
+
+    for (int i = 0; i < playlists.Size(); ++i)
+    {
+        Playlist* playlist = new Playlist(this);
+        playlist->Deserialize(playlists[i]);
+
+        m_Playlists->Add(playlist);
+    }
+    /* }}} */
 }
 
 void Project::Deserialize(std::istream& in)
@@ -132,6 +167,8 @@ void Project::Deserialize(std::istream& in)
     Tools::VoidProfiler<std::chrono::duration<double>> p("Deserialize Project");
 
     uint32_t count;
+
+    /* Read Media {{{ */
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
 
     for (uint32_t i = 0; i < count; ++i)
@@ -142,6 +179,19 @@ void Project::Deserialize(std::istream& in)
         /* Add the Deserialized clip back */
         m_Media->Add(clip);
     }
+    /* }}} */
+
+    /* Read Playlists {{{ */
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        Playlist* playlist = new Playlist(this);
+        playlist->Deserialize(in);
+
+        m_Playlists->Add(playlist);
+    }
+    /* }}} */
 }
 
 std::string Project::Document(const std::string& name) const

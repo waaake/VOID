@@ -256,6 +256,7 @@ void VoidMediaLister::Connect()
         RebuildPlaylistMenu();
     });
     connect(&_MediaBridge, &MBridge::playlistCreated, this, &VoidMediaLister::RebuildPlaylistMenu);
+    connect(&_MediaBridge, &MBridge::updated, this, &VoidMediaLister::RebuildPlaylistMenu);
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);

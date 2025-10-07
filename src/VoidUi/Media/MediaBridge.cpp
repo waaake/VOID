@@ -498,6 +498,7 @@ void MBridge::Load(const std::string& path)
     m_Project->SetSavePath(path);
 
     emit projectCreated(m_Project);
+    emit updated();
 }
 
 bool MBridge::CloseProject(bool force)
@@ -523,6 +524,8 @@ bool MBridge::CloseProject(bool force)
     else
         SetCurrentProject(m_Projects->index(row == 0 ? ++row : --row, 0));
 
+    emit updated();
+
     return true;
 }
 
@@ -547,6 +550,8 @@ bool MBridge::CloseProject(Project* project, bool force)
 
     if (create)
         NewProject();
+
+    emit updated();
 
     return true;
 }
