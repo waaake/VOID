@@ -199,15 +199,6 @@ private:  /* Methods */
     void CompareMediaFrame(v_frame_t frame);
 
     /**
-     * Connects the signals from SharedMediaClip (i.e. shared_ptr for MediaClip)
-     */
-    inline void ConnectMediaClipToTimeline(const SharedMediaClip& clip)
-    {
-        connect(clip.get(), &MediaClip::frameCached, this, &Player::AddCacheFrame);
-        connect(clip.get(), &MediaClip::frameUncached, this, &Player::RemoveCachedFrame);
-    }
-
-    /**
      * Fetches the Requred settings from Prefences and sets the internal values accordingly
      */
     void SetFromPreferences();
