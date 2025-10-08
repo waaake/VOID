@@ -226,7 +226,7 @@ void Player::Load(const SharedMediaClip& media)
     m_CacheProcessor.SetMedia(media);
 
     /* Viewer Buffer - Clip -> Player - Add Cache Frame */
-    ConnectMediaClipToTimeline(media);
+    // ConnectMediaClipToTimeline(media);
 
     /**
      * Once we have the image sequence,
@@ -587,6 +587,7 @@ void Player::dropEvent(QDropEvent* event)
 {
     if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
     {
+        Clear();
         QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
 
         /**
@@ -611,6 +612,7 @@ void Player::dropEvent(QDropEvent* event)
     }
     else if (event->mimeData()->hasFormat(MimeTypes::PlaylistItem))
     {
+        Clear();
         QByteArray data = event->mimeData()->data(MimeTypes::PlaylistItem);
 
         /**

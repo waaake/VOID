@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7.0)
 
-project(VOID VERSION 0.2.0 LANGUAGES CXX)
+project(VOID VERSION 0.3.0 LANGUAGES CXX)
 
 # C++17 and Above
 set(CMAKE_CXX_STANDARD 17)
