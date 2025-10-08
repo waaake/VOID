@@ -12,10 +12,14 @@ Below are a few screenshots showcasing its early interface and capabilities.
 
 ---
 
-## Playlist & Media Organization
+## Project & Media Organization
 
+- Multi project support for Media
 - Drag-and-drop support for directories
 - Automatically builds structured playlists from media folders
+- In-project multi playlist support for further grouping media for quick review & playback
+
+[<img src="images/VoidPlaylist.png" width="1000"/>](images/VoidPlaylist.png)
 
 ---
 
@@ -39,6 +43,8 @@ The player also supports **media reader plugins**, allowing developers to extend
 - **Dual-buffer playback**: A/B buffers for simultaneous media handling
 
 [<img src="images/VoidPlayerPlaying.png" width="1000"/>](images/VoidPlayerPlaying.png)
+
+[<img src="images/VoidMultiBuffer.png" width="1000"/>](images/VoidMultiBuffer.png)
 
 [<img src="images/VoidChannelSupport.png" width="1000"/>](images/VoidChannelSupport.png)
 
@@ -76,10 +82,19 @@ Dual-buffer mode enables rich media comparison using multiple viewer layouts:
 Customize player behavior with basic preferences:
 
 - Default media view interface
+- Customization of the color scheme
 - Handling of missing frames
 - Undo history settings
 
 [<img src="images/VoidPreferences.png" width="1000"/>](images/VoidPreferences.png)
+
+## Scripting
+
+Support for scripting on the player using python bindings.
+
+VOID provides internal API via **vortex** python binding, allowing interaction with internal components of the system
+
+[<img src="images/VoidScriptEditor.png" width="1000"/>](images/VoidScriptEditor.png)
 
 ---
 
