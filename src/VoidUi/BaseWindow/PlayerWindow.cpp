@@ -173,13 +173,13 @@ void VoidMainWindow::Connect()
     #endif  // USE_FRAMED_WINDOW
 
     /* Media Lister */
-    connect(m_MediaLister, &VoidMediaLister::mediaChanged, this, &VoidMainWindow::SetMedia);
+    connect(m_MediaLister, &VoidMediaLister::mediaChanged, m_Player, static_cast<void (Player::*)(const SharedMediaClip&)>(&Player::SetMedia));
     connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
 
     /* Play Lister */
     connect(m_PlayLister, &VoidPlayLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
-    connect(m_PlayLister, &VoidPlayLister::mediaChanged, this, &VoidMainWindow::SetMedia);
+    connect(m_PlayLister, &VoidPlayLister::mediaChanged, m_Player, static_cast<void (Player::*)(const SharedMediaClip&)>(&Player::SetMedia));
 
     /* Sequence */
     connect(m_Sequence.get(), &PlaybackSequence::rangeChanged, m_Player, &Player::SetRange);
@@ -348,29 +348,31 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
 
 void VoidMainWindow::SetMedia(const SharedMediaClip& media)
 {
-    /* Clear the player */
-    m_Player->Clear();
+    // /* Clear the player */
+    // m_Player->Clear();
 
-    /* Set the Clip on the player */
-    m_Player->Load(media);
+    // /* Set the Clip on the player */
+    // m_Player->Load(media);
+    m_Player->SetMedia(media);
 }
 
 void VoidMainWindow::AddMedia(const SharedMediaClip& media)
 {
-    /* Clear the player */
-    m_Player->Clear();
+    // /* Clear the player */
+    // m_Player->Clear();
 
     /* Add Media to the track */
     m_Track->AddMedia(media);
 
-    /* Set the sequence on the Player */
-    m_Player->Load(m_Sequence);
+    // /* Set the sequence on the Player */
+    // m_Player->Load(m_Sequence);
+    m_Player->SetSequence(m_Sequence);
 }
 
 void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
 {
-    /* Clear the player */
-    m_Player->Clear();
+    // /* Clear the player */
+    // m_Player->Clear();
 
     /* Clear the track */
     m_Track->Clear();
@@ -378,8 +380,9 @@ void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
     for (SharedMediaClip m : media)
         m_Track->AddMedia(m);
 
-    /* Set the sequence on the Player */
-    m_Player->Load(m_Sequence);
+    // /* Set the sequence on the Player */
+    // m_Player->Load(m_Sequence);
+    m_Player->SetSequence(m_Sequence);
 }
 
 void VoidMainWindow::InspectMetadata(const SharedMediaClip& media)

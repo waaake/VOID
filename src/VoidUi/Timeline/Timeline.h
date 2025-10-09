@@ -25,7 +25,7 @@
 VOID_NAMESPACE_OPEN
 
 /* Forward Declaration for PlayerWidget class */
-class Player;
+class PlayerWidget;
 
 class Timeline : public QWidget
 {
@@ -190,7 +190,7 @@ protected: /* Methods */
 	void ResetOutFrame();
 
 	/* Friendly classes */
-	friend class Player;
+	friend class PlayerWidget;
 };
 
 VOID_NAMESPACE_CLOSE

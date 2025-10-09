@@ -26,7 +26,7 @@
 VOID_NAMESPACE_OPEN
 
 /* Forward decl for Player as this needs to know the current playback type and frame */
-class Player;
+class PlayerWidget;
 
 /**
  * ChronoFlux is the Cache Engine for 'VOID'
@@ -69,7 +69,7 @@ public:
      * Setup the player for which the caching happens
      * this is required to understand what is the current buffer or the current time
      */
-    inline void SetActivePlayer(Player* player) { m_Player = player; }
+    inline void SetActivePlayer(PlayerWidget* player) { m_Player = player; }
 
     /**
      * The media to currently look at actively to cache
@@ -135,7 +135,7 @@ public:
     void CachePrevious();
 
 private: /* Members */
-    Player* m_Player;
+    PlayerWidget* m_Player;
     QThreadPool m_ThreadPool;
 
     TrackView* m_TrackView;

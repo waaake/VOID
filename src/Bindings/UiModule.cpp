@@ -57,7 +57,7 @@ void BindUi(py::module_& m)
         .def("move_to_start", &Player::MoveToStart)
         .def("move_to_end", &Player::MoveToEnd)
         .def("set_frame", &Player::SetFrame, py::arg("frame"))
-        .def("load", py::overload_cast<const SharedMediaClip&>(&Player::Load), py::arg("media_clip"));
+        .def("set_media", py::overload_cast<const SharedMediaClip&>(&Player::SetMedia), py::arg("media_clip"));
 
     /* Metadata Viewer */
     py::class_<MetadataViewer>(m, "MetadataViewer")

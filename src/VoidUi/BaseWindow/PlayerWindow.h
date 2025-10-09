@@ -18,7 +18,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidUi/Dock/Docker.h"
-#include "VoidUi/Player/PlayerWidget.h"
+#include "VoidUi/Player/Player.h"
 #include "VoidUi/Media/MediaLister.h"
 #include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/Media/MetadataViewer.h"
