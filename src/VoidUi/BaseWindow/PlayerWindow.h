@@ -99,12 +99,6 @@ private: /* Members */
     SharedPlaybackSequence m_Sequence;
     /* The track which gets used on the Sequence */
     SharedPlaybackTrack m_Track;
-
-public:
-    /* Clears and sets the provided media on the player */
-    void SetMedia(const SharedMediaClip& media);
-    /* Adds media onto the existing track */
-    void AddMedia(const SharedMediaClip& media);
 };
 
 VOID_NAMESPACE_CLOSE

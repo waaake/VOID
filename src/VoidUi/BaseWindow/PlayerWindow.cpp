@@ -346,34 +346,8 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* }}} */
 }
 
-void VoidMainWindow::SetMedia(const SharedMediaClip& media)
-{
-    // /* Clear the player */
-    // m_Player->Clear();
-
-    // /* Set the Clip on the player */
-    // m_Player->Load(media);
-    m_Player->SetMedia(media);
-}
-
-void VoidMainWindow::AddMedia(const SharedMediaClip& media)
-{
-    // /* Clear the player */
-    // m_Player->Clear();
-
-    /* Add Media to the track */
-    m_Track->AddMedia(media);
-
-    // /* Set the sequence on the Player */
-    // m_Player->Load(m_Sequence);
-    m_Player->SetSequence(m_Sequence);
-}
-
 void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
 {
-    // /* Clear the player */
-    // m_Player->Clear();
-
     /* Clear the track */
     m_Track->Clear();
 

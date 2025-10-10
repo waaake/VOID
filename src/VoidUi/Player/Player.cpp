@@ -48,7 +48,7 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
     m_Timeline->Clear();
     m_Renderer->Clear();
 
-    buffer == PlayerViewBuffer::A ? m_ViewBufferA->Set(media) : m_ViewBufferA->Set(media);
+    buffer == PlayerViewBuffer::A ? m_ViewBufferA->Set(media) : m_ViewBufferB->Set(media);
 
     if (Comparing())
         return CompareMediaFrame(m_Timeline->Frame());
@@ -66,10 +66,10 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
 
     /* Refresh the player with the updated content from the Buffer */
     ResetCacheMedia();
-    SetMediaFrame(m_Timeline->Frame());
 
     /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    SetMediaFrame(m_Timeline->Frame());
 }
 
 void Player::SetTrack(const SharedPlaybackTrack& track)
@@ -94,7 +94,7 @@ void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& 
     m_Timeline->Clear();
     m_Renderer->Clear();
 
-    buffer == PlayerViewBuffer::A ? m_ViewBufferA->Set(track) : m_ViewBufferA->Set(track);
+    buffer == PlayerViewBuffer::A ? m_ViewBufferA->Set(track) : m_ViewBufferB->Set(track);
 
     if (Comparing())
         return CompareMediaFrame(m_Timeline->Frame());
@@ -170,8 +170,6 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
-
-
 }
 
 void Player::ResetCacheMedia()
