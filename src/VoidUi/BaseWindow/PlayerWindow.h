@@ -59,10 +59,7 @@ public:
     VoidMainWindow(QWidget* parent = nullptr);
     virtual ~VoidMainWindow();
 
-    virtual QSize sizeHint() const override;
-
     void InitMenu(MenuSystem* menuSystem);
-    void PlayMedia(const std::vector<SharedMediaClip>& items);
 
     /* Inspect Media Information */
     void InspectMetadata(const SharedMediaClip& media);
@@ -80,6 +77,7 @@ private: /* Methods */
     void RegisterDocks();
 
 protected:
+    virtual QSize sizeHint() const override;
     void paintEvent(QPaintEvent* event) override;
 
 private: /* Members */

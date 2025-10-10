@@ -83,6 +83,16 @@ void ViewerBuffer::Set(const SharedPlaybackSequence& sequence)
     Refresh();
 }
 
+void ViewerBuffer::Set(const std::vector<SharedMediaClip>& media)
+{
+    m_Track->Clear();
+
+    for (const SharedMediaClip& media : media)
+        m_Track->AddMedia(media);
+
+    m_PlayingComponent = PlayableComponent::Track;
+}
+
 void ViewerBuffer::SetColor(const QColor& color)
 {
     /* Update the Buffer Color */

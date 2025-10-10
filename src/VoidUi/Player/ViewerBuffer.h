@@ -150,6 +150,7 @@ public:
     void Set(const SharedMediaClip& media);
     void Set(const SharedPlaybackTrack& track);
     void Set(const SharedPlaybackSequence& sequence);
+    void Set(const std::vector<SharedMediaClip>& media);
 
     /**
      * Set Annotation on the Active Media Item
@@ -209,7 +210,6 @@ private: /* Methods */
      */
     SharedTrackItem ItemFromTrack(const v_frame_t frame);
     SharedTrackItem ItemFromSequence(const v_frame_t frame);
-
 };
 
 VOID_NAMESPACE_CLOSE

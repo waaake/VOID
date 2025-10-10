@@ -20,6 +20,8 @@ public:
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
 
     void SetMedia(const SharedMediaClip& media);
+    void SetMedia(const std::vector<SharedMediaClip>& media);
+    void SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer);
     void SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer);
     void SetTrack(const SharedPlaybackTrack& track);
     void SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer);

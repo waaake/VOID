@@ -174,11 +174,11 @@ void VoidMainWindow::Connect()
 
     /* Media Lister */
     connect(m_MediaLister, &VoidMediaLister::mediaChanged, m_Player, static_cast<void (Player::*)(const SharedMediaClip&)>(&Player::SetMedia));
-    connect(m_MediaLister, &VoidMediaLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
+    connect(m_MediaLister, &VoidMediaLister::playlistChanged, m_Player, static_cast<void (Player::*)(const std::vector<SharedMediaClip>&)>(&Player::SetMedia));
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
 
     /* Play Lister */
-    connect(m_PlayLister, &VoidPlayLister::playlistChanged, this, &VoidMainWindow::PlayMedia);
+    connect(m_PlayLister, &VoidPlayLister::playlistChanged, m_Player, static_cast<void (Player::*)(const std::vector<SharedMediaClip>&)>(&Player::SetMedia));
     connect(m_PlayLister, &VoidPlayLister::mediaChanged, m_Player, static_cast<void (Player::*)(const SharedMediaClip&)>(&Player::SetMedia));
 
     /* Sequence */
@@ -344,19 +344,6 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
 
     connect(aboutAction, &QAction::triggered, this, [this]() { AboutVoid(this).exec(); });
     /* }}} */
-}
-
-void VoidMainWindow::PlayMedia(const std::vector<SharedMediaClip>& media)
-{
-    /* Clear the track */
-    m_Track->Clear();
-
-    for (SharedMediaClip m : media)
-        m_Track->AddMedia(m);
-
-    // /* Set the sequence on the Player */
-    // m_Player->Load(m_Sequence);
-    m_Player->SetSequence(m_Sequence);
 }
 
 void VoidMainWindow::InspectMetadata(const SharedMediaClip& media)

@@ -41,6 +41,27 @@ void Player::SetMedia(const SharedMediaClip& media)
     SetMediaFrame(m_Timeline->Frame());
 }
 
+void Player::SetMedia(const std::vector<SharedMediaClip>& media)
+{
+    m_ActiveViewBuffer->Set(media);
+    SetTrack(m_ActiveViewBuffer->ActiveTrack());
+}
+
+void Player::SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer)
+{
+    switch (buffer)
+    {
+        case PlayerViewBuffer::B:
+            m_ViewBufferB->Set(media);
+            SetTrack(m_ViewBufferB->ActiveTrack(), buffer);
+            break;
+        case PlayerViewBuffer::A:
+        default:
+            m_ViewBufferA->Set(media);
+            SetTrack(m_ViewBufferA->ActiveTrack(), buffer);
+    }
+}
+
 void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
 {
     /* Reset timeline | Renderer */
@@ -445,13 +466,13 @@ void Player::dropEvent(QDropEvent* event)
         {
             media.size() == 1
                 ? SetMedia(media.at(0), PlayerViewBuffer::A)
-                : SetTrack(_MediaBridge.AsTrack(media), PlayerViewBuffer::A);
+                : SetMedia(media, PlayerViewBuffer::A);
         }
         else if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::B)
         {
             media.size() == 1
                 ? SetMedia(media.at(0), PlayerViewBuffer::B)
-                : SetTrack(_MediaBridge.AsTrack(media), PlayerViewBuffer::B);
+                : SetMedia(media, PlayerViewBuffer::B);
         }
     }
     else if (event->mimeData()->hasFormat(MimeTypes::PlaylistItem))
@@ -469,13 +490,13 @@ void Player::dropEvent(QDropEvent* event)
         {
             media.size() == 1
                 ? SetMedia(media.at(0), PlayerViewBuffer::A)
-                : SetTrack(_MediaBridge.AsTrack(media), PlayerViewBuffer::A);
+                : SetMedia(media, PlayerViewBuffer::A);
         }
         else if (m_Overlay->HoveredBuffer() == PlayerOverlay::HoveredViewerBuffer::B)
         {
             media.size() == 1
                 ? SetMedia(media.at(0), PlayerViewBuffer::B)
-                : SetTrack(_MediaBridge.AsTrack(media), PlayerViewBuffer::B);
+                : SetMedia(media, PlayerViewBuffer::B);
         }
     }
 
