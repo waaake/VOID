@@ -15,10 +15,8 @@
 #include "TitleBar.h"
 #include "MenuSystem.h"
 #include "VoidObjects/Media/MediaClip.h"
-#include "VoidObjects/Sequence/Sequence.h"
-#include "VoidObjects/Sequence/Track.h"
 #include "VoidUi/Dock/Docker.h"
-#include "VoidUi/Player/PlayerWidget.h"
+#include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Media/MediaLister.h"
 #include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/Media/MetadataViewer.h"
@@ -59,16 +57,12 @@ public:
     VoidMainWindow(QWidget* parent = nullptr);
     virtual ~VoidMainWindow();
 
-    virtual QSize sizeHint() const override;
-
     void InitMenu(MenuSystem* menuSystem);
-    void PlayMedia(const std::vector<SharedMediaClip>& items);
 
     /* Inspect Media Information */
     void InspectMetadata(const SharedMediaClip& media);
 
-    SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
-    Player* ActivePlayer() const { return m_Player; }
+    Player* ActivePlayer() const { return _PlayerBridge.ActivePlayer(); }
     MetadataViewer* GetMetadataViewer() const { return m_MetadataViewer; }
     QMenuBar* MenuBar() const;
 
@@ -80,10 +74,10 @@ private: /* Methods */
     void RegisterDocks();
 
 protected:
+    virtual QSize sizeHint() const override;
     void paintEvent(QPaintEvent* event) override;
 
 private: /* Members */
-    Player* m_Player;
     VoidMediaLister* m_MediaLister;
     VoidPlayLister* m_PlayLister;
     PyScriptEditor* m_ScriptEditor;
@@ -94,17 +88,6 @@ private: /* Members */
 
     /* Media Bridge Instance */
     MBridge& m_Bridge;
-
-    /* Playback Sequence holding Media entities internally */
-    SharedPlaybackSequence m_Sequence;
-    /* The track which gets used on the Sequence */
-    SharedPlaybackTrack m_Track;
-
-public:
-    /* Clears and sets the provided media on the player */
-    void SetMedia(const SharedMediaClip& media);
-    /* Adds media onto the existing track */
-    void AddMedia(const SharedMediaClip& media);
 };
 
 VOID_NAMESPACE_CLOSE

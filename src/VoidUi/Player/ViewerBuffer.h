@@ -20,7 +20,7 @@ VOID_NAMESPACE_OPEN
  * Enum decribing which viewer buffer is currently active and can be used to set an
  * active viewer buffer for the 
  */
-enum class PlayerViewBuffer
+enum class VOID_API PlayerViewBuffer
 {
     /* Relates to ViewerBuffer A */
     A,
@@ -150,6 +150,7 @@ public:
     void Set(const SharedMediaClip& media);
     void Set(const SharedPlaybackTrack& track);
     void Set(const SharedPlaybackSequence& sequence);
+    void Set(const std::vector<SharedMediaClip>& media);
 
     /**
      * Set Annotation on the Active Media Item
@@ -209,7 +210,6 @@ private: /* Methods */
      */
     SharedTrackItem ItemFromTrack(const v_frame_t frame);
     SharedTrackItem ItemFromSequence(const v_frame_t frame);
-
 };
 
 VOID_NAMESPACE_CLOSE

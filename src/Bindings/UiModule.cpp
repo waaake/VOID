@@ -10,7 +10,7 @@
 #include "Definition.h"
 #include "VoidCore/Serialization.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/Player/PlayerWidget.h"
+#include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/Project/Project.h"
 #include "VoidUi/Engine/Globals.h"
@@ -30,6 +30,7 @@ void BindUi(py::module_& m)
     m.def("load_project", [](const std::string& path) { _MediaBridge.Load(path); }, py::arg("path"));
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
     m.def("menu_system", &UIGlobals::InternalMenuSystem, py::return_value_policy::reference);
+    m.def("player_controller", &PlayerBridge::Instance, py::return_value_policy::reference);
 
     auto register_action = []
     (const std::string& m, const std::string& action, std::function<void()> f, const std::string& shortcut = "") -> void
@@ -46,6 +47,33 @@ void BindUi(py::module_& m)
         py::arg("shortcut") = ""
     );
 
+    /* PlayerBridge -- PlayerController */
+    py::class_<PlayerBridge>(m, "PlayerController")
+        .def("play_forwards", &PlayerBridge::PlayForwards)
+        .def("play_backwards", &PlayerBridge::PlayBackwards)
+        .def("stop", &PlayerBridge::Stop)
+        .def("next_frame", &PlayerBridge::NextFrame)
+        .def("previous_frame", &PlayerBridge::PreviousFrame)
+        .def("move_to_start", &PlayerBridge::MoveToStart)
+        .def("move_to_end", &PlayerBridge::MoveToEnd)
+        .def("resume_cache", &PlayerBridge::ResumeCache)
+        .def("disable_cache", &PlayerBridge::DisableCache)
+        .def("stop_cache", &PlayerBridge::StopCache)
+        .def("recache", &PlayerBridge::Recache)
+        .def("clear_cache", &PlayerBridge::ClearCache)
+        .def("set_media",
+            py::overload_cast<const SharedMediaClip&>(&PlayerBridge::SetMedia),
+            py::arg("media_clip"))
+        .def("set_media",
+            py::overload_cast<const SharedMediaClip&, const PlayerViewBuffer&>(&PlayerBridge::SetMedia),
+            py::arg("media_clip"), py::arg("buffer"))
+        .def("set_media",
+            py::overload_cast<const std::vector<SharedMediaClip>&>(&PlayerBridge::SetMedia),
+            py::arg("media_list"))
+        .def("set_media",
+            py::overload_cast<const std::vector<SharedMediaClip>&, const PlayerViewBuffer&>(&PlayerBridge::SetMedia),
+            py::arg("media_list"), py::arg("buffer"));
+
     /* Player */
     py::class_<Player>(m, "Player")
         .def("play_forwards", &Player::PlayForwards)
@@ -57,7 +85,13 @@ void BindUi(py::module_& m)
         .def("move_to_start", &Player::MoveToStart)
         .def("move_to_end", &Player::MoveToEnd)
         .def("set_frame", &Player::SetFrame, py::arg("frame"))
-        .def("load", py::overload_cast<const SharedMediaClip&>(&Player::Load), py::arg("media_clip"));
+        .def("set_media", py::overload_cast<const SharedMediaClip&>(&Player::SetMedia), py::arg("media_clip"));
+
+    /* PlayerViewBuffer */
+    py::enum_<PlayerViewBuffer>(m, "PlayerViewBuffer")
+        .value("A", PlayerViewBuffer::A)
+        .value("B", PlayerViewBuffer::B)
+        .export_values();
 
     /* Metadata Viewer */
     py::class_<MetadataViewer>(m, "MetadataViewer")

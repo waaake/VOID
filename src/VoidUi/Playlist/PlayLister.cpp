@@ -17,6 +17,7 @@
 #include "VoidCore/Logging.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
@@ -226,33 +227,24 @@ void VoidPlayLister::IndexSelected(const QModelIndex& index)
     if (!index.isValid())
         return;
  
-    /* Emit the Media Clip dereferenced from the internal pointer */
-    emit mediaChanged(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    _PlayerBridge.SetMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
 }
 
 void VoidPlayLister::AddSelectionToSequence()
 {
-    /* The currently selected indexes */
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
 
-    /* Nothing is selected */
     if (selected.empty())
         return;
 
-    /* Vector to hold the underlying selected medias */
     std::vector<SharedMediaClip> m;
-
     /* Already aware of the amount of items which are to be copied */
     m.reserve(selected.size());
 
     for (const QModelIndex& index: selected)
-    {
-        /* Add the Media to the vector */
         m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
-    }
 
-    /* Emit that the sequence of playing media is now changed */
-    emit playlistChanged(m);
+    _PlayerBridge.SetMedia(m);
 }
 
 void VoidPlayLister::RemoveSelectedMedia()
@@ -264,12 +256,12 @@ void VoidPlayLister::RemoveSelectedMedia()
 void VoidPlayLister::Play(const Playlist* playlist)
 {
     /* All of the Media from the playlist */
-    emit playlistChanged(playlist->DataModel()->AllMedia());
+    _PlayerBridge.SetMedia(playlist->DataModel()->AllMedia());
 }
 
 void VoidPlayLister::Play(const std::vector<SharedMediaClip>& media)
 {
-    emit playlistChanged(media);
+    _PlayerBridge.SetMedia(media);
 }
 
 void VoidPlayLister::SetFromPreferences()

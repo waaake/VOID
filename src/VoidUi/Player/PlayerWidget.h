@@ -23,7 +23,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VOID_API Player : public QWidget
+class VOID_API PlayerWidget : public QWidget
 {
     Q_OBJECT
 
@@ -40,8 +40,8 @@ public:
     };
 
 public:
-    Player(QWidget* parent = nullptr);
-    virtual ~Player();
+    PlayerWidget(QWidget* parent = nullptr);
+    virtual ~PlayerWidget();
 
     /* Getters */
     inline SharedMediaClip ActiveMediaClip() const
@@ -70,27 +70,6 @@ public:
      */
     [[nodiscard]] inline bool Comparing() { return m_ComparisonMode != Renderer::ComparisonMode::NONE; }
 
-    /* Loads a Playable Media (clip) on the Player */
-    void Load(const SharedMediaClip& media);
-    void Load(const SharedMediaClip& media, const PlayerViewBuffer& buffer);
-
-    /* Loads a Playable Track on the Player */
-    void Load(const SharedPlaybackTrack& track);
-    void Load(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer);
-
-    /* Load a Sequence to be played on the Player */
-    void Load(const SharedPlaybackSequence& sequence);
-
-    /* Sets the comparison mode for comparing the two buffers */
-    void SetComparisonMode(int mode);
-    void SetBlendMode(int mode);
-
-    /* Compare Media on the Player */
-    void Compare(const SharedMediaClip& first, const SharedMediaClip& second);
-
-    /* Set a frame on the player based on the media */
-    void SetFrame(int frame);
-
     /**
      * Updates the Handler for Missing frame
      * Setting the behaviour for when a missing frame is set
@@ -100,18 +79,8 @@ public:
         /* Update the missing frame handler */
         m_MFrameHandler = static_cast<MissingFrameHandler>(handler);
         /* And Refresh the viewport */
-        Refresh();
+        // Refresh();
     }
-
-    /**
-     * Sets the provided viewer buffer on the player
-     * @param buffer: The play buffer to set on the viewer
-     */
-    void ResetViewBuffer(const PlayerViewBuffer& buffer);
-
-    inline void Refresh() { SetFrame(m_Timeline->Frame()); }
-    void ResetCacheMedia();
-    void CacheBuffer();
 
     /* Zoom on the Viewport */
     inline void ZoomIn() { m_Renderer->ZoomIn(); }
@@ -163,102 +132,38 @@ public:
     inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
     inline void ResetRange() { m_Timeline->ResetRange(); }
 
-    inline void PauseCache() { m_CacheProcessor.PauseCaching(); }
-    inline void DisableCache() { m_CacheProcessor.DisableCaching(); }
-    inline void StopCache() { m_CacheProcessor.StopCaching(); }
-    inline void Recache() { m_CacheProcessor.Recache(); }
-    inline void ResumeCache() { m_CacheProcessor.ResumeCaching(); }
-    inline void ClearCache() { m_CacheProcessor.ClearCache(); }
-
-protected:
-    void dragEnterEvent(QDragEnterEvent* event) override;
-    void dragLeaveEvent(QDragLeaveEvent* event) override;
-    void dragMoveEvent(QDragMoveEvent* event) override;
-    void dropEvent(QDropEvent* event) override;
-
 public:
     void Clear();
 
-private:  /* Methods */
+protected:  /* Methods */
     void Build();
     void Connect();
-
-    /* Loads the frame from the underlying sequence */
-    void SetSequenceFrame(int frame);
-
-    /* Load the frame from a the buffer's track */
-    void SetTrackFrame(int frame);
-
-    /* Load the frame from a given track item from the sequence/track */
-    void SetTrackItemFrame(SharedTrackItem item, const int frame);
-
-    /* Loads the frame from the media in the player */
-    void SetMediaFrame(int frame);
-
-    /* Sets the Comparison Buffer frame */
-    void CompareMediaFrame(v_frame_t frame);
-
-    /**
-     * Fetches the Requred settings from Prefences and sets the internal values accordingly
-     */
-    void SetFromPreferences();
-
-    /**
-     * Setup Annotations
-     */
+    
     void ToggleAnnotations(const bool state);
-
-    /**
-     * Add an Annotation to the Viewer Buffer
-     */
     void AddAnnotation(const Renderer::SharedAnnotation& annotation);
-    /**
-     * Removes the Annotation from the underlying Media
-     */
     void RemoveAnnotation();
 
-private:  /* Members */
+    void SetFromPreferences();
+    
+protected:  /* Members */
+    QVBoxLayout* m_RendererLayout;
+
+    PlayerOverlay* m_Overlay;
     VoidRenderer* m_Renderer;
     VoidPlaceholderRenderer* m_PlaceholderRenderer;
     Timeline* m_Timeline;
 
-    PlayerOverlay* m_Overlay;
-
+    ControlBar* m_ControlBar;
     AnnotationsController* m_AnnotationsController;
 
-    /**
-     * The control bar provides users tools to play around with the viewer
-     * Providing tweak controls and how the viewer behaves
-     */
-    ControlBar* m_ControlBar;
-
-    /**
-     * Set a comparison Mode on the Player (of how to compare the data from the buffers)
-     */
     Renderer::ComparisonMode m_ComparisonMode;
-    /**
-     * Set a blend mode on the Player (how to blend the data being currently compared)
-     */
     Renderer::BlendMode m_BlendMode;
 
-    /**
-     * Playable Governing Component
-     * Describes what is currently playing and provides information about the entity
-     * Like the timerange
-     */
     ViewerBuffer* m_ViewBufferA;
     ViewerBuffer* m_ViewBufferB;
-
-    /* Describes the view buffer that is currently active and all information is queried from it */
     ViewerBuffer* m_ActiveViewBuffer;
 
-    /* Holds the Mode of representing Missing Frames */
     MissingFrameHandler m_MFrameHandler;
-
-    /* Internal Layout to hold Renderer -- For when the renderer has returned from it's fullscreen view */
-    QVBoxLayout* m_RendererLayout;
-
-    ChronoFlux m_CacheProcessor;
 };
 
 VOID_NAMESPACE_CLOSE
