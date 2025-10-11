@@ -52,8 +52,9 @@ set(SOURCES
 
     # Player
     Player/OverlayWidget.cpp
-    Player/PlayerWidget.cpp
     Player/Player.cpp
+    Player/PlayerBridge.cpp
+    Player/PlayerWidget.cpp
     Player/ViewerBuffer.cpp
 
     # Project
