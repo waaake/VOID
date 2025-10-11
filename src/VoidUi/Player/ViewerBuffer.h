@@ -20,7 +20,7 @@ VOID_NAMESPACE_OPEN
  * Enum decribing which viewer buffer is currently active and can be used to set an
  * active viewer buffer for the 
  */
-enum class PlayerViewBuffer
+enum class VOID_API PlayerViewBuffer
 {
     /* Relates to ViewerBuffer A */
     A,

@@ -32,7 +32,15 @@ public:
     inline void Clear() { m_Player->Clear(); }
 
     inline void SetMedia(const SharedMediaClip& media) { m_Player->SetMedia(media); }
+    inline void SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
+    {
+        m_Player->SetMedia(media, buffer);
+    }
     inline void SetMedia(const std::vector<SharedMediaClip>& media) { m_Player->SetMedia(media); }
+    inline void SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer)
+    {
+        m_Player->SetMedia(media, buffer);
+    }
 
     inline void ResumeCache() { m_Player->ResumeCache(); }
     inline void DisableCache() { m_Player->DisableCache(); }

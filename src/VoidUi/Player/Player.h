@@ -9,7 +9,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class Player : public PlayerWidget
+class VOID_API Player : public PlayerWidget
 {
 public:
     Player(QWidget* parent = nullptr);
