@@ -46,6 +46,7 @@ signals:
     /* Sends the Source Model Index mapped from the proxy model */
     void itemClicked(const QModelIndex&);
     void played(Playlist*);
+    void playedAsSequence(Playlist*);
     void updated();
 
 private: /* Models */
@@ -53,6 +54,7 @@ private: /* Models */
     PlaylistProxyModel* proxy;
 
     QAction* m_PlayAction;
+    QAction* m_PlayAsSequenceAction;
     QAction* m_RemoveAction;
 
 private: /* Methods */
@@ -68,6 +70,7 @@ private: /* Methods */
     void ProjectChanged(const Project* project);
     void ShowContextMenu(const Point& position);
     void Play();
+    void PlayAsSequence();
 };
 
 VOID_NAMESPACE_CLOSE
