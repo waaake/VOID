@@ -42,6 +42,11 @@ public:
         m_Player->SetMedia(media, buffer);
     }
 
+    inline void SetPlaylist(Playlist* playlist) { m_Player->SetPlaylist(playlist); }
+    inline void ClearQueue() { m_Playlist->Clear(); }
+    void AddToQueue(const SharedMediaClip& media, bool refresh = true);
+    void AddToQueue(const std::vector<SharedMediaClip>& media, bool refresh = true);
+
     inline void ResumeCache() { m_Player->ResumeCache(); }
     inline void DisableCache() { m_Player->DisableCache(); }
     inline void StopCache() { m_Player->StopCache(); }
@@ -68,6 +73,7 @@ public:
 
 private: /* Members */
     Player* m_Player;
+    Playlist* m_Playlist;
 };
 
 #define _PlayerBridge PlayerBridge::Instance()

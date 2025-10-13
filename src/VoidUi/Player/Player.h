@@ -26,6 +26,7 @@ public:
     void SetTrack(const SharedPlaybackTrack& track);
     void SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer);
     void SetSequence(const SharedPlaybackSequence& sequence);
+    void SetPlaylist(Playlist* playlist);
 
     void SetBlendMode(int mode);
     void SetComparisonMode(int mode);
@@ -59,6 +60,9 @@ private: /* Methods */
 
     void Connect();
     void ResetCacheMedia();
+
+    void PreviousMedia();
+    void NextMedia();
 };
 
 VOID_NAMESPACE_CLOSE

@@ -97,6 +97,7 @@ signals:
 	void TimeChanged(int time);
 	void fullscreenRequested();
 	void playbackStateChanged(const PlayState&);
+	void mediaFinished(const PlayState & type = PlayState::FORWARDS);
 
 private: /* Members */
 	/* Main Layout */

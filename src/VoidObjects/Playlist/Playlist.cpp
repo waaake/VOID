@@ -12,6 +12,7 @@ Playlist::Playlist(const std::string& name, Core::Project* parent)
     , m_Name(name)
     , m_Modified(false)
     , m_Project(parent)
+    , m_CurrentRow(0)
 {
     m_Media = new MediaModel(this);
 }
@@ -119,6 +120,18 @@ void Playlist::Deserialize(std::istream& in)
     }
 
     emit updated(this);
+}
+
+SharedMediaClip Playlist::NextMedia()
+{
+    m_CurrentRow = m_CurrentRow == m_Media->rowCount() - 1 ? 0 : ++m_CurrentRow;
+    return m_Media->Media(m_Media->index(m_CurrentRow, 0));
+}
+
+SharedMediaClip Playlist::PreviousMedia()
+{
+    m_CurrentRow = m_CurrentRow == 0 ? m_Media->rowCount() - 1 : --m_CurrentRow;    
+    return m_Media->Media(m_Media->index(m_CurrentRow, 0));
 }
 
 VOID_NAMESPACE_CLOSE

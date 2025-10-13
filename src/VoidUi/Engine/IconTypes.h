@@ -32,6 +32,7 @@ enum class IconType : char16_t
     icon_play_arrow         = 0xe037,
     icon_playlist_play      = 0xe05f,
     icon_repeat             = 0xe040,
+    icon_repeat_one         = 0xe041,
     icon_save               = 0xe161,
     icon_segment            = 0xe94b,
     icon_sort_by_alpha      = 0xe053,

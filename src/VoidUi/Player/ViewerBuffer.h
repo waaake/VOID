@@ -13,6 +13,7 @@
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Playlist/Playlist.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -46,7 +47,8 @@ public: /* Enums */
     {
         Sequence,
         Track,
-        Clip
+        Clip,
+        Playlist
     };
 
 public:
@@ -152,6 +154,10 @@ public:
     void Set(const SharedPlaybackSequence& sequence);
     void Set(const std::vector<SharedMediaClip>& media);
 
+    void SetPlaylist(Playlist* playlist);
+    bool NextMedia();
+    bool PreviousMedia();
+
     /**
      * Set Annotation on the Active Media Item
      */
@@ -173,6 +179,7 @@ private: /* Members */
     SharedMediaClip m_Clip;
     SharedPlaybackTrack m_Track;
     SharedPlaybackSequence m_Sequence;
+    Playlist* m_Playlist;
 
     /**
      * At any point this buffer maintains a cached track item which makes the query to get the track item

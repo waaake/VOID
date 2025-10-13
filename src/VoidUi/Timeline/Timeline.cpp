@@ -478,6 +478,9 @@ void Timeline::PlayNextFrame()
 			return;
 		}
 
+		if (m_LoopType == LoopType::LoopInfinitely)
+			emit mediaFinished(PlayState::FORWARDS);
+
 		/* Else we set the first frame on the timeline and let it continue till the user decides to stop, or close the player :D */
 		m_Timeslider->setValue(m_Start);
 	}
@@ -505,7 +508,10 @@ void Timeline::PlayPreviousFrame()
 			PlayForwards();
 			return;
 		}
-	
+
+		if (m_LoopType == LoopType::LoopInfinitely)
+			emit mediaFinished(PlayState::BACKWARDS);
+
 		/* Else we set the last frame on the timeline and let it continue till the user decides to stop, or close the player :D */
 		m_Timeslider->setValue(m_End);
 	}

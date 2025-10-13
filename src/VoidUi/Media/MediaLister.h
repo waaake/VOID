@@ -64,6 +64,8 @@ private: /* Methods */
     void ShowContextMenu(const Point& position);
 
     void AddSelectionToSequence();
+    void PlaySelectionAsQueue();
+    void AddSelectionToQueue();
     void RemoveSelectedMedia();
     void InspectMetadata();
 
@@ -91,6 +93,8 @@ private: /* Members */
 
     /* Context Menu */
     QAction* m_PlayAction;
+    QAction* m_PlayAsListAction;
+    QAction* m_AddToQueueAction;
     QAction* m_RemoveAction;
     QAction* m_InspectMetadataAction;
     QMenu* m_PlaylistMenu;

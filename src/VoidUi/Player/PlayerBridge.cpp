@@ -9,6 +9,7 @@ VOID_NAMESPACE_OPEN
 PlayerBridge::PlayerBridge()
 {
     m_Player = new Player();
+    m_Playlist = new Playlist();
 }
 
 PlayerBridge::~PlayerBridge()
@@ -21,6 +22,10 @@ PlayerBridge::~PlayerBridge()
     // m_Player->deleteLater();
     // delete m_Player;
     // m_Player = nullptr;
+
+    m_Playlist->deleteLater();
+    delete m_Playlist;
+    m_Playlist = nullptr;
 }
 
 PlayerBridge& PlayerBridge::Instance()
@@ -93,6 +98,23 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     connect(fullscreenAction, &QAction::triggered, this, &PlayerBridge::SetFullscreen);
     connect(exitFullscreenAction, &QAction::triggered, this, &PlayerBridge::ExitFullscreen);
     /* }}} */
+}
+
+void PlayerBridge::AddToQueue(const SharedMediaClip& media, bool refresh)
+{
+    m_Playlist->AddMedia(media);
+
+    if (refresh)
+        m_Player->SetPlaylist(m_Playlist);
+}
+
+void PlayerBridge::AddToQueue(const std::vector<SharedMediaClip>& media, bool refresh)
+{
+    for (const SharedMediaClip& m : media)
+        m_Playlist->AddMedia(m);
+
+    if (refresh)
+        m_Player->SetPlaylist(m_Playlist);
 }
 
 VOID_NAMESPACE_CLOSE

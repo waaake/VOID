@@ -21,6 +21,7 @@ LoopTypeButton::LoopTypeButton(QWidget* parent)
 {
 	/* Update Loop States to be used on the button */
 	m_LoopState[LoopType::LoopInfinitely] = {"Loop Infinitely", IconType::icon_repeat};
+	m_LoopState[LoopType::LoopOneInfinitely] = {"Loop One", IconType::icon_repeat_one};
 	m_LoopState[LoopType::PingPong] = {"Bounce", IconType::icon_sync_alt};
 	m_LoopState[LoopType::PlayOnce] = {"Play Once", IconType::icon_trending_flat};
 

@@ -154,6 +154,21 @@ void Player::SetSequence(const SharedPlaybackSequence& sequence)
     SetSequenceFrame(m_Timeline->Frame());
 }
 
+void Player::SetPlaylist(Playlist* playlist)
+{
+    m_Timeline->SetRange(0, 1);
+    m_Timeline->Clear();
+    m_Renderer->Clear();
+
+    /* Update what is being played on the Active Viewer Buffer */
+    m_ActiveViewBuffer->SetPlaylist(playlist);
+    m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip());
+
+     /* Update the frame range */
+    SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    SetMediaFrame(m_Timeline->Frame());
+}
+
 void Player::SetFrame(int frame)
 {
     /**
@@ -175,16 +190,44 @@ void Player::SetFrame(int frame)
     return SetMediaFrame(frame);
 }
 
+void Player::NextMedia()
+{
+    if (m_ActiveViewBuffer->NextMedia())
+    {
+        m_Renderer->Clear();
+        ResetCacheMedia();
+        m_CacheProcessor.RestartPlaybackCache();
+    
+        SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    }
+}
+
+void Player::PreviousMedia()
+{
+    if (m_ActiveViewBuffer->PreviousMedia())
+    {
+        m_Renderer->Clear();
+        ResetCacheMedia();
+        m_CacheProcessor.RestartPlaybackCache();
+    
+        SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    }
+}
+
 void Player::Connect()
 {
     /* Timeline */
     connect(m_Timeline, &Timeline::TimeChanged, this, &Player::SetFrame);
-    connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state)
+    connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state) -> void
     {
         if (state == Timeline::PlayState::STOPPED)
             m_CacheProcessor.StopPlaybackCache();
         else
             m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
+    });
+    connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
+    {
+        state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
     });
 
     /* ControlBar */
@@ -204,6 +247,7 @@ void Player::ResetCacheMedia()
             m_CacheProcessor.SetTrack(m_ActiveViewBuffer->GetTrack());
             break;
         case ViewerBuffer::PlayableComponent::Clip:
+        case ViewerBuffer::PlayableComponent::Playlist:
         default:
             m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip());
     }
