@@ -206,7 +206,8 @@ void VoidPlayLister::Connect()
     /* List */
     connect(m_MediaView, &PlaylistMediaView::itemDoubleClicked, this, &VoidPlayLister::IndexSelected);
     connect(m_PlaylistView, &PlaylistView::itemClicked, this, [this](const QModelIndex& index) { _MediaBridge.SetCurrentPlaylist(index); });
-    connect(m_PlaylistView, &PlaylistView::played, this, static_cast<void (VoidPlayLister::*)(const Playlist*)>(&VoidPlayLister::Play));
+    connect(m_PlaylistView, &PlaylistView::played, this, static_cast<void (VoidPlayLister::*)(Playlist*)>(&VoidPlayLister::Play));
+    connect(m_PlaylistView, &PlaylistView::playedAsSequence, this, &VoidPlayLister::PlayAsSequence);
     connect(m_MediaView, &PlaylistMediaView::played, this, static_cast<void (VoidPlayLister::*)(const std::vector<SharedMediaClip>&)>(&VoidPlayLister::Play));
     /* View Changed */
     /* The call to buttonToggled is a slightly expensive as this gets called 2 times if we have n buttons (once for checked off and once for checked on) */
@@ -253,9 +254,14 @@ void VoidPlayLister::RemoveSelectedMedia()
     _MediaBridge.RemoveMedia(m_MediaView->SelectedIndexes());
 }
 
-void VoidPlayLister::Play(const Playlist* playlist)
+void VoidPlayLister::Play(Playlist* playlist)
 {
-    /* All of the Media from the playlist */
+    /* All of the Media from the playlist as a Queue */
+    _PlayerBridge.SetPlaylist(playlist);
+}
+
+void VoidPlayLister::PlayAsSequence(Playlist* playlist)
+{
     _PlayerBridge.SetMedia(playlist->DataModel()->AllMedia());
 }
 

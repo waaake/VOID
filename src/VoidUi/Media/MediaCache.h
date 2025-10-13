@@ -87,6 +87,7 @@ public:
     void CacheAvailable();
 
     void StartPlaybackCache(const Direction& direction = Direction::Forwards);
+    inline void RestartPlaybackCache() { StartPlaybackCache(m_CacheDirection); }
     void StopPlaybackCache();
 
     /**

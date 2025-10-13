@@ -11,6 +11,7 @@ ViewerBuffer::ViewerBuffer(const std::string& name, QObject* parent)
     , m_Clip(std::make_shared<MediaClip>())
     , m_Track(std::make_shared<PlaybackTrack>())
     , m_Sequence(std::make_shared<PlaybackSequence>())
+    , m_Playlist(nullptr)
     , m_PlayingComponent(PlayableComponent::Clip)
     , m_Startframe(0)
     , m_Endframe(100)
@@ -93,6 +94,20 @@ void ViewerBuffer::Set(const std::vector<SharedMediaClip>& media)
     m_PlayingComponent = PlayableComponent::Track;
 }
 
+void ViewerBuffer::SetPlaylist(Playlist* playlist)
+{
+    m_Playlist = playlist;
+    m_Clip = playlist->CurrentMedia();
+
+    m_PlayingComponent = PlayableComponent::Playlist;
+
+    /* Update frame range */
+    m_Startframe = m_Clip->FirstFrame();
+    m_Endframe = m_Clip->LastFrame();
+
+    Refresh();
+}
+
 void ViewerBuffer::SetColor(const QColor& color)
 {
     /* Update the Buffer Color */
@@ -130,6 +145,8 @@ SharedPlaybackTrack ViewerBuffer::ActiveTrack() const
              * if added, where does the media go to? at the last of track or clears it?
              */
             return m_Sequence->ActiveVideoTrack();
+        case PlayableComponent::Playlist:
+            return nullptr;
     }
 
     return nullptr;
@@ -266,6 +283,38 @@ void ViewerBuffer::RemoveAnnotation(const v_frame_t frame)
         /* Remove the annotation from the Media clip on the given frame */
         m_Clip->RemoveAnnotation(frame);
     }
+}
+
+bool ViewerBuffer::NextMedia()
+{
+    if (m_PlayingComponent == PlayableComponent::Playlist)
+    {
+        m_Clip = m_Playlist->NextMedia();
+
+        /* Update frame range */
+        m_Startframe = m_Clip->FirstFrame();
+        m_Endframe = m_Clip->LastFrame();
+
+        return true;
+    }
+
+    return false;
+}
+
+bool ViewerBuffer::PreviousMedia()
+{
+    if (m_PlayingComponent == PlayableComponent::Playlist)
+    {
+        m_Clip = m_Playlist->PreviousMedia();
+
+        /* Update frame range */
+        m_Startframe = m_Clip->FirstFrame();
+        m_Endframe = m_Clip->LastFrame();
+
+        return true;
+    }
+
+    return false;
 }
 
 VOID_NAMESPACE_CLOSE

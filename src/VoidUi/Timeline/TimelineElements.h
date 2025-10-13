@@ -24,6 +24,7 @@ VOID_NAMESPACE_OPEN
 enum class LoopType : short
 {
 	LoopInfinitely,
+	LoopOneInfinitely,
 	PlayOnce,
 	PingPong
 };

@@ -58,12 +58,11 @@ ChronoFlux::~ChronoFlux()
 
 void ChronoFlux::StartPlaybackCache(const Direction& direction)
 {
-    if (m_Framenumbers.size() >= m_Duration || m_State != State::Enabled)
-    {
-        return;
-    }
-
     m_CacheDirection = direction;
+
+    if (m_Framenumbers.size() >= m_Duration || m_State != State::Enabled)
+        return;
+
     m_CacheTimer.start(10);
 
     if (!m_ThreadPool.activeThreadCount() && !m_Framenumbers.empty())
@@ -140,9 +139,9 @@ void ChronoFlux::Update()
         return;
     }
 
-    if (m_CacheDirection == Direction::Forwards)
+    else if (m_CacheDirection == Direction::Forwards && m_Framenumbers.size() != m_Duration)
         CacheNext();
-    else if (m_CacheDirection == Direction::Backwards)
+    else if (m_CacheDirection == Direction::Backwards && m_Framenumbers.size() != m_Duration)
         CachePrevious();
     else
         m_CacheTimer.stop();
@@ -264,7 +263,6 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
      */
     if (m_Framenumbers.size() >= m_Duration)
     {
-        m_CacheDirection = Direction::None;
         m_CacheTimer.stop();
 
         return false;

@@ -57,7 +57,8 @@ private: /* Methods */
 
     void IndexSelected(const QModelIndex& index);
 
-    void Play(const Playlist* playlist);
+    void Play(Playlist* playlist);
+    void PlayAsSequence(Playlist* playlist);
     void Play(const std::vector<SharedMediaClip>& media);
 
 private: /* Members */

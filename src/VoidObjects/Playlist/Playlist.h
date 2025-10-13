@@ -25,8 +25,8 @@ class VOID_API Playlist : public VoidObject
     Q_OBJECT
 
 public:
-    Playlist(const std::string& name, Core::Project* parent);
-    Playlist(Core::Project* parent);
+    Playlist(const std::string& name, Core::Project* parent = nullptr);
+    Playlist(Core::Project* parent = nullptr);
     ~Playlist();
 
     inline bool Active() const { return m_Active; }
@@ -41,6 +41,12 @@ public:
 
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
+
+    inline SharedMediaClip CurrentMedia() const { return m_Media->Media(m_Media->index(m_CurrentRow, 0)); }
+    SharedMediaClip NextMedia();
+    SharedMediaClip PreviousMedia();
+
+    inline void Clear() { m_Media->Clear(); }
 
     inline int Size() const { return static_cast<int>(m_Media->rowCount()); }
     inline bool Modified() const { return m_Modified; }
@@ -63,7 +69,10 @@ protected: /* Members */
     bool m_Modified;
     bool m_Active;
     Core::Project* m_Project;
+    unsigned int m_CurrentRow;
 };
+
+typedef std::shared_ptr<Playlist> SharedPlaylist;
 
 VOID_NAMESPACE_CLOSE
 
