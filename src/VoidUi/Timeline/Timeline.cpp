@@ -259,10 +259,7 @@ void Timeline::PlaybackLoop()
 
 void Timeline::TimerPlaybackLoop()
 {
-	if (m_Playstate == PlayState::FORWARDS)
-		PlayNextFrame();
-	else if (m_Playstate == PlayState::BACKWARDS)
-		PlayPreviousFrame();
+	m_Playstate == PlayState::FORWARDS ? PlayNextFrame() : PlayPreviousFrame();
 }
 
 void Timeline::SetFrame(const int frame)
@@ -465,24 +462,19 @@ void Timeline::PlayNextFrame()
 		 * This is effectively the end of the timeline
 		 * What happens next depends on the loop type
 		 */
-		if (m_LoopType == LoopType::PlayOnce)
+		switch (m_LoopType)
 		{
-			/* Stop Playing now and return */
-			Stop();
-			return;
+			case LoopType::PlayOnce:
+				Stop();
+				break;
+			case LoopType::PingPong:
+				PlayBackwards();
+				break;
+			case LoopType::LoopInfinitely:
+				emit mediaFinished(PlayState::FORWARDS);
+			default:
+				m_Timeslider->setValue(m_Start);
 		}
-		else if (m_LoopType == LoopType::PingPong)
-		{
-			/* We're in a Ping Pong Mode so start playing backwards if we're here */
-			PlayBackwards();
-			return;
-		}
-
-		if (m_LoopType == LoopType::LoopInfinitely)
-			emit mediaFinished(PlayState::FORWARDS);
-
-		/* Else we set the first frame on the timeline and let it continue till the user decides to stop, or close the player :D */
-		m_Timeslider->setValue(m_Start);
 	}
 }
 
@@ -496,24 +488,19 @@ void Timeline::PlayPreviousFrame()
 		 * This is effectively the start of the timeline (since we're playing backwards)
 		 * What happens next depends on the loop type
 		 */
-		if (m_LoopType == LoopType::PlayOnce)
+		switch (m_LoopType)
 		{
-			/* Stop Playing now and return */
-			Stop();
-			return;
+			case LoopType::PlayOnce:
+				Stop();
+				break;
+			case LoopType::PingPong:
+				PlayForwards();
+				break;
+			case LoopType::LoopInfinitely:
+				emit mediaFinished(PlayState::BACKWARDS);
+			default:
+				m_Timeslider->setValue(m_End);
 		}
-		else if (m_LoopType == LoopType::PingPong)
-		{
-			/* We're in a Ping Pong Mode so start playing forwards if we're here */
-			PlayForwards();
-			return;
-		}
-
-		if (m_LoopType == LoopType::LoopInfinitely)
-			emit mediaFinished(PlayState::BACKWARDS);
-
-		/* Else we set the last frame on the timeline and let it continue till the user decides to stop, or close the player :D */
-		m_Timeslider->setValue(m_End);
 	}
 	else
 	{
@@ -534,14 +521,7 @@ void Timeline::Play(const Timeline::PlayState& state)
 	}
 
 	/* once the playhead is placed correctly -> We can begin playing */
-	if (state == Timeline::PlayState::FORWARDS)
-	{
-		PlayForwards();
-	}
-	else if (state == Timeline::PlayState::BACKWARDS)
-	{
-		PlayBackwards();
-	}
+	state == Timeline::PlayState::FORWARDS ? PlayForwards() : PlayBackwards();
 }
 
 VOID_NAMESPACE_CLOSE
