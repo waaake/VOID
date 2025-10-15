@@ -104,6 +104,9 @@ find_package(FFMPEG REQUIRED COMPONENTS avcodec avformat avutil swscale)
 
 find_package(TurboJPEG REQUIRED)
 
+# Audio Library
+find_package(miniaudio REQUIRED)
+
 # Used for Logging
 find_package(spdlog QUIET)
 

@@ -23,6 +23,7 @@ FFmpegDecoder::FFmpegDecoder()
     , m_SwsContext(nullptr)
     , m_Stream(nullptr)
     , m_StreamID(-1)
+    , m_AudioStreamID(-1)
 {
 }
 
@@ -51,6 +52,9 @@ void FFmpegDecoder::Open()
 
     if (m_StreamID < 0)
         return;
+
+    /* Get the ID for the Audio Stream, it may or may not have it */
+    m_AudioStreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
 
     /* Video stream for the StreamID */
     m_Stream = m_FormatContext->streams[m_StreamID];
@@ -106,18 +110,26 @@ void FFmpegDecoder::Close()
 
     /* The read stream ID */
     m_StreamID = -1;
+    m_AudioStreamID = -1;
+}
+
+std::vector<unsigned char>& FFmpegDecoder::VideoData(const int framenumber)
+{
+    std::lock_guard<std::mutex> guard(m_Mutex);
+    return GetVector(framenumber);
 }
 
 std::vector<unsigned char>& FFmpegDecoder::GetVector(const int frame)
 {
     if (m_DecodedFrames.find(frame) == m_DecodedFrames.end())
     {
+        FFData fdata;
         /* Assign a new vector to the decoded frames */
-        m_DecodedFrames[frame] = {};
-        return m_DecodedFrames.at(frame);
+        m_DecodedFrames[frame] = fdata;
+        return m_DecodedFrames.at(frame).video;
     }
 
-    return m_DecodedFrames.at(frame);
+    return m_DecodedFrames.at(frame).video;
 }
 
 void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
@@ -232,18 +244,69 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
     if (status < 0)
         return -1;
 
-    /* Indicates just a stream mismatch and can continue back */
-    if (m_Packet->stream_index != m_StreamID)
-        return -2;
+    // /* Indicates just a stream mismatch and can continue back */
+    // if (m_Packet->stream_index != m_StreamID)
+    //     return -2;
 
+    // status = DecodeVideo(save);
+
+    // if (status < 0)
+    //     return status;
+
+    if (m_Packet->stream_index == m_StreamID)
+    {
+        status = DecodeVideo(save);
+
+        if (status < 0)
+            return status;
+    }
+    else if (m_Packet->stream_index == m_AudioStreamID)
+    {
+        DecodeAudio(save);
+        VOID_LOG_INFO("Frame: {0}", m_CurrentFrame);
+        return -2;
+    }
+    else
+    {
+        return -2;
+    }
+
+    // /* Send the packet */
+    // avcodec_send_packet(m_CodecContext, m_Packet);
+    // /* Recieve back the frame */
+    // status = avcodec_receive_frame(m_CodecContext, m_Frame);
+
+    // /* Check if we can proceed further */
+    // if (status != 0)
+    //     return -3;
+
+    // m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
+
+    // if (save)
+    // {
+    //     sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+
+    //     std::vector<unsigned char>& v = GetVector(m_CurrentFrame);
+    //     v = m_Pixels;
+    // }
+
+    /* Dereference the buffer */
+    av_packet_unref(m_Packet);
+
+    /* The decoded frame number*/
+    return m_CurrentFrame;
+}
+
+v_frame_t FFmpegDecoder::DecodeVideo(bool save)
+{
     /* Send the packet */
     avcodec_send_packet(m_CodecContext, m_Packet);
     /* Recieve back the frame */
-    status = avcodec_receive_frame(m_CodecContext, m_Frame);
-
-    /* Check if we can proceed further */
-    if (status != 0)
+    if (avcodec_receive_frame(m_CodecContext, m_Frame) != 0)
         return -3;
+
+    // if (status != 0)
+    //     return -3;
 
     m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
 
@@ -252,14 +315,16 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
         sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
 
         std::vector<unsigned char>& v = GetVector(m_CurrentFrame);
-        v = m_Pixels;
+        v = m_Pixels;   
     }
 
-    /* Dereference the buffer */
-    av_packet_unref(m_Packet);
-
-    /* The decoded frame number*/
     return m_CurrentFrame;
+}
+
+v_frame_t FFmpegDecoder::DecodeAudio(bool save)
+{
+    VOID_LOG_INFO("AUDIO Decode");
+    return 0;
 }
 
 /* }}} */
@@ -348,7 +413,7 @@ void FFmpegPixReader::Read()
      * Once the decoding for the frame is completed
      * Swap the needed frame data with empty undelying pixel struct
      */
-    std::swap(decoder.GetData(m_Framenumber), m_Pixels);
+    std::swap(decoder.VideoData(m_Framenumber), m_Pixels);
 
     /* Read the Frame Dimensions */
     m_Width = decoder.Width();

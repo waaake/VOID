@@ -24,6 +24,18 @@ extern "C"
 
 VOID_NAMESPACE_OPEN
 
+struct FFData
+{
+    std::vector<unsigned char> video;
+    std::vector<unsigned char> audio;
+
+    // void Clear()
+    // {
+    //     video.clear();
+    //     audio.clear();
+    // }
+};
+
 class FFmpegDecoder
 {
 public:
@@ -49,7 +61,11 @@ public:
      */
     void Decode(const std::string& path, const int framenumber);
 
-    inline std::vector<unsigned char>& GetData(const int framenumber) { return GetVector(framenumber); }
+    // inline std::vector<unsigned char>& GetData(const int framenumber) { return GetVector(framenumber); }
+    std::vector<unsigned char>& VideoData(const int framenumber);
+    // inline std::vector<unsigned char>& AudioData(const int framenumber) { return GetAudioVector(framenumber); }
+
+    inline bool HasAudio() const { return m_AudioStreamID >= 0; }
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -74,11 +90,13 @@ private: /* Members */
     AVStream* m_Stream;
 
     int m_StreamID;
+    int m_AudioStreamID;
 
     /**
      * The Map to save Data for each of the frame
      */
-    std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
+    // std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
+    std::unordered_map<int, FFData> m_DecodedFrames;
     std::mutex m_Mutex;
 
 private: /* Methods */
@@ -86,12 +104,15 @@ private: /* Methods */
     void Close();
 
     std::vector<unsigned char>& GetVector(const int frame);
+    // std::vector<unsigned char>& GetAudioVector(const int frame);
 
     /**
      * Decodes the next frame from the movie container
      * returns back the frame number (converted from av time base to signed long)
      */
     v_frame_t DecodeNextFrame(bool save = true);
+    v_frame_t DecodeVideo(bool save = true);
+    v_frame_t DecodeAudio(bool save = true);
 };
 
 

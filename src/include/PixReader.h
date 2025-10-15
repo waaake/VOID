@@ -10,6 +10,7 @@
 #include <string>
 
 /* Internal */
+#include "AudioFormat.h"
 #include "Colorspace.h"
 #include "Definition.h"
 #include "FrameRange.h"
@@ -168,6 +169,8 @@ public:
      */
     virtual double Framerate() = 0;
     virtual bool IsMovie() const { return true; }
+    // virtual bool HasAudio() = 0;
+    // virtual AudioBuffer Audio() = 0;
 };
 
 VOID_NAMESPACE_CLOSE
