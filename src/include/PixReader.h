@@ -10,6 +10,7 @@
 #include <string>
 
 /* Internal */
+#include "AudioFormat.h"
 #include "Colorspace.h"
 #include "Definition.h"
 #include "FrameRange.h"
@@ -96,6 +97,11 @@ public:
      * is correct to be rendered on GL Viewer, this can be returned from here
      */
     virtual const void* Pixels() const = 0;
+
+    /**
+     * Returns the Audio Data and Audio format information for Audio Playback
+     */
+    virtual AudioBuffer Audio() const = 0;
 
     /**
      * Returns the frame data as unsigned char*

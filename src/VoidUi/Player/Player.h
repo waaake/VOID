@@ -40,6 +40,9 @@ public:
     inline void ResumeCache() { m_CacheProcessor.ResumeCaching(); }
     inline void ClearCache() { m_CacheProcessor.ClearCache(); }
 
+    void StartAudio();
+    void StopAudio();
+
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;

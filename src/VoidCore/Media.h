@@ -17,6 +17,7 @@
 #include "ImageData.h"
 #include "Logging.h"
 #include "MediaFilesystem.h"
+#include "AudioStream.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -188,6 +189,7 @@ public:
      * to allow this function to run parallelly to other elements
      */
     void Cache();
+    void CacheAudio();
 
     /*
      * Clears the cache for all the frames of the Media
@@ -203,6 +205,8 @@ public:
     /* Allow iterating over the Media frames */
     inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
     inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_Mediaframes.end(); }
+
+    inline AudioStream* Audio() const { return m_Stream; }
 
 protected: /* Members */
     /**
@@ -227,6 +231,8 @@ protected: /* Members */
     std::unordered_map<v_frame_t, Frame> m_Mediaframes;
     /* Array to hold the frame numbers for the frames which have been read */
     std::vector<v_frame_t> m_Framenumbers;
+
+    AudioStream* m_Stream;
 
 private: /* Methods */
     void ProcessMovie(const MediaStruct& mstruct);

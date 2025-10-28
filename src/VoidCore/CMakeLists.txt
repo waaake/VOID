@@ -6,6 +6,7 @@ find_package(Boost REQUIRED)
 add_library(
     VoidCore
     SHARED
+    AudioStream.cpp
     ColorProcessor.cpp
     FormatForge.cpp
     Identity.h
@@ -47,6 +48,7 @@ target_link_libraries(
     OpenColorIO::OpenColorIO
     pybind11::embed
     Python::Python
+    miniaudio
     ${TurboJPEG_LIBRARIES}
 )
 
