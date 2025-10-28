@@ -89,6 +89,8 @@ void AudioStream::Clear()
 
     m_ReadPos = 0;
     m_Buffer.clear();
+
+    VOID_LOG_INFO("Audio Cleared");
 }
 
 void AudioStream::PushPCM(const unsigned char* data, size_t size)

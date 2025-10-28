@@ -85,6 +85,7 @@ public:
      * A Cache process which caches all frames till the memory size allows
      */
     void CacheAvailable();
+    void CacheAudio();
 
     void StartPlaybackCache(const Direction& direction = Direction::Forwards);
     inline void RestartPlaybackCache() { StartPlaybackCache(m_CacheDirection); }
@@ -134,6 +135,8 @@ public:
 
     void CacheNext();
     void CachePrevious();
+
+    void CacheMediaAudio();
 
 private: /* Members */
     Player* m_Player;
@@ -230,8 +233,18 @@ private: /* Task Classes */
     {
     public:
         explicit CachePreviousFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
-        inline void run() override {  m_Parent->CachePreviousFrame(); }
+        inline void run() override { m_Parent->CachePreviousFrame(); }
 
+    private:
+        ChronoFlux* m_Parent;
+    };
+
+    class CacheAudioTask : public QRunnable
+    {
+    public:
+        explicit CacheAudioTask(ChronoFlux* parent) : m_Parent(parent) {}
+        inline void run() override { m_Parent->CacheMediaAudio(); }
+    
     private:
         ChronoFlux* m_Parent;
     };

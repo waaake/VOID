@@ -182,6 +182,7 @@ void ChronoFlux::SetMedia(const SharedMediaClip& media)
      * Cache all of the available frames what the memory limit allows to
      */
     CacheAvailable();
+    CacheAudio();
 
     /* If the Cache was paused, it can be resumed now */
     if (m_State == State::Paused)
@@ -494,6 +495,20 @@ void ChronoFlux::CacheAvailable()
 
             AddTask(new CacheNextFrameTask(this));
         }
+    }
+}
+
+void ChronoFlux::CacheAudio()
+{
+    AddTask(new CacheAudioTask(this));
+}
+
+void ChronoFlux::CacheMediaAudio()
+{
+    if (m_CacheEntity == Entity::Media)
+    {
+        if (SharedMediaClip media = m_Media.lock())
+            media->CacheAudio();
     }
 }
 

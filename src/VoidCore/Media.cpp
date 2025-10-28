@@ -324,6 +324,8 @@ void Media::CacheAudio()
 
     m_Stream->Initialize(buffer.samplerate, buffer.channels);
     m_Stream->SetPCM(buffer.data);
+
+    VOID_LOG_INFO("Audio Cached...");
 }
 
 void Media::ClearCache()
@@ -334,6 +336,8 @@ void Media::ClearCache()
         /* Clear the Data for the Frame from the memory */
         it.second.ClearCache();
     }
+
+    m_Stream->Clear();
 }
 
 void Media::StopCaching()

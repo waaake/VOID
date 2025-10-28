@@ -234,51 +234,14 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
     if (status < 0)
         return -1;
 
-    // /* Indicates just a stream mismatch and can continue back */
-    // if (m_Packet->stream_index != m_VStreamID)
-    //     return -2;
-
-    // status = DecodeVideo(save);
-
-    // if (status < 0)
-    //     return status;
-
-    if (m_Packet->stream_index == m_VStreamID)
-    {
-        status = DecodeVideo(save);
-
-        if (status < 0)
-            return status;
-    }
-    // else if (m_Packet->stream_index == m_AudStreamID)
-    // {
-    //     DecodeAudio(save);
-    //     // VOID_LOG_INFO("Frame: {0}", m_CurrentFrame);
-    //     return -2;
-    // }
-    else
-    {
+    /* Indicates just a stream mismatch and can continue back */
+    if (m_Packet->stream_index != m_VStreamID)
         return -2;
-    }
 
-    // /* Send the packet */
-    // avcodec_send_packet(m_VCodecCtx, m_Packet);
-    // /* Recieve back the frame */
-    // status = avcodec_receive_frame(m_VCodecCtx, m_Frame);
+    status = DecodeVideo(save);
 
-    // /* Check if we can proceed further */
-    // if (status != 0)
-    //     return -3;
-
-    // m_CurrentFrame = av_rescale_q(m_Frame->pts, m_VStream->time_base, av_inv_q(m_VStream->r_frame_rate));
-
-    // if (save)
-    // {
-    //     sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
-
-    //     std::vector<unsigned char>& v = FrameVector(m_CurrentFrame);
-    //     v = m_Pixels;
-    // }
+    if (status < 0)
+        return status;
 
     /* Dereference the buffer */
     av_packet_unref(m_Packet);
@@ -310,72 +273,6 @@ v_frame_t FFmpegDecoder::DecodeVideo(bool save)
 
     return m_CurrentFrame;
 }
-
-// v_frame_t FFmpegDecoder::DecodeAudio(bool save)
-// {
-//     avcodec_send_packet(m_AudCodecCtx, m_Packet);
-
-//     if (avcodec_receive_frame(m_AudCodecCtx, m_Frame) != 0)
-//         return -3;
-
-//     int64_t index = av_rescale_q(m_Frame->pts, m_AudStream->time_base, {1, m_AudCodecCtx->sample_rate});
-//     int64_t frame = index / m_Frame->nb_samples;
-
-//     // int64_t frame = av_rescale_q(m_Frame->pts, m_AudStream->time_base, av_inv_q(m_AudStream->r_frame_rate));
-
-//     if (save)
-//     {
-//         // VOID_LOG_INFO("Sample rate: {0}, Channels: {1}", m_AudCodecCtx->sample_rate, m_AudCodecCtx->ch_layout.nb_channels);
-//         SwrContext* swrCtx = swr_alloc();
-//         // AVChannelLayout* channelLayout = nullptr;
-//         AVChannelLayout channelLayout;
-//         int channels = m_AudCodecCtx->ch_layout.nb_channels;
-//         av_channel_layout_default(&channelLayout, channels);
-
-//         swr_alloc_set_opts2(
-//             &swrCtx,
-//             &channelLayout,
-//             AV_SAMPLE_FMT_U8,
-//             m_AudCodecCtx->sample_rate,
-//             &channelLayout,
-//             m_AudCodecCtx->sample_fmt,
-//             m_AudCodecCtx->sample_rate,
-//             0,
-//             nullptr
-//         );
-
-//         swr_init(swrCtx);
-
-//         VOID_LOG_INFO("A Frame: {0}", frame);
-//         uint8_t* outBuffer = nullptr;
-//         std::vector<unsigned char>& a = AudVector(frame);
-//         // VOID_LOG_INFO("Vector Size: {0}", a.size());
-
-//         if (a.empty())
-//         {
-//             // VOID_LOG_INFO("Filling Vector");
-//             int outLineSize;
-//             int outSamples = av_rescale_rnd(m_Frame->nb_samples, m_AudCodecCtx->sample_rate, m_AudCodecCtx->sample_rate, AV_ROUND_UP);
-//             av_samples_alloc(&outBuffer, &outLineSize, m_AudCodecCtx->ch_layout.nb_channels, outSamples, AV_SAMPLE_FMT_U8, 0);
-
-//             /* Convert */
-//             swr_convert(swrCtx, &outBuffer, outSamples, const_cast<const uint8_t**>(m_Frame->extended_data), m_Frame->nb_samples);
-
-//             // a.insert(a.end(), outBuffer, outBuffer + outSamples);
-//             a.assign(outBuffer, outBuffer + (outSamples * m_AudCodecCtx->ch_layout.nb_channels));
-
-//             // VOID_LOG_INFO("Buffer Size: {0}", outSamples * m_AudCodecCtx->ch_layout.nb_channels);
-//         }
-
-//         // VOID_LOG_INFO("Filled Vector Size: {0}", a.size());
-//         // unsigned char* outBuffer = a.data();
-
-//         swr_free(&swrCtx);
-//     }
-
-//     // VOID_LOG_INFO("AUDIO Decode");
-//     return 0;
-// }
 
 /* }}} */
 

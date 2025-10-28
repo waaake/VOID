@@ -39,7 +39,6 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
-    media->CacheAudio();
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
