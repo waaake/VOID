@@ -23,18 +23,21 @@ public:
     AudioStream();
     ~AudioStream();
 
-    bool Initialize(int samplerate, int channels, ma_format format);
+    bool Initialize(uint32_t samplerate = 44100, int channels = 2);
     void PushPCM(const unsigned char* data, size_t size);
+    void PushPCM(const std::vector<unsigned char>& data);
+    void SetPCM(const std::vector<unsigned char>& stream);
 
     void Start();
     void Stop();
-
-    // inline unsigned long long PlaybackTime() const { return ma_device_get_total_run_time_in_frames__null(&m_Device); }
+    inline void Reset() { m_ReadPos = 0; }
+    void Clear();
 
 private: /* Members */
     ma_device m_Device;
     std::mutex m_Mutex;
-    std::queue<std::vector<unsigned char>> m_PcmQueue;
+    std::vector<unsigned char> m_Buffer;
+    size_t m_ReadPos;
     std::atomic<bool> m_Running;
 
 private: /* Methods */

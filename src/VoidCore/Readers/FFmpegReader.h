@@ -16,6 +16,7 @@ extern "C"
 #include <libavutil/imgutils.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#include <libswresample/swresample.h>
 }
 
 /* Internal */
@@ -61,11 +62,7 @@ public:
      */
     void Decode(const std::string& path, const int framenumber);
 
-    // inline std::vector<unsigned char>& GetData(const int framenumber) { return GetVector(framenumber); }
-    std::vector<unsigned char>& VideoData(const int framenumber);
-    // inline std::vector<unsigned char>& AudioData(const int framenumber) { return GetAudioVector(framenumber); }
-
-    inline bool HasAudio() const { return m_AudioStreamID >= 0; }
+    std::vector<unsigned char>& Frame(const int framenumber);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -82,29 +79,27 @@ private: /* Members */
 
     /* FFMPEG Contexts */
     AVFormatContext* m_FormatContext;
-    AVCodecContext* m_CodecContext;
+    AVCodecContext* m_VCodecCtx;
     AVFrame* m_Frame;
     AVFrame* m_RGBFrame;
     AVPacket* m_Packet;
     SwsContext* m_SwsContext;
-    AVStream* m_Stream;
+    AVStream* m_VStream;
 
-    int m_StreamID;
-    int m_AudioStreamID;
+    int m_VStreamID;
 
     /**
      * The Map to save Data for each of the frame
      */
-    // std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
-    std::unordered_map<int, FFData> m_DecodedFrames;
+    std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
     std::mutex m_Mutex;
 
 private: /* Methods */
     void Open();
     void Close();
 
-    std::vector<unsigned char>& GetVector(const int frame);
-    // std::vector<unsigned char>& GetAudioVector(const int frame);
+    void InitContext();
+    std::vector<unsigned char>& FrameVector(const int frame);
 
     /**
      * Decodes the next frame from the movie container
@@ -112,7 +107,6 @@ private: /* Methods */
      */
     v_frame_t DecodeNextFrame(bool save = true);
     v_frame_t DecodeVideo(bool save = true);
-    v_frame_t DecodeAudio(bool save = true);
 };
 
 
@@ -152,6 +146,7 @@ public:
      * is correct to be rendered on GL Viewer, this can be returned from here
      */
     inline virtual const void* Pixels() const override { return m_Pixels.data(); }
+    virtual AudioBuffer Audio() const override;
 
     /**
      * Returns the frame data as unsigned char*

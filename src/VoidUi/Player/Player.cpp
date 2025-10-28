@@ -39,6 +39,7 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
+    media->CacheAudio();
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -547,6 +548,23 @@ void Player::dropEvent(QDropEvent* event)
     /* Reset Overlay */
     m_Overlay->SetHoveredBuffer(PlayerOverlay::HoveredViewerBuffer::None);
     m_Overlay->setVisible(false);
+}
+
+void Player::StartAudio()
+{
+    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+
+    if (!clip->Empty())
+        clip->Audio()->Start();
+}
+
+void Player::StopAudio()
+{
+    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+
+    if (!clip->Empty())
+        clip->Audio()->Stop();
+
 }
 
 VOID_NAMESPACE_CLOSE

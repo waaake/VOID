@@ -99,6 +99,11 @@ public:
     virtual const void* Pixels() const = 0;
 
     /**
+     * Returns the Audio Data and Audio format information for Audio Playback
+     */
+    virtual AudioBuffer Audio() const = 0;
+
+    /**
      * Returns the frame data as unsigned char*
      * This would be used to create thumbnails for qt
      * Not all frames will be used so this function can create a vector on the fly if unsigned char
@@ -169,8 +174,6 @@ public:
      */
     virtual double Framerate() = 0;
     virtual bool IsMovie() const { return true; }
-    // virtual bool HasAudio() = 0;
-    // virtual AudioBuffer Audio() = 0;
 };
 
 VOID_NAMESPACE_CLOSE

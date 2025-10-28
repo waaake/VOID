@@ -136,6 +136,7 @@ Media::Media()
     , m_Caching(false)
     , m_StopCaching(false)
 {
+    m_Stream = new AudioStream;
 }
 
 Media::Media(const MediaStruct& mstruct)
@@ -146,6 +147,8 @@ Media::Media(const MediaStruct& mstruct)
 
 Media::~Media()
 {
+    delete m_Stream;
+    m_Stream = nullptr;
 }
 
 Media::Media(const std::string& basepath, const std::string& name, const std::string& extension)
@@ -309,6 +312,18 @@ void Media::Cache()
 
     /* We're done with the caching */
     m_Caching = false;
+}
+
+void Media::CacheAudio()
+{
+    Frame& f = m_Mediaframes.at(m_FirstFrame);
+    AudioBuffer buffer = f.Image()->Audio();
+
+    if (buffer.data.empty())
+        return;
+
+    m_Stream->Initialize(buffer.samplerate, buffer.channels);
+    m_Stream->SetPCM(buffer.data);
 }
 
 void Media::ClearCache()
