@@ -49,7 +49,7 @@ public:
      */
     void Decode(const std::string& path, const int framenumber);
 
-    inline std::vector<unsigned char>& GetData(const int framenumber) { return GetVector(framenumber); }
+    std::vector<unsigned char>& Frame(const int framenumber);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
