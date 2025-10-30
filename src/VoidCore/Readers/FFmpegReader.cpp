@@ -108,6 +108,12 @@ void FFmpegDecoder::Close()
     m_StreamID = -1;
 }
 
+std::vector<unsigned char>& FFmpegDecoder::Frame(const int framenumber)
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    return GetVector(framenumber);
+}
+
 std::vector<unsigned char>& FFmpegDecoder::GetVector(const int frame)
 {
     if (m_DecodedFrames.find(frame) == m_DecodedFrames.end())
@@ -348,7 +354,7 @@ void FFmpegPixReader::Read()
      * Once the decoding for the frame is completed
      * Swap the needed frame data with empty undelying pixel struct
      */
-    std::swap(decoder.GetData(m_Framenumber), m_Pixels);
+    std::swap(decoder.Frame(m_Framenumber), m_Pixels);
 
     /* Read the Frame Dimensions */
     m_Width = decoder.Width();
