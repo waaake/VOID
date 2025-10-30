@@ -16,12 +16,14 @@ Player::Player(QWidget* parent)
     : PlayerWidget(parent)
 {
     m_CacheProcessor.SetActivePlayer(this);
-
+    m_AudioStream = new AudioStream;
     Connect();
 }
 
 Player::~Player()
 {
+    delete m_AudioStream;
+    m_AudioStream = nullptr;
 }
 
 void Player::SetMedia(const SharedMediaClip& media)
@@ -39,6 +41,7 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
+    m_AudioStream->Initialize();
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -221,9 +224,11 @@ void Player::Connect()
     connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state) -> void
     {
         if (state == Timeline::PlayState::STOPPED)
-            m_CacheProcessor.StopPlaybackCache();
+            // m_CacheProcessor.StopPlaybackCache();
+            StopAudio();
         else
-            m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
+            // m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
+            StartAudio();
     });
     connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {
@@ -356,6 +361,15 @@ void Player::SetMediaFrame(int frame)
         m_CacheProcessor.EnsureCached(frame);        
         /* Read the image for the frame from the sequence and set it on the player */
         m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
+
+        const std::vector<unsigned char>& audio = clip->AudioData(frame);
+
+        if (!audio.empty())
+        {
+            VOID_LOG_INFO("Pushing");
+            m_AudioStream->PushPCM(audio);
+        }
+
     }
     else
     {
@@ -551,18 +565,20 @@ void Player::dropEvent(QDropEvent* event)
 
 void Player::StartAudio()
 {
-    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+    m_AudioStream->Start();
+    // const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
 
-    if (!clip->Empty())
-        clip->Audio()->Start();
+    // if (!clip->Empty())
+    //     clip->Audio()->Start();
 }
 
 void Player::StopAudio()
 {
-    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+    m_AudioStream->Stop();
+    // const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
 
-    if (!clip->Empty())
-        clip->Audio()->Stop();
+    // if (!clip->Empty())
+    //     clip->Audio()->Stop();
 
 }
 

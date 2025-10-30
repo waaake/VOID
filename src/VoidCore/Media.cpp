@@ -323,8 +323,12 @@ void Media::CacheAudio()
         return;
 
     m_Stream->Initialize(buffer.samplerate, buffer.channels);
-    m_Stream->SetPCM(buffer.data);
+    // m_Stream->SetPCM(buffer.data);
+    m_AudioBuffer = buffer.data;
 
+    VOID_LOG_INFO("Audio Frames Count: {0}", buffer.data.size());
+    // VOID_LOG_INFO("First Frame: {0}", buffer.data.front().seconds * 24.0);
+    // VOID_LOG_INFO("Last Frame: {0}", buffer.data.back().seconds * 24.0);
     VOID_LOG_INFO("Audio Cached...");
 }
 
@@ -353,6 +357,14 @@ void Media::StopCaching()
         VOID_LOG_INFO("Stopping Cache");
     }
     VOID_LOG_INFO("No ongoing Cache Process");
+}
+
+std::vector<unsigned char> Media::AudioData(v_frame_t frame)
+{
+    if (m_AudioBuffer.find(frame) == m_AudioBuffer.end())
+        return {};
+    
+    return m_AudioBuffer.at(frame);
 }
 
 VOID_NAMESPACE_CLOSE

@@ -2,7 +2,9 @@
 // Licensed under the MIT License
 
 /* STD */
+#include <deque>
 #include <vector>
+#include <map>
 
 /* Internal */
 #include "Definition.h"
@@ -28,13 +30,37 @@ enum class AudioFormat
     F_32,
 };
 
-struct AudioBuffer
+/**
+ * An AudioFrame represents the samples of Audio at a given duration
+ * The duration is in seconds, which could be easily be converted to frame based
+ * on the video framerate for frame syncing
+ */
+struct AudioFrame
 {
     std::vector<unsigned char> data;
+    double seconds;
+};
+
+struct AudioBuffer
+{
+    // std::vector<unsigned char> data;
+    // std::deque<AudioFrame> data;
+    std::map<v_frame_t, std::vector<unsigned char>> data;
     int samplerate;
     int channels;
     AudioFormat format;
     int64_t pts;
+
+    std::vector<unsigned char>& Get(v_frame_t frame)
+    {
+        if (data.find(frame) == data.end())
+        {
+            data[frame] = {};
+            return data.at(frame);
+        }
+
+        return data.at(frame);
+    }
 };
 
 

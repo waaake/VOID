@@ -207,6 +207,7 @@ public:
     inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_Mediaframes.end(); }
 
     inline AudioStream* Audio() const { return m_Stream; }
+    std::vector<unsigned char> AudioData(v_frame_t frame);
 
 protected: /* Members */
     /**
@@ -233,6 +234,7 @@ protected: /* Members */
     std::vector<v_frame_t> m_Framenumbers;
 
     AudioStream* m_Stream;
+    std::map<v_frame_t, std::vector<unsigned char>> m_AudioBuffer;
 
 private: /* Methods */
     void ProcessMovie(const MediaStruct& mstruct);

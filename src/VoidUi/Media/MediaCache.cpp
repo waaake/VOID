@@ -31,7 +31,7 @@ ChronoFlux::ChronoFlux(QObject* parent)
     , m_TrackView(nullptr)
     , m_SequenceView(nullptr)
     , m_CacheDirection(Direction::None)
-    , m_State(State::Enabled)
+    , m_State(State::Disabled)
     , m_CacheEntity(Entity::Media)
     , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
     , m_UsedMemory(0)

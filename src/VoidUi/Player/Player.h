@@ -51,6 +51,7 @@ protected:
 
 private: /* Members */
     ChronoFlux m_CacheProcessor;
+    AudioStream* m_AudioStream;
 
 private: /* Methods */
     void SetMediaFrame(int frame);

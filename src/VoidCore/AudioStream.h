@@ -7,7 +7,8 @@
 /* STD */
 #include <atomic>
 #include <mutex>
-#include <queue>
+// #include <queue>
+#include <deque>
 
 /* MiniAudio */
 #include "miniaudio/miniaudio.h"
@@ -17,16 +18,16 @@
 
 VOID_NAMESPACE_OPEN
 
-class AudioStream
+class VOID_API AudioStream
 {
 public:
     AudioStream();
     ~AudioStream();
 
     bool Initialize(uint32_t samplerate = 44100, int channels = 2);
-    void PushPCM(const unsigned char* data, size_t size);
+    // void PushPCM(const unsigned char* data, size_t size);
     void PushPCM(const std::vector<unsigned char>& data);
-    void SetPCM(const std::vector<unsigned char>& stream);
+    // void SetPCM(const std::vector<unsigned char>& stream);
 
     void Start();
     void Stop();
@@ -36,7 +37,8 @@ public:
 private: /* Members */
     ma_device m_Device;
     std::mutex m_Mutex;
-    std::vector<unsigned char> m_Buffer;
+    // std::vector<unsigned char> m_Buffer;
+    std::deque<std::vector<unsigned char>> m_Buffer;
     size_t m_ReadPos;
     std::atomic<bool> m_Running;
 

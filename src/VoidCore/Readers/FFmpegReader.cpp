@@ -406,6 +406,11 @@ AudioBuffer FFmpegPixReader::Audio() const
     AVPacket* packet = av_packet_alloc();
     AVFrame* frame = av_frame_alloc();
 
+    int ff = 0;
+    AVRational timebase = fmtCtx->streams[index]->time_base;
+    // double timebase = av_q2d(fmtCtx->streams[index]->time_base);
+    // int64_t samples = seconds * codecCtx->sample_rate;
+
     while (av_read_frame(fmtCtx, packet) >= 0)
     {
         if (packet->stream_index == index)
@@ -414,6 +419,13 @@ AudioBuffer FFmpegPixReader::Audio() const
             {
                 while (avcodec_receive_frame(codecCtx, frame) == 0)
                 {
+                    // AudioFrame aframe;
+
+                    // double seconds = frame->pts * timebase;
+                    // int64_t samples = static_cast<int64_t>(seconds * codecCtx->sample_rate);
+                    // ff = samples / frame->nb_samples;
+                    double time_seconds = (double)frame->pts * timebase.num / timebase.den;
+
                     int outlines;
                     int outsamples = av_rescale_rnd(frame->nb_samples, codecCtx->sample_rate, codecCtx->sample_rate, AV_ROUND_UP);
 
@@ -423,8 +435,16 @@ AudioBuffer FFmpegPixReader::Audio() const
                     unsigned char* data = temp.data();
 
                     swr_convert(swrCtx, &data, outsamples, (const uint8_t**)frame->extended_data, frame->nb_samples);
+                    // aframe.data.assign(temp.begin(), temp.end());
+                    // aframe.seconds = time_seconds;
+                    ff = time_seconds * 24.0; // Update to use actual frame rate rather than the hardcoded one
+                    std::vector<unsigned char>& d = buffer.Get(ff);
+                    d.insert(d.end(), temp.begin(), temp.end());
 
-                    buffer.data.insert(buffer.data.end(), temp.begin(), temp.end());
+                    // buffer.data.push_back(aframe);
+                    // buffer.data.insert(buffer.data.end(), temp.begin(), temp.end());
+                    // VOID_LOG_INFO("Frame: {0}", ff);
+                    // ff++;
                 }
             }
         }
