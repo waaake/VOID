@@ -42,12 +42,30 @@ void DockSplitter::RemovePane(int index)
 	VOID_LOG_INFO("INDEX: {0}", index);
 
 	QWidget* w = findChild<QWidget*>(QString::number(index));
+
+	/* Set parent of internal children as null as to not delete them when the Pane is deleted/removed */
+	for (QWidget*& c : w->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly))
+		c->setParent(nullptr);
+
 	/* Remove Widget */
 	w->hide();
 	w->deleteLater();
 
 	/* Reset the sizes */
 	setSizes({1});
+}
+
+void DockSplitter::ClearPanes()
+{
+	for (QWidget*& w : findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly))
+	{
+		/* Set parent of internal children as null as to not delete them when the Pane is deleted/removed */
+		for (QWidget*& c : w->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly))
+			c->setParent(nullptr);
+
+		w->hide();
+		w->deleteLater();
+	}
 }
 
 void DockSplitter::Resplit(int index, const Qt::Orientation& orientation)

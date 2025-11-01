@@ -70,6 +70,9 @@ void VoidEngine::Initialize()
     m_Imager = new VoidMainWindow;
     UIGlobals::g_VoidMainWindow = m_Imager;
 
+    /* Workspace */
+    m_Imager->SwitchWorkspace(Workspace::PLAYBACK);
+
     /* Init Menu */
     m_MenuSystem = new MenuSystem(m_Imager);
     UIGlobals::g_MenuSystem = m_MenuSystem;

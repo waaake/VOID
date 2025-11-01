@@ -17,65 +17,10 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Docker Window {{{ */
-
-DockerWindow::DockerWindow(QWidget* parent)
-    : QMainWindow(parent)
-{
-    /* Build the Docker */
-    Build();
-}
-
-DockerWindow::~DockerWindow()
-{
-}
-
-void DockerWindow::Build()
-{
-    m_DockSizes << 400 << 700;
-
-    /* Docker */
-    m_Splitter = new DockSplitter(Qt::Horizontal, this);
-
-    /* Add Panels */
-    m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
-    m_Splitter->AddPane(static_cast<int>(Component::Viewer));
-
-    m_Splitter->setSizes(m_DockSizes);
-
-    setCentralWidget(m_Splitter);
-}
-
-void DockerWindow::ToggleDock(VoidDocker* dock, const bool state, const Qt::DockWidgetArea& area)
-{
-    /* Set the visibility of the component */
-    dock->setVisible(state);
-
-    /* And redock to said area */
-    if (state)
-    {
-        addDockWidget(area, dock);
-    }
-}
-
-void DockerWindow::ToggleComponent(const Component& component, const bool state)
-{
-    // switch (component)
-    // {
-    //     case Component::MediaLister:
-    //         /* Setup the Dock */
-    //         ToggleDock(m_MListDocker, state, Qt::LeftDockWidgetArea);
-    //         break;
-    // }
-}
-
-/* }}} */
-
 VoidMainWindow::VoidMainWindow(QWidget* parent)
     : BaseWindow(parent)
     , m_Bridge(MBridge::Instance())
 {
-    RegisterDocks();
     Build();
 
     setWindowTitle("VOID");
@@ -87,10 +32,9 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
 
 VoidMainWindow::~VoidMainWindow()
 {
-    m_MediaLister->deleteLater();
-    m_PlayLister->deleteLater();
-    m_ScriptEditor->deleteLater();
-    m_MetadataViewer->deleteLater();
+    m_WorkspaceManager->deleteLater();
+    delete m_WorkspaceManager;
+    m_WorkspaceManager = nullptr;
 }
 
 void VoidMainWindow::paintEvent(QPaintEvent* event)
@@ -138,8 +82,10 @@ void VoidMainWindow::Build()
      * and is a docker window where components could be docked/undocked and moved
      * All of the internal components like player, media list, timeline etc. would exist here
      */
-    m_InternalDocker = new DockerWindow(this);
-    layout->addWidget(m_InternalDocker);
+    m_WorkspaceManager = new WorkspaceManager(this);
+    m_WorkspaceManager->Init();
+
+    layout->addWidget(m_WorkspaceManager);
 
     /* Set the central widget */
     setCentralWidget(baseWidget);
@@ -167,30 +113,14 @@ void VoidMainWindow::Connect()
     connect(m_TitleBar, &VoidTitleBar::requestClose, this, &QCoreApplication::quit);
     #endif  // USE_FRAMED_WINDOW
 
+    m_WorkspaceManager->Connect();
     /* Media Lister */
-    connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
+    // connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
 }
 
-void VoidMainWindow::RegisterDocks()
+void VoidMainWindow::SwitchWorkspace(const Workspace& workspace)
 {
-    /* Register Dock Widgets in the Dock Manager */
-    DockManager& manager = DockManager::Instance();
-
-    /* Media Lister Widget */
-    m_MediaLister = new VoidMediaLister(this);
-    m_PlayLister = new VoidPlayLister();
-
-    /* Python Script Editor */
-    m_ScriptEditor = new PyScriptEditor();
-
-    /* Media Metadata Viewer */
-    m_MetadataViewer = new MetadataViewer();
-
-    manager.RegisterDock(m_MediaLister, "Media View");
-    manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
-    manager.RegisterDock(m_ScriptEditor, "Script Editor");
-    manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
-    manager.RegisterDock(m_PlayLister, "Playlist View");
+    m_WorkspaceManager->Switch(workspace);
 }
 
 void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
@@ -253,6 +183,10 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     connect(editPrefsAction, &QAction::triggered, this, [this]() { VoidPreferencesWidget(this).exec(); } );
     /* }}} */
 
+    /* Workspace Menu {{{ */
+    m_WorkspaceManager->InitMenu(menuSystem);
+    /* }}} */
+
     /* Player Menu(s) {{{ */
     _PlayerBridge.InitMenu(menuSystem);
     /* }}} */
@@ -267,7 +201,10 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
 
 void VoidMainWindow::InspectMetadata(const SharedMediaClip& media)
 {
-    m_MetadataViewer->SetFromMedia(media);
+    // MetadataViewer* mv = dynamic_cast<MetadataViewer*>(m_WorkspaceManager->Widget(Component::MetadataViewer));
+
+    // if (mv)
+    //     mv->SetFromMedia(media);
 }
 
 VOID_NAMESPACE_CLOSE

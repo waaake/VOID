@@ -34,6 +34,7 @@ public:
 
     /* Remove the pane at the given index */
 	void RemovePane(int index);
+    void ClearPanes();
 
     /**
      * Splits the Internal Widget at the given index
