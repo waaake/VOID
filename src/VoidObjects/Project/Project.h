@@ -44,6 +44,7 @@ public:
 
     inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip MediaAt(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
+    inline SharedMediaClip LastMedia() const { return m_Media->LastMedia(); }
     SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const;
     SharedMediaClip PlaylistMediaAt(int row, int column) const;
 

@@ -20,6 +20,9 @@ class ProjectBridge
 public:
     static ProjectBridge& Instance();
 
+    /* Imports Media onto the currently active project + sets the Media for playing on the Active Player */
+    SharedMediaClip OpenMedia();
+
     /* Imports Media onto the currently active project */
     void ImportMedia();
     void ImportDirectory();

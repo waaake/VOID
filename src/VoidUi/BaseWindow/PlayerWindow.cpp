@@ -128,6 +128,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* File Menu {{{ */
     QMenu* fileMenu = menuSystem->AddMenu("File");
 
+    QAction* openMediaAction = menuSystem->AddAction(fileMenu, "Open Media...");
     QAction* importAction = menuSystem->AddAction(fileMenu, "Import Media...", QKeySequence("Ctrl+I"));
     QAction* importDirectoryAction = menuSystem->AddAction(fileMenu, "Import Directory...", QKeySequence("Ctrl+Alt+I"));
 
@@ -146,6 +147,11 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     QAction* clearAction = menuSystem->AddAction(fileMenu, "Clear Viewer");
     QAction* closeAction = menuSystem->AddAction(fileMenu, "Close VOID", QKeySequence("Ctrl+Q"));
 
+    connect(openMediaAction, &QAction::triggered, this, []() -> void
+    {
+        if (const SharedMediaClip& media = _ProjectBridge.OpenMedia())
+            _PlayerBridge.SetMedia(media);
+    });
     connect(importAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
     connect(importDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
     connect(newProjectAction, &QAction::triggered, this, [this]() { _MediaBridge.NewProject(); });
