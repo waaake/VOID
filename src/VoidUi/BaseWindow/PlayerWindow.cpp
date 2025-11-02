@@ -144,7 +144,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     fileMenu->addSeparator();
 
     QAction* clearAction = menuSystem->AddAction(fileMenu, "Clear Viewer");
-    QAction* closeAction = menuSystem->AddAction(fileMenu, "Quit VOID", QKeySequence("Ctrl+Q"));
+    QAction* closeAction = menuSystem->AddAction(fileMenu, "Close VOID", QKeySequence("Ctrl+Q"));
 
     connect(importAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
     connect(importDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
