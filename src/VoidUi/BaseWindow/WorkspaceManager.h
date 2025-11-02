@@ -15,10 +15,10 @@
 #include "VoidUi/Dock/Docker.h"
 
 /* Internal Widget Components */
-#include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Media/MediaLister.h"
-#include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/Media/MetadataViewer.h"
+#include "VoidUi/Player/PlayerBridge.h"
+#include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
 
 VOID_NAMESPACE_OPEN

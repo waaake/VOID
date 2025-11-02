@@ -80,14 +80,20 @@ void WorkspaceManager::Switch(const Workspace& workspace)
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
             break;
         case Workspace::REVIEW:
-            m_Splitter->AddPane(static_cast<int>(Component::PlayLister));
+            m_Splitter->AddSplitPane(
+                static_cast<int>(Component::MediaLister),
+                static_cast<int>(Component::PlayLister),
+                Qt::Vertical
+            );
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
             break;
-
-            // m_Splitter->Resplit(1, Qt::Vertical);
-            // break;
         case Workspace::SCRIPTING:
-            m_Splitter->AddPane(static_cast<int>(Component::ScriptEditor));
+            m_Splitter->AddPanes(
+                {
+                    static_cast<int>(Component::MediaLister),
+                    static_cast<int>(Component::ScriptEditor)
+                }
+            );
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
             break;
         case Workspace::PLAYBACK:
