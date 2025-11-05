@@ -157,6 +157,14 @@ int MediaModel::MediaRow(const SharedMediaClip& clip) const
     return -1;
 }
 
+SharedMediaClip MediaModel::LastMedia() const
+{
+    if (m_Media.empty())
+        return nullptr;
+
+    return m_Media.back();
+}
+
 void MediaModel::Update()
 {
     if (m_Media.empty())

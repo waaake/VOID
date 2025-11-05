@@ -121,7 +121,7 @@ void DockWidget::AddDockManagerWidget(int index)
 	/* It is an invalid Dock */
 	if (d.id < 0)
 		return;
-	
+
 	/* All Dock Manager Widgets shall be closable */
 	AddDock(d.widget, d.name, true);
 }

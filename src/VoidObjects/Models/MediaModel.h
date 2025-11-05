@@ -59,6 +59,11 @@ public:
     SharedMediaClip Media(const QModelIndex& index) const;
     int MediaRow(const SharedMediaClip& clip) const;
 
+    /**
+     * Returns the last/latest media clip from the underlying model
+     */
+    SharedMediaClip LastMedia() const;
+
     void Clear() { m_Media.clear(); }
 
     /* Iterator */

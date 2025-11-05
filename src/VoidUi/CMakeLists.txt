@@ -6,6 +6,7 @@ set(SOURCES
     BaseWindow/MenuSystem.cpp
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
+    BaseWindow/WorkspaceManager.cpp
 
     # Commands
     Commands/VoidCommand.cpp

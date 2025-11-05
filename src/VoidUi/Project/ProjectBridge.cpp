@@ -21,6 +21,20 @@ ProjectBridge& ProjectBridge::Instance()
     return instance;
 }
 
+SharedMediaClip ProjectBridge::OpenMedia()
+{
+    VoidMediaBrowser mediaBrowser;
+
+    if (!mediaBrowser.Browse())
+    {
+        VOID_LOG_INFO("User Cancelled Opening Media");
+        return nullptr;
+    }
+
+    m_Bridge.AddMedia(mediaBrowser.GetSelectedFile());
+    return m_Bridge.LastMedia();    
+}
+
 void ProjectBridge::ImportMedia()
 {
     VoidMediaBrowser mediaBrowser;
