@@ -6,7 +6,6 @@
 
 /* Qt */
 #include <QMainWindow>
-// #include <QSplitter>
 
 /* Internal */
 #include "Definition.h"

@@ -114,8 +114,6 @@ void VoidMainWindow::Connect()
     #endif  // USE_FRAMED_WINDOW
 
     m_WorkspaceManager->Connect();
-    /* Media Lister */
-    // connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &VoidMainWindow::InspectMetadata);
 }
 
 void VoidMainWindow::SwitchWorkspace(const Workspace& workspace)
@@ -203,14 +201,6 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
 
     connect(aboutAction, &QAction::triggered, this, [this]() { AboutVoid(this).exec(); });
     /* }}} */
-}
-
-void VoidMainWindow::InspectMetadata(const SharedMediaClip& media)
-{
-    // MetadataViewer* mv = dynamic_cast<MetadataViewer*>(m_WorkspaceManager->Widget(Component::MetadataViewer));
-
-    // if (mv)
-    //     mv->SetFromMedia(media);
 }
 
 VOID_NAMESPACE_CLOSE

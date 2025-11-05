@@ -30,9 +30,6 @@ public:
 
     void InitMenu(MenuSystem* menuSystem);
 
-    /* Inspect Media Information */
-    void InspectMetadata(const SharedMediaClip& media);
-
     inline Player* ActivePlayer() const { return _PlayerBridge.ActivePlayer(); }
     MetadataViewer* GetMetadataViewer() const { return dynamic_cast<MetadataViewer*>(m_WorkspaceManager->Widget(Component::MetadataViewer)); }
     QMenuBar* MenuBar() const;
