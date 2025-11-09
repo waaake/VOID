@@ -137,14 +137,6 @@ void VoidMediaLister::Build()
     m_ViewButtonGroup->setExclusive(true);
 
     /* View Toggle Buttons */
-    m_ListViewToggle = new HighlightToggleButton(this);
-    m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 150)));
-    m_ListViewToggle->setToolTip(
-        ToolTipString(
-            "List View",
-            "Shows items in a Vertical List."
-        ).c_str()
-    );
 
     m_DetailedListViewToggle = new HighlightToggleButton(this);
     m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 150)));
@@ -152,6 +144,15 @@ void VoidMediaLister::Build()
         ToolTipString(
             "Detailed List View",
             "Shows items in a Vertical List with details."
+        ).c_str()
+    );
+
+    m_ListViewToggle = new HighlightToggleButton(this);
+    m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 150)));
+    m_ListViewToggle->setToolTip(
+        ToolTipString(
+            "List View",
+            "Shows items in a Vertical List."
         ).c_str()
     );
 
@@ -164,8 +165,8 @@ void VoidMediaLister::Build()
         ).c_str()
     );
 
-    m_ViewButtonGroup->addButton(m_ListViewToggle, 0);
-    m_ViewButtonGroup->addButton(m_DetailedListViewToggle, 1);
+    m_ViewButtonGroup->addButton(m_DetailedListViewToggle, 0);
+    m_ViewButtonGroup->addButton(m_ListViewToggle, 1);
     m_ViewButtonGroup->addButton(m_ThumbnailViewToggle, 2);
 
     m_SortButton = new HighlightToggleButton(this);
@@ -389,13 +390,13 @@ void VoidMediaLister::SetFromPreferences()
     /* Default View */
     switch(static_cast<MediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType()))
     {
-        case MediaView::ViewType::DetailedListView:
-            m_DetailedListViewToggle->setChecked(true);
+        case MediaView::ViewType::ListView:
+            m_ListViewToggle->setChecked(true);
         case MediaView::ViewType::ThumbnailView:
             m_ThumbnailViewToggle->setChecked(true);
-        case MediaView::ViewType::ListView:
+        case MediaView::ViewType::DetailedListView:
         default:
-            m_ListViewToggle->setChecked(true);
+            m_DetailedListViewToggle->setChecked(true);
     }
 }
 

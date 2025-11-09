@@ -59,7 +59,7 @@ void MediaViewPreferences::Build()
 void MediaViewPreferences::Setup()
 {
     /* Default values */
-    m_ViewBox->addItems({"List", "Detailed List", "Thumbnail"});
+    m_ViewBox->addItems({"Detailed List", "List", "Thumbnail"});
     m_ViewBox->setCurrentIndex(0);
 }
 

@@ -139,33 +139,69 @@ void Timeline::Build()
 
 	/* Add to options layout */
 	/* Layout spacing */
+	// m_LeftLayout->addWidget(m_FramerateBox);
+	// m_LeftLayout->addLayout(playoptsLayout);
+	
+	// /* Spacer */
+	// m_LeftLayout->addStretch(1);
+
+	playoptsLayout->setSpacing(1);
+	// playoptsLayout->addWidget(m_StartFrameButton);
+	// playoptsLayout->addWidget(m_PrevFrameButton);
+	// playoptsLayout->addWidget(m_BackwardButton);
+	// playoptsLayout->addWidget(m_StopButton);
+	// playoptsLayout->addWidget(m_ForwardButton);
+	// playoptsLayout->addWidget(m_NextFrameButton);
+	// playoptsLayout->addWidget(m_EndFrameButton);
+
+	// m_LeftLayout->addWidget(m_InFrameButton);
 	m_LeftLayout->addWidget(m_FramerateBox);
+	m_LeftLayout->addWidget(m_LoopTypeButton);
+	m_LeftLayout->addLayout(playoptsLayout);
+	// m_LeftLayout->addWidget(m_OutFrameButton);
 	
 	/* Spacer */
 	m_LeftLayout->addStretch(1);
 
-	playoptsLayout->setSpacing(0);
-	playoptsLayout->addWidget(m_StartFrameButton);
-	playoptsLayout->addWidget(m_PrevFrameButton);
-	playoptsLayout->addWidget(m_BackwardButton);
-	playoptsLayout->addWidget(m_StopButton);
-	playoptsLayout->addWidget(m_ForwardButton);
-	playoptsLayout->addWidget(m_NextFrameButton);
-	playoptsLayout->addWidget(m_EndFrameButton);
-
 	/* Spacer */
 	m_RightLayout->addStretch(1);
 
+	// m_RightLayout->addWidget(m_InFrameButton);
+	// m_RightLayout->addLayout(playoptsLayout);
+	// m_RightLayout->addWidget(m_OutFrameButton);
+	// m_RightLayout->addWidget(m_LoopTypeButton);
+	// m_RightLayout->addWidget(m_FramerateBox);
+
 	m_RightLayout->addWidget(m_InFrameButton);
-	m_RightLayout->addLayout(playoptsLayout);
+	m_RightLayout->addWidget(m_StartFrameButton);
+	m_RightLayout->addWidget(m_PrevFrameButton);
+
+	m_RightLayout->addWidget(m_TimeDisplay);
+
+	m_RightLayout->addWidget(m_NextFrameButton);
+	m_RightLayout->addWidget(m_EndFrameButton);
 	m_RightLayout->addWidget(m_OutFrameButton);
-	m_RightLayout->addWidget(m_LoopTypeButton);
+
 	m_RightLayout->addWidget(m_FullscreenButton);
 
-	optionsLayout->setSpacing(10);
+	// optionsLayout->setSpacing(10);
 	
 	optionsLayout->addLayout(m_LeftLayout);
-	optionsLayout->addWidget(m_TimeDisplay);
+
+	optionsLayout->addWidget(m_BackwardButton);
+	optionsLayout->addWidget(m_StopButton);
+	optionsLayout->addWidget(m_ForwardButton);
+
+	// optionsLayout->addWidget(m_InFrameButton);
+	// optionsLayout->addWidget(m_StartFrameButton);
+	// optionsLayout->addWidget(m_PrevFrameButton);
+
+	// optionsLayout->addWidget(m_TimeDisplay);
+
+	// optionsLayout->addWidget(m_NextFrameButton);
+	// optionsLayout->addWidget(m_EndFrameButton);
+	// optionsLayout->addWidget(m_OutFrameButton);
+
 	optionsLayout->addLayout(m_RightLayout);	
 
 	/* Timeslider */

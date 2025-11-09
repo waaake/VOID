@@ -7,6 +7,7 @@
 #include "VoidUi/Media/Browser.h"
 #include "VoidUi/Project/Browser.h"
 #include "VoidUi/QExtensions/MessageBox.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -105,6 +106,11 @@ void ProjectBridge::Open()
 
     VoidFileDescriptor d = browser.File();
     m_Bridge.Load(d.path);
+}
+
+void ProjectBridge::Open(const std::string& path)
+{
+    m_Bridge.Load(path);
 }
 
 void ProjectBridge::Close()

@@ -88,6 +88,11 @@ void VoidEngine::PostInit()
 
     /* Register Any other Media plugins that are found in the way */
     // ReaderPluginLoader::Instance().LoadExternals();
+
+    // std::string recent = VoidPreferences::Instance().GetRecentProject(RecentProjects::First);
+    // if (!recent.empty())
+    //     _ProjectBridge.Open(recent);
+
 }
 
 

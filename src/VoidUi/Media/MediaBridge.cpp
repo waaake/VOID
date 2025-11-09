@@ -8,6 +8,7 @@
 /* Internal */
 #include "MediaBridge.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
@@ -29,6 +30,7 @@ MBridge::MBridge(QObject* parent)
 
     /* Setup a Default Project */
     NewProject();
+    // DefaultProject();
 }
 
 MBridge::~MBridge()
@@ -36,6 +38,20 @@ MBridge::~MBridge()
     m_Projects->deleteLater();
     delete m_Projects;
     m_Projects = nullptr;
+}
+
+void MBridge::DefaultProject()
+{
+    VOID_LOG_INFO("Setting Default Project...");
+
+    std::string recent = VoidPreferences::Instance().GetRecentProject(RecentProjects::First);
+
+    VOID_LOG_INFO("Last Project Path: {0}", recent);
+
+    NewProject();
+
+    // if (!recent.empty())
+    //     Load(recent);
 }
 
 void MBridge::NewProject()
@@ -478,6 +494,9 @@ void MBridge::Load(const std::string& path)
         VOID_LOG_INFO("Invalid File format");
         return;
     }
+
+    /* Save as the Last project Opened */
+    VoidPreferences::Instance().AddRecentProject(RecentProjects::First, path);
 
     if (type == EtherFormat::Type::ASCII)
     {

@@ -33,7 +33,7 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     painter->save();
 
     /* Default background */
-    QColor bg = index.data(static_cast<int>(ProjectModel::Roles::Active)).toBool() ? option.palette.color(QPalette::Window).lighter(250) : option.palette.color(QPalette::Window).lighter(150);
+    QColor bg = index.data(static_cast<int>(ProjectModel::Roles::Active)).toBool() ? option.palette.color(QPalette::Window).lighter(200) : option.palette.color(QPalette::Window).lighter(120);
     painter->fillRect(rect, bg);
 
     /* Selected */
@@ -59,7 +59,9 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
     /* Side Bar */
     QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());
-    painter->fillRect(siderect, bg.lighter(250));
+    QColor sidecol = index.data(static_cast<int>(ProjectModel::Roles::SaveState)).toBool() ? option.palette.color(QPalette::Highlight) : bg.lighter(200);
+    // painter->fillRect(siderect, bg.lighter(250));
+    painter->fillRect(siderect, sidecol);
 
     /* Name */
     QRect namerect = QRect(rect.left() + 10, rect.top(), rect.right(), rect.height());
