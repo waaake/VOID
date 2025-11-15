@@ -116,7 +116,7 @@ void Timeline::Build()
 
 	/* Fullscreen Button */
 	m_FullscreenButton = new QPushButton;
-	m_FullscreenButton->setIcon(IconForge::GetIcon(IconType::icon_pageless, _DARK_COLOR(QPalette::Text, 150)));
+	m_FullscreenButton->setIcon(IconForge::GetIcon(IconType::icon_pageless, _DARK_COLOR(QPalette::Text, 100)));
 	m_FullscreenButton->setFlat(true);
 	m_FullscreenButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 	m_FullscreenButton->setToolTip(ToolTipString("Fullscreen", "Plays media in fullscreen.").c_str());

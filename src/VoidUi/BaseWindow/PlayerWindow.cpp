@@ -172,7 +172,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
 
     QAction* editPrefsAction = new QAction("Preferences...", editMenu);
     QIcon icon;
-    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _DARK_COLOR(QPalette::Text, 150), 18), QIcon::Normal);
+    icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _DARK_COLOR(QPalette::Text, 100), 18), QIcon::Normal);
     icon.addPixmap(IconForge::GetPixmap(IconType::icon_build, _COLOR(QPalette::Dark), 18), QIcon::Active);
     editPrefsAction->setIcon(icon);
 
