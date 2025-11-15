@@ -20,7 +20,7 @@ VOID_NAMESPACE_OPEN
 
 MediaView::MediaView(QWidget* parent)
     : QListView(parent)
-    , m_ViewType(ViewType::ListView)
+    , m_ViewType(ViewType::DetailedListView)
 {
     Setup();
 

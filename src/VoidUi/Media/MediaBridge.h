@@ -170,6 +170,7 @@ private: /* Members */
     Project* m_Project;
 
 private: /* Methods */
+    void DefaultProject();
     void SetActiveProject(Project* project);
     friend class ProjectBridge;
 };

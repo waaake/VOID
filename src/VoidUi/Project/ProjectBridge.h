@@ -32,6 +32,7 @@ public:
     void ImportDirectory(Project* project);
 
     void Open();
+    void Open(const std::string& path);
     void Close();
     void Close(Project* project);
 

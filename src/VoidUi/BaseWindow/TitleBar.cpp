@@ -72,12 +72,12 @@ void VoidTitleBar::Build()
     m_MinimizeButton = new QToolButton();
     m_MinimizeButton->setFixedSize(16, 16);
     m_MinimizeButton->setAutoRaise(true);
-    m_MinimizeButton->setIcon(IconForge::GetIcon(IconType::icon_minimize, _DARK_COLOR(QPalette::Text, 150)));
+    m_MinimizeButton->setIcon(IconForge::GetIcon(IconType::icon_minimize, _DARK_COLOR(QPalette::Text, 100)));
 
     m_MaximizeButton = new QToolButton();
     m_MaximizeButton->setFixedSize(16, 16);
     m_MaximizeButton->setAutoRaise(true);
-    m_MaximizeButton->setIcon(IconForge::GetIcon(IconType::icon_square, _DARK_COLOR(QPalette::Text, 150)));
+    m_MaximizeButton->setIcon(IconForge::GetIcon(IconType::icon_square, _DARK_COLOR(QPalette::Text, 100)));
 
     m_CloseButton = new CloseButton;
     m_CloseButton->setFixedSize(15, 15);

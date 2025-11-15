@@ -126,7 +126,7 @@ void ControlBar::Build()
 
     /* Annotation */
     m_AnnotationButton = new HighlightToggleButton;
-    m_AnnotationButton->setIcon(IconForge::GetIcon(IconType::icon_draw, _DARK_COLOR(QPalette::Text, 140)));
+    m_AnnotationButton->setIcon(IconForge::GetIcon(IconType::icon_draw, _DARK_COLOR(QPalette::Text, 100)));
     m_AnnotationButton->setFixedWidth(26);
     m_AnnotationButton->setToolTip(ToolTipString("Annotations Toolkit", "Toggles Annotation tools for the Viewer.").c_str());
 

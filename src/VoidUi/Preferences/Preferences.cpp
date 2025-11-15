@@ -21,4 +21,15 @@ VoidPreferences::~VoidPreferences()
 {
 }
 
+void VoidPreferences::AddRecentProject(const RecentProjects& index, const std::string& path)
+{
+    settings.setValue(QString::number(static_cast<int>(index)), QVariant(path.c_str()));
+    emit projectsUpdated();
+}
+
+std::string VoidPreferences::GetRecentProject(const RecentProjects& index)
+{
+    return settings.value(QString::number(static_cast<int>(index))).toString().toStdString();
+}
+
 VOID_NAMESPACE_CLOSE

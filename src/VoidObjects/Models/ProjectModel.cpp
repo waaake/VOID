@@ -77,6 +77,8 @@ QVariant ProjectModel::data(const QModelIndex& index, int role) const
             return QVariant(project->Name().c_str());
         case Roles::Active:
             return QVariant(project->Active());
+        case Roles::SaveState:
+            return QVariant(project->Saved());
         default:
             return QVariant();
     }

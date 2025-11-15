@@ -22,6 +22,17 @@ namespace Settings
     constexpr auto CacheThreads = "cache/threads";
 }
 
+enum class RecentProjects
+{
+    First,
+    Second,
+    Third,
+    Fourth,
+    Fifth,
+
+    MaxRecentProjects,
+};
+
 class VOID_API VoidPreferences : public QObject
 {
     Q_OBJECT
@@ -33,7 +44,7 @@ public:
     ~VoidPreferences();
 
     inline QVariant GetSetting(const std::string key) const { return settings.value(key.c_str()); }
-    inline void Set(const std::string key, const QVariant& value)
+    inline void Set(const std::string& key, const QVariant& value)
     {
         /* Setup values */
         settings.setValue(key.c_str(), value);
@@ -49,6 +60,9 @@ public:
     inline unsigned int GetCacheThreads() const { return GetSetting(Settings::CacheThreads).toUInt(); }
     inline int GetColorStyle() const { return GetSetting(Settings::ColorStyle).toInt(); }
 
+    void AddRecentProject(const RecentProjects& index, const std::string& path);
+    std::string GetRecentProject(const RecentProjects& index);
+
 signals:
     /**
      * The updated signal is invoked when any setting is changed
@@ -58,6 +72,7 @@ signals:
      * Adding individual signal for a setting could be quite messy in the long run
      */
     void updated();
+    void projectsUpdated();
 
 private:
     QSettings settings;

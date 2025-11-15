@@ -37,6 +37,11 @@ public:
      * (or hasn't been saved at all) or modified since it was created
      */
     inline bool Modified() const { return m_Modified; }
+    /**
+     * Returns whether the project has yet been saved and us currently not in modified state
+     * Project being referred to as saved means that it has a physical file location
+     */
+    inline bool Saved() const { return !m_Modified && !m_Path.empty(); }
     
     void AddMedia(const SharedMediaClip& media);
     void InsertMedia(const SharedMediaClip& media, const int index);

@@ -99,7 +99,7 @@ void VoidPlayLister::Build()
 
     /* View Toggle Buttons */
     m_ListViewToggle = new HighlightToggleButton(this);
-    m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 150)));
+    m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 100)));
     m_ListViewToggle->setToolTip(
         ToolTipString(
             "List View",
@@ -108,7 +108,7 @@ void VoidPlayLister::Build()
     );
 
     m_DetailedListViewToggle = new HighlightToggleButton(this);
-    m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 150)));
+    m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 100)));
     m_DetailedListViewToggle->setToolTip(
         ToolTipString(
             "Detailed List View",
@@ -117,7 +117,7 @@ void VoidPlayLister::Build()
     );
 
     m_ThumbnailViewToggle = new HighlightToggleButton(this);
-    m_ThumbnailViewToggle->setIcon(IconForge::GetIcon(IconType::icon_grid_view, _DARK_COLOR(QPalette::Text, 150)));
+    m_ThumbnailViewToggle->setIcon(IconForge::GetIcon(IconType::icon_grid_view, _DARK_COLOR(QPalette::Text, 100)));
     m_ThumbnailViewToggle->setToolTip(
         ToolTipString(
             "Thumbnail View",
