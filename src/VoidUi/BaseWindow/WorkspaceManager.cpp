@@ -88,11 +88,10 @@ void WorkspaceManager::Switch(const Workspace& workspace)
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
             break;
         case Workspace::SCRIPTING:
-            m_Splitter->AddPanes(
-                {
-                    static_cast<int>(Component::MediaLister),
-                    static_cast<int>(Component::ScriptEditor)
-                }
+            m_Splitter->AddSplitPane(
+                static_cast<int>(Component::MediaLister),
+                static_cast<int>(Component::ScriptEditor),
+                Qt::Vertical
             );
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
             break;

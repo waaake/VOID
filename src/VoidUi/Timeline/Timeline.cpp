@@ -59,54 +59,44 @@ void Timeline::Build()
 	m_RightLayout = new QHBoxLayout;
 
 	QHBoxLayout* optionsLayout = new QHBoxLayout;
-	QHBoxLayout* playoptsLayout = new QHBoxLayout;
 
 	QStyle* s = style();
 
 	/* Forwards */
 	m_ForwardButton = new QPushButton;
-	m_ForwardButton->setIcon(s->standardIcon(s->SP_MediaPlay));
+	m_ForwardButton->setIcon(IconForge::GetIcon(IconType::icon_play_arrow, _DARK_COLOR(QPalette::Text, 100)));
 	m_ForwardButton->setFixedWidth(BUTTON_WIDTH);
 	m_ForwardButton->setToolTip(ToolTipString("Play Forwards", "Starts Playing in forward direction.").c_str());
 
 	m_NextFrameButton = new QPushButton;
-	m_NextFrameButton->setIcon(s->standardIcon(s->SP_MediaSeekForward));
+	m_NextFrameButton->setIcon(IconForge::GetIcon(IconType::icon_fast_forward, _DARK_COLOR(QPalette::Text, 100)));
 	m_NextFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_NextFrameButton->setToolTip(ToolTipString("Next Frame", "Moves to the next frame.").c_str());
 
 	m_EndFrameButton = new QPushButton;
-	m_EndFrameButton->setIcon(s->standardIcon(s->SP_MediaSkipForward));
+	m_EndFrameButton->setIcon(IconForge::GetIcon(IconType::icon_skip_next, _DARK_COLOR(QPalette::Text, 100)));
 	m_EndFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_EndFrameButton->setToolTip(ToolTipString("End Frame", "Moves to the last frame.").c_str());
 
 	/* Backwards */
 	m_BackwardButton = new QPushButton;
-
-	/* Reversed Play icon for backward button */
-	#if _QT6 		/* Qt6 Compat */
-	QPixmap p = s->standardPixmap(s->SP_MediaPlay);
-	QImage backImg(p.toImage().flipped(Qt::Horizontal));
-	#else
-	QPixmap p = s->standardPixmap(s->SP_MediaPlay);
-	QImage backImg(p.toImage().mirrored(true, false));
-	#endif
-	m_BackwardButton->setIcon(QIcon(QPixmap::fromImage(backImg)));
+	m_BackwardButton->setIcon(IconForge::GetIcon(IconType::icon_arrow_back, _DARK_COLOR(QPalette::Text, 100)));
 	m_BackwardButton->setFixedWidth(BUTTON_WIDTH);
 	m_BackwardButton->setToolTip(ToolTipString("Play Backwards", "Starts Playing in reverse direction.").c_str());
 
 	m_PrevFrameButton = new QPushButton;
-	m_PrevFrameButton->setIcon(s->standardIcon(s->SP_MediaSeekBackward));
+	m_PrevFrameButton->setIcon(IconForge::GetIcon(IconType::icon_fast_rewind,  _DARK_COLOR(QPalette::Text, 100)));
 	m_PrevFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_PrevFrameButton->setToolTip(ToolTipString("Previous Frame", "Moves to the previous frame.").c_str());
 
 	m_StartFrameButton = new QPushButton;
-	m_StartFrameButton->setIcon(s->standardIcon(s->SP_MediaSkipBackward));
+	m_StartFrameButton->setIcon(IconForge::GetIcon(IconType::icon_skip_previous,  _DARK_COLOR(QPalette::Text, 100)));
 	m_StartFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_StartFrameButton->setToolTip(ToolTipString("Start Frame", "Moves to the first frame.").c_str());
 
 	/* Stop and others */
 	m_StopButton = new QPushButton;
-	m_StopButton->setIcon(s->standardIcon(s->SP_MediaStop));
+	m_StopButton->setIcon(IconForge::GetIcon(IconType::icon_pause, _DARK_COLOR(QPalette::Text, 100)));
 	m_StopButton->setFixedWidth(BUTTON_WIDTH);
 	m_StopButton->setToolTip(ToolTipString("Stop", "Stops playing the media.").c_str());
 
@@ -137,28 +127,8 @@ void Timeline::Build()
 	/* Framerate */
 	m_FramerateBox = new FramerateBox;
 
-	/* Add to options layout */
-	/* Layout spacing */
-	// m_LeftLayout->addWidget(m_FramerateBox);
-	// m_LeftLayout->addLayout(playoptsLayout);
-	
-	// /* Spacer */
-	// m_LeftLayout->addStretch(1);
-
-	playoptsLayout->setSpacing(1);
-	// playoptsLayout->addWidget(m_StartFrameButton);
-	// playoptsLayout->addWidget(m_PrevFrameButton);
-	// playoptsLayout->addWidget(m_BackwardButton);
-	// playoptsLayout->addWidget(m_StopButton);
-	// playoptsLayout->addWidget(m_ForwardButton);
-	// playoptsLayout->addWidget(m_NextFrameButton);
-	// playoptsLayout->addWidget(m_EndFrameButton);
-
-	// m_LeftLayout->addWidget(m_InFrameButton);
 	m_LeftLayout->addWidget(m_FramerateBox);
 	m_LeftLayout->addWidget(m_LoopTypeButton);
-	m_LeftLayout->addLayout(playoptsLayout);
-	// m_LeftLayout->addWidget(m_OutFrameButton);
 	
 	/* Spacer */
 	m_LeftLayout->addStretch(1);
@@ -166,12 +136,7 @@ void Timeline::Build()
 	/* Spacer */
 	m_RightLayout->addStretch(1);
 
-	// m_RightLayout->addWidget(m_InFrameButton);
-	// m_RightLayout->addLayout(playoptsLayout);
-	// m_RightLayout->addWidget(m_OutFrameButton);
-	// m_RightLayout->addWidget(m_LoopTypeButton);
-	// m_RightLayout->addWidget(m_FramerateBox);
-
+	m_RightLayout->setSpacing(2);
 	m_RightLayout->addWidget(m_InFrameButton);
 	m_RightLayout->addWidget(m_StartFrameButton);
 	m_RightLayout->addWidget(m_PrevFrameButton);
@@ -182,9 +147,9 @@ void Timeline::Build()
 	m_RightLayout->addWidget(m_EndFrameButton);
 	m_RightLayout->addWidget(m_OutFrameButton);
 
-	m_RightLayout->addWidget(m_FullscreenButton);
+	m_RightLayout->addItem(new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum));
 
-	// optionsLayout->setSpacing(10);
+	m_RightLayout->addWidget(m_FullscreenButton);
 	
 	optionsLayout->addLayout(m_LeftLayout);
 
@@ -192,17 +157,8 @@ void Timeline::Build()
 	optionsLayout->addWidget(m_StopButton);
 	optionsLayout->addWidget(m_ForwardButton);
 
-	// optionsLayout->addWidget(m_InFrameButton);
-	// optionsLayout->addWidget(m_StartFrameButton);
-	// optionsLayout->addWidget(m_PrevFrameButton);
-
-	// optionsLayout->addWidget(m_TimeDisplay);
-
-	// optionsLayout->addWidget(m_NextFrameButton);
-	// optionsLayout->addWidget(m_EndFrameButton);
-	// optionsLayout->addWidget(m_OutFrameButton);
-
-	optionsLayout->addLayout(m_RightLayout);	
+	optionsLayout->setSpacing(2);
+	optionsLayout->addLayout(m_RightLayout);
 
 	/* Timeslider */
 	m_Timeslider = new Timeslider(Qt::Horizontal);
