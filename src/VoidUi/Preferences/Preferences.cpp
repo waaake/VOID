@@ -6,6 +6,8 @@
 
 VOID_NAMESPACE_OPEN
 
+static int s_MaxRecentProjects = 5;
+
 VoidPreferences::VoidPreferences(QObject* parent)
     : QObject(parent)
 {
@@ -21,15 +23,52 @@ VoidPreferences::~VoidPreferences()
 {
 }
 
-void VoidPreferences::AddRecentProject(const RecentProjects& index, const std::string& path)
+void VoidPreferences::AddRecentProject(const std::string& path)
 {
-    settings.setValue(QString::number(static_cast<int>(index)), QVariant(path.c_str()));
-    emit projectsUpdated();
+    std::vector<std::string> recents = RecentProjects();
+
+    recents.erase(std::remove(recents.begin(), recents.end(), path), recents.end());
+    recents.insert(recents.begin(), path);
+
+    if (recents.size() > s_MaxRecentProjects)
+        recents.resize(s_MaxRecentProjects);
+    
+    SaveRecentProjects(recents);
 }
 
-std::string VoidPreferences::GetRecentProject(const RecentProjects& index)
+std::vector<std::string> VoidPreferences::RecentProjects()
 {
-    return settings.value(QString::number(static_cast<int>(index))).toString().toStdString();
+    QStringList recents = settings.value(Settings::RecentProjects).toStringList();
+
+    std::vector<std::string> files;
+    files.reserve(recents.size());
+
+    for (const QString& recent : recents)
+        files.emplace_back(recent.toStdString());
+    
+    return files;
+}
+
+std::string VoidPreferences::MostRecentProject()
+{
+    const std::vector<std::string>& recents = RecentProjects();
+
+    if (recents.empty())
+        return "";
+    
+    return recents.at(0);
+}
+
+void VoidPreferences::SaveRecentProjects(const std::vector<std::string>& files)
+{
+    QStringList recents;
+
+    for (const std::string& file : files)
+        recents << QString::fromStdString(file);
+
+    settings.setValue(Settings::RecentProjects, recents);
+
+    emit projectsUpdated();
 }
 
 VOID_NAMESPACE_CLOSE

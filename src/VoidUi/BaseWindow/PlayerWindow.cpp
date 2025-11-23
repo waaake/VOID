@@ -142,6 +142,11 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* -------------------------------- */
     fileMenu->addSeparator();
 
+    fileMenu->addMenu(_MediaBridge.RecentProjectsMenu(fileMenu));
+
+    /* -------------------------------- */
+    fileMenu->addSeparator();
+
     QAction* clearAction = menuSystem->AddAction(fileMenu, "Clear Viewer");
     QAction* closeAction = menuSystem->AddAction(fileMenu, "Close VOID", QKeySequence("Ctrl+Q"));
 

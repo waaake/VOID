@@ -9,6 +9,7 @@
 
 /* Qt */
 #include <QByteArray>
+#include <QMenu>
 #include <QObject>
 #include <QUndoGroup>
 #include <QUndoStack>
@@ -137,6 +138,7 @@ public:
     /* Returns the Menu Actions for Undo and Redo */
     QAction* CreateUndoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoGroup->createUndoAction(parent, prefix); }
     QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoGroup->createRedoAction(parent, prefix); }
+    QMenu* RecentProjectsMenu(QMenu* parent = nullptr);
 
     /**
      * Project I/O processors
@@ -169,9 +171,13 @@ private: /* Members */
     /* Current Active Project */
     Project* m_Project;
 
+    /* Menu Holding the recent projects */
+    QMenu* m_RecentProjectsMenu;
+
 private: /* Methods */
     void DefaultProject();
     void SetActiveProject(Project* project);
+    void ResetProjectsMenu();
     friend class ProjectBridge;
 };
 
