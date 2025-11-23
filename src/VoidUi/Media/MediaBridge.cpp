@@ -24,6 +24,7 @@ MBridge& MBridge::Instance()
 
 MBridge::MBridge(QObject* parent)
     : QObject(parent)
+    , m_RecentProjectsMenu(nullptr)
 {
     m_Projects = new ProjectModel(this);
     m_UndoGroup = new QUndoGroup(this);
@@ -31,6 +32,8 @@ MBridge::MBridge(QObject* parent)
     /* Setup a Default Project */
     NewProject();
     // DefaultProject();
+
+    connect(&VoidPreferences::Instance(), &VoidPreferences::projectsUpdated, this, &MBridge::ResetProjectsMenu);
 }
 
 MBridge::~MBridge()
@@ -38,13 +41,17 @@ MBridge::~MBridge()
     m_Projects->deleteLater();
     delete m_Projects;
     m_Projects = nullptr;
+
+    m_RecentProjectsMenu->deleteLater();
+    delete m_RecentProjectsMenu;
+    m_RecentProjectsMenu = nullptr;
 }
 
 void MBridge::DefaultProject()
 {
     VOID_LOG_INFO("Setting Default Project...");
 
-    std::string recent = VoidPreferences::Instance().GetRecentProject(RecentProjects::First);
+    std::string recent = VoidPreferences::Instance().MostRecentProject();
 
     VOID_LOG_INFO("Last Project Path: {0}", recent);
 
@@ -406,6 +413,9 @@ bool MBridge::Save(const std::string& path, const std::string& name, const Ether
     {
         /* Force Update on the Model */
         m_Projects->Refresh();
+
+        /* Add the current project path to Recents */
+        VoidPreferences::Instance().AddRecentProject(path);
         return true;
     }
 
@@ -496,7 +506,7 @@ void MBridge::Load(const std::string& path)
     }
 
     /* Save as the Last project Opened */
-    VoidPreferences::Instance().AddRecentProject(RecentProjects::First, path);
+    VoidPreferences::Instance().AddRecentProject(path);
 
     if (type == EtherFormat::Type::ASCII)
     {
@@ -573,6 +583,28 @@ bool MBridge::CloseProject(Project* project, bool force)
     emit updated();
 
     return true;
+}
+
+QMenu* MBridge::RecentProjectsMenu(QMenu* parent)
+{
+    if (!m_RecentProjectsMenu)
+        m_RecentProjectsMenu = new QMenu("Recent Projects", parent);
+    
+    ResetProjectsMenu();
+    return m_RecentProjectsMenu;
+}
+
+void MBridge::ResetProjectsMenu()
+{
+    m_RecentProjectsMenu->clear();
+
+    for (const std::string& project : VoidPreferences::Instance().RecentProjects())
+    {
+        QAction* action = new QAction(project.c_str(), m_RecentProjectsMenu);
+        connect(action, &QAction::triggered, this, [=]() { Load(project); });
+
+        m_RecentProjectsMenu->addAction(action);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

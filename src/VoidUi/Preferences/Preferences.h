@@ -20,18 +20,8 @@ namespace Settings
     constexpr auto MediaViewType = "mediaView/viewType";
     constexpr auto CacheMemory = "cache/memory";
     constexpr auto CacheThreads = "cache/threads";
+    constexpr auto RecentProjects = "recents/projects";
 }
-
-enum class RecentProjects
-{
-    First,
-    Second,
-    Third,
-    Fourth,
-    Fifth,
-
-    MaxRecentProjects,
-};
 
 class VOID_API VoidPreferences : public QObject
 {
@@ -60,8 +50,9 @@ public:
     inline unsigned int GetCacheThreads() const { return GetSetting(Settings::CacheThreads).toUInt(); }
     inline int GetColorStyle() const { return GetSetting(Settings::ColorStyle).toInt(); }
 
-    void AddRecentProject(const RecentProjects& index, const std::string& path);
-    std::string GetRecentProject(const RecentProjects& index);
+    void AddRecentProject(const std::string& path);
+    std::vector<std::string> RecentProjects();
+    std::string MostRecentProject();
 
 signals:
     /**
@@ -74,8 +65,11 @@ signals:
     void updated();
     void projectsUpdated();
 
-private:
+private: /* Members */
     QSettings settings;
+
+private: /* Methods */
+    void SaveRecentProjects(const std::vector<std::string>& files);
 };
 
 VOID_NAMESPACE_CLOSE
