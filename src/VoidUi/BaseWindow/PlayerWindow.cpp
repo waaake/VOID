@@ -14,6 +14,7 @@
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/Project/ProjectBridge.h"
 #include "VoidUi/Preferences/PreferencesUI.h"
+#include "VoidUi/BaseWindow/StartupWindow.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -130,6 +131,9 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     QAction* importAction = menuSystem->AddAction(fileMenu, "Import Media...", QKeySequence("Ctrl+I"));
     QAction* importDirectoryAction = menuSystem->AddAction(fileMenu, "Import Directory...", QKeySequence("Ctrl+Alt+I"));
 
+    /* Temp */
+    QAction* recentProjectsAction = menuSystem->AddAction(fileMenu, "Select from Recent Projects...");
+
     /* -------------------------------- */
     fileMenu->addSeparator();
 
@@ -164,6 +168,11 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     connect(closeProjectAction, &QAction::triggered, this, []() -> void { _ProjectBridge.Close(); });
     connect(clearAction, &QAction::triggered, &_PlayerBridge, &PlayerBridge::Clear);
     connect(closeAction, &QAction::triggered, this, &QCoreApplication::quit);
+
+    connect(recentProjectsAction, &QAction::triggered, this, [this]()
+    {
+       StartupWindow(this).exec();
+    });
     /* }}} */
 
     /* Edit Menu {{{ */
