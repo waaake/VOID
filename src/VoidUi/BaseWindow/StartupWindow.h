@@ -11,11 +11,20 @@
 #include <QLayout>
 #include <QListWidget>
 #include <QPushButton>
+#include <QStyledItemDelegate>
 
 /* Internal */
 #include "Definition.h"
 
 VOID_NAMESPACE_OPEN
+
+class LogoWidget : public QWidget
+{
+public:
+    LogoWidget(QWidget* parent = nullptr);
+protected:
+    void paintEvent(QPaintEvent* event);
+};
 
 class StartupWindow : public QDialog
 {
@@ -43,6 +52,7 @@ private: /* Members */
 private: /* Methods */
     void Build();
     void Connect();
+    void Populate();
 };
 
 VOID_NAMESPACE_CLOSE

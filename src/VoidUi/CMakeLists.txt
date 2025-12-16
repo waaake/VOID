@@ -85,6 +85,7 @@ set(SOURCES
     Toolkit/ControlScroller.cpp
 
     # QExtensions
+    QExtensions/Delegates.cpp
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
     QExtensions/MessageBox.cpp
