@@ -42,7 +42,7 @@ MBridge::~MBridge()
     delete m_Projects;
     m_Projects = nullptr;
 
-    m_RecentProjectsMenu->deleteLater();
+    // m_RecentProjectsMenu->deleteLater();
     // delete m_RecentProjectsMenu;
     // m_RecentProjectsMenu = nullptr;
 }
