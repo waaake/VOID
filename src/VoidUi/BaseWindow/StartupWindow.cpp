@@ -1,13 +1,18 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <filesystem>
+
 /* Qt */
 #include <QPainter>
 
 /* Internal */
 #include "StartupWindow.h"
+#include "VoidCore/Logging.h"
 #include "VoidUi/Preferences/Preferences.h"
 #include "VoidUi/QExtensions/Delegates.h"
+#include "VoidUi/Project/ProjectBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -70,8 +75,9 @@ void StartupWindow::Build()
     m_SideButtonsLayout->addStretch(1);
 
     m_ProjectsLister = new QListWidget;
+    m_ProjectsLister->setItemDelegate(new HCustomItemDelegate(43));
 
-    m_DontShowCheck = new QCheckBox("Don't Show this Dialog on Startup");
+    m_DontShowCheck = new QCheckBox("Don't Show this dialog on startup");
     m_LoadBtn = new QPushButton("Load Selected");
     m_CloseBtn = new QPushButton("Close");
 
@@ -91,19 +97,66 @@ void StartupWindow::Build()
 void StartupWindow::Connect()
 {
     connect(m_CloseBtn, &QPushButton::clicked, this, &StartupWindow::close);
+    connect(m_LoadBtn, &QPushButton::clicked, this, &StartupWindow::LoadSelected);
+    connect(m_OpenProjectBtn, &QPushButton::clicked, this, [this]()
+    {
+        _ProjectBridge.Open();
+        Close();
+    });
+    connect(m_NewProjectBtn, &QPushButton::clicked, this, [this]()
+    {
+        _ProjectBridge.New();
+        Close();
+    });
+
+    connect(m_ProjectsLister, &QListWidget::itemDoubleClicked, this, &StartupWindow::LoadSelected);
 }
 
 void StartupWindow::Populate()
 {
-    m_ProjectsLister->setItemDelegate(new HCustomItemDelegate(40));
     for (const std::string& project : VoidPreferences::Instance().RecentProjects())
     {
         QListWidgetItem* item = new QListWidgetItem(m_ProjectsLister);
-        item->setText(project.c_str());
-        // item->setSizeHint(QSize(item->sizeHint().width(), 80));
+        std::filesystem::path path = project.c_str();
+
+        item->setText(path.filename().c_str());
+        item->setToolTip(project.c_str());
 
         m_ProjectsLister->addItem(item);
     }
+}
+
+void StartupWindow::LoadSelected()
+{
+    int index = m_ProjectsLister->selectionModel()->currentIndex().row();
+    if (index < 0)
+    {
+        VOID_LOG_INFO("No Project selected to Load");
+        return;
+    }
+
+    const std::vector<std::string>& projects = VoidPreferences::Instance().RecentProjects();
+    const std::string path = projects.at(index);
+    VOID_LOG_INFO("Loading Recent Project: {0}", path);
+
+    _ProjectBridge.Open(path);
+    Close();
+}
+
+void StartupWindow::Exec(QWidget* parent)
+{
+    /* Check if the preferences allow to show the startup*/
+    if (VoidPreferences::Instance().ShowStartup())
+        StartupWindow(parent).exec();
+}
+
+void StartupWindow::Close()
+{
+    /* Ensure that the state of whether the dialog needs to be shown again or not is saved in the prefs */
+    if (m_DontShowCheck->isChecked())
+        VoidPreferences::Instance().Set(Settings::DontShowStartup, true);
+
+    close();
 }
 
 VOID_NAMESPACE_CLOSE

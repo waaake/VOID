@@ -34,6 +34,7 @@ public:
     ~StartupWindow();
 
     inline virtual QSize sizeHint() const override { return QSize(650, 350); }
+    static void Exec(QWidget* parent = nullptr);
 
 private: /* Members */
     QPushButton* m_NewProjectBtn;
@@ -53,6 +54,8 @@ private: /* Methods */
     void Build();
     void Connect();
     void Populate();
+    void LoadSelected();
+    void Close();
 };
 
 VOID_NAMESPACE_CLOSE
