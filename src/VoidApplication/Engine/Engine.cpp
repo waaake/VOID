@@ -12,6 +12,7 @@
 #include "VoidCore/Readers/Registration.h"
 #include "VoidUi/Engine/Globals.h"
 #include "VoidUi/Preferences/Preferences.h"
+#include "VoidUi/BaseWindow/StartupWindow.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -33,6 +34,10 @@ int VoidEngine::Exec(int argc, char** argv)
     PostInit();
 
     m_Imager->showMaximized();
+
+    /* Once the UI is up -> Process any further events or windows */
+    PostStartup();
+
     int result = app.exec();
 
     /* Cleanup */
@@ -95,5 +100,10 @@ void VoidEngine::PostInit()
 
 }
 
+void VoidEngine::PostStartup()
+{
+    /* Startup window pop-up */
+    StartupWindow::Exec(m_Imager);
+}
 
 VOID_NAMESPACE_CLOSE
