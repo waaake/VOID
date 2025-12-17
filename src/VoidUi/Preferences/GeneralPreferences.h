@@ -5,6 +5,7 @@
 #define _VOID_GENERAL_PREFERENCES_H
 
 /* Qt */
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QLayout>
@@ -37,6 +38,11 @@ private: /* Members */
     QLabel* m_ColorStyleDescription;
     QLabel* m_ColorStyleLabel;
     QComboBox* m_ColorStyleBox;
+
+    /* Startup Popup */
+    QLabel* m_StartupPopupDescription;
+    QLabel* m_StartupPopupLabel;
+    QCheckBox* m_StartupPopupCheck;
 
 private: /* Methods */
     /**
