@@ -220,4 +220,88 @@ bool ProjectProxyModel::lessThan(const QModelIndex& left, const QModelIndex& rig
 
 /* }}} */
 
+/* RecentProjectsModel {{{ */
+
+RecentProjectsModel::RecentProjectsModel(QObject* parent)
+    : QAbstractItemModel(parent)
+{
+}
+
+QModelIndex RecentProjectsModel::index(int row, int column, const QModelIndex& parent) const
+{
+
+}
+
+QModelIndex RecentProjectsModel::parent(const QModelIndex& index) const
+{
+
+}
+
+int RecentProjectsModel::rowCount(const QModelIndex& parent) const
+{
+    if (index.isValid())
+        return 0;
+    
+    return static_cast<int>(m_Projects.size());
+}
+
+int RecentProjectsModel::columnCount(const QModelIndex& parent) const
+{
+    return 1;
+}
+
+QVariant RecentProjectsModel::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid() || index.row() >= static_cast<int>(m_Projects.size()))
+        return QVariant();
+    
+    const std::filesystem::path& path = m_Projects.at(index.row());
+
+    switch(static_cast<Roles>(role))
+    {
+        case Roles::Modification:
+            return QVariant("Thursday 22 December 2025");
+            break;
+        case Roles::Name:
+        default:
+            return QVariant(path.c_str());
+    }
+}
+
+Qt::ItemFlags RecentProjectsModel::flags(const QModelIndex& index) const
+{
+    if (!index.isValid())
+        return Qt::NoItemFlags;
+    
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+}
+
+void RecentProjectsModel::Add(const std::vector<std::string>& projects)
+{
+    /* Where the project will be inserted */
+    int insertidx = static_cast<int>(m_Projects.size());
+
+    m_Projects.reserve(projects.size());
+
+    beginInsertRows(QModelIndex(), insertidx, insertidx);
+    for (const std::string& project : projects)
+    {
+        // std::filesystem::path filepath = project;
+        m_Projects.emplace_back(project);
+    }
+    endInsertRows();
+}
+
+void RecentProjectsModel::Clear()
+{
+    /* Where the project will be inserted */
+    int insertidx = static_cast<int>(m_Projects.size());
+
+    beginInsertRows(QModelIndex(), insertidx, insertidx);
+    m_Projects.clear();
+    endInsertRows();
+}
+
+/* }}}*/
+
 VOID_NAMESPACE_CLOSE
