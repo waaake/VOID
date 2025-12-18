@@ -77,4 +77,55 @@ QSize ProjectItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QM
     return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 20);
 }
 
+/* Recent Project Item Delegate {{{ */
+
+RecentProjectItemDelegate::RecentProjectItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent)
+{
+}
+
+void RecentProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    /**
+     * The main Rect for the Item will used as is for the name
+     * ------------------------------
+     * | Name.ext      Thurs 18 Dec |
+     * ------------------------------
+     */
+    QRect r = option.rect;
+    QRect left = QRect(r.left() + 6 , r.top(), r.width() / 2, r.height());
+    QRect right = QRect(left.right(), r.top(), r.width() / 2 - 12, r.height());
+
+    QColor fg = option.palette.color(QPalette::Text);
+    QColor bg = option.palette.color(QPalette::Window).lighter(200);
+
+    painter->save();
+    painter->setPen(Qt::NoPen);
+
+     /* Selected */
+    if (option.state & QStyle::State_Selected)
+    {        
+        bg = option.palette.color(QPalette::Highlight);
+        fg = Qt::black;
+    }
+
+    /* Paint the BG */
+    painter->setBrush(bg);
+    painter->drawRect(r);
+
+    /* Draw Text text */
+    painter->setPen(fg);
+    painter->drawText(left, Qt::AlignLeft | Qt::AlignVCenter, index.data(static_cast<int>(RecentProjectsModel::Roles::Name)).toString());
+    painter->drawText(right, Qt::AlignRight | Qt::AlignVCenter, index.data(static_cast<int>(RecentProjectsModel::Roles::Modification)).toString());
+
+    painter->restore();
+}
+
+QSize RecentProjectItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 38);
+}
+
+/* }}} */
+
 VOID_NAMESPACE_CLOSE

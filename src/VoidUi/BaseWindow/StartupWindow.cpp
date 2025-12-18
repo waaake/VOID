@@ -13,6 +13,7 @@
 #include "VoidUi/Preferences/Preferences.h"
 #include "VoidUi/QExtensions/Delegates.h"
 #include "VoidUi/Project/ProjectBridge.h"
+#include "VoidUi/Project/Delegates/ListDelegate.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -30,6 +31,7 @@ StartupWindow::StartupWindow(QWidget* parent)
     : QDialog(parent)
 {
     Build();
+    Setup();
     Connect();
     Populate();
 }
@@ -44,9 +46,21 @@ StartupWindow::~StartupWindow()
     delete m_BottomButtonsLayout;
     m_BottomButtonsLayout = nullptr;
 
+    m_ProjectsLayout->deleteLater();
+    delete m_ProjectsLayout;
+    m_ProjectsLayout = nullptr;
+
+    m_InternalSplitLayout->deleteLater();
+    delete m_InternalSplitLayout;
+    m_InternalSplitLayout = nullptr;
+
     m_Layout->deleteLater();
     delete m_Layout;
     m_Layout = nullptr;
+
+    m_Projects->deleteLater();
+    delete m_Projects;
+    m_Projects = nullptr;
 }
 
 void StartupWindow::Build()
@@ -54,6 +68,7 @@ void StartupWindow::Build()
     m_Layout = new QVBoxLayout(this);
 
     m_InternalSplitLayout = new QHBoxLayout;
+    m_ProjectsLayout = new QVBoxLayout;
     m_SideButtonsLayout = new QVBoxLayout;
     m_BottomButtonsLayout = new QHBoxLayout;
 
@@ -74,8 +89,8 @@ void StartupWindow::Build()
     m_SideButtonsLayout->addWidget(m_OpenProjectBtn);
     m_SideButtonsLayout->addStretch(1);
 
-    m_ProjectsLister = new QListWidget;
-    m_ProjectsLister->setItemDelegate(new HCustomItemDelegate(43));
+    QLabel* recentProjectsLabel = new QLabel("Recent Projects");
+    m_ProjectsLister = new QListView;
 
     m_DontShowCheck = new QCheckBox("Don't Show this dialog on startup");
     m_LoadBtn = new QPushButton("Load Selected");
@@ -86,8 +101,11 @@ void StartupWindow::Build()
     m_BottomButtonsLayout->addWidget(m_LoadBtn);
     m_BottomButtonsLayout->addWidget(m_CloseBtn);
 
+    m_ProjectsLayout->addWidget(recentProjectsLabel);
+    m_ProjectsLayout->addWidget(m_ProjectsLister);
+
     m_InternalSplitLayout->addLayout(m_SideButtonsLayout);
-    m_InternalSplitLayout->addWidget(m_ProjectsLister);
+    m_InternalSplitLayout->addLayout(m_ProjectsLayout);
 
     m_Layout->addWidget(labelWidget);
     m_Layout->addLayout(m_InternalSplitLayout);
@@ -109,37 +127,35 @@ void StartupWindow::Connect()
         Close();
     });
 
-    connect(m_ProjectsLister, &QListWidget::itemDoubleClicked, this, &StartupWindow::LoadSelected);
+    connect(m_ProjectsLister, &QListView::doubleClicked, this, &StartupWindow::LoadSelected);
+}
+
+void StartupWindow::Setup()
+{
+    m_Projects = new RecentProjectsModel(this);
+    m_ProjectsLister->setModel(m_Projects);
+    m_ProjectsLister->setItemDelegate(new RecentProjectItemDelegate(this));
+    m_ProjectsLister->setSpacing(1);
 }
 
 void StartupWindow::Populate()
 {
-    for (const std::string& project : VoidPreferences::Instance().RecentProjects())
-    {
-        QListWidgetItem* item = new QListWidgetItem(m_ProjectsLister);
-        std::filesystem::path path = project.c_str();
-
-        item->setText(path.filename().c_str());
-        item->setToolTip(project.c_str());
-
-        m_ProjectsLister->addItem(item);
-    }
+    m_Projects->Add(VoidPreferences::Instance().RecentProjects());
 }
 
 void StartupWindow::LoadSelected()
 {
-    int index = m_ProjectsLister->selectionModel()->currentIndex().row();
-    if (index < 0)
+
+    const std::filesystem::path& project = m_Projects->Project(m_ProjectsLister->selectionModel()->currentIndex());
+    if (project.empty())
     {
         VOID_LOG_INFO("No Project selected to Load");
         return;
     }
 
-    const std::vector<std::string>& projects = VoidPreferences::Instance().RecentProjects();
-    const std::string path = projects.at(index);
-    VOID_LOG_INFO("Loading Recent Project: {0}", path);
+    VOID_LOG_INFO("Loading Recent Project: {0}", project.c_str());
 
-    _ProjectBridge.Open(path);
+    _ProjectBridge.Open(project.c_str());
     Close();
 }
 

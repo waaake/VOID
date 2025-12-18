@@ -9,12 +9,13 @@
 #include <QDialog>
 #include <QLabel>
 #include <QLayout>
-#include <QListWidget>
+#include <QListView>
 #include <QPushButton>
 #include <QStyledItemDelegate>
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Models/ProjectModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -43,17 +44,22 @@ private: /* Members */
     QPushButton* m_CloseBtn;
 
     QCheckBox* m_DontShowCheck;
-    QListWidget* m_ProjectsLister;
+    QListView* m_ProjectsLister;
 
     QVBoxLayout* m_Layout;
     QHBoxLayout* m_InternalSplitLayout;
+    QVBoxLayout* m_ProjectsLayout;
     QVBoxLayout* m_SideButtonsLayout;
     QHBoxLayout* m_BottomButtonsLayout;
+
+    RecentProjectsModel* m_Projects;
 
 private: /* Methods */
     void Build();
     void Connect();
+    void Setup();
     void Populate();
+
     void LoadSelected();
     void Close();
 };
