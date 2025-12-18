@@ -94,6 +94,14 @@ void ProjectBridge::ImportDirectory(Project* project)
     m_Bridge.ImportDirectory(mediaBrowser.SelectedDirectory());
 }
 
+void ProjectBridge::New()
+{
+    /**
+     * TODO: This needs to be implemented here as opposed to the MediaBridge
+     */
+    m_Bridge.NewProject();
+}
+
 void ProjectBridge::Open()
 {
     VoidProjectBrowser browser;

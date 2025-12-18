@@ -7,6 +7,7 @@ set(SOURCES
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
     BaseWindow/WorkspaceManager.cpp
+    BaseWindow/StartupWindow.cpp
 
     # Commands
     Commands/VoidCommand.cpp
@@ -84,6 +85,7 @@ set(SOURCES
     Toolkit/ControlScroller.cpp
 
     # QExtensions
+    QExtensions/Delegates.cpp
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
     QExtensions/MessageBox.cpp

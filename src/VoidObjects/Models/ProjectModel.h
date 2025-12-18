@@ -6,6 +6,7 @@
 
 /* STD */
 #include <vector>
+#include <filesystem>
 
 /* Qt */
 #include <QAbstractItemModel>
@@ -97,6 +98,45 @@ private: /* Members */
 
     /* Sorting role */
     int m_SortRole;
+};
+
+class VOID_API RecentProjectsModel : public QAbstractItemModel
+{
+    Q_OBJECT
+
+public:
+    /**
+     * Roles for various fields of data from the Project
+     */
+    enum class Roles
+    {
+        Name = Qt::UserRole + 1001,
+        Modification
+    };
+
+public:
+    explicit RecentProjectsModel(QObject* parent = nullptr);
+
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex& index) const override;
+
+    int rowCount(const QModelIndex& index) const override;
+    int columnCount(const QModelIndex& index) const override;
+
+    QVariant data(const QModelIndex& parent, int role = Qt::DisplayRole) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+
+    void Add(const std::vector<std::string>& projects);
+    void Clear();
+
+    std::filesystem::path Project(const QModelIndex& index) const;
+    std::filesystem::path Project(int row) const;
+
+private: /* Members */
+    std::vector<std::filesystem::path> m_Projects;
+
+private: /* Methods */
+    std::string ModificationTime(const std::filesystem::path& path) const;
 };
 
 VOID_NAMESPACE_CLOSE

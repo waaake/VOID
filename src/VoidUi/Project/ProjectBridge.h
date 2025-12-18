@@ -31,6 +31,7 @@ public:
     void ImportMedia(Project* project);
     void ImportDirectory(Project* project);
 
+    void New();
     void Open();
     void Open(const std::string& path);
     void Close();

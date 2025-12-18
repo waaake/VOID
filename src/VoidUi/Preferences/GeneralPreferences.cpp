@@ -29,6 +29,8 @@ void GeneralPreferences::Reset()
 
     index = VoidPreferences::Instance().GetSetting(Settings::ColorStyle).toInt();
     m_ColorStyleBox->setCurrentIndex(index);
+
+    m_StartupPopupCheck->setChecked(VoidPreferences::Instance().GetSetting(Settings::DontShowStartup).toBool());
 }
 
 void GeneralPreferences::Save()
@@ -36,6 +38,7 @@ void GeneralPreferences::Save()
     /* Get and save the value of the Undo Queue size */
     VoidPreferences::Instance().Set(Settings::UndoQueueSize, QVariant(m_UndoBox->currentIndex()));
     VoidPreferences::Instance().Set(Settings::ColorStyle, QVariant(m_ColorStyleBox->currentIndex()));
+    VoidPreferences::Instance().Set(Settings::DontShowStartup, QVariant(m_StartupPopupCheck->isChecked()));
 }
 
 void GeneralPreferences::Build()
@@ -59,6 +62,10 @@ void GeneralPreferences::Build()
     m_ColorStyleLabel = new QLabel("Color Style");
     m_ColorStyleBox = new QComboBox;
 
+    m_StartupPopupDescription = new QLabel("Show a popup when the Application starts. The popup allows to choose from the recent Projects.");
+    m_StartupPopupLabel = new QLabel("Don't show Statup Dialog");
+    m_StartupPopupCheck = new QCheckBox();
+
     /* Add to the layout */
     m_Layout->addWidget(m_UndoDescription, 0, 0, 1, 3);
     m_Layout->addWidget(m_UndoLabel, 1, 0);
@@ -70,8 +77,14 @@ void GeneralPreferences::Build()
     m_Layout->addWidget(m_ColorStyleLabel, 4, 0);
     m_Layout->addWidget(m_ColorStyleBox, 4, 1);
 
+    m_Layout->addItem(new QSpacerItem(10, 20), 5, 3);
+
+    m_Layout->addWidget(m_StartupPopupDescription, 6, 0, 1, 3);
+    m_Layout->addWidget(m_StartupPopupLabel, 7, 0);
+    m_Layout->addWidget(m_StartupPopupCheck, 7, 1);
+
     /* Spacer */
-    m_Layout->setRowStretch(5, 1);
+    m_Layout->setRowStretch(8, 1);
 }
 
 void GeneralPreferences::Setup()

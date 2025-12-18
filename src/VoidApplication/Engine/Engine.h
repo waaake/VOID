@@ -38,6 +38,7 @@ private: /* Methods */
     void Setup(QApplication& app);
     void Initialize();
     void PostInit();
+    void PostStartup();
 };
 
 VOID_NAMESPACE_CLOSE

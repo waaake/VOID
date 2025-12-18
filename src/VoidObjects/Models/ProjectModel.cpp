@@ -1,6 +1,10 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <chrono>
+#include <sstream>
+
 /* Internal */
 #include "ProjectModel.h"
 #include "VoidCore/VoidTools.h"
@@ -219,5 +223,124 @@ bool ProjectProxyModel::lessThan(const QModelIndex& left, const QModelIndex& rig
 }
 
 /* }}} */
+
+/* RecentProjectsModel {{{ */
+
+RecentProjectsModel::RecentProjectsModel(QObject* parent)
+    : QAbstractItemModel(parent)
+{
+}
+
+QModelIndex RecentProjectsModel::index(int row, int column, const QModelIndex& parent) const
+{
+    if (!parent.isValid() && row >= 0 && row < static_cast<int>(m_Projects.size()))
+        return createIndex(row, column, const_cast<std::filesystem::path*>(&m_Projects[row]));  // Non-const
+
+    /* Empty */
+    return QModelIndex();   
+}
+
+QModelIndex RecentProjectsModel::parent(const QModelIndex& index) const
+{
+    return QModelIndex();
+}
+
+int RecentProjectsModel::rowCount(const QModelIndex& index) const
+{
+    if (index.isValid())
+        return 0;
+    
+    return static_cast<int>(m_Projects.size());
+}
+
+int RecentProjectsModel::columnCount(const QModelIndex& index) const
+{
+    return 1;
+}
+
+QVariant RecentProjectsModel::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid() || index.row() >= static_cast<int>(m_Projects.size()))
+        return QVariant();
+    
+    const std::filesystem::path& path = m_Projects.at(index.row());
+
+    switch(static_cast<Roles>(role))
+    {
+        case Roles::Modification:
+            return QVariant(ModificationTime(path).c_str());
+            break;
+        case Roles::Name:
+        default:
+            return QVariant(path.filename().c_str());
+    }
+}
+
+Qt::ItemFlags RecentProjectsModel::flags(const QModelIndex& index) const
+{
+    if (!index.isValid())
+        return Qt::NoItemFlags;
+    
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+}
+
+void RecentProjectsModel::Add(const std::vector<std::string>& projects)
+{
+    /* Where the project will be inserted */
+    int insertidx = static_cast<int>(m_Projects.size());
+
+    m_Projects.reserve(projects.size());
+
+    beginInsertRows(QModelIndex(), insertidx, insertidx);
+    for (const std::string& project : projects)
+    {
+        // std::filesystem::path filepath = project;
+        m_Projects.emplace_back(project);
+    }
+    endInsertRows();
+}
+
+void RecentProjectsModel::Clear()
+{
+    /* Where the project will be inserted */
+    int insertidx = static_cast<int>(m_Projects.size());
+
+    beginInsertRows(QModelIndex(), insertidx, insertidx);
+    m_Projects.clear();
+    endInsertRows();
+}
+
+std::filesystem::path RecentProjectsModel::Project(const QModelIndex& index) const
+{
+    if (!index.isValid() || index.row() > m_Projects.size())
+        return "";
+
+    return m_Projects.at(index.row());
+}
+
+std::filesystem::path RecentProjectsModel::Project(int row) const
+{
+    if (row < m_Projects.size())
+        return m_Projects.at(row);
+
+    return "";
+}
+
+std::string RecentProjectsModel::ModificationTime(const std::filesystem::path& path) const
+{
+    std::filesystem::file_time_type mtime = std::filesystem::last_write_time(path);
+    auto sysclocktimept = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+        mtime - std::filesystem::file_time_type::clock::now() + std::chrono::high_resolution_clock::now()
+    );
+
+    /* Before formatting */
+    std::time_t ftime = std::chrono::system_clock::to_time_t(sysclocktimept);
+    std::ostringstream oss;
+    oss << std::put_time(std::localtime(&ftime), "%A %d %b %H:%M");
+
+    return oss.str();
+}
+
+/* }}}*/
 
 VOID_NAMESPACE_CLOSE

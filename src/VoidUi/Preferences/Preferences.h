@@ -21,6 +21,7 @@ namespace Settings
     constexpr auto CacheMemory = "cache/memory";
     constexpr auto CacheThreads = "cache/threads";
     constexpr auto RecentProjects = "recents/projects";
+    constexpr auto DontShowStartup = "startup/dontShowPopup";
 }
 
 class VOID_API VoidPreferences : public QObject
@@ -49,6 +50,7 @@ public:
     inline unsigned int GetCacheMemory() const { return GetSetting(Settings::CacheMemory).toUInt(); }
     inline unsigned int GetCacheThreads() const { return GetSetting(Settings::CacheThreads).toUInt(); }
     inline int GetColorStyle() const { return GetSetting(Settings::ColorStyle).toInt(); }
+    inline bool ShowStartup() const { return !GetSetting(Settings::DontShowStartup).toBool(); }
 
     void AddRecentProject(const std::string& path);
     std::vector<std::string> RecentProjects();
