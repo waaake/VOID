@@ -272,7 +272,7 @@ QVariant RecentProjectsModel::data(const QModelIndex& index, int role) const
             break;
         case Roles::Name:
         default:
-            return QVariant(path.filename().c_str());
+            return QVariant(path.filename().string().c_str());
     }
 }
 
@@ -329,9 +329,7 @@ std::filesystem::path RecentProjectsModel::Project(int row) const
 std::string RecentProjectsModel::ModificationTime(const std::filesystem::path& path) const
 {
     std::filesystem::file_time_type mtime = std::filesystem::last_write_time(path);
-    auto sysclocktimept = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
-        mtime - std::filesystem::file_time_type::clock::now() + std::chrono::high_resolution_clock::now()
-    );
+    auto sysclocktimept = std::chrono::system_clock::now() + (mtime - std::filesystem::file_time_type::clock::now());
 
     /* Before formatting */
     std::time_t ftime = std::chrono::system_clock::to_time_t(sysclocktimept);

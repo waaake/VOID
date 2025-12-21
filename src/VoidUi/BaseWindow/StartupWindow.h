@@ -27,7 +27,7 @@ protected:
     void paintEvent(QPaintEvent* event);
 };
 
-class StartupWindow : public QDialog
+class VOID_API StartupWindow : public QDialog
 {
     Q_OBJECT
 public:
