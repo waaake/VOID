@@ -3,6 +3,10 @@
 
 /* Qt */
 #include <QApplication>
+#include <QByteArray>
+#include <QDrag>
+#include <QMainWindow>
+#include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStyle>
@@ -12,6 +16,7 @@
 #include "Docker.h"
 #include "DockManager.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Descriptors.h"
 #include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
@@ -65,9 +70,23 @@ void DockTab::mouseMoveEvent(QMouseEvent* event)
 		/* Check the delta of the movement */
 		if ((event->pos() - m_StartPos).manhattanLength() > 200)
 		{
-			m_Dragging = false;
-			/* Tab Detach Requested */
-			emit tabDetachRequested(currentIndex(), mapToGlobal(event->pos()));
+			DockWidget* p = dynamic_cast<DockWidget*>(parentWidget());
+			int index = tabAt(m_StartPos);
+			DockPanel* w = dynamic_cast<DockPanel*>(p->widget(index));
+			QPixmap pixmap = w->grab();
+
+			QDrag* drag = new QDrag(this);
+			QMimeData* mime = new QMimeData;
+			mime->setData(MimeTypes::TabIndex, QByteArray::number(w->PanelId()));
+			drag->setMimeData(mime);
+			drag->setPixmap(pixmap);
+
+			Qt::DropAction drop = drag->exec(Qt::MoveAction);
+
+			if (drop == Qt::IgnoreAction)
+				emit tabDetachRequested(index, mapToGlobal(event->pos()));
+			else
+				emit tabRemovalRequested(index);
 		}
 	}
 
@@ -78,7 +97,6 @@ void DockTab::mouseReleaseEvent(QMouseEvent* event)
 {
 	/* Mouse has been release and so is the dragging */
 	m_Dragging = false;
-
 	QTabBar::mouseReleaseEvent(event);
 }
 
@@ -86,9 +104,11 @@ void DockTab::mouseReleaseEvent(QMouseEvent* event)
 
 /* Dock Widget {{{ */
 
-DockWidget::DockWidget(DockSplitter* parent)
+DockWidget::DockWidget(DockSplitter* parent, bool floating)
 	: QTabWidget(parent)
 	, m_Splitter(parent)
+	, m_DragActive(false)
+	, m_Floating(floating)
 {
 	m_DockTab = new DockTab(this);
 
@@ -126,46 +146,107 @@ void DockWidget::AddDockManagerWidget(int index)
 	AddDock(d.widget, d.name, true);
 }
 
+void DockWidget::dragEnterEvent(QDragEnterEvent* event)
+{
+	if (event->mimeData()->hasFormat(MimeTypes::TabIndex))
+	{
+		event->acceptProposedAction();
+
+		m_DragActive = true;
+		update();
+	}
+}
+
+void DockWidget::dragLeaveEvent(QDragLeaveEvent* event)
+{
+	m_DragActive = false;
+	update();
+}
+
+void DockWidget::dropEvent(QDropEvent* event)
+{
+	QByteArray data = event->mimeData()->data(MimeTypes::TabIndex);
+	int index = data.toInt();
+
+	AddDockManagerWidget(index);
+
+	m_DragActive = false;
+	update();
+	event->accept();
+}
+
+void DockWidget::paintEvent(QPaintEvent* event)
+{
+	QTabWidget::paintEvent(event);
+
+	if (m_DragActive)
+	{
+		QPainter p(this);
+		QColor highlight = palette().color(QPalette::Highlight);
+
+		if (count())
+		{
+			p.fillRect(
+				QRect(0, 0, width(), tabBar()->height()),
+				QColor(highlight.red(), highlight.green(), highlight.blue(), 127)
+			);
+		}
+		else
+		{
+			p.fillRect(rect(), QColor(highlight.red(), highlight.green(), highlight.blue(), 127));
+		}
+	}
+}
+
 void DockWidget::SetTabClosable(int index)
 {
 	CloseButton* closeButton = new CloseButton();
     closeButton->setFixedSize(12, 12);
 
 	// connect(closeButton, &QToolButton::clicked, this, [=]() { emit tabCloseRequested(index); });
-	connect(closeButton, &QToolButton::clicked, this, [=]() { CloseTab(index); });
+	connect(closeButton, &QToolButton::clicked, this, [=]() { RemoveTab(index); });
 
 	/* Set the tool button on the tabbar */
 	tabBar()->setTabButton(index, QTabBar::RightSide, closeButton);
 }
 
-void DockWidget::CloseTab(int index)
+void DockWidget::RemoveTab(int index)
 {
-	//DockPanel* panel = static_cast<DockPanel*>(widget(index));
+	/* Dock panel at the index */
+	DockPanel* panel = dynamic_cast<DockPanel*>(widget(index));
+	panel->setParent(nullptr);
 
-	removeTab(index);
-
-	///* Delete the panel that was added to the widget */
-	//delete panel;
+	/**
+	 * If the current Widget is a floating panel -> we're free to destroy it
+	 * if we don't have any more tabs left
+	 */
+	if (!count() && m_Floating)
+		CloseParent();
 }
 
 void DockWidget::UndockTab(int index, const QPoint& position)
 {
+	QMainWindow* window = new QMainWindow;
+	DockSplitter* splitter = new DockSplitter(Qt::Horizontal, window);
+	DockWidget* undocked = new DockWidget(splitter, true);
+	window->setCentralWidget(undocked);
+
 	/* Get the Dock Panel at the index */
 	DockPanel* panel = static_cast<DockPanel*>(widget(index));
 
 	/* Unparent the Panel */
 	panel->setParent(nullptr);
+	undocked->AddDockManagerWidget(panel->PanelId());
 
-	/* Remove the tab */
-	removeTab(index);
-
-	/* Move the panel to that position */
-	panel->show();
-	panel->move(position);
+	/* Move the window to provided position */
+	window->move(position);
+	window->show();
 }
 
 void DockWidget::SetupOptions()
 {
+	setAcceptDrops(true);
+
 	/* Options Button */
 	m_PanelOptions = new MenuToolButton;
 	m_PanelOptions->setIcon(IconForge::GetIcon(IconType::icon_browse, _DARK_COLOR(QPalette::Text, 140)));
@@ -189,6 +270,17 @@ void DockWidget::SetupOptions()
 	m_Options->addAction(m_SplitHorizontalAction);
 	m_Options->addAction(m_SplitVerticalAction);
 
+	/**
+	 * TODO: For floating panels splitting is disabled at the moment
+	 * it is based on the current architecture that we are not tracking how many splits
+	 * have been added to the parent dock splitter, we can't really allow floating panels
+	 * to be split, as with 0 tabs remaining, the window is destroyed
+	 * Once the tracking on the parent Splitter is added, this can then be allowed
+	 * and Windows can then be allowed to have a full feature as the main window for docking
+	 */
+	m_SplitHorizontalAction->setEnabled(!m_Floating);
+	m_SplitVerticalAction->setEnabled(!m_Floating);
+
 	/* ------------------------ */
 	m_Options->addSeparator();
 
@@ -202,6 +294,7 @@ void DockWidget::SetupOptions()
 void DockWidget::Connect()
 {
 	/* Tab Bar */
+	connect(m_DockTab, &DockTab::tabRemovalRequested, this, &DockWidget::RemoveTab);
 	connect(m_DockTab, &DockTab::tabDetachRequested, this, &DockWidget::UndockTab);
 
 	/* Panel Options */
@@ -226,6 +319,23 @@ void DockWidget::ClosePane()
 
 	/* With all tabs unparented, request for this to be removed */
 	emit closureRequested(this);
+}
+
+void DockWidget::CloseParent()
+{
+	/**
+	 * The floating panels are constructed with the main window -> Dock Splitter -> Dock Widget (this)
+	 * so from the dock widget we start getting the parent -> parent, i.e. the main window
+	 * and free the pointer to the window, clearing all of the children
+	 */
+	QMainWindow* window = dynamic_cast<QMainWindow*>(parentWidget()->window());
+
+	if (window)
+	{
+		window->deleteLater();
+		delete window;
+		window = nullptr;
+	}
 }
 
 void DockWidget::ResetDockMenu()

@@ -52,6 +52,7 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* event) override;
 
 signals:
+	void tabRemovalRequested(int index);
 	void tabDetachRequested(int index, const QPoint& position);
 
 private: /* Members */
@@ -64,10 +65,17 @@ class DockWidget : public QTabWidget
 	Q_OBJECT
 
 public:
-	DockWidget(DockSplitter* parent = nullptr);
+	DockWidget(DockSplitter* parent = nullptr, bool floating = false);
 
 	void AddDock(QWidget* panel, const std::string& title, bool closable = false);
 	void AddDockManagerWidget(int index);
+
+protected:
+	void dragEnterEvent(QDragEnterEvent* event) override;
+	void dragLeaveEvent(QDragLeaveEvent* event) override;
+	void dropEvent(QDropEvent* event) override;
+
+	void paintEvent(QPaintEvent* event) override;
 
 signals:
 	/* Emitted when the DockWidget is to be closed */
@@ -86,8 +94,11 @@ private: /* Members */
 
 	DockSplitter* m_Splitter;
 
+	bool m_DragActive;
+	bool m_Floating;
+
 private: /* Methods */
-	void CloseTab(int index);
+	void RemoveTab(int index);
 	void UndockTab(int index, const QPoint& positiion);
 	void SetTabClosable(int index);
 
@@ -97,9 +108,10 @@ private: /* Methods */
 	void SetupOptions();
 
 	void Connect();
-
+	
 	/* Closes the entire Pane of tab widgets */
 	void ClosePane();
+	void CloseParent();
 
 	/* (Re)setup the Menu for the Docks */
 	void ResetDockMenu();
