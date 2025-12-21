@@ -19,6 +19,9 @@ public:
 	DockPanel(QWidget* widget, QWidget* parent = nullptr);
 	~DockPanel();
 
+	inline QWidget* Widget() const { return widget; }
+	inline int PanelId() const { return widget ? widget->objectName().toInt() : -1; }
+
 private: /* Members */
 	QWidget* widget;
 	QHBoxLayout* m_Layout;

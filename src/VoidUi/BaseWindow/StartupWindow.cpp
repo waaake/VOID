@@ -153,9 +153,9 @@ void StartupWindow::LoadSelected()
         return;
     }
 
-    VOID_LOG_INFO("Loading Recent Project: {0}", project.c_str());
+    VOID_LOG_INFO("Loading Recent Project: {0}", project.string());
 
-    _ProjectBridge.Open(project.c_str());
+    _ProjectBridge.Open(project.string());
     Close();
 }
 

@@ -13,6 +13,7 @@ namespace MimeTypes {
 
     constexpr const char* MediaItem = "application-void/x-MediaItem";
     constexpr const char* PlaylistItem = "application-void/x-PlaylistItem";
+    constexpr const char* TabIndex = "application-void/x-tab-index";
 
 } // namespace MimeTypes
 

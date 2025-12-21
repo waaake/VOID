@@ -24,6 +24,9 @@ int DockManager::RegisterDock(QWidget* widget, const std::string& text)
     /* Add the Dock to the underlying struct */
     m_Docks[id] = {id, widget, text};
 
+    /* Give the widget the same id as the object name */
+    widget->setObjectName(QString::number(id));
+
     /* Emit that the DockManager has received an update */
     emit updated();
 
