@@ -106,6 +106,7 @@ void MediaModel::Add(const SharedMediaClip& media)
 
     beginInsertRows(QModelIndex(), insertidx, insertidx);
     m_Media.push_back(media);
+    connect(media.get(), &MediaClip::updated, this, [this, media]() { UpdateMedia(media); });
     endInsertRows();
 }
 
@@ -178,6 +179,19 @@ void MediaModel::Update()
 
     /* Emit that all the data has now been changed */
     emit dataChanged(top, bottom);
+}
+
+void MediaModel::UpdateMedia(const SharedMediaClip& clip)
+{
+    if (m_Media.empty())
+        return;
+
+    auto it = std::find(m_Media.begin(), m_Media.end(), clip);
+    if (it != m_Media.end())
+    {
+        QModelIndex idx = index(static_cast<int>(std::distance(m_Media.begin(), it)), 0);
+        emit dataChanged(idx, idx);
+    }
 }
 
 /* }}} */

@@ -83,6 +83,7 @@ private: /* Methods */
     std::string ItemFramerange(const SharedMediaClip& clip) const;
 
     void Update();
+    void UpdateMedia(const SharedMediaClip& clip);
 };
 
 class VOID_API MediaProxyModel : public QSortFilterProxyModel
