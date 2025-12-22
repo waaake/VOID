@@ -11,6 +11,7 @@
 /* Qt */
 #include <QColor>
 #include <QPixmap>
+#include <QRunnable>
 
 /* Internal */
 #include "Definition.h"
@@ -147,6 +148,25 @@ private: /* Members */
      * Each Shared Annotation Pointer is mapped to a frame (as simple as it can be :D)
      */
     std::unordered_map<v_frame_t, Renderer::SharedAnnotation> m_Annotations;
+
+private: /* Methods */
+    void ReadThumbnail();
+    QPixmap DefaultThumbnail();
+
+private: /* Classes */
+    class MediaThumbnailCacheRunner : public QRunnable
+    {
+    public:
+        MediaThumbnailCacheRunner(MediaClip* clip) : m_Clip(clip) {}
+        inline void run() override
+        {
+            if (m_Clip)
+                m_Clip->ReadThumbnail();
+        }
+
+    private:
+        MediaClip* m_Clip;
+    };
 };
 
 VOID_NAMESPACE_CLOSE

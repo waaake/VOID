@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "MediaClip.h"
+#include "VoidObjects/Core/Threads.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -14,6 +15,7 @@ MediaClip::MediaClip(QObject* parent)
     , Media()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
@@ -22,6 +24,7 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 MediaClip::MediaClip(const std::string& basepath,
@@ -34,6 +37,7 @@ MediaClip::MediaClip(const std::string& basepath,
     , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 MediaClip::MediaClip(const std::string& basepath,
@@ -49,6 +53,7 @@ MediaClip::MediaClip(const std::string& basepath,
     , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 MediaClip::MediaClip(const std::string& basepath,
@@ -65,6 +70,7 @@ MediaClip::MediaClip(const std::string& basepath,
     , m_Thumbnail()
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 
@@ -74,18 +80,47 @@ MediaClip::~MediaClip()
 
 QPixmap MediaClip::Thumbnail()
 {
-    if (m_Thumbnail.isNull())
-    {
-        /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-        SharedPixels im = Media::FirstImage();
-        QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
+    /**
+     * Since the thumbnail caching is on another thread, we don't know when it might be available
+     * in case it's not yet read, use the default thumbnail, once the thumbnail is updated the updated
+     * signal will force the model to requery the thumbnail and that's when the actual thumbnail is returned
+     */
+    return m_Thumbnail.isNull() ? DefaultThumbnail() : m_Thumbnail;
+}
 
-        m_Thumbnail = QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format)).scaledToWidth(400, Qt::SmoothTransformation);
-        /* Clear the data for when required */
-        im->Clear();
+void MediaClip::ReadThumbnail()
+{
+    if (!Valid())
+        return;
+
+    /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
+    SharedPixels im = Media::FirstImage();
+    QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
+
+    QPixmap frame;
+    frame = QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format));
+
+    /* Fallback to default thumbnail if we can't read the frame from the Media */
+    if (frame.isNull())
+    {
+        frame = DefaultThumbnail();
+        VOID_LOG_WARN("Unable to fetch image from the Media, using default");
     }
 
-    return m_Thumbnail;
+    m_Thumbnail = frame.scaledToWidth(400, Qt::SmoothTransformation);
+    /* Clear the data for when required */
+    im->Clear();
+
+    emit updated();
+}
+
+QPixmap MediaClip::DefaultThumbnail()
+{
+    /* 16:9 aspect default */
+    QPixmap pix = QPixmap(QSize(400, 225));
+    pix.fill(Qt::black);
+
+    return pix;
 }
 
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const
