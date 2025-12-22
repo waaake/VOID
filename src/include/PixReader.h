@@ -148,6 +148,9 @@ public:
      */
     virtual const std::map<std::string, std::string> Metadata() const = 0;
 
+    inline std::string Framepath() const { return m_Path; }
+    inline v_frame_t Framenumber() const { return m_Framenumber; }
+
 protected:
     std::string m_Path;
     v_frame_t m_Framenumber;
