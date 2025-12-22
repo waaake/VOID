@@ -1,5 +1,7 @@
 # Build Intermediate Objects Library
 set(SOURCES
+    Core/Threads.cpp
+
     Media/MediaClip.cpp
 
     Models/MediaModel.cpp

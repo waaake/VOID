@@ -10,6 +10,7 @@
 /* Reader Registration */
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
+#include "VoidObjects/Core/Threads.h"
 #include "VoidUi/Engine/Globals.h"
 #include "VoidUi/Preferences/Preferences.h"
 #include "VoidUi/BaseWindow/StartupWindow.h"
@@ -41,6 +42,7 @@ int VoidEngine::Exec(int argc, char** argv)
     int result = app.exec();
 
     /* Cleanup */
+    ThreadPool::Destroy();
     delete m_MenuSystem;
     delete m_Imager;
     return result;
@@ -72,6 +74,7 @@ void VoidEngine::Setup(QApplication& app)
 
 void VoidEngine::Initialize()
 {
+    ThreadPool::Init();
     m_Imager = new VoidMainWindow;
     UIGlobals::g_VoidMainWindow = m_Imager;
 
