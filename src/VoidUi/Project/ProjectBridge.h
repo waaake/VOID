@@ -22,6 +22,7 @@ public:
 
     /* Imports Media onto the currently active project + sets the Media for playing on the Active Player */
     SharedMediaClip OpenMedia();
+    SharedMediaClip OpenMedia(const std::string& path);
 
     /* Imports Media onto the currently active project */
     void ImportMedia();

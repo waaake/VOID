@@ -11,6 +11,7 @@
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
 #include "VoidObjects/Core/Threads.h"
+#include "VoidUi/Engine/Bridge.h"
 #include "VoidUi/Engine/Globals.h"
 #include "VoidUi/Preferences/Preferences.h"
 #include "VoidUi/BaseWindow/StartupWindow.h"
@@ -24,6 +25,9 @@ VoidEngine::~VoidEngine()
 
 int VoidEngine::Exec(int argc, char** argv)
 {
+    /* Parse incoming args to get what can be used during/post startup */
+    m_Args = ArgParser::ParseArgs(argc, argv);
+
     InitLogging();
 
     QApplication app(argc, argv);
@@ -79,7 +83,7 @@ void VoidEngine::Initialize()
     UIGlobals::g_VoidMainWindow = m_Imager;
 
     /* Workspace */
-    m_Imager->SwitchWorkspace(Workspace::PLAYBACK);
+    m_Imager->SwitchWorkspace(m_Args.basic ? Workspace::BASIC : Workspace::PLAYBACK);
 
     /* Init Menu */
     m_MenuSystem = new MenuSystem(m_Imager);
@@ -105,8 +109,20 @@ void VoidEngine::PostInit()
 
 void VoidEngine::PostStartup()
 {
-    /* Startup window pop-up */
-    StartupWindow::Exec(m_Imager);
+    if (!m_Args.project.empty())
+    {
+        EngineBridge::OpenProject(m_Args.project);
+    }
+    else if (!m_Args.media.empty())
+    {
+        EngineBridge::LoadMedia(m_Args.media);
+    }
+
+    if (m_Args.project.empty() && m_Args.media.empty() && !m_Args.basic)
+    {    
+        /* Startup window pop-up */
+        StartupWindow::Exec(m_Imager);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

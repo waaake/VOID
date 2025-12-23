@@ -33,7 +33,13 @@ SharedMediaClip ProjectBridge::OpenMedia()
     }
 
     m_Bridge.AddMedia(mediaBrowser.GetSelectedFile());
-    return m_Bridge.LastMedia();    
+    return m_Bridge.LastMedia();
+}
+
+SharedMediaClip ProjectBridge::OpenMedia(const std::string& path)
+{
+    m_Bridge.AddMedia(path);
+    return m_Bridge.LastMedia();
 }
 
 void ProjectBridge::ImportMedia()
@@ -105,7 +111,7 @@ void ProjectBridge::New()
 void ProjectBridge::Open()
 {
     VoidProjectBrowser browser;
-    
+
     if (!browser.Browse())
     {
         VOID_LOG_INFO("User Cancelled Opening.");
@@ -167,13 +173,13 @@ void ProjectBridge::Save()
         VOID_LOG_INFO("Not able to save project. Opening Save As Dialog...");
 
         VoidProjectBrowser browser;
-        
+
         if (!browser.Save())
         {
             VOID_LOG_INFO("User Cancelled Saving.");
             return;
         }
-    
+
         VoidFileDescriptor d = browser.File();
         m_Bridge.Save(d.path, d.name, d.type);
     }
@@ -182,7 +188,7 @@ void ProjectBridge::Save()
 void ProjectBridge::SaveAs()
 {
     VoidProjectBrowser browser;
-    
+
     if (!browser.Save())
     {
         VOID_LOG_INFO("User Cancelled Saving.");

@@ -65,6 +65,7 @@ add_executable(
     # Core Application Engine
     VoidApplication/Engine/VoidStyle.cpp
     VoidApplication/Engine/Engine.cpp
+    VoidApplication/Core/ArgumentParser.cpp
     Application.cpp
 )
 
