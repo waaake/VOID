@@ -336,7 +336,6 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
 void Player::SetMediaFrame(int frame)
 {
     const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
-
     /* Ensure we have a valid media to process before setting the frame */
     if (clip->Empty())
         return;

@@ -330,6 +330,9 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
             m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
         }
     }
+
+    /* Load thumbnail */
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 void MediaClip::Deserialize(std::istream& in)
@@ -377,6 +380,9 @@ void MediaClip::Deserialize(std::istream& in)
 
         m_Annotations[f] = annotation;
     }
+
+    /* Load thumbnail */
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 VOID_NAMESPACE_CLOSE
