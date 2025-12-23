@@ -74,6 +74,7 @@ private: /* Members */
 private: /* Members */
     void Clear();
     void InspectMetadata(const SharedMediaClip& media);
+    void ShowComponent(const Component& component) const;
 };
 
 VOID_NAMESPACE_CLOSE
