@@ -12,7 +12,7 @@
 #include <QTabWidget>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "DockPanel.h"
 #include "DockSplitter.h"
 #include "VoidUi/QExtensions/PushButton.h"
@@ -52,6 +52,7 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* event) override;
 
 signals:
+	void tabDragged(int index);
 	void tabRemovalRequested(int index);
 	void tabDetachRequested(int index, const QPoint& position);
 
@@ -98,6 +99,7 @@ private: /* Members */
 	bool m_Floating;
 
 private: /* Methods */
+	void HideTab(int index);
 	void RemoveTab(int index);
 	void UndockTab(int index, const QPoint& positiion);
 	void SetTabClosable(int index);
