@@ -27,7 +27,7 @@ public:
     explicit MetadataViewer(QWidget* parent = nullptr);
     ~MetadataViewer();
 
-    inline QSize sizeHint() const { return QSize(880, 720); }
+    virtual inline QSize sizeHint() const override { return QSize(880, 720); }
 
     /* Set Metadata on the viewer from the media clip */
     inline void SetFromMedia(const SharedMediaClip& clip) { m_Tree->SetMetadata(clip->Metadata()); }
