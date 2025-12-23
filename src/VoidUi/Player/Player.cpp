@@ -76,7 +76,7 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
 
     ViewerBuffer *active, *inactive;
 
-    buffer == PlayerViewBuffer::A 
+    buffer == PlayerViewBuffer::A
         ? (active = m_ViewBufferA, inactive = m_ViewBufferB)
         : (active = m_ViewBufferB, inactive = m_ViewBufferA);
 
@@ -122,7 +122,7 @@ void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& 
 
     ViewerBuffer *active, *inactive;
 
-    buffer == PlayerViewBuffer::A 
+    buffer == PlayerViewBuffer::A
         ? (active = m_ViewBufferA, inactive = m_ViewBufferB)
         : (active = m_ViewBufferB, inactive = m_ViewBufferA);
 
@@ -197,7 +197,7 @@ void Player::NextMedia()
         m_Renderer->Clear();
         ResetCacheMedia();
         m_CacheProcessor.RestartPlaybackCache();
-    
+
         SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
     }
 }
@@ -209,7 +209,7 @@ void Player::PreviousMedia()
         m_Renderer->Clear();
         ResetCacheMedia();
         m_CacheProcessor.RestartPlaybackCache();
-    
+
         SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
     }
 }
@@ -353,7 +353,7 @@ void Player::SetMediaFrame(int frame)
      */
     if (clip->Contains(frame))
     {
-        m_CacheProcessor.EnsureCached(frame);        
+        m_CacheProcessor.EnsureCached(frame);
         /* Read the image for the frame from the sequence and set it on the player */
         m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
     }
@@ -388,6 +388,29 @@ void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second
 
     /* Compare frames */
     CompareMediaFrame(m_Timeline->Frame());
+}
+
+void Player::InspectCurrentMetadata()
+{
+    /**
+     * Grab the active media from the ViewerBuffer that's active
+     * if the viewer buffer has sequence set, then we grab the media that's at the very frame
+     */
+    if (Comparing())
+        return;
+
+    if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Clip)
+    {
+        const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+        if (clip && clip->Valid())
+            emit metadataInspected(clip);
+    }
+    else
+    {
+        const SharedTrackItem& item = m_ActiveViewBuffer->TrackItem(Frame());
+        if (item)
+            emit metadataInspected(item->GetMedia());
+    }
 }
 
 void Player::CompareMediaFrame(v_frame_t frame)
@@ -444,7 +467,7 @@ void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)
 
     ViewerBuffer *active, *inactive;
 
-    buffer == PlayerViewBuffer::A 
+    buffer == PlayerViewBuffer::A
         ? (active = m_ViewBufferA, inactive = m_ViewBufferB)
         : (active = m_ViewBufferB, inactive = m_ViewBufferA);
 

@@ -11,9 +11,13 @@ VOID_NAMESPACE_OPEN
 
 class VOID_API Player : public PlayerWidget
 {
+    Q_OBJECT
+
 public:
     Player(QWidget* parent = nullptr);
     ~Player();
+    
+    virtual inline QSize sizeHint() const { return QSize(640, 480); }
 
     void SetFrame(int frame);
 
@@ -32,6 +36,7 @@ public:
     void SetComparisonMode(int mode);
     /* Compare Media on the Player */
     void Compare(const SharedMediaClip& first, const SharedMediaClip& second);
+    void InspectCurrentMetadata();
 
     inline void PauseCache() { m_CacheProcessor.PauseCaching(); }
     inline void DisableCache() { m_CacheProcessor.DisableCaching(); }
@@ -39,6 +44,13 @@ public:
     inline void Recache() { m_CacheProcessor.Recache(); }
     inline void ResumeCache() { m_CacheProcessor.ResumeCaching(); }
     inline void ClearCache() { m_CacheProcessor.ClearCache(); }
+
+signals:
+    /**
+     * Emitted when metadata is inspected for a Media Clip, probably being played
+     * @param clip: The Shared pointer to the Media clip for which the metadata is to be inspected.
+     */
+    void metadataInspected(const SharedMediaClip&);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;

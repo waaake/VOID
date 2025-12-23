@@ -75,6 +75,8 @@ void DockTab::mouseMoveEvent(QMouseEvent* event)
 			DockPanel* w = dynamic_cast<DockPanel*>(p->widget(index));
 			QPixmap pixmap = w->grab();
 
+			emit tabDragged(index);
+
 			QDrag* drag = new QDrag(this);
 			QMimeData* mime = new QMimeData;
 			mime->setData(MimeTypes::TabIndex, QByteArray::number(w->PanelId()));
@@ -210,6 +212,17 @@ void DockWidget::SetTabClosable(int index)
 	tabBar()->setTabButton(index, QTabBar::RightSide, closeButton);
 }
 
+void DockWidget::HideTab(int index)
+{
+	/**
+	 * We're going to be in 6 very soon, so we don't have to handle this scenario in the older versions like 5.12
+	 * if we get a request, then we can look into custom porting this functionality else we leave it.
+	 */
+	#if _QT6_COMPAT
+	setTabVisible(index, false);
+	#endif
+}
+
 void DockWidget::RemoveTab(int index)
 {
 	/* Dock panel at the index */
@@ -296,6 +309,7 @@ void DockWidget::Connect()
 	/* Tab Bar */
 	connect(m_DockTab, &DockTab::tabRemovalRequested, this, &DockWidget::RemoveTab);
 	connect(m_DockTab, &DockTab::tabDetachRequested, this, &DockWidget::UndockTab);
+	connect(m_DockTab, &DockTab::tabDragged, this, &DockWidget::HideTab);
 
 	/* Panel Options */
 	connect(m_ClosePaneAction, &QAction::triggered, this, &DockWidget::ClosePane);

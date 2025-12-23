@@ -53,6 +53,7 @@ void WorkspaceManager::Init()
 void WorkspaceManager::Connect()
 {
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
+    connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
 }
 
 void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
@@ -110,6 +111,22 @@ void WorkspaceManager::Clear()
 void WorkspaceManager::InspectMetadata(const SharedMediaClip& media)
 {
     m_MetadataViewer->SetFromMedia(media);
+
+    /* Show if it's not already being shown */
+    const DockStruct d = DockManager::Instance().Dock(static_cast<int>(Component::MetadataViewer));
+    if (!d.widget->isVisible())
+        ShowComponent(Component::MetadataViewer);
+}
+
+void WorkspaceManager::ShowComponent(const Component& component) const
+{
+    QMainWindow* window = new QMainWindow;
+	DockSplitter* splitter = new DockSplitter(Qt::Horizontal, window);
+	DockWidget* undocked = new DockWidget(splitter, true);
+	window->setCentralWidget(undocked);
+
+	undocked->AddDockManagerWidget(static_cast<int>(component));
+	window->show();
 }
 
 VOID_NAMESPACE_CLOSE
