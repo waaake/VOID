@@ -11,6 +11,7 @@
 #include "Definition.h"
 #include "VoidUi/BaseWindow/MenuSystem.h"
 #include "VoidUi/BaseWindow/PlayerWindow.h"
+#include "VoidApplication/Core/ArgumentParser.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -32,6 +33,7 @@ public:
 private: /* Members */
     VoidMainWindow* m_Imager;
     MenuSystem* m_MenuSystem;
+    ArgParser::EngineArguments m_Args;
 
 private: /* Methods */
     void InitLogging();

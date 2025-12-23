@@ -21,6 +21,7 @@ set(SOURCES
     Dock/DockSplitter.cpp
     
     # Core Engine Globals
+    Engine/Bridge.cpp
     Engine/Globals.cpp
     Engine/IconForge.cpp
     
