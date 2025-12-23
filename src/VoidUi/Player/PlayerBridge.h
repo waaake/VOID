@@ -65,6 +65,8 @@ public:
     inline void ResetOutFrame() { m_Player->ResetOutFrame(); }
     inline void ResetRange() { m_Player->ResetRange(); }
 
+    inline void InspectCurrentMetadata() { m_Player->InspectCurrentMetadata(); }
+
     inline void ZoomIn() { m_Player->ZoomIn(); }
     inline void ZoomOut() { m_Player->ZoomOut(); }
     inline void ZoomToFit() { m_Player->ZoomToFit(); }

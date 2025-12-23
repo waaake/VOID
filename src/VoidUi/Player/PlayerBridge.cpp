@@ -64,6 +64,11 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     QAction* setOutFrameAction = menuSystem->AddAction(playbackMenu, "Set Out Frame", QKeySequence(Qt::Key_BracketRight));
     QAction* resetRangeAction = menuSystem->AddAction(playbackMenu, "Reset In/Out Frames", QKeySequence(Qt::Key_Backslash));
 
+    /* -------------------------------- */
+    playbackMenu->addSeparator();
+
+    QAction* inspectMetdataAction = menuSystem->AddAction(playbackMenu, "Inspect Metadata", QKeySequence(Qt::Key_I));
+
     connect(enableCacheAction, &QAction::triggered, this, &PlayerBridge::ResumeCache);
     connect(disableCacheAction, &QAction::triggered, this, &PlayerBridge::DisableCache);
     connect(stopCacheAction, &QAction::triggered, this, &PlayerBridge::StopCache);
@@ -81,6 +86,8 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     connect(setInFrameAction, &QAction::triggered, this, &PlayerBridge::ResetInFrame);
     connect(setOutFrameAction, &QAction::triggered, this, &PlayerBridge::ResetOutFrame);
     connect(resetRangeAction, &QAction::triggered, this, &PlayerBridge::ResetRange);
+
+    connect(inspectMetdataAction, &QAction::triggered, this, &PlayerBridge::InspectCurrentMetadata);
     /* }}} */
 
     /* Viewer Contols Menu {{{ */
