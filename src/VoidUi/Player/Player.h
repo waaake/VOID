@@ -16,6 +16,8 @@ class VOID_API Player : public PlayerWidget
 public:
     Player(QWidget* parent = nullptr);
     ~Player();
+    
+    virtual inline QSize sizeHint() const { return QSize(640, 480); }
 
     void SetFrame(int frame);
 
