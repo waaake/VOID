@@ -17,7 +17,7 @@ public:
     Player(QWidget* parent = nullptr);
     ~Player();
     
-    virtual inline QSize sizeHint() const { return QSize(640, 480); }
+    virtual inline QSize sizeHint() const override { return QSize(640, 480); }
 
     void SetFrame(int frame);
 
