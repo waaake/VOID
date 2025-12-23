@@ -64,6 +64,8 @@ void DockTab::mousePressEvent(QMouseEvent* event)
 
 void DockTab::mouseMoveEvent(QMouseEvent* event)
 {
+	QTabBar::mouseMoveEvent(event);
+
 	/* If the mouse was held and we're dragging */
 	if (m_Dragging)
 	{
@@ -91,8 +93,6 @@ void DockTab::mouseMoveEvent(QMouseEvent* event)
 				emit tabRemovalRequested(index);
 		}
 	}
-
-	QTabBar::mouseMoveEvent(event);
 }
 
 void DockTab::mouseReleaseEvent(QMouseEvent* event)
