@@ -31,6 +31,8 @@ public:
     void InitMenu(MenuSystem* menuSystem);
     inline void Clear() { m_Player->Clear(); }
 
+    inline void Refresh() { m_Player->Refresh(); }
+
     inline void SetMedia(const SharedMediaClip& media) { m_Player->SetMedia(media); }
     inline void SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
     {

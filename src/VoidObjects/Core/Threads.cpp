@@ -24,7 +24,7 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::Initialize()
 {
-    setMaxThreadCount(4);
+    setMaxThreadCount(1);
 }
 
 void ThreadPool::Uninitialize()

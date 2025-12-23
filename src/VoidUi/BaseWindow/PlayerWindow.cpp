@@ -157,7 +157,16 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     connect(openMediaAction, &QAction::triggered, this, []() -> void
     {
         if (const SharedMediaClip& media = _ProjectBridge.OpenMedia())
+        {
+            /**
+             * TODO: The player currently faces a race condition when caching media and playing
+             * the first frame, there's mostly a case where the frame is read but not cached completely
+             * at the moment, calling refresh (re-render the current frame) works to load the first frame
+             * of the media, but this needs some change, possibly on the way how media cache is handled 
+             */
             _PlayerBridge.SetMedia(media);
+            _PlayerBridge.Refresh();
+        }
     });
     connect(importAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportMedia(); });
     connect(importDirectoryAction, &QAction::triggered, this, []() -> void { _ProjectBridge.ImportDirectory(); });
