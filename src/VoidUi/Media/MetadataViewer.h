@@ -27,11 +27,13 @@ public:
     explicit MetadataViewer(QWidget* parent = nullptr);
     ~MetadataViewer();
 
+    inline QSize sizeHint() const { return QSize(880, 720); }
+
     /* Set Metadata on the viewer from the media clip */
     inline void SetFromMedia(const SharedMediaClip& clip) { m_Tree->SetMetadata(clip->Metadata()); }
     /* Set the Metadata on the viewer from the provided map of data */
     inline void SetMetadata(const std::map<std::string, std::string>& metadata) { m_Tree->SetMetadata(metadata); }
-
+    
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
