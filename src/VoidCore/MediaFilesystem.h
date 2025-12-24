@@ -70,6 +70,7 @@ public:
      * file is a separate single entity
      */
     [[nodiscard]] inline bool SingleFile() const { return m_SingleFile; }
+    [[nodiscard]] inline bool Templated() const { return m_Templated; }
     [[nodiscard]] inline bool Valid() const { return !m_Path.empty(); }
 
     /**
@@ -108,6 +109,7 @@ private: /* Members */
      * Media is a single file and only has frame sequences
      */
     bool m_SingleFile;
+    bool m_Templated;
 
 private: /* Methods */
     /**
@@ -135,6 +137,17 @@ private: /* Methods */
      * not allow it to be converted to an integer frame number
      */
     bool ValidFrame(const std::string& framestring) const;
+    /**
+     * @brief Checks whether the provided string (generally frames section of the path)
+     * is a valid templated frame, it is valid if the string is of the format ###, ####, #####
+     * where number of '#'s represent the frame padding, or it could also be in a printf format
+     * like, %03d, %04d and so on.
+     * If any of these patterns are present in the string, the path is considered as a templated path
+     * @param framestring 
+     * @return true if the string contains the template patterns.
+     * @return false if the string does not contain any template patterns.
+     */
+    bool ValidTemplate(const std::string& framestring) const;
     std::string PaddedFrame(v_frame_t frame) const;
 };
 
@@ -339,6 +352,19 @@ class VOID_API MediaFS
 {
 public:
     inline MediaStruct GetMediaStruct(const std::string& filepath) { return MediaStruct::FromFile(filepath); }
+
+    /**
+     * @brief Returns a path which has the template resolved from the path
+     * e.g. if the path provided is /path/to/media/name.####.exr then the path returned would be
+     * /path/to/media/name.1001.exr where 1001 could be one of the frames of the media on disk
+     * the internal MediaStruct conversion does not care about what frame is provided, as long as it's on the same path
+     * 
+     * If the provided path is not templated, then the same shall be returned.
+     * 
+     * @param filepath Path to the media, could be templated (i.e. having #s or printf formatting) or not.
+     * @return std::string Path to a numbered frame media file on disk. Returns the same path, if it is not templated.
+     */
+    static std::string ResolvedPath(const std::string& filepath);
 
     /**
      * Provides a vector of MediaStructs for a provided Directory

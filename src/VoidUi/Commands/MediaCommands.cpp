@@ -10,7 +10,7 @@ VOID_NAMESPACE_OPEN
 
 MediaImportCommand::MediaImportCommand(const std::string& path, QUndoCommand* parent)
     : VoidUndoCommand(parent)
-    , m_Path(path)
+    , m_Path(MediaFS::ResolvedPath(path))
 {
     /* The current index on which the Media Will be inserted */
     m_InsertIndex = _MediaBridge.DataModel()->rowCount();
