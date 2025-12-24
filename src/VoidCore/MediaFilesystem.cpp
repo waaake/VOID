@@ -3,6 +3,7 @@
 
 /* STD */
 #include <iomanip>
+#include <regex>
 #include <sstream>
 #include <unordered_set>
 
@@ -115,6 +116,11 @@ void MEntry::Parse(const std::string& path)
         m_Framenumber = std::stol(framestring);
         m_Name = remaining.substr(0, lastDot);
     }
+    else if (ValidTemplate(framestring))
+    {
+        m_Templated = true;
+        m_Name = remaining.substr(0, lastDot);
+    }
     else /* In case we don't have an image sequence, just a standard image */
     {
         m_Name = remaining;
@@ -136,6 +142,14 @@ bool MEntry::ValidFrame(const std::string& framestring) const
 
     /* Valid frame */
     return true;
+}
+
+bool MEntry::ValidTemplate(const std::string& framestring) const
+{
+    std::regex hashPattern("(#+)");
+    std::regex printfPattern("%0\\d+d");
+
+    return std::regex_search(framestring, hashPattern) || std::regex_search(framestring, printfPattern);
 }
 
 std::string MEntry::PaddedFrame(v_frame_t frame) const
@@ -448,6 +462,34 @@ void MediaStruct::Clear()
 /* }}} */
 
 /* Media FS {{{ */
+
+std::string MediaFS::ResolvedPath(const std::string& path)
+{
+    MEntry e(path);
+
+    if (e.Templated())
+    {
+        try
+        {
+            for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(e.Basepath()))
+            {
+                MEntry searched(entry.path().string());
+
+                /* Check if both the paths have similarity, like the path and the name and extension */
+                if (searched.Similar(e))
+                    return searched.Fullpath();
+            }
+        }
+        catch (const std::filesystem::filesystem_error& e)
+        {
+            VOID_LOG_INFO("Unable to resolve templated path {0}", path);
+            VOID_LOG_ERROR(e.what());
+        }
+    }
+
+    /* Path isn't templated for us to act on it */
+    return path;
+}
 
 std::vector<MediaStruct> MediaFS::FromDirectory(const std::string& path)
 {
