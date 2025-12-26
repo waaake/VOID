@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "Bridge.h"
+#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Project/ProjectBridge.h"
 
@@ -28,6 +29,11 @@ void LoadMedia(const std::string& path)
         _PlayerBridge.SetMedia(clip);
         _PlayerBridge.Refresh();
     }
+}
+
+void ClearIconCache()
+{
+    IconForge::Instance().ClearCache();
 }
 
 } // namespace EngineBridge

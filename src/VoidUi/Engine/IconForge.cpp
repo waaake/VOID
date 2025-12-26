@@ -67,6 +67,15 @@ QIcon IconForge::Icon(const IconType& icon, int size, const QColor& color)
     return QIcon(Pixmap(icon, size, color));
 }
 
+void IconForge::Set(QPushButton* button, const IconType& icon, int size, const QColor& color)
+{
+    QFont font(m_FontFamily);
+    font.setPointSize(size);
+
+    button->setFont(font);
+    button->setText(QChar(static_cast<char16_t>(icon)));
+}
+
 QPixmap IconForge::GetPixmap(const IconType& icon, const QColor& color, int size)
 {
     static IconForge instance;
@@ -77,6 +86,17 @@ QIcon IconForge::GetIcon(const IconType& icon, const QColor& color, int size)
 {
     static IconForge instance;
     return instance.Icon(icon, size, color);
+}
+
+void IconForge::SetIcon(QPushButton* button, const IconType& icon, const QColor& color, int size)
+{
+    static IconForge instance;
+    return instance.Set(button, icon, size, color);
+}
+
+void IconForge::ClearCache()
+{
+    m_Cache.clear();
 }
 
 VOID_NAMESPACE_CLOSE

@@ -16,6 +16,7 @@ namespace EngineBridge {
 
     VOID_API void OpenProject(const std::string& path);
     VOID_API void LoadMedia(const std::string& path);
+    VOID_API void ClearIconCache();
 
 } // namespace EngineBridge
 
