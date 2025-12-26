@@ -13,50 +13,54 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Color Definitions */
-const QColor VOID_DARK_BG_COLOR = {40, 40, 40};
-const QColor VOID_SEMI_DARK_COLOR = {25, 25, 25};
-const QColor VOID_GRAY_COLOR = {50, 50, 50};
-
-const QColor VOID_DARK_BLUE_COLOR = {30, 80, 70};
-const QColor VOID_BLUE_COLOR = {30, 210, 200};
-
-const QColor VOID_PURPLE_COLOR = {130, 110, 190};
-
-const QColor VOID_DARK_HIGHLIGHT_GREEN = {70, 110, 30};
-const QColor VOID_HIGHLIGHT_GREEN = {160, 190, 60};
-const QColor VOID_FOREGROUND_COLOR = {190, 190, 190};
-const QColor VOID_FOREGROUND_DISABLED_COLOR = {80, 80, 80};
-
-class VoidDark : public QProxyStyle
+class VoidBase : public QProxyStyle
 {
 public:
-    VoidDark();
+    VoidBase();
 
     // void drawItemText(QPainter* painter, const QRect& rect, int flags, const QPalette& palette, bool enabled, const QString& text, QPalette::ColorRole textRole = QPalette::NoRole) const override;
     void drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget = nullptr) const override;
     void drawControl(ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget = nullptr) const override;
+};
+
+class VoidWhite : public VoidBase
+{
+public:
+    VoidWhite();
+};
+
+class VoidDark : public VoidBase
+{
+public:
+    VoidDark();
     virtual void polish(QPalette& palette) override;
 };
 
-class BlueShore : public VoidDark
+class NightBlue : public VoidBase
 {
 public:
-    BlueShore();
+    NightBlue();
     void polish(QPalette& palette) override;
 };
 
-class SakuraPink : public VoidDark
+class SakuraPink : public VoidBase
 {
 public:
     SakuraPink();
     void polish(QPalette& palette) override;
 };
 
-class Obsidian : public VoidDark
+class Obsidian : public VoidBase
 {
 public:
     Obsidian();
+    void polish(QPalette& palette) override;
+};
+
+class VoidGray : public VoidBase
+{
+public:
+    VoidGray();
     void polish(QPalette& palette) override;
 };
 
@@ -65,12 +69,14 @@ namespace VoidColorStyle {
     enum class StyleType
     {
         DefaultDark,
-        ShoreBlue,
+        NightBlue,
         SakuraPink,
-        Obsidian
+        Obsidian,
+        DefaultWhite,
+        VoidGray
     };
 
-    VoidDark* GetProxyStyle(const StyleType& type);
+    VoidBase* GetProxyStyle(const StyleType& type);
 
 } // namespace VoidColorStyle
 

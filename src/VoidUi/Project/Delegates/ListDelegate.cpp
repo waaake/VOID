@@ -33,7 +33,7 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     painter->save();
 
     /* Default background */
-    QColor bg = index.data(static_cast<int>(ProjectModel::Roles::Active)).toBool() ? option.palette.color(QPalette::Window).lighter(200) : option.palette.color(QPalette::Window).lighter(120);
+    QColor bg = index.data(static_cast<int>(ProjectModel::Roles::Active)).toBool() ? option.palette.color(QPalette::Window).lighter(150) : option.palette.color(QPalette::Window).lighter(120);
     painter->fillRect(rect, bg);
 
     /* Selected */
@@ -42,7 +42,7 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         painter->save();
 
         /* Draw the Background */
-        painter->setBrush(option.palette.color(QPalette::Highlight).darker(180));
+        painter->setBrush(option.palette.color(QPalette::Highlight).darker(150));
         painter->setPen(Qt::NoPen);
         painter->drawRect(rect);
 
@@ -59,7 +59,7 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
     /* Side Bar */
     QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());
-    QColor sidecol = index.data(static_cast<int>(ProjectModel::Roles::SaveState)).toBool() ? option.palette.color(QPalette::Highlight) : bg.lighter(200);
+    QColor sidecol = index.data(static_cast<int>(ProjectModel::Roles::SaveState)).toBool() ? option.palette.color(QPalette::Disabled, QPalette::Text) : bg;
     // painter->fillRect(siderect, bg.lighter(250));
     painter->fillRect(siderect, sidecol);
 
