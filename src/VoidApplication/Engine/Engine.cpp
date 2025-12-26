@@ -40,6 +40,14 @@ int VoidEngine::Exec(int argc, char** argv)
 
     m_Imager->showMaximized();
 
+    /* Color Theme change based on the preference */
+    m_Imager->connect(&VoidPreferences::Instance(), &VoidPreferences::updated, m_Imager, [&]()
+    {
+        app.setStyle(VoidColorStyle::GetProxyStyle(
+            static_cast<VoidColorStyle::StyleType>(VoidPreferences::Instance().GetColorStyle())
+        ));
+    });
+
     /* Once the UI is up -> Process any further events or windows */
     PostStartup();
 
@@ -100,11 +108,6 @@ void VoidEngine::PostInit()
 
     /* Register Any other Media plugins that are found in the way */
     // ReaderPluginLoader::Instance().LoadExternals();
-
-    // std::string recent = VoidPreferences::Instance().GetRecentProject(RecentProjects::First);
-    // if (!recent.empty())
-    //     _ProjectBridge.Open(recent);
-
 }
 
 void VoidEngine::PostStartup()

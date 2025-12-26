@@ -34,13 +34,17 @@ public:
     VoidPreferences(QObject* parent = nullptr);
     ~VoidPreferences();
 
-    inline QVariant GetSetting(const std::string key) const { return settings.value(key.c_str()); }
+    inline QVariant GetSetting(const std::string key) const { return m_Settings.value(key.c_str()); }
     inline void Set(const std::string& key, const QVariant& value)
     {
         /* Setup values */
-        settings.setValue(key.c_str(), value);
-        /* and emit that something was changed */
-        emit updated();
+        m_Settings.setValue(key.c_str(), value);
+        /* and emit that something was changed if the hash changed */
+        if (size_t h = Hash() != m_Hash)
+        {
+            emit updated();
+            m_Hash = h;
+        }
     }
 
     /* Helpers -> Exposing Setting Value natively */
@@ -68,10 +72,12 @@ signals:
     void projectsUpdated();
 
 private: /* Members */
-    QSettings settings;
+    QSettings m_Settings;
+    size_t m_Hash;
 
 private: /* Methods */
     void SaveRecentProjects(const std::vector<std::string>& files);
+    size_t Hash();
 };
 
 VOID_NAMESPACE_CLOSE
