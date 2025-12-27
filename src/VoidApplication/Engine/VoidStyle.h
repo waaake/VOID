@@ -27,6 +27,7 @@ class VoidWhite : public VoidBase
 {
 public:
     VoidWhite();
+    void polish(QPalette& palette) override;
 };
 
 class VoidDark : public VoidBase

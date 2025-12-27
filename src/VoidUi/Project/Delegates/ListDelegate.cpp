@@ -36,6 +36,8 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     QColor bg = index.data(static_cast<int>(ProjectModel::Roles::Active)).toBool() ? option.palette.color(QPalette::Window).lighter(150) : option.palette.color(QPalette::Window).lighter(120);
     painter->fillRect(rect, bg);
 
+    QColor fg = option.palette.color(QPalette::WindowText);
+
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {        
@@ -50,12 +52,16 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         painter->fillRect(QRect(rect.width() - 4, rect.top(), 4, rect.height()), option.palette.color(QPalette::Highlight));
 
         painter->restore();
+
+        fg = option.palette.color(QPalette::HighlightedText);
     }
 
     painter->restore();
 
     /* Save the painter for restoring later */
     painter->save();
+
+    painter->setPen(fg);
 
     /* Side Bar */
     QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());

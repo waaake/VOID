@@ -175,6 +175,29 @@ VoidWhite::VoidWhite()
 {
 }
 
+void VoidWhite::polish(QPalette& palette)
+{
+    palette.setColor(QPalette::Window, QColor(245, 245, 245));
+    palette.setColor(QPalette::Base, QColor(250, 250, 250));
+    palette.setColor(QPalette::AlternateBase, QColor(235, 235, 235));
+    palette.setColor(QPalette::Dark, QColor(200, 200, 200));
+    palette.setColor(QPalette::Light, QColor(255, 255, 255));
+    palette.setColor(QPalette::Midlight, QColor(230, 230, 230));
+
+    palette.setColor(QPalette::WindowText, QColor(30, 30, 30));
+    palette.setColor(QPalette::Text, QColor(20, 20, 20));
+    palette.setColor(QPalette::ButtonText, QColor(30, 30, 30));
+    palette.setColor(QPalette::BrightText, QColor(255, 0, 0));
+    palette.setColor(QPalette::ToolTipText, QColor(50, 50, 50));
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(150, 150, 150));
+
+    palette.setColor(QPalette::Button, QColor(220, 220, 220));
+    palette.setColor(QPalette::ToolTipBase, QColor(255, 255, 220));
+    palette.setColor(QPalette::Link, QColor(0, 120, 215));
+    // palette.setColor(QPalette::Highlight, QColor(0, 120, 215));
+    // palette.setColor(QPalette::HighlightedText, Qt::white);
+}
+
 /* }}} */
 
 /* Void Dark {{{ */
@@ -220,20 +243,22 @@ void NightBlue::polish(QPalette& palette)
     palette.setColor(QPalette::Base, QColor(55, 75, 95));
     palette.setColor(QPalette::AlternateBase, QColor(45, 65, 85));
     palette.setColor(QPalette::Dark, QColor(50, 70, 90));
+    palette.setColor(QPalette::Light, QColor(255, 200, 80));
+    palette.setColor(QPalette::Midlight, QColor(255, 160, 60));
+
     palette.setColor(QPalette::WindowText, QColor(240, 245, 255));
     palette.setColor(QPalette::Text, QColor(225, 235, 250));
     palette.setColor(QPalette::ButtonText, QColor(240, 250, 255));
     palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
     palette.setColor(QPalette::ToolTipText, QColor(230, 240, 255));
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(150, 160, 175));
+
     palette.setColor(QPalette::Button, QColor(70, 90, 120));
     palette.setColor(QPalette::ToolTipBase, QColor(75, 95, 125));
+
     palette.setColor(QPalette::Link, QColor(0, 150, 255));
     palette.setColor(QPalette::Highlight, QColor(105, 140, 255));
     palette.setColor(QPalette::HighlightedText, QColor(20, 30, 45));
-    palette.setColor(QPalette::Light, QColor(255, 200, 80));
-    palette.setColor(QPalette::Midlight, QColor(255, 160, 60));
-
-    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(150, 160, 175));
 }
 
 /* }}} */
@@ -251,19 +276,22 @@ void SakuraPink::polish(QPalette& palette)
     palette.setColor(QPalette::Base, QColor(249, 243, 234));
     palette.setColor(QPalette::AlternateBase, QColor(250, 230, 240));
     palette.setColor(QPalette::Dark, QColor(220, 190, 200));
+    palette.setColor(QPalette::Light, QColor(255, 200, 220));
+    palette.setColor(QPalette::Midlight, QColor(255, 170, 190));
+
     palette.setColor(QPalette::WindowText, QColor(50, 30, 40));
     palette.setColor(QPalette::Text, QColor(60, 40, 50));
     palette.setColor(QPalette::ButtonText, QColor(70, 50, 60));
     palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
     palette.setColor(QPalette::ToolTipText, QColor(60, 40, 50));
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(160, 140, 150));
+
     palette.setColor(QPalette::Button, QColor(232, 185, 200));
     palette.setColor(QPalette::ToolTipBase, QColor(255, 240, 245));
+
     palette.setColor(QPalette::Link, QColor(200, 80, 120));
     palette.setColor(QPalette::Highlight, QColor(234, 172, 200));
     palette.setColor(QPalette::HighlightedText, QColor(255, 255, 255));
-    palette.setColor(QPalette::Light, QColor(255, 200, 220));
-    palette.setColor(QPalette::Midlight, QColor(255, 170, 190));
-    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(160, 140, 150));
 }
 
 /* }}} */
@@ -277,22 +305,26 @@ Obsidian::Obsidian()
 
 void Obsidian::polish(QPalette& palette)
 {
-    palette.setColor(QPalette::Window, QColor(30, 30, 30));
-    palette.setColor(QPalette::WindowText, QColor(208, 208, 208));
-    palette.setColor(QPalette::Base, QColor(51, 51, 51));
-    palette.setColor(QPalette::AlternateBase, QColor(42, 42, 42));
-    palette.setColor(QPalette::ToolTipBase, QColor(46, 46, 46));
-    palette.setColor(QPalette::ToolTipText, QColor(192, 192, 192));
-    palette.setColor(QPalette::Text, QColor(185, 185, 185));
-    palette.setColor(QPalette::Button, QColor(47, 47, 47));
-    palette.setColor(QPalette::ButtonText, QColor(208, 208, 208));
+    palette.setColor(QPalette::Window, QColor(32, 32, 32));
+    palette.setColor(QPalette::Base, QColor(38, 38, 38));
+    palette.setColor(QPalette::AlternateBase, QColor(34, 34, 34));
+    palette.setColor(QPalette::Dark, QColor(24, 24, 24));
+    palette.setColor(QPalette::Light, QColor(60, 60, 60));
+    palette.setColor(QPalette::Midlight, QColor(48, 48, 48));
+
+    palette.setColor(QPalette::WindowText, QColor(220, 220, 220));
+    palette.setColor(QPalette::Text, QColor(230, 230, 230));
+    palette.setColor(QPalette::ButtonText, QColor(220, 220, 220));
     palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
-    palette.setColor(QPalette::Link, QColor(102, 255, 153));
+    palette.setColor(QPalette::ToolTipText, QColor(240, 240, 240));
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(135, 135, 135));
+
+    palette.setColor(QPalette::Button, QColor(42, 42, 42));
+    palette.setColor(QPalette::ToolTipBase, QColor(50, 50, 50));
+
+    palette.setColor(QPalette::Link, QColor(100, 160, 255));
     palette.setColor(QPalette::Highlight, QColor(160, 190, 60));
     palette.setColor(QPalette::HighlightedText, QColor(26, 26, 26));
-    palette.setColor(QPalette::Dark, QColor(42, 42, 42));
-
-    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(128, 128, 128));
 }
 
 /* }}} */
@@ -310,19 +342,22 @@ void VoidGray::polish(QPalette& palette)
     palette.setColor(QPalette::Base, QColor(66, 66, 66));
     palette.setColor(QPalette::AlternateBase, QColor(51, 51, 51));
     palette.setColor(QPalette::Dark, QColor(35, 35, 35));
+    palette.setColor(QPalette::Light, QColor(80, 80, 80));
+    palette.setColor(QPalette::Midlight, QColor(70, 70, 70));
+
     palette.setColor(QPalette::WindowText, QColor(190, 190, 190));
     palette.setColor(QPalette::Text, QColor(220, 220, 220));
     palette.setColor(QPalette::ButtonText, QColor(210, 210, 210));
     palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
     palette.setColor(QPalette::ToolTipText, QColor(230, 230, 230));
+    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(140, 140, 140));
+
     palette.setColor(QPalette::Button, QColor(91, 91, 91));
     palette.setColor(QPalette::ToolTipBase, QColor(60, 60, 60));
+
     palette.setColor(QPalette::Link, QColor(90, 150, 250));
     palette.setColor(QPalette::Highlight, QColor(255, 152, 20));
     palette.setColor(QPalette::HighlightedText, Qt::black);
-    palette.setColor(QPalette::Light, QColor(80, 80, 80));
-    palette.setColor(QPalette::Midlight, QColor(70, 70, 70));
-    palette.setColor(QPalette::Disabled, QPalette::Text, QColor(140, 140, 140));
 }
 
 /* }}} */
