@@ -93,7 +93,7 @@ void GeneralPreferences::Setup()
     m_UndoBox->addItems({"50", "100", "200", "Unlimited"});
     m_UndoBox->setCurrentIndex(0);
 
-    m_ColorStyleBox->addItems({"Default Dark", "Shore Blue", "Sakura Pink", "Obsidian"});
+    m_ColorStyleBox->addItems({"Default Dark", "Night Blue", "Sakura Pink", "Obsidian", "Default White", "Void Gray"});
     m_ColorStyleBox->setCurrentIndex(0);
 }
 

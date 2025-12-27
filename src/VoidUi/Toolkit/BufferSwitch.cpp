@@ -35,7 +35,7 @@ void BufferPage::paintEvent(QPaintEvent* event)
     /* Setup Painter */
     QPainter painter(this);
 
-    QColor color = m_ViewerBuffer->Active() ? m_ViewerBuffer->Color() : INACTIVE_BUFFER_COLOR;
+    QColor color = m_ViewerBuffer->Active() ? m_ViewerBuffer->Color() : palette().color(QPalette::Disabled, QPalette::Text);
 
     /* Draw Border */
     painter.setPen(QPen(color, 2));

@@ -10,8 +10,8 @@
 
 VOID_NAMESPACE_OPEN
 
-const int MAX_THUMBNAIL_WIDTH = 80;
-const int MAX_THUMBNAIL_HEIGHT = 50;
+constexpr int MAX_THUMBNAIL_WIDTH = 80;
+constexpr int MAX_THUMBNAIL_HEIGHT = 50;
 
 /* Basic Media Item Delegate {{{ */
 
@@ -120,7 +120,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         /* Gradient */
         QLinearGradient gradient(0, 0, rect.width(), 0);
         gradient.setColorAt(0, bg);
-        gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
+        gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(150));
         
         painter->save();
 

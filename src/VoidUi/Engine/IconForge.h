@@ -10,6 +10,7 @@
 /* Qt */
 #include <QIcon>
 #include <QColor>
+#include <QPushButton>
 
 /* Internal */
 #include "Definition.h"
@@ -36,9 +37,12 @@ public:
     static IconForge& Instance();
     QPixmap Pixmap(const IconType& icon, int size = 24, const QColor& color = Qt::black);
     QIcon Icon(const IconType& icon, int size = 24, const QColor& color = Qt::black);
+    void Set(QPushButton* button, const IconType& icon, int size = 24, const QColor& = Qt::black);
+    void ClearCache();
 
     static QPixmap GetPixmap(const IconType& icon, const QColor& color = Qt::black, int size = _default_size);
     static QIcon GetIcon(const IconType& icon, const QColor& color = Qt::black, int size = _default_size);
+    static void SetIcon(QPushButton* button, const IconType& icon, const QColor& color = Qt::black, int size = _default_size);
 
 private: /* Members */  
     QString m_FontFamily;

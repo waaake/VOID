@@ -4,6 +4,9 @@
 #ifndef _VOID_UI_GLOBALS_H
 #define _VOID_UI_GLOBALS_H
 
+/* Qt */
+#include <QColor>
+
 /* Internal */
 #include "Definition.h"
 #include "VoidUi/Media/MetadataViewer.h"
@@ -22,6 +25,8 @@ namespace UIGlobals {
     VOID_API MenuSystem* InternalMenuSystem();
     VOID_API Player* GetActivePlayer();
     VOID_API MetadataViewer* GetMetadataViewer();
+    VOID_API void SetLuminance(const QColor& color);
+    VOID_API bool IsDarkTheme();
 
 } // namespace Globals
 

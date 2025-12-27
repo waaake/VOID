@@ -16,9 +16,9 @@ EngineArguments ParseArgs(int argc, char** argv)
     {
         std::string arg = argv[i];
 
-        if ("--project" == arg & i + 1 < argc)
+        if ("--project" == arg && i + 1 < argc)
             args.project = argv[++i];
-        else if ("--media" == arg & i + 1 < argc)
+        else if ("--media" == arg && i + 1 < argc)
             args.media = argv[++i];
         else if ("--basic" == arg)
             args.basic = true;

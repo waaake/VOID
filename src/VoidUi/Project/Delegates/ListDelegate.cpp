@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "ListDelegate.h"
+#include "VoidUi/Engine/Globals.h"
 #include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
@@ -33,8 +34,10 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     painter->save();
 
     /* Default background */
-    QColor bg = index.data(static_cast<int>(ProjectModel::Roles::Active)).toBool() ? option.palette.color(QPalette::Window).lighter(200) : option.palette.color(QPalette::Window).lighter(120);
+    QColor bg = index.data(static_cast<int>(ProjectModel::Roles::Active)).toBool() ? option.palette.color(QPalette::Window).lighter(150) : option.palette.color(QPalette::Window).lighter(120);
     painter->fillRect(rect, bg);
+
+    QColor fg = option.palette.color(QPalette::WindowText);
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
@@ -42,7 +45,7 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         painter->save();
 
         /* Draw the Background */
-        painter->setBrush(option.palette.color(QPalette::Highlight).darker(180));
+        painter->setBrush(option.palette.color(QPalette::Highlight).darker(150));
         painter->setPen(Qt::NoPen);
         painter->drawRect(rect);
 
@@ -50,6 +53,9 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         painter->fillRect(QRect(rect.width() - 4, rect.top(), 4, rect.height()), option.palette.color(QPalette::Highlight));
 
         painter->restore();
+
+        if (!UIGlobals::IsDarkTheme())
+            fg = option.palette.color(QPalette::HighlightedText);
     }
 
     painter->restore();
@@ -57,9 +63,11 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
     /* Save the painter for restoring later */
     painter->save();
 
+    painter->setPen(fg);
+
     /* Side Bar */
     QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());
-    QColor sidecol = index.data(static_cast<int>(ProjectModel::Roles::SaveState)).toBool() ? option.palette.color(QPalette::Highlight) : bg.lighter(200);
+    QColor sidecol = index.data(static_cast<int>(ProjectModel::Roles::SaveState)).toBool() ? option.palette.color(QPalette::Disabled, QPalette::Text) : bg;
     // painter->fillRect(siderect, bg.lighter(250));
     painter->fillRect(siderect, sidecol);
 
