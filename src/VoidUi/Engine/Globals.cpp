@@ -10,6 +10,7 @@ namespace UIGlobals {
 
 VoidMainWindow* g_VoidMainWindow = nullptr;
 MenuSystem* g_MenuSystem = nullptr;
+static bool s_IsDarkTheme = false;
 
 VoidMainWindow* GetMainWindow()
 {
@@ -35,6 +36,18 @@ MetadataViewer* GetMetadataViewer()
         return g_VoidMainWindow->GetMetadataViewer();
 
     return nullptr;
+}
+
+void SetLuminance(const QColor& color)
+{
+    /* Based on the Luminance, we set decide on the theme's darkness */
+    double luminance = 0.2126 * color.redF() + 0.7152 * color.greenF() + 0.0722 * color.blueF();
+    s_IsDarkTheme = luminance < 0.5;
+}
+
+bool IsDarkTheme()
+{
+    return s_IsDarkTheme;
 }
 
 } // namespace UIGlobals

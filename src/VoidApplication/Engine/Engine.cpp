@@ -46,6 +46,7 @@ int VoidEngine::Exec(int argc, char** argv)
         app.setStyle(VoidColorStyle::GetProxyStyle(
             static_cast<VoidColorStyle::StyleType>(VoidPreferences::Instance().GetColorStyle())
         ));
+        UIGlobals::SetLuminance(app.palette().color(QPalette::Window));
     });
 
     /* Once the UI is up -> Process any further events or windows */
@@ -78,6 +79,7 @@ void VoidEngine::Setup(QApplication& app)
     app.setStyle(VoidColorStyle::GetProxyStyle(
         static_cast<VoidColorStyle::StyleType>(VoidPreferences::Instance().GetColorStyle())
     ));
+    UIGlobals::SetLuminance(app.palette().color(QPalette::Window));
 
     /* Set Application icon */
     QImage icon(":resources/images/VOID_Logo.svg");
