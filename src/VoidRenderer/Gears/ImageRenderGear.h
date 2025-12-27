@@ -27,6 +27,9 @@ public:
      * Reinitializes the shaders and internals (Vertex Array Objects | Vertex Buffer Objects | Element/Index Buffer Objects)
      */
     virtual void Reinitialize() override;
+    
+    void BindPBO();
+    void SwitchPBO();
 
 protected:
     /**
@@ -55,7 +58,6 @@ protected:
      */
     virtual void PostDraw() override;
 
-
 private: /* Members */
     ImageShaderProgram* m_Shader;
 
@@ -69,6 +71,8 @@ private: /* Members */
     unsigned int m_VAO;
     unsigned int m_VBO;
     unsigned int m_IBO;
+    unsigned int m_PBOs[2];
+    int m_PBOIndex;
 
     /* Uniforms */
     int m_UProjection;

@@ -17,6 +17,7 @@ ImageRenderGear::ImageRenderGear()
     : m_VAO(0)
     , m_VBO(0)
     , m_IBO(0)
+    , m_PBOIndex(0)
     , m_UProjection(-1)
     , m_UTexture(-1)
     , m_UExposure(-1)
@@ -117,9 +118,24 @@ void ImageRenderGear::SetupBuffers()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    /* PBOs */
+    glGenBuffers(2, m_PBOs);
+
     /* Unbind */
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void ImageRenderGear::BindPBO()
+{
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[m_PBOIndex]);
+}
+
+void ImageRenderGear::SwitchPBO()
+{
+    m_PBOIndex = (m_PBOIndex + 1) % 2;
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 bool ImageRenderGear::PreDraw()
