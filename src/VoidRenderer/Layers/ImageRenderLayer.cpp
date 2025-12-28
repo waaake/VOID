@@ -66,6 +66,7 @@ void ImageRenderLayer::InitTexture(const SharedPixels& image)
     /* Init the bound tex with null image for Tex*/
     glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), nullptr);
     m_InternalFormat = image->GLInternalFormat();
+    m_ImageRenderer->ReallocatePixelBuffer(image->FrameSize());
 }
 
 void ImageRenderLayer::SetImage(const SharedPixels& image)
@@ -73,11 +74,6 @@ void ImageRenderLayer::SetImage(const SharedPixels& image)
     /* Nothing to load */
     if (!image)
         return;
-
-    m_ImageRenderer->BindPBO();
-
-    /* Get rid of old data */
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->FrameSize(), nullptr, GL_STREAM_DRAW);
 
     /* Bind the Generated texture for Render */
     glBindTexture(GL_TEXTURE_2D, m_Texture);
@@ -87,21 +83,14 @@ void ImageRenderLayer::SetImage(const SharedPixels& image)
     if (m_InternalFormat != image->GLInternalFormat())
         InitTexture(image);
 
-    /* Copy new pixels */
-    void* iptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-    if (iptr)
-    {
-        memcpy(iptr, image->Pixels(), image->FrameSize());
-        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-    }
-
-    // glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), image->Pixels());
+    m_ImageRenderer->RebindPixelBuffer();
+    m_ImageRenderer->WritePixelData(image->Pixels(), image->FrameSize());
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    m_ImageRenderer->SwitchPBO();
+    m_ImageRenderer->UnbindPixelBuffer();
 
     /* Update the colorspace on the Image Data */
     m_ImageData->inputColorSpace = static_cast<int>(image->InputColorSpace());

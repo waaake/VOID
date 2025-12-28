@@ -127,15 +127,34 @@ void ImageRenderGear::SetupBuffers()
     glBindVertexArray(0);
 }
 
-void ImageRenderGear::BindPBO()
+void ImageRenderGear::RebindPixelBuffer()
 {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[m_PBOIndex]);
+    m_PBOIndex = (m_PBOIndex + 1) % 2;
 }
 
-void ImageRenderGear::SwitchPBO()
+void ImageRenderGear::WritePixelData(const void* data, std::size_t size)
 {
-    m_PBOIndex = (m_PBOIndex + 1) % 2;
+    /* Copy new pixels */
+    if (void* iptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY))
+    {
+        memcpy(iptr, data, size);
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    }
+}
+
+void ImageRenderGear::UnbindPixelBuffer()
+{
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+void ImageRenderGear::ReallocatePixelBuffer(std::size_t size)
+{
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[0]);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[1]);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
 }
 
 bool ImageRenderGear::PreDraw()

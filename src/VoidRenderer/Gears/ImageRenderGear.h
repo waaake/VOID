@@ -28,8 +28,29 @@ public:
      */
     virtual void Reinitialize() override;
     
-    void BindPBO();
-    void SwitchPBO();
+    /**
+     * @brief (Re)Allocates the internal PIXEL buffers with the provided size.
+     * 
+     * @param size Size of the allocation for the buffer.
+     */
+    void ReallocatePixelBuffer(std::size_t size);
+    /**
+     * @brief Binds the next index of the Pixel buffer for recieving data.
+     * 
+     */
+    void RebindPixelBuffer();
+    /**
+     * @brief Copy the data from the source to the pixel buffer.
+     * 
+     * @param data The data to be uploaded on the buffer to the GPU for rendering.
+     * @param size Size of the data to be copied.
+     */
+    void WritePixelData(const void* data, std::size_t size);
+    /**
+     * @brief Unbinds the active pixel buffer
+     * 
+     */
+    void UnbindPixelBuffer();
 
 protected:
     /**
