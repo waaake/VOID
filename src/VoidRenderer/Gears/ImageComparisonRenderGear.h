@@ -28,6 +28,35 @@ public:
      */
     virtual void Reinitialize() override;
 
+    /**
+     * @brief (Re)Allocates the internal PIXEL buffers with the provided size.
+     * 
+     * @param size Size of the allocation for the buffer.
+     * @param buffer The Pixel buffer to allocate to.
+     */
+    void ReallocatePixelBuffer(std::size_t size, const PixelBuffer& buffer = PixelBuffer::A) override;
+
+    /**
+     * @brief Binds the next index of the Pixel buffer for recieving data.
+     * 
+     * @param buffer The pixel buffer to bind.
+     */
+    void RebindPixelBuffer(const PixelBuffer& buffer = PixelBuffer::A) override;
+
+    /**
+     * @brief Copy the data from the source to the pixel buffer.
+     * 
+     * @param data The data to be uploaded on the buffer to the GPU for rendering.
+     * @param size Size of the data to be copied.
+     */
+    void WritePixelData(const void* data, std::size_t size) override;
+
+    /**
+     * @brief Unbinds the active pixel buffer
+     * 
+     */
+    void UnbindPixelBuffer() override;
+
 protected:
     /**
      * Setup Array Buffers
@@ -69,6 +98,10 @@ private: /* Members */
     unsigned int m_VAO;
     unsigned int m_VBO;
     unsigned int m_IBO;
+    unsigned int m_PBOs_A[2];
+    unsigned int m_PBOs_B[2];
+    int m_PBOIndexA;
+    int m_PBOIndexB;
 
     /* Uniforms */
     int m_UProjection;
@@ -83,7 +116,6 @@ private: /* Members */
     int m_USwipeX;
     int m_UInputColorSpaceA;
     int m_UInputColorSpaceB;
-
 };
 
 VOID_NAMESPACE_CLOSE

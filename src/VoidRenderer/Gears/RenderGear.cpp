@@ -19,4 +19,20 @@ void RenderGear::Render(const void* data)
     PostDraw();
 }
 
+void RenderGear::ReallocatePixelBuffer(std::size_t, const PixelBuffer&)
+{
+}
+
+void RenderGear::RebindPixelBuffer(const PixelBuffer&)
+{
+}
+
+void RenderGear::WritePixelData(const void*, std::size_t)
+{
+}
+
+void RenderGear::UnbindPixelBuffer()
+{
+}
+
 VOID_NAMESPACE_CLOSE

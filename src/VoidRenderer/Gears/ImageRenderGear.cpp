@@ -127,7 +127,7 @@ void ImageRenderGear::SetupBuffers()
     glBindVertexArray(0);
 }
 
-void ImageRenderGear::RebindPixelBuffer()
+void ImageRenderGear::RebindPixelBuffer(const PixelBuffer&)
 {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[m_PBOIndex]);
     m_PBOIndex = (m_PBOIndex + 1) % 2;
@@ -148,7 +148,7 @@ void ImageRenderGear::UnbindPixelBuffer()
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
-void ImageRenderGear::ReallocatePixelBuffer(std::size_t size)
+void ImageRenderGear::ReallocatePixelBuffer(std::size_t size, const PixelBuffer&)
 {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[0]);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);

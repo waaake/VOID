@@ -27,30 +27,35 @@ public:
      * Reinitializes the shaders and internals (Vertex Array Objects | Vertex Buffer Objects | Element/Index Buffer Objects)
      */
     virtual void Reinitialize() override;
-    
+
     /**
      * @brief (Re)Allocates the internal PIXEL buffers with the provided size.
      * 
      * @param size Size of the allocation for the buffer.
+     * @param buffer The Pixel buffer to allocate to.
      */
-    void ReallocatePixelBuffer(std::size_t size);
+    void ReallocatePixelBuffer(std::size_t size, const PixelBuffer& buffer = PixelBuffer::A) override;
+
     /**
      * @brief Binds the next index of the Pixel buffer for recieving data.
      * 
+     * @param buffer The pixel buffer to bind.
      */
-    void RebindPixelBuffer();
+    void RebindPixelBuffer(const PixelBuffer& buffer = PixelBuffer::A) override;
+
     /**
      * @brief Copy the data from the source to the pixel buffer.
      * 
      * @param data The data to be uploaded on the buffer to the GPU for rendering.
      * @param size Size of the data to be copied.
      */
-    void WritePixelData(const void* data, std::size_t size);
+    void WritePixelData(const void* data, std::size_t size) override;
+
     /**
      * @brief Unbinds the active pixel buffer
      * 
      */
-    void UnbindPixelBuffer();
+    void UnbindPixelBuffer() override;
 
 protected:
     /**

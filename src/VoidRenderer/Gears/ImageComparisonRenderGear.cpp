@@ -17,6 +17,8 @@ ImageComparisonRenderGear::ImageComparisonRenderGear()
     : m_VAO(0)
     , m_VBO(0)
     , m_IBO(0)
+    , m_PBOIndexA(0)
+    , m_PBOIndexB(0)
     , m_UProjection(-1)
     , m_UTextureA(-1)
     , m_UTextureB(-1)
@@ -132,9 +134,64 @@ void ImageComparisonRenderGear::SetupBuffers()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    /* Pixel Buffer Objects */
+    glGenBuffers(2, m_PBOs_A);
+    glGenBuffers(2, m_PBOs_B);
+
     /* Unbind */
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void ImageComparisonRenderGear::ReallocatePixelBuffer(std::size_t size, const PixelBuffer& buffer)
+{
+    switch (buffer)
+    {
+        case PixelBuffer::B:
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[0]);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[1]);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+            break;
+        case PixelBuffer::A:
+        default:
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[0]);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[1]);
+            glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+    }
+}
+
+void ImageComparisonRenderGear::RebindPixelBuffer(const PixelBuffer& buffer)
+{
+    switch (buffer)
+    {
+        case PixelBuffer::B:
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[m_PBOIndexB]);
+            m_PBOIndexB = (m_PBOIndexB + 1) % 2;
+            break;
+        case PixelBuffer::A:
+        default:
+            glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[m_PBOIndexA]);
+            m_PBOIndexA = (m_PBOIndexA + 1) % 2;
+    }
+}
+
+void ImageComparisonRenderGear::WritePixelData(const void* data, std::size_t size)
+{
+    if (void* iptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY))
+    {
+        memcpy(iptr, data, size);
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    }
+}
+
+void ImageComparisonRenderGear::UnbindPixelBuffer()
+{
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 bool ImageComparisonRenderGear::PreDraw()
