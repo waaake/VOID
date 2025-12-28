@@ -17,6 +17,7 @@ ImageRenderGear::ImageRenderGear()
     : m_VAO(0)
     , m_VBO(0)
     , m_IBO(0)
+    , m_PBOIndex(0)
     , m_UProjection(-1)
     , m_UTexture(-1)
     , m_UExposure(-1)
@@ -117,9 +118,43 @@ void ImageRenderGear::SetupBuffers()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    /* PBOs */
+    glGenBuffers(2, m_PBOs);
+
     /* Unbind */
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void ImageRenderGear::RebindPixelBuffer(const PixelBuffer&)
+{
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[m_PBOIndex]);
+    m_PBOIndex = (m_PBOIndex + 1) % 2;
+}
+
+void ImageRenderGear::WritePixelData(const void* data, std::size_t size)
+{
+    /* Copy new pixels */
+    if (void* iptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY))
+    {
+        memcpy(iptr, data, size);
+        glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+    }
+}
+
+void ImageRenderGear::UnbindPixelBuffer()
+{
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+void ImageRenderGear::ReallocatePixelBuffer(std::size_t size, const PixelBuffer&)
+{
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[0]);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[1]);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_STREAM_DRAW);
 }
 
 bool ImageRenderGear::PreDraw()

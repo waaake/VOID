@@ -35,6 +35,18 @@ private: /* Members */
 };
 
 /**
+ * @brief Denotes the type of PixelBuffer to be bound in the current context
+ * 
+ * A refers to the Pixel Buffer for Texture A
+ * B refers to the Pixel Buffer for Texture B
+ */
+enum class PixelBuffer
+{
+    A,
+    B
+};
+
+/**
  * A Basic Render Gear:
  * Composits into the Main Render as a component which draws on Screen
  * This could draw anything on the screen with the Provided Data
@@ -60,6 +72,35 @@ public:
      * Then the PostDraw is invoked always
      */
     void Render(const void* data);
+
+    /**
+     * @brief (Re)Allocates the internal PIXEL buffers with the provided size.
+     * 
+     * @param size Size of the allocation for the buffer.
+     * @param buffer The Pixel buffer to allocate to.
+     */
+    virtual void ReallocatePixelBuffer(std::size_t size, const PixelBuffer& buffer);
+
+    /**
+     * @brief Binds the next index of the Pixel buffer for recieving data.
+     * 
+     * @param buffer The pixel buffer to bind.
+     */
+    virtual void RebindPixelBuffer(const PixelBuffer& buffer);
+
+    /**
+     * @brief Copy the data from the source to the pixel buffer.
+     * 
+     * @param data The data to be uploaded on the buffer to the GPU for rendering.
+     * @param size Size of the data to be copied.
+     */
+
+    virtual void WritePixelData(const void* data, std::size_t size);
+    /**
+     * @brief Unbinds the active pixel buffer
+     * 
+     */
+    virtual void UnbindPixelBuffer();
 
 protected:
     /**

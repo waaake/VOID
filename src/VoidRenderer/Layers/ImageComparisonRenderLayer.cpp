@@ -84,12 +84,14 @@ void ImageComparisonRenderLayer::InitTextureA(const SharedPixels& image)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), nullptr);
     m_InternalFormatA = image->GLInternalFormat();
+    m_ImageRenderer->ReallocatePixelBuffer(image->FrameSize(), PixelBuffer::A);
 }
 
 void ImageComparisonRenderLayer::InitTextureB(const SharedPixels& image)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), nullptr);
     m_InternalFormatB = image->GLInternalFormat();
+    m_ImageRenderer->ReallocatePixelBuffer(image->FrameSize(), PixelBuffer::B);
 }
 
 void ImageComparisonRenderLayer::SetImageA(const SharedPixels& image)
@@ -105,9 +107,15 @@ void ImageComparisonRenderLayer::SetImageA(const SharedPixels& image)
      */
     if (m_InternalFormatA != image->GLInternalFormat())
         InitTextureA(image);
+    
+    m_ImageRenderer->RebindPixelBuffer(PixelBuffer::A);
+    m_ImageRenderer->WritePixelData(image->Pixels(), image->FrameSize());
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), image->Pixels());
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    m_ImageRenderer->UnbindPixelBuffer();
 
     /* Update the colorspace on the Image Data */
     m_ImageData->inputColorSpaceA = static_cast<int>(image->InputColorSpace());
@@ -127,9 +135,14 @@ void ImageComparisonRenderLayer::SetImageB(const SharedPixels& image)
     if (m_InternalFormatB != image->GLInternalFormat())
         InitTextureB(image);
 
-    // glTexImage2D(GL_TEXTURE_2D, 0, image->GLFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), image->Pixels());
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), image->Pixels());
+    m_ImageRenderer->RebindPixelBuffer(PixelBuffer::B);
+    m_ImageRenderer->WritePixelData(image->Pixels(), image->FrameSize());
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    m_ImageRenderer->UnbindPixelBuffer();
 
     /* Update the colorspace on the Image Data */
     m_ImageData->inputColorSpaceB = static_cast<int>(image->InputColorSpace());
