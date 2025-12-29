@@ -294,8 +294,8 @@ void RecentProjectsModel::Add(const std::vector<std::string>& projects)
     beginInsertRows(QModelIndex(), insertidx, insertidx);
     for (const std::string& project : projects)
     {
-        // std::filesystem::path filepath = project;
-        m_Projects.emplace_back(project);
+        if (std::filesystem::exists(project))
+            m_Projects.emplace_back(project);
     }
     endInsertRows();
 }
