@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "PlaylistMediaView.h"
+#include "VoidCore/Logging.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/Delegates/ListDelegate.h"
 #include "VoidUi/Media/Delegates/ThumbnailDelegate.h"

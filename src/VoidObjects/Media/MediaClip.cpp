@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "MediaClip.h"
+#include "VoidCore/Logging.h"
 #include "VoidObjects/Core/Threads.h"
 
 VOID_NAMESPACE_OPEN

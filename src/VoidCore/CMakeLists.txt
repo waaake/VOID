@@ -11,7 +11,6 @@ add_library(
     Identity.h
     ImageData.cpp
     Logging.cpp
-    Media.cpp
     MediaFilesystem.cpp
     Profiler.h
     PyExecutor.cpp
@@ -19,6 +18,10 @@ add_library(
 
     # Plugins
     Plugins/Loader.cpp
+
+    # Media
+    Media/Frame.cpp
+    Media/Media.cpp
 
     # Media Readers
     Readers/OIIOReader.cpp

@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Sequence.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
