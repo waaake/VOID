@@ -15,7 +15,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidCore/Media.h"
+#include "VoidCore/Media/Media.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidObjects/VoidObject.h"
 

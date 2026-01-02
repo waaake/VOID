@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "ProjectView.h"
+#include "VoidCore/Logging.h"
 #include "VoidUi/Project/Delegates/ListDelegate.h"
 #include "VoidUi/Project/ProjectBridge.h"
 

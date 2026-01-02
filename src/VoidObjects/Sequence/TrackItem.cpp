@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "TrackItem.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
