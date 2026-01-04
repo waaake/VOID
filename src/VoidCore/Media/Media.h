@@ -11,7 +11,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "Frame.h"
+#include "View.h"
 #include "VoidCore/MediaFilesystem.h"
 
 VOID_NAMESPACE_OPEN
@@ -30,6 +30,7 @@ public: /* Enums */
 
 public:
     Media();
+    Media(MediaStruct& mstruct);
     Media(const MediaStruct& mstruct);
 
     /**
@@ -63,6 +64,7 @@ public:
      * entries in the structure
      */
     void Read(const MediaStruct& mstruct);
+    void Read(MediaStruct&& mstruct);
 
     /* Getters */
     inline std::string Path() const { return m_MediaStruct.Basepath(); }
@@ -172,7 +174,8 @@ protected: /* Members */
     std::vector<v_frame_t> m_Framenumbers;
 
 private: /* Methods */
-    void ProcessMovie(const MediaStruct& mstruct);
+    void ProcessSequence();
+    void ProcessMovie();
 
     /* Updates the internal range based on the read frames */
     void UpdateRange();

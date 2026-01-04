@@ -4,6 +4,7 @@
 /* Internal */
 #include "Frame.h"
 #include "FormatForge.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -38,6 +39,25 @@ Frame::~Frame()
     //     delete m_ImageData;
     //     m_ImageData = nullptr;
     // }
+}
+
+Frame::Frame(Frame&& other) noexcept
+    : m_MediaEntry(std::move(other.m_MediaEntry))
+    , m_Framenumber(other.m_Framenumber)
+    , m_ImageData(std::move(other.m_ImageData))
+{
+}
+
+Frame& Frame::operator=(Frame&& other) noexcept
+{
+    if (&other == this)
+        return *this;
+
+    m_MediaEntry = std::move(other.m_MediaEntry);
+    m_Framenumber = other.m_Framenumber;
+    m_ImageData = std::move(other.m_ImageData);
+
+    return *this;
 }
 
 Frame::Frame(const Frame& other)

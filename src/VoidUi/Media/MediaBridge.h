@@ -88,8 +88,10 @@ public:
     /**
      * Adds Media to the Graph
      */
+    bool AddMedia(MediaStruct&& mstruct);
     bool AddMedia(const MediaStruct& mstruct);    
-    bool InsertMedia(const MediaStruct& mstruct, const int index);
+    bool InsertMedia(MediaStruct&& mstruct, int index);
+    bool InsertMedia(const MediaStruct& mstruct, int index);
 
     /**
      * Playlist

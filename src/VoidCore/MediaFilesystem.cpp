@@ -74,6 +74,64 @@ MEntry::~MEntry()
 {
 }
 
+MEntry::MEntry(MEntry&& other) noexcept
+    : m_Path(other.m_Path)
+    , m_Basepath(other.m_Basepath)
+    , m_Name(other.m_Name)
+    , m_Extension(other.m_Extension)
+    , m_FramePadding(other.m_FramePadding)
+    , m_Framenumber(other.m_Framenumber)
+    , m_SingleFile(other.m_SingleFile)
+    , m_Templated(other.m_Templated)
+{
+}
+
+MEntry& MEntry::operator=(MEntry&& other) noexcept
+{
+    if (&other == this)
+        return *this;
+    
+    m_Path = other.m_Path;
+    m_Basepath = other.m_Basepath;
+    m_Name = other.m_Name;
+    m_Extension = other.m_Extension;
+    m_FramePadding = other.m_FramePadding;
+    m_Framenumber = other.m_Framenumber;
+    m_SingleFile = other.m_SingleFile;
+    m_Templated = other.m_Templated;
+
+    return *this;
+}
+
+MEntry::MEntry(const MEntry& other)
+    : m_Path(other.m_Path)
+    , m_Basepath(other.m_Basepath)
+    , m_Name(other.m_Name)
+    , m_Extension(other.m_Extension)
+    , m_FramePadding(other.m_FramePadding)
+    , m_Framenumber(other.m_Framenumber)
+    , m_SingleFile(other.m_SingleFile)
+    , m_Templated(other.m_Templated)
+{
+}
+
+MEntry& MEntry::operator=(const MEntry& other)
+{
+    if (&other == this)
+        return *this;
+
+    m_Path = other.m_Path;
+    m_Basepath = other.m_Basepath;
+    m_Name = other.m_Name;
+    m_Extension = other.m_Extension;
+    m_FramePadding = other.m_FramePadding;
+    m_Framenumber = other.m_Framenumber;
+    m_SingleFile = other.m_SingleFile;
+    m_Templated = other.m_Templated;
+
+    return *this;
+}
+
 void MEntry::Parse(const std::string& path)
 {
     /* Update the fullpath */
@@ -258,6 +316,13 @@ MediaStruct::MediaStruct(const MediaStruct& other)
     m_Entries = other.m_Entries;
 }
 
+MediaStruct::MediaStruct(MediaStruct&& other) noexcept
+    : m_MediaType(other.m_MediaType)
+{
+    std::swap(m_Frames, other.m_Frames);
+    std::swap(m_Entries, other.m_Entries);
+}
+
 MediaStruct MediaStruct::operator=(const MediaStruct& other)
 {
     /* Talking about the same entity */
@@ -285,6 +350,9 @@ MediaStruct MediaStruct::operator=(const MediaStruct& other)
 
 MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
 {
+    if (&other == this)
+        return *this;
+
     /* Clear Contents */
     Clear();
 
@@ -363,7 +431,7 @@ MEntry MediaStruct::First() const
 void MediaStruct::Add(const MEntry& entry)
 {
     /* Add the provided entry */
-    m_Entries[entry.Framenumber()] = entry;
+    m_Entries.insert({entry.Framenumber(), entry});
     /* Add the frame number on the vector */
     m_Frames.push_back(entry.Framenumber());
 }
@@ -441,7 +509,7 @@ void MediaStruct::Reset(const MEntry& entry, const MediaType& type)
         Clear();
 
     /* Add the first Entry */
-    m_Entries[entry.Framenumber()] = entry;
+    m_Entries.insert({entry.Framenumber(), entry});
     /* Add the frame number on the vector */
     m_Frames.push_back(entry.Framenumber());
 

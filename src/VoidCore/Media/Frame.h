@@ -30,6 +30,10 @@ public:
 
     ~Frame();
 
+    /* Move */
+    Frame(Frame&& other) noexcept;
+    Frame& operator=(Frame&& other) noexcept;
+
     /* Copy */
     Frame(const Frame& other);
     Frame& operator=(const Frame& other);

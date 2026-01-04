@@ -28,6 +28,15 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
+MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
+    : VoidObject(parent)
+    , Media(mstruct)
+    , m_Thumbnail()
+{
+    VOID_LOG_INFO("Clip Created: {0}", Vuid());
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+}
+
 MediaClip::MediaClip(const std::string& basepath,
         const std::string& name,
         const std::string& extension,
