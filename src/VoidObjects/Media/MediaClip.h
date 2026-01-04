@@ -32,6 +32,7 @@ class VOID_API MediaClip : public VoidObject, public Media
 public:
     MediaClip(QObject* parent = nullptr);
     MediaClip(const MediaStruct& mstruct, QObject* parent = nullptr);
+    MediaClip(MediaStruct& mstruct, QObject* parent = nullptr);
     MediaClip(const std::string& basepath,
             const std::string& name,
             const std::string& extension,
