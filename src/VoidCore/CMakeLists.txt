@@ -22,6 +22,7 @@ add_library(
     # Media
     Media/Frame.cpp
     Media/Media.cpp
+    Media/View.cpp
 
     # Media Readers
     Readers/OIIOReader.cpp

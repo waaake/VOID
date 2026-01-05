@@ -67,9 +67,9 @@ public:
     void Read(MediaStruct&& mstruct);
 
     /* Getters */
-    inline std::string Path() const { return m_MediaStruct.Basepath(); }
-    inline std::string Name() const { return m_MediaStruct.Name(); }
-    inline std::string Extension() const { return m_MediaStruct.Extension(); }
+    inline std::string Path() const { return m_View.media.Basepath(); }
+    inline std::string Name() const { return m_View.media.Name(); }
+    inline std::string Extension() const { return m_View.media.Extension(); }
 
     inline Media::Type MediaType() const { return m_Type; }
 
@@ -78,7 +78,7 @@ public:
     inline v_frame_t FirstFrame() const { return m_FirstFrame; }
     inline v_frame_t LastFrame() const { return m_LastFrame; }
 
-    inline v_frame_t Duration() const { return (LastFrame() - FirstFrame()) + 1; }
+    inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
     /*
      * Returns whether a given frame falls in the range of Media
@@ -92,7 +92,7 @@ public:
      * There could be a scenario where the given frame is in the range of first - last but is not available
      * and is referred to as the missing frame.
      */
-    [[nodiscard]] inline bool Contains(v_frame_t frame) const { return m_Mediaframes.find(frame) != m_Mediaframes.end(); }
+    [[nodiscard]] inline bool Contains(v_frame_t frame) const { return m_View.Contains(frame); }
 
     /*
      * Based on the available frames, returns the frame which is just lower than the provided frame
@@ -100,20 +100,19 @@ public:
      */
     v_frame_t NearestFrame(v_frame_t frame) const;
 
-    Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame); }
+    Frame GetFrame(v_frame_t frame) const { return m_View.GetFrame(frame); }
+    Frame FirstFrameData() const { return m_View.frames.at(FirstFrame()); }
+    Frame LastFrameData() const { return m_View.frames.at(LastFrame()); }
 
-    Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
-    Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
-
-    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame).Image(cached); }
+    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_View.frames.at(frame).Image(cached); }
 
     inline SharedPixels FirstImage() { return Image(FirstFrame()); }
     inline SharedPixels LastImage() { return Image(LastFrame()); }
 
-    inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.at(m_FirstFrame).Metadata(); }
+    inline const std::map<std::string, std::string> Metadata() const { return m_View.frames.at(m_FirstFrame).Metadata(); }
 
     inline double Framerate() const { return m_Framerate; }
-    inline bool Empty() const { return m_Mediaframes.empty(); }
+    inline bool Empty() const { return m_View.Empty(); }
     /*
      * A Media can be considered invalid if it is empty
      * Any valid media will have atleast one frame
@@ -122,9 +121,8 @@ public:
 
     inline void Clear()
     {
-        /* Clear underlying structs */
-        m_Framenumbers.clear();
-        m_Mediaframes.clear();
+        for (View& view : m_Views)
+            view.Clear();
     }
 
     /*
@@ -146,18 +144,12 @@ public:
     inline bool Caching() const { return m_StopCaching; }
 
     /* Allow iterating over the Media frames */
-    inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
-    inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_Mediaframes.end(); }
+    inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_View.frames.begin(); }
+    inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_View.frames.end(); }
 
 protected: /* Members */
-    /**
-     * The Media structure for the Media
-     */
-    MediaStruct m_MediaStruct;
-
     v_frame_t m_FirstFrame, m_LastFrame;
     double m_Framerate;
-
     Type m_Type;
 
     /* State determining that caching is currently ongoing */
@@ -167,11 +159,8 @@ protected: /* Members */
      * If set to True and if the caching process was active
      */
     bool m_StopCaching;
-
-    /* Arrays to hold the media Frames for the type of media */
-    std::unordered_map<v_frame_t, Frame> m_Mediaframes;
-    /* Array to hold the frame numbers for the frames which have been read */
-    std::vector<v_frame_t> m_Framenumbers;
+    View m_View;
+    Views m_Views;
 
 private: /* Methods */
     void ProcessSequence();

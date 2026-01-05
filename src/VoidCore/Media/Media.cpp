@@ -73,23 +73,23 @@ Media::Media(const std::string& basepath,
 void Media::UpdateRange()
 {
     /* Check if we have any frames to arrange */
-    if (m_Framenumbers.empty())
+    if (m_View.framenumbers.empty())
         return;
 
     /* Sort the Updated frames vector */
-    std::sort(m_Framenumbers.begin(), m_Framenumbers.end());
+    std::sort(m_View.framenumbers.begin(), m_View.framenumbers.end());
 
     /* Update the first and last frame after the framenumbers have been sorted */
-    m_FirstFrame = m_Framenumbers.front();
-    m_LastFrame = m_Framenumbers.back();
+    m_FirstFrame = m_View.framenumbers.front();
+    m_LastFrame = m_View.framenumbers.back();
 }
 
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
 {
     /* We need the lower bound of the given frame available in the vector */
-    auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
+    auto it = std::lower_bound(m_View.framenumbers.begin(), m_View.framenumbers.end(), frame);
 
-    if (it != m_Framenumbers.begin())
+    if (it != m_View.framenumbers.begin())
     {
         /* Return the value at the iter after moving it back */
         return *(--it);
@@ -104,50 +104,56 @@ v_frame_t Media::NearestFrame(const v_frame_t frame) const
 
 void Media::Read(const MediaStruct& mstruct)
 {
-    m_MediaStruct = mstruct;
+    m_View.media = mstruct;
 
     /**
      * Check if we have a Plugin reader for the file format
      * If not -> we can't proceed
      */
-    if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
+    if (!Forge::Instance().IsRegistered(m_View.media.Extension()))
     {
-        VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
+        VOID_LOG_WARN("No Media Reader found for type {0}", m_View.media.Extension());
         return;
     }
 
+    m_Views.reserve(1);
+    m_Views.emplace_back(m_View);
+
     /* If it is a movie -> process it as one */
-    m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
+    m_View.media.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
 void Media::Read(MediaStruct&& mstruct)
 {
-    m_MediaStruct = std::move(mstruct);
+    m_View.media = std::move(mstruct);
 
     /**
      * Check if we have a Plugin reader for the file format
      * If not -> we can't proceed
      */
-    if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
+    if (!Forge::Instance().IsRegistered(m_View.media.Extension()))
     {
-        VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
+        VOID_LOG_WARN("No Media Reader found for type {0}", m_View.media.Extension());
         return;
     }
 
+    m_Views.reserve(1);
+    m_Views.emplace_back(m_View);
+
     /* If it is a movie -> process it as one */
-    m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
+    m_View.media.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
 void Media::ProcessSequence()
 {
-    m_Framenumbers.reserve(m_MediaStruct.Size());
+    m_View.framenumbers.reserve(m_View.media.Size());
 
     /* Iterate over the struct's internal Media Entry */
-    for (const MEntry& e: m_MediaStruct)
+    for (const MEntry& e: m_View.media)
     {
         /* Update internal structures with the frame information */
-        m_Mediaframes[e.Framenumber()] = std::move(Frame(e));
-        m_Framenumbers.emplace_back(e.Framenumber());
+        m_View.frames[e.Framenumber()] = std::move(Frame(e));
+        m_View.framenumbers.emplace_back(e.Framenumber());
     }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
@@ -158,13 +164,13 @@ void Media::ProcessSequence()
 void Media::ProcessMovie()
 {
     /* Get the First entry since it is a Single File Movie */
-    MEntry entry = m_MediaStruct.First();
+    MEntry entry = m_View.media.First();
 
     if (!entry.Valid())
         return;
 
     /* Media Reader */
-    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_MediaStruct.Extension(), entry.Fullpath());
+    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_View.media.Extension(), entry.Fullpath());
 
     MFrameRange frange = r->Framerange();
     VOID_LOG_INFO("Movie Media Range: {0}-{1}", frange.startframe, frange.endframe);
@@ -172,14 +178,14 @@ void Media::ProcessMovie()
     /* Update internal framerate */
     m_Framerate = r->Framerate();
 
-    m_Framenumbers.reserve(frange.endframe - frange.startframe + 1);
+    m_View.framenumbers.reserve(frange.endframe - frange.startframe + 1);
 
     /* Add each of the Frame with the same entry and the varying frame number */
     for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
     {
         /* Update internal structures with the frame information */
-        m_Mediaframes[i] = std::move(MovieFrame(entry, i));
-        m_Framenumbers.emplace_back(i);
+        m_View.frames[i] = std::move(MovieFrame(entry, i));
+        m_View.framenumbers.emplace_back(i);
     }
 
     m_Type = Media::Type::MOVIE;
@@ -192,7 +198,7 @@ void Media::Cache()
     m_Caching = true;
 
     /* For all the frames in the media frames */
-    for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
+    for (std::pair<const v_frame_t, Frame>& it: m_View.frames)
     {
         /* Check if we're supposed to stop caching frames further */
         if (m_StopCaching)
@@ -213,7 +219,7 @@ void Media::Cache()
 void Media::ClearCache()
 {
     /* For all the frames in the media frames */
-    for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
+    for (std::pair<const v_frame_t, Frame>& it: m_View.frames)
     {
         /* Clear the Data for the Frame from the memory */
         it.second.ClearCache();
