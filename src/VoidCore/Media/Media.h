@@ -66,6 +66,9 @@ public:
     void Read(const MediaStruct& mstruct);
     void Read(MediaStruct&& mstruct);
 
+    bool AddView(const MediaStruct& mstruct);
+    bool AddView(MediaStruct&& mstruct);
+
     /* Getters */
     inline std::string Path() const { return m_View.media.Basepath(); }
     inline std::string Name() const { return m_View.media.Name(); }
@@ -105,6 +108,7 @@ public:
     Frame LastFrameData() const { return m_View.frames.at(LastFrame()); }
 
     inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_View.frames.at(frame).Image(cached); }
+    SharedPixels Image(v_frame_t frame, int view, bool cached = true);
 
     inline SharedPixels FirstImage() { return Image(FirstFrame()); }
     inline SharedPixels LastImage() { return Image(LastFrame()); }
@@ -124,6 +128,15 @@ public:
         for (View& view : m_Views)
             view.Clear();
     }
+
+    /**
+     * @brief Switch the Media view to the active view on the Player
+     * The switch will happen only if the said view is available in the media
+     * if not, the media continues to use the current active view to be rendered
+     * 
+     * @param view Index of the view to be set as active.
+     */
+    void SwitchView(int view);
 
     /*
      * Caches all frames of the Media onto memory
@@ -163,11 +176,11 @@ protected: /* Members */
     Views m_Views;
 
 private: /* Methods */
-    void ProcessSequence();
-    void ProcessMovie();
+    void ProcessSequence(View& view);
+    void ProcessMovie(View& view);
 
     /* Updates the internal range based on the read frames */
-    void UpdateRange();
+    void UpdateRange(View& view);
 };
 
 VOID_NAMESPACE_CLOSE

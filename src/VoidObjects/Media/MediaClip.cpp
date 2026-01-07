@@ -195,40 +195,51 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
 {
     out.SetObject();
 
-    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
-    out.AddMember("basepath", rapidjson::Value(m_View.media.Basepath().c_str(), allocator), allocator);
-    out.AddMember("name", rapidjson::Value(m_View.media.Name().c_str(), allocator), allocator);
-    out.AddMember("extension", rapidjson::Value(m_View.media.Extension().c_str(), allocator), allocator);
-    out.AddMember("start", static_cast<int64_t>(m_FirstFrame), allocator);
-    out.AddMember("end", static_cast<int64_t>(m_LastFrame), allocator);
-    out.AddMember("singlefile", static_cast<int>(m_View.media.SingleFile()), allocator);
-    out.AddMember("framePadding", static_cast<unsigned int>(m_View.media.Framepadding()), allocator);
+    rapidjson::Value views(rapidjson::kArrayType);
+    views.Reserve(m_Views.size(), allocator);
 
-    /* Save any missing frames from the media */
-    rapidjson::Value missingFrames(rapidjson::kArrayType);
-    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    for (int i = 0; i < m_Views.size(); ++i)
     {
-        if (m_View.frames.find(i) == m_View.frames.end())
-            missingFrames.PushBack(static_cast<int64_t>(i), allocator);
+        rapidjson::Value view(rapidjson::kObjectType);
+
+        view.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+        view.AddMember("basepath", rapidjson::Value(m_View.media.Basepath().c_str(), allocator), allocator);
+        view.AddMember("name", rapidjson::Value(m_View.media.Name().c_str(), allocator), allocator);
+        view.AddMember("extension", rapidjson::Value(m_View.media.Extension().c_str(), allocator), allocator);
+        view.AddMember("start", static_cast<int64_t>(m_FirstFrame), allocator);
+        view.AddMember("end", static_cast<int64_t>(m_LastFrame), allocator);
+        view.AddMember("singlefile", static_cast<int>(m_View.media.SingleFile()), allocator);
+        view.AddMember("framePadding", static_cast<unsigned int>(m_View.media.Framepadding()), allocator);
+    
+        /* Save any missing frames from the media */
+        rapidjson::Value missingFrames(rapidjson::kArrayType);
+        for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+        {
+            if (m_View.frames.find(i) == m_View.frames.end())
+                missingFrames.PushBack(static_cast<int64_t>(i), allocator);
+        }
+    
+        view.AddMember("missingFrames", missingFrames, allocator);
+    
+        rapidjson::Value annotations(rapidjson::kArrayType);
+        for (const auto& data: m_Annotations)
+        {
+            rapidjson::Value entry(rapidjson::kObjectType);
+            entry.AddMember("frame", static_cast<int64_t>(data.first), allocator);
+    
+            /* Serialize Annotation Data */
+            rapidjson::Value annotation;
+            data.second->Serialize(annotation, allocator);
+            entry.AddMember("data", annotation, allocator);
+    
+            annotations.PushBack(entry, allocator);
+        }
+    
+        view.AddMember("annotations", annotations, allocator);
+        views.PushBack(view, allocator);
     }
 
-    out.AddMember("missingFrames", missingFrames, allocator);
-
-    rapidjson::Value annotations(rapidjson::kArrayType);
-    for (const auto& data: m_Annotations)
-    {
-        rapidjson::Value entry(rapidjson::kObjectType);
-        entry.AddMember("frame", static_cast<int64_t>(data.first), allocator);
-
-        /* Serialize Annotation Data */
-        rapidjson::Value annotation;
-        data.second->Serialize(annotation, allocator);
-        entry.AddMember("data", annotation, allocator);
-
-        annotations.PushBack(entry, allocator);
-    }
-
-    out.AddMember("annotations", annotations, allocator);
+    out.AddMember("views", views, allocator);
 }
 
 void MediaClip::Serialize(std::ostream& out) const
@@ -282,64 +293,70 @@ void MediaClip::Serialize(std::ostream& out) const
 
 void MediaClip::Deserialize(const rapidjson::Value& in)
 {
-    const rapidjson::Value::ConstArray missingFrames = in["missingFrames"].GetArray();
-
-    /* A Single file is just something like a single image or maybe an audio and a movie like like .mp4, .mov etc. */
-    if (in["singlefile"].GetInt())
+    const rapidjson::Value::ConstArray views = in["views"].GetArray();
+    for (int i = 0; i < views.Size(); ++i)
     {
-        Read(
-            MediaStruct(
-                in["basepath"].GetString(),
-                in["name"].GetString(),
-                in["extension"].GetString()
-            )
-        );
-    }
-    else if (missingFrames.Empty())
-    {
-        Read(
-            MediaStruct(
-                in["basepath"].GetString(),
-                in["name"].GetString(),
-                in["extension"].GetString(),
-                in["start"].GetInt64(),
-                in["end"].GetInt64(),
-                in["framePadding"].GetUint()
-            )
-        );
-    }
-    else
-    {
-        std::vector<v_frame_t> missing;
-        missing.reserve(missingFrames.Size());
-
-        for (int i = 0; i < missingFrames.Size(); ++i)
-            missing.emplace_back(missingFrames[i].GetInt64());
-
-        Read(
-            MediaStruct(
-                in["basepath"].GetString(),
-                in["name"].GetString(),
-                in["extension"].GetString(),
-                in["start"].GetInt64(),
-                in["end"].GetInt64(),
-                in["framePadding"].GetUint(),
-                missing
-            )
-        );   
-    }
-
-    const rapidjson::Value::ConstArray annotations = in["annotations"].GetArray();
-    if (!annotations.Empty())
-    {
-        for (int i = 0; i < annotations.Size(); ++i)
+        const rapidjson::Value::ConstArray missingFrames = views[i]["missingFrames"].GetArray();
+    
+        /* A Single file is just something like a single image or maybe an audio and a movie like like .mp4, .mov etc. */
+        if (views[i]["singlefile"].GetInt())
         {
-            Renderer::SharedAnnotation annotation = std::make_shared<Renderer::Annotation>();
-            annotation->Deserialize(annotations[i]["data"]);
-
-            m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
+            AddView(
+                MediaStruct(
+                    views[i]["basepath"].GetString(),
+                    views[i]["name"].GetString(),
+                    views[i]["extension"].GetString()
+                )
+            );
+        }
+        else if (missingFrames.Empty())
+        {
+            AddView(
+                MediaStruct(
+                    views[i]["basepath"].GetString(),
+                    views[i]["name"].GetString(),
+                    views[i]["extension"].GetString(),
+                    views[i]["start"].GetInt64(),
+                    views[i]["end"].GetInt64(),
+                    views[i]["framePadding"].GetUint()
+                )
+            );
+        }
+        else
+        {
+            std::vector<v_frame_t> missing;
+            missing.reserve(missingFrames.Size());
+    
+            for (int i = 0; i < missingFrames.Size(); ++i)
+                missing.emplace_back(missingFrames[i].GetInt64());
+    
+            AddView(
+                MediaStruct(
+                    views[i]["basepath"].GetString(),
+                    views[i]["name"].GetString(),
+                    views[i]["extension"].GetString(),
+                    views[i]["start"].GetInt64(),
+                    views[i]["end"].GetInt64(),
+                    views[i]["framePadding"].GetUint(),
+                    missing
+                )
+            );   
+        }
+    
+        const rapidjson::Value::ConstArray annotations = views[i]["annotations"].GetArray();
+        if (!annotations.Empty())
+        {
+            for (int i = 0; i < annotations.Size(); ++i)
+            {
+                Renderer::SharedAnnotation annotation = std::make_shared<Renderer::Annotation>();
+                annotation->Deserialize(annotations[i]["data"]);
+    
+                m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
+            }
         }
     }
+
+    SwitchView(0);
 
     /* Load thumbnail */
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));

@@ -66,15 +66,15 @@ public:
 
     inline QColor Color() const { return m_Color; }
 
-    /* Overloading Base Media functions to allow frameCached be emit */
-    inline SharedPixels Image(v_frame_t frame, bool cached = true)
-    { 
-        /* Emit that the frame was cached */
-        emit frameCached(frame);
+    // /* Overloading Base Media functions to allow frameCached be emit */
+    // inline SharedPixels Image(v_frame_t frame, bool cached = true)
+    // { 
+    //     /* Emit that the frame was cached */
+    //     emit frameCached(frame);
 
-        /* Return the frame data from media */
-        return Media::Image(frame, cached);
-    }
+    //     /* Return the frame data from media */
+    //     return Media::Image(frame, cached);
+    // }
 
     /* 
      * Caches all the frames for the media

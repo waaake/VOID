@@ -69,19 +69,18 @@ Media::Media(const std::string& basepath,
     Read(MediaStruct(basepath, name, extension, start, end, padding, missing));
 }
 
-
-void Media::UpdateRange()
+void Media::UpdateRange(View& view)
 {
     /* Check if we have any frames to arrange */
-    if (m_View.framenumbers.empty())
+    if (view.framenumbers.empty())
         return;
 
     /* Sort the Updated frames vector */
-    std::sort(m_View.framenumbers.begin(), m_View.framenumbers.end());
+    std::sort(view.framenumbers.begin(), view.framenumbers.end());
 
     /* Update the first and last frame after the framenumbers have been sorted */
-    m_FirstFrame = m_View.framenumbers.front();
-    m_LastFrame = m_View.framenumbers.back();
+    m_FirstFrame = view.framenumbers.front();
+    m_LastFrame = view.framenumbers.back();
 }
 
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
@@ -120,7 +119,7 @@ void Media::Read(const MediaStruct& mstruct)
     m_Views.emplace_back(m_View);
 
     /* If it is a movie -> process it as one */
-    m_View.media.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
+    m_View.media.Type() == MediaType::Movie ? ProcessMovie(m_View) : ProcessSequence(m_View);
 }
 
 void Media::Read(MediaStruct&& mstruct)
@@ -141,36 +140,105 @@ void Media::Read(MediaStruct&& mstruct)
     m_Views.emplace_back(m_View);
 
     /* If it is a movie -> process it as one */
-    m_View.media.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
+    m_View.media.Type() == MediaType::Movie ? ProcessMovie(m_View) : ProcessSequence(m_View);
 }
 
-void Media::ProcessSequence()
+bool Media::AddView(const MediaStruct& mstruct)
 {
-    m_View.framenumbers.reserve(m_View.media.Size());
+    View view;
+    view.media = mstruct;
+
+    /**
+     * Check if we have a Plugin reader for the file format
+     * If not -> we can't proceed
+     */
+    if (!Forge::Instance().IsRegistered(view.media.Extension()))
+    {
+        VOID_LOG_WARN("No Media Reader found for type {0}", view.media.Extension());
+        return false;
+    }
+
+    m_Views.reserve(m_Views.size() + 1);
+    
+    /* If it is a movie -> process it as one */
+    view.media.Type() == MediaType::Movie ? ProcessMovie(view) : ProcessSequence(view);
+    m_Views.emplace_back(view);
+
+    return true;
+}
+
+bool Media::AddView(MediaStruct&& mstruct)
+{
+    View view;
+    view.media = std::move(mstruct);
+
+    /**
+     * Check if we have a Plugin reader for the file format
+     * If not -> we can't proceed
+     */
+    if (!Forge::Instance().IsRegistered(view.media.Extension()))
+    {
+        VOID_LOG_WARN("No Media Reader found for type {0}", view.media.Extension());
+        return false;
+    }
+
+    m_Views.reserve(m_Views.size() + 1);
+    
+    /* If it is a movie -> process it as one */
+    view.media.Type() == MediaType::Movie ? ProcessMovie(view) : ProcessSequence(view);
+    m_Views.emplace_back(view);
+
+    return true;
+}
+
+SharedPixels Media::Image(v_frame_t frame, int view, bool cached)
+{
+    if (view >= m_Views.size())
+        return m_View.frames.at(frame).Image(cached);
+
+    /* Return the Image from the requested View */
+    return m_Views[view].frames.at(frame).Image(cached);
+}
+
+void Media::SwitchView(int view)
+{
+    /**
+     * The media does not have the requested view
+     * e.g. if the Media does not have right view, then the current view
+     * is the one which will still be rendered/shown on the viewport
+     */
+    if (view >= m_Views.size())
+        return;
+
+    m_View = m_Views.at(view);
+}
+
+void Media::ProcessSequence(View& view)
+{
+    view.framenumbers.reserve(view.media.Size());
 
     /* Iterate over the struct's internal Media Entry */
-    for (const MEntry& e: m_View.media)
+    for (const MEntry& e: view.media)
     {
         /* Update internal structures with the frame information */
-        m_View.frames[e.Framenumber()] = std::move(Frame(e));
-        m_View.framenumbers.emplace_back(e.Framenumber());
+        view.frames[e.Framenumber()] = std::move(Frame(e));
+        view.framenumbers.emplace_back(e.Framenumber());
     }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
-    UpdateRange();
+    UpdateRange(view);
 }
 
-// void Media::ProcessMovie(const MediaStruct& mstruct)
-void Media::ProcessMovie()
+void Media::ProcessMovie(View& view)
 {
     /* Get the First entry since it is a Single File Movie */
-    MEntry entry = m_View.media.First();
+    MEntry entry = view.media.First();
 
     if (!entry.Valid())
         return;
 
     /* Media Reader */
-    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_View.media.Extension(), entry.Fullpath());
+    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(view.media.Extension(), entry.Fullpath());
 
     MFrameRange frange = r->Framerange();
     VOID_LOG_INFO("Movie Media Range: {0}-{1}", frange.startframe, frange.endframe);
@@ -178,18 +246,18 @@ void Media::ProcessMovie()
     /* Update internal framerate */
     m_Framerate = r->Framerate();
 
-    m_View.framenumbers.reserve(frange.endframe - frange.startframe + 1);
+    view.framenumbers.reserve(frange.endframe - frange.startframe + 1);
 
     /* Add each of the Frame with the same entry and the varying frame number */
     for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
     {
         /* Update internal structures with the frame information */
-        m_View.frames[i] = std::move(MovieFrame(entry, i));
-        m_View.framenumbers.emplace_back(i);
+        view.frames[i] = std::move(MovieFrame(entry, i));
+        view.framenumbers.emplace_back(i);
     }
 
     m_Type = Media::Type::MOVIE;
-    UpdateRange();
+    UpdateRange(view);
 }
 
 void Media::Cache()
