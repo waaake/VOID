@@ -11,7 +11,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "View.h"
+#include "Frame.h"
 #include "VoidCore/MediaFilesystem.h"
 
 VOID_NAMESPACE_OPEN
