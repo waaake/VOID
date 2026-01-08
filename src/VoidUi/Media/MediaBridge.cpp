@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <sstream>
+
 /* Qt */
 #include <QCoreApplication>
 #include <QDataStream>
@@ -31,7 +34,6 @@ MBridge::MBridge(QObject* parent)
 
     /* Setup a Default Project */
     NewProject();
-    // DefaultProject();
 
     connect(&VoidPreferences::Instance(), &VoidPreferences::projectsUpdated, this, &MBridge::ResetProjectsMenu);
 }
@@ -45,20 +47,6 @@ MBridge::~MBridge()
     // m_RecentProjectsMenu->deleteLater();
     // delete m_RecentProjectsMenu;
     // m_RecentProjectsMenu = nullptr;
-}
-
-void MBridge::DefaultProject()
-{
-    VOID_LOG_INFO("Setting Default Project...");
-
-    std::string recent = VoidPreferences::Instance().MostRecentProject();
-
-    VOID_LOG_INFO("Last Project Path: {0}", recent);
-
-    NewProject();
-
-    // if (!recent.empty())
-    //     Load(recent);
 }
 
 void MBridge::NewProject()

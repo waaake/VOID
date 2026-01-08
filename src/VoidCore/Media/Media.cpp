@@ -17,8 +17,6 @@ Media::Media()
     , m_LastFrame(-1)
     , m_Framerate(24.0)
     , m_Type(Type::UNDEFINED)
-    , m_Caching(false)
-    , m_StopCaching(false)
 {
 }
 
@@ -186,29 +184,6 @@ void Media::ProcessMovie()
     UpdateRange();
 }
 
-void Media::Cache()
-{
-    /* Update the Caching state */
-    m_Caching = true;
-
-    /* For all the frames in the media frames */
-    for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
-    {
-        /* Check if we're supposed to stop caching frames further */
-        if (m_StopCaching)
-        {
-            /* Set the state of stopCaching back to 0 so that we don't unnecessarily stop future caches */
-            m_StopCaching = false;
-            break;
-        }
-
-        /* Cache the Frame */
-        it.second.Cache();
-    }
-
-    /* We're done with the caching */
-    m_Caching = false;
-}
 
 void Media::ClearCache()
 {
@@ -220,19 +195,5 @@ void Media::ClearCache()
     }
 }
 
-void Media::StopCaching()
-{
-    /*
-     * Check if we're caching currently
-     * if so -> set the var to allow the caching process to stop at the current frame
-     * and not proceed to the other frames
-     */
-    if (m_Caching)
-    {
-        m_StopCaching = false;
-        VOID_LOG_INFO("Stopping Cache");
-    }
-    VOID_LOG_INFO("No ongoing Cache Process");
-}
 
 VOID_NAMESPACE_CLOSE

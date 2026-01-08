@@ -12,7 +12,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidCore/MediaFilesystem.h"
+#include "VoidCore/Media/Filesystem.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -8,9 +8,9 @@
 #include <unordered_set>
 
 /* Internal */
-#include "MediaFilesystem.h"
-#include "Logging.h"
-#include "Profiler.h"
+#include "Filesystem.h"
+#include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 

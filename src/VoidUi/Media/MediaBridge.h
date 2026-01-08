@@ -177,7 +177,6 @@ private: /* Members */
     QMenu* m_RecentProjectsMenu;
 
 private: /* Methods */
-    void DefaultProject();
     void SetActiveProject(Project* project);
     void ResetProjectsMenu();
     friend class ProjectBridge;

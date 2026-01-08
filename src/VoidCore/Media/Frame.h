@@ -10,7 +10,7 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
-#include "VoidCore/MediaFilesystem.h"
+#include "Filesystem.h"
 
 VOID_NAMESPACE_OPEN
 

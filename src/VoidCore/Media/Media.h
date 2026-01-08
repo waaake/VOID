@@ -12,7 +12,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Frame.h"
-#include "VoidCore/MediaFilesystem.h"
+#include "Filesystem.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -128,22 +128,9 @@ public:
     }
 
     /*
-     * Caches all frames of the Media onto memory
-     * This method is CPU intensive function and should be called from a separate thread
-     * to allow this function to run parallelly to other elements
-     */
-    void Cache();
-
-    /*
      * Clears the cache for all the frames of the Media
      */
     void ClearCache();
-
-    /* Stops caching if the cache process is ongoing */
-    void StopCaching();
-
-    /* Returns whether the Cache process is ongoing */
-    inline bool Caching() const { return m_StopCaching; }
 
     /* Allow iterating over the Media frames */
     inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
@@ -159,15 +146,6 @@ protected: /* Members */
     double m_Framerate;
 
     Type m_Type;
-
-    /* State determining that caching is currently ongoing */
-    bool m_Caching;
-    /*
-     * This variable controls when the caching operation needs to be stopped
-     * If set to True and if the caching process was active
-     */
-    bool m_StopCaching;
-
     /* Arrays to hold the media Frames for the type of media */
     std::unordered_map<v_frame_t, Frame> m_Mediaframes;
     /* Array to hold the frame numbers for the frames which have been read */
