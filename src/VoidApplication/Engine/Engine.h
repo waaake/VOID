@@ -41,6 +41,7 @@ private: /* Methods */
     void Initialize();
     void PostInit();
     void PostStartup();
+    void Callback();
 };
 
 VOID_NAMESPACE_CLOSE
