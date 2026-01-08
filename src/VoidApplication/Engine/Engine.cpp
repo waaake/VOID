@@ -123,6 +123,12 @@ void VoidEngine::PostStartup()
         EngineBridge::LoadMedia(m_Args.media);
     }
 
+    /* Defer the callbacks */
+    QTimer::singleShot(800, m_Imager, [this]() { Callback(); });
+}
+
+void VoidEngine::Callback()
+{
     if (m_Args.project.empty() && m_Args.media.empty() && !m_Args.basic)
     {    
         /* Startup window pop-up */
