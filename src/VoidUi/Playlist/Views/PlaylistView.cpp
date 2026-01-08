@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "PlaylistView.h"
+#include "VoidCore/Logging.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Playlist/Delegates/ListDelegate.h"
 

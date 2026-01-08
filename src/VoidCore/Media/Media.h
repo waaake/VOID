@@ -8,70 +8,13 @@
 #include <filesystem>
 #include <unordered_map>
 #include <vector>
-#include <mutex>
 
 /* Internal */
 #include "Definition.h"
-#include "FormatForge.h"
-#include "PixReader.h"
-#include "ImageData.h"
-#include "Logging.h"
-#include "MediaFilesystem.h"
+#include "Frame.h"
+#include "Filesystem.h"
 
 VOID_NAMESPACE_OPEN
-
-class VOID_API Frame
-{
-public:
-    Frame();
-    explicit Frame(const MEntry& e);
-    Frame(const MEntry& e, v_frame_t frame);
-
-    ~Frame();
-
-    /* Copy */
-    Frame(const Frame& other);
-    Frame& operator=(const Frame& other);
-
-    /* Getters */
-    inline const std::string& Path() const { return m_MediaEntry.Fullpath(); }
-    inline const std::string& Name() const { return m_MediaEntry.Name(); }
-    inline const std::string& Extension() const { return m_MediaEntry.Extension(); }
-    inline v_frame_t Framenumber() const { return m_Framenumber; }
-
-    /**
-     * Returns Shared Pointer to the ImageData
-     * cached defines whether the frame needs to be read before returning
-     * has no effect if the frame has already been read
-     */
-    SharedPixels Image(bool cached = true);
-
-    /**
-     * Returns the underlying metadata from the image
-     */
-    inline const std::map<std::string, std::string> Metadata() const { return m_ImageData->Metadata(); }
-
-    /* Frame Caches */
-    void Cache();
-    void ClearCache();
-
-protected: /* Members */
-    MEntry m_MediaEntry;
-    SharedPixels m_ImageData;
-
-    /* Internally associated framenumer */
-    v_frame_t m_Framenumber;
-
-private: /* Members*/
-    std::mutex m_Mutex;
-};
-
-class VOID_API MovieFrame : public Frame
-{
-public:
-    MovieFrame() : Frame() {}
-    MovieFrame(const MEntry& e, const v_frame_t frame);
-};
 
 class VOID_API Media
 {
@@ -87,6 +30,7 @@ public: /* Enums */
 
 public:
     Media();
+    Media(MediaStruct& mstruct);
     Media(const MediaStruct& mstruct);
 
     /**
@@ -120,6 +64,7 @@ public:
      * entries in the structure
      */
     void Read(const MediaStruct& mstruct);
+    void Read(MediaStruct&& mstruct);
 
     /* Getters */
     inline std::string Path() const { return m_MediaStruct.Basepath(); }
@@ -183,22 +128,9 @@ public:
     }
 
     /*
-     * Caches all frames of the Media onto memory
-     * This method is CPU intensive function and should be called from a separate thread
-     * to allow this function to run parallelly to other elements
-     */
-    void Cache();
-
-    /*
      * Clears the cache for all the frames of the Media
      */
     void ClearCache();
-
-    /* Stops caching if the cache process is ongoing */
-    void StopCaching();
-
-    /* Returns whether the Cache process is ongoing */
-    inline bool Caching() const { return m_StopCaching; }
 
     /* Allow iterating over the Media frames */
     inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
@@ -214,26 +146,17 @@ protected: /* Members */
     double m_Framerate;
 
     Type m_Type;
-
-    /* State determining that caching is currently ongoing */
-    bool m_Caching;
-    /*
-     * This variable controls when the caching operation needs to be stopped
-     * If set to True and if the caching process was active
-     */
-    bool m_StopCaching;
-
     /* Arrays to hold the media Frames for the type of media */
     std::unordered_map<v_frame_t, Frame> m_Mediaframes;
     /* Array to hold the frame numbers for the frames which have been read */
     std::vector<v_frame_t> m_Framenumbers;
 
 private: /* Methods */
-    void ProcessMovie(const MediaStruct& mstruct);
+    void ProcessSequence();
+    void ProcessMovie();
 
     /* Updates the internal range based on the read frames */
     void UpdateRange();
-
 };
 
 VOID_NAMESPACE_CLOSE

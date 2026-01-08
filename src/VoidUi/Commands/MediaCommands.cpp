@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "MediaCommands.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -29,24 +30,8 @@ void MediaImportCommand::undo()
 
 bool MediaImportCommand::Redo()
 {
-    /* Construct the media struct from the file path */
-    MediaStruct mstruct = MediaStruct::FromFile(m_Path);
-
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return false;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return false;
-    }
-
     /* Add the Media to the Model */
-    return _MediaBridge.AddMedia(mstruct);
+    return _MediaBridge.AddMedia(MediaStruct::FromFile(m_Path));
 }
 
 /* }}} */
@@ -62,23 +47,8 @@ MediaRemoveCommand::MediaRemoveCommand(const QModelIndex& index, QUndoCommand* p
 
 void MediaRemoveCommand::undo()
 {
-    MediaStruct mstruct = MediaStruct::FromFile(m_Path);
-
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return;
-    }
-
     /* Add the Media to the Model */
-    _MediaBridge.InsertMedia(mstruct, m_Index.row());
+    _MediaBridge.InsertMedia(MediaStruct::FromFile(m_Path), m_Index.row());
 }
 
 bool MediaRemoveCommand::Redo()

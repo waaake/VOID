@@ -16,7 +16,6 @@
 /* Internal */
 #include "Definition.h"
 #include "TrackItem.h"
-#include "VoidCore/Media.h"
 #include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN

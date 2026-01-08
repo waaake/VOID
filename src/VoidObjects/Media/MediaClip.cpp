@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "MediaClip.h"
+#include "VoidCore/Logging.h"
 #include "VoidObjects/Core/Threads.h"
 
 VOID_NAMESPACE_OPEN
@@ -19,6 +20,15 @@ MediaClip::MediaClip(QObject* parent)
 }
 
 MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
+    : VoidObject(parent)
+    , Media(mstruct)
+    , m_Thumbnail()
+{
+    VOID_LOG_INFO("Clip Created: {0}", Vuid());
+    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+}
+
+MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
     : VoidObject(parent)
     , Media(mstruct)
     , m_Thumbnail()

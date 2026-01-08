@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "Project.h"
+#include "VoidCore/Logging.h"
 #include "VoidUi/Commands/MediaCommands.h"
 
 VOID_NAMESPACE_OPEN

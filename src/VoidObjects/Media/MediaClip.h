@@ -15,7 +15,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidCore/Media.h"
+#include "VoidCore/Media/Media.h"
 #include "VoidRenderer/RenderTypes.h"
 #include "VoidObjects/VoidObject.h"
 
@@ -32,6 +32,7 @@ class VOID_API MediaClip : public VoidObject, public Media
 public:
     MediaClip(QObject* parent = nullptr);
     MediaClip(const MediaStruct& mstruct, QObject* parent = nullptr);
+    MediaClip(MediaStruct& mstruct, QObject* parent = nullptr);
     MediaClip(const std::string& basepath,
             const std::string& name,
             const std::string& extension,
@@ -64,34 +65,6 @@ public:
     }
 
     inline QColor Color() const { return m_Color; }
-
-    /* Overloading Base Media functions to allow frameCached be emit */
-    inline SharedPixels Image(v_frame_t frame, bool cached = true)
-    { 
-        /* Emit that the frame was cached */
-        emit frameCached(frame);
-
-        /* Return the frame data from media */
-        return Media::Image(frame, cached);
-    }
-
-    /* 
-     * Caches all the frames for the media
-     * emits frameCached for all the frames as they are cached
-     * Overloads the function Cache from media
-     */
-    void Cache()
-    {
-        /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
-        for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
-        {
-            /* Cache the data for the frame */
-            it.second.Cache();
-
-            /* Emit the frame which was cached */
-            emit frameCached(it.first);
-        }
-    }
 
     void CacheFrame(v_frame_t frame);
     void UncacheFrame(v_frame_t frame);

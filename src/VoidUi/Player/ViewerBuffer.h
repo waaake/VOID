@@ -137,11 +137,6 @@ public:
     void Clear();
 
     /**
-     * Cache's the active item for playback
-     */
-    void Cache();
-
-    /**
      * Clears any cache from underlying components
      */
     void ClearCache();

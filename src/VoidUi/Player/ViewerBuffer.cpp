@@ -158,15 +158,6 @@ void ViewerBuffer::Refresh()
     m_CachedTrackItem = nullptr;
 }
 
-void ViewerBuffer::Cache()
-{
-    /* What is the active item for playback */
-    if (m_PlayingComponent == PlayableComponent::Clip)
-        m_Clip->Cache();
-    else
-        m_Track->Cache();
-}
-
 void ViewerBuffer::ClearCache()
 {
     /* Clear Cache from the playing components */

@@ -7,7 +7,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidCore/MediaFilesystem.h"
+#include "VoidCore/Media/Filesystem.h"
 #include "VoidObjects/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN

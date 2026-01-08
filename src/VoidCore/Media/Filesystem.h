@@ -55,6 +55,14 @@ public:
 
     ~MEntry();
 
+    /* Move */
+    MEntry(MEntry&& other) noexcept;
+    MEntry& operator=(MEntry&& other) noexcept;
+
+    /* Copy */
+    MEntry(const MEntry& other);
+    MEntry& operator=(const MEntry& other);
+
     /**
      * Getters describing the Entry
      */
@@ -232,6 +240,7 @@ public:
      * Move and Copy
      */
     MediaStruct(const MediaStruct& other);
+    MediaStruct(MediaStruct&& other) noexcept;
 
     MediaStruct operator=(MediaStruct&& other) noexcept;
     MediaStruct operator=(const MediaStruct& other);

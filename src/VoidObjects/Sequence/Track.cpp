@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "Track.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -201,16 +202,6 @@ void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
 
     /* Emit the signal the the range has been modified */
     emit rangeChanged(m_StartFrame, m_EndFrame);
-}
-
-void PlaybackTrack::Cache()
-{
-    /* For each of the track item in the underlying array -> Cache the item's media */
-    for (SharedTrackItem& item: m_Items)
-    {
-        /* This emits the frameCached signal for each frame that has been cached */
-        item->Cache();
-    }
 }
 
 void PlaybackTrack::ClearCache()
