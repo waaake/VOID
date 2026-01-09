@@ -73,8 +73,20 @@ void DockTab::mouseMoveEvent(QMouseEvent* event)
 		if ((event->pos() - m_StartPos).manhattanLength() > 200)
 		{
 			DockWidget* p = dynamic_cast<DockWidget*>(parentWidget());
-			int index = tabAt(m_StartPos);
+			int index = currentIndex();
 			DockPanel* w = dynamic_cast<DockPanel*>(p->widget(index));
+
+			/**
+			 * Sometime when dragging tabs very quickly one after the other
+			 * there is a state where none of the tabs in the widget are active
+			 * atleast in qt5 this is quite noticable, need to test this behaviour
+			 * on qt6, anyways always good to check if a pointer is valid before
+			 * accessing it's attributes to play safe here, else we crash when calling 
+			 * widget::grab() below
+			 */
+			if (!w)
+				return;
+
 			QPixmap pixmap = w->grab();
 
 			emit tabDragged(index);
