@@ -9,15 +9,16 @@
 
 /* Internal */
 #include "Definition.h"
+#include "FileDialog.h"
 #include "VoidCore/Media/Filesystem.h"
 
 VOID_NAMESPACE_OPEN
 
-class VoidMediaBrowser : public QFileDialog
+class MediaBrowser : public MediaFileDialog
 {
 public:
-    VoidMediaBrowser(QWidget* parent = nullptr);
-    virtual ~VoidMediaBrowser();
+    MediaBrowser(QWidget* parent = nullptr);
+    virtual ~MediaBrowser();
 
     /*
      * Begin browsing
@@ -28,10 +29,8 @@ public:
     [[nodiscard]] bool Browse();
     [[nodiscard]] bool BrowseDirectory();
 
-    inline std::string GetDirectory() const { return directory().absolutePath().toStdString(); }
-    inline std::string SelectedDirectory() const { return selectedFiles().first().toStdString(); }
-    std::string GetSelectedFile() const;
-    MediaStruct GetMediaStruct() const;
+    inline std::string SelectedDirectory() const { return SelectedPath().toStdString(); }
+    std::string GetSelectedFile() const { return SelectedPath().toStdString(); }
 };
 
 VOID_NAMESPACE_CLOSE

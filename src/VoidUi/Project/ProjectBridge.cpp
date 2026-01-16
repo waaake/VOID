@@ -24,7 +24,7 @@ ProjectBridge& ProjectBridge::Instance()
 
 SharedMediaClip ProjectBridge::OpenMedia()
 {
-    VoidMediaBrowser mediaBrowser;
+    MediaBrowser mediaBrowser;
 
     if (!mediaBrowser.Browse())
     {
@@ -44,7 +44,7 @@ SharedMediaClip ProjectBridge::OpenMedia(const std::string& path)
 
 void ProjectBridge::ImportMedia()
 {
-    VoidMediaBrowser mediaBrowser;
+    MediaBrowser mediaBrowser;
 
     /* In case the dialog was not accepted */
     if (!mediaBrowser.Browse())
@@ -59,7 +59,7 @@ void ProjectBridge::ImportMedia()
 
 void ProjectBridge::ImportDirectory()
 {
-    VoidMediaBrowser mediaBrowser;
+    MediaBrowser mediaBrowser;
 
     if (!mediaBrowser.BrowseDirectory())
     {
@@ -73,7 +73,7 @@ void ProjectBridge::ImportDirectory()
 
 void ProjectBridge::ImportMedia(Project* project)
 {
-    VoidMediaBrowser mediaBrowser;
+    MediaBrowser mediaBrowser;
 
     /* In case the dialog was not accepted */
     if (!mediaBrowser.Browse())
@@ -88,7 +88,7 @@ void ProjectBridge::ImportMedia(Project* project)
 
 void ProjectBridge::ImportDirectory(Project* project)
 {
-    VoidMediaBrowser mediaBrowser;
+    MediaBrowser mediaBrowser;
 
     if (!mediaBrowser.BrowseDirectory())
     {

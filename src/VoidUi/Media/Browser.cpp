@@ -6,50 +6,26 @@
 
 VOID_NAMESPACE_OPEN
 
-VoidMediaBrowser::VoidMediaBrowser(QWidget* parent)
-    : QFileDialog(parent)
+MediaBrowser::MediaBrowser(QWidget* parent)
+    : MediaFileDialog(parent)
 {
-    setOption(QFileDialog::DontUseNativeDialog);
 }
 
-VoidMediaBrowser::~VoidMediaBrowser()
+MediaBrowser::~MediaBrowser()
 {
 
 }
 
-bool VoidMediaBrowser::Browse()
+bool MediaBrowser::Browse()
 {
-    setFileMode(QFileDialog::FileMode::ExistingFile);
+    SetFileMode(MediaFileDialog::FileMode::ExistingFile);
     return exec();
 }
 
-bool VoidMediaBrowser::BrowseDirectory()
+bool MediaBrowser::BrowseDirectory()
 {
-    setFileMode(QFileDialog::FileMode::Directory);
+    SetFileMode(MediaFileDialog::FileMode::Directory);
     return exec();
-}
-
-std::string VoidMediaBrowser::GetSelectedFile() const
-{
-    QStringList files = selectedFiles();
-
-    /* Empty Media struct */
-    if (files.empty())
-        return "";
-
-    return files.first().toStdString();
-}
-
-MediaStruct VoidMediaBrowser::GetMediaStruct() const
-{
-    QStringList files = selectedFiles();
-
-    /* Empty Media struct */
-    if (files.empty())
-        return MediaStruct();
-
-    /* Return the MediaStruct constructed from the selected file */
-    return MediaStruct::FromFile(files.first().toStdString());
 }
 
 VOID_NAMESPACE_CLOSE
