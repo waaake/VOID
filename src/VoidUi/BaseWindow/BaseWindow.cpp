@@ -28,6 +28,9 @@ BaseWindow::BaseWindow(QWidget* parent)
 #if _QT6        /* Qt 6 Compat */
 void BaseWindow::mousePressEvent(QMouseEvent* event)
 {
+    if (isMaximized())
+        return;
+
     /* Window geometry */
     QRect window = geometry();
 
@@ -197,6 +200,9 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
 #else
 void BaseWindow::mousePressEvent(QMouseEvent* event)
 {
+    if (isMaximized())
+        return;
+
     /* Window geometry */
     QRect window = geometry();
 
@@ -368,16 +374,10 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
 void BaseWindow::mouseReleaseEvent(QMouseEvent* event)
 {
     if (m_Resize != ResizeType::None)
-    {
-        /* Restore the Resize Type */
         m_Resize = ResizeType::None;
-    }
 
     if (m_Dragging)
-    {
-        /* Reset Dragging */
         m_Dragging = false;
-    }
 }
 
 #endif // USE_FRAMED_WINDOW
