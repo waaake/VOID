@@ -27,12 +27,15 @@ set(SOURCES
     
     # Media
     Media/Browser.cpp
+    Media/FileDialog.cpp
     Media/MediaBridge.cpp
     Media/MediaCache.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
     Media/MetadataViewer.cpp
     Media/Models/MetadataModel.cpp
+    Media/Models/MediaFilesModel.cpp
+    Media/Views/FileView.cpp
     Media/Views/MediaView.cpp
     Media/Views/MetadataView.cpp
     Media/Delegates/ListDelegate.cpp
