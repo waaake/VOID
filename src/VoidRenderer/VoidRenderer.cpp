@@ -307,17 +307,7 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
 
     /* Fetch color values at the given point */
     float pixels[4]; /* R G B A*/
-
-    /*
-     * TODO: FIX the issue with offset in value
-     * Currently there is an offset with which pixel values are read
-     * The underlying issue is that we have a dock widget and the left side dock is shriking this widget
-     * But then the glViewport(x, y, w, h) call is not happenning correctly causing the pixel values to get offset
-     *
-     * Fix is to play without the left dock, but is not very important at this point in development
-     * We can come back to this at a later stage to figure out how Qt is handling the calls and come up with a fix accordingly
-     */
-    glReadPixels(x, height() - y, 1, 1, GL_RGBA, GL_FLOAT, pixels);
+    glReadPixels(event->globalX(), height() - y + pos().y(), 1, 1, GL_RGBA, GL_FLOAT, pixels);
 
     /* Update the Pixel values on the Renderer Status bar */
     m_RenderStatus->SetColourValues(pixels[0], pixels[1], pixels[2], pixels[3]);
