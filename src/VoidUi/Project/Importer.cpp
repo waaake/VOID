@@ -77,8 +77,8 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
                 continue;
             }
 
-            MEntry e(entry.path().string());
-            MediaType type = MHelper::GetMediaType(e);
+            Frame f(entry.path().string());
+            MediaType type = MHelper::GetMediaType(f);
 
             if (type == MediaType::NonMedia)
                 continue;
@@ -98,7 +98,7 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
                  * this search is going to be used to import media via the UndoQueue
                  * which only needs path of a single media from it
                  */
-                if (m.Validate(e))
+                if (m.Validate(f))
                 {
                     new_entry = false;
                     break;
@@ -108,7 +108,7 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
             /* Check if no entry in the MediaStruct adopted our newly created Media entry */
             if (new_entry)
             {
-                vec.push_back(MediaStruct(e, type));
+                vec.push_back(MediaStruct(f, type));
             }
         }
     }

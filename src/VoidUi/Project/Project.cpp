@@ -89,12 +89,12 @@ void Project::ImportDirectory_(const std::string& path)
         {
             if (entry.is_regular_file())
             {
-                MEntry e(entry.path().string());
+                Frame f(entry.path().string());
     
                 /* Flag to control what happens with the entry */
                 bool new_entry = true;
     
-                if (!e.SingleFile())
+                if (!f.SingleFile())
                 {
                     /**
                      * Iterate over what we have in our vector currently
@@ -108,7 +108,7 @@ void Project::ImportDirectory_(const std::string& path)
                          * this search is going to be used to import media via the UndoQueue
                          * which only needs path of a single media from it
                          */
-                        if (m.Validate(e))
+                        if (m.Validate(f))
                         {
                             new_entry = false;
                             break;
@@ -118,7 +118,7 @@ void Project::ImportDirectory_(const std::string& path)
     
                 /* Check if no entry in the MediaStruct adopted our newly created Media entry */
                 if (new_entry)
-                    vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
+                    vec.push_back(MediaStruct(f, MHelper::GetMediaType(f)));
             }
         }
     }

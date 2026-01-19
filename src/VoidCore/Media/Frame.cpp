@@ -1,6 +1,10 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <filesystem>
+#include <regex>
+
 /* Internal */
 #include "Frame.h"
 #include "FormatForge.h"
@@ -8,43 +12,76 @@
 
 VOID_NAMESPACE_OPEN
 
-Frame::Frame()
-{
-    m_ImageData = nullptr;
-}
+/* MHelper {{{ */
 
-Frame::Frame(const MEntry& e)
-    : Frame(e, e.Framenumber())
+MediaType MHelper::GetMediaType(const Frame& entry)
 {
-}
+    /* If it's a Movie */
+    if (IsMovie(entry))
+        return MediaType::Movie;
+    else if (IsImage(entry))
+        return MediaType::Image;
 
-Frame::Frame(const MEntry& e, v_frame_t frame)
-    : m_MediaEntry(e)
-    , m_Framenumber(frame)
-{
     /**
-     * Since we have the Media Entry, we can now get the PixReader for the media type
+     * For Now Audio isn't interpreted
+     * TODO: Add Audio format detection
      */
-    m_ImageData = std::move(Forge::Instance().GetImageReader(
-        m_MediaEntry.Extension(),
-        m_MediaEntry.Fullpath(),
-        m_Framenumber
-    ));
+
+    return MediaType::NonMedia;
+}
+
+/* }}} */
+
+Frame::Frame()
+    : m_Path("")
+    , m_Basepath("")
+    , m_Name("")
+    , m_Extension("")
+    , m_Framenumber(0)
+    , m_FramePadding(0)
+    , m_SingleFile(false)
+    , m_ImageData(nullptr)
+{
+}
+
+Frame::Frame(const std::string& path)
+    : Frame()
+{
+    /* Parse the provided path and update internal token */
+    Parse(path);
+}
+
+Frame::Frame(const std::string& basepath, const std::string& name, const std::string& extension, v_frame_t frame, unsigned int padding, bool singlefile)
+    : m_Basepath(basepath)
+    , m_Name(name)
+    , m_Extension(extension)
+    , m_Framenumber(frame)
+    , m_FramePadding(padding)
+    , m_SingleFile(singlefile)
+    , m_ImageData(nullptr)
+{
+    std::filesystem::path path = std::filesystem::path(m_Basepath) / name;
+    if (!singlefile)
+        path += "." + PaddedFrame(frame);
+
+    path += "." + extension;
+    m_Path = path.string();
 }
 
 Frame::~Frame()
 {
-    // if (m_ImageData)
-    // {
-    //     delete m_ImageData;
-    //     m_ImageData = nullptr;
-    // }
 }
 
 Frame::Frame(Frame&& other) noexcept
-    : m_MediaEntry(std::move(other.m_MediaEntry))
+    : m_Path(other.m_Path)
+    , m_Basepath(other.m_Basepath)
+    , m_Name(other.m_Name)
+    , m_Extension(other.m_Extension)
+    , m_FramePadding(other.m_FramePadding)
     , m_Framenumber(other.m_Framenumber)
-    , m_ImageData(std::move(other.m_ImageData))
+    , m_SingleFile(other.m_SingleFile)
+    , m_Templated(other.m_Templated)
+    , m_ImageData(other.m_ImageData)
 {
 }
 
@@ -52,31 +89,145 @@ Frame& Frame::operator=(Frame&& other) noexcept
 {
     if (&other == this)
         return *this;
-
-    m_MediaEntry = std::move(other.m_MediaEntry);
+    
+    m_Path = other.m_Path;
+    m_Basepath = other.m_Basepath;
+    m_Name = other.m_Name;
+    m_Extension = other.m_Extension;
+    m_FramePadding = other.m_FramePadding;
     m_Framenumber = other.m_Framenumber;
-    m_ImageData = std::move(other.m_ImageData);
+    m_SingleFile = other.m_SingleFile;
+    m_Templated = other.m_Templated;
+    m_ImageData = other.m_ImageData;
 
     return *this;
 }
 
 Frame::Frame(const Frame& other)
-    : m_MediaEntry(other.m_MediaEntry)
-    , m_ImageData(other.m_ImageData)
+    : m_Path(other.m_Path)
+    , m_Basepath(other.m_Basepath)
+    , m_Name(other.m_Name)
+    , m_Extension(other.m_Extension)
+    , m_FramePadding(other.m_FramePadding)
     , m_Framenumber(other.m_Framenumber)
+    , m_SingleFile(other.m_SingleFile)
+    , m_Templated(other.m_Templated)
+    , m_ImageData(other.m_ImageData)
 {
 }
 
 Frame& Frame::operator=(const Frame& other)
 {
-    if (this != &other)
-    {
-        m_MediaEntry = other.m_MediaEntry;
-        m_ImageData = other.m_ImageData;
-        m_Framenumber = other.m_Framenumber;
-    }
+    if (&other == this)
+        return *this;
+
+    m_Path = other.m_Path;
+    m_Basepath = other.m_Basepath;
+    m_Name = other.m_Name;
+    m_Extension = other.m_Extension;
+    m_FramePadding = other.m_FramePadding;
+    m_Framenumber = other.m_Framenumber;
+    m_SingleFile = other.m_SingleFile;
+    m_Templated = other.m_Templated;
+    m_ImageData = other.m_ImageData;
 
     return *this;
+}
+
+void Frame::Parse(const std::string& path)
+{
+    /* Update the fullpath */
+    m_Path = path;
+
+    std::filesystem::path filepath(path);
+
+    /* The base path for the file */
+    m_Basepath = filepath.parent_path().string();
+    /* Grab the filename from the rest of the base path */
+    std::string filename = filepath.filename().string();
+
+    /* From the last . try to get the extension and other parts */
+    size_t lastDot = filename.find_last_of(".");
+    std::string remaining = filename.substr(0, lastDot);
+
+    m_Extension = filename.substr(lastDot + 1);
+
+    lastDot = remaining.find_last_of(".");
+    std::string framestring = remaining.substr(lastDot + 1);
+
+    /* Validate a case where file is named 1.ext or 1001.ext */
+    if (framestring == remaining)
+    {
+        m_Name = remaining;
+        /* It can be considered as a single file */
+        m_SingleFile = true;
+
+        /* No need to proceed further */
+        return;
+    }
+
+    /**
+     * Image is a sequence or atleast follows a sequential naming convention
+     * Check if the framestring is a valid number before trying to cast that to one
+     */
+    if (ValidFrame(framestring))
+    {
+        m_FramePadding = framestring.size();
+        m_Framenumber = std::stol(framestring);
+        m_Name = remaining.substr(0, lastDot);
+    }
+    else if (ValidTemplate(framestring))
+    {
+        m_Templated = true;
+        m_Name = remaining.substr(0, lastDot);
+    }
+    else /* In case we don't have an image sequence, just a standard image */
+    {
+        m_Name = remaining;
+        /* Update the state so we know it is a single file */
+        m_SingleFile = true;
+    }
+}
+
+bool Frame::ValidFrame(const std::string& framestring) const
+{
+    if (framestring.empty())
+        return false;
+
+    for (char c: framestring)
+    {
+        if (!std::isdigit(c))
+            return false;
+    }
+
+    /* Valid frame */
+    return true;
+}
+
+bool Frame::ValidTemplate(const std::string& framestring) const
+{
+    std::regex hashPattern("(#+)");
+    std::regex printfPattern("%0\\d+d");
+
+    return std::regex_search(framestring, hashPattern) || std::regex_search(framestring, printfPattern);
+}
+
+std::string Frame::PaddedFrame(v_frame_t frame) const
+{
+    std::stringstream ss;
+    ss << std::setw(m_FramePadding) << std::setfill('0') << frame;
+    return ss.str();
+}
+
+void Frame::Setup()
+{
+    m_ImageData = std::move(Forge::Instance().GetImageReader(m_Extension, m_Path, m_Framenumber));
+}
+
+void Frame::Setup(v_frame_t framenumber)
+{
+    m_Framenumber = framenumber;
+    m_ImageData = std::move(Forge::Instance().GetMovieReader(m_Extension, m_Path, m_Framenumber));
 }
 
 SharedPixels Frame::Image(bool cached)
@@ -121,25 +272,6 @@ void Frame::ClearCache()
         std::lock_guard<std::mutex> guard(m_Mutex);
         m_ImageData->Clear();
     }
-}
-
-MovieFrame::MovieFrame(const MEntry& e, const v_frame_t frame)
-{
-    /* Update the entry */
-    m_MediaEntry = e;
-    /* The frame */
-    m_Framenumber = frame;
-
-    /**
-     * And get the Reader
-     * As of today there isn't a usecase to hold the movie reader in the Movie frame
-     * as a SharedMPixReader as all the bits about reading are same
-     */
-    m_ImageData = std::move(Forge::Instance().GetMovieReader(
-        m_MediaEntry.Extension(),
-        m_MediaEntry.Fullpath(),
-        m_Framenumber
-    ));
 }
 
 VOID_NAMESPACE_CLOSE

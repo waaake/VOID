@@ -69,8 +69,6 @@ public:
     void CacheFrame(v_frame_t frame);
     void UncacheFrame(v_frame_t frame);
 
-    inline size_t FrameSize() { return Media::Image(m_FirstFrame)->FrameSize(); }
-
     /* Add Annotation for a Frame */
     void SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation);
     /* Remove Anotation for the frame */
@@ -81,7 +79,6 @@ public:
      * nullptr if the annotation isn't found
      */
     Renderer::SharedAnnotation Annotation(const v_frame_t frame) const;
-    inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
     std::vector<int> AnnotatedFrames() const;
 
     QPixmap Thumbnail();

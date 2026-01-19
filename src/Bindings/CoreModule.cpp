@@ -33,20 +33,20 @@ void BindCore(py::module_& m)
         .value("NonMedia", MediaType::NonMedia)
         .export_values();
 
-    /* MEntry */
-    py::class_<MEntry>(m, "MEntry")
+    /* Frame */
+    py::class_<Frame>(m, "Frame")
         .def(py::init<const std::string&>(), py::arg("path"))
-        .def("fullpath", &MEntry::Fullpath)
-        .def("basepath", &MEntry::Basepath)
-        .def("name", &MEntry::Name)
-        .def("extension", &MEntry::Extension)
-        .def("framenumber", &MEntry::Framenumber)
-        .def("is_single_file", &MEntry::SingleFile)
-        .def("is_valid", &MEntry::Valid);
+        .def("fullpath", &Frame::Fullpath)
+        .def("basepath", &Frame::Basepath)
+        .def("name", &Frame::Name)
+        .def("extension", &Frame::Extension)
+        .def("framenumber", &Frame::Framenumber)
+        .def("is_single_file", &Frame::SingleFile)
+        .def("is_valid", &Frame::Valid);
 
     /* MediaStruct */
     py::class_<MediaStruct>(m, "MediaStruct")
-        .def(py::init<const MEntry&, const MediaType&>(), py::arg("media_entry"), py::arg("media_type"))
+        .def(py::init<Frame&, const MediaType&>(), py::arg("media_entry"), py::arg("media_type"))
     
         .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int>(), 
                 py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"))
@@ -62,25 +62,25 @@ void BindCore(py::module_& m)
         .def("is_valid", &MediaStruct::ValidMedia)
         .def("media_type", &MediaStruct::Type);
 
-    /* Frame */
-    py::class_<Frame>(m, "Frame")
-        .def(py::init<const MEntry&>(), py::arg("media_entry"))
-        .def("path", &Frame::Path)
-        .def("framenumber", &Frame::Framenumber);
+    // /* Frame */
+    // py::class_<Frame>(m, "Frame")
+    //     .def(py::init<const MEntry&>(), py::arg("media_entry"))
+    //     .def("path", &Frame::Path)
+    //     .def("framenumber", &Frame::Framenumber);
 
-    py::class_<MovieFrame>(m, "MovieFrame")
-        .def(py::init<const MEntry&, const v_frame_t>(), py::arg("media_entry"), py::arg("frame"))
-        .def("path", &Frame::Path)
-        .def("framenumber", &Frame::Framenumber);
+    // py::class_<MovieFrame>(m, "MovieFrame")
+    //     .def(py::init<const MEntry&, const v_frame_t>(), py::arg("media_entry"), py::arg("frame"))
+    //     .def("path", &Frame::Path)
+    //     .def("framenumber", &Frame::Framenumber);
 
     /* Media */
     py::class_<Media>(m, "Media")
         .def(py::init<const MediaStruct&>(), py::arg("media_struct"))
 
         .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int>(),
-                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"))
+                py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"));
 
-        .def("get_frame", &Media::GetFrame, py::arg("frame"));
+        // .def("get_frame", &Media::GetFrame, py::arg("frame"));
 
     /* MediaClip */
     py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")

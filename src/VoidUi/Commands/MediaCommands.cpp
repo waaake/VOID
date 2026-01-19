@@ -55,7 +55,7 @@ bool MediaRemoveCommand::Redo()
 {
     /* Update the internal struct so that we know where each clip was and it's path */
     const SharedMediaClip clip = _MediaBridge.DataModel()->Media(m_Index);
-    m_Path = clip->FirstFrameData().Path();
+    m_Path = clip->Fullpath();
 
     return _MediaBridge.Remove(m_Index);
 }

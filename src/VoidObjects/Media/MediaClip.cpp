@@ -181,14 +181,12 @@ std::vector<int> MediaClip::AnnotatedFrames() const
 
 void MediaClip::CacheFrame(v_frame_t frame)
 {
-    m_Mediaframes.at(frame).Cache();
-    // emit frameCached(frame);
+    m_MediaStruct.Cache(frame);
 }
 
 void MediaClip::UncacheFrame(v_frame_t frame)
 {
-    m_Mediaframes.at(frame).ClearCache();
-    // emit frameUncached(frame);
+    m_MediaStruct.ClearCache(frame);
 }
 
 void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
@@ -199,16 +197,17 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("basepath", rapidjson::Value(m_MediaStruct.Basepath().c_str(), allocator), allocator);
     out.AddMember("name", rapidjson::Value(m_MediaStruct.Name().c_str(), allocator), allocator);
     out.AddMember("extension", rapidjson::Value(m_MediaStruct.Extension().c_str(), allocator), allocator);
-    out.AddMember("start", static_cast<int64_t>(m_FirstFrame), allocator);
-    out.AddMember("end", static_cast<int64_t>(m_LastFrame), allocator);
+    out.AddMember("start", static_cast<int64_t>(m_MediaStruct.Startframe()), allocator);
+    out.AddMember("end", static_cast<int64_t>(m_MediaStruct.Endframe()), allocator);
     out.AddMember("singlefile", static_cast<int>(m_MediaStruct.SingleFile()), allocator);
     out.AddMember("framePadding", static_cast<unsigned int>(m_MediaStruct.Framepadding()), allocator);
 
     /* Save any missing frames from the media */
     rapidjson::Value missingFrames(rapidjson::kArrayType);
-    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    for (v_frame_t i = m_MediaStruct.Startframe(); i < m_MediaStruct.Endframe(); ++i)
     {
-        if (m_Mediaframes.find(i) == m_Mediaframes.end())
+        // if (m_Mediaframes.find(i) == m_Mediaframes.end())
+        if (!m_MediaStruct.HasFrame(i))
             missingFrames.PushBack(static_cast<int64_t>(i), allocator);
     }
 
@@ -240,8 +239,10 @@ void MediaClip::Serialize(std::ostream& out) const
     bool singlefile = m_MediaStruct.SingleFile();
     unsigned int padding = m_MediaStruct.Framepadding();
 
-    out.write(reinterpret_cast<const char*>(&m_FirstFrame), sizeof(v_frame_t));
-    out.write(reinterpret_cast<const char*>(&m_LastFrame), sizeof(v_frame_t));
+    v_frame_t start = m_MediaStruct.Startframe();
+    v_frame_t end = m_MediaStruct.Endframe();
+    out.write(reinterpret_cast<const char*>(&start), sizeof(v_frame_t));
+    out.write(reinterpret_cast<const char*>(&end), sizeof(v_frame_t));
     out.write(reinterpret_cast<const char*>(&singlefile), sizeof(singlefile));
     out.write(reinterpret_cast<const char*>(&padding), sizeof(padding));
 
@@ -254,9 +255,9 @@ void MediaClip::Serialize(std::ostream& out) const
     uint32_t count = 0;
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
-    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    for (v_frame_t i = m_MediaStruct.Startframe(); i < m_MediaStruct.Endframe(); ++i)
     {
-        if (m_Mediaframes.find(i) == m_Mediaframes.end())
+        if (!m_MediaStruct.HasFrame(i))
         {
             out.write(reinterpret_cast<const char*>(&i), sizeof(i));
             count++;
