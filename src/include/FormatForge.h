@@ -76,6 +76,8 @@ public:
     std::unique_ptr<VoidPixReader> GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
 
+    std::unique_ptr<VoidPixReader> GetReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
+
     inline bool IsMovie(const std::string& extension) const { return m_MovieForger.find(extension) != m_MovieForger.end(); }
     inline bool IsImage(const std::string& extension) const { return m_ImageForger.find(extension) != m_ImageForger.end(); }
 
