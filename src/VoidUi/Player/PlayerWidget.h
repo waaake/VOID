@@ -131,6 +131,7 @@ public:
     inline void ResetInFrame() { m_Timeline->ResetInFrame(); }
     inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
     inline void ResetRange() { m_Timeline->ResetRange(); }
+    inline void ReserveRange(int duration) { m_Timeline->ReserveRange(duration); }
 
 public:
     void Clear();

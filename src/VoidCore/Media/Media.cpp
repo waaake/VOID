@@ -13,8 +13,7 @@
 VOID_NAMESPACE_OPEN
 
 Media::Media()
-    : m_Framerate(24.0)
-    , m_Type(Type::UNDEFINED)
+    : m_Type(Type::UNDEFINED)
 {
 }
 

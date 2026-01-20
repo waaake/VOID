@@ -107,7 +107,7 @@ public:
 
     inline const std::map<std::string, std::string> Metadata() const { return m_MediaStruct.Metadata(); }
 
-    inline double Framerate() const { return m_Framerate; }
+    inline double Framerate() const { return m_MediaStruct.Framerate(); }
     inline bool Empty() const { return m_MediaStruct.Empty(); }
     /*
      * A Media can be considered invalid if it is empty
@@ -131,7 +131,6 @@ protected: /* Members */
      * The Media structure for the Media
      */
     MediaStruct m_MediaStruct;
-    double m_Framerate;
     Type m_Type;
 
 private: /* Methods */

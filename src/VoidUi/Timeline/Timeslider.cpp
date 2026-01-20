@@ -255,6 +255,8 @@ void Timeslider::paintEvent(QPaintEvent* event)
 		painter.setPen(SL_FRAME_COLOR);
 		painter.drawText(m_HovXPos - uwidth / 2, height() / 2, QString::number(m_HoveredFrame));
 	}
+
+	painter.end();
 	/* }}} */
 }
 

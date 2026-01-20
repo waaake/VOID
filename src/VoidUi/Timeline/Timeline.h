@@ -68,8 +68,8 @@ public:
 	void SetUserFirstframe(int frame);
 	void SetUserEndframe(int frame);
 
+	void ReserveRange(int duration);
 	void SetRange(const int min, const int max);
-
 	void ResetRange();
 
 	/**

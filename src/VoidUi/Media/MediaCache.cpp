@@ -154,6 +154,7 @@ void ChronoFlux::UpdateRange(v_frame_t start, v_frame_t end)
     m_StartFrame = start;
     m_EndFrame = end;
     m_Duration = (m_EndFrame - m_StartFrame) + 1;
+    m_Player->ReserveRange(m_Duration);
 
     /**
      * The Back buffer refers to the amount of frames which stay behind the playhead

@@ -266,6 +266,11 @@ void Timeline::TimeUpdated(const int time)
 	emit TimeChanged(time);
 }
 
+void Timeline::ReserveRange(int duration)
+{
+	m_Timeslider->m_CachedFrames.reserve(duration);
+}
+
 void Timeline::SetRange(const int min, const int max)
 {
 	/* Reset any user defined range for the timeslider */

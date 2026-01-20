@@ -4,6 +4,7 @@
 /* STD */
 #include <filesystem>
 #include <regex>
+#include <sstream>
 
 /* Internal */
 #include "Frame.h"

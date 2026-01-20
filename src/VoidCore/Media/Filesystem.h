@@ -93,12 +93,12 @@ public:
      */
     bool Validate(const Frame& frame);
 
-    std::string Name() const;
-    std::string Extension() const;
-    std::string Basepath() const;
-
-    std::string FirstPath() const;
-    [[nodiscard]] bool SingleFile() const;
+    inline std::string Name() const { return m_Entries.empty() ? "" : m_Entries.begin()->second.Name(); }
+    inline std::string Extension() const { return m_Entries.empty() ? "" : m_Entries.begin()->second.Extension(); }
+    inline std::string Basepath() const { return m_Entries.empty() ? "" : m_Entries.begin()->second.Basepath(); }
+    inline std::string FirstPath() const { return m_Entries.empty() ? "" : m_Entries.begin()->second.Fullpath(); }
+    inline bool SingleFile() const { return m_Entries.empty() ? false : m_Entries.begin()->second.SingleFile(); }
+    inline unsigned int Framepadding() const { return m_Entries.empty() ? 0 : m_Entries.begin()->second.Framepadding(); }
 
     /*
      * Returns whether a given frame falls in the range of Media
@@ -123,8 +123,7 @@ public:
     inline v_frame_t Startframe() const { return m_Start; }
     inline v_frame_t Endframe() const { return m_End; }
     inline v_frame_t Duration() const { return (m_End - m_Start) + 1; }
-
-    unsigned int Framepadding() const;
+    inline double Framerate() const { return m_Framerate; }
 
     /**
      * Returns whether the media struct is currently empty
@@ -177,6 +176,7 @@ public:
 
 private: /* Members */
     v_frame_t m_Start, m_End;
+    double m_Framerate;
     /* The kind of media */
     MediaType m_MediaType;
     std::vector<v_frame_t> m_Frames;

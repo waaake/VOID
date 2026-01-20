@@ -21,6 +21,7 @@ VOID_NAMESPACE_OPEN
 MediaStruct::MediaStruct()
     : m_Start(-1)
     , m_End(-1)
+    , m_Framerate(0.0)
     , m_MediaType(MediaType::NonMedia)
 {
 }
@@ -28,6 +29,7 @@ MediaStruct::MediaStruct()
 MediaStruct::MediaStruct(Frame& frame, const MediaType& type)
     : m_Start(-1)
     , m_End(-1)
+    , m_Framerate(24.0)
 {
     /* Setup Media */
     Reset(frame, type);
@@ -40,6 +42,7 @@ MediaStruct::~MediaStruct()
 MediaStruct::MediaStruct(const std::string& basepath, const std::string& name, const std::string& extension)
     : m_Start(-1)
     , m_End(-1)
+    , m_Framerate(24.0)
 {
     /* This is a Single file */
     Frame f(basepath, name, extension, 0, 0, true);
@@ -121,6 +124,7 @@ MediaStruct::MediaStruct(const MediaStruct& other)
     m_Entries = other.m_Entries;
     m_Start = other.m_Start;
     m_End = other.m_End;
+    m_Framerate = other.m_Framerate;
 }
 
 MediaStruct::MediaStruct(MediaStruct&& other) noexcept
@@ -129,6 +133,7 @@ MediaStruct::MediaStruct(MediaStruct&& other) noexcept
     m_MediaType = other.m_MediaType;
     m_Start = other.m_Start;
     m_End = other.m_End;
+    m_Framerate = other.m_Framerate;
 
     std::swap(m_Frames, other.m_Frames);
     std::swap(m_Entries, other.m_Entries);
@@ -157,6 +162,7 @@ MediaStruct MediaStruct::operator=(const MediaStruct& other)
     m_Entries = other.m_Entries;
     m_Start = other.m_Start;
     m_End = other.m_End;
+    m_Framerate = other.m_Framerate;
 
     return *this;
 }
@@ -172,42 +178,13 @@ MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
     m_MediaType = other.m_MediaType;
     m_Start = other.m_Start;
     m_End = other.m_End;
+    m_Framerate = other.m_Framerate;
 
     /* Swap the contents of the provided Struct with ours */
     std::swap(m_Frames, other.m_Frames);
     std::swap(m_Entries, other.m_Entries);
 
     return *this;
-}
-
-std::string MediaStruct::Name() const
-{
-    return m_Entries.empty() ? "" : m_Entries.begin()->second.Name();
-}
-
-std::string MediaStruct::Extension() const
-{
-    return m_Entries.empty() ? "" : m_Entries.begin()->second.Extension();
-}
-
-std::string MediaStruct::Basepath() const
-{
-    return m_Entries.empty() ? "" : m_Entries.begin()->second.Basepath();
-}
-
-std::string MediaStruct::FirstPath() const
-{
-    return m_Entries.empty() ? "" : m_Entries.begin()->second.Fullpath();
-}
-
-bool MediaStruct::SingleFile() const
-{
-    return m_Entries.empty() ? false : m_Entries.begin()->second.SingleFile();
-}
-
-unsigned int MediaStruct::Framepadding() const
-{
-    return m_Entries.empty() ? 0 : m_Entries.begin()->second.Framepadding();
 }
 
 v_frame_t MediaStruct::NearestFrame(const v_frame_t frame) const
@@ -344,8 +321,6 @@ void MediaStruct::Clear()
 
 void MediaStruct::ProcessMovie()
 {
-    // /* Get the First frame since it is a Single File Movie */
-    // Frame frame = m_MediaStruct.First();
     if (m_Entries.empty())
         return;
 
@@ -358,32 +333,18 @@ void MediaStruct::ProcessMovie()
     std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(frame.Extension(), frame.Fullpath());
 
     MFrameRange frange = r->Framerange();
-    VOID_LOG_INFO("MediaStruct::Movie Media Range: {0}-{1}", frange.startframe, frange.endframe);
-    // m_
-
-    // // /* Update internal framerate */
-    // // m_Framerate = r->Framerate();
-
     m_Frames.reserve(frange.endframe - frange.startframe + 1);
 
     /* Add each of the Frame with the same frame and the varying frame number */
     for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
     {
-        // frame.Setup(i);
-        // m_Entries[i] = frame; // Copy
-        m_Entries.insert({i, {frame.Basepath(), frame.Name(), frame.Extension(), i, 0, true}});
+        m_Entries[i] = std::move(Frame(frame.Basepath(), frame.Name(), frame.Extension(), i, 0, true));
         m_Frames.emplace_back(i);
-        /* Update internal structures with the frame information */
-        // m_Mediaframes[i] = std::move(MovieFrame(frame, i));
-        // m_Entries[i] = 
-        // m_Framenumbers.emplace_back(i);
     }
 
     m_Start = frange.startframe;
     m_End = frange.endframe - 1;
-
-    // m_Type = Media::Type::MOVIE;
-    // UpdateRange();
+    m_Framerate = r->Framerate();
 }
 
 void MediaStruct::UpdateRange()
@@ -395,8 +356,6 @@ void MediaStruct::UpdateRange()
 
     m_Start = m_Frames.front();
     m_End = m_Frames.back();
-
-    VOID_LOG_INFO("MediaStruct::Media Range: {0}-{1}", m_Start, m_End);
 }
 
 void MediaStruct::ClearCache()
