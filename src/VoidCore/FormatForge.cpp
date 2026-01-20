@@ -76,34 +76,18 @@ void Forge::RegisterMovieReader(const std::string& extension, MPixForge forger)
 std::unique_ptr<VoidPixReader> Forge::GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber) const
 {
     std::unordered_map<std::string, PixForge>::const_iterator it = m_ImageForger.find(extension);
-    /* If the extension is available */
-    if (it != m_ImageForger.end())
-        return it->second(path, framenumber);
-
-    /* The extension has not yet been registered */
-    return nullptr;
+    return it == m_ImageForger.end() ? nullptr : it->second(path, framenumber);
 }
 
 std::unique_ptr<VoidMPixReader> Forge::GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber) const
 {
     std::unordered_map<std::string, MPixForge>::const_iterator it = m_MovieForger.find(extension);
-    /* If the extension is available */
-    if (it != m_MovieForger.end())
-        return it->second(path, framenumber);
-
-    /* The extension has not yet been registered */
-    return nullptr;
+    return it == m_MovieForger.end() ? nullptr : it->second(path, framenumber);
 }
 
 bool Forge::IsRegistered(const std::string& extension) const
 {
-    if (m_ImageForger.find(extension) != m_ImageForger.end())
-        return true;
-    
-    if (m_MovieForger.find(extension) != m_MovieForger.end())
-        return true;
-    
-    return false;
+    return m_ImageForger.find(extension) != m_ImageForger.end() || m_MovieForger.find(extension) != m_MovieForger.end();
 }
 
 VOID_NAMESPACE_CLOSE

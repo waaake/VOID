@@ -16,7 +16,6 @@ Player::Player(QWidget* parent)
     : PlayerWidget(parent)
 {
     m_CacheProcessor.SetActivePlayer(this);
-
     Connect();
 }
 
@@ -27,15 +26,14 @@ Player::~Player()
 void Player::SetMedia(const SharedMediaClip& media)
 {
     /* Reset timeline | Renderer */
-    m_Timeline->SetRange(0, 1);
     m_Timeline->Clear();
     m_Renderer->Clear();
 
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
-    m_CacheProcessor.SetMedia(media);
-
     m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
+
+    m_CacheProcessor.SetMedia(media);
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
@@ -65,7 +63,6 @@ void Player::SetMedia(const std::vector<SharedMediaClip>& media, const PlayerVie
 void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
 {
     /* Reset timeline | Renderer */
-    m_Timeline->SetRange(0, 1);
     m_Timeline->Clear();
     m_Renderer->Clear();
 
@@ -96,22 +93,20 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
 void Player::SetTrack(const SharedPlaybackTrack& track)
 {
     /* Reset timeline | Renderer */
-    m_Timeline->SetRange(0, 1);
     m_Timeline->Clear();
     m_Renderer->Clear();
 
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(track);
-    m_CacheProcessor.SetTrack(track);
-
     m_Timeline->SetRange(track->StartFrame(), track->EndFrame());
+    
+    m_CacheProcessor.SetTrack(track);
     SetTrackFrame(m_Timeline->Frame());
 }
 
 void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer)
 {
     /* Reset timeline | Renderer */
-    m_Timeline->SetRange(0, 1);
     m_Timeline->Clear();
     m_Renderer->Clear();
 
@@ -142,30 +137,27 @@ void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& 
 void Player::SetSequence(const SharedPlaybackSequence& sequence)
 {
     /* Reset timeline | Renderer */
-    m_Timeline->SetRange(0, 1);
     m_Timeline->Clear();
     m_Renderer->Clear();
 
     /* Update what is being played on the Active Viewer Buffer */
     m_ActiveViewBuffer->Set(sequence);
-    m_CacheProcessor.SetSequence(sequence);
-
     m_Timeline->SetRange(sequence->StartFrame(), sequence->EndFrame());
+    
+    m_CacheProcessor.SetSequence(sequence);
     SetSequenceFrame(m_Timeline->Frame());
 }
 
 void Player::SetPlaylist(Playlist* playlist)
 {
-    m_Timeline->SetRange(0, 1);
     m_Timeline->Clear();
     m_Renderer->Clear();
 
     /* Update what is being played on the Active Viewer Buffer */
     m_ActiveViewBuffer->SetPlaylist(playlist);
-    m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip());
-
-     /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+
+    m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip());
     SetMediaFrame(m_Timeline->Frame());
 }
 

@@ -273,7 +273,8 @@ void Timeline::SetRange(const int min, const int max)
 
 	/* Update timeslider range */
 	m_Timeslider->setRange(min, max);
-	
+	m_Timeslider->m_CachedFrames.reserve(max - min + 1);
+
 	/* Update internal range */
 	m_Start = min;
 	m_End = max;
@@ -299,8 +300,13 @@ void Timeline::ResetRange()
 
 void Timeline::Clear()
 {
+	m_Timeslider->setRange(0, 1);
+
 	m_Timeslider->ClearAnnotatedFrames();
 	m_Timeslider->ClearCachedFrames();
+
+	m_Start = 0;
+	m_End = 1;
 }
 
 void Timeline::SetUserFirstframe(int frame)
