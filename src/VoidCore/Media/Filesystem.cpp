@@ -369,8 +369,9 @@ void MediaStruct::ProcessMovie()
     /* Add each of the Frame with the same frame and the varying frame number */
     for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
     {
-        frame.Setup(i);
-        m_Entries[i] = frame; // Copy
+        // frame.Setup(i);
+        // m_Entries[i] = frame; // Copy
+        m_Entries.insert({i, {frame.Basepath(), frame.Name(), frame.Extension(), i, 0, true}});
         m_Frames.emplace_back(i);
         /* Update internal structures with the frame information */
         // m_Mediaframes[i] = std::move(MovieFrame(frame, i));

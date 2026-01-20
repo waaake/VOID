@@ -74,10 +74,10 @@ Frame::~Frame()
 }
 
 Frame::Frame(Frame&& other) noexcept
-    : m_Path(other.m_Path)
-    , m_Basepath(other.m_Basepath)
-    , m_Name(other.m_Name)
-    , m_Extension(other.m_Extension)
+    : m_Path(std::move(other.m_Path))
+    , m_Basepath(std::move(other.m_Basepath))
+    , m_Name(std::move(other.m_Name))
+    , m_Extension(std::move(other.m_Extension))
     , m_FramePadding(other.m_FramePadding)
     , m_Framenumber(other.m_Framenumber)
     , m_SingleFile(other.m_SingleFile)
@@ -91,10 +91,10 @@ Frame& Frame::operator=(Frame&& other) noexcept
     if (&other == this)
         return *this;
     
-    m_Path = other.m_Path;
-    m_Basepath = other.m_Basepath;
-    m_Name = other.m_Name;
-    m_Extension = other.m_Extension;
+    m_Path = std::move(other.m_Path);
+    m_Basepath = std::move(other.m_Basepath);
+    m_Name = std::move(other.m_Name);
+    m_Extension = std::move(other.m_Extension);
     m_FramePadding = other.m_FramePadding;
     m_Framenumber = other.m_Framenumber;
     m_SingleFile = other.m_SingleFile;
