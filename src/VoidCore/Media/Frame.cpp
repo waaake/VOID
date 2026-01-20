@@ -66,6 +66,7 @@ Frame::Frame(const std::string& basepath, const std::string& name, const std::st
 
     path += "." + extension;
     m_Path = path.string();
+    Setup();
 }
 
 Frame::~Frame()
@@ -221,13 +222,13 @@ std::string Frame::PaddedFrame(v_frame_t frame) const
 
 void Frame::Setup()
 {
-    m_ImageData = std::move(Forge::Instance().GetImageReader(m_Extension, m_Path, m_Framenumber));
+    m_ImageData = std::move(Forge::Instance().GetReader(m_Extension, m_Path, m_Framenumber));
 }
 
 void Frame::Setup(v_frame_t framenumber)
 {
     m_Framenumber = framenumber;
-    m_ImageData = std::move(Forge::Instance().GetMovieReader(m_Extension, m_Path, m_Framenumber));
+    m_ImageData = std::move(Forge::Instance().GetReader(m_Extension, m_Path, m_Framenumber));
 }
 
 SharedPixels Frame::Image(bool cached)

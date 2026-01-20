@@ -62,7 +62,7 @@ MediaStruct::MediaStruct(const std::string& basepath,
 
     for (v_frame_t frame = start; frame <= end; ++frame)
     {
-        m_Entries[frame] = std::move(Frame(basepath, name, extension, frame, padding,false));
+        m_Entries[frame] = std::move(Frame(basepath, name, extension, frame, padding, false));
         m_Frames.emplace_back(frame);
     }
 
