@@ -376,6 +376,8 @@ void Timeslider::ClearCachedFrames()
 {
 	/* Clears the contents of the cached frames */
 	m_CachedFrames.clear();
+	m_CachedFrames.resize(0);
+	m_CachedFrames.shrink_to_fit();
 
 	/* Repaint after the cache frames have been cleared */
 	update();
