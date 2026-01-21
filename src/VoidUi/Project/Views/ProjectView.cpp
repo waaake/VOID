@@ -36,9 +36,9 @@ ProjectView::~ProjectView()
 
 void ProjectView::Setup()
 {
-    m_ImportMediaAction = new QAction("Import Media...");
-    m_ImportDirectoryAction = new QAction("Import Directory...");
-    m_CloseProjectAction = new QAction("Close Project");
+    m_ImportMediaAction = new QAction("Import Media...", this);
+    m_ImportDirectoryAction = new QAction("Import Directory...", this);
+    m_CloseProjectAction = new QAction("Close Project", this);
 
     /* Source Model */
     ProjectModel* model = _MediaBridge.ProjectDataModel();
