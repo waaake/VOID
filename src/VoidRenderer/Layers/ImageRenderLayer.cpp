@@ -85,6 +85,12 @@ void ImageRenderLayer::SetImage(const SharedPixels& image)
 
     m_ImageRenderer->RebindPixelBuffer();
     m_ImageRenderer->WritePixelData(image->Pixels(), image->FrameSize());
+
+    // int size = 0;
+    // glGetBufferParameteriv(GL_PIXEL_UNPACK_BUFFER, GL_BUFFER_SIZE, &size);
+    // VOID_LOG_INFO("Size: {0}, FrameSize: {1}", size, image->FrameSize());
+    // assert(size >= image->FrameSize());
+
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

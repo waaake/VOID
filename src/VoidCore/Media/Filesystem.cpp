@@ -44,6 +44,7 @@ MEntry::MEntry()
     , m_Framenumber(0)
     , m_FramePadding(0)
     , m_SingleFile(false)
+    , m_Templated(false)
 {
 }
 
@@ -61,6 +62,7 @@ MEntry::MEntry(const std::string& basepath, const std::string& name, const std::
     , m_Framenumber(frame)
     , m_FramePadding(padding)
     , m_SingleFile(singlefile)
+    , m_Templated(false)
 {
     std::filesystem::path path = std::filesystem::path(m_Basepath) / name;
     if (!singlefile)
@@ -75,10 +77,10 @@ MEntry::~MEntry()
 }
 
 MEntry::MEntry(MEntry&& other) noexcept
-    : m_Path(other.m_Path)
-    , m_Basepath(other.m_Basepath)
-    , m_Name(other.m_Name)
-    , m_Extension(other.m_Extension)
+    : m_Path(std::move(other.m_Path))
+    , m_Basepath(std::move(other.m_Basepath))
+    , m_Name(std::move(other.m_Name))
+    , m_Extension(std::move(other.m_Extension))
     , m_FramePadding(other.m_FramePadding)
     , m_Framenumber(other.m_Framenumber)
     , m_SingleFile(other.m_SingleFile)
@@ -91,10 +93,10 @@ MEntry& MEntry::operator=(MEntry&& other) noexcept
     if (&other == this)
         return *this;
     
-    m_Path = other.m_Path;
-    m_Basepath = other.m_Basepath;
-    m_Name = other.m_Name;
-    m_Extension = other.m_Extension;
+    m_Path = std::move(other.m_Path);
+    m_Basepath = std::move(other.m_Basepath);
+    m_Name = std::move(other.m_Name);
+    m_Extension = std::move(other.m_Extension);
     m_FramePadding = other.m_FramePadding;
     m_Framenumber = other.m_Framenumber;
     m_SingleFile = other.m_SingleFile;

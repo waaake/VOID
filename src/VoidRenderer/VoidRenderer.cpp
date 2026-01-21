@@ -306,7 +306,7 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     m_RenderStatus->SetMouseCoordinates(x, y);
 
     /* Fetch color values at the given point */
-    float pixels[4]; /* R G B A*/
+    float pixels[4] = { 0.f }; /* R G B A*/
     glReadPixels(event->globalX(), height() - y + pos().y(), 1, 1, GL_RGBA, GL_FLOAT, pixels);
 
     /* Update the Pixel values on the Renderer Status bar */
