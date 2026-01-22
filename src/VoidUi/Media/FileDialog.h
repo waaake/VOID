@@ -56,6 +56,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    void showEvent(QShowEvent* event) override;
 
 private: /* Members */
     QPushButton* m_AcceptButton;
@@ -80,7 +81,6 @@ private: /* Members */
     QHBoxLayout* m_FileLayout;
     QHBoxLayout* m_FilterLayout;
     QSplitter* m_BrowserSplitter;
-
     QFileSystemModel* m_Model;
 
     QString m_SelectedPath;

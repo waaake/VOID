@@ -25,8 +25,6 @@ public:
     FileTree(QFileSystemModel* model, QWidget* parent = nullptr);
     ~FileTree();
 
-    void setRootIndex(const QModelIndex& index) override;
-
     /**
      * @brief Returns the current root directory from the model.
      * 
@@ -65,6 +63,12 @@ public:
      * @param index Model index of an entry (directory or file)
      */
     void Open(const QModelIndex& index);
+
+    /**
+     * @brief Creates a new directory in the current set path
+     * 
+     */
+    void NewDirectory();
 
     /**
      * @brief Accepts the current directory and emits the accepted signal with the fullpath

@@ -13,6 +13,7 @@
 
 
 /* Internal */
+#include "FrameRange.h"
 #include "Definition.h"
 
 VOID_NAMESPACE_OPEN
@@ -277,6 +278,7 @@ public:
     [[nodiscard]] bool SingleFile() const;
 
     unsigned int Framepadding() const;
+    MFrameRange Framerange() const;
 
     /**
      * Returns whether the media struct is currently empty

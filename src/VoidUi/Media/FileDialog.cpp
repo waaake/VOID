@@ -58,6 +58,7 @@ void MediaFileDialog::Build()
     m_Model = new QFileSystemModel(this);
     m_Model->setRootPath(QDir::rootPath());
     m_Model->setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
+    m_Model->setReadOnly(false);
 
     m_Layout = new QVBoxLayout(this);
 
@@ -135,6 +136,12 @@ void MediaFileDialog::keyPressEvent(QKeyEvent* event)
     QDialog::keyPressEvent(event);
 }
 
+void MediaFileDialog::showEvent(QShowEvent* event)
+{
+    QDialog::showEvent(event);
+    m_NameEdit->setFocus();
+}
+
 void MediaFileDialog::Connect()
 {
     connect(m_DirectoryEdit, &QLineEdit::returnPressed, this, [this]() -> void
@@ -157,6 +164,7 @@ void MediaFileDialog::Connect()
     {
         m_FileMode == FileMode::Directory ? m_FileTree->SelectDirectory() : m_FileTree->Open();
     });
+    connect(m_NewDirButton, &QToolButton::clicked, m_FileTree, &FileTree::NewDirectory);
 
     connect(m_CancelButton, &QPushButton::clicked, this, &QDialog::reject);
     connect(m_SequencesCheck, &QCheckBox::toggled, m_FileTree, &FileTree::EnableSequences);
@@ -182,9 +190,6 @@ void MediaFileDialog::Setup()
     m_AcceptButton->setText("Open");
     m_AcceptButton->setIcon(style()->standardIcon(style()->SP_DialogOpenButton));
     m_DirectoryEdit->setText(m_FileTree->CurrentDirectory());
-
-    setFocusProxy(m_NameEdit);
-    setTabOrder(m_NameEdit, m_DirectoryEdit);
 }
 
 void MediaFileDialog::Accept(const QString& selected)
