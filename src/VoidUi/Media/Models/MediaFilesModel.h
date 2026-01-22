@@ -6,19 +6,37 @@
 
 /* STD */
 #include <set>
+#include <unordered_map>
 
 /* Qt */
+#include <QString>
 #include <QSortFilterProxyModel>
 
 /* Internal */
 #include "Definition.h"
+#include "VoidCore/Media/Filesystem.h"
+
+namespace std {
+
+    template <>
+    struct hash<QString>
+    {
+        inline std::size_t operator()(const QString& key) const noexcept { return qHash(key); }
+    };
+
+} // namespace std
 
 VOID_NAMESPACE_OPEN
+
+enum MediaFilesRoles
+{
+    DisplayNameRole = Qt::UserRole + 1001
+};
 
 class MediaFilesProxyModel : public QSortFilterProxyModel
 {
 public:
-    MediaFilesProxyModel(QObject* parent = nullptr);
+    explicit MediaFilesProxyModel(QObject* parent = nullptr);
 
     /**
      * @brief Enables Sequence Display for Image/File sequences of the format name.####.ext
@@ -40,11 +58,12 @@ protected:
 
 private: /* Members */
     mutable std::set<QString> m_Visited;
-    mutable std::set<QString> m_Media;
+    mutable std::unordered_map<QString, MediaStruct> m_Sequences;
     bool m_SequenceView;
 
 private: /* Methods */
     QString TemplatedName(const QString& name) const;
+    QString TemplatedName(const QString& name, const MFrameRange& range) const;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -29,11 +29,11 @@ FileTree::~FileTree()
     m_Proxy = nullptr;
 }
 
-void FileTree::setRootIndex(const QModelIndex& index)
-{
-    QTreeView::setRootIndex(index);
-    m_Proxy->ResetSequences();
-}
+// void FileTree::setRootIndex(const QModelIndex& index)
+// {
+//     // m_Proxy->ResetSequences();
+//     QTreeView::setRootIndex(index);
+// }
 
 void FileTree::Setup()
 {
@@ -73,6 +73,22 @@ void FileTree::SetRootIndex(const QModelIndex& index)
         emit directoryChanged(info.absoluteFilePath());
 
         s_LastAccessedDir = info.absoluteFilePath();
+    }
+}
+
+void FileTree::NewDirectory()
+{
+    QModelIndex index = m_Model->mkdir(m_Proxy->mapToSource(rootIndex()), "New Folder");
+    if (index.isValid())
+    {
+        QModelIndex proxy = m_Proxy->mapFromSource(index);
+
+        setCurrentIndex(proxy);
+        selectionModel()->select(proxy, QItemSelectionModel::ClearAndSelect);
+        edit(proxy.siblingAtColumn(0));
+        // bool status = m_Proxy->setData(proxy, "Tesrrrr", Qt::EditRole);
+
+        // VOID_LOG_INFO("Renamed: {0}", status);
     }
 }
 
@@ -136,7 +152,7 @@ void FileTree::currentChanged(const QModelIndex& current, const QModelIndex& pre
     QFileInfo entity = m_Model->fileInfo(m_Proxy->mapToSource(current));
 
     if (entity.isFile())
-        emit highlighted(current.data(Qt::DisplayRole).toString());
+        emit highlighted(current.data(MediaFilesRoles::DisplayNameRole).toString());
 }
 
 /* Quick Link View {{{ */

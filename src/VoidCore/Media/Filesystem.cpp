@@ -430,6 +430,12 @@ MEntry MediaStruct::First() const
     return m_Entries.begin()->second;
 }
 
+MFrameRange MediaStruct::Framerange() const
+{
+    auto [minIt, maxIt] = std::minmax_element(m_Frames.begin(), m_Frames.end());
+    return minIt != m_Frames.end() && maxIt != m_Frames.end() ? MFrameRange(*minIt, *maxIt) : MFrameRange(0, 1);
+}
+
 void MediaStruct::Add(const MEntry& entry)
 {
     /* Add the provided entry */
