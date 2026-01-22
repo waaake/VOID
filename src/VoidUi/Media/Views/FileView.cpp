@@ -29,12 +29,6 @@ FileTree::~FileTree()
     m_Proxy = nullptr;
 }
 
-// void FileTree::setRootIndex(const QModelIndex& index)
-// {
-//     // m_Proxy->ResetSequences();
-//     QTreeView::setRootIndex(index);
-// }
-
 void FileTree::Setup()
 {
     m_Proxy = new MediaFilesProxyModel(this);
@@ -86,9 +80,6 @@ void FileTree::NewDirectory()
         setCurrentIndex(proxy);
         selectionModel()->select(proxy, QItemSelectionModel::ClearAndSelect);
         edit(proxy.siblingAtColumn(0));
-        // bool status = m_Proxy->setData(proxy, "Tesrrrr", Qt::EditRole);
-
-        // VOID_LOG_INFO("Renamed: {0}", status);
     }
 }
 

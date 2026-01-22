@@ -25,8 +25,6 @@ public:
     FileTree(QFileSystemModel* model, QWidget* parent = nullptr);
     ~FileTree();
 
-    // void setRootIndex(const QModelIndex& index) override;
-
     /**
      * @brief Returns the current root directory from the model.
      * 
