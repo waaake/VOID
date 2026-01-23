@@ -13,9 +13,10 @@
 #include <QSortFilterProxyModel>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "VoidCore/Media/Filesystem.h"
 
+#if _QT5
 namespace std {
 
     template <>
@@ -25,6 +26,7 @@ namespace std {
     };
 
 } // namespace std
+#endif  // _QT5
 
 VOID_NAMESPACE_OPEN
 

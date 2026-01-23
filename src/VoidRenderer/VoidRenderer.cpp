@@ -388,7 +388,7 @@ void VoidRenderer::Render(SharedPixels data)
     m_AnnotationsRenderer->SetAnnotation(nullptr);
 
     /* Load the Textures to be rendered */
-    ReloadTextures();
+    m_ImageRenderer->SetImage(m_ImageA);
 
     /* Trigger a Re-paint */
     update();
@@ -422,7 +422,7 @@ void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& anno
     m_AnnotationsRenderer->SetAnnotation(annotation);
 
     /* Load the Textures to be rendered */
-    ReloadTextures();
+    m_ImageRenderer->SetImage(m_ImageA);
 
     /* Trigger a Re-paint */
     update();
@@ -456,7 +456,8 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
     }
 
     /* Load the Textures to be rendered */
-    ReloadTextures();
+    m_ImageComparisonRenderer->SetImageA(m_ImageA);
+    m_ImageComparisonRenderer->SetImageB(m_ImageB);
 
     /* Trigger a Re-paint */
     update();
