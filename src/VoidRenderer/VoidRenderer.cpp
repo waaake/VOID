@@ -44,6 +44,7 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     m_ImageRenderer = new ImageRenderLayer;
     m_ImageComparisonRenderer = new ImageComparisonRenderLayer;
     m_AnnotationsRenderer = new VoidAnnotationsRenderer;
+    m_SwipeRenderer = new SwipeRenderLayer;
 }
 
 VoidRenderer::~VoidRenderer()
@@ -52,6 +53,7 @@ VoidRenderer::~VoidRenderer()
     delete m_AnnotationsRenderer;
     delete m_ImageRenderer;
     delete m_ImageComparisonRenderer;
+    delete m_SwipeRenderer;
 
     /* Set Focus Policy for typing */
     setFocusPolicy(Qt::StrongFocus);
@@ -66,6 +68,8 @@ void VoidRenderer::Initialize()
     m_ImageRenderer->Initialize();
     /* Initialize the Comparison Image Render Layer */
     m_ImageComparisonRenderer->Initialize();
+
+    m_SwipeRenderer->Initialize();
 
     /* (Re)Load Any textures if available */
     ReloadTextures();
@@ -95,6 +99,7 @@ void VoidRenderer::Draw()
         {
             /* Render Images with Comparison */
             m_ImageComparisonRenderer->Render(m_VProjection);
+            m_SwipeRenderer->Render();
         }
 
         /* Exit Programs */
@@ -118,7 +123,7 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
     if (m_CompareMode == ComparisonMode::WIPE)
     {
         /* Convert the Swipe onto Qt Coordinates actual window width */
-        float swipex = (m_ImageComparisonRenderer->SwipeX() + m_SwipeOffet) * width();
+        float swipex = (m_SwipeRenderer->SwipeX() + m_SwipeOffet) * width();
 
         /* A Buffer of 10 pixels to allow swiping */
         if (std::abs(m_LastMouse.x() - swipex) < 10.f)
@@ -230,7 +235,7 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     if (m_CompareMode == ComparisonMode::WIPE)
     {
         /* Convert the Swipe onto Qt Coordinates actual window width */
-        float swipex = (m_ImageComparisonRenderer->SwipeX() + m_SwipeOffet) * width();
+        float swipex = (m_SwipeRenderer->SwipeX() + m_SwipeOffet) * width();
 
         /* A Buffer of 10 pixels to allow swiping */
         if (std::abs(x - swipex) < 10.f)
@@ -248,6 +253,7 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         if (m_Swiping)
         {
             /* Update the Swipe in it's normalized system (0.f - +1.f)*/
+            m_SwipeRenderer->SetSwipeX(std::clamp(x / float(width()), 0.f, 1.f));
             m_ImageComparisonRenderer->SetSwipeX(std::clamp(x / float(width()), 0.f, 1.f));
 
             /* Redraw the Texture */

@@ -19,6 +19,7 @@
 #include "Layers/AnnotationRenderLayer.h"
 #include "Layers/ImageRenderLayer.h"
 #include "Layers/ImageComparisonRenderLayer.h"
+#include "Layers/SwipeRenderLayer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -136,6 +137,8 @@ private: /* Members */
     ImageComparisonRenderLayer* m_ImageComparisonRenderer;
     /* Renders all forms of annotations (text | strokes) */
     VoidAnnotationsRenderer* m_AnnotationsRenderer;
+    /* Renders Swipe bar when comparing in Stack */
+    SwipeRenderLayer* m_SwipeRenderer;
 
     /**
      * ModelViewProjection matrix for the Texture

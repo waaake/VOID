@@ -22,9 +22,10 @@ add_library(
     Gears/TextRenderGear.cpp
 
     # Render Layers
+    Layers/AnnotationRenderLayer.cpp
     Layers/ImageRenderLayer.cpp
     Layers/ImageComparisonRenderLayer.cpp
-    Layers/AnnotationRenderLayer.cpp
+    Layers/SwipeRenderLayer.cpp
 
     # Shader Programs
     Programs/ImageShaderProgram.cpp
