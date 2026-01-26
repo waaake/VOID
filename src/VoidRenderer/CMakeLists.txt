@@ -10,6 +10,7 @@ add_library(
     VoidRenderer.cpp
 
     # Core
+    Core/FontAtlas.cpp
     Core/FontEngine.cpp
 
     # Render Components (Gears)

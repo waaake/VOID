@@ -22,6 +22,8 @@ static const float MIN_ZOOM = 0.1;
 
 VOID_NAMESPACE_OPEN
 
+static bool s_TextAnnotating = false;
+
 VoidRenderer::VoidRenderer(QWidget* parent)
     : BasicRenderer(parent)
     , m_ImageA(nullptr)
@@ -161,7 +163,7 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
 
             /* Set Focus on the Widget to receive Key Events Correctly when typing */
             setFocus();
-            grabKeyboard();
+            s_TextAnnotating = true;
         }
     }
 }
@@ -625,6 +627,11 @@ void VoidRenderer::ReloadTextures()
     }
 }
 
+bool VoidRenderer::HasTextFocus()
+{
+    return s_TextAnnotating;
+}
+
 void VoidRenderer::ToggleAnnotation(bool t)
 {
     /* Update Annotation State */
@@ -755,14 +762,14 @@ void VoidRenderer::HandleAnnotationTyping(QKeyEvent* event)
             m_AnnotationsRenderer->CommitText();
             /* Clear Focus from the Widget */
             clearFocus();
-            releaseKeyboard();
+            s_TextAnnotating = false;
             break;
         case Qt::Key_Escape:
             /* Discard anything that was being typed on screen */
             m_AnnotationsRenderer->DiscardText();
             /* Clear the Focus from the widget */
             clearFocus();
-            releaseKeyboard();
+            s_TextAnnotating = false;
             break;
         default:
             /* Add the Text on the Renderer Draft */

@@ -42,6 +42,7 @@ private: /* Methods */
 protected:
     virtual QSize sizeHint() const override;
     void paintEvent(QPaintEvent* event) override;
+    bool eventFilter(QObject* object, QEvent* event);
 
 private: /* Members */
     VoidTitleBar* m_TitleBar;

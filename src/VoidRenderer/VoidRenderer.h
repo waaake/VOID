@@ -59,6 +59,7 @@ public:
     /* Toggles Annotation state */
     void ToggleAnnotation(bool t);
     [[nodiscard]] inline bool Annotating() const { return m_Annotating; }
+    [[nodiscard]] static bool HasTextFocus();
 
     /**
      * Clears any Annotation strokes on the current frame
