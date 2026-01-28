@@ -15,7 +15,6 @@
 #include "ControlScroller.h"
 #include "ColorController.h"
 #include "Definition.h"
-#include "VoidCore/Logging.h"
 #include "VoidUi/QExtensions/PushButton.h"
 
 /* Describes the amount of zoom (in or out) that happens when the zoom buttons are pressed */
@@ -134,7 +133,6 @@ private: /* Methods */
      * Emits the zoomChanged signal with the value from zoom slider normalized to viewport zoom
      */
     inline void UpdateZoom(int value) { emit zoomChanged(MapToZoom(value)); }
-    // inline void UpdateZoom(int zoom) { VOID_LOG_INFO("Z: {0}", MapToZoom(zoom)); }
 
     float MapToZoom(int value);
     int MapFromZoom(float zoom);

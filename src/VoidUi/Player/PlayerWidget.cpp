@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "PlayerWidget.h"
+#include "VoidCore/Logging.h"
 #include "VoidUi/Preferences/Preferences.h"
 #include "VoidUi/Media/MediaBridge.h"
 

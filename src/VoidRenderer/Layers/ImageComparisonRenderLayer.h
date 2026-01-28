@@ -7,7 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
-#include "VoidRenderer/RenderTypes.h"
+#include "VoidRenderer/Core/RenderTypes.h"
 #include "VoidRenderer/Programs/ImageComparisonShaderProgram.h"
 #include "VoidRenderer/Programs/SwiperShaderProgram.h"
 

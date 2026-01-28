@@ -22,14 +22,13 @@ static const float MIN_ZOOM = 0.1;
 
 VOID_NAMESPACE_OPEN
 
-static bool s_TextAnnotating = false;
-
 VoidRenderer::VoidRenderer(QWidget* parent)
     : BasicRenderer(parent)
     , m_ImageA(nullptr)
     , m_ImageB(nullptr)
     , m_CompareMode(ComparisonMode::NONE)
     , m_BlendMode(BlendMode::UNDER)
+    , m_DrawType(DrawType::NONE)
     , m_SwipeX(0.5f)
     , m_SwipeOffet(0.f)
     , m_Swiping(false)
@@ -43,26 +42,26 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     /* Renderer for Annotations */
     m_ImageRenderer = new ImageRenderLayer;
     m_ImageComparisonRenderer = new ImageComparisonRenderLayer;
-    m_AnnotationsRenderer = new VoidAnnotationsRenderer;
     m_SwipeRenderer = new SwipeRenderLayer;
+    m_StrokeRenderer = new StrokeRenderLayer;
+    m_TextRenderer = new TextAnnotationsRenderLayer;
+
+    setFocusPolicy(Qt::StrongFocus);
+    installEventFilter(this);
 }
 
 VoidRenderer::~VoidRenderer()
 {
     /* Delete the Render Layers */
-    delete m_AnnotationsRenderer;
     delete m_ImageRenderer;
     delete m_ImageComparisonRenderer;
     delete m_SwipeRenderer;
-
-    /* Set Focus Policy for typing */
-    setFocusPolicy(Qt::StrongFocus);
+    delete m_StrokeRenderer;
+    delete m_TextRenderer;
 }
 
 void VoidRenderer::Initialize()
 {
-    /* Initialize the Annotations Layer */
-    m_AnnotationsRenderer->Initialize();
 
     /* Initialize the Image Render Layer */
     m_ImageRenderer->Initialize();
@@ -70,6 +69,8 @@ void VoidRenderer::Initialize()
     m_ImageComparisonRenderer->Initialize();
 
     m_SwipeRenderer->Initialize();
+    m_StrokeRenderer->Initialize();
+    m_TextRenderer->Initialize();
 
     /* (Re)Load Any textures if available */
     ReloadTextures();
@@ -89,10 +90,11 @@ void VoidRenderer::Draw()
             m_ImageRenderer->Render(m_VProjection);
 
             /* Draw Annotations */
-            if (m_Annotating)
+            if (m_Annotating && m_Annotation)
             {
                 /* Render the stokes with the projection */
-                m_AnnotationsRenderer->Render(m_VProjection);
+                m_StrokeRenderer->Render(m_VProjection);
+                m_TextRenderer->Render(m_VProjection);
             }
         }
         else
@@ -145,46 +147,41 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         glm::vec2 p = InverseWorldPoint({glX, glY});
 
         /* and we have a brush active? */
-        if (m_AnnotationsRenderer->DrawType() == DrawType::BRUSH)
+        if (m_DrawType == DrawType::BRUSH)
         {
             /* Ensure that we have an annotation to draw on (creates if not yet present) */
             EnsureHasAnnotation();
 
             /* Add the Original Point */
-            m_AnnotationsRenderer->DrawPoint(p);
+            m_StrokeRenderer->DrawPoint(p);
         }
-        else if (m_AnnotationsRenderer->DrawType() == DrawType::ERASER)
+        else if (m_DrawType == DrawType::ERASER)
         {
             /* Remove a Stroke which contains the point */
-            m_AnnotationsRenderer->EraseStroke(p);
+            m_StrokeRenderer->EraseStroke(p);
         }
-        else if (m_AnnotationsRenderer->DrawType() == DrawType::TEXT)
+        else if (m_DrawType == DrawType::TEXT)
         {
             /* Ensure that we have an annotation to draw on (creates if not yet present) */
             EnsureHasAnnotation();
 
             /* Begin Typing at this point */
-            m_AnnotationsRenderer->BeginTyping(p);
+            m_TextRenderer->BeginTyping(p);
 
             /* Set Focus on the Widget to receive Key Events Correctly when typing */
             setFocus();
-            s_TextAnnotating = true;
         }
     }
 }
 
 void VoidRenderer::mouseReleaseEvent(QMouseEvent* event)
 {
-    /* And indicates that the mouse was released */
     m_Pressed = false;
     m_Swiping = false;
 
     if (m_Annotating)
     {
-        /* Commit the Stroke if we're annotating */
-        m_AnnotationsRenderer->CommitStroke();
-
-        /* Redraw */
+        m_StrokeRenderer->CommitStroke();
         update();
     }
 }
@@ -210,24 +207,17 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         float glY = 1.f - (y / float(height()) * 2.f);
 
         /* Draw Textures on Screen */
-        if (m_AnnotationsRenderer->DrawType() == DrawType::BRUSH)
+        if (m_DrawType == DrawType::BRUSH)
         {
-            /* Add the Point */
-            m_AnnotationsRenderer->DrawPoint(InverseWorldPoint({glX, glY}));
-
-            /* Redraw */
+            m_StrokeRenderer->DrawPoint(InverseWorldPoint({glX, glY}));
             update();
         }
-        else if (m_AnnotationsRenderer->DrawType() == DrawType::ERASER)
+        else if (m_DrawType == DrawType::ERASER)
         {
-            /* Remove a Stroke which contains the point */
-            m_AnnotationsRenderer->EraseStroke(InverseWorldPoint({glX, glY}));
-
-            /* Redraw */
+            m_StrokeRenderer->EraseStroke(InverseWorldPoint({glX, glY}));
             update();
         }
 
-        /* Return from Here as we're annotating */
         return;
     }
 
@@ -315,7 +305,11 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
 
     /* Fetch color values at the given point */
     float pixels[4] = { 0.f }; /* R G B A*/
+    #if _QT6
+    glReadPixels(event->globalPosition().x(), height() - y + pos().y(), 1, 1, GL_RGBA, GL_FLOAT, pixels);
+    #else
     glReadPixels(event->globalX(), height() - y + pos().y(), 1, 1, GL_RGBA, GL_FLOAT, pixels);
+    #endif // _QT6
 
     /* Update the Pixel values on the Renderer Status bar */
     m_RenderStatus->SetColourValues(pixels[0], pixels[1], pixels[2], pixels[3]);
@@ -330,7 +324,7 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
     #else
     m_TranslateX = (2.f * event->pos().x() / width()) - 1.f;
     m_TranslateY = 1.f - (2.f * event->pos().y() / height());
-    #endif // Qt6 Compat
+    #endif // _QT6_COMPAT
 
     if (event->angleDelta().y() > 0)
     {
@@ -358,7 +352,7 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
 void VoidRenderer::keyPressEvent(QKeyEvent* event)
 {
     /* If we're annotating and typing */
-    if (m_Annotating && m_AnnotationsRenderer->Typing())
+    if (m_Annotating && m_TextRenderer->Typing())
     {
         HandleAnnotationTyping(event);
         /* No other operation while the typing is ongoing */
@@ -367,6 +361,25 @@ void VoidRenderer::keyPressEvent(QKeyEvent* event)
 
     /* Base Key presses */
     BasicRenderer::keyPressEvent(event);
+}
+
+bool VoidRenderer::eventFilter(QObject* object, QEvent* event)
+{
+    if (event->type() == QEvent::ShortcutOverride)
+    {
+        /**
+         * We don't want any shorcuts to get triggered while the Renderer is open
+         * for taking in Text annotation, this means the user is typing something
+         * to be taken in as annotations for the current media, we certainly don't want
+         * the pressed key to start invoking any shortcuts and make the player behave
+         * in a funny manner, hence accept the event which was going to be passed on
+         * to the Shortcut, to now be a keyPressEvent in the focussed widget i.e. this
+         */
+        if (m_TextRenderer->Typing())
+            event->accept();
+    }
+
+    return BasicRenderer::eventFilter(object, event);
 }
 
 void VoidRenderer::Render(SharedPixels data)
@@ -388,12 +401,9 @@ void VoidRenderer::Render(SharedPixels data)
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
-    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-    }
 
-    /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
-    m_AnnotationsRenderer->SetAnnotation(nullptr);
+    RemoveAnnotation();
 
     /* Load the Textures to be rendered */
     m_ImageRenderer->SetImage(m_ImageA);
@@ -422,12 +432,10 @@ void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& anno
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
-    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-    }
 
     /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
-    m_AnnotationsRenderer->SetAnnotation(annotation);
+    SetAnnotation(annotation);
 
     /* Load the Textures to be rendered */
     m_ImageRenderer->SetImage(m_ImageA);
@@ -633,11 +641,6 @@ void VoidRenderer::ReloadTextures()
     }
 }
 
-bool VoidRenderer::HasTextFocus()
-{
-    return s_TextAnnotating;
-}
-
 void VoidRenderer::ToggleAnnotation(bool t)
 {
     /* Update Annotation State */
@@ -648,27 +651,29 @@ void VoidRenderer::ToggleAnnotation(bool t)
 
 void VoidRenderer::SetAnnotationColor(const glm::vec3& color)
 {
-    /* Update the current color on the Annotation */
-    m_AnnotationsRenderer->SetColor(color);
-    /* Reset The Mouse Pointer */
+    m_StrokeRenderer->SetColor(color);
+    m_TextRenderer->SetColor(color);
+
     ResetAnnotationPointer();
 }
 void VoidRenderer::SetAnnotationColor(const QColor& color)
 {
-    /* Update the current color on the Annotation */
-    m_AnnotationsRenderer->SetColor(color);
-    /* Reset The Mouse Pointer */
+    /* This Renderer takes colors normalized to 0.f - 1.f */
+    const glm::vec3 c = { color.red() / 255.f, color.green() / 255.f, color.blue() / 255.f };
+
+    m_StrokeRenderer->SetColor(c);
+    m_TextRenderer->SetColor(c);
+
     ResetAnnotationPointer();
 }
 
 void VoidRenderer::SetAnnotationSize(const float size)
 {
-    /* Update the Brush Size */
-    m_AnnotationsRenderer->SetBrushSize(size);
+    m_StrokeRenderer->SetBrushSize(size);
 
     /* Ensure we set a valid size fot the text */
     if (size > 0)
-        m_AnnotationsRenderer->SetFontSize(static_cast<size_t>(size));
+        m_TextRenderer->SetFontSize(static_cast<size_t>(size));
 
     /* Reset the Mouse Pointer to reflect the brush size */
     ResetAnnotationPointer();
@@ -677,7 +682,7 @@ void VoidRenderer::SetAnnotationSize(const float size)
 void VoidRenderer::SetAnnotationDrawType(const int type)
 {
     /* Update the Draw Component */
-    m_AnnotationsRenderer->SetDrawType(static_cast<Renderer::DrawType>(type));
+    m_DrawType = static_cast<Renderer::DrawType>(type);
     /* Update the mouse Pointer */
     ResetAnnotationPointer();
 }
@@ -685,7 +690,9 @@ void VoidRenderer::SetAnnotationDrawType(const int type)
 void VoidRenderer::ClearAnnotations()
 {
     /* Clear the Annotation */
-    m_AnnotationsRenderer->DeleteAnnotation();
+    m_Annotation = nullptr;
+    m_StrokeRenderer->DeleteAnnotation();
+    m_TextRenderer->DeleteAnnotation();
     /* Redraw */
     update();
 
@@ -704,10 +711,10 @@ void VoidRenderer::ResetAnnotationPointer()
     }
 
     /* Size to be Used for Brush and Eraser */
-    int diameter = (m_AnnotationsRenderer->BrushSize() * 500) + 4; // 4 units for boundaries
+    const int diameter = (m_StrokeRenderer->BrushSize() * 500) + 4; // 4 units for boundaries
 
     /* For each of the Annotation Tool -> Set the Mouse Pointer */
-    if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::BRUSH)
+    if (m_DrawType == Renderer::DrawType::BRUSH)
     {
         /* The Pixmap holding the Brush */
         QPixmap p(diameter, diameter);
@@ -717,16 +724,16 @@ void VoidRenderer::ResetAnnotationPointer()
         painter.setRenderHint(QPainter::Antialiasing);
 
         /* Fetch the current color from the Renderer */
-        glm::vec3 color = m_AnnotationsRenderer->Color();
+        const glm::vec3 color = m_StrokeRenderer->Color();
         /* Normalize to QColor RGB space (0 - 255) */
         painter.setBrush(QColor(color[0] * 255, color[1] * 255, color[2] * 255));
         painter.drawEllipse(0, 0, diameter, diameter);
 
         /* Hotspot at the center */
-        int hotspot = diameter / 2;
+        const int hotspot = diameter / 2;
         setCursor(QCursor(p, hotspot, hotspot));
     }
-    else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::ERASER)
+    else if (m_DrawType == Renderer::DrawType::ERASER)
     {
         /* The Pixmap holding the Brush */
         QPixmap p(diameter + 4, diameter + 4);
@@ -735,16 +742,14 @@ void VoidRenderer::ResetAnnotationPointer()
         QPainter painter(&p);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        /* Fetch the current color from the Renderer */
-        glm::vec3 color = m_AnnotationsRenderer->Color();
         painter.setPen(QPen(Qt::white, 2));
         painter.drawEllipse(2, 2, diameter, diameter);
 
         /* Hotspot at the center */
-        int hotspot = diameter / 2;
+        const int hotspot = diameter / 2;
         setCursor(QCursor(p, hotspot, hotspot));
     }
-    else if (m_AnnotationsRenderer->DrawType() == Renderer::DrawType::TEXT)
+    else if (m_DrawType == Renderer::DrawType::TEXT)
     {
         /* Set as Text Cursor */
         setCursor(Qt::IBeamCursor);
@@ -761,25 +766,23 @@ void VoidRenderer::HandleAnnotationTyping(QKeyEvent* event)
     switch (event->key())
     {
         case Qt::Key_Backspace:
-            m_AnnotationsRenderer->Backspace();
+            m_TextRenderer->Backspace();
             break;
         case Qt::Key_Return:
         case Qt::Key_Enter:
-            m_AnnotationsRenderer->CommitText();
+            m_TextRenderer->CommitText();
             /* Clear Focus from the Widget */
             clearFocus();
-            s_TextAnnotating = false;
             break;
         case Qt::Key_Escape:
             /* Discard anything that was being typed on screen */
-            m_AnnotationsRenderer->DiscardText();
+            m_TextRenderer->DiscardText();
             /* Clear the Focus from the widget */
             clearFocus();
-            s_TextAnnotating = false;
             break;
         default:
             /* Add the Text on the Renderer Draft */
-            m_AnnotationsRenderer->Type(event->text().toStdString());
+            m_TextRenderer->Type(event->text().toStdString());
     }
 
     /* Redraw */
@@ -788,15 +791,26 @@ void VoidRenderer::HandleAnnotationTyping(QKeyEvent* event)
 
 void VoidRenderer::EnsureHasAnnotation()
 {
-    /* If we're not able to create a point -> that could be because the annotation isn't created yet */
-    if (!m_AnnotationsRenderer->HasAnnotation())
+    if (!m_Annotation)
     {
-        /* Create a new Annotation for drawing over */
-        SharedAnnotation annotation = m_AnnotationsRenderer->NewAnnotation();
-
-        /* Emit the Created Annotation */
-        emit annotationCreated(annotation);
+        SetAnnotation(std::make_shared<Renderer::Annotation>());
+        emit annotationCreated(m_Annotation);
     }
+}
+
+void VoidRenderer::SetAnnotation(const Renderer::SharedAnnotation& annotation)
+{
+    m_Annotation = annotation;
+    /* Render layers get the same update */
+    m_StrokeRenderer->SetAnnotation(m_Annotation);
+    m_TextRenderer->SetAnnotation(m_Annotation);   
+}
+
+void VoidRenderer::RemoveAnnotation()
+{
+    m_Annotation = nullptr;
+    m_StrokeRenderer->DeleteAnnotation();
+    m_TextRenderer->DeleteAnnotation();
 }
 
 VOID_NAMESPACE_CLOSE

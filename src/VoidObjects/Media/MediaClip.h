@@ -16,8 +16,8 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/Media/Media.h"
-#include "VoidRenderer/RenderTypes.h"
 #include "VoidObjects/VoidObject.h"
+#include "VoidRenderer/Core/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -14,12 +14,13 @@
 
 /* Internal */
 #include "PixReader.h"
-#include "RenderTypes.h"
+#include "Core/RenderTypes.h"
 #include "RendererStatus.h"
-#include "Layers/AnnotationRenderLayer.h"
 #include "Layers/ImageRenderLayer.h"
 #include "Layers/ImageComparisonRenderLayer.h"
 #include "Layers/SwipeRenderLayer.h"
+#include "Layers/StrokeRenderLayer.h"
+#include "Layers/TextRenderLayer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -60,7 +61,6 @@ public:
     /* Toggles Annotation state */
     void ToggleAnnotation(bool t);
     [[nodiscard]] inline bool Annotating() const { return m_Annotating; }
-    [[nodiscard]] static bool HasTextFocus();
 
     /**
      * Clears any Annotation strokes on the current frame
@@ -113,10 +113,9 @@ protected: /* Methods */
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void mouseMoveEvent(QMouseEvent* event) override;
-
     virtual void keyPressEvent(QKeyEvent* event) override;
-
     virtual void wheelEvent(QWheelEvent* event) override;
+    virtual bool eventFilter(QObject* object, QEvent* event) override;
 
     /* Draw Functions */
     virtual void Initialize() override;
@@ -136,9 +135,12 @@ private: /* Members */
     /* Renders the Textures when the compare mode is set */
     ImageComparisonRenderLayer* m_ImageComparisonRenderer;
     /* Renders all forms of annotations (text | strokes) */
-    VoidAnnotationsRenderer* m_AnnotationsRenderer;
     /* Renders Swipe bar when comparing in Stack */
     SwipeRenderLayer* m_SwipeRenderer;
+    StrokeRenderLayer* m_StrokeRenderer;
+    TextAnnotationsRenderLayer* m_TextRenderer;
+
+    SharedAnnotation m_Annotation;
 
     /**
      * ModelViewProjection matrix for the Texture
@@ -146,10 +148,9 @@ private: /* Members */
     glm::mat4 m_VProjection;
     glm::mat4 m_InverseProjection;
 
-    /* Comparison Mode for the buffers */
     ComparisonMode m_CompareMode;
-    /* Blend Mode for the comparison */
     BlendMode m_BlendMode;
+    DrawType m_DrawType;
 
     /* The Swipe Controller */
     float m_SwipeX;
@@ -161,22 +162,11 @@ private: /* Members */
 
     bool m_Swiping;
 
-    /* Zoom Factor/Level on the Renderer */
     float m_ZoomFactor;
-    /* Zoom at specific coords */
     float m_TranslateX, m_TranslateY;
 
     bool m_Pressed;
-
-    /**
-     * State describing if the Renderer is currently up for annotation
-     */
     bool m_Annotating;
-
-    /**
-     * Holds the state whether the Renderer is currently rendering
-     * fullscreen or in normal view
-     */
     bool m_Fullscreen;
 
     /* Panning */
@@ -214,7 +204,7 @@ private: /* Methods */
     void CalculateModelViewProjection();
 
     /**
-     * Applies inverse Projection tranformation to the Normalized x, y position
+     * @brief Applies inverse Projection tranformation to the Normalized x, y position
      * for the mouse to represent a point accurately in 2D world irrespective of the zoom
      * 
      * The inverse of the world transform (model view projection) when going back from 
@@ -223,6 +213,8 @@ private: /* Methods */
      * Applies the inverse of the projection matrix to the 4 vec of (x, y, z, w)
      * where w is 1 (homogeneous Coordinate) cannot be 0 else the value gets treated as a direction vector 
      * z can be 0 as for 2D the depth doesn't matter
+     * 
+     * @param normalized Normalized Device Converted Coordinates from the Mouse.x Mouse.y.
      */
     inline glm::vec2 InverseWorldPoint(const glm::vec2& normalized) const
     {
@@ -231,30 +223,46 @@ private: /* Methods */
     }
 
     /**
-     * Loads the Textures With Image Data
+     * @brief Loads the Textures With Image Data
+     * 
      */
     void ReloadTextures();
 
     /**
-     * (Re)Sets the Mouse pointer based on the current Annotation tool
+     * @brief (Re)Sets the Mouse pointer based on the current Annotation tool
+     * 
      */
     void ResetAnnotationPointer();
 
     /**
-     * Handles the KeyPresses for Annotation and converts the required keys into text which is rendered
+     * @brief Handles the KeyPresses for Annotation and converts the required keys into text which is rendered
      * on the viewport, handles other key presses like Escape to exit out from the mode etc.
+     * 
      */
     void HandleAnnotationTyping(QKeyEvent* event);
 
     /**
-     * Checks with the AnnotationRenderLayer to see if an annotation is currently active
+     * @brief Checks with the AnnotationRenderLayer to see if an annotation is currently active
      * if an annotation is active, all good -- that'll be used for drawing onto
      * if an annotation isn't present or has been deleted, then a new annotation will be created
      * and the annotationCreated signal will be invoked for any other component to handle annotation
      * that has been added
+     * 
      */
     void EnsureHasAnnotation();
 
+    /**
+     * @brief Set the Annotation data for the Renderer.
+     * 
+     * @param annotation Annotation data to be set/rendered for the frame.
+     */
+    void SetAnnotation(const Renderer::SharedAnnotation& annotation);
+
+    /**
+     * @brief Clears the underlying annotation data from the Renderer.
+     * 
+     */
+    void RemoveAnnotation();
 };
 
 VOID_NAMESPACE_CLOSE

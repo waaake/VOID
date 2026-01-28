@@ -8,6 +8,7 @@
 #include <QPainter>
 
 /* Internal */
+#include "About.h"
 #include "PlayerWindow.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Dock/DockManager.h"
@@ -43,25 +44,6 @@ void VoidMainWindow::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
     painter.fillRect(rect(), palette().color(QPalette::Dark));
-}
-
-bool VoidMainWindow::eventFilter(QObject* object, QEvent* event)
-{
-    if (event->type() == QEvent::ShortcutOverride)
-    {
-        /**
-         * We don't want any shorcuts to get triggered while the Renderer is open
-         * for taking in Text annotation, this means the user is typing something
-         * to be taken in as annotations for the current media, we certainly don't want
-         * the pressed key to start invoking any shortcuts and make the player behave
-         * in a funny manner, hence accept the event which was going to be passed on
-         * to the Shortcut, to now be a keyPressEvent in the focussed widget i.e. the Renderer
-         */
-        if (VoidRenderer::HasTextFocus())
-            event->accept();
-    }
-
-    return BaseWindow::eventFilter(object, event);
 }
 
 QSize VoidMainWindow::sizeHint() const

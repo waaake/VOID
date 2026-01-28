@@ -14,7 +14,7 @@
 #include "OverlayWidget.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Sequence.h"
-#include "VoidRenderer/RenderTypes.h"
+#include "VoidRenderer/Core/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
 #include "VoidUi/Timeline/Timeline.h"
 #include "VoidUi/Toolkit/AnnotationController.h"

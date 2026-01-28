@@ -6,17 +6,13 @@
 
 /* Qt */
 #include <QMainWindow>
-#include <QList>
 
 /* Internal */
-#include "About.h"
 #include "Definition.h"
 #include "BaseWindow.h"
 #include "TitleBar.h"
 #include "MenuSystem.h"
 #include "WorkspaceManager.h"
-#include "VoidObjects/Media/MediaClip.h"
-#include "VoidUi/Dock/Docker.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -42,7 +38,6 @@ private: /* Methods */
 protected:
     virtual QSize sizeHint() const override;
     void paintEvent(QPaintEvent* event) override;
-    bool eventFilter(QObject* object, QEvent* event);
 
 private: /* Members */
     VoidTitleBar* m_TitleBar;

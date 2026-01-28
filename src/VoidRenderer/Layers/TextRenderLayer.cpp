@@ -1,35 +1,35 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-#include <iostream>
-
-/* GLEW */
-#include <GL/glew.h>
+/* Qt */
+#include <QFile>
 
 /* GLM */
-#include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp> // for glm::value_ptr
 
 /* Internal */
-#include "RenderTypes.h"
-#include "TextRenderGear.h"
+#include "TextRenderLayer.h"
 #include "VoidCore/Logging.h"
+#include "VoidRenderer/Core/FontEngine.h"
 
 VOID_NAMESPACE_OPEN
 
-TextRenderGear::TextRenderGear()
-    : m_VAO(0)
+TextAnnotationsRenderLayer::TextAnnotationsRenderLayer()
+    : m_Annotation(nullptr)
+    , m_Shader(nullptr)
+    , m_VAO(0)
     , m_VBO(0)
     , m_UProjection(-1)
     , m_UColor(-1)
     , m_UText(-1)
-    , m_FontEngine(FontEngine::Instance())
+    , m_Typing(false)
+    , m_Color(1.f, 1.f, 1.f)
+    , m_Size(40)
 {
-    /* Setup the Font Face */
-    m_Ft_Face = m_FontEngine.GetStandardFace();
+    m_Ft_Face = FontEngine::Instance().GetStandardFace();
 }
 
-TextRenderGear::~TextRenderGear()
+TextAnnotationsRenderLayer::~TextAnnotationsRenderLayer()
 {
     if (m_Shader)
     {
@@ -38,7 +38,73 @@ TextRenderGear::~TextRenderGear()
     }
 }
 
-void TextRenderGear::Initialize()
+void TextAnnotationsRenderLayer::BeginTyping(const glm::vec2& position)
+{
+    /* If the Annotation hasn't been set */
+    if (!m_Annotation)
+        return;
+    
+    /* Set Typing as true for typing into the Annotations */
+    m_Typing = true;
+
+    /* Setup the draft */
+    m_Annotation->draft.color = m_Color;
+    m_Annotation->draft.size = m_Size;
+    m_Annotation->draft.position = position;
+}
+
+void TextAnnotationsRenderLayer::Type(const std::string& text)
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    m_Annotation->draft.text.append(text);
+}
+
+void TextAnnotationsRenderLayer::Backspace()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    m_Annotation->draft.text.pop_back();
+}
+
+void TextAnnotationsRenderLayer::CommitText()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    /* Nothing to save */
+    if (m_Annotation->draft.Empty())
+        return;
+
+    /* Add to texts */
+    m_Annotation->texts.push_back(std::move(m_Annotation->draft));
+
+    /* Clear draft */
+    m_Annotation->draft.Clear();
+
+    /* Not typing anymore */
+    m_Typing = false;
+}
+
+void TextAnnotationsRenderLayer::DiscardText()
+{
+    /* Annotation hasn't been set yet */
+    if (!m_Annotation)
+        return;
+
+    /* Clear draft */
+    m_Annotation->draft.Clear();
+
+    /* Not typing anymore */
+    m_Typing = false;
+}
+
+void TextAnnotationsRenderLayer::Initialize()
 {
     m_Shader = new TextShaderProgram;
 
@@ -49,26 +115,25 @@ void TextRenderGear::Initialize()
     SetupBuffers();
 
     /* Reinit Textures */
-    m_FontEngine.ClearTextures();
+    FontEngine::Instance().ClearTextures();
 
     /* Load all the locations for uniforms */
     m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
     m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
-    m_UText = glGetUniformLocation(m_Shader->ProgramId(), "uText");
+    m_UText = glGetUniformLocation(m_Shader->ProgramId(), "uText"); 
 }
 
-void TextRenderGear::Reinitialize()
+void TextAnnotationsRenderLayer::Render(const glm::mat4& projection)
 {
-    /* Re-Initialize the Shader */
-    m_Shader->Reinitialize();
+    m_Projection = projection;
 
-    /* Re-Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
-    m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
-    m_UText = glGetUniformLocation(m_Shader->ProgramId(), "uText");
+    if (PreDraw())
+        Draw();
+    
+    PostDraw();
 }
 
-void TextRenderGear::SetupBuffers()
+void TextAnnotationsRenderLayer::SetupBuffers()
 {
     /* Gen Arrays */
     glGenVertexArrays(1, &m_VAO);
@@ -98,7 +163,7 @@ void TextRenderGear::SetupBuffers()
     glBindVertexArray(0);
 }
 
-bool TextRenderGear::PreDraw()
+bool TextAnnotationsRenderLayer::PreDraw()
 {
     /* Use the Shader Program */
     m_Shader->Bind();
@@ -111,30 +176,21 @@ bool TextRenderGear::PreDraw()
     return true;
 }
 
-void TextRenderGear::Draw(const void* data)
+void TextAnnotationsRenderLayer::Draw()
 {
-    /* Cast it back to the Renderable Annotation */
-    const Renderer::AnnotationRenderData* d = static_cast<const Renderer::AnnotationRenderData*>(data);
-
-    /* Cannot cast it back */
-    if (!d)
-        return;
-
     /* Set the Projection on which this will be rendered */
-    glUniformMatrix4fv(m_UProjection, 1, GL_FALSE, glm::value_ptr(d->projection));
+    glUniformMatrix4fv(m_UProjection, 1, GL_FALSE, glm::value_ptr(m_Projection));
 
     /* For all the Texts in the Annotation -> Render them one by one */
-    for (const Renderer::RenderText& text: d->annotation->texts)
-    {
+    for (const Renderer::RenderText& text: m_Annotation->texts)
         DrawText(text);
-    }
 
     /* Draw the Currently being typed text */
-    if (!d->annotation->draft.Empty())
-        DrawText(d->annotation->draft);
+    if (!m_Annotation->draft.Empty())
+        DrawText(m_Annotation->draft);
 }
 
-void TextRenderGear::DrawText(const Renderer::RenderText& text)
+void TextAnnotationsRenderLayer::DrawText(const Renderer::RenderText& text)
 {
     /* This is to align with the overall NDC of the Projection where the range is [-1, 1] */
     float scale = 0.001;
@@ -157,7 +213,7 @@ void TextRenderGear::DrawText(const Renderer::RenderText& text)
         /* Cast the Character into something Freetype can understand */
         FT_ULong code = static_cast<FT_ULong>(c);
         /* Get the Renderable Character glyph struct */
-        const Character& ch = m_FontEngine.GetChar(m_Ft_Face, code);
+        const Character& ch = FontEngine::Instance().GetChar(m_Ft_Face, code);
 
         /* Setup the Necessary data to generate the Buffer data for the draw call */
         float xpos = x + ch.bearing.x * scalex;
@@ -202,7 +258,7 @@ void TextRenderGear::DrawText(const Renderer::RenderText& text)
     }
 }
 
-void TextRenderGear::PostDraw()
+void TextAnnotationsRenderLayer::PostDraw()
 {
     /* Cleanup */
     glBindVertexArray(0);

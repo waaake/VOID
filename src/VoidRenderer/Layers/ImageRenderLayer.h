@@ -7,7 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
-#include "VoidRenderer/RenderTypes.h"
+#include "VoidRenderer/Core/RenderTypes.h"
 #include "VoidRenderer/Programs/ImageShaderProgram.h"
 
 VOID_NAMESPACE_OPEN

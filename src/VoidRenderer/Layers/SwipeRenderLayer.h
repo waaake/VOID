@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidRenderer/RenderTypes.h"
+#include "VoidRenderer/Core/RenderTypes.h"
 #include "VoidRenderer/Programs/SwiperShaderProgram.h"
 
 VOID_NAMESPACE_OPEN
