@@ -314,16 +314,7 @@ int Timeslider::Maximum()
 
 void Timeslider::AddCacheFrame(int frame)
 {
-	std::vector<int>::iterator it = std::find(m_CachedFrames.begin(), m_CachedFrames.end(), frame);
-
-	/*
-	 * If the value is not present in cached frames already
-	 * Add it to the set
-	 */
-	if (it == m_CachedFrames.end())
-	{
-		m_CachedFrames.push_back(frame);
-	}
+	m_CachedFrames.push_back(frame);
 
 	/* Repaint after a frame has been cached to redraw the cache line */
 	update();
@@ -358,26 +349,16 @@ void Timeslider::ClearCachedFrames()
 
 void Timeslider::AddAnnotatedFrame(int frame)
 {
-	auto it = std::find(m_AnnotatedFrames.begin(), m_AnnotatedFrames.end(), frame);
+	m_AnnotatedFrames.push_back(frame);
 
-	/**
-	 * Frame doesn't exist already
-	 */
-	if (it == m_AnnotatedFrames.end())
-	{
-		/* Add to the annotated frames */
-		m_AnnotatedFrames.push_back(frame);
-
-		/* Redraw now that we have annotated it */
-		update();
-	}
+	/* Redraw now that we have annotated it */
+	update();
 }
 
 void Timeslider::RemoveAnnotatedFrame(int frame)
 {
 	// auto it = std::find(m_AnnotatedFrames.begin(), )
 	auto it = std::remove(m_AnnotatedFrames.begin(), m_AnnotatedFrames.end(), frame);
-
 	if (it != m_AnnotatedFrames.end())
 	{
 		/* Remove the frame from the Annotated frames */

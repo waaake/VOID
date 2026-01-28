@@ -98,9 +98,11 @@ public:
     FontEngine& operator=(FontEngine&&) = delete;
 
     /**
-     * Returns a Freetype Font face based on the standard text from resource
+     * @brief Get the Standard Freertype Font face
      * The font's internal byte array is stored within the class and if that needs to be deleted
      * to free memory call DeleteFace with the FT_Face.
+     * 
+     * @return FT_Face a Freetype Font face based on the standard text from resource.
      */
     inline FT_Face GetStandardFace() { return GetFace(":resources/fonts/Roboto-Regular.ttf"); }
 

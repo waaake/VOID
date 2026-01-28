@@ -16,7 +16,6 @@
 
 /* Internal */
 #include "QDefinition.h"
-#include "VoidCore/Logging.h"
 #include "VoidUi/QExtensions/Label.h"
 #include "VoidUi/QExtensions/SpinBox.h"
 

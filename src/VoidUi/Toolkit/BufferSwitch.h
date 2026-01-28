@@ -12,7 +12,7 @@
 #include "Definition.h"
 #include "VoidUi/QExtensions/Frame.h"
 #include "VoidUi/Player/ViewerBuffer.h"
-#include "VoidRenderer/RenderTypes.h"
+#include "VoidRenderer/Core/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
 

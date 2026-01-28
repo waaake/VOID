@@ -8,6 +8,7 @@
 #include <QPainter>
 
 /* Internal */
+#include "About.h"
 #include "PlayerWindow.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Dock/DockManager.h"
@@ -29,6 +30,7 @@ VoidMainWindow::VoidMainWindow(QWidget* parent)
 
     /* Connect Signals -> Slots */
     Connect();
+    installEventFilter(this);
 }
 
 VoidMainWindow::~VoidMainWindow()
@@ -159,7 +161,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
              * TODO: The player currently faces a race condition when caching media and playing
              * the first frame, there's mostly a case where the frame is read but not cached completely
              * at the moment, calling refresh (re-render the current frame) works to load the first frame
-             * of the media, but this needs some change, possibly on the way how media cache is handled 
+             * of the media, but this needs some change, possibly on the way how media cache is handled
              */
             _PlayerBridge.SetMedia(media);
             _PlayerBridge.Refresh();
@@ -181,7 +183,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
 
     QAction* undoAction = m_Bridge.CreateUndoAction(editMenu);
     undoAction->setShortcut(QKeySequence("Ctrl+Z"));
-    
+
     QAction* redoAction = m_Bridge.CreateRedoAction(editMenu);
     redoAction->setShortcut(QKeySequence("Ctrl+Shift+Z"));
 

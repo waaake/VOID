@@ -5,26 +5,24 @@
 #include <GL/glew.h>
 
 /* GLM */
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/type_ptr.hpp> // for glm::value_ptr
-
+#include <glm/gtc/type_ptr.hpp>
 
 /* Internal */
-#include "RenderTypes.h"
-#include "SwiperRenderGear.h"
-#include "VoidCore/Logging.h"
+#include "SwipeRenderLayer.h"
 
 VOID_NAMESPACE_OPEN
 
-SwiperRenderGear::SwiperRenderGear()
-    : m_VAO(0)
+SwipeRenderLayer::SwipeRenderLayer()
+    : m_SwipeX(0.5f)
+    , m_Offset(0.f)
+    , m_VAO(0)
     , m_VBO(0)
     , m_UProjection(-1)
     , m_UColor(-1)
 {
 }
 
-SwiperRenderGear::~SwiperRenderGear()
+SwipeRenderLayer::~SwipeRenderLayer()
 {
     if (m_Shader)
     {
@@ -33,8 +31,14 @@ SwiperRenderGear::~SwiperRenderGear()
     }
 }
 
-void SwiperRenderGear::Initialize()
+void SwipeRenderLayer::Reset()
 {
+
+}
+
+void SwipeRenderLayer::Initialize()
+{
+    /* Initialize the Image Render Component */
     m_Shader = new SwiperShaderProgram;
 
     /* Initialize the Shaders */
@@ -48,7 +52,15 @@ void SwiperRenderGear::Initialize()
     m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
 }
 
-void SwiperRenderGear::Reinitialize()
+void SwipeRenderLayer::Render()
+{
+    if (PreDraw())
+        Draw();
+
+    PostDraw();
+}
+
+void SwipeRenderLayer::ReinitShaderProgram()
 {
     /* Re-Initialize the Shader */
     m_Shader->Reinitialize();
@@ -58,7 +70,7 @@ void SwiperRenderGear::Reinitialize()
     m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
 }
 
-void SwiperRenderGear::SetupBuffers()
+void SwipeRenderLayer::SetupBuffers()
 {
     float vertices[6] = {
         0.f, -1.f, 0.f,
@@ -82,7 +94,7 @@ void SwiperRenderGear::SetupBuffers()
     glBindVertexArray(0);
 }
 
-bool SwiperRenderGear::PreDraw()
+bool SwipeRenderLayer::PreDraw()
 {
     /* Use the Shader Program */
     m_Shader->Bind();
@@ -94,15 +106,8 @@ bool SwiperRenderGear::PreDraw()
     return true;
 }
 
-void SwiperRenderGear::Draw(const void* data)
+void SwipeRenderLayer::Draw()
 {
-    /* Cast it back to the Image data for comparison */
-    const Renderer::ImageComparisonRenderData* d = static_cast<const Renderer::ImageComparisonRenderData*>(data);
-
-    /* Can't cast */
-    if (!d)
-        return;
-
     /**
      * Normalize between the device coordinates
      * the SwipeX limit is between 0.0 - 1.0
@@ -113,7 +118,7 @@ void SwiperRenderGear::Draw(const void* data)
      * mid: (0.5f * 2.f) - 1.f = 0.f;
      * highest: (1.f * 2.f) - 1.f = 1.f;
      */
-    float normalized = ((d->swipeX + d->offset) * 2.f) - 1.f;
+    float normalized = ((m_SwipeX + m_Offset) * 2.f) - 1.f;
 
     /* Model view projection for the swiper */
     glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
@@ -130,7 +135,7 @@ void SwiperRenderGear::Draw(const void* data)
     glDrawArrays(GL_LINES, 0, 2);
 }
 
-void SwiperRenderGear::PostDraw()
+void SwipeRenderLayer::PostDraw()
 {
     /* Cleanup */
     glBindVertexArray(0);

@@ -5,25 +5,20 @@ add_library(
     Renderer.h
     Renderer.cpp
     RendererStatus.cpp
-    RenderTypes.cpp
     VoidRenderer.h
     VoidRenderer.cpp
 
     # Core
+    Core/FontAtlas.cpp
     Core/FontEngine.cpp
-
-    # Render Components (Gears)
-    Gears/RenderGear.cpp
-    Gears/ImageRenderGear.cpp
-    Gears/ImageComparisonRenderGear.cpp
-    Gears/StrokeRenderGear.cpp
-    Gears/SwiperRenderGear.cpp
-    Gears/TextRenderGear.cpp
+    Core/RenderTypes.cpp
 
     # Render Layers
     Layers/ImageRenderLayer.cpp
     Layers/ImageComparisonRenderLayer.cpp
-    Layers/AnnotationRenderLayer.cpp
+    Layers/StrokeRenderLayer.cpp
+    Layers/SwipeRenderLayer.cpp
+    Layers/TextRenderLayer.cpp
 
     # Shader Programs
     Programs/ImageShaderProgram.cpp
