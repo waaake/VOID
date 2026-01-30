@@ -65,9 +65,9 @@ void FileTree::SetRootIndex(const QModelIndex& index)
 
     if (info.isDir())
     {
-        setRootIndex(index);        
+        setRootIndex(index);
         s_LastAccessedDir = info.absoluteFilePath();
-        
+
         AddToHistory(s_LastAccessedDir);
         emit directoryChanged(info.absoluteFilePath());
     }
@@ -114,7 +114,7 @@ void FileTree::CdUp()
         {
             setRootIndex(index);
             s_LastAccessedDir = d.absolutePath();
-            
+
             AddToHistory(s_LastAccessedDir);
             emit directoryChanged(d.absolutePath());
         }

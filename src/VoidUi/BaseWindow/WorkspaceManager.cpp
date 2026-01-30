@@ -60,10 +60,10 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
 {
     QMenu* workspaceMenu = menuSystem->AddMenu("Workspace");
 
-    QAction* basicWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Basic Workspace");
-    QAction* playbackWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Playback Workspace");
-    QAction* reviewWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Review Workspace");
-    QAction* scriptingWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Scripting Workspace");
+    QAction* basicWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Basic Workspace", QKeySequence("Shift+F1"));
+    QAction* playbackWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Playback Workspace", QKeySequence("Shift+F2"));
+    QAction* reviewWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Review Workspace", QKeySequence("Shift+F3"));
+    QAction* scriptingWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Scripting Workspace", QKeySequence("Shift+F4"));
 
     connect(basicWorkspaceAction, &QAction::triggered, this, [this]() { Switch(Workspace::BASIC); });
     connect(playbackWorkspaceAction, &QAction::triggered, this, [this]() { Switch(Workspace::PLAYBACK); });
