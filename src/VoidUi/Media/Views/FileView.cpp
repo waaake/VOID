@@ -17,6 +17,7 @@ static QString s_LastAccessedDir = QDir::currentPath();
 FileTree::FileTree(QFileSystemModel* model, QWidget* parent)
     : QTreeView(parent)
     , m_Model(model)
+    , m_HistoryIndex(0)
 {
     Setup();
     Connect();
@@ -36,6 +37,7 @@ void FileTree::Setup()
 
     setModel(m_Proxy);
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    setEditTriggers(QAbstractItemView::EditTrigger::EditKeyPressed);
     setRootIsDecorated(false);
     setItemsExpandable(false);
     header()->setStretchLastSection(false);
@@ -63,10 +65,11 @@ void FileTree::SetRootIndex(const QModelIndex& index)
 
     if (info.isDir())
     {
-        setRootIndex(index);
-        emit directoryChanged(info.absoluteFilePath());
-
+        setRootIndex(index);        
         s_LastAccessedDir = info.absoluteFilePath();
+        
+        AddToHistory(s_LastAccessedDir);
+        emit directoryChanged(info.absoluteFilePath());
     }
 }
 
@@ -91,6 +94,7 @@ void FileTree::SetDirectory(const QString& directory)
     {
         setRootIndex(index);
         s_LastAccessedDir = directory;
+        AddToHistory(directory);
     }
 }
 
@@ -110,9 +114,42 @@ void FileTree::CdUp()
         {
             setRootIndex(index);
             s_LastAccessedDir = d.absolutePath();
-
+            
+            AddToHistory(s_LastAccessedDir);
             emit directoryChanged(d.absolutePath());
         }
+    }
+}
+
+void FileTree::Backwards()
+{
+    unsigned int previous = m_HistoryIndex - 1;
+    if (previous < static_cast<unsigned int>(m_History.size()))
+    {
+        const QString& path = m_History[previous];
+        QModelIndex index = m_Proxy->mapFromSource(m_Model->index(path));
+        setRootIndex(index);
+
+        s_LastAccessedDir = path;
+        m_HistoryIndex = previous;
+
+        emit directoryChanged(path);
+    }
+}
+
+void FileTree::Forwards()
+{
+    unsigned int next = m_HistoryIndex + 1;
+    if (next < static_cast<unsigned int>(m_History.size()))
+    {
+        const QString& path = m_History[next];
+        QModelIndex index = m_Proxy->mapFromSource(m_Model->index(path));
+        setRootIndex(index);
+
+        s_LastAccessedDir = path;
+        m_HistoryIndex = next;
+
+        emit directoryChanged(path);
     }
 }
 
@@ -144,6 +181,22 @@ void FileTree::currentChanged(const QModelIndex& current, const QModelIndex& pre
 
     if (entity.isFile())
         emit highlighted(current.data(MediaFilesRoles::DisplayNameRole).toString());
+}
+
+void FileTree::AddToHistory(const QModelIndex& index)
+{
+    if (index.isValid())
+    {
+        QFileInfo f = m_Model->fileInfo(index);
+        m_History.push_back(f.absolutePath());
+        m_HistoryIndex = static_cast<unsigned int>(m_History.size()) - 1;
+    }
+}
+
+void FileTree::AddToHistory(const QString& path)
+{
+    m_History.push_back(path);
+    m_HistoryIndex = static_cast<unsigned int>(m_History.size()) - 1;
 }
 
 /* Quick Link View {{{ */

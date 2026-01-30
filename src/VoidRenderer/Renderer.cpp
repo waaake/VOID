@@ -173,7 +173,7 @@ void BasicRenderer::SetProfile()
      * going up? maybe we do it later?
      * Plus Apple is kind enough to support only till GL 4.1 so not much to update afterall
      */
-    format.setVersion(3, 3);    // This is so that our shader gets compiled and linked version 330 core for OpenGL 3.3
+    format.setVersion(3, 3);
     format.setProfile(QSurfaceFormat::CoreProfile);
 
     /**

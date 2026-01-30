@@ -4,6 +4,9 @@
 #ifndef _VOID_FILE_VIEW_H
 #define _VOID_FILE_VIEW_H
 
+/* STD */
+#include <vector>
+
 /* Qt */
 #include <QComboBox>
 #include <QFileSystemModel>
@@ -44,6 +47,23 @@ public:
      * 
      */
     void CdUp();
+
+    /**
+     * @brief Move backwards in history if possible
+     * To the last browsed directory before going to the current directory.
+     * 
+     */
+    void Backwards();
+
+    /**
+     * @brief Move forwards to a directory we've back'd from.
+     * 
+     */
+    void Forwards();
+
+    inline bool CanGoBackwards() const noexcept { return m_HistoryIndex - 1 < static_cast<unsigned int>(m_History.size()); }
+    inline bool CanGoForwards() const noexcept { return m_HistoryIndex + 1 < static_cast<unsigned int>(m_History.size()); }
+
     /**
      * @brief Looks at the current selected index in the View and tries to open
      * or proceed into the directory depending on what's possible with the index
@@ -96,11 +116,15 @@ protected:
 private: /* Members */
     QFileSystemModel* m_Model;
     MediaFilesProxyModel* m_Proxy;
+    std::vector<QString> m_History;
+    unsigned int m_HistoryIndex;
 
 private: /* Methods */
     void Setup();
     void Connect();
     void SetRootIndex(const QModelIndex& index);
+    void AddToHistory(const QModelIndex& index);
+    void AddToHistory(const QString& path);
 };
 
 class QuickLinkView : public QListWidget

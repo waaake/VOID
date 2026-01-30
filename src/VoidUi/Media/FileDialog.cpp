@@ -4,6 +4,7 @@
 /* Qt */
 #include <QHeaderView>
 #include <QKeyEvent>
+#include <QShortcut>
 
 /* Internal */
 #include "FileDialog.h"
@@ -126,16 +127,6 @@ void MediaFileDialog::Build()
     m_Layout->addLayout(m_FilterLayout);
 }
 
-void MediaFileDialog::keyPressEvent(QKeyEvent* event)
-{
-    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
-        m_FileTree->Open();
-    else if (event->modifiers() & Qt::AltModifier && event->key() == Qt::Key_Up)
-        m_FileTree->CdUp();
-
-    QDialog::keyPressEvent(event);
-}
-
 void MediaFileDialog::showEvent(QShowEvent* event)
 {
     QDialog::showEvent(event);
@@ -149,7 +140,12 @@ void MediaFileDialog::Connect()
         m_FileTree->SetDirectory(m_DirectoryEdit->text());
     });
 
-    connect(m_FileTree, &FileTree::directoryChanged, m_DirectoryEdit, &QLineEdit::setText);
+    connect(m_FileTree, &FileTree::directoryChanged, this, [this](const QString& text) -> void
+    {
+        m_DirectoryEdit->setText(text);
+        m_BackButton->setEnabled(m_FileTree->CanGoBackwards());
+        m_ForwardButton->setEnabled(m_FileTree->CanGoForwards());
+    });
     connect(m_FileTree, &FileTree::highlighted, m_NameEdit, &QLineEdit::setText);
     connect(m_FileTree, &FileTree::accepted, this, &MediaFileDialog::Accept);
 
@@ -160,6 +156,8 @@ void MediaFileDialog::Connect()
     });
 
     connect(m_UpButton, &QToolButton::clicked, m_FileTree, &FileTree::CdUp);
+    connect(m_BackButton, &QToolButton::clicked, m_FileTree, &FileTree::Backwards);
+    connect(m_ForwardButton, &QToolButton::clicked, m_FileTree, &FileTree::Forwards);
     connect(m_AcceptButton, &QPushButton::clicked, m_FileTree, [this]() -> void
     {
         m_FileMode == FileMode::Directory ? m_FileTree->SelectDirectory() : m_FileTree->Open();
@@ -168,6 +166,15 @@ void MediaFileDialog::Connect()
 
     connect(m_CancelButton, &QPushButton::clicked, this, &QDialog::reject);
     connect(m_SequencesCheck, &QCheckBox::toggled, m_FileTree, &FileTree::EnableSequences);
+
+    QShortcut* upShortcut = new QShortcut(QKeySequence("Alt+Up"), this);
+    connect(upShortcut, &QShortcut::activated, m_FileTree, &FileTree::CdUp);
+
+    QShortcut* backShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+    connect(backShortcut, &QShortcut::activated, m_FileTree, &FileTree::Backwards);
+
+    QShortcut* forwardShortcut = new QShortcut(QKeySequence("Alt+Right"), this);
+    connect(forwardShortcut, &QShortcut::activated, m_FileTree, &FileTree::Forwards);
 }
 
 void MediaFileDialog::Setup()
@@ -183,8 +190,8 @@ void MediaFileDialog::Setup()
     m_BrowserSplitter->setSizes({80, 400});
     m_FilterCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    m_BackButton->setEnabled(false);
-    m_ForwardButton->setEnabled(false);
+    m_BackButton->setEnabled(m_FileTree->CanGoBackwards());
+    m_ForwardButton->setEnabled(m_FileTree->CanGoForwards());
     m_SequencesCheck->setChecked(true);    
     
     m_AcceptButton->setText("Open");

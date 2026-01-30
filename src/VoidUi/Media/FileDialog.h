@@ -35,7 +35,7 @@ public: /* Enums */
     };
 
 public:
-    MediaFileDialog(QWidget* parent = nullptr);
+    explicit MediaFileDialog(QWidget* parent = nullptr);
     ~MediaFileDialog();
 
     inline QSize sizeHint() const override { return QSize(800, 400); }
@@ -55,7 +55,6 @@ public:
     inline QString SelectedPath() const { return m_SelectedPath; }
 
 protected:
-    void keyPressEvent(QKeyEvent* event) override;
     void showEvent(QShowEvent* event) override;
 
 private: /* Members */
