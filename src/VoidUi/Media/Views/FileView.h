@@ -122,6 +122,8 @@ private: /* Members */
 private: /* Methods */
     void Setup();
     void Connect();
+    QString DefaultDirectory();
+    void Accept(const QString& path);
     void SetRootIndex(const QModelIndex& index);
     void AddToHistory(const QModelIndex& index);
     void AddToHistory(const QString& path);

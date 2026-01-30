@@ -174,6 +174,8 @@ void Timeline::Build()
 
 void Timeline::Connect()
 {
+	qRegisterMetaType<PlayState>("PlayState");
+
 	connect(m_Timeslider, &QSlider::valueChanged, this, &Timeline::TimeUpdated, Qt::DirectConnection);
 
 	connect(m_ForwardButton, &QPushButton::clicked, this, [this]() { Play(Timeline::PlayState::FORWARDS); });

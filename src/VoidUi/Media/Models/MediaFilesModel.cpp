@@ -38,16 +38,21 @@ void MediaFilesProxyModel::EnableSequences(bool enable)
 {
     m_SequenceView = enable;
     invalidateFilter();
-    ResetSequences();
 }
 
 QVariant MediaFilesProxyModel::data(const QModelIndex& index, int role) const
 {
     if (m_SequenceView)
     {
-        const QVariant& data = (role == MediaFilesRoles::DisplayNameRole)
-                                    ? QSortFilterProxyModel::data(index, Qt::DisplayRole)
-                                    : QSortFilterProxyModel::data(index, role);
+        if (role == MediaFilesRoles::DisplayNameRole)
+        {
+            const QModelIndex& idx = this->index(index.row(), 0, index.parent());
+            const QVariant& data = QSortFilterProxyModel::data(idx, Qt::DisplayRole);
+            const QString& path = QSortFilterProxyModel::data(idx, QFileSystemModel::FilePathRole).toString();
+            return m_Sequences.find(path) != m_Sequences.end() ? TemplatedName(data.toString()) : data;
+        }
+
+        const QVariant& data = QSortFilterProxyModel::data(index, role);
 
         if (role == Qt::DisplayRole)
         {
@@ -68,11 +73,6 @@ QVariant MediaFilesProxyModel::data(const QModelIndex& index, int role) const
                 if (m_Sequences.find(path) != m_Sequences.end())
                     return QVariant();
             }
-        }
-        else if (role == MediaFilesRoles::DisplayNameRole)
-        {
-            const QString& path = QSortFilterProxyModel::data(index, QFileSystemModel::FilePathRole).toString();
-            return m_Sequences.find(path) != m_Sequences.end() ? TemplatedName(data.toString()) : data;
         }
 
         return data;
