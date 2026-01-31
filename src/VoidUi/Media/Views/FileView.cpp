@@ -8,15 +8,17 @@
 /* Internal */
 #include "FileView.h"
 #include "VoidUi/QExtensions/Delegates.h"
+#include "VoidUi/Preferences/Preferences.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
-static QString s_LastAccessedDir = QDir::currentPath();
+static QString s_LastAccessedDir;
 
 FileTree::FileTree(QFileSystemModel* model, QWidget* parent)
     : QTreeView(parent)
     , m_Model(model)
+    , m_HistoryIndex(0)
 {
     Setup();
     Connect();
@@ -36,6 +38,7 @@ void FileTree::Setup()
 
     setModel(m_Proxy);
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    setEditTriggers(QAbstractItemView::EditTrigger::EditKeyPressed);
     setRootIsDecorated(false);
     setItemsExpandable(false);
     header()->setStretchLastSection(false);
@@ -43,7 +46,7 @@ void FileTree::Setup()
     header()->setSectionResizeMode(3, QHeaderView::ResizeMode::ResizeToContents);
     setColumnHidden(2, true); /* hide Type column */
 
-    SetDirectory(s_LastAccessedDir);
+    SetDirectory(DefaultDirectory());
 
     setSortingEnabled(true);
     /* Sorting by size gives the best result in segregating folders from files */
@@ -64,9 +67,10 @@ void FileTree::SetRootIndex(const QModelIndex& index)
     if (info.isDir())
     {
         setRootIndex(index);
-        emit directoryChanged(info.absoluteFilePath());
-
         s_LastAccessedDir = info.absoluteFilePath();
+
+        AddToHistory(s_LastAccessedDir);
+        emit directoryChanged(info.absoluteFilePath());
     }
 }
 
@@ -91,6 +95,7 @@ void FileTree::SetDirectory(const QString& directory)
     {
         setRootIndex(index);
         s_LastAccessedDir = directory;
+        AddToHistory(directory);
     }
 }
 
@@ -111,21 +116,54 @@ void FileTree::CdUp()
             setRootIndex(index);
             s_LastAccessedDir = d.absolutePath();
 
+            AddToHistory(s_LastAccessedDir);
             emit directoryChanged(d.absolutePath());
         }
+    }
+}
+
+void FileTree::Backwards()
+{
+    unsigned int previous = m_HistoryIndex - 1;
+    if (previous < static_cast<unsigned int>(m_History.size()))
+    {
+        const QString& path = m_History[previous];
+        QModelIndex index = m_Proxy->mapFromSource(m_Model->index(path));
+        setRootIndex(index);
+
+        s_LastAccessedDir = path;
+        m_HistoryIndex = previous;
+
+        emit directoryChanged(path);
+    }
+}
+
+void FileTree::Forwards()
+{
+    unsigned int next = m_HistoryIndex + 1;
+    if (next < static_cast<unsigned int>(m_History.size()))
+    {
+        const QString& path = m_History[next];
+        QModelIndex index = m_Proxy->mapFromSource(m_Model->index(path));
+        setRootIndex(index);
+
+        s_LastAccessedDir = path;
+        m_HistoryIndex = next;
+
+        emit directoryChanged(path);
     }
 }
 
 void FileTree::Open()
 {
     QFileInfo entity = m_Model->fileInfo(m_Proxy->mapToSource(currentIndex()));
-    entity.isFile() ? emit accepted(entity.absoluteFilePath()) : SetRootIndex(currentIndex());
+    entity.isFile() ? Accept(entity.absoluteFilePath()) : SetRootIndex(currentIndex());
 }
 
 void FileTree::Open(const QModelIndex& index)
 {
     QFileInfo entity = m_Model->fileInfo(m_Proxy->mapToSource(index));
-    entity.isFile() ? emit accepted(entity.absoluteFilePath()) : SetRootIndex(index);
+    entity.isFile() ? Accept(entity.absoluteFilePath()) : SetRootIndex(index);
 }
 
 void FileTree::SelectDirectory()
@@ -134,7 +172,7 @@ void FileTree::SelectDirectory()
     QFileInfo entity = m_Model->fileInfo(m_Proxy->mapToSource(index));
 
     if (entity.isDir())
-        emit accepted(entity.absoluteFilePath());
+        Accept(entity.absoluteFilePath());
 }
 
 void FileTree::currentChanged(const QModelIndex& current, const QModelIndex& previous)
@@ -144,6 +182,39 @@ void FileTree::currentChanged(const QModelIndex& current, const QModelIndex& pre
 
     if (entity.isFile())
         emit highlighted(current.data(MediaFilesRoles::DisplayNameRole).toString());
+}
+
+QString FileTree::DefaultDirectory()
+{
+    if (s_LastAccessedDir.isEmpty())
+    {
+        const QString last = VoidPreferences::Instance().LastBrowsed();
+        return last.isEmpty() ? QDir::currentPath() : last;
+    }
+
+    return s_LastAccessedDir;
+}
+
+void FileTree::Accept(const QString& path)
+{
+    VoidPreferences::Instance().Set(Settings::LastBrowsedLocation, s_LastAccessedDir);
+    emit accepted(path);
+}
+
+void FileTree::AddToHistory(const QModelIndex& index)
+{
+    if (index.isValid())
+    {
+        QFileInfo f = m_Model->fileInfo(index);
+        m_History.push_back(f.absolutePath());
+        m_HistoryIndex = static_cast<unsigned int>(m_History.size()) - 1;
+    }
+}
+
+void FileTree::AddToHistory(const QString& path)
+{
+    m_History.push_back(path);
+    m_HistoryIndex = static_cast<unsigned int>(m_History.size()) - 1;
 }
 
 /* Quick Link View {{{ */

@@ -24,6 +24,11 @@ public:
     VoidMainWindow(QWidget* parent = nullptr);
     virtual ~VoidMainWindow();
 
+    /**
+     * @brief Initializes the Menu for the Main Player.
+     * 
+     * @param menuSystem Menu system pointer for Menu creation.
+     */
     void InitMenu(MenuSystem* menuSystem);
 
     inline Player* ActivePlayer() const { return _PlayerBridge.ActivePlayer(); }
@@ -36,15 +41,12 @@ private: /* Methods */
     void Connect();
 
 protected:
-    virtual QSize sizeHint() const override;
+    inline QSize sizeHint() const override { return QSize(1280, 760); }
     void paintEvent(QPaintEvent* event) override;
 
 private: /* Members */
     VoidTitleBar* m_TitleBar;
     WorkspaceManager* m_WorkspaceManager;
-
-    /* Media Bridge Instance */
-    MBridge& m_Bridge;
 };
 
 VOID_NAMESPACE_CLOSE

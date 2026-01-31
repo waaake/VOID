@@ -21,16 +21,12 @@ VOID_NAMESPACE_OPEN
 
 VoidMainWindow::VoidMainWindow(QWidget* parent)
     : BaseWindow(parent)
-    , m_Bridge(MBridge::Instance())
 {
-    Build();
-
     setWindowTitle("VOID");
     setAttribute(Qt::WA_QuitOnClose);
 
-    /* Connect Signals -> Slots */
+    Build();
     Connect();
-    installEventFilter(this);
 }
 
 VoidMainWindow::~VoidMainWindow()
@@ -44,11 +40,6 @@ void VoidMainWindow::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
     painter.fillRect(rect(), palette().color(QPalette::Dark));
-}
-
-QSize VoidMainWindow::sizeHint() const
-{
-    return QSize(1280, 760);
 }
 
 QMenuBar* VoidMainWindow::MenuBar() const
@@ -181,10 +172,10 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* Edit Menu {{{ */
     QMenu* editMenu = menuSystem->AddMenu("Edit");
 
-    QAction* undoAction = m_Bridge.CreateUndoAction(editMenu);
+    QAction* undoAction = _MediaBridge.CreateUndoAction(editMenu);
     undoAction->setShortcut(QKeySequence("Ctrl+Z"));
 
-    QAction* redoAction = m_Bridge.CreateRedoAction(editMenu);
+    QAction* redoAction = _MediaBridge.CreateRedoAction(editMenu);
     redoAction->setShortcut(QKeySequence("Ctrl+Shift+Z"));
 
     QAction* editPrefsAction = new QAction("Preferences...", editMenu);

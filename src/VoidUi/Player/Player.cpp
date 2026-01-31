@@ -209,7 +209,7 @@ void Player::PreviousMedia()
 void Player::Connect()
 {
     /* Timeline */
-    connect(m_Timeline, &Timeline::TimeChanged, this, &Player::SetFrame);
+    connect(m_Timeline, &Timeline::TimeChanged, this, &Player::SetFrame, Qt::DirectConnection);
     connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state) -> void
     {
         if (state == Timeline::PlayState::STOPPED)

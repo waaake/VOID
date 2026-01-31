@@ -19,6 +19,11 @@ public:
     
     virtual inline QSize sizeHint() const override { return QSize(640, 480); }
 
+    /**
+     * @brief Set the Frame on the Player Timeline.
+     * 
+     * @param frame Framenumber to be set on the Timeline.
+     */
     void SetFrame(int frame);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
