@@ -1,8 +1,8 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-#ifndef _VOID_TEXT_SHADER_PROGRAM_H
-#define _VOID_TEXT_SHADER_PROGRAM_H
+#ifndef _VOID_TEXTBOX_SHADER_PROGRAM_H
+#define _VOID_TEXTBOX_SHADER_PROGRAM_H
 
 /* Qt */
 #include <QOpenGLShaderProgram>
@@ -13,11 +13,11 @@
 
 VOID_NAMESPACE_OPEN
 
-class TextShaderProgram : public ShaderProgram
+class TextBoxShaderProgram : public ShaderProgram
 {
 public:
-    TextShaderProgram() = default;
-    ~TextShaderProgram();
+    TextBoxShaderProgram() = default;
+    ~TextBoxShaderProgram();
 
     /**
      * Initializes the shaders and the internals
@@ -57,4 +57,4 @@ private: /* Members */
 
 VOID_NAMESPACE_CLOSE
 
-#endif // _VOID_TEXT_SHADER_PROGRAM_H
+#endif // _VOID_TEXTBOX_SHADER_PROGRAM_H

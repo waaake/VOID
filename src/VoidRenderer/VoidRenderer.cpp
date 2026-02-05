@@ -149,10 +149,7 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         /* and we have a brush active? */
         if (m_DrawType == DrawType::BRUSH)
         {
-            /* Ensure that we have an annotation to draw on (creates if not yet present) */
             EnsureHasAnnotation();
-
-            /* Add the Original Point */
             m_StrokeRenderer->DrawPoint(p);
         }
         else if (m_DrawType == DrawType::ERASER)
@@ -162,13 +159,9 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         }
         else if (m_DrawType == DrawType::TEXT)
         {
-            /* Ensure that we have an annotation to draw on (creates if not yet present) */
             EnsureHasAnnotation();
-
-            /* Begin Typing at this point */
-            m_TextRenderer->BeginTyping(p);
-
-            /* Set Focus on the Widget to receive Key Events Correctly when typing */
+            if (!m_TextRenderer->Typing())
+                m_TextRenderer->Begin(p);            
             setFocus();
         }
     }
@@ -401,7 +394,10 @@ void VoidRenderer::Render(SharedPixels data)
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
+    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+        m_TextRenderer->SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
+    }
 
     RemoveAnnotation();
 
@@ -432,7 +428,10 @@ void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& anno
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
+    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+        m_TextRenderer->SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
+    }
 
     /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
     SetAnnotation(annotation);
@@ -765,23 +764,34 @@ void VoidRenderer::HandleAnnotationTyping(QKeyEvent* event)
     /* Handle Key Switches */
     switch (event->key())
     {
+        case Qt::Key_Delete:
+            m_TextRenderer->Delete();
+            break;
         case Qt::Key_Backspace:
             m_TextRenderer->Backspace();
             break;
+        case Qt::Key_Home:
+            m_TextRenderer->MoveCaretHome();
+            break;
+        case Qt::Key_Left:
+            m_TextRenderer->MoveCaretLeft();
+            break;
+        case Qt::Key_Right:
+            m_TextRenderer->MoveCaretRight();
+            break;
+        case Qt::Key_End:
+            m_TextRenderer->MoveCaretEnd();
+            break;
         case Qt::Key_Return:
         case Qt::Key_Enter:
-            m_TextRenderer->CommitText();
-            /* Clear Focus from the Widget */
+            m_TextRenderer->Commit();
             clearFocus();
             break;
         case Qt::Key_Escape:
-            /* Discard anything that was being typed on screen */
-            m_TextRenderer->DiscardText();
-            /* Clear the Focus from the widget */
+            m_TextRenderer->Discard();
             clearFocus();
             break;
         default:
-            /* Add the Text on the Renderer Draft */
             m_TextRenderer->Type(event->text().toStdString());
     }
 

@@ -168,14 +168,13 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	painter.drawRect(hpos - hwidth / 2, 0, hwidth, height());
 	/* }}} */
 
-	const int range = maximum() - minimum();
+	const int range = maximum() - minimum() + 1;
 
 	/* Step here would give the step based on the number of markings are being generated */
 	int step = range / std::max(range / SL_MARKING_STEP, 1);
 
 	for (int i = minimum(); i <= maximum(); i+=step)
 	{
-		/* Update pen to draw Pre-marked frames on the timeslider */
 		painter.setPen(QPen(Qt::gray, 1));
 		/* Position of the line */
 		int pos = width() * (i - minimum()) / range;

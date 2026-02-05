@@ -26,6 +26,7 @@ add_library(
     Programs/StrokeShaderProgram.cpp
     Programs/SwiperShaderProgram.cpp
     Programs/TextShaderProgram.cpp
+    Programs/TextboxShaderProgram.cpp
 )
 
 target_include_directories(
