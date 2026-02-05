@@ -93,13 +93,8 @@ struct VOID_API AnnotatedVertex
  */
 struct VOID_API Stroke : public SerializableEntity
 {
-    /* All of the Annotated Vertices (points) */
     std::vector<AnnotatedVertex> vertices;
-
-    /* Color of the Vertices (points) */
     glm::vec3 color;
-
-    /* Size of the Brush for draw (points) */
     float thickness;
 
     inline bool Empty() const noexcept { return vertices.empty(); }
@@ -122,19 +117,16 @@ struct VOID_API Stroke : public SerializableEntity
  */
 struct VOID_API RenderText : public SerializableEntity
 {
-    /* The Text to be rendered on the screen */
     std::string text;
-
-    /* Color of the Text */
+    std::size_t size;
+    bool active;
+    bool editing;
+    float length;
     glm::vec3 color;
-
-    /* Start Position of the Text */
     glm::vec2 position;
 
-    /* The Font size */
-    size_t size;
-
     inline bool Empty() const noexcept { return text.empty(); }
+    inline bool Active() const noexcept { return active; }
     inline void Clear() { text.clear(); }
 
     virtual void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
@@ -214,54 +206,6 @@ struct AnnotationRenderData
     Renderer::SharedAnnotation annotation;
     /* Projection for the Annotation for rendering on the viewport */
     glm::mat4 projection;
-};
-
-/**
- * A Structure holding a Renderable Image Texture information
- */
-struct ImageRenderData
-{
-    /* The Image Texture ID to be Rendered */
-    unsigned int textureA;
-    /* Projection for the Texture for the viewport */
-    glm::mat4 projection;
-    /* Render Attributes affecting how the image is displayed */
-    float exposure;
-    float gamma;
-    float gain;
-
-    int channelMode;
-
-    int inputColorSpace;
-};
-
-/**
- * A Structure holding a Renderable Image Textures information for Comparison
- */
-struct ImageComparisonRenderData
-{
-    /* The First Image Texture ID to be Rendered */
-    unsigned int textureA;
-    /* The Second Image Texture ID to be Rendered */
-    unsigned int textureB;
-    /* Projection for the Texture for the viewport */
-    glm::mat4 projection;
-    /* Render Attributes affecting how the image is displayed */
-    float exposure;
-    float gamma;
-    float gain;
-
-    int channelMode;
-
-    int comparisonMode;
-    int blendMode;
-
-    int inputColorSpaceA;
-    int inputColorSpaceB;
-
-    /* Swiper Placement */
-    float swipeX;
-    float offset;
 };
 
 /**

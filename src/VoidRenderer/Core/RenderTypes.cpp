@@ -38,8 +38,6 @@ void AnnotatedVertex::Deserialize(const rapidjson::Value& in)
 
 void AnnotatedVertex::Deserialize(std::istream& in)
 {
-    // in.read(reinterpret_cast<char*>(&position), sizeof(position));
-    // in.read(reinterpret_cast<char*>(&normal), sizeof(normal));
     float x, y;
     in.read(reinterpret_cast<char*>(&x), sizeof(x));
     in.read(reinterpret_cast<char*>(&y), sizeof(y));
