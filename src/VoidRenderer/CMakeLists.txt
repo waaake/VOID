@@ -50,6 +50,7 @@ target_link_libraries(
     glm::glm
     GLEW::GLEW
     Freetype::Freetype
+    OpenColorIO::OpenColorIO
 )
 
 # Qt6 needs OpenGLWidgets be included/linked separately

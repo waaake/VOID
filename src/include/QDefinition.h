@@ -20,6 +20,7 @@
 
 /* Define type EnterEvent */
 #if _QT6
+#include <QEnterEvent>
 typedef QEnterEvent EnterEvent;
 #else
 typedef QEvent EnterEvent;

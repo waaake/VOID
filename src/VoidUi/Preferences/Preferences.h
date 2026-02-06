@@ -52,7 +52,7 @@ public:
     inline int GetMissingFrameHandler() const { return GetSetting(Settings::MissingFramesHandler).toInt(); }
     inline int GetUndoQueueSizeHint() const { return GetSetting(Settings::UndoQueueSize).toInt(); }
     inline int GetMediaViewType() const { return GetSetting(Settings::MediaViewType).toInt(); }
-    inline unsigned int GetCacheMemory() const { return GetSetting(Settings::CacheMemory).toUInt(); }
+    inline unsigned long long GetCacheMemory() const { return GetSetting(Settings::CacheMemory).toULongLong(); }
     inline unsigned int GetCacheThreads() const { return GetSetting(Settings::CacheThreads).toUInt(); }
     inline int GetColorStyle() const { return GetSetting(Settings::ColorStyle).toInt(); }
     inline bool ShowStartup() const { return !GetSetting(Settings::DontShowStartup).toBool(); }

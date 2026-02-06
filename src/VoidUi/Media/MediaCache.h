@@ -78,7 +78,7 @@ public:
     void SetTrack(const SharedPlaybackTrack& track);
     void SetSequence(const SharedPlaybackSequence& sequence);
 
-    inline void SetMaxMemory(unsigned int gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
+    inline void SetMaxMemory(unsigned long long gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
     inline void SetMaxThreads(unsigned int count) { m_ThreadPool.setMaxThreadCount(count); }
 
     /**
@@ -160,9 +160,9 @@ private: /* Members */
      * if the memory is full then the caching is stopped unless a force request (evict = true) is made
      * this makes the last first or frame based on direction be evicted (cleared of any cached data) from memory
      */
-    size_t m_MaxMemory;
-    size_t m_UsedMemory;
-    size_t m_FrameSize;
+    std::size_t m_MaxMemory;
+    std::size_t m_UsedMemory;
+    std::size_t m_FrameSize;
 
     std::deque<v_frame_t> m_Framenumbers;
 
@@ -182,7 +182,7 @@ private: /* Members */
     std::mutex m_Mutex;
 
 private: /* Methods */
-    inline long AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
+    inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
     inline v_frame_t MinFrame() const { return m_Framenumbers.front(); }
 
     /**
