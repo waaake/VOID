@@ -97,7 +97,7 @@ set(SOURCES
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp
     QExtensions/SpinBox.cpp
-    QExtensions/ToolTip.cpp
+    QExtensions/Tooltip.cpp
 )
 
 if (WIN32)
@@ -147,6 +147,7 @@ target_link_libraries(
     OpenGL::GL
     pybind11::embed
     Python::Python
+    OpenColorIO::OpenColorIO
 )
 
 # Qt6 needs OpenGLWidgets be included/linked separately
