@@ -449,7 +449,7 @@ void TextAnnotationsRenderLayer::DrawTextbox()
 
     const Renderer::RenderText& r = m_Annotation->draft;
 
-    const float halfsize = r.size / 2 * m_Scale;
+    const float halfsize = r.size * 0.5 * m_Scale;
     const glm::vec2 a = { r.position.x - halfsize, r.position.y - halfsize };
     const glm::vec2 b = { r.position.x + r.length + halfsize , r.position.y + (r.size * m_Scale) };
 

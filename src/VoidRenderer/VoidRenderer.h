@@ -182,11 +182,11 @@ private: /* Methods */
      */
     inline float WidthDivisor() const
     {
-        return (m_CompareMode == ComparisonMode::HORIZONTAL) ? 2.f : 1.f;
+        return (m_CompareMode == ComparisonMode::HORIZONTAL) ? 0.5f : 1.f;
     }
     inline float HeightDivisor() const
     {
-        return (m_CompareMode == ComparisonMode::VERTICAL) ? 2.f : 1.f;
+        return (m_CompareMode == ComparisonMode::VERTICAL) ? 0.5f : 1.f;
     }
 
     /**

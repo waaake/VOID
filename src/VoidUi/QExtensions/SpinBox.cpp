@@ -34,7 +34,7 @@ void ControlDoubleSpinner::paintEvent(QPaintEvent* event)
     painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignCenter, QString::number(value(), 'f', 1));
 
     /* Draw Arrows */
-    QPoint arrowCenter(width() - 8, height() / 2);
+    QPoint arrowCenter(width() - 8, height() * 0.5);
     QPolygon downArrow;
     QPolygon upArrow;
 

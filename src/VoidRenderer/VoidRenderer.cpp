@@ -330,7 +330,7 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
     else
     {
         /* Zoom out */
-        m_ZoomFactor /= 1.1f;
+        m_ZoomFactor *= 0.9091;
 
         /* And upto a minimum */
         m_ZoomFactor = std::max(m_ZoomFactor, MIN_ZOOM);
@@ -593,7 +593,7 @@ void VoidRenderer::CalculateModelViewProjection()
      * Calculate the aspect of the current view (Renderer Width / Renderer Height)
      * And the aspect of the image being rendered
      */
-    float viewAspect = (width() / WidthDivisor()) / (height() / HeightDivisor());
+    float viewAspect = (width() * WidthDivisor()) / (height() * HeightDivisor());
     float imageAspect = float(m_ImageA->Width()) / float((m_ImageA->Height() ? m_ImageA->Height() : 1));
 
     /* Find the overall scale of the image */
@@ -729,7 +729,7 @@ void VoidRenderer::ResetAnnotationPointer()
         painter.drawEllipse(0, 0, diameter, diameter);
 
         /* Hotspot at the center */
-        const int hotspot = diameter / 2;
+        const int hotspot = diameter * 0.5;
         setCursor(QCursor(p, hotspot, hotspot));
     }
     else if (m_DrawType == Renderer::DrawType::ERASER)
@@ -745,7 +745,7 @@ void VoidRenderer::ResetAnnotationPointer()
         painter.drawEllipse(2, 2, diameter, diameter);
 
         /* Hotspot at the center */
-        const int hotspot = diameter / 2;
+        const int hotspot = diameter * 0.5;
         setCursor(QCursor(p, hotspot, hotspot));
     }
     else if (m_DrawType == Renderer::DrawType::TEXT)

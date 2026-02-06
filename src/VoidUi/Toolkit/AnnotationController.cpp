@@ -135,7 +135,7 @@ void AnnotationsController::OpenSizeSelector()
      * and at the center in terms of height
      */
     m_SizeSlider->move(m_SizeAdjuster->mapToGlobal(
-        QPoint(-m_SizeSlider->width(), (m_SizeAdjuster->height() - m_SizeSlider->height()) / 2))
+        QPoint(-m_SizeSlider->width(), (m_SizeAdjuster->height() - m_SizeSlider->height()) * 0.5))
     );
 }
 

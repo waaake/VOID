@@ -37,7 +37,7 @@ void ControlSlider::paintEvent(QPaintEvent* event)
     painter.setPen(QColor(20, 20, 20));
     painter.setBrush(QColor(50, 50, 50));
 
-    painter.drawRect(0, height() / 2, width(), 4);
+    painter.drawRect(0, height() * 0.5, width(), 4);
     /* }}} */
 
     /* Markers {{{ */
@@ -48,7 +48,7 @@ void ControlSlider::paintEvent(QPaintEvent* event)
         painter.setPen(QPen(QColor(20, 20, 20), 2));
         int pos = width() * (i - minimum()) / (maximum() - minimum());
         /* Draw Line representing Markers */
-        painter.drawLine(pos, height() / 2, pos, 0);
+        painter.drawLine(pos, height() * 0.5, pos, 0);
     }
 
     /* Position Handle */

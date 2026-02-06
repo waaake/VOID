@@ -32,7 +32,7 @@ void ControlCombo::paintEvent(QPaintEvent* event)
     painter.drawText(rect().adjusted(5, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter, currentText());
 
     /* Arrow Indicator */
-    QPoint arrowCenter(width() - 15, height() / 2);
+    QPoint arrowCenter(width() - 15, height() * 0.5);
     QPolygon downarrow;
 
     /* Add Points */
@@ -76,7 +76,7 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
     painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignCenter, (QString::number(value()) + " %"));
 
     /* Draw Arrows */
-    QPoint arrowCenter(width() - 8, height() / 2);
+    QPoint arrowCenter(width() - 8, height() * 0.5);
     QPolygon downArrow;
     QPolygon upArrow;
 
