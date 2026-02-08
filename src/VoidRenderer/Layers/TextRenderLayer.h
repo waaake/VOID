@@ -88,7 +88,7 @@ public:
     inline void SetFontSize(const size_t size)
     { 
         m_Size = size * 20; 
-        m_CaretOffset = m_Size / 10; 
+        m_CaretOffset = m_Size * 0.1;
     }
 
 private: /* Members */

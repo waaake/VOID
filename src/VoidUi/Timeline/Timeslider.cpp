@@ -122,8 +122,8 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	int startpos = 0, endpos = 0;
 
 	/* Width of each unit value represented in the slider */
-	const double uwidth = double(width()) / (maximum() - minimum());
-	const double halfuwidth = uwidth / 2;
+	const float uwidth = float(width()) / (maximum() - minimum());
+	const float halfuwidth = uwidth * 0.5f;
 
 	/* Groove {{{ */
 	painter.setPen(QColor(30, 30, 30));
@@ -163,28 +163,29 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	painter.setBrush(palette().color(QPalette::Highlight));
 
 	/* The position handle should have a minimum width */
-	const int hwidth = std::max(uwidth, 4.0);
+	const int hwidth = std::max(uwidth, 4.0f);
 
-	painter.drawRect(hpos - hwidth / 2, 0, hwidth, height());
+	painter.drawRect(hpos - hwidth * 0.5f, 0, hwidth, height());
 	/* }}} */
 
 	const int range = maximum() - minimum() + 1;
 
 	/* Step here would give the step based on the number of markings are being generated */
-	int step = range / std::max(range / SL_MARKING_STEP, 1);
+	const int step = range / std::max(range / SL_MARKING_STEP, 1);
+	const float rec_range = 1.f / range;
 
 	for (int i = minimum(); i <= maximum(); i+=step)
 	{
 		painter.setPen(QPen(Qt::gray, 1));
 		/* Position of the line */
-		int pos = width() * (i - minimum()) / range;
+		const int pos = width() * (i - minimum()) * rec_range;
 		/* Draw Line representing Marked frames on the timeslider */
 		painter.drawLine(pos, height() - 10, pos, height());
 	}
 
 	for (int frame : m_CachedFrames)
 	{
-		int xpos = (frame - minimum()) * uwidth;
+		const int xpos = (frame - minimum()) * uwidth;
 		painter.setPen(QPen(SL_CACHE_COLOR, 3));
 		/* Draw line representing the frame which has been cached */
 		painter.drawLine(xpos, 0, xpos + uwidth, 0);
@@ -192,7 +193,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 
 	for (int frame : m_AnnotatedFrames)
 	{
-		int xpos = (frame - minimum()) * uwidth;
+		const int xpos = (frame - minimum()) * uwidth;
 		painter.setPen(QPen(SL_ANNOTATED_COLOR, 3));
 		/* Draw line representing that the frame has been cached */
 		painter.drawLine(xpos - halfuwidth, 6, xpos + halfuwidth, 6);
@@ -206,7 +207,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 		painter.drawLine(startpos, 0, startpos, height());
 
 		/* Draw Text to indicate the frame */
-		painter.drawText(startpos + 4, height() / 2, QString::number(m_UserStartframe));
+		painter.drawText(startpos + 4, height() * 0.5f, QString::number(m_UserStartframe));
 	}
 
 	if (endpos)
@@ -216,7 +217,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 		painter.drawLine(endpos, 0, endpos, height());
 
 		/* Draw Text to indicate the frame */
-		painter.drawText(endpos + 4, height() / 2, QString::number(m_UserEndframe));
+		painter.drawText(endpos + 4, height() * 0.5f, QString::number(m_UserEndframe));
 	}
 	/* }}} */
 
@@ -225,7 +226,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	{
 		/* Draw the frame number */
 		painter.setPen(SL_FRAME_COLOR);
-		painter.drawText(m_HovXPos - uwidth / 2, height() / 2, QString::number(m_HoveredFrame));
+		painter.drawText(m_HovXPos - halfuwidth, height() * 0.5f, QString::number(m_HoveredFrame));
 	}
 	/* }}} */
 }

@@ -17,8 +17,8 @@
 #include "VoidCore/ColorProcessor.h"
 #include "VoidCore/Logging.h"
 
-static const float MAX_ZOOM = 12.8;
-static const float MIN_ZOOM = 0.1;
+constexpr float MAX_ZOOM = 12.8;
+constexpr float MIN_ZOOM = 0.1;
 
 VOID_NAMESPACE_OPEN
 
@@ -323,20 +323,16 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
     {
         /* +ve or Zoom In */
         m_ZoomFactor *= 1.1f;
-
-        /* The zoom can be upto a max */
         m_ZoomFactor = std::min(m_ZoomFactor, MAX_ZOOM);
     }
     else
     {
         /* Zoom out */
-        m_ZoomFactor /= 1.1f;
-
-        /* And upto a minimum */
+        m_ZoomFactor *= 0.9091;
         m_ZoomFactor = std::max(m_ZoomFactor, MIN_ZOOM);
     }
 
-    VOID_LOG_INFO("Zoom Level: {0}", m_ZoomFactor);
+    emit zoomChanged(Zoom());
 
     /* Repaint */
     update();
@@ -498,17 +494,9 @@ void VoidRenderer::Clear()
     update();
 }
 
-void VoidRenderer::ZoomIn(float factor)
+void VoidRenderer::SetZoom(float zoom)
 {
-    m_ZoomFactor *= factor;
-    /* Repaint */
-    update();
-}
-
-void VoidRenderer::ZoomOut(float factor)
-{
-    m_ZoomFactor *= factor;
-    /* Repaint */
+    m_ZoomFactor = float(m_ImageA->Width()) * zoom / (width() * 100);
     update();
 }
 
@@ -524,17 +512,20 @@ void VoidRenderer::ZoomToFit()
 
     /* Reset the SwipeOffset to make it come to it's original place */
     m_SwipeOffet = 0.f;
+    emit zoomChanged(Zoom());
 
     /* Repaint after the zoom attributes have been reset */
     update();
 }
 
-void VoidRenderer::UpdateZoom(const float zoom)
+float VoidRenderer::MinZoom() const
 {
-    m_ZoomFactor = zoom;
+    return m_ImageA ? (float)width() / m_ImageA->Width() * MIN_ZOOM * 100 : 0.f;
+}
 
-    /* Repaint */
-    update();
+float VoidRenderer::MaxZoom() const
+{
+    return m_ImageA ? (float)width() / m_ImageA->Width() * MAX_ZOOM * 100 : 0.f;
 }
 
 void VoidRenderer::SetExposure(const float exposure)
@@ -593,7 +584,7 @@ void VoidRenderer::CalculateModelViewProjection()
      * Calculate the aspect of the current view (Renderer Width / Renderer Height)
      * And the aspect of the image being rendered
      */
-    float viewAspect = (width() / WidthDivisor()) / (height() / HeightDivisor());
+    float viewAspect = (width() * WidthDivisor()) / (height() * HeightDivisor());
     float imageAspect = float(m_ImageA->Width()) / float((m_ImageA->Height() ? m_ImageA->Height() : 1));
 
     /* Find the overall scale of the image */
@@ -729,7 +720,7 @@ void VoidRenderer::ResetAnnotationPointer()
         painter.drawEllipse(0, 0, diameter, diameter);
 
         /* Hotspot at the center */
-        const int hotspot = diameter / 2;
+        const int hotspot = diameter * 0.5;
         setCursor(QCursor(p, hotspot, hotspot));
     }
     else if (m_DrawType == Renderer::DrawType::ERASER)
@@ -745,7 +736,7 @@ void VoidRenderer::ResetAnnotationPointer()
         painter.drawEllipse(2, 2, diameter, diameter);
 
         /* Hotspot at the center */
-        const int hotspot = diameter / 2;
+        const int hotspot = diameter * 0.5;
         setCursor(QCursor(p, hotspot, hotspot));
     }
     else if (m_DrawType == Renderer::DrawType::TEXT)

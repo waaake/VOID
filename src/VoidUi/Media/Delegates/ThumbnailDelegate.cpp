@@ -86,8 +86,8 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
     /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
-    int x = left + (MAX_THUMBNAIL_WIDTH - scaled.width()) / 2;
-    int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) / 2;
+    int x = left + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
+    int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);

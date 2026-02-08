@@ -17,9 +17,6 @@
 #include "Definition.h"
 #include "VoidUi/QExtensions/PushButton.h"
 
-/* Describes the amount of zoom (in or out) that happens when the zoom buttons are pressed */
-static const int ZOOM_STEP = 10;
-
 VOID_NAMESPACE_OPEN
 
 class ControlSlider : public QSlider
@@ -43,14 +40,10 @@ public:
     ControlBar(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent = nullptr);
     virtual ~ControlBar();
 
-    /**
-     * Since the viewport could also have a zoom applied on itself, that value should then also
-     * need to reflect on the zoom slider, and hence the zoom factor needs to be translated to Slider
-     * space and then set on the Zoom slider
-     * Also since the slider is connected to emit zoomChanged with value changes,
-     * the signals are blocked till the time the value has been set on the slider and unblocked after
-     */
-    void SetFromZoom(float zoom);
+    void SetZoom(float zoom);
+    inline void ZoomIn() { m_Zoomer->setValue(m_Zoomer->value() + 10); }
+    inline void ZoomOut() { m_Zoomer->setValue(m_Zoomer->value() - 10); }
+    void SetZoomLimits(float min, float max);
 
     /**
      * Sets the current Compare mode
@@ -118,25 +111,7 @@ private: /* Methods */
     void Build();
     void Setup();
     void Connect();
-
-    /**
-     * Returns a Vertical Separator to be added to the Layout
-     * This separator is a way to separate Tool controllers
-     */
     QFrame* Separator();
-
-    /* Zoom Updates */
-    inline void ZoomIn() { m_Zoomer->setValue(m_Zoomer->value() + ZOOM_STEP); }
-    inline void ZoomOut() { m_Zoomer->setValue(m_Zoomer->value() - ZOOM_STEP); }
-
-    /* 
-     * Emits the zoomChanged signal with the value from zoom slider normalized to viewport zoom
-     */
-    inline void UpdateZoom(int value) { emit zoomChanged(MapToZoom(value)); }
-
-    float MapToZoom(int value);
-    int MapFromZoom(float zoom);
-
 };
 
 VOID_NAMESPACE_CLOSE

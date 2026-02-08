@@ -101,8 +101,8 @@ void RecentProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
      * ------------------------------
      */
     QRect r = option.rect;
-    QRect left = QRect(r.left() + 6 , r.top(), r.width() / 2, r.height());
-    QRect right = QRect(left.right(), r.top(), r.width() / 2 - 12, r.height());
+    QRect left = QRect(r.left() + 6 , r.top(), r.width() * 0.5, r.height());
+    QRect right = QRect(left.right(), r.top(), r.width() * 0.5 - 12, r.height());
 
     QColor fg = option.palette.color(QPalette::Text);
     QColor bg = option.palette.color(QPalette::Window).lighter(200);

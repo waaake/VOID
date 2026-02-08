@@ -65,8 +65,8 @@ void PlayerWidget::Connect()
     /* Timeline - fullscreenRequested -> Player - SetRendererFullscreen */
     connect(m_Timeline, &Timeline::fullscreenRequested, this, &PlayerWidget::SetRendererFullscreen);
 
-    /* ControlBar - ZoomChange -> Renderer - UpdateZoom */
-    connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::UpdateZoom);
+    /* ControlBar - ZoomChange -> Renderer - SetZoom */
+    connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::SetZoom);
     /* ControlBar - ExposureChange -> Renderer - SetExposure */
     connect(m_ControlBar, &ControlBar::exposureChanged, m_Renderer, &VoidRenderer::SetExposure);
     /* ControlBar - GammaChange -> Renderer - SetGamma */
@@ -105,6 +105,7 @@ void PlayerWidget::Connect()
     connect(m_Renderer, &VoidRenderer::annotationCreated, this, &PlayerWidget::AddAnnotation);
     /* Renderer - Annotation Deleted -> ViewerBuffer - RemoveAnnotation */
     connect(m_Renderer, &VoidRenderer::annotationDeleted, this, &PlayerWidget::RemoveAnnotation);
+    connect(m_Renderer, &VoidRenderer::zoomChanged, m_ControlBar, &ControlBar::SetZoom);
 
     /* When a MediaClip is about to be removed from the MediaBride */
     connect(&_MediaBridge, &MBridge::mediaAboutToBeRemoved, this, &PlayerWidget::RemoveMedia);

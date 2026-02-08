@@ -103,7 +103,7 @@ void CachePreferences::Setup()
 
     /* Default values */
     m_CacheBox->setValue(1);
-    m_ThreadsBox->setValue(maxThreads / 2);
+    m_ThreadsBox->setValue(maxThreads * 0.5);
 }
 
 size_t CachePreferences::TotalMemory()

@@ -63,7 +63,7 @@ public:
     /* Return the Annotation Color */
     inline glm::vec3 Color() const { return m_Color; }
 
-    inline void SetBrushSize(const float size) { m_Size = size / 500; }
+    inline void SetBrushSize(const float size) { m_Size = size * 0.002; } // Same as / 500
     inline float BrushSize() const { return m_Size; }
 
 private: /* Members */

@@ -47,8 +47,8 @@ void PlayerOverlay::paintEvent(QPaintEvent* event)
 void PlayerOverlay::ResetRect()
 {
     QRect r = rect();
-    m_RectA = QRect(r.left(), r.top(), r.width() / 2, r.height());
-    m_RectB = QRect(m_RectA.right(), r.top(), r.width() / 2, r.height());
+    m_RectA = QRect(r.left(), r.top(), r.width() * 0.5, r.height());
+    m_RectB = QRect(m_RectA.right(), r.top(), r.width() * 0.5, r.height());
 }
 
 void PlayerOverlay::resizeEvent(QResizeEvent* event)

@@ -50,10 +50,16 @@ public:
     void Clear();
 
     /* Set zoom values */
-    void ZoomIn(float factor = 1.1f);
-    void ZoomOut(float factor = 0.9f);
+    /**
+     * @brief Sets the Zoom of the image based on the zoom percentage
+     * 
+     * @param zoom Percentage of the zoom.
+     */
+    void SetZoom(float zoom);
     void ZoomToFit();
-    void UpdateZoom(const float zoom);
+    float MinZoom() const;
+    float MaxZoom() const;
+    inline float Zoom() const { return m_ImageA ? (float)width() / m_ImageA->Width() * m_ZoomFactor * 100 : 0.f; }
 
     /**
      * Annotation Features
@@ -101,13 +107,11 @@ public:
     void SetColorDisplay(const std::string& display);
 
 signals:
-    /**
-     * Signals for the Annotations
-     */
     /* Emitted when a new annotation is just created */
     void annotationCreated(const SharedAnnotation&);
     /* Emitted when annotation on a frame has been cleared/deleted */
     void annotationDeleted();
+    void zoomChanged(float zoom);
 
 protected: /* Methods */
     virtual void mousePressEvent(QMouseEvent* event) override;
@@ -182,11 +186,11 @@ private: /* Methods */
      */
     inline float WidthDivisor() const
     {
-        return (m_CompareMode == ComparisonMode::HORIZONTAL) ? 2.f : 1.f;
+        return (m_CompareMode == ComparisonMode::HORIZONTAL) ? 0.5f : 1.f;
     }
     inline float HeightDivisor() const
     {
-        return (m_CompareMode == ComparisonMode::VERTICAL) ? 2.f : 1.f;
+        return (m_CompareMode == ComparisonMode::VERTICAL) ? 0.5f : 1.f;
     }
 
     /**

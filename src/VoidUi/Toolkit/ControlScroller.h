@@ -30,7 +30,7 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 };
 
-class ControlSpinner : public QSpinBox
+class ControlSpinner : public QDoubleSpinBox
 {
 public:
     ControlSpinner(QWidget* parent = nullptr);

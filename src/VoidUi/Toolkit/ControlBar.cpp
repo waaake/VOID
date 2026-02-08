@@ -37,7 +37,7 @@ void ControlSlider::paintEvent(QPaintEvent* event)
     painter.setPen(QColor(20, 20, 20));
     painter.setBrush(QColor(50, 50, 50));
 
-    painter.drawRect(0, height() / 2, width(), 4);
+    painter.drawRect(0, height() * 0.5, width(), 4);
     /* }}} */
 
     /* Markers {{{ */
@@ -48,7 +48,7 @@ void ControlSlider::paintEvent(QPaintEvent* event)
         painter.setPen(QPen(QColor(20, 20, 20), 2));
         int pos = width() * (i - minimum()) / (maximum() - minimum());
         /* Draw Line representing Markers */
-        painter.drawLine(pos, height() / 2, pos, 0);
+        painter.drawLine(pos, height() * 0.5, pos, 0);
     }
 
     /* Position Handle */
@@ -223,24 +223,15 @@ void ControlBar::Setup()
     /* Resize */
     m_GainSpinner->setMaximumWidth(52);
 
-    /**
-     * Zoom Slider
-     * QSlider operates only on a Linear Scale
-     * But since the zoom requires values ranging from 0.1f to 12.8f
-     * We would want to map the value from slider onto the zoom range
-     * And also from zoom range to slider value
-     */
     m_Zoomer->setMinimum(1);
     m_Zoomer->setMaximum(100);
-
-    /* 50 acts as the mid way for the slider which gets mapped to a zoom of 1.f */
     m_Zoomer->setValue(50);
 }
 
 void ControlBar::Connect()
 {
     /* Zoom */
-    connect(m_Zoomer, static_cast<void (QSpinBox::* )(int)>(&QSpinBox::valueChanged), this, &ControlBar::UpdateZoom);
+    connect(m_Zoomer, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::zoomChanged);
 
     /* Viewer Controls Exposure | Gamma | Gain */
     connect(m_ExposureSpinner, &QuickSpinner::valueChanged, this, &ControlBar::exposureChanged);
@@ -262,48 +253,17 @@ void ControlBar::Connect()
     connect(m_ColorDisplayController, &ColorController::colorDisplayChanged, this, &ControlBar::colorDisplayChanged);
 }
 
-float ControlBar::MapToZoom(int value)
-{
-    /*
-     * QSlider operates on a Linear Scale and so is the ZoomSlider
-     * The range of the ZoomSlider is from 1 -> 100
-     * This method maps the values from that range into 0.1f - 1.f - 12.8f
-     * Where 1 from the Slider is mapped as 0.1f and 50 as 1.f, 100 as 12.8f
-     *
-     * To ensure the second half of the slider also has similar precision as the first half
-     * We use logarithmic scaling
-     */
-
-    if (value <= 50)
-        return 0.1f + (value / 50.f) * (1.f - 0.1f);
-
-    /* Second half of the slider */
-    float normalized = (value - 50) / 50.f;
-    /* Base 10 */
-    return std::pow(10.f, normalized * (std::log10(12.8) - std::log10(1.f))) * 1.f;
-}
-
-int ControlBar::MapFromZoom(float zoom)
-{
-    /* First Half */
-    /* This casts the value into slider range of 1 - 50 */
-    if (zoom <= 1.f)
-        return static_cast<int>((zoom - 0.1f) / (1.f - 0.1f) * 50);
-
-    /* Casts the value into slider range of 51 - 100 */
-    return 50 + static_cast<int>(50 * (std::log10(zoom)- std::log10(1.f)) / std::log10(12.8) - std::log10(1.f));
-}
-
-void ControlBar::SetFromZoom(float zoom)
-{
-    /* Block Signals */
+void ControlBar::SetZoom(float zoom)
+{ 
     bool blocked = m_Zoomer->blockSignals(true);
-
-    /* Cast the zoom to the slider space */
-    m_Zoomer->setValue(MapFromZoom(zoom));
-
-    /* Unblock signals */
+    m_Zoomer->setValue(zoom);
     m_Zoomer->blockSignals(blocked);
+}
+
+void ControlBar::SetZoomLimits(float min, float max)
+{
+    m_Zoomer->setMinimum(min);
+    m_Zoomer->setMaximum(max);
 }
 
 VOID_NAMESPACE_CLOSE
