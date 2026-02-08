@@ -83,8 +83,8 @@ public:
     }
 
     /* Zoom on the Viewport */
-    inline void ZoomIn() { m_Renderer->ZoomIn(); }
-    inline void ZoomOut() { m_Renderer->ZoomOut(); }
+    inline void ZoomIn() { m_ControlBar->ZoomIn(); }
+    inline void ZoomOut() { m_ControlBar->ZoomOut(); }
     inline void ZoomToFit() { m_Renderer->ZoomToFit(); }
 
     /* Mark a frame on the timeline as cached */

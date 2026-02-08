@@ -50,7 +50,7 @@ void ControlCombo::paintEvent(QPaintEvent* event)
 /* Control Spinner {{{ */
 
 ControlSpinner::ControlSpinner(QWidget* parent)
-    : QSpinBox(parent)
+    : QDoubleSpinBox(parent)
     , m_LastX(0)
     , m_Threshold(10)
 {
@@ -73,7 +73,7 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
 
     /* Text */
     painter.setPen(palette().text().color());
-    painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignCenter, (QString::number(value()) + " %"));
+    painter.drawText(rect().adjusted(0, 0, -15, 0), Qt::AlignCenter, (QString::number(value(), 'f', 1) + " %"));
 
     /* Draw Arrows */
     QPoint arrowCenter(width() - 8, height() * 0.5);
@@ -98,7 +98,7 @@ void ControlSpinner::paintEvent(QPaintEvent* event)
 void ControlSpinner::mousePressEvent(QMouseEvent* event)
 {
     /* Base Mouse Press */
-    QSpinBox::mousePressEvent(event);
+    QDoubleSpinBox::mousePressEvent(event);
 
     #if _QT6 /* Qt6 Compat */
     /* Save the last mouse x pos */
@@ -173,13 +173,13 @@ void ControlSpinner::enterEvent(EnterEvent* event)
 {
     /* Set Cursor Override */
     setCursor(Qt::SizeHorCursor);
-    QSpinBox::enterEvent(event);
+    QDoubleSpinBox::enterEvent(event);
 }
 
 void ControlSpinner::leaveEvent(QEvent* event)
 {
     setCursor(Qt::ArrowCursor);
-    QSpinBox::leaveEvent(event);
+    QDoubleSpinBox::leaveEvent(event);
 }
 
 /* }}} */

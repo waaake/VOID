@@ -37,6 +37,9 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
+
+    m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
+    m_ControlBar->SetZoom(m_Renderer->Zoom());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -88,6 +91,9 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
     /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
     SetMediaFrame(m_Timeline->Frame());
+
+    m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
+    m_ControlBar->SetZoom(m_Renderer->Zoom());
 }
 
 void Player::SetTrack(const SharedPlaybackTrack& track)
@@ -102,6 +108,9 @@ void Player::SetTrack(const SharedPlaybackTrack& track)
     
     m_CacheProcessor.SetTrack(track);
     SetTrackFrame(m_Timeline->Frame());
+
+    m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
+    m_ControlBar->SetZoom(m_Renderer->Zoom());
 }
 
 void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer)
@@ -132,6 +141,9 @@ void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& 
 
     /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+
+    m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
+    m_ControlBar->SetZoom(m_Renderer->Zoom());
 }
 
 void Player::SetSequence(const SharedPlaybackSequence& sequence)
@@ -146,6 +158,9 @@ void Player::SetSequence(const SharedPlaybackSequence& sequence)
     
     m_CacheProcessor.SetSequence(sequence);
     SetSequenceFrame(m_Timeline->Frame());
+
+    m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
+    m_ControlBar->SetZoom(m_Renderer->Zoom());
 }
 
 void Player::SetPlaylist(Playlist* playlist)
@@ -225,7 +240,7 @@ void Player::Connect()
     /* ControlBar */
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
-    connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
+    connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode); 
 }
 
 void Player::ResetCacheMedia()
