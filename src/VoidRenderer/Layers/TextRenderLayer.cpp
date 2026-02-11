@@ -10,6 +10,7 @@
 /* Internal */
 #include "TextRenderLayer.h"
 #include "VoidCore/Logging.h"
+#include "VoidRenderer/Core/FontAtlas.h"
 #include "VoidRenderer/Core/FontEngine.h"
 
 VOID_NAMESPACE_OPEN
@@ -319,14 +320,44 @@ void TextAnnotationsRenderLayer::DrawText(const Renderer::RenderText& text)
     float x = text.position.x;
     float y = text.position.y;
 
+    std::vector<float> vertices;
+    vertices.reserve(6 * 4 * text.text.size());
+
+    FontAtlas* atlas = FontStore::Instance().Atlas(text.size);
+
+    for (char c : text.text)
+    {
+        const FChar& fc = atlas->GetChar(c);
+
+        float xpos = x + fc.bearing.x * m_Scalex;
+        float ypos = y - (fc.size.y - fc.bearing.y) * m_Scale;
+        float w = fc.size.x * m_Scalex;
+        float h = fc.size.y * m_Scale;
+
+        float quad[6][4] = {
+            { xpos,     ypos + h,   fc.uMin, fc.vMin },
+            { xpos,     ypos,       fc.uMin, fc.vMax },
+            { xpos + w, ypos,       fc.uMax, fc.vMax },
+            { xpos,     ypos + h,   fc.uMin, fc.vMin },
+            { xpos + w, ypos,       fc.uMax, fc.vMax },
+            { xpos + w, ypos + h,   fc.uMax, fc.vMin }
+        };
+
+        vertices.insert(vertices.end(), &quad[0][0], &quad[0][0] + 6 * 4);
+        x += fc.advance * m_Scalex;
+    }
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, atlas->TextureId());
+
     /* Set the Color and the text to be used */
     glUniform3fv(m_UColor, 1, glm::value_ptr(text.color));
     glUniform1i(m_UText, 0);
 
-    FT_Set_Pixel_Sizes(m_Ft_Face, 0, text.size);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
 
-    for (char c : text.text)
-        DrawChar(c, x, y);
+    glDrawArrays(GL_TRIANGLES, 0, 6 * text.text.size());
 }
 
 void TextAnnotationsRenderLayer::DrawCurrent(Renderer::RenderText& text)

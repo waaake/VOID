@@ -9,6 +9,7 @@ add_library(
     VoidRenderer.cpp
 
     # Core
+    Core/Error.cpp
     Core/FontAtlas.cpp
     Core/FontEngine.cpp
     Core/RenderTypes.cpp
