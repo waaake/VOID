@@ -24,6 +24,17 @@ extern "C"
 
 VOID_NAMESPACE_OPEN
 
+/**
+ * @brief Represents Frame information for a Movie Frame that FFMPEG can provide
+ * PTS, the presentation timestamp is what holds the data for a frame.
+ * data, the video frame data.
+ */
+struct FrameData
+{
+    v_frame_t pts;
+    std::vector<unsigned char> data;
+};
+
 class FFmpegDecoder
 {
 public:
@@ -36,56 +47,54 @@ public:
     FFmpegDecoder();
 
     FFmpegDecoder(const FFmpegDecoder&) = delete;
-    FFmpegDecoder operator=(const FFmpegDecoder&) = delete;
+    FFmpegDecoder(FFmpegDecoder&&) = delete;
+    FFmpegDecoder& operator=(const FFmpegDecoder&) = delete;
+    FFmpegDecoder& operator=(FFmpegDecoder&&) = delete;
 
     /**
-     * Opens the movie file and decodes the frame
+     * @brief Opens the movie file and decodes the frame
      * keeps the packet iterator in its state and does not destroy the context till a new filepath is
      * provided which means that subsequent queries to get consecutive/immediate frames would just be of
      * complexity O(1) generally as we're not iterating over the queried frame again
      * but sometimes the containers have frames not in order and that can lead to a next frame complexity of
      * O(n) as the iterator might have to loop over all frames to get to the one we're looking at which also
      * caches the other frames so next frame queries could directly result in direct data transfer
+     * 
+     * @param path Path to the movie file.
+     * @param framenumber Framenumber currently looking for.
      */
-    void Decode(const std::string& path, const int framenumber);
+    void DecodeVideo(const std::string& path, const int framenumber);
 
-    std::vector<unsigned char>& Frame(const int framenumber);
+    FrameData& VideoFrame(const int framenumber);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
     [[nodiscard]] int Channels() const { return m_Channels; }
 
 private: /* Members */
-    std::string m_Path;
-
-    int64_t m_CurrentFrame;
-
     int m_Width, m_Height, m_Channels;
-
-    std::vector<unsigned char> m_Pixels;
+    int m_VStreamID;
 
     /* FFMPEG Contexts */
     AVFormatContext* m_FormatContext;
-    AVCodecContext* m_CodecContext;
-    AVFrame* m_Frame;
+    AVCodecContext* m_VCodecContext;
+    AVFrame* m_VFrame;
     AVFrame* m_RGBFrame;
     AVPacket* m_Packet;
     SwsContext* m_SwsContext;
-    AVStream* m_Stream;
+    AVStream* m_VStream;
 
-    int m_StreamID;
+    std::string m_Path;
+    int64_t m_CurrentFrame;
 
-    /**
-     * The Map to save Data for each of the frame
-     */
-    std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
     std::mutex m_Mutex;
+    std::unordered_map<int, FrameData> m_DecodedFrames;
 
 private: /* Methods */
     void Open();
     void Close();
 
-    std::vector<unsigned char>& GetVector(const int frame);
+    FrameData& VideoData(const int frame);
 
     /**
      * Decodes the next frame from the movie container
@@ -209,7 +218,6 @@ private: /* Methods */
      * start and end frames and anything additional that could describe the media
      */
     void ProcessInformation();
-
 };
 
 VOID_NAMESPACE_CLOSE
