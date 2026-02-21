@@ -31,7 +31,7 @@ void ControlSlider::paintEvent(QPaintEvent* event)
     QPainter painter(this);
 
     /* Width of each unit value represented in the slider */
-    double uwidth = double(width()) / (maximum() - minimum());
+    // double uwidth = double(width()) / (maximum() - minimum());
 
     /* Groove {{{ */
     painter.setPen(QColor(20, 20, 20));
@@ -41,9 +41,9 @@ void ControlSlider::paintEvent(QPaintEvent* event)
     /* }}} */
 
     /* Markers {{{ */
-    int step = 10;
+    // int step = 10;
 
-    for (int i = minimum(); i <= maximum(); i+= step)
+    for (int i = minimum(); i <= maximum(); i+= 10)
     {
         painter.setPen(QPen(QColor(20, 20, 20), 2));
         int pos = width() * (i - minimum()) / (maximum() - minimum());
