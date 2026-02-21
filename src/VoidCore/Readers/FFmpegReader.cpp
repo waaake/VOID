@@ -4,129 +4,145 @@
 /* Internal */
 #include "FFmpegReader.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
 /* FFmpegDecoder {{{ */
 FFmpegDecoder::FFmpegDecoder()
-    : m_Path("")
-    , m_CurrentFrame(0)
-    , m_Width(0)
+    : m_Width(0)
     , m_Height(0)
     , m_Channels(3)
+    , m_VStreamID(-1)
+    , m_AStreamID(-1)
     , m_FormatContext(nullptr)
-    , m_CodecContext(nullptr)
-    , m_Frame(nullptr)
+    , m_VCodecContext(nullptr)
+    , m_ACodecContext(nullptr)
+    , m_VFrame(nullptr)
     , m_RGBFrame(nullptr)
+    , m_AFrame(nullptr)
     , m_Packet(nullptr)
     , m_SwsContext(nullptr)
-    , m_Stream(nullptr)
-    , m_StreamID(-1)
+    , m_SwrContext(nullptr)
+    , m_VStream(nullptr)
+    , m_AStream(nullptr)
+    , m_Path("")
+    , m_CurrentFrame(0)
 {
+}
+
+FFmpegDecoder::~FFmpegDecoder()
+{
+    Close();
 }
 
 void FFmpegDecoder::Open()
 {
-    /* Allocate Frames with default values */
-    m_Frame = av_frame_alloc();
+    m_VFrame = av_frame_alloc();
+    m_AFrame = av_frame_alloc();
     m_RGBFrame = av_frame_alloc();
-
-    /* Allocate AVPacket */
     m_Packet = av_packet_alloc();
 
-    /* Try opening the file */
+    m_CurrentFrame = 0;
+
     if (avformat_open_input(&m_FormatContext, m_Path.c_str(), nullptr, nullptr) > 0)
         return;
 
-    /* Try finding stream information */
     if (avformat_find_stream_info(m_FormatContext, nullptr) < 0)
         return;
 
-    /* Get the ID to the best stream of the Movie file */
-    m_StreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+    m_VStreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+    m_AStreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
 
-    /* Reset the current frame */
-    m_CurrentFrame = 0;
-
-    if (m_StreamID < 0)
+    if (m_VStreamID < 0)
         return;
 
-    /* Video stream for the StreamID */
-    m_Stream = m_FormatContext->streams[m_StreamID];
+    m_VStream = m_FormatContext->streams[m_VStreamID];
 
-    /* Codec Related Parameters */
-    AVCodecParameters* codecParams = m_Stream->codecpar;
+    if (m_AStreamID >= 0)
+    {
+        m_AStream = m_FormatContext->streams[m_AStreamID];
+        const AVCodecParameters* codecParams = m_AStream->codecpar;
+        const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
 
-    /* Find a decoder for the codec */
+        m_ACodecContext = avcodec_alloc_context3(codec);
+
+        avcodec_parameters_to_context(m_ACodecContext, codecParams);
+        avcodec_open2(m_ACodecContext, codec, nullptr);
+        m_SwrContext = swr_alloc();
+
+        AVChannelLayout layout;
+        av_channel_layout_default(&layout, m_ACodecContext->ch_layout.nb_channels);
+        swr_alloc_set_opts2(&m_SwrContext, &layout, AV_SAMPLE_FMT_S16, m_ACodecContext->sample_rate, &layout, m_ACodecContext->sample_fmt, m_ACodecContext->sample_rate, 0, nullptr);
+        swr_init(m_SwrContext);
+    }
+
+    const AVCodecParameters* codecParams = m_VStream->codecpar;
     const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
 
-    /* Initialize defaults for the given codec */
-    m_CodecContext = avcodec_alloc_context3(codec);
-
-    /* Update the channels if we're RGBA */
-    if (m_CodecContext->pix_fmt == AV_PIX_FMT_RGBA)
+    m_VCodecContext = avcodec_alloc_context3(codec);
+    if (m_VCodecContext->pix_fmt == AV_PIX_FMT_RGBA)
         m_Channels = 4;
 
-    /* Update the codec context based on the values from the codec params */
-    avcodec_parameters_to_context(m_CodecContext, codecParams);
-
-    /* Initialize the context to use the given codec */
-    avcodec_open2(m_CodecContext, codec, nullptr);
+    avcodec_parameters_to_context(m_VCodecContext, codecParams);
+    avcodec_open2(m_VCodecContext, codec, nullptr);
 
     /* Update the resolution information */
-    m_Width = m_CodecContext->width;
-    m_Height = m_CodecContext->height;
+    m_Width = m_VCodecContext->width;
+    m_Height = m_VCodecContext->height;
 }
 
 void FFmpegDecoder::Close()
 {
-    if (m_Frame)
-        av_frame_free(&m_Frame);
+    if (m_VFrame) av_frame_free(&m_VFrame);
+    if (m_RGBFrame) av_frame_free(&m_RGBFrame);
+    if (m_AFrame) av_frame_free(&m_AFrame);
+    if (m_Packet) av_packet_free(&m_Packet);
+    if (m_VCodecContext) avcodec_free_context(&m_VCodecContext);
+    if (m_ACodecContext) avcodec_free_context(&m_ACodecContext);
+    if (m_FormatContext) avformat_close_input(&m_FormatContext);
+    if (m_SwsContext) sws_free_context(&m_SwsContext);
+    if (m_SwrContext) swr_free(&m_SwrContext);
 
-    if (m_RGBFrame)
-        av_frame_free(&m_RGBFrame);
-
-    if (m_Packet)
-        av_packet_free(&m_Packet);
-
-    if (m_CodecContext)
-        avcodec_free_context(&m_CodecContext);
-
-    if (m_FormatContext)
-        avformat_close_input(&m_FormatContext);
-
-    if (m_SwsContext)
-        sws_free_context(&m_SwsContext);
-
-    /* Reset caches */
-    m_Pixels.clear();
-    m_Pixels.shrink_to_fit();
     m_DecodedFrames.clear();
-
-    /* The read stream ID */
-    m_StreamID = -1;
+    m_DecodedStreams.clear();
+    m_VStreamID = -1;
 }
 
-std::vector<unsigned char>& FFmpegDecoder::Frame(const int framenumber)
+std::vector<unsigned char>& FFmpegDecoder::VideoFrame(const int framenumber)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    return GetVector(framenumber);
+    return VideoData(framenumber);
 }
 
-std::vector<unsigned char>& FFmpegDecoder::GetVector(const int frame)
+std::vector<unsigned char>& FFmpegDecoder::Audio(const int framenumber)
 {
-    if (m_DecodedFrames.find(frame) == m_DecodedFrames.end())
-    {
-        /* Assign a new vector to the decoded frames */
-        m_DecodedFrames[frame] = {};
-        return m_DecodedFrames.at(frame);
-    }
-
-    return m_DecodedFrames.at(frame);
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    return AudioStream(framenumber);
 }
 
-void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
+std::vector<unsigned char>& FFmpegDecoder::VideoData(const int frame)
+{
+    auto it = m_DecodedFrames.find(frame);
+    if (it == m_DecodedFrames.end())
+    {
+        m_DecodedFrames[frame] = {};
+        return m_DecodedFrames[frame];
+    }
+    return it->second;
+}
+
+std::vector<unsigned char>& FFmpegDecoder::AudioStream(const int framenumber)
+{
+    auto it = m_DecodedStreams.find(framenumber);
+    if (it == m_DecodedStreams.end())
+    {
+        m_DecodedStreams[framenumber] = {};
+        return m_DecodedStreams[framenumber];
+    }
+    return it->second;
+}
+
+void FFmpegDecoder::DecodeVideo(const std::string& path, const int framenumber)
 {
     /**
      * At the moment, this is not accessible concurrently throught multiple threads
@@ -136,38 +152,26 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
      */
     std::lock_guard<std::mutex> guard(m_Mutex);
 
-    /* The framenumber was already decoded as stored */
-    if (!GetVector(framenumber).empty())
-    {
-        return;
-    }
-
     /* A new movie is being read */
     if (path != m_Path)
     {
-        /* Close existing file and buffers */
         Close();
-
-        /* Update the internal path */
         m_Path = path;
-
-        /* And open the file */
         Open();
     }
 
-     /* Get how much size is required to read the image */
-    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+    std::vector<unsigned char>& pixels = VideoData(framenumber);
+    if (!pixels.empty())
+        return;
 
-    m_Pixels.resize(numBytes);
-
-    /* Setup data pointers */
-    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, m_Pixels.data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+    pixels.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
 
     /**
      * Allocate the sws context
      * not scaling the image, have set the destination width and height to be the same as the source for now
      */
-    m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+    m_SwsContext = sws_getContext(m_Width, m_Height, m_VCodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
     /* Now we start */
     bool found = false;
@@ -199,10 +203,10 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
         if (ret > framenumber || ret == -1)
         {
             /* Seek */
-            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_VStream->r_frame_rate), m_VStream->time_base);
             /* Seek the closest keyframe before the framenumber */
-            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
-            avcodec_flush_buffers(m_CodecContext);
+            av_seek_frame(m_FormatContext, m_VStreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
+            avcodec_flush_buffers(m_VCodecContext);
 
             /* Increment the retry count */
             retryCount++;
@@ -216,56 +220,95 @@ void FFmpegDecoder::Decode(const std::string& path, const int framenumber)
         else if (distance > 20 && !seeked)
         {
             /* Seek */
-            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_VStream->r_frame_rate), m_VStream->time_base);
             /**
              * Seek the framenumber
              * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
              */
-            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
-            avcodec_flush_buffers(m_CodecContext);
+            av_seek_frame(m_FormatContext, m_VStreamID, seek_pts, AVSEEK_FLAG_FRAME);
+            avcodec_flush_buffers(m_VCodecContext);
 
             seeked = true;
         }
     }
 }
 
+void FFmpegDecoder::DecodeAudio(const int framenumber)
+{
+    if (m_AStreamID < 0)
+        return;
+
+    /**
+     * Case 1: The current framenumber being looked at is higher than the current framenumber
+     * this means the audio at the frame must have been decoded for sure
+     * 20 is the min
+     */
+    if ((m_CurrentFrame - 20) > framenumber)
+        return;
+
+
+    /**
+     * Case 2: This was decoded before and already available for use
+     */
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if (!AudioStream(framenumber).empty())
+            return;
+    }
+
+    /**
+     * Last case when the audio hasn't been decoded yet
+     * To make sure we decode the audio correctly, Decode the next video frame
+     * (which mostly decodes the current and next frame)
+     */
+    DecodeVideo(m_Path, framenumber + 1);
+}
+
 v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
 {
-    /* Read the next frame from the packet */
-    int status = av_read_frame(m_FormatContext, m_Packet);
-
-    /* Indicates a Read failure */
-    if (status < 0)
+    if (av_read_frame(m_FormatContext, m_Packet) < 0)
         return -1;
 
-    /* Indicates just a stream mismatch and can continue back */
-    if (m_Packet->stream_index != m_StreamID)
-        return -2;
+    if (m_Packet->stream_index == m_AStreamID)
+        DecodeNextAudio();
 
-    /* Send the packet */
-    avcodec_send_packet(m_CodecContext, m_Packet);
-    /* Recieve back the frame */
-    status = avcodec_receive_frame(m_CodecContext, m_Frame);
-
-    /* Check if we can proceed further */
-    if (status != 0)
-        return -3;
-
-    m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
-
-    if (save)
+    if (m_Packet->stream_index == m_VStreamID)
     {
-        sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+        /* Send the packet */
+        avcodec_send_packet(m_VCodecContext, m_Packet);
+        if (avcodec_receive_frame(m_VCodecContext, m_VFrame) != 0)
+            return -3;
 
-        std::vector<unsigned char>& v = GetVector(m_CurrentFrame);
-        v = m_Pixels;
+        m_CurrentFrame = av_rescale_q(m_VFrame->pts, m_VStream->time_base, av_inv_q(m_VStream->r_frame_rate));
+        if (save)
+            sws_scale(m_SwsContext, m_VFrame->data, m_VFrame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+    }
+    else
+    {
+        /* Dereference the buffer */
+        // av_packet_unref(m_Packet);
+        return -2;
     }
 
     /* Dereference the buffer */
     av_packet_unref(m_Packet);
-
-    /* The decoded frame number*/
     return m_CurrentFrame;
+}
+
+void FFmpegDecoder::DecodeNextAudio()
+{
+    avcodec_send_packet(m_ACodecContext, m_Packet);
+    if (avcodec_receive_frame(m_ACodecContext, m_AFrame) == 0)
+    {
+        int outLines;
+        int outSamples = av_rescale_rnd(m_AFrame->nb_samples, m_ACodecContext->sample_rate, m_ACodecContext->sample_rate, AV_ROUND_UP);
+        int outBufferSize = av_samples_get_buffer_size(&outLines, m_ACodecContext->ch_layout.nb_channels, m_AFrame->nb_samples, AV_SAMPLE_FMT_S16, 1);
+
+        std::vector<unsigned char>& stream = AudioStream(m_CurrentFrame);
+        stream.resize(outBufferSize);
+        unsigned char* strmptr = stream.data();
+        swr_convert(m_SwrContext, (uint8_t**)&strmptr, outSamples, (const uint8_t**)(m_AFrame->extended_data), m_AFrame->nb_samples);
+    }
 }
 
 /* }}} */
@@ -276,6 +319,8 @@ FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
     , m_Width(0)
     , m_Height(0)
     , m_Channels(0)
+    , m_AChannels(0)
+    , m_Samplerate(0)
     , m_Startframe(0)
     , m_Endframe(0)
     , m_Duration(0)
@@ -293,6 +338,9 @@ void FFmpegPixReader::Clear()
     /* Remove any data from the pixels vector and shrink it back in place */
     m_Pixels.clear();
     m_Pixels.shrink_to_fit();
+
+    m_Stream.clear();
+    m_Stream.shrink_to_fit();
 }
 
 void FFmpegPixReader::ProcessInformation()
@@ -302,26 +350,24 @@ void FFmpegPixReader::ProcessInformation()
         return;
 
     AVFormatContext* formatContext = nullptr;
-
     if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
     {
-        AVStream* vidStream = nullptr;
         for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
         {
-            if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+            const AVStream* stream = formatContext->streams[i];
+            if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
             {
-                vidStream = formatContext->streams[i];
-                break;
+                /* This always has been 2 less than the total number of frames, need a bit more information here... */
+                m_Endframe = stream->nb_frames - 2;
+                m_Framerate = av_q2d(stream->r_frame_rate);
+            }
+            else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+            {
+                m_Samplerate = stream->codecpar->sample_rate;
+                m_AChannels = stream->codecpar->ch_layout.nb_channels;
             }
         }
 
-        /* This always has been 2 less than the total number of frames, need a bit more information here... */
-        m_Endframe = vidStream->nb_frames - 2;
-
-        AVRational framerate = vidStream->r_frame_rate;
-        m_Framerate = av_q2d(framerate);
-
-        /* Deallocate internals */
         avformat_close_input(&formatContext);
     }
 }
@@ -347,26 +393,23 @@ void FFmpegPixReader::Read()
 {
     /* Decoder */
     FFmpegDecoder& decoder = FFmpegDecoder::Instance();
+    decoder.DecodeVideo(m_Path, m_Framenumber);
 
-    decoder.Decode(m_Path, m_Framenumber);
+    std::swap(decoder.VideoFrame(m_Framenumber), m_Pixels);
 
-    /**
-     * Once the decoding for the frame is completed
-     * Swap the needed frame data with empty undelying pixel struct
-     */
-    std::swap(decoder.Frame(m_Framenumber), m_Pixels);
+    decoder.DecodeAudio(m_Framenumber);
+    std::swap(decoder.Audio(m_Framenumber), m_Stream);
+    // VOID_LOG_INFO("Frame: {0}, Empty Audio: {1}", m_Framenumber, m_Stream.empty());
 
     /* Read the Frame Dimensions */
     m_Width = decoder.Width();
     m_Height = decoder.Height();
-
     m_Channels = decoder.Channels();
 }
 
 const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 {
     std::map<std::string, std::string> m;
-
     AVFormatContext* formatContext = nullptr;
 
     if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)

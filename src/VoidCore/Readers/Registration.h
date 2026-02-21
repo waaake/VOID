@@ -77,7 +77,7 @@ struct FFmpegReaderPlugin
         FormatRegistry<MPixForge> f;
 
         f.name = "FFmpeg Reader";
-        f.extensions = { "mp4", "mov" };
+        f.extensions = { "mp4", "mov", "MOV" };
         /* FFmpeg Reader */
         f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<FFmpegPixReader> { return std::make_unique<FFmpegPixReader>(path, framenumber); };
 

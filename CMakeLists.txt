@@ -100,7 +100,7 @@ find_package(pybind11 REQUIRED)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 # Try and find ffmpeg
-find_package(FFMPEG REQUIRED COMPONENTS avcodec avformat avutil swscale)
+find_package(FFMPEG REQUIRED COMPONENTS avcodec avformat avutil swscale swresample)
 
 find_package(TurboJPEG REQUIRED)
 
