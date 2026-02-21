@@ -19,45 +19,45 @@ VOID_NAMESPACE_OPEN
 /**
  * These are effectively the same a GL types just named internally as per "VOID Conventions"
  */
-#define VOID_GL_BYTE 0x1400
-#define VOID_GL_UNSIGNED_BYTE 0x1401
-#define VOID_GL_SHORT 0x1402
-#define VOID_GL_UNSIGNED_SHORT 0x1403
-#define VOID_GL_INT 0x1404
-#define VOID_GL_UNSIGNED_INT 0x1405
-#define VOID_GL_FLOAT 0x1406
-#define VOID_GL_2_BYTES 0x1407
-#define VOID_GL_3_BYTES 0x1408
-#define VOID_GL_4_BYTES 0x1409
-#define VOID_GL_DOUBLE 0x140A
+#define VOID_GL_BYTE            0x1400
+#define VOID_GL_UNSIGNED_BYTE   0x1401
+#define VOID_GL_SHORT           0x1402
+#define VOID_GL_UNSIGNED_SHORT  0x1403
+#define VOID_GL_INT             0x1404
+#define VOID_GL_UNSIGNED_INT    0x1405
+#define VOID_GL_FLOAT           0x1406
+#define VOID_GL_2_BYTES         0x1407
+#define VOID_GL_3_BYTES         0x1408
+#define VOID_GL_4_BYTES         0x1409
+#define VOID_GL_DOUBLE          0x140A
 
 /**
  * GL Formats but with "VOID Conventions"
  */
-#define VOID_GL_RED 0x1903
-#define VOID_GL_GREEN 0x1904
-#define VOID_GL_BLUE 0x1905
-#define VOID_GL_ALPHA 0x1906
-#define VOID_GL_RGB 0x1907
-#define VOID_GL_RGBA 0x1908
-#define VOID_GL_LUMINANCE 0x1909
+#define VOID_GL_RED             0x1903
+#define VOID_GL_GREEN           0x1904
+#define VOID_GL_BLUE            0x1905
+#define VOID_GL_ALPHA           0x1906
+#define VOID_GL_RGB             0x1907
+#define VOID_GL_RGBA            0x1908
+#define VOID_GL_LUMINANCE       0x1909
 #define VOID_GL_LUMINANCE_ALPHA 0x190A
-#define VOID_GL_RGBA32F 0x8814
-#define VOID_GL_RGB32F 0x8815
-#define VOID_GL_RGBA16F 0x881A
-#define VOID_GL_RGB16F 0x881B
-#define VOID_GL_RGBA32UI 0x8D70
-#define VOID_GL_RGB32UI 0x8D71
-#define VOID_GL_RGBA16UI 0x8D76
-#define VOID_GL_RGB16UI 0x8D77
-#define VOID_GL_RGBA8UI 0x8D7C
-#define VOID_GL_RGB8UI 0x8D7D
-#define VOID_GL_RGBA32I 0x8D82
-#define VOID_GL_RGB32I 0x8D83
-#define VOID_GL_RGBA16I 0x8D88
-#define VOID_GL_RGB16I 0x8D89
-#define VOID_GL_RGBA8I 0x8D8E
-#define VOID_GL_RGB8I 0x8D8F
+#define VOID_GL_RGBA32F         0x8814
+#define VOID_GL_RGB32F          0x8815
+#define VOID_GL_RGBA16F         0x881A
+#define VOID_GL_RGB16F          0x881B
+#define VOID_GL_RGBA32UI        0x8D70
+#define VOID_GL_RGB32UI         0x8D71
+#define VOID_GL_RGBA16UI        0x8D76
+#define VOID_GL_RGB16UI         0x8D77
+#define VOID_GL_RGBA8UI         0x8D7C
+#define VOID_GL_RGB8UI          0x8D7D
+#define VOID_GL_RGBA32I         0x8D82
+#define VOID_GL_RGB32I          0x8D83
+#define VOID_GL_RGBA16I         0x8D88
+#define VOID_GL_RGB16I          0x8D89
+#define VOID_GL_RGBA8I          0x8D8E
+#define VOID_GL_RGB8I           0x8D8F
 
 
 /* Typedefs */
@@ -139,7 +139,35 @@ public:
      * Retrieve the input colorspace of the media file
      */
     virtual ColorSpace InputColorSpace() const = 0;
+
+    /**
+     * @brief Returns whether the given Image/Frame is a Movie
+     * 
+     * @return true The image/frame belongs to a movie.
+     * @return false The image/frame is a physical image file.
+     */
     virtual bool IsMovie() const { return false; }
+
+    /**
+     * @brief Returns the Number of channels in the Audio Stream.
+     * 
+     * @return int Channel count for the Audio stream.
+     */
+    virtual int AudioChannels() const { return 0; };
+
+    /**
+     * @brief Returns the number of samples for the Audio.
+     * 
+     * @return int
+     */
+    virtual int Samplerate() const { return 0; }
+
+    /**
+     * @brief Returns the Audio Samples 
+     * 
+     * @return const unsigned char* Audio stream data.
+     */
+    virtual const unsigned char* AudioSamples() const { return nullptr; }
 
     /**
      * Read the metadata from the underlying image/frame

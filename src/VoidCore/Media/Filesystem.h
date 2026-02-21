@@ -189,11 +189,12 @@ private:
     };
 
     /* Can be classified as Movies */
-    inline static const std::string m_MovieFormats[4] = {
+    inline static const std::string m_MovieFormats[5] = {
         "mov",
         "mp4",
         "mxf",
-        "mkv"
+        "mkv",
+        "MOV"
     };
 };
 

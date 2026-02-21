@@ -16,6 +16,7 @@ extern "C"
 #include <libavutil/imgutils.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#include <libswresample/swresample.h>
 }
 
 /* Internal */
@@ -24,19 +25,10 @@ extern "C"
 
 VOID_NAMESPACE_OPEN
 
-/**
- * @brief Represents Frame information for a Movie Frame that FFMPEG can provide
- * PTS, the presentation timestamp is what holds the data for a frame.
- * data, the video frame data.
- */
-struct FrameData
-{
-    v_frame_t pts;
-    std::vector<unsigned char> data;
-};
-
 class FFmpegDecoder
 {
+    FFmpegDecoder();
+
 public:
     static FFmpegDecoder& Instance()
     {
@@ -44,7 +36,7 @@ public:
         return instance;
     }
 
-    FFmpegDecoder();
+    ~FFmpegDecoder();    
 
     FFmpegDecoder(const FFmpegDecoder&) = delete;
     FFmpegDecoder(FFmpegDecoder&&) = delete;
@@ -64,8 +56,10 @@ public:
      * @param framenumber Framenumber currently looking for.
      */
     void DecodeVideo(const std::string& path, const int framenumber);
+    void DecodeAudio(const int framenumber);
 
-    FrameData& VideoFrame(const int framenumber);
+    std::vector<unsigned char>& VideoFrame(const int framenumber);
+    std::vector<unsigned char>& Audio(const int frame);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -73,34 +67,37 @@ public:
 
 private: /* Members */
     int m_Width, m_Height, m_Channels;
-    int m_VStreamID;
+    int m_VStreamID, m_AStreamID;
 
     /* FFMPEG Contexts */
     AVFormatContext* m_FormatContext;
-    AVCodecContext* m_VCodecContext;
-    AVFrame* m_VFrame;
-    AVFrame* m_RGBFrame;
+    AVCodecContext *m_VCodecContext, *m_ACodecContext;
+    AVFrame *m_VFrame, *m_RGBFrame, *m_AFrame;
     AVPacket* m_Packet;
     SwsContext* m_SwsContext;
-    AVStream* m_VStream;
+    SwrContext* m_SwrContext;
+    AVStream *m_VStream, *m_AStream;
 
     std::string m_Path;
     int64_t m_CurrentFrame;
 
     std::mutex m_Mutex;
-    std::unordered_map<int, FrameData> m_DecodedFrames;
+    std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
+    std::unordered_map<int, std::vector<unsigned char>> m_DecodedStreams;
 
 private: /* Methods */
     void Open();
     void Close();
 
-    FrameData& VideoData(const int frame);
+    std::vector<unsigned char>& VideoData(const int frame);
+    std::vector<unsigned char>& AudioStream(const int frame);
 
     /**
      * Decodes the next frame from the movie container
      * returns back the frame number (converted from av time base to signed long)
      */
     v_frame_t DecodeNextFrame(bool save = true);
+    void DecodeNextAudio();
 };
 
 
@@ -195,11 +192,17 @@ public:
      */
     virtual const std::map<std::string, std::string> Metadata() const override;
 
+    virtual int AudioChannels() const override { return m_AChannels; }
+    virtual int Samplerate() const { return m_Samplerate; }
+    virtual const unsigned char* AudioSamples() const { return m_Stream.data(); }
+
 private: /* Members */
     /* Image specifications */
     int m_Width, m_Height;
     /* Number of channels in the image */
     int m_Channels;
+    int m_AChannels;
+    int m_Samplerate;
 
     /**
      * Media timeline information
@@ -211,6 +214,7 @@ private: /* Members */
 
     /* Internal data store */
     std::vector<unsigned char> m_Pixels;
+    std::vector<unsigned char> m_Stream;
 
 private: /* Methods */
     /**
