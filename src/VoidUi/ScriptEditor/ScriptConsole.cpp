@@ -157,11 +157,15 @@ void InputScriptConsole::LineNumberPaintEvent(QPaintEvent* event)
     {
         if (block.isVisible() && bottom >= event->rect().top())
         {
-            /* Draw Line Number */
-            QString number = QString::number(blockNum + 1);
-
             painter.setPen(palette().color(QPalette::Text).darker(150));
-            painter.drawText(0, top, m_LineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+            painter.drawText(
+                0,
+                top,
+                m_LineNumberArea->width(),
+                fontMetrics().height(),
+                Qt::AlignRight,
+                QString::number(blockNum + 1)
+            );
         }
 
         block = block.next();

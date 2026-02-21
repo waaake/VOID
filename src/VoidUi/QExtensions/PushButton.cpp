@@ -162,8 +162,7 @@ void CloseButton::paintEvent(QPaintEvent* event)
         painter.drawRect(rect());
     }
 
-    QRect iconRect = style()->subControlRect(QStyle::CC_ToolButton, &option, QStyle::SC_ToolButton, this);
-    icon().paint(&painter, iconRect);
+    icon().paint(&painter, style()->subControlRect(QStyle::CC_ToolButton, &option, QStyle::SC_ToolButton, this));
 }
 
 /* }}} */

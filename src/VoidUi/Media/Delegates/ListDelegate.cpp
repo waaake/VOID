@@ -31,7 +31,6 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     /* Base Rect */
     QRect rect = option.rect;
-
     painter->save();
 
     /* Default background */
@@ -65,18 +64,22 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->save();
 
     /* Side Bar */
-    QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());
-    painter->fillRect(siderect, bg.lighter(250));
+    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(250));
 
     /* Name */
-    QRect namerect = QRect(rect.left() + 10, rect.top(), rect.right(), rect.height());
-    QString name = index.data(static_cast<int>(MediaModel::MRoles::Name)).toString();
-    painter->drawText(namerect, Qt::AlignLeft | Qt::AlignVCenter, name);
+    const QRect namerect = QRect(rect.left() + 10, rect.top(), rect.right(), rect.height());
+    painter->drawText(
+        namerect,
+        Qt::AlignLeft | Qt::AlignVCenter,
+        index.data(static_cast<int>(MediaModel::MRoles::Name)).toString()
+    );
 
     /* Frame Range */
-    QRect countrect = QRect(namerect.left(), rect.top(), rect.right() - 20, rect.height());
-    QString count = index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString();
-    painter->drawText(countrect, Qt::AlignRight | Qt::AlignVCenter, count);
+    painter->drawText(
+        QRect(namerect.left(), rect.top(), rect.right() - 20, rect.height()),
+        Qt::AlignRight | Qt::AlignVCenter,
+        index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
+    );
 
     /* Restore for other use */
     painter->restore();
@@ -107,7 +110,6 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     /* Base Rect */
     QRect rect = option.rect;
-
     painter->save();
 
     /* Default background */
@@ -141,45 +143,41 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->save();
 
     /* Side Bar */
-    QRect siderect = QRect(rect.left(), rect.top(), 6, rect.height());
-    painter->fillRect(siderect, bg.lighter(150));
+    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(150));
 
     /* Thumbnail */
-    QRect thumbrect = QRect(rect.left() + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+    const QRect thumbrect = QRect(rect.left() + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
     QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
     /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
-    int x = thumbrect.left() + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
-    int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
+    const int x = thumbrect.left() + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
+    const int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
-    int thumbright = thumbrect.right() + 5;
-    int halfheight = rect.height() * 0.5;
-
-    int namewidth = rect.width() - (thumbrect.width() + 70);
+    const int thumbright = thumbrect.right() + 5;
+    const int halfheight = rect.height() * 0.5;
+    const int namewidth = rect.width() - (thumbrect.width() + 70);
 
     /* Name */
-    QRect namerect = QRect(thumbright, rect.top(), namewidth, halfheight);
+    const QRect namerect = QRect(thumbright, rect.top(), namewidth, halfheight);
     QString name = index.data(static_cast<int>(MediaModel::MRoles::Name)).toString();
     painter->drawText(namerect, Qt::AlignLeft | Qt::AlignVCenter, name);
 
     /* Extension */
-    QRect extrect = QRect(namerect.right(), rect.top(), 46, halfheight);
+    const QRect extrect = QRect(namerect.right(), rect.top(), 46, halfheight);
     QString extension = index.data(static_cast<int>(MediaModel::MRoles::Extension)).toString();
     painter->drawText(extrect, Qt::AlignRight | Qt::AlignVCenter, extension);
 
     /* Frame range */
-    QRect rangerect = QRect(thumbright, namerect.bottom(), namewidth, halfheight);
     QString framerange = index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString();
-    painter->drawText(rangerect, Qt::AlignLeft | Qt::AlignVCenter, framerange);
+    painter->drawText(QRect(thumbright, namerect.bottom(), namewidth, halfheight), Qt::AlignLeft | Qt::AlignVCenter, framerange);
 
     /* Framerate */
-    QRect fpsrect = QRect(namerect.right(), extrect.bottom(), 46, halfheight);
     QString framerate = index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString();
-    painter->drawText(fpsrect, Qt::AlignRight | Qt::AlignVCenter, framerate);
+    painter->drawText(QRect(namerect.right(), extrect.bottom(), 46, halfheight), Qt::AlignRight | Qt::AlignVCenter, framerate);
 
     /* Restore for other use */
     painter->restore();
