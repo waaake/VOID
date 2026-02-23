@@ -13,7 +13,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VOID_API Logger
+class LOGGER_API Logger
 {
 public:
     static void Init();
