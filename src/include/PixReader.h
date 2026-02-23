@@ -163,11 +163,18 @@ public:
     virtual int Samplerate() const { return 0; }
 
     /**
-     * @brief Returns the Audio Samples 
+     * @brief Returns the Audio Samples.
      * 
      * @return const unsigned char* Audio stream data.
      */
     virtual const unsigned char* AudioSamples() const { return nullptr; }
+
+    /**
+     * @brief Get the required buffer size for the audio stream.
+     * 
+     * @return int Size of the audio stream.
+     */
+    virtual int AudioBufferSize() const { return 0; }
 
     /**
      * Read the metadata from the underlying image/frame

@@ -13,18 +13,18 @@ set(SOURCES
     Commands/VoidCommand.cpp
     Commands/MediaCommands.cpp
     Commands/PlaylistCommands.cpp
-    
+
     # Dock
     Dock/Docker.cpp
     Dock/DockManager.cpp
     Dock/DockPanel.cpp
     Dock/DockSplitter.cpp
-    
+
     # Core Engine Globals
     Engine/Bridge.cpp
     Engine/Globals.cpp
     Engine/IconForge.cpp
-    
+
     # Media
     Media/Browser.cpp
     Media/FileDialog.cpp
@@ -136,6 +136,7 @@ target_link_libraries(
     VoidCore
     VoidObjects
     VoidRenderer
+    VoidAudio
 )
 
 # Link to this library

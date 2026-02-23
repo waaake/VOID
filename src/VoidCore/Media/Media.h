@@ -80,6 +80,10 @@ public:
 
     inline v_frame_t Duration() const { return (LastFrame() - FirstFrame()) + 1; }
 
+    inline bool HasAudio() const { return static_cast<bool>(m_AudioChannels); }
+    inline int Samplerate() const { return m_Samplerate; }
+    inline int AudioChannels() const { return m_AudioChannels; }
+
     /*
      * Returns whether a given frame falls in the range of Media
      * i.e. between the first and the last frame of media
@@ -144,6 +148,7 @@ protected: /* Members */
 
     v_frame_t m_FirstFrame, m_LastFrame;
     double m_Framerate;
+    int m_Samplerate, m_AudioChannels;
 
     Type m_Type;
     /* Arrays to hold the media Frames for the type of media */

@@ -195,6 +195,7 @@ public:
     virtual int AudioChannels() const override { return m_AChannels; }
     virtual int Samplerate() const { return m_Samplerate; }
     virtual const unsigned char* AudioSamples() const { return m_Stream.data(); }
+    virtual int AudioBufferSize() const { return m_Stream.size(); }
 
 private: /* Members */
     /* Image specifications */

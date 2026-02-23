@@ -16,6 +16,8 @@ Media::Media()
     : m_FirstFrame(-1)
     , m_LastFrame(-1)
     , m_Framerate(24.0)
+    , m_Samplerate(0)
+    , m_AudioChannels(0)
     , m_Type(Type::UNDEFINED)
 {
 }
@@ -169,6 +171,10 @@ void Media::ProcessMovie()
 
     /* Update internal framerate */
     m_Framerate = r->Framerate();
+    m_AudioChannels = r->AudioChannels();
+    m_Samplerate = r->Samplerate();
+
+    VOID_LOG_INFO("Movie Audio Details: Samplerate: {0}, Channels: {1}", m_Samplerate, m_AudioChannels);
 
     m_Framenumbers.reserve(frange.endframe - frange.startframe + 1);
 

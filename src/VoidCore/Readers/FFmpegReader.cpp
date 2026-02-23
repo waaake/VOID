@@ -183,6 +183,7 @@ void FFmpegDecoder::DecodeVideo(const std::string& path, const int framenumber)
     /* Retry seeking for 3 times before giving up */
     while (!found && retryCount < 3)
     {
+        // VOID_LOG_INFO("Decoding Requested for frame: {0}", framenumber);
         /**
          * Calculate the distance between the requested and the last frame which was read 
          * this helps us determine whether or not to save any data and also if we need to seek forwards in order
@@ -193,6 +194,7 @@ void FFmpegDecoder::DecodeVideo(const std::string& path, const int framenumber)
         distance = framenumber - m_CurrentFrame;
         /* Decode the next frame and it returns back either a negative value or the decoded frame */
         v_frame_t ret = DecodeNextFrame((distance < 10));
+        // VOID_LOG_INFO("Return: {0}", ret);
 
         /**
          * Then we check if the return value was greater than the requested frame
@@ -308,6 +310,8 @@ void FFmpegDecoder::DecodeNextAudio()
         stream.resize(outBufferSize);
         unsigned char* strmptr = stream.data();
         swr_convert(m_SwrContext, (uint8_t**)&strmptr, outSamples, (const uint8_t**)(m_AFrame->extended_data), m_AFrame->nb_samples);
+
+        // VOID_LOG_INFO("Frame: {0}, Buffersize: {1}, stream empty: {2}", m_CurrentFrame, outBufferSize, stream.empty());
     }
 }
 
@@ -363,6 +367,7 @@ void FFmpegPixReader::ProcessInformation()
             }
             else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
             {
+                avformat_find_stream_info(formatContext, nullptr);  // This is expensive, check if there is a different way to get audio channel count
                 m_Samplerate = stream->codecpar->sample_rate;
                 m_AChannels = stream->codecpar->ch_layout.nb_channels;
             }

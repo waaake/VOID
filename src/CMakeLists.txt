@@ -11,6 +11,9 @@ add_subdirectory(VoidRenderer)
 # Build Intermediate Objects Library
 add_subdirectory(VoidObjects)
 
+# Build Audio
+add_subdirectory(VoidAudio)
+
 # Build Ui Library
 add_subdirectory(VoidUi)
 
@@ -38,6 +41,13 @@ target_include_directories(
     ${RapidJSON_INCLUDE_DIRS}
 )
 
+target_include_directories(
+    VoidAudio
+    PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
+)
+
 # Logging
 if (spdlog_FOUND)
     target_include_directories(
@@ -57,6 +67,7 @@ endif()
 include_directories(
     ${FREETYPE_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
 )
 
 # Main Executable
@@ -152,7 +163,7 @@ endif()
 # )
 
 # Install Libraries and Binaries
-install(TARGETS VoidCore VoidObjects VoidRenderer VoidUi VOID vortex
+install(TARGETS VoidCore VoidObjects VoidRenderer VoidUi VOID vortex VoidAudio
     EXPORT VOIDTargets
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib
