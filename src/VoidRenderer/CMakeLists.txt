@@ -1,7 +1,5 @@
 # Build Render Library
-add_library(
-    VoidRenderer
-    SHARED
+set(SOURCES
     Renderer.h
     Renderer.cpp
     RendererStatus.cpp
@@ -28,6 +26,12 @@ add_library(
     Programs/SwiperShaderProgram.cpp
     Programs/TextShaderProgram.cpp
     Programs/TextboxShaderProgram.cpp
+)
+
+add_library(
+    VoidRenderer
+    SHARED
+    ${SOURCES}
 )
 
 target_include_directories(

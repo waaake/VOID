@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.0)
+cmake_minimum_required(VERSION 3.13.4)
 
 project(VOID VERSION 0.3.0 LANGUAGES CXX)
 
@@ -105,11 +105,11 @@ find_package(FFMPEG REQUIRED COMPONENTS avcodec avformat avutil swscale swresamp
 find_package(TurboJPEG REQUIRED)
 
 # Used for Logging
-find_package(spdlog QUIET)
+find_package(spdlog REQUIRED)
 
 # Definitions
 # Enable Logging if we have spdlog present and we're on the debug build
-if (spdlog_FOUND AND CMAKE_BUILD_TYPE STREQUAL "debug")
+if (CMAKE_BUILD_TYPE STREQUAL "debug")
     add_definitions(-DVOID_ENABLE_LOGGING)
 endif()
 

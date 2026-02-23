@@ -3,9 +3,7 @@
 find_package(Boost REQUIRED)
 
 # Build Core Library
-add_library(
-    VoidCore
-    SHARED
+set(SOURCES
     ColorProcessor.cpp
     FormatForge.cpp
     Identity.h
@@ -28,6 +26,12 @@ add_library(
     Readers/OpenEXRReader.cpp
     Readers/FFmpegReader.cpp
     Readers/TurboJpegReader.cpp
+)
+
+add_library(
+    VoidCore
+    SHARED
+    ${SOURCES}
 )
 
 target_include_directories(
@@ -59,4 +63,4 @@ if (APPLE)
 endif()
 
 # Export symbols for windows
-target_compile_definitions(VoidCore PRIVATE VOID_LIB)
+target_compile_definitions(VoidCore PRIVATE VOID_LIB LOGGER_LIB)
