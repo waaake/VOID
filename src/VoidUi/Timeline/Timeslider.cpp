@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "Timeslider.h"
+#include "VoidObjects/Core/Timekeeper.h"
 
 /* Timeslider Markings Step */
 const int SL_MARKING_STEP = 5;
@@ -80,13 +81,15 @@ void Timeslider::mousePressEvent(QMouseEvent* event)
 	m_Focussed = false;
 
 	/* Set the value on the slider from postion of the mouse press */
-	setValue(QStyle::sliderValueFromPosition(
+	const int value = QStyle::sliderValueFromPosition(
 					minimum(),
 					maximum(),
 					event->pos().x(),
 					width(),
 					orientation() == Qt::Vertical
-				));
+				);
+	setValue(value);
+	Timekeeper::Instance().SetFrame(value);
 
 	/* Allow dragging behaviour */
 	QSlider::mousePressEvent(event);
@@ -290,26 +293,6 @@ void Timeslider::ResetEndFrame()
 
 	/* Repaint the timeslider -- for clearing any denotions of the frame */
 	update();
-}
-
-int Timeslider::Minimum()
-{
-	/* If a user start frame is defined -> return that */
-	if (m_UserStartframe)
-		return m_UserStartframe;
-
-	/* Else return the base minimum frame */
-	return minimum();
-}
-
-int Timeslider::Maximum()
-{
-	/* If a user end frame is defined -> return that */
-	if (m_UserEndframe)
-		return m_UserEndframe;
-
-	/* Else return the base maximum frame */
-	return maximum();
 }
 
 void Timeslider::AddCacheFrame(int frame)
