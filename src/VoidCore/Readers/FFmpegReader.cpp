@@ -339,8 +339,8 @@ void FFmpegPixReader::Clear()
     m_Pixels.clear();
     m_Pixels.shrink_to_fit();
 
-    m_Stream.clear();
-    m_Stream.shrink_to_fit();
+    // m_Stream.clear();
+    // m_Stream.shrink_to_fit();
 }
 
 void FFmpegPixReader::ProcessInformation()
@@ -363,6 +363,7 @@ void FFmpegPixReader::ProcessInformation()
             }
             else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
             {
+                avformat_find_stream_info(formatContext, nullptr);  // This is expensive, check if there is a different way to get audio channel count
                 m_Samplerate = stream->codecpar->sample_rate;
                 m_AChannels = stream->codecpar->ch_layout.nb_channels;
             }

@@ -16,6 +16,7 @@ Player::Player(QWidget* parent)
     : PlayerWidget(parent)
 {
     m_CacheProcessor.SetActivePlayer(this);
+    m_PlayBuffer.SetTimeline(m_Timeline);
     Connect();
 }
 
@@ -33,7 +34,8 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_ActiveViewBuffer->Set(media);
     m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
 
-    m_CacheProcessor.SetMedia(media);
+    m_PlayBuffer.SetMedia(media);
+    // m_CacheProcessor.SetMedia(media);
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
@@ -228,9 +230,15 @@ void Player::Connect()
     connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state) -> void
     {
         if (state == Timeline::PlayState::STOPPED)
-            m_CacheProcessor.StopPlaybackCache();
+        {
+            // m_CacheProcessor.StopPlaybackCache();
+            m_PlayBuffer.Stop();
+        }
         else
-            m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
+        {
+            // m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
+            m_PlayBuffer.Start(static_cast<BufferDirection>(state));
+        }
     });
     connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {
@@ -342,48 +350,56 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
 
 void Player::SetMediaFrame(int frame)
 {
-    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
-    /* Ensure we have a valid media to process before setting the frame */
-    if (clip->Empty())
-        return;
+    if (SharedPixels image = m_PlayBuffer.Image(frame))
+    {
+        m_Renderer->Upload(image);
+        m_Renderer->Render();
+    }
+    // const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+    // /* Ensure we have a valid media to process before setting the frame */
+    // if (clip->Empty())
+    //     return;
 
-    /**
-     * If the frame does not have any data, this could mean that the frame is missing
-     * if the provided frame is in range of the Media
-     * How such a case is handled is based on the MissingFrameHandler
-     * This determines what to do when a frame data is not available
-     *
-     * ERROR: Display an error on the Viewport stating the frame is not available.
-     * BLACKFRAME: Display a black frame instead of anything else. No error is displayed.
-     * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
-     */
-    if (clip->Contains(frame))
-    {
-        m_CacheProcessor.EnsureCached(frame);
-        /* Read the image for the frame from the sequence and set it on the player */
-        m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
-    }
-    else
-    {
-        switch(m_MFrameHandler)
-        {
-            case MissingFrameHandler::BLACK_FRAME:
-                m_Renderer->Clear();
-                break;
-            case MissingFrameHandler::ERROR_FRAME:
-                m_Renderer->Clear();
-                m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
-                break;
-            case MissingFrameHandler::NEAREST:
-                /**
-                 * Recursively call the method but with the nearest available frame
-                 * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
-                 * to read and render on the renderer
-                 */
-                SetMediaFrame(clip->NearestFrame(frame));
-                break;
-        }
-    }
+    // /**
+    //  * If the frame does not have any data, this could mean that the frame is missing
+    //  * if the provided frame is in range of the Media
+    //  * How such a case is handled is based on the MissingFrameHandler
+    //  * This determines what to do when a frame data is not available
+    //  *
+    //  * ERROR: Display an error on the Viewport stating the frame is not available.
+    //  * BLACKFRAME: Display a black frame instead of anything else. No error is displayed.
+    //  * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
+    //  */
+    // if (clip->Contains(frame))
+    // {
+    //     // m_CacheProcessor.EnsureCached(frame);
+    //     // /* Read the image for the frame from the sequence and set it on the player */
+    //     // m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
+    //     // m_Renderer->Upload(clip->Image(frame));
+    //     m_Renderer->Upload(m_PlayBuffer.Image(frame));
+    //     m_Renderer->Render();
+    // }
+    // else
+    // {
+    //     switch(m_MFrameHandler)
+    //     {
+    //         case MissingFrameHandler::BLACK_FRAME:
+    //             m_Renderer->Clear();
+    //             break;
+    //         case MissingFrameHandler::ERROR_FRAME:
+    //             m_Renderer->Clear();
+    //             m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
+    //             break;
+    //         case MissingFrameHandler::NEAREST:
+    //             /**
+    //              * Recursively call the method but with the nearest available frame
+    //              * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
+    //              * to read and render on the renderer
+    //              */
+    //             SetMediaFrame(clip->NearestFrame(frame));
+    //             break;
+    //     }
+    // }
 }
 
 void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second)

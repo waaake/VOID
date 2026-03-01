@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "Timeslider.h"
+#include "Timekeeper.h"
 
 /* Timeslider Markings Step */
 const int SL_MARKING_STEP = 5;
@@ -80,13 +81,15 @@ void Timeslider::mousePressEvent(QMouseEvent* event)
 	m_Focussed = false;
 
 	/* Set the value on the slider from postion of the mouse press */
-	setValue(QStyle::sliderValueFromPosition(
+	const int value = QStyle::sliderValueFromPosition(
 					minimum(),
 					maximum(),
 					event->pos().x(),
 					width(),
 					orientation() == Qt::Vertical
-				));
+				);
+	setValue(value);
+	Timekeeper::Instance().SetFrame(value);
 
 	/* Allow dragging behaviour */
 	QSlider::mousePressEvent(event);

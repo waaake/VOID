@@ -11,6 +11,9 @@ add_subdirectory(VoidRenderer)
 # Build Intermediate Objects Library
 add_subdirectory(VoidObjects)
 
+# Audio Library
+add_subdirectory(VoidAudio)
+
 # Build Ui Library
 add_subdirectory(VoidUi)
 
@@ -152,7 +155,7 @@ endif()
 # )
 
 # Install Libraries and Binaries
-install(TARGETS VoidCore VoidObjects VoidRenderer VoidUi VOID vortex
+install(TARGETS VoidAudio VoidCore VoidObjects VoidRenderer VoidUi VOID vortex
     EXPORT VOIDTargets
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib

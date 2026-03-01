@@ -40,6 +40,10 @@ public:
     VoidRenderer(QWidget* parent = nullptr);
     virtual ~VoidRenderer();
 
+    void Upload(const SharedPixels& data);
+
+    inline void Render() { update(); };
+
     /* Render the Image */
     void Render(SharedPixels data);
     /* Render Image along with Annotations */

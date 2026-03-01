@@ -371,6 +371,18 @@ bool VoidRenderer::eventFilter(QObject* object, QEvent* event)
     return BasicRenderer::eventFilter(object, event);
 }
 
+void VoidRenderer::Upload(const SharedPixels& image)
+{
+    if (image)
+    {
+        m_ImageA = image;
+        m_RenderStatus->SetRenderResolution(image->Width(), image->Height());
+    }
+
+    RemoveAnnotation();
+    m_ImageRenderer->SetImage(m_ImageA);
+}
+
 void VoidRenderer::Render(SharedPixels data)
 {
     /* Update the image data */

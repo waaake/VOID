@@ -21,6 +21,7 @@
 #include "Timeslider.h"
 #include "TimelineElements.h"
 #include "VoidUi/QExtensions/PushButton.h"
+#include "VoidUi/Timeline/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 

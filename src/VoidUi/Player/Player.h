@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "PlayerWidget.h"
+#include "Buffer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -65,6 +66,7 @@ protected:
 
 private: /* Members */
     ChronoFlux m_CacheProcessor;
+    PlayBuffer m_PlayBuffer;
 
 private: /* Methods */
     void SetMediaFrame(int frame);

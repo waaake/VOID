@@ -57,6 +57,7 @@ set(SOURCES
     Preferences/PlayerPreferences.cpp
 
     # Player
+    Player/Buffer.cpp
     Player/OverlayWidget.cpp
     Player/Player.cpp
     Player/PlayerBridge.cpp
@@ -77,6 +78,7 @@ set(SOURCES
     ScriptEditor/SyntaxHighlighter.cpp
 
     # Timeline
+    Timeline/Timekeeper.cpp
     Timeline/Timeline.cpp
     Timeline/TimelineElements.cpp
     Timeline/Timeslider.cpp
@@ -136,6 +138,7 @@ target_link_libraries(
     VoidCore
     VoidObjects
     VoidRenderer
+    VoidAudio
 )
 
 # Link to this library
