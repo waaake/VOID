@@ -59,7 +59,7 @@ target_link_libraries(
 
 # Mac for some reason needs this explicitly
 if (APPLE)
-    target_link_libraries(VoidCore PRIVATE swscale)
+    target_link_libraries(VoidCore PRIVATE swscale swresample)
 endif()
 
 # Export symbols for windows
