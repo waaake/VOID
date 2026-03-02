@@ -30,15 +30,32 @@ VOID_NAMESPACE_OPEN
 class Player;
 
 /**
- * ChronoFlux is the Cache Engine for 'VOID'
- * The name itself is an indication of something that flows over time
- * here the flowing entity is Media 'Frames' allowing data to be pre-read (cached)
- * and ready for playback
+ * PlayBuffer is the Cache Engine for 'VOID'
+ * Buffering ahead of time for playback readiness
  */
-
-class ChronoFlux : public QObject
+class PlayBuffer : public QObject
 {
     Q_OBJECT
+
+class CacheNextFrameTask : public QRunnable
+    {
+    public:
+        explicit CacheNextFrameTask(PlayBuffer* parent) : m_Parent(parent) {}
+        inline void run() override { m_Parent->CacheNextFrame(); }
+
+    private:
+        PlayBuffer* m_Parent;
+    };
+
+    class CachePreviousFrameTask : public QRunnable
+    {
+    public:
+        explicit CachePreviousFrameTask(PlayBuffer* parent) : m_Parent(parent) {}
+        inline void run() override {  m_Parent->CachePreviousFrame(); }
+
+    private:
+        PlayBuffer* m_Parent;
+    };
 
 public:
     enum class Direction
@@ -63,8 +80,8 @@ public:
     };
 
 public:
-    explicit ChronoFlux(QObject* parent = nullptr);
-    ~ChronoFlux();
+    explicit PlayBuffer(QObject* parent = nullptr);
+    ~PlayBuffer();
 
     /**
      * Setup the player for which the caching happens
@@ -88,7 +105,7 @@ public:
     void CacheAvailable();
 
     void StartPlaybackCache(const Direction& direction = Direction::Forwards);
-    inline void RestartPlaybackCache() { StartPlaybackCache(m_CacheDirection); }
+    inline void RestartPlaybackCache() { StartPlaybackCache(m_Direction); }
     void StopPlaybackCache();
 
     /**
@@ -107,7 +124,6 @@ public:
      */
     void StopCaching();
     void ResumeCaching();
-
 
     /**
      * Request caching the next available frame depending on the direction
@@ -149,9 +165,8 @@ private: /* Members */
      */
     std::weak_ptr<MediaClip> m_Media;
     std::weak_ptr<PlaybackTrack> m_Track;
-    // std::weak_ptr<SharedTrackItem> m_TrackItem;
 
-    Direction m_CacheDirection;
+    Direction m_Direction;
     State m_State;
     Entity m_CacheEntity;
 
@@ -203,39 +218,13 @@ private: /* Methods */
     void Update();
 
     void UpdateRange(v_frame_t start, v_frame_t end);
-
     inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
 
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();
 
-    inline bool Cached(v_frame_t frame) const
-    { 
-        return std::find(m_Framenumbers.cbegin(), m_Framenumbers.cend(), frame) != m_Framenumbers.cend(); 
-    }
-
-    void SettingsUpdated();
-
-private: /* Task Classes */
-    class CacheNextFrameTask : public QRunnable
-    {
-    public:
-        explicit CacheNextFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
-        inline void run() override { m_Parent->CacheNextFrame(); }
-
-    private:
-        ChronoFlux* m_Parent;
-    };
-
-    class CachePreviousFrameTask : public QRunnable
-    {
-    public:
-        explicit CachePreviousFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
-        inline void run() override {  m_Parent->CachePreviousFrame(); }
-
-    private:
-        ChronoFlux* m_Parent;
-    };
+    inline bool Cached(v_frame_t frame) const { return m_Buffered.find(frame) != m_Buffered.end(); }
+    void SettingsUpdated();    
 };
 
 VOID_NAMESPACE_CLOSE

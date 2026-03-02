@@ -230,7 +230,7 @@ void Player::Connect()
         if (state == Timeline::PlayState::STOPPED)
             m_CacheProcessor.StopPlaybackCache();
         else
-            m_CacheProcessor.StartPlaybackCache(static_cast<ChronoFlux::Direction>(state));
+            m_CacheProcessor.StartPlaybackCache(static_cast<PlayBuffer::Direction>(state));
     });
     connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {

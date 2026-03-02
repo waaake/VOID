@@ -26,11 +26,11 @@ VOID_NAMESPACE_OPEN
 //     return stream;
 // }
 
-ChronoFlux::ChronoFlux(QObject* parent)
+PlayBuffer::PlayBuffer(QObject* parent)
     : QObject(parent)
     , m_TrackView(nullptr)
     , m_SequenceView(nullptr)
-    , m_CacheDirection(Direction::None)
+    , m_Direction(Direction::None)
     , m_State(State::Enabled)
     , m_CacheEntity(Entity::Media)
     , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
@@ -44,11 +44,11 @@ ChronoFlux::ChronoFlux(QObject* parent)
 {
     m_ThreadPool.setMaxThreadCount(VoidPreferences::Instance().GetCacheThreads());
 
-    connect(&m_CacheTimer, &QTimer::timeout, this, &ChronoFlux::Update);
-    connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &ChronoFlux::SettingsUpdated);
+    connect(&m_CacheTimer, &QTimer::timeout, this, &PlayBuffer::Update, Qt::DirectConnection);
+    connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &PlayBuffer::SettingsUpdated);
 }
 
-ChronoFlux::~ChronoFlux()
+PlayBuffer::~PlayBuffer()
 {
     ClearCache();
 
@@ -56,41 +56,37 @@ ChronoFlux::~ChronoFlux()
     ClearSequenceView();
 }
 
-void ChronoFlux::StartPlaybackCache(const Direction& direction)
+void PlayBuffer::StartPlaybackCache(const Direction& direction)
 {
-    m_CacheDirection = direction;
-
+    m_Direction = direction;
     if (m_Framenumbers.size() >= m_Duration || m_State != State::Enabled)
         return;
 
     m_CacheTimer.start(10);
 
     if (!m_ThreadPool.activeThreadCount() && !m_Framenumbers.empty())
-    {
-        /* Update the last frame for the Cache process to begin from */
-        m_LastCached = m_CacheDirection == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
-    }
+        m_LastCached = m_Direction == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
 }
 
-void ChronoFlux::StopPlaybackCache()
+void PlayBuffer::StopPlaybackCache()
 {
-    m_CacheDirection = Direction::None;
+    m_Direction = Direction::None;
     m_CacheTimer.stop();
 }
 
-void ChronoFlux::PauseCaching()
+void PlayBuffer::PauseCaching()
 {
     StopCaching();
     m_State = State::Paused;
 }
 
-void ChronoFlux::DisableCaching()
+void PlayBuffer::DisableCaching()
 {
     StopCaching();
     m_State = State::Disabled;
 }
 
-void ChronoFlux::StopCaching()
+void PlayBuffer::StopCaching()
 {
     /* Clear all the function threads that have not yet started */
     m_ThreadPool.clear();
@@ -101,13 +97,13 @@ void ChronoFlux::StopCaching()
     m_LastCached = m_Player->Frame();
 }
 
-void ChronoFlux::ResumeCaching()
+void PlayBuffer::ResumeCaching()
 {
     m_State = State::Enabled;
     CacheAvailable();
 }
 
-void ChronoFlux::ClearTrackView()
+void PlayBuffer::ClearTrackView()
 {
     if (m_TrackView)
     {
@@ -117,7 +113,7 @@ void ChronoFlux::ClearTrackView()
     }
 }
 
-void ChronoFlux::ClearSequenceView()
+void PlayBuffer::ClearSequenceView()
 {
     if (m_SequenceView)
     {
@@ -127,7 +123,7 @@ void ChronoFlux::ClearSequenceView()
     }
 }
 
-void ChronoFlux::Update()
+void PlayBuffer::Update()
 {
     /**
      * Ensure that we do not have any other cache process running
@@ -139,9 +135,9 @@ void ChronoFlux::Update()
         return;
     }
 
-    else if (m_CacheDirection == Direction::Forwards && m_Framenumbers.size() != m_Duration)
+    else if (m_Direction == Direction::Forwards && m_Framenumbers.size() != m_Duration)
         CacheNext();
-    else if (m_CacheDirection == Direction::Backwards && m_Framenumbers.size() != m_Duration)
+    else if (m_Direction == Direction::Backwards && m_Framenumbers.size() != m_Duration)
         CachePrevious();
     else
         m_CacheTimer.stop();
@@ -149,7 +145,7 @@ void ChronoFlux::Update()
     VOID_LOG_INFO("Update Cache.....");
 }
 
-void ChronoFlux::UpdateRange(v_frame_t start, v_frame_t end)
+void PlayBuffer::UpdateRange(v_frame_t start, v_frame_t end)
 {
     m_StartFrame = start;
     m_EndFrame = end;
@@ -163,7 +159,7 @@ void ChronoFlux::UpdateRange(v_frame_t start, v_frame_t end)
     m_BackBuffer = std::min(10, std::max(3, static_cast<int>(m_Duration * 0.02)));
 }
 
-void ChronoFlux::SetMedia(const SharedMediaClip& media)
+void PlayBuffer::SetMedia(const SharedMediaClip& media)
 {
     m_CacheEntity = Entity::Media;
     /* Clear Existing Media cache if present */
@@ -188,7 +184,7 @@ void ChronoFlux::SetMedia(const SharedMediaClip& media)
         m_State = State::Enabled;
 }
 
-void ChronoFlux::SetTrack(const SharedPlaybackTrack& track)
+void PlayBuffer::SetTrack(const SharedPlaybackTrack& track)
 {
     m_CacheEntity = Entity::Track;
     /* Clear Existing Media cache if present */
@@ -214,7 +210,7 @@ void ChronoFlux::SetTrack(const SharedPlaybackTrack& track)
         m_State = State::Enabled;
 }
 
-void ChronoFlux::SetSequence(const SharedPlaybackSequence& sequence)
+void PlayBuffer::SetSequence(const SharedPlaybackSequence& sequence)
 {
     m_CacheEntity = Entity::Sequence;
     /* Clear Existing Media cache if present */
@@ -240,7 +236,7 @@ void ChronoFlux::SetSequence(const SharedPlaybackSequence& sequence)
         m_State = State::Enabled;
 }
 
-bool ChronoFlux::Request(v_frame_t frame, bool evict)
+bool PlayBuffer::Request(v_frame_t frame, bool evict)
 {
     /**
      * Size isn't yet set so we can definitely go for caching the first frame
@@ -249,11 +245,7 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
      */
     if (!m_FrameSize)
     {
-        // if (m_CacheDirection == Direction::Backwards)
-        //     m_Framenumbers.push_front(frame);
-        // else
-        //     m_Framenumbers.push_back(frame);
-        m_CacheDirection == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+        m_Direction == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
         m_Buffered.insert(frame);
         return true;
     }
@@ -272,7 +264,7 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
     {
         if (evict)
         {
-            if (m_CacheDirection == Direction::Backwards)
+            if (m_Direction == Direction::Backwards)
             {
                 EvictBack();
                 m_Framenumbers.push_front(frame);
@@ -282,6 +274,7 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
                 EvictFront();
                 m_Framenumbers.push_back(frame);
             }
+
             m_UsedMemory += m_FrameSize;
             m_Buffered.insert(frame);
             return true;
@@ -293,17 +286,12 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
 
     m_UsedMemory += m_FrameSize;
 
-    // if (m_CacheDirection == Direction::Backwards)
-    //     m_Framenumbers.push_front(frame);
-    // else
-    //     m_Framenumbers.push_back(frame);
-
-    m_CacheDirection == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+    m_Direction == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
     m_Buffered.insert(frame);
     return true;
 }
 
-void ChronoFlux::Cache(v_frame_t frame)
+void PlayBuffer::Cache(v_frame_t frame)
 {
     if (m_CacheEntity == Entity::Track)
     {
@@ -359,7 +347,7 @@ void ChronoFlux::Cache(v_frame_t frame)
     }
 }
 
-void ChronoFlux::Evict(v_frame_t frame)
+void PlayBuffer::Evict(v_frame_t frame)
 {
     auto it = std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
 
@@ -376,7 +364,7 @@ void ChronoFlux::Evict(v_frame_t frame)
     }
 }
 
-void ChronoFlux::EvictFront()
+void PlayBuffer::EvictFront()
 {
     v_frame_t frame = m_Framenumbers.front();
 
@@ -384,8 +372,10 @@ void ChronoFlux::EvictFront()
     {
         case Entity::Track:
             m_TrackView->ItemAt(frame)->UncacheFrame(frame);
+            break;
         case Entity::Sequence:
             m_SequenceView->ItemAt(frame)->UncacheFrame(frame);
+            break;
         case Entity::Media:
         default:
         {
@@ -395,12 +385,13 @@ void ChronoFlux::EvictFront()
     }
 
     m_UsedMemory -= m_FrameSize;
+
     m_Framenumbers.pop_front();
     m_Buffered.erase(frame);
     m_Player->RemoveCachedFrame(frame);
 }
 
-void ChronoFlux::EvictBack()
+void PlayBuffer::EvictBack()
 {
     v_frame_t frame = m_Framenumbers.back();
 
@@ -408,8 +399,10 @@ void ChronoFlux::EvictBack()
     {
         case Entity::Track:
             m_TrackView->ItemAt(frame)->UncacheFrame(frame);
+            break;
         case Entity::Sequence:
             m_SequenceView->ItemAt(frame)->UncacheFrame(frame);
+            break;
         case Entity::Media:
         default:
         {
@@ -424,7 +417,7 @@ void ChronoFlux::EvictBack()
     m_Player->RemoveCachedFrame(frame);
 }
 
-void ChronoFlux::EnsureCached(v_frame_t frame)
+void PlayBuffer::EnsureCached(v_frame_t frame)
 {
     if (m_Buffered.find(frame) == m_Buffered.end())
     {
@@ -440,9 +433,8 @@ void ChronoFlux::EnsureCached(v_frame_t frame)
     }
 }
 
-void ChronoFlux::ClearCache()
+void PlayBuffer::ClearCache()
 {
-
     if (m_CacheEntity == Entity::Track && m_TrackView)
         m_TrackView->Track()->ClearCache();
     else if (m_CacheEntity == Entity::Sequence && m_SequenceView)
@@ -457,13 +449,13 @@ void ChronoFlux::ClearCache()
     StopCaching();
 }
 
-void ChronoFlux::Recache()
+void PlayBuffer::Recache()
 {
     ClearCache();
     CacheAvailable();
 }
 
-void ChronoFlux::CacheAvailable()
+void PlayBuffer::CacheAvailable()
 {
     if (m_State == State::Disabled)
         return;
@@ -474,7 +466,7 @@ void ChronoFlux::CacheAvailable()
      * This is invoked whenever the media is set/changed on the player buffer
      * so the usual direction is Forwards, unless we were going backwards
      */
-    if (m_CacheDirection == Direction::Backwards)
+    if (m_Direction == Direction::Backwards)
     {
         for (v_frame_t frame = m_EndFrame; frame >= m_StartFrame; --frame)
         {
@@ -502,7 +494,7 @@ void ChronoFlux::CacheAvailable()
     }
 }
 
-v_frame_t ChronoFlux::GetNextFrame()
+v_frame_t PlayBuffer::GetNextFrame()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -518,7 +510,7 @@ v_frame_t ChronoFlux::GetNextFrame()
     return frame;
 }
 
-v_frame_t ChronoFlux::GetPreviousFrame()
+v_frame_t PlayBuffer::GetPreviousFrame()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -535,17 +527,17 @@ v_frame_t ChronoFlux::GetPreviousFrame()
     return frame;
 }
 
-void ChronoFlux::CacheNextFrame()
+void PlayBuffer::CacheNextFrame()
 {
     Cache(GetNextFrame());
 }
 
-void ChronoFlux::CachePreviousFrame()
+void PlayBuffer::CachePreviousFrame()
 {
     Cache(GetPreviousFrame());
 }
 
-void ChronoFlux::CacheNext()
+void PlayBuffer::CacheNext()
 {
     v_frame_t frame = m_LastCached;
     
@@ -566,7 +558,7 @@ void ChronoFlux::CacheNext()
     }
 }
 
-void ChronoFlux::CachePrevious()
+void PlayBuffer::CachePrevious()
 {
     v_frame_t frame = m_LastCached;
 
@@ -587,7 +579,7 @@ void ChronoFlux::CachePrevious()
     }
 }
 
-void ChronoFlux::SettingsUpdated()
+void PlayBuffer::SettingsUpdated()
 {
     SetMaxMemory(VoidPreferences::Instance().GetCacheMemory());
     SetMaxThreads(VoidPreferences::Instance().GetCacheThreads());
