@@ -10,6 +10,8 @@
 
 /* Internal */
 #include "TimelineElements.h"
+#include "VoidCore/Logging.h"
+#include "VoidObjects/Core/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -124,6 +126,7 @@ FramerateBox::FramerateBox(QWidget* parent)
 	/* Setup the Box */
 	Setup();
 
+	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int) { RateChanged(currentText()); });
 	connect(this->lineEdit(), &QLineEdit::returnPressed, this, [this]() { RateChanged(currentText()); });
 	connect(this->lineEdit(), &QLineEdit::editingFinished, this, [this]() { RateChanged(currentText()); });
 }
@@ -159,7 +162,10 @@ void FramerateBox::Setup()
 
 void FramerateBox::RateChanged(const QString& text)
 {
+	Timekeeper::Instance().SetFramerate(text.toDouble());
 	emit framerateChanged(text.toDouble());
+
+	VOID_LOG_INFO("Playback Framerate changed: {0}", text.toStdString());
 
 	/* Unset Focus once the text is updated */
 	clearFocus();

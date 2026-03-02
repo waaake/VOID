@@ -36,8 +36,8 @@ public:
 	void ResetEndFrame();
 	void ResetRange();
 
-	int Minimum();
-	int Maximum();
+	inline int Minimum() const { return m_UserStartframe ? m_UserStartframe : minimum(); } 
+	inline int Maximum() const { return m_UserEndframe ? m_UserEndframe : maximum(); }
 
 	/* Adds a cache marker on the frame */
 	void AddCacheFrame(int frame);

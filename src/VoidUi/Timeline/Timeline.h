@@ -51,9 +51,7 @@ public:
 	 * The range from the Timeslider
 	 * Considers any user defined min and max frames
 	 */
-	// inline int Minimum() const { return m_Timeslider->minimum(); }
 	inline int Minimum() const { return m_Timeslider->Minimum(); }
-	// inline int Maximum() const { return m_Timeslider->maximum(); }
 	inline int Maximum() const { return m_Timeslider->Maximum(); }
 
 	/* Setters */
@@ -137,15 +135,7 @@ private: /* Members */
 	FramerateBox* m_FramerateBox;
 
 	QDoubleValidator* m_DoubleValidator;
-
 	QTimer m_PlayTimer;
-
-	/**
-	 * Timeslider Min - Max
-	 * This is additionally maintained as to reduce the amount of overhead when
-	 * playing as the next frame constanly check if the current frame is the last or not
-	 */
-	int m_Start, m_End;
 
 	/* Loop mode for playback */
 	LoopType m_LoopType;

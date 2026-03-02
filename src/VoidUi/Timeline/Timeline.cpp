@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "Timeline.h"
+#include "VoidObjects/Core/Timekeeper.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
@@ -24,8 +25,6 @@ VOID_NAMESPACE_OPEN
 
 Timeline::Timeline(QWidget* parent)
 	: QWidget(parent)
-	, m_Start(0)
-	, m_End(0)
 	, m_LoopType(LoopType::LoopInfinitely)
 	, m_Playing(false)
 	, m_Playstate(PlayState::STOPPED)
@@ -210,8 +209,7 @@ void Timeline::Setup()
 	setFixedHeight(50);
 
 	/* Update the internal range */
-	m_Start = m_Timeslider->minimum();
-	m_End = m_Timeslider->maximum();
+	Timekeeper::Instance().SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
 }
 
 void Timeline::StartPlayback()
@@ -278,8 +276,7 @@ void Timeline::SetRange(const int min, const int max)
 	m_Timeslider->m_CachedFrames.reserve(max - min + 1);
 
 	/* Update internal range */
-	m_Start = min;
-	m_End = max;
+	Timekeeper::Instance().SetRange(min, max);
 }
 
 void Timeline::ResetRange()
@@ -292,8 +289,7 @@ void Timeline::ResetRange()
 	 * At this point the timeslider does not have any user defined values
 	 * So we could just query the base minimum and maximum values from it
 	 */
-	m_Start = m_Timeslider->minimum();
-	m_End = m_Timeslider->maximum();
+	Timekeeper::Instance().SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
 
 	/* Reset the Toggle button state */
 	m_InFrameButton->Toggle(false);
@@ -303,12 +299,10 @@ void Timeline::ResetRange()
 void Timeline::Clear()
 {
 	m_Timeslider->setRange(0, 1);
+	Timekeeper::Instance().SetRange(0, 1);
 
 	m_Timeslider->ClearAnnotatedFrames();
 	m_Timeslider->ClearCachedFrames();
-
-	m_Start = 0;
-	m_End = 1;
 }
 
 void Timeline::SetUserFirstframe(int frame)
@@ -318,15 +312,12 @@ void Timeline::SetUserFirstframe(int frame)
 	{
 		/* If so -> Reset the end frame */
 		m_Timeslider->m_UserEndframe = 0;
-		/* Update internal end frame */
-		m_End = m_Timeslider->maximum();
+		Timekeeper::Instance().SetEnd(m_Timeslider->maximum());
 	}
 
 	/* Update the first user frame on the timeslider */
 	m_Timeslider->SetUserFirstframe(frame);
-
-	/* Update the start frame */
-	m_Start = frame;
+	Timekeeper::Instance().SetStart(frame);
 }
 
 void Timeline::SetUserEndframe(int frame)
@@ -336,15 +327,12 @@ void Timeline::SetUserEndframe(int frame)
 	{
 		/* If so -> Reset the start frame */
 		m_Timeslider->m_UserStartframe = 0;
-		/* Update internal start frame */
-		m_Start = m_Timeslider->minimum();
+		Timekeeper::Instance().SetStart(m_Timeslider->minimum());
 	}
 
 	/* Update the last user frame on the timeslider */
 	m_Timeslider->SetUserEndframe(frame);
-
-	/* Update the end frame */
-	m_End = frame;
+	Timekeeper::Instance().SetEnd(frame);
 }
 
 void Timeline::ResetInFrame()
@@ -353,10 +341,10 @@ void Timeline::ResetInFrame()
 	int frame = Frame();
 
 	/* Check if it's already our start frame */
-	if (frame == m_Start)
+	if (frame == Timekeeper::Instance().StartFrame())
 	{
 		m_Timeslider->ResetStartFrame();
-		m_Start = m_Timeslider->minimum();
+		Timekeeper::Instance().SetStart(m_Timeslider->minimum());
 	}
 	else
 	{
@@ -374,10 +362,10 @@ void Timeline::ResetOutFrame()
 	int frame = Frame();
 
 	/* Check if it's already our end frame */
-	if (frame == m_End)
+	if (frame == Timekeeper::Instance().EndFrame())
 	{
 		m_Timeslider->ResetEndFrame();
-		m_End = m_Timeslider->maximum();
+		Timekeeper::Instance().SetEnd(m_Timeslider->maximum());
 	}
 	else
 	{
@@ -430,81 +418,49 @@ void Timeline::Replay()
 
 void Timeline::NextFrame()
 {
-	int currentFrame = m_Timeslider->value();
-
-	if (currentFrame < m_End)
-		m_Timeslider->setValue(currentFrame + 1);
-	else
-		m_Timeslider->setValue(m_Start);
+	m_Timeslider->setValue(Timekeeper::Instance().NextFrame());
 }
 
 void Timeline::PreviousFrame()
 {
-	int currentFrame = m_Timeslider->value();
-
-	if (currentFrame == m_Start)
-		m_Timeslider->setValue(m_End);
-	else
-		m_Timeslider->setValue(currentFrame - 1);
+	m_Timeslider->setValue(Timekeeper::Instance().PreviousFrame());
 }
 
 void Timeline::PlayNextFrame()
 {
-	int currentFrame = m_Timeslider->value();
-
-	if (currentFrame < m_End)
+	Timekeeper& t = Timekeeper::Instance();
+	if (m_Timeslider->value() < t.EndFrame())
 	{
-		m_Timeslider->setValue(currentFrame + 1);
+		m_Timeslider->setValue(t.NextFrame());
 	}
 	else
 	{
-		/**
-		 * This is effectively the end of the timeline
-		 * What happens next depends on the loop type
-		 */
 		switch (m_LoopType)
 		{
-			case LoopType::PlayOnce:
-				Stop();
-				break;
-			case LoopType::PingPong:
-				PlayBackwards();
-				break;
-			case LoopType::LoopInfinitely:
-				emit mediaFinished(PlayState::FORWARDS);
-			default:
-				m_Timeslider->setValue(m_Start);
+			case LoopType::PlayOnce: Stop(); break;
+			case LoopType::PingPong: PlayBackwards(); break;
+			case LoopType::LoopInfinitely: emit mediaFinished(PlayState::FORWARDS);
+			default: m_Timeslider->setValue(t.StartFrame());
 		}
 	}
 }
 
 void Timeline::PlayPreviousFrame()
 {
-	int currentFrame = m_Timeslider->value();
-
-	if (currentFrame == m_Start)
+	Timekeeper& t = Timekeeper::Instance();
+	if (m_Timeslider->value() == t.StartFrame())
 	{
-		/**
-		 * This is effectively the start of the timeline (since we're playing backwards)
-		 * What happens next depends on the loop type
-		 */
 		switch (m_LoopType)
 		{
-			case LoopType::PlayOnce:
-				Stop();
-				break;
-			case LoopType::PingPong:
-				PlayForwards();
-				break;
-			case LoopType::LoopInfinitely:
-				emit mediaFinished(PlayState::BACKWARDS);
-			default:
-				m_Timeslider->setValue(m_End);
+			case LoopType::PlayOnce: Stop(); break;
+			case LoopType::PingPong: PlayForwards(); break;
+			case LoopType::LoopInfinitely: emit mediaFinished(PlayState::BACKWARDS);
+			default: m_Timeslider->setValue(t.EndFrame()); 
 		}
 	}
 	else
 	{
-		m_Timeslider->setValue(currentFrame - 1);
+		m_Timeslider->setValue(t.PreviousFrame());
 	}
 }
 
@@ -517,7 +473,7 @@ void Timeline::Play(const Timeline::PlayState& state)
 		 * Move the playhead to the beginning of the playable range
 		 * Ideally the Internal start should always have the playable range on it
 		 */
-		m_Timeslider->setValue(m_Start);
+		m_Timeslider->setValue(Timekeeper::Instance().StartFrame());
 	}
 
 	/* once the playhead is placed correctly -> We can begin playing */
