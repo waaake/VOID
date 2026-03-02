@@ -9,6 +9,14 @@
 
 VOID_NAMESPACE_OPEN
 
+/**
+ * @brief As the name suggests, keeps time for the player.
+ * Keeps a track of what frame is being played right now and what's the next/previous frame
+ * that's going to be played.
+ * Also allows the audio or the primary stream to set time in seconds, which when playing
+ * ensures that the next frame to be rendered out is always around that time. This is done
+ * to sync the content around the primary stream of data.
+ */
 class Timekeeper
 {
     Timekeeper();
@@ -27,7 +35,6 @@ public:
      * @param framerate Rate of playback from the active timeline.
      */
     void SetFramerate(double framerate) { m_Framerate = framerate; }
-    // void SetFrame(v_frame_t frame) { m_CurrentFrame = frame; }
 
     /**
      * @brief Set the current frame. This method is likely to be called when the
@@ -45,19 +52,42 @@ public:
      */
     void SetTime(double time) { m_CurrentTime = time; }
 
-    void SetStart(v_frame_t start) { m_Start = start; }
-    void SetEnd(v_frame_t end) { m_End = end; }
-    void SetRange(v_frame_t start, v_frame_t end) { m_Start = start; m_End = end; }
+    inline void SetStart(v_frame_t start) { m_Start = start; }
+    inline void SetEnd(v_frame_t end) { m_End = end; }
+    void SetRange(v_frame_t start, v_frame_t end);
 
+    /**
+     * @brief Resets the start time and frame internally to the start
+     * 
+     */
     void Reset();
 
-    v_frame_t StartFrame() const { return m_Start; }
-    v_frame_t EndFrame() const { return m_End; }
-    v_frame_t CurrentFrame() const { return m_CurrentFrame; }
+    inline v_frame_t StartFrame() const { return m_Start; }
+    inline v_frame_t EndFrame() const { return m_End; }
+    inline v_frame_t CurrentFrame() const { return m_CurrentFrame; }
 
-    double CurrentTime() const { return m_CurrentTime; }
+    inline double CurrentTime() const { return m_CurrentTime; }
 
+    /**
+     * @brief Returns the Next Frame based on the current frame and also on the current time
+     * if that has been set. If the time is set and is greater than the current frame,
+     * then the next frame provided is the converted time (x framerate) + 1.
+     * If however, the time is set and is lesser than the current frame, then the next frame is provided
+     * as is.
+     * 
+     * @return v_frame_t The next frame.
+     */
     v_frame_t NextFrame();
+
+    /**
+     * @brief Returns the Previous Frame based on the current frame and also on the current time
+     * if that has been set. If the time is set and is lesser than the current frame,
+     * then the next frame provided is the converted time (x framerate) - 1.
+     * If however, the time is set and is greater than the current frame, then the previous frame is provided
+     * as is.
+     * 
+     * @return v_frame_t The previous frame.
+     */
     v_frame_t PreviousFrame();
 
 private: /* Members */

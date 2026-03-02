@@ -26,9 +26,16 @@ Timekeeper& Timekeeper::Instance()
     return instance;
 }
 
+void Timekeeper::SetRange(v_frame_t start, v_frame_t end)
+{
+    m_Start = start;
+    m_End = end;
+    Reset();
+}
+
 void Timekeeper::Reset()
 {
-    m_CurrentFrame = -1;
+    m_CurrentFrame = m_Start;
     m_CurrentTime = -1.0;
 }
 
