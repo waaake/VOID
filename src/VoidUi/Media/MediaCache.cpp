@@ -249,11 +249,12 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
      */
     if (!m_FrameSize)
     {
-        if (m_CacheDirection == Direction::Backwards)
-            m_Framenumbers.push_front(frame);
-        else
-            m_Framenumbers.push_back(frame);
-
+        // if (m_CacheDirection == Direction::Backwards)
+        //     m_Framenumbers.push_front(frame);
+        // else
+        //     m_Framenumbers.push_back(frame);
+        m_CacheDirection == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+        m_Buffered.insert(frame);
         return true;
     }
 
@@ -264,7 +265,6 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
     if (m_Framenumbers.size() >= m_Duration)
     {
         m_CacheTimer.stop();
-
         return false;
     }
 
@@ -283,7 +283,7 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
                 m_Framenumbers.push_back(frame);
             }
             m_UsedMemory += m_FrameSize;
-
+            m_Buffered.insert(frame);
             return true;
         }
 
@@ -293,11 +293,13 @@ bool ChronoFlux::Request(v_frame_t frame, bool evict)
 
     m_UsedMemory += m_FrameSize;
 
-    if (m_CacheDirection == Direction::Backwards)
-        m_Framenumbers.push_front(frame);
-    else
-        m_Framenumbers.push_back(frame);
+    // if (m_CacheDirection == Direction::Backwards)
+    //     m_Framenumbers.push_front(frame);
+    // else
+    //     m_Framenumbers.push_back(frame);
 
+    m_CacheDirection == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+    m_Buffered.insert(frame);
     return true;
 }
 
@@ -394,6 +396,7 @@ void ChronoFlux::EvictFront()
 
     m_UsedMemory -= m_FrameSize;
     m_Framenumbers.pop_front();
+    m_Buffered.erase(frame);
     m_Player->RemoveCachedFrame(frame);
 }
 
@@ -417,12 +420,13 @@ void ChronoFlux::EvictBack()
 
     m_UsedMemory -= m_FrameSize;
     m_Framenumbers.pop_back();
+    m_Buffered.erase(frame);
     m_Player->RemoveCachedFrame(frame);
 }
 
 void ChronoFlux::EnsureCached(v_frame_t frame)
 {
-    if (std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame) == m_Framenumbers.end())
+    if (m_Buffered.find(frame) == m_Buffered.end())
     {
         VOID_LOG_INFO("Force Caching Frame: {0}", frame);
         {
@@ -447,6 +451,7 @@ void ChronoFlux::ClearCache()
         media->ClearCache();
 
     m_Framenumbers.clear();
+    m_Buffered.clear();
     m_UsedMemory = 0;
 
     StopCaching();

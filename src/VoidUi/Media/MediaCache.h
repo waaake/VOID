@@ -10,6 +10,7 @@
 #include <thread>
 #include <memory>
 #include <mutex>
+#include <unordered_set>
 
 /* Qt */
 #include <QObject>
@@ -150,7 +151,6 @@ private: /* Members */
     std::weak_ptr<PlaybackTrack> m_Track;
     // std::weak_ptr<SharedTrackItem> m_TrackItem;
 
-
     Direction m_CacheDirection;
     State m_State;
     Entity m_CacheEntity;
@@ -163,8 +163,6 @@ private: /* Members */
     std::size_t m_MaxMemory;
     std::size_t m_UsedMemory;
     std::size_t m_FrameSize;
-
-    std::deque<v_frame_t> m_Framenumbers;
 
     v_frame_t m_StartFrame;
     v_frame_t m_EndFrame;
@@ -180,6 +178,9 @@ private: /* Members */
 
     QTimer m_CacheTimer;
     std::mutex m_Mutex;
+
+    std::deque<v_frame_t> m_Framenumbers;
+    std::unordered_set<v_frame_t> m_Buffered;
 
 private: /* Methods */
     inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
