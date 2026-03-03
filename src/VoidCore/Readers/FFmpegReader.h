@@ -193,8 +193,8 @@ public:
     virtual const std::map<std::string, std::string> Metadata() const override;
 
     virtual int AudioChannels() const override { return m_AChannels; }
-    virtual int Samplerate() const { return m_Samplerate; }
-    virtual const unsigned char* AudioSamples() const { return m_Stream.data(); }
+    virtual int Samplerate() const override { return m_Samplerate; }
+    virtual const unsigned char* AudioSamples() const override { return m_Stream.data(); }
 
 private: /* Members */
     /* Image specifications */

@@ -10,6 +10,7 @@
 #include <thread>
 #include <memory>
 #include <mutex>
+#include <unordered_set>
 
 /* Qt */
 #include <QObject>
@@ -29,15 +30,32 @@ VOID_NAMESPACE_OPEN
 class Player;
 
 /**
- * ChronoFlux is the Cache Engine for 'VOID'
- * The name itself is an indication of something that flows over time
- * here the flowing entity is Media 'Frames' allowing data to be pre-read (cached)
- * and ready for playback
+ * PlayBuffer is the Cache Engine for 'VOID'
+ * Buffering ahead of time for playback readiness
  */
-
-class ChronoFlux : public QObject
+class PlayBuffer : public QObject
 {
     Q_OBJECT
+
+    class CacheNextFrameTask : public QRunnable
+    {
+    public:
+        explicit CacheNextFrameTask(PlayBuffer* parent) : m_Parent(parent) {}
+        inline void run() override { m_Parent->CacheNextFrame(); }
+
+    private:
+        PlayBuffer* m_Parent;
+    };
+
+    class CachePreviousFrameTask : public QRunnable
+    {
+    public:
+        explicit CachePreviousFrameTask(PlayBuffer* parent) : m_Parent(parent) {}
+        inline void run() override {  m_Parent->CachePreviousFrame(); }
+
+    private:
+        PlayBuffer* m_Parent;
+    };
 
 public:
     enum class Direction
@@ -62,8 +80,8 @@ public:
     };
 
 public:
-    explicit ChronoFlux(QObject* parent = nullptr);
-    ~ChronoFlux();
+    explicit PlayBuffer(QObject* parent = nullptr);
+    ~PlayBuffer();
 
     /**
      * Setup the player for which the caching happens
@@ -81,13 +99,8 @@ public:
     inline void SetMaxMemory(unsigned long long gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
     inline void SetMaxThreads(unsigned int count) { m_ThreadPool.setMaxThreadCount(count); }
 
-    /**
-     * A Cache process which caches all frames till the memory size allows
-     */
-    void CacheAvailable();
-
     void StartPlaybackCache(const Direction& direction = Direction::Forwards);
-    inline void RestartPlaybackCache() { StartPlaybackCache(m_CacheDirection); }
+    inline void RestartPlaybackCache() { StartPlaybackCache(m_Direction); }
     void StopPlaybackCache();
 
     /**
@@ -107,6 +120,81 @@ public:
     void StopCaching();
     void ResumeCaching();
 
+    void Recache();
+    void ClearCache();
+
+    void EnsureCached(v_frame_t frame);
+
+private: /* Members */
+    Player* m_Player;
+    QThreadPool m_ThreadPool;
+
+    TrackView* m_TrackView;
+    SequenceView* m_SequenceView;
+
+    /**
+     * This is a non-owning pointer to the Media coming in from either the viewer buffer or some other
+     * component that might need the media to be cache for some reason
+     */
+    std::weak_ptr<MediaClip> m_Media;
+    std::weak_ptr<PlaybackTrack> m_Track;
+
+    Direction m_Direction;
+    State m_State;
+    Entity m_CacheEntity;
+
+    /**
+     * Bytes representation of the amount of maximum available memory for caching media
+     * if the memory is full then the caching is stopped unless a force request (evict = true) is made
+     * this makes the last first or frame based on direction be evicted (cleared of any cached data) from memory
+     */
+    std::size_t m_MaxMemory;
+    std::size_t m_UsedMemory;
+    std::size_t m_FrameSize;
+
+    v_frame_t m_StartFrame;
+    v_frame_t m_EndFrame;
+    unsigned int m_Duration;
+
+    v_frame_t m_LastCached;
+    /**
+     * The amount of frames that can be kept on the opposite side of the current sync direction
+     * this is kept to atleast support playback till the cache starts updating in the other direction
+     * this is being set to a minimum of 3 frames and upto a max of 2% of the overall length of the media
+     */
+    int m_BackBuffer;
+
+    QTimer m_CacheTimer;
+    std::mutex m_Mutex;
+
+    std::deque<v_frame_t> m_Framenumbers;
+    std::unordered_set<v_frame_t> m_Buffered;
+
+private: /* Methods */
+    inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
+
+    /**
+     * Frame Eviction from the cached array
+     */
+    void EvictFront();
+    void EvictBack();
+
+    void ClearTrackView();
+    void ClearSequenceView();
+
+    /**
+     * Update to refresh the cache to available frames after removing the frames
+     * that may no longer be required
+     */
+    void Update();
+
+    void UpdateRange(v_frame_t start, v_frame_t end);
+    inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
+    
+    /**
+     * A Cache process which caches all frames till the memory size allows
+     */
+    void CacheAvailable();
 
     /**
      * Request caching the next available frame depending on the direction
@@ -125,9 +213,6 @@ public:
      * of memory usage
      */
     void Cache(v_frame_t frame);
-    void EnsureCached(v_frame_t frame);
-    void ClearCache();
-    void Recache();
 
     void CacheNextFrame();
     void CachePreviousFrame();
@@ -135,106 +220,11 @@ public:
     void CacheNext();
     void CachePrevious();
 
-private: /* Members */
-    Player* m_Player;
-    QThreadPool m_ThreadPool;
-
-    TrackView* m_TrackView;
-    SequenceView* m_SequenceView;
-
-    /**
-     * This is a non-owning pointer to the Media coming in from either the viewer buffer or some other
-     * component that might need the media to be cache for some reason
-     */
-    std::weak_ptr<MediaClip> m_Media;
-    std::weak_ptr<PlaybackTrack> m_Track;
-    // std::weak_ptr<SharedTrackItem> m_TrackItem;
-
-
-    Direction m_CacheDirection;
-    State m_State;
-    Entity m_CacheEntity;
-
-    /**
-     * Bytes representation of the amount of maximum available memory for caching media
-     * if the memory is full then the caching is stopped unless a force request (evict = true) is made
-     * this makes the last first or frame based on direction be evicted (cleared of any cached data) from memory
-     */
-    std::size_t m_MaxMemory;
-    std::size_t m_UsedMemory;
-    std::size_t m_FrameSize;
-
-    std::deque<v_frame_t> m_Framenumbers;
-
-    v_frame_t m_StartFrame;
-    v_frame_t m_EndFrame;
-    unsigned int m_Duration;
-
-    v_frame_t m_LastCached;
-    /**
-     * The amount of frames that can be kept on the opposite side of the current sync direction
-     * this is kept to atleast support playback till the cache starts updating in the other direction
-     * this is being set to a minimum of 3 frames and upto a max of 2% of the overall length of the media
-     */
-    int m_BackBuffer;
-
-    QTimer m_CacheTimer;
-    std::mutex m_Mutex;
-
-private: /* Methods */
-    inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
-    inline v_frame_t MinFrame() const { return m_Framenumbers.front(); }
-
-    /**
-     * Frame Eviction from the cached array
-     */
-    void Evict(v_frame_t frame);
-    void EvictFront();
-    void EvictBack();
-
-    void ClearTrackView();
-    void ClearSequenceView();
-
-    /**
-     * Update to refresh the cache to available frames after removing the frames
-     * that may no longer be required
-     */
-    void Update();
-
-    void UpdateRange(v_frame_t start, v_frame_t end);
-
-    inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
-
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();
 
-    inline bool Cached(v_frame_t frame) const
-    { 
-        return std::find(m_Framenumbers.cbegin(), m_Framenumbers.cend(), frame) != m_Framenumbers.cend(); 
-    }
-
-    void SettingsUpdated();
-
-private: /* Task Classes */
-    class CacheNextFrameTask : public QRunnable
-    {
-    public:
-        explicit CacheNextFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
-        inline void run() override { m_Parent->CacheNextFrame(); }
-
-    private:
-        ChronoFlux* m_Parent;
-    };
-
-    class CachePreviousFrameTask : public QRunnable
-    {
-    public:
-        explicit CachePreviousFrameTask(ChronoFlux* parent) : m_Parent(parent) {}
-        inline void run() override {  m_Parent->CachePreviousFrame(); }
-
-    private:
-        ChronoFlux* m_Parent;
-    };
+    inline bool Cached(v_frame_t frame) const { return m_Buffered.find(frame) != m_Buffered.end(); }
+    void SettingsUpdated();    
 };
 
 VOID_NAMESPACE_CLOSE

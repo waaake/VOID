@@ -17,7 +17,7 @@ VOID_NAMESPACE_OPEN
  * ensures that the next frame to be rendered out is always around that time. This is done
  * to sync the content around the primary stream of data.
  */
-class Timekeeper
+class VOID_API Timekeeper
 {
     Timekeeper();
 public:

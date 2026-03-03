@@ -64,7 +64,7 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 private: /* Members */
-    ChronoFlux m_CacheProcessor;
+    PlayBuffer m_CacheProcessor;
 
 private: /* Methods */
     void SetMediaFrame(int frame);
