@@ -347,23 +347,6 @@ void PlayBuffer::Cache(v_frame_t frame)
     }
 }
 
-void PlayBuffer::Evict(v_frame_t frame)
-{
-    auto it = std::find(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
-
-    if (SharedMediaClip media = m_Media.lock())
-    {
-        if (it != m_Framenumbers.end())
-        {
-            media->UncacheFrame(frame);
-            m_UsedMemory -= m_FrameSize;
-
-            m_Framenumbers.erase(it);
-            m_Player->RemoveCachedFrame(frame);
-        }
-    }
-}
-
 void PlayBuffer::EvictFront()
 {
     v_frame_t frame = m_Framenumbers.front();

@@ -37,7 +37,7 @@ class PlayBuffer : public QObject
 {
     Q_OBJECT
 
-class CacheNextFrameTask : public QRunnable
+    class CacheNextFrameTask : public QRunnable
     {
     public:
         explicit CacheNextFrameTask(PlayBuffer* parent) : m_Parent(parent) {}
@@ -99,11 +99,6 @@ public:
     inline void SetMaxMemory(unsigned long long gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
     inline void SetMaxThreads(unsigned int count) { m_ThreadPool.setMaxThreadCount(count); }
 
-    /**
-     * A Cache process which caches all frames till the memory size allows
-     */
-    void CacheAvailable();
-
     void StartPlaybackCache(const Direction& direction = Direction::Forwards);
     inline void RestartPlaybackCache() { StartPlaybackCache(m_Direction); }
     void StopPlaybackCache();
@@ -125,32 +120,10 @@ public:
     void StopCaching();
     void ResumeCaching();
 
-    /**
-     * Request caching the next available frame depending on the direction
-     * if the memory limit allows based on the average memory usage of the current frame
-     * then the request will be approved and true will be returned
-     * else false is returned to indicate that the next frame cannot be added to the cache
-     *
-     * however, the evict flag allows a frame to be cached despite the memory limit
-     * as evicting would remove the First or the Last frame depending on the Direction of cache
-     * if memory limit does not allow
-     */
-    bool Request(v_frame_t frame, bool evict = false);
-
-    /**
-     * Cache the provided frame for the media, if the frame is already cached nothing happens in terms
-     * of memory usage
-     */
-    void Cache(v_frame_t frame);
-    void EnsureCached(v_frame_t frame);
-    void ClearCache();
     void Recache();
+    void ClearCache();
 
-    void CacheNextFrame();
-    void CachePreviousFrame();
-
-    void CacheNext();
-    void CachePrevious();
+    void EnsureCached(v_frame_t frame);
 
 private: /* Members */
     Player* m_Player;
@@ -199,12 +172,10 @@ private: /* Members */
 
 private: /* Methods */
     inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
-    inline v_frame_t MinFrame() const { return m_Framenumbers.front(); }
 
     /**
      * Frame Eviction from the cached array
      */
-    void Evict(v_frame_t frame);
     void EvictFront();
     void EvictBack();
 
@@ -219,6 +190,35 @@ private: /* Methods */
 
     void UpdateRange(v_frame_t start, v_frame_t end);
     inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
+    
+    /**
+     * A Cache process which caches all frames till the memory size allows
+     */
+    void CacheAvailable();
+
+    /**
+     * Request caching the next available frame depending on the direction
+     * if the memory limit allows based on the average memory usage of the current frame
+     * then the request will be approved and true will be returned
+     * else false is returned to indicate that the next frame cannot be added to the cache
+     *
+     * however, the evict flag allows a frame to be cached despite the memory limit
+     * as evicting would remove the First or the Last frame depending on the Direction of cache
+     * if memory limit does not allow
+     */
+    bool Request(v_frame_t frame, bool evict = false);
+
+    /**
+     * Cache the provided frame for the media, if the frame is already cached nothing happens in terms
+     * of memory usage
+     */
+    void Cache(v_frame_t frame);
+
+    void CacheNextFrame();
+    void CachePreviousFrame();
+
+    void CacheNext();
+    void CachePrevious();
 
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();
