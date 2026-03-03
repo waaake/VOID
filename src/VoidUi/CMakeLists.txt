@@ -136,6 +136,7 @@ target_link_libraries(
     VoidCore
     VoidObjects
     VoidRenderer
+    VoidAudio
 )
 
 # Link to this library

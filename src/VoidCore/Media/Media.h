@@ -67,6 +67,7 @@ public:
     void Read(MediaStruct&& mstruct);
 
     /* Getters */
+    inline std::string Fullpath() const { return m_MediaStruct.FirstPath(); }
     inline std::string Path() const { return m_MediaStruct.Basepath(); }
     inline std::string Name() const { return m_MediaStruct.Name(); }
     inline std::string Extension() const { return m_MediaStruct.Extension(); }
