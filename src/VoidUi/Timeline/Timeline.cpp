@@ -13,7 +13,7 @@
 
 /* Internal */
 #include "Timeline.h"
-#include "VoidObjects/Core/Timekeeper.h"
+#include "VoidCore/Timekeeper.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 

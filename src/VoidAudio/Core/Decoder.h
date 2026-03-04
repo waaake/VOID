@@ -12,14 +12,13 @@
 extern "C" 
 {
 #include <libavformat/avformat.h>
-// #include <libavutil/imgutils.h>
 #include <libavcodec/avcodec.h>
-// #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
 }
 
 /* Internal */
 #include "Definition.h"
+#include "VoidAudio/Stream/Linux.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -53,6 +52,8 @@ private: /* Members */
     SwrContext* m_SwrContext;
 
     bool m_Valid;
+
+    AudioStream* m_AudioStream;
 };
 
 VOID_NAMESPACE_CLOSE

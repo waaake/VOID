@@ -8,7 +8,7 @@
 
 /* Internal */
 #include "Timeslider.h"
-#include "VoidObjects/Core/Timekeeper.h"
+#include "VoidCore/Timekeeper.h"
 
 /* Timeslider Markings Step */
 const int SL_MARKING_STEP = 5;

@@ -10,6 +10,7 @@
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -49,6 +50,7 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_ControlBar->SetZoom(m_Renderer->Zoom());
 
     m_AudioDecoder->Init(media->Fullpath());
+    Timekeeper::Instance().Reset();
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -239,7 +241,7 @@ void Player::Connect()
         if (state == Timeline::PlayState::STOPPED)
         {
             m_CacheProcessor.StopPlaybackCache();
-            m_AudioDecoder->Stop();
+            if (m_AudioDecoder) m_AudioDecoder->Stop();
         }
         else
         {
@@ -363,6 +365,9 @@ void Player::SetMediaFrame(int frame)
     if (clip->Empty())
         return;
 
+    // // Update the current time from Audio Stream to the Timekeeper in order to sync against it
+    // Timekeeper::Instance().SetTime(m_AudioDecoder->CurrentTime());
+
     /**
      * If the frame does not have any data, this could mean that the frame is missing
      * if the provided frame is in range of the Media
@@ -378,7 +383,6 @@ void Player::SetMediaFrame(int frame)
         m_CacheProcessor.EnsureCached(frame);
         /* Read the image for the frame from the sequence and set it on the player */
         m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
-        VOID_LOG_INFO("Current Audio Time: {0}", m_AudioDecoder->CurrentTime());
     }
     else
     {

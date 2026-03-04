@@ -11,6 +11,7 @@ set(SOURCES
     Logging.cpp
     Profiler.h
     PyExecutor.cpp
+    Timekeeper.cpp
     VoidTools.cpp
 
     # Plugins

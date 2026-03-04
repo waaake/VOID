@@ -3,7 +3,7 @@
 
 /* Internal */
 #include "Timekeeper.h"
-#include "VoidCore/Logging.h"
+#include "Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -61,20 +61,44 @@ v_frame_t Timekeeper::NextFrame()
     if (m_CurrentTime < 0)
         return NextFrame__();
 
+    int distance = m_CurrentFrame - ConvertedTime();
+
     /**
      * The time is lagging behind --
      * For now return the Next Frame as supposed to
      * with the understanding that the time will catch up
      */
-    if (ConvertedTime() < m_CurrentFrame)
+    if (std::abs(distance) < 3)
         return NextFrame__();
-    
-    v_frame_t time = ConvertedTime();
-    if (time >= m_End)
-        m_CurrentFrame = m_Start;
-    else
-        m_CurrentFrame = ++time;
+
+    // -ve Distance: time (from the audio) is ahead than the threshold
+    if (distance < 0)
+    {
+        // Catch up to it slowly
+        m_CurrentFrame += std::abs(distance) / 2;
+
+        if (m_CurrentFrame > m_End)
+            m_CurrentFrame = m_Start;
+
+        return m_CurrentFrame;
+    }
+
+    // Time (from the audio) is trailing behind at the moment, return the frame without increment
+    // This basically mimics slowing down the video fps to catch-up to the audio
     return m_CurrentFrame;
+
+
+    // ++time;
+    // // VOID_LOG_INFO("Time Base: {0}, Current Actual: {1}", time, m_CurrentFrame);
+
+    // // if (time == m_CurrentFrame)
+    // //     return NextFrame__();
+    
+    // if (time >= m_End)
+    //     m_CurrentFrame = m_Start;
+    // else
+    //     m_CurrentFrame = time;
+    // return m_CurrentFrame;
 }
 
 v_frame_t Timekeeper::PreviousFrame()

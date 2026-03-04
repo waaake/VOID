@@ -6,13 +6,14 @@
 #include <thread>
 
 /* Internal */
-#include "Stream.h"
+#include "Decoder.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
 AudioDecoder::AudioDecoder()
-    : m_Time(0.0)
+    : m_Time(-1.0)
     , m_Running(false)
     , m_Finished(false)
     , m_StreamID(-1)
@@ -21,6 +22,8 @@ AudioDecoder::AudioDecoder()
     , m_Stream(nullptr)
     , m_Frame(nullptr)
     , m_Packet(nullptr)
+    , m_SwrContext(nullptr)
+    , m_AudioStream(nullptr)
 {
 }
 
@@ -66,6 +69,8 @@ void AudioDecoder::Init(const std::string& path)
 
     m_Valid = true;
     VOID_LOG_INFO("Media: {} has valid audio.", path);
+
+    m_AudioStream = new AudioStream(m_CodecContext->sample_rate, m_CodecContext->ch_layout.nb_channels);
 }
 
 void AudioDecoder::Start()
@@ -75,10 +80,13 @@ void AudioDecoder::Start()
     {
         Reset();
         m_Running = true;
+
+        m_AudioStream->Start();
+
         // Needs to be threaded
         // DecodeSamples();
         std::thread t(&AudioDecoder::DecodeSamples, this);
-        VOID_LOG_INFO("Started...");
+        // VOID_LOG_INFO("Started...");
         t.detach();
     }
 }
@@ -86,7 +94,10 @@ void AudioDecoder::Start()
 void AudioDecoder::Stop()
 {
     if (m_Running.load())
+    {
         m_Running = false;
+        m_AudioStream->Stop();
+    }
 }
 
 void AudioDecoder::Reset()
@@ -100,6 +111,7 @@ void AudioDecoder::Reset()
         m_Packet = av_packet_alloc();
     
         m_Finished = false;
+        m_Time = -1.0;
     }
 }
 
@@ -112,6 +124,12 @@ void AudioDecoder::Cleanup()
     if (m_CodecContext) avcodec_free_context(&m_CodecContext);
     if (m_FormatContext) avformat_close_input(&m_FormatContext);
     if (m_SwrContext) swr_free(&m_SwrContext);
+
+    if (m_AudioStream)
+    {
+        delete m_AudioStream;
+        m_AudioStream = nullptr;
+    }
 }
 
 void AudioDecoder::DecodeSamples()
@@ -136,8 +154,10 @@ void AudioDecoder::DecodeSamples()
 
                     swr_convert(m_SwrContext, (uint8_t**)&framedata, outsamples, (const uint8_t**)m_Frame->extended_data, m_Frame->nb_samples);
 
+                    Timekeeper::Instance().SetTime(m_Time.load());
+                    // std::this_thread::sleep_for(std::chrono::milliseconds(24));
+                    m_AudioStream->WriteSamples(framedata, buffersize);
                     // VOID_LOG_INFO("Time: {0}s, BufferSize: {1}", m_Time.load(), buffersize);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(24));
                 } 
             }
         }

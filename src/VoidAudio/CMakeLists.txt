@@ -1,6 +1,15 @@
 set(SOURCES
-    Core/Stream.cpp
+    Core/Decoder.cpp
 )
+
+list(APPEND
+    SOURCES
+
+    Stream/Linux.cpp
+)
+
+find_package(ALSA REQUIRED)
+find_package(PulseAudio REQUIRED)
 
 add_library(
     VoidAudio
@@ -12,13 +21,15 @@ target_link_libraries(
     VoidAudio
     PUBLIC
     VoidCore
-    VoidObjects
+    # VoidObjects
 )
 
 target_link_libraries(
     VoidAudio
     PRIVATE
     ${FFMPEG_LIBRARIES}
+    pulse
+    pulse-simple
 )
 
 if (APPLE)

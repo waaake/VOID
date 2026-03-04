@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "PlayerWidget.h"
-#include "VoidAudio/Core/Stream.h"
+#include "VoidAudio/Core/Decoder.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -11,7 +11,7 @@
 /* Internal */
 #include "TimelineElements.h"
 #include "VoidCore/Logging.h"
-#include "VoidObjects/Core/Timekeeper.h"
+#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
