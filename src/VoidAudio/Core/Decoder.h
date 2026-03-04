@@ -6,6 +6,7 @@
 
 /* STD */
 #include <atomic>
+#include <future>
 #include <string>
 
 /* FFMPEG */
@@ -28,10 +29,20 @@ public:
     AudioDecoder();
     ~AudioDecoder();
 
+    /**
+     * @brief Initialise the buffers and contexts for playback.
+     * 
+     * @param path Path of the media for audio (could be a video file or an audio file as well)
+     */
     void Init(const std::string& path);
+
+    // Start playback if the provided file had valid audio to be played
     void Start();
+    // Stop Playback
     void Stop();
+    // Reset the PTS and internal time, this makes the audio play from the start of the file
     void Reset();
+    // Returns the current time of the audio read/buffered to the playback server
     double CurrentTime() const { return m_Time.load(); }
 
 private: /* Methods */
@@ -52,6 +63,7 @@ private: /* Members */
     SwrContext* m_SwrContext;
 
     bool m_Valid;
+    std::future<void> m_DecodeWorker;
 
     AudioStream* m_AudioStream;
 };

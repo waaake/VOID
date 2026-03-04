@@ -252,6 +252,7 @@ void Player::Connect()
     });
     connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {
+        m_AudioDecoder->Reset();
         state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
     });
 
@@ -364,9 +365,6 @@ void Player::SetMediaFrame(int frame)
     /* Ensure we have a valid media to process before setting the frame */
     if (clip->Empty())
         return;
-
-    // // Update the current time from Audio Stream to the Timekeeper in order to sync against it
-    // Timekeeper::Instance().SetTime(m_AudioDecoder->CurrentTime());
 
     /**
      * If the frame does not have any data, this could mean that the frame is missing
