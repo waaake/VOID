@@ -50,7 +50,9 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_ControlBar->SetZoom(m_Renderer->Zoom());
 
     m_AudioDecoder->Init(media->Fullpath());
+
     Timekeeper::Instance().Reset();
+    Timekeeper::Instance().SetMediaFramerate(media->Framerate());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)

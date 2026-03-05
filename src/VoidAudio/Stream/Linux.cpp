@@ -39,12 +39,14 @@ bool AudioStream::Start()
 
 void AudioStream::Stop()
 {
-    if (!m_Stream)
-        return;
+    if (m_Stream)
+    {
+        int error;
+        pa_simple_flush(m_Stream, &error);
+        pa_simple_free(m_Stream);
+    }
 
-    pa_simple_flush(m_Stream, nullptr);
-    pa_simple_drain(m_Stream, nullptr);
-    pa_simple_free(m_Stream);
+    m_Stream = nullptr;
 }
 
 bool AudioStream::WriteSamples(const unsigned char* data, std::size_t size)
