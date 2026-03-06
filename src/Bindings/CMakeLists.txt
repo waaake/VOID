@@ -11,6 +11,12 @@ set(SOURCES
 # Create Python Module
 pybind11_add_module(vortex "${SOURCES}")
 
+target_include_directories(
+    vortex
+    PRIVATE
+    ${FFMPEG_INCLUDE_DIRS}
+)
+
 target_link_libraries(
     vortex
     PRIVATE

@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "PlayerWidget.h"
+#include "VoidAudio/Core/Decoder.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -65,6 +66,7 @@ protected:
 
 private: /* Members */
     PlayBuffer m_CacheProcessor;
+    AudioDecoder* m_AudioDecoder;
 
 private: /* Methods */
     void SetMediaFrame(int frame);

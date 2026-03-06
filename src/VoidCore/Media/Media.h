@@ -67,11 +67,13 @@ public:
     void Read(MediaStruct&& mstruct);
 
     /* Getters */
+    inline std::string Fullpath() const { return m_MediaStruct.FirstPath(); }
     inline std::string Path() const { return m_MediaStruct.Basepath(); }
     inline std::string Name() const { return m_MediaStruct.Name(); }
     inline std::string Extension() const { return m_MediaStruct.Extension(); }
 
     inline Media::Type MediaType() const { return m_Type; }
+    inline bool HasAudio() const { return bool(m_Samplerate); }
 
     // inline bool Valid() const { return m_Type != Type::NON_MEDIA; }
 
@@ -143,6 +145,7 @@ protected: /* Members */
     MediaStruct m_MediaStruct;
 
     v_frame_t m_FirstFrame, m_LastFrame;
+    int m_Samplerate;
     double m_Framerate;
 
     Type m_Type;

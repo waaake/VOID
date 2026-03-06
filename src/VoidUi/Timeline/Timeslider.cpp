@@ -8,7 +8,7 @@
 
 /* Internal */
 #include "Timeslider.h"
-#include "VoidObjects/Core/Timekeeper.h"
+#include "VoidCore/Timekeeper.h"
 
 /* Timeslider Markings Step */
 const int SL_MARKING_STEP = 5;
@@ -90,6 +90,9 @@ void Timeslider::mousePressEvent(QMouseEvent* event)
 				);
 	setValue(value);
 	Timekeeper::Instance().SetFrame(value);
+
+	// User clicked on the current position calls for a seek in the playable timeline
+	emit seeked(value);
 
 	/* Allow dragging behaviour */
 	QSlider::mousePressEvent(event);

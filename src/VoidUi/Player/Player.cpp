@@ -9,6 +9,8 @@
 #include "Player.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/MediaBridge.h"
+#include "VoidCore/Logging.h"
+#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -16,11 +18,17 @@ Player::Player(QWidget* parent)
     : PlayerWidget(parent)
 {
     m_CacheProcessor.SetActivePlayer(this);
+    m_AudioDecoder = new AudioDecoder;
     Connect();
 }
 
 Player::~Player()
 {
+    if (m_AudioDecoder)
+    {
+        delete m_AudioDecoder;
+        m_AudioDecoder = nullptr;
+    }
 }
 
 void Player::SetMedia(const SharedMediaClip& media)
@@ -40,6 +48,12 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
+
+    m_AudioDecoder->Init(media->Fullpath());
+
+    Timekeeper::Instance().Reset();
+    Timekeeper::Instance().SetMediaFramerate(media->Framerate());
+    VOID_LOG_INFO("Media has Audio: {0}", media->HasAudio());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -228,13 +242,25 @@ void Player::Connect()
     connect(m_Timeline, &Timeline::playbackStateChanged, this, [this](const Timeline::PlayState& state) -> void
     {
         if (state == Timeline::PlayState::STOPPED)
+        {
             m_CacheProcessor.StopPlaybackCache();
+            if (m_AudioDecoder) m_AudioDecoder->Stop();
+        }
         else
+        {
             m_CacheProcessor.StartPlaybackCache(static_cast<PlayBuffer::Direction>(state));
+            if (state == Timeline::PlayState::FORWARDS)
+                m_AudioDecoder->Start();
+        }
     });
     connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {
+        m_AudioDecoder->Reset();
         state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
+    });
+    connect(m_Timeline, &Timeline::seeked, this, [this](v_frame_t frame)
+    { 
+        m_AudioDecoder->SeekTo((double)frame / m_Timeline->Framerate());
     });
 
     /* ControlBar */

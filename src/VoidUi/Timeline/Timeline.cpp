@@ -13,7 +13,7 @@
 
 /* Internal */
 #include "Timeline.h"
-#include "VoidObjects/Core/Timekeeper.h"
+#include "VoidCore/Timekeeper.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
@@ -176,6 +176,7 @@ void Timeline::Connect()
 	qRegisterMetaType<PlayState>("PlayState");
 
 	connect(m_Timeslider, &QSlider::valueChanged, this, &Timeline::TimeUpdated, Qt::DirectConnection);
+	connect(m_Timeslider, &Timeslider::seeked, this, &Timeline::seeked, Qt::DirectConnection);
 
 	connect(m_ForwardButton, &QPushButton::clicked, this, [this]() { Play(Timeline::PlayState::FORWARDS); });
 	connect(m_BackwardButton, &QPushButton::clicked, this, [this]() { Play(Timeline::PlayState::BACKWARDS); });

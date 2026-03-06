@@ -56,20 +56,14 @@ QVariant MediaModel::data(const QModelIndex& index, int role) const
 
     switch (static_cast<MRoles>(role))
     {
-        case MRoles::Name:
-            return QVariant(item->Name().c_str());
-        case MRoles::FrameRange:
-            return QVariant(ItemFramerange(item).c_str());
-        case MRoles::Extension:
-            return QVariant(item->Extension().c_str());
-        case MRoles::Thumbnail:
-            return item->Thumbnail();
-        case MRoles::Framerate:
-            return QVariant(ItemFramerate(item).c_str());
-        case MRoles::Color:
-            return item->Color();
-        default:
-            return QVariant();
+        case MRoles::Name: return QVariant(item->Name().c_str());
+        case MRoles::FrameRange: return QVariant(ItemFramerange(item).c_str());
+        case MRoles::Extension: return QVariant(item->Extension().c_str());
+        case MRoles::Thumbnail: return item->Thumbnail();
+        case MRoles::Framerate: return QVariant(ItemFramerate(item).c_str());
+        case MRoles::Color: return item->Color();
+        case MRoles::Audio: return item->HasAudio();
+        default: return QVariant();
     }
 }
 

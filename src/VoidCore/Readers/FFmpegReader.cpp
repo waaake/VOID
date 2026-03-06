@@ -51,30 +51,30 @@ void FFmpegDecoder::Open()
         return;
 
     m_VStreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
-    m_AStreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
+    // m_AStreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
 
     if (m_VStreamID < 0)
         return;
 
     m_VStream = m_FormatContext->streams[m_VStreamID];
 
-    if (m_AStreamID >= 0)
-    {
-        m_AStream = m_FormatContext->streams[m_AStreamID];
-        const AVCodecParameters* codecParams = m_AStream->codecpar;
-        const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
+    // if (m_AStreamID >= 0)
+    // {
+    //     m_AStream = m_FormatContext->streams[m_AStreamID];
+    //     const AVCodecParameters* codecParams = m_AStream->codecpar;
+    //     const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
 
-        m_ACodecContext = avcodec_alloc_context3(codec);
+    //     m_ACodecContext = avcodec_alloc_context3(codec);
 
-        avcodec_parameters_to_context(m_ACodecContext, codecParams);
-        avcodec_open2(m_ACodecContext, codec, nullptr);
-        m_SwrContext = swr_alloc();
+    //     avcodec_parameters_to_context(m_ACodecContext, codecParams);
+    //     avcodec_open2(m_ACodecContext, codec, nullptr);
+    //     m_SwrContext = swr_alloc();
 
-        AVChannelLayout layout;
-        av_channel_layout_default(&layout, m_ACodecContext->ch_layout.nb_channels);
-        swr_alloc_set_opts2(&m_SwrContext, &layout, AV_SAMPLE_FMT_S16, m_ACodecContext->sample_rate, &layout, m_ACodecContext->sample_fmt, m_ACodecContext->sample_rate, 0, nullptr);
-        swr_init(m_SwrContext);
-    }
+    //     AVChannelLayout layout;
+    //     av_channel_layout_default(&layout, m_ACodecContext->ch_layout.nb_channels);
+    //     swr_alloc_set_opts2(&m_SwrContext, &layout, AV_SAMPLE_FMT_S16, m_ACodecContext->sample_rate, &layout, m_ACodecContext->sample_fmt, m_ACodecContext->sample_rate, 0, nullptr);
+    //     swr_init(m_SwrContext);
+    // }
 
     const AVCodecParameters* codecParams = m_VStream->codecpar;
     const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
@@ -246,7 +246,6 @@ void FFmpegDecoder::DecodeAudio(const int framenumber)
     if ((m_CurrentFrame - 20) > framenumber)
         return;
 
-
     /**
      * Case 2: This was decoded before and already available for use
      */
@@ -269,8 +268,8 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
     if (av_read_frame(m_FormatContext, m_Packet) < 0)
         return -1;
 
-    if (m_Packet->stream_index == m_AStreamID)
-        DecodeNextAudio();
+    // if (m_Packet->stream_index == m_AStreamID)
+    //     DecodeNextAudio();
 
     if (m_Packet->stream_index == m_VStreamID)
     {
@@ -397,8 +396,8 @@ void FFmpegPixReader::Read()
 
     std::swap(decoder.VideoFrame(m_Framenumber), m_Pixels);
 
-    decoder.DecodeAudio(m_Framenumber);
-    std::swap(decoder.Audio(m_Framenumber), m_Stream);
+    // decoder.DecodeAudio(m_Framenumber);
+    // std::swap(decoder.Audio(m_Framenumber), m_Stream);
     // VOID_LOG_INFO("Frame: {0}, Empty Audio: {1}", m_Framenumber, m_Stream.empty());
 
     /* Read the Frame Dimensions */

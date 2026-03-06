@@ -37,6 +37,13 @@ public:
     void SetFramerate(double framerate) { m_Framerate = framerate; }
 
     /**
+     * @brief Set the current framerate of the media that is being played
+     * 
+     * @param framerate Rate of playback of the active media.
+     */
+    void SetMediaFramerate(double framerate) { m_Mediarate = framerate; }
+
+    /**
      * @brief Set the current frame. This method is likely to be called when the
      * frame was set mannually. Eventually will result in a seek operation
      * 
@@ -93,10 +100,11 @@ public:
 private: /* Members */
     v_frame_t m_Start, m_End, m_CurrentFrame;
     double m_CurrentTime;
-    double m_Framerate;
+    double m_Framerate, m_Mediarate;
 
 private: /* Methods */
     inline v_frame_t ConvertedTime() const { return m_CurrentTime * m_Framerate; }
+    inline bool HasDifferentRate() const { return m_Mediarate != m_Framerate; }
     v_frame_t NextFrame__();
     v_frame_t PreviousFrame__();
 };

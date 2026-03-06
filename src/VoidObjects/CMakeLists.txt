@@ -1,7 +1,6 @@
 # Build Intermediate Objects Library
 set(SOURCES
     Core/Threads.cpp
-    Core/Timekeeper.cpp
 
     Media/MediaClip.cpp
 

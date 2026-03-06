@@ -92,10 +92,11 @@ signals:
 	void Played(const PlayState& type = PlayState::FORWARDS);
 	void PlayedForwards();
 	void PlayedBackwards();
-	void TimeChanged(int time);
+	void TimeChanged(int);
 	void fullscreenRequested();
 	void playbackStateChanged(const PlayState&);
 	void mediaFinished(const PlayState & type = PlayState::FORWARDS);
+	void seeked(v_frame_t);
 
 private: /* Members */
 	/* Main Layout */

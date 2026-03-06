@@ -64,7 +64,8 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->save();
 
     /* Side Bar */
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(250));
+    const QColor sidebar = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool() ? QColor(120, 180, 80) : bg.lighter(150);
+    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), sidebar);
 
     /* Name */
     const QRect namerect = QRect(rect.left() + 10, rect.top(), rect.right(), rect.height());
@@ -142,8 +143,10 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     /* Save the painter for restoring later */
     painter->save();
 
+    
     /* Side Bar */
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(150));
+    const QColor sidebar = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool() ? QColor(120, 180, 80) : bg.lighter(150);
+    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), sidebar);
 
     /* Thumbnail */
     const QRect thumbrect = QRect(rect.left() + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
