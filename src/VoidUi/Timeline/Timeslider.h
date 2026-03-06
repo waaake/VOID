@@ -21,6 +21,8 @@ class Timeline;
 
 class Timeslider : public QSlider
 {
+	Q_OBJECT
+
 public:
 	Timeslider(Qt::Orientation orientation, QWidget *parent = nullptr);
 
@@ -55,6 +57,9 @@ public:
 	 * Checks whether a given frame is in Playable range
 	 */
 	inline bool InRange(int frame) { return frame >= Minimum() && frame <= Maximum(); }
+
+signals:
+	void seeked(v_frame_t);
 
 protected:
 	void enterEvent(EnterEvent* event) override;

@@ -257,6 +257,10 @@ void Player::Connect()
         m_AudioDecoder->Reset();
         state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
     });
+    connect(m_Timeline, &Timeline::seeked, this, [this](v_frame_t frame)
+    { 
+        m_AudioDecoder->SeekTo((double)frame / m_Timeline->Framerate());
+    });
 
     /* ControlBar */
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);

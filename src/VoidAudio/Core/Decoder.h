@@ -42,6 +42,9 @@ public:
     void Stop();
     // Reset the PTS and internal time, this makes the audio play from the start of the file
     void Reset();
+    // Seeks the audio to the frame in time
+    // void SeekTo(v_frame_t frame);
+    void SeekTo(double seconds);
     // Returns the current time of the audio read/buffered to the playback server
     double CurrentTime() const { return m_Time.load(); }
 

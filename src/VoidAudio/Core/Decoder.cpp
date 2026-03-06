@@ -97,14 +97,8 @@ void AudioDecoder::Stop()
 
 void AudioDecoder::Reset()
 {
-    if (m_Valid)
-    {
-        m_Time = -1.0;
-        Timekeeper::Instance().SetTime(-1.0);
-        // Seek to the start
-        av_seek_frame(m_FormatContext, m_StreamID, 0, AVSEEK_FLAG_FRAME);
-        avcodec_flush_buffers(m_CodecContext);
-    }
+    Timekeeper::Instance().SetTime(-1.0);
+    SeekTo(0.0);
 }
 
 void AudioDecoder::Cleanup()
@@ -121,6 +115,26 @@ void AudioDecoder::Cleanup()
     {
         delete m_AudioStream;
         m_AudioStream = nullptr;
+    }
+}
+
+// void AudioDecoder::SeekTo(v_frame_t frame)
+// {
+//     if (m_Valid)
+//     {
+//         int64_t seek_pts = av_rescale_q(frame, AVRational{1, m_CodecContext->sample_rate}, m_Stream->time_base);
+//         if (av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME) >= 0)
+//             avcodec_flush_buffers(m_CodecContext);
+//     }
+// }
+
+void AudioDecoder::SeekTo(double seconds)
+{
+    if (m_Valid)
+    {
+        int64_t pts = av_rescale_q(seconds * AV_TIME_BASE, AVRational{1, AV_TIME_BASE}, m_Stream->time_base);
+        if (av_seek_frame(m_FormatContext, m_StreamID, pts, AVSEEK_FLAG_FRAME) >= 0)
+            avcodec_flush_buffers(m_CodecContext);
     }
 }
 

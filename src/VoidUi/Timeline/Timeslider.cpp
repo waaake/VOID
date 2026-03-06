@@ -91,6 +91,9 @@ void Timeslider::mousePressEvent(QMouseEvent* event)
 	setValue(value);
 	Timekeeper::Instance().SetFrame(value);
 
+	// User clicked on the current position calls for a seek in the playable timeline
+	emit seeked(value);
+
 	/* Allow dragging behaviour */
 	QSlider::mousePressEvent(event);
 
