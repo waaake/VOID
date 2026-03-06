@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <cmath>
+
 /* Internal */
 #include "Timekeeper.h"
 #include "Logging.h"
@@ -90,18 +93,6 @@ v_frame_t Timekeeper::NextFrame()
     // Time (from the audio) is trailing behind at the moment, return the frame without increment
     // This basically mimics slowing down the video fps to catch-up to the audio
     return m_CurrentFrame;
-
-    // ++time;
-    // // VOID_LOG_INFO("Time Base: {0}, Current Actual: {1}", time, m_CurrentFrame);
-
-    // // if (time == m_CurrentFrame)
-    // //     return NextFrame__();
-    
-    // if (time >= m_End)
-    //     m_CurrentFrame = m_Start;
-    // else
-    //     m_CurrentFrame = time;
-    // return m_CurrentFrame;
 }
 
 v_frame_t Timekeeper::PreviousFrame()
@@ -123,7 +114,6 @@ v_frame_t Timekeeper::PreviousFrame()
         return PreviousFrame__();
 
     // Time (from the audio) is trailing behind at the moment, return the frame without increment
-    // This basically mimics slowing down the video fps to catch-up to the audio
     if (distance > 0)
     {
         // Catch up to it slowly
@@ -136,23 +126,8 @@ v_frame_t Timekeeper::PreviousFrame()
     }
 
     // +ve Distance: time (from the audio) is ahead than the threshold
+    // This basically mimics slowing down the video fps to catch-up to the audio
     return m_CurrentFrame;
-
-    // /**
-    //  * The time is lagging behind --
-    //  * For now return the Next Frame as supposed to
-    //  * with the understanding that the time will catch up
-    //  */
-    // if (ConvertedTime() > m_CurrentFrame)
-    //     return PreviousFrame__();
-    
-    // v_frame_t time = ConvertedTime();
-
-    // if (time <= m_Start)
-    //     m_CurrentFrame = m_End;
-    // else
-    //     m_CurrentFrame = --time;
-    // return m_CurrentFrame;
 }
 
 v_frame_t Timekeeper::NextFrame__()

@@ -19,7 +19,11 @@ extern "C"
 
 /* Internal */
 #include "Definition.h"
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include "VoidAudio/Stream/Win.h"
+#else
 #include "VoidAudio/Stream/Linux.h"
+#endif
 
 VOID_NAMESPACE_OPEN
 

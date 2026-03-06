@@ -29,6 +29,7 @@ target_include_directories(
     ${QtWidgets_INCLUDE_DIRS}
     ${QtCore_INCLUDE_DIRS}
     ${FREETYPE_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 target_include_directories(
