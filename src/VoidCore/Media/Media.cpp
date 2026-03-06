@@ -15,6 +15,7 @@ VOID_NAMESPACE_OPEN
 Media::Media()
     : m_FirstFrame(-1)
     , m_LastFrame(-1)
+    , m_Samplerate(0.0)
     , m_Framerate(24.0)
     , m_Type(Type::UNDEFINED)
 {
@@ -169,6 +170,7 @@ void Media::ProcessMovie()
 
     /* Update internal framerate */
     m_Framerate = r->Framerate();
+    m_Samplerate = r->Samplerate();
 
     m_Framenumbers.reserve(frange.endframe - frange.startframe + 1);
 

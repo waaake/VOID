@@ -53,6 +53,7 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     Timekeeper::Instance().Reset();
     Timekeeper::Instance().SetMediaFramerate(media->Framerate());
+    VOID_LOG_INFO("Media has Audio: {0}", media->HasAudio());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)

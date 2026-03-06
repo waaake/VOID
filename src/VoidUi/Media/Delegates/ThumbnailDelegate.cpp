@@ -75,7 +75,8 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->save();
 
     /* Side Bar */
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, height), bg.lighter(150));
+    const QColor sidebar = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool() ? QColor(120, 180, 80) : bg.lighter(150);
+    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), sidebar);
 
     const int left = rect.left() + 10;
 

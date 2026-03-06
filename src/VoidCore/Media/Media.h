@@ -73,6 +73,7 @@ public:
     inline std::string Extension() const { return m_MediaStruct.Extension(); }
 
     inline Media::Type MediaType() const { return m_Type; }
+    inline bool HasAudio() const { return bool(m_Samplerate); }
 
     // inline bool Valid() const { return m_Type != Type::NON_MEDIA; }
 
@@ -144,6 +145,7 @@ protected: /* Members */
     MediaStruct m_MediaStruct;
 
     v_frame_t m_FirstFrame, m_LastFrame;
+    int m_Samplerate;
     double m_Framerate;
 
     Type m_Type;
