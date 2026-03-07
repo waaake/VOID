@@ -162,8 +162,8 @@ void AudioDecoder::DecodeSamples()
                     swr_convert(m_SwrContext, (uint8_t**)&framedata, outsamples, (const uint8_t**)m_Frame->extended_data, m_Frame->nb_samples);
 
                     // Update the current time on the Timekeeper, this makes the Video frames sync to this worker thread
-                    Timekeeper::Instance().SetTime(m_Time.load());
-                    m_AudioStream->WriteSamples(framedata, buffersize);
+                    if (m_AudioStream->WriteSamples(framedata, buffersize))
+                        Timekeeper::Instance().SetTime(m_Time.load());
                 }
             }
         }

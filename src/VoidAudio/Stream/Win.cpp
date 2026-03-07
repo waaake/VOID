@@ -9,6 +9,7 @@
 /* Internal */
 #include "Win.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -28,7 +29,6 @@ AudioStream::AudioStream(int samplerate, int channels)
     m_Enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &m_Device);
 
     m_Device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, (void**)&m_AudioClient);
-
     m_AudioClient->GetMixFormat(&m_Wfx);
     m_AudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 10000000, 0, m_Wfx, NULL);
     m_AudioClient->GetService(__uuidof(IAudioRenderClient), (void**)&m_AudioRenderClient);
@@ -48,7 +48,8 @@ AudioStream::~AudioStream()
 
 bool AudioStream::Start()
 {
-    return m_AudioClient->Start();
+    HRESULT hr = m_AudioClient->Start();
+    return FAILED(hr) ? false : true;
 }
 
 void AudioStream::Stop()
@@ -57,43 +58,39 @@ void AudioStream::Stop()
 }
 
 bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size)
-{    
-    REFERENCE_TIME hnsDefaultDevicePeriod;
-    REFERENCE_TIME hnsMinimumDevicePeriod;
-    HRESULT hr = m_AudioClient->GetDevicePeriod(&hnsDefaultDevicePeriod, &hnsMinimumDevicePeriod);
+{
+    Tools::VoidProfiler<std::chrono::milliseconds> p("AudioStream::WriteSamples");
 
-    UINT32 framesAvailable = AvailableFrames();
-    VOID_LOG_INFO("Available: {0}", framesAvailable);
+    const int16_t* in = reinterpret_cast<const int16_t*>(buffer);
+    std::size_t samples = size / sizeof(int16_t);
+    UINT32 inframes = samples / m_Wfx->nChannels;
 
-    if (framesAvailable)
+    UINT32 framesAvailable;
+    while (framesAvailable < inframes)
+    {
+        framesAvailable = AvailableFrames();
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+
+    if (framesAvailable > 0)
     {
         BYTE* data;
-        hr = m_AudioRenderClient->GetBuffer(framesAvailable, &data);
-    
+        HRESULT hr = m_AudioRenderClient->GetBuffer(framesAvailable, &data);
+
         if (FAILED(hr))
         {
-            VOID_LOG_INFO("GetBuffer failed.");
+            VOID_LOG_INFO("GetBuffer failed");
             return false;
         }
-    
-        const int16_t* in = reinterpret_cast<const int16_t*>(buffer);
-        std::size_t inputSamples = size / sizeof(int16_t);
-    
+
         float* out = reinterpret_cast<float*>(data);
-        std::size_t outSamples = framesAvailable * m_Wfx->nBlockAlign;
-    
-        std::size_t toCopy = (inputSamples < outSamples) ? inputSamples : outSamples;
-    
-        for (std::size_t i = 0; i < toCopy; ++i)
-            out[i] = in[i] / 32767.0f; // Normalize to [-1.0 , 1.0]
-        
-        // Release the buffer back to WAS for playing
-        m_AudioRenderClient->ReleaseBuffer(framesAvailable, 0);
-    }
-    else
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(hnsDefaultDevicePeriod / 10000));
-        // VOID_LOG_INFO("--{0}", m_Wfx->nSamplesPerSec);
+
+        UINT32 frames = (framesAvailable < inframes) ? framesAvailable : inframes;
+
+        for (UINT32 i = 0; i < frames * m_Wfx->nChannels; ++i)
+            out[i] = in[i] / 32768.0f;
+
+        m_AudioRenderClient->ReleaseBuffer(frames, 0);
     }
 
     return true;
