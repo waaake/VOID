@@ -61,7 +61,7 @@ private: /* Methods */
     void Connect();
 
     /* Show Context Menu at the given position */
-    void ShowContextMenu(const Point& position);
+    void ShowContextMenu(const _QPoint& position);
 
     void AddSelectionToSequence();
     void PlaySelectionAsQueue();

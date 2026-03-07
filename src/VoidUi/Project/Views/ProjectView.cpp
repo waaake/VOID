@@ -132,7 +132,7 @@ void ProjectView::EnableSorting(bool state, const Qt::SortOrder& order)
     proxy->sort(state ? 0 : -1, order);
 }
 
-void ProjectView::ShowContextMenu(const Point& position)
+void ProjectView::ShowContextMenu(const _QPoint& position)
 {
     if (!HasSelection())
         return;
