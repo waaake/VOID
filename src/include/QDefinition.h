@@ -28,9 +28,9 @@ typedef QEvent EnterEvent;
 
 /* Define type Point */
 #if _QT6
-typedef QPointF Point;
+typedef QPointF _QPoint;
 #else
-typedef QPoint Point;
+typedef QPoint _QPoint;
 #endif
 
 #endif // _VOID_Q_DEFINITIONS_H

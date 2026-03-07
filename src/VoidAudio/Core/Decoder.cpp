@@ -76,9 +76,8 @@ void AudioDecoder::Start()
     if (m_Valid && !m_Running.load())
     {
         m_Running = true;
-        m_AudioStream->Start();
-
-        m_DecodeWorker = std::async(std::launch::async, &AudioDecoder::DecodeSamples, this);
+        if (m_AudioStream->Start())
+            m_DecodeWorker = std::async(std::launch::async, &AudioDecoder::DecodeSamples, this);
     }
 }
 
@@ -162,9 +161,12 @@ void AudioDecoder::DecodeSamples()
 
                     swr_convert(m_SwrContext, (uint8_t**)&framedata, outsamples, (const uint8_t**)m_Frame->extended_data, m_Frame->nb_samples);
 
+                    VOID_LOG_INFO("Samplerate: {0}, OutSamples: {1}", m_CodecContext->sample_rate, outsamples);
                     // Update the current time on the Timekeeper, this makes the Video frames sync to this worker thread
                     if (m_AudioStream->WriteSamples(framedata, buffersize))
                         Timekeeper::Instance().SetTime(m_Time.load());
+
+                    std::this_thread::sleep_for(std::chrono::milliseconds((outsamples * 1000 / m_CodecContext->sample_rate) - 5));
                 }
             }
         }

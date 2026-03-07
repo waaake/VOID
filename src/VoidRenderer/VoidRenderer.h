@@ -175,7 +175,7 @@ private: /* Members */
 
     /* Panning */
     glm::vec2 m_Pan;
-    Point m_LastMouse;
+    _QPoint m_LastMouse;
 
 private: /* Methods */
     /**

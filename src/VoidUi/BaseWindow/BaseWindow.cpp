@@ -35,7 +35,7 @@ void BaseWindow::mousePressEvent(QMouseEvent* event)
     QRect window = geometry();
 
     /* Position for the event click */
-    Point pos = event->position();
+    _QPoint pos = event->position();
 
     /* TODO: Add all types of resize operations */
     if (pos.x() > window.width() - RESIZE_MARGIN && pos.y() > window.height() - RESIZE_MARGIN)   /* Bottom Right */
@@ -81,7 +81,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
     if (m_Dragging)
     {
         /* Calculate how much the mouse has moved since last click */
-        Point delta = event->globalPosition() - m_LastPos;
+        _QPoint delta = event->globalPosition() - m_LastPos;
 
         /* And Move the widget/window as well that much */
         move(x() + delta.x(), y() + delta.y());
@@ -95,7 +95,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
     if (m_Resize == ResizeType::BottomRight)
     {
         /* Calculate the offset of how much the mouse has moved */
-        Point delta = event->globalPosition() - m_LastPos;
+        _QPoint delta = event->globalPosition() - m_LastPos;
 
         /* Resize the geometry */
         resize(width() + delta.x(), height() + delta.y());
@@ -105,7 +105,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
     else if (m_Resize == ResizeType::Bottom)
     {
         /* Calculate the offset of how much the mouse has moved */
-        Point delta = event->globalPosition() - m_LastPos;
+        _QPoint delta = event->globalPosition() - m_LastPos;
 
         /* Resize the geometry -- only in terms of height */
         resize(width(), height() + delta.y());
@@ -116,7 +116,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
     else if (m_Resize == ResizeType::Right)
     {
         /* Calculate the offset of how much the mouse has moved */
-        Point delta = event->globalPosition() - m_LastPos;
+        _QPoint delta = event->globalPosition() - m_LastPos;
 
         /* Resize the geometry -- only in terms of Width */
         resize(width() + delta.x(), height());
@@ -127,7 +127,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
     else if (m_Resize == ResizeType::Left)
     {
         /* Calculate the offset of how much the mouse has moved */
-        Point delta = event->globalPosition() - m_LastPos;
+        _QPoint delta = event->globalPosition() - m_LastPos;
 
         if (width() - delta.x() >= minimumWidth())
         {
@@ -152,7 +152,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
     else if (m_Resize == ResizeType::TopLeft)
     {
         /* Calculate the offset of how much the mouse has moved */
-        Point delta = event->globalPosition() - m_LastPos;
+        _QPoint delta = event->globalPosition() - m_LastPos;
 
         if (width() - delta.x() >= minimumWidth() && height() - delta.y() >= minimumHeight())
         {
@@ -175,7 +175,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event)
     else if (m_Resize == ResizeType::BottomLeft)
     {
         /* Calculate the offset of how much the mouse has moved */
-        Point delta = event->globalPosition() - m_LastPos;
+        _QPoint delta = event->globalPosition() - m_LastPos;
 
         if (width() - delta.x() >= minimumWidth())
         {
@@ -207,7 +207,7 @@ void BaseWindow::mousePressEvent(QMouseEvent* event)
     QRect window = geometry();
 
     /* position for the event click */
-    Point pos = event->pos();
+    _QPoint pos = event->pos();
 
     /* TODO: Add all types of resize operations */
     if (pos.x() > window.width() - RESIZE_MARGIN && pos.y() > window.height() - RESIZE_MARGIN)    /* Bottom Right */

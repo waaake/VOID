@@ -255,11 +255,11 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     if (m_Pressed)
     {
         #if _QT6    /* Qt6 Compat */
-        Point delta = event->position() - m_LastMouse;
+        _QPoint delta = event->position() - m_LastMouse;
         /* Update the last mouse pos as well */
         m_LastMouse = event->position();
         #else
-        Point delta = event->pos() - m_LastMouse;
+        _QPoint delta = event->pos() - m_LastMouse;
         /* Update the last mouse pos as well */
         m_LastMouse = event->pos();
         #endif // _QT6
