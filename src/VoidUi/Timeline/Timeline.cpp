@@ -14,6 +14,7 @@
 /* Internal */
 #include "Timeline.h"
 #include "VoidCore/Timekeeper.h"
+#include "VoidUi/Engine/Globals.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
@@ -202,8 +203,7 @@ void Timeline::Connect()
 void Timeline::Setup()
 {
 	/* Set the default rate */
-	SetFramerate("24");
-
+	SetFramerate(UIGlobals::FramerateString());
 	SetFrame(m_Timeslider->minimum());
 
 	/* Fixed Height for the timeslider panel */

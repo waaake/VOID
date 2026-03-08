@@ -25,6 +25,9 @@ namespace UIGlobals {
     VOID_API MenuSystem* InternalMenuSystem();
     VOID_API Player* GetActivePlayer();
     VOID_API MetadataViewer* GetMetadataViewer();
+    VOID_API void SetFramerate(float rate);
+    VOID_API float Framerate();
+    VOID_API std::string FramerateString();
     VOID_API void SetLuminance(const QColor& color);
     VOID_API bool IsDarkTheme();
 

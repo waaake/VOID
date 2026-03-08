@@ -84,6 +84,9 @@ void VoidEngine::Setup(QApplication& app)
     /* Set Application icon */
     QImage icon(":resources/images/VOID_Logo.svg");
     app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation))));
+
+    if (m_Args.framerate > 0)
+        UIGlobals::SetFramerate(m_Args.framerate);
 }
 
 void VoidEngine::Initialize()
@@ -115,13 +118,9 @@ void VoidEngine::PostInit()
 void VoidEngine::PostStartup()
 {
     if (!m_Args.project.empty())
-    {
         EngineBridge::OpenProject(m_Args.project);
-    }
     else if (!m_Args.media.empty())
-    {
         EngineBridge::LoadMedia(m_Args.media);
-    }
 
     /* Defer the callbacks */
     QTimer::singleShot(800, m_Imager, [this]() { Callback(); });
