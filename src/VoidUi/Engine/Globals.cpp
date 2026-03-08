@@ -1,6 +1,10 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <cmath>
+#include <string>
+
 /* Internal */
 #include "Globals.h"
 
@@ -11,6 +15,7 @@ namespace UIGlobals {
 VoidMainWindow* g_VoidMainWindow = nullptr;
 MenuSystem* g_MenuSystem = nullptr;
 static bool s_IsDarkTheme = false;
+static float s_Framerate = 24.f;
 
 VoidMainWindow* GetMainWindow()
 {
@@ -36,6 +41,27 @@ MetadataViewer* GetMetadataViewer()
         return g_VoidMainWindow->GetMetadataViewer();
 
     return nullptr;
+}
+
+void SetFramerate(float rate)
+{
+    s_Framerate = rate;
+}
+
+float Framerate()
+{
+    return s_Framerate;
+}
+
+std::string FramerateString()
+{
+    if (std::fabs(s_Framerate - std::round(s_Framerate)) < 1e-9)
+        return std::to_string(static_cast<int>(s_Framerate));
+
+    std::string fstr = std::to_string(s_Framerate);
+    fstr.erase(fstr.find_last_not_of('0') + 1, std::string::npos);
+
+    return fstr;
 }
 
 void SetLuminance(const QColor& color)

@@ -22,6 +22,7 @@ AudioDecoder::AudioDecoder()
     , m_Frame(nullptr)
     , m_Packet(nullptr)
     , m_SwrContext(nullptr)
+    , m_Valid(false)
     , m_AudioStream(nullptr)
 {
 }

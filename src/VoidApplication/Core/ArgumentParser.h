@@ -17,6 +17,7 @@ struct EngineArguments
     std::string project;
     std::string media;
 
+    float framerate;
     bool basic = false;
 };
 
