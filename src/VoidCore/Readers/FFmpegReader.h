@@ -44,60 +44,47 @@ public:
     FFmpegDecoder& operator=(FFmpegDecoder&&) = delete;
 
     /**
-     * @brief Opens the movie file and decodes the frame
+     * Opens the movie file and decodes the frame
      * keeps the packet iterator in its state and does not destroy the context till a new filepath is
      * provided which means that subsequent queries to get consecutive/immediate frames would just be of
      * complexity O(1) generally as we're not iterating over the queried frame again
      * but sometimes the containers have frames not in order and that can lead to a next frame complexity of
      * O(n) as the iterator might have to loop over all frames to get to the one we're looking at which also
      * caches the other frames so next frame queries could directly result in direct data transfer
-     * 
-     * @param path Path to the movie file.
-     * @param framenumber Framenumber currently looking for.
      */
-    void DecodeVideo(const std::string& path, const int framenumber);
-    void DecodeAudio(const int framenumber);
-
-    std::vector<unsigned char>& VideoFrame(const int framenumber);
-    std::vector<unsigned char>& Audio(const int frame);
+    bool Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
     [[nodiscard]] int Channels() const { return m_Channels; }
 
 private: /* Members */
+    std::string m_Path;
+
+    int64_t m_CurrentFrame;
     int m_Width, m_Height, m_Channels;
-    int m_VStreamID, m_AStreamID;
 
     /* FFMPEG Contexts */
     AVFormatContext* m_FormatContext;
-    AVCodecContext *m_VCodecContext, *m_ACodecContext;
-    AVFrame *m_VFrame, *m_RGBFrame, *m_AFrame;
+    AVCodecContext* m_CodecContext;
+    AVFrame* m_Frame;
+    AVFrame* m_RGBFrame;
     AVPacket* m_Packet;
     SwsContext* m_SwsContext;
-    SwrContext* m_SwrContext;
-    AVStream *m_VStream, *m_AStream;
-
-    std::string m_Path;
-    int64_t m_CurrentFrame;
+    AVStream* m_Stream;
+    int m_StreamID;
 
     std::mutex m_Mutex;
-    std::unordered_map<int, std::vector<unsigned char>> m_DecodedFrames;
-    std::unordered_map<int, std::vector<unsigned char>> m_DecodedStreams;
 
 private: /* Methods */
     void Open();
     void Close();
-
-    std::vector<unsigned char>& VideoData(const int frame);
-    std::vector<unsigned char>& AudioStream(const int frame);
 
     /**
      * Decodes the next frame from the movie container
      * returns back the frame number (converted from av time base to signed long)
      */
     v_frame_t DecodeNextFrame(bool save = true);
-    void DecodeNextAudio();
 };
 
 
@@ -194,7 +181,6 @@ public:
 
     virtual int AudioChannels() const override { return m_AChannels; }
     virtual int Samplerate() const override { return m_Samplerate; }
-    virtual const unsigned char* AudioSamples() const override { return m_Stream.data(); }
 
 private: /* Members */
     /* Image specifications */
@@ -214,7 +200,6 @@ private: /* Members */
 
     /* Internal data store */
     std::vector<unsigned char> m_Pixels;
-    std::vector<unsigned char> m_Stream;
 
 private: /* Methods */
     /**
