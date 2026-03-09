@@ -140,6 +140,7 @@ void AudioDecoder::SeekTo(double seconds)
 
 void AudioDecoder::DecodeSamples()
 {
+    double latency = m_AudioStream->Latency() / 1000;
     std::vector<unsigned char> frame;
 
     while (m_Running.load() && av_read_frame(m_FormatContext, m_Packet) >= 0)
@@ -160,13 +161,11 @@ void AudioDecoder::DecodeSamples()
                     unsigned char* framedata = frame.data();
 
                     swr_convert(m_SwrContext, (uint8_t**)&framedata, outsamples, (const uint8_t**)m_Frame->extended_data, m_Frame->nb_samples);
-
-                    VOID_LOG_INFO("Samplerate: {0}, OutSamples: {1}", m_CodecContext->sample_rate, outsamples);
                     // Update the current time on the Timekeeper, this makes the Video frames sync to this worker thread
-                    if (m_AudioStream->WriteSamples(framedata, buffersize))
-                        Timekeeper::Instance().SetTime(m_Time.load());
+                    if (m_AudioStream->WriteSamples(framedata, buffersize, outsamples))
+                        Timekeeper::Instance().SetTime(m_Time.load() - latency);
 
-                    std::this_thread::sleep_for(std::chrono::milliseconds((outsamples * 1000 / m_CodecContext->sample_rate) - 5));
+                    // std::this_thread::sleep_for(std::chrono::milliseconds((outsamples * 1000 / m_CodecContext->sample_rate) - 5));
                 }
             }
         }

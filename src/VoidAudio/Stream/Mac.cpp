@@ -31,7 +31,6 @@ AudioStream::AudioStream(int samplerate, int channels)
     m_Format.mBytesPerPacket = m_Format.mBytesPerFrame;
 }
 
-
 AudioStream::~AudioStream()
 {
     Stop();
@@ -90,7 +89,12 @@ void AudioStream::Stop()
     }
 }
 
-bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size)
+double AudioStream::Latency() const
+{
+    return 0.0;
+}
+
+bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     m_Samples.insert(m_Samples.end(), buffer, buffer + size);

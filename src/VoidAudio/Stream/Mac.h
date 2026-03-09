@@ -28,11 +28,14 @@ public:
 
     bool Start();
     void Stop();
-    bool WriteSamples(const unsigned char* buffer, std::size_t size);
+    bool WriteSamples(const unsigned char* buffer, std::size_t size, int samples);
+
+    double CurrentTime() const { return m_Time; }
+    double Latency() const;
 
 private:
     int m_Samplerate, m_Channels;
-    double m_PlaybackTime, m_SessionTime;
+    double m_PlaybackTime, m_SessionTime, m_Time;
     AudioUnit m_AudioUnit;
     AudioStreamBasicDescription m_Format;
     std::vector<unsigned char> m_Samples;
