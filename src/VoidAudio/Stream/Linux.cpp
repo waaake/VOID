@@ -49,7 +49,20 @@ void AudioStream::Stop()
     m_Stream = nullptr;
 }
 
-bool AudioStream::WriteSamples(const unsigned char* data, std::size_t size)
+double AudioStream::Latency() const
+{
+    if (m_Stream)
+    {
+        int error;
+        uint64_t latency = pa_simple_get_latency(m_Stream, &error);
+    
+        return latency / 1000.0;
+    }
+
+    return 0.0;
+}
+
+bool AudioStream::WriteSamples(const unsigned char* data, std::size_t size, int samples)
 {
     if (!m_Stream)
         return false;

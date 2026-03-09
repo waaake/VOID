@@ -337,7 +337,7 @@ void VoidMediaLister::AddSelectionToQueue()
     _PlayerBridge.AddToQueue(m, false);
 }
 
-void VoidMediaLister::ShowContextMenu(const Point& position)
+void VoidMediaLister::ShowContextMenu(const _QPoint& position)
 {
     /* Show up only if we have selection */
     if (!m_MediaView->HasSelection())

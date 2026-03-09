@@ -68,7 +68,7 @@ private: /* Methods */
     void ResetModel(PlaylistModel* model);
     void ItemClicked(const QModelIndex& index);
     void ProjectChanged(const Project* project);
-    void ShowContextMenu(const Point& position);
+    void ShowContextMenu(const _QPoint& position);
     void Play();
     void PlayAsSequence();
 };

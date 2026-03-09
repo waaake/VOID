@@ -4,8 +4,11 @@ set(SOURCES
 
 if (WIN32)
 list(APPEND SOURCES Stream/Win.cpp)
+elseif (APPLE)
+list(APPEND SOURCES Stream/Mac.cpp)
 elseif (UNIX)
 list(APPEND SOURCES Stream/Linux.cpp)
+
 find_package(ALSA REQUIRED)
 find_package(PulseAudio REQUIRED)
 endif()
@@ -36,7 +39,13 @@ target_include_directories(
     ${FFMPEG_INCLUDE_DIRS}
 )
 
-if (UNIX)
+if (APPLE)
+target_link_libraries(
+    VoidAudio
+    PRIVATE
+    "-framework CoreFoundation" "-framework AudioToolbox"
+)
+elseif (UNIX)
 target_link_libraries(
     VoidAudio
     PRIVATE

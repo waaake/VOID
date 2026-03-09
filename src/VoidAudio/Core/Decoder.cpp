@@ -76,9 +76,8 @@ void AudioDecoder::Start()
     if (m_Valid && !m_Running.load())
     {
         m_Running = true;
-        m_AudioStream->Start();
-
-        m_DecodeWorker = std::async(std::launch::async, &AudioDecoder::DecodeSamples, this);
+        if (m_AudioStream->Start())
+            m_DecodeWorker = std::async(std::launch::async, &AudioDecoder::DecodeSamples, this);
     }
 }
 
@@ -161,10 +160,19 @@ void AudioDecoder::DecodeSamples()
                     unsigned char* framedata = frame.data();
 
                     swr_convert(m_SwrContext, (uint8_t**)&framedata, outsamples, (const uint8_t**)m_Frame->extended_data, m_Frame->nb_samples);
-
                     // Update the current time on the Timekeeper, this makes the Video frames sync to this worker thread
-                    if (m_AudioStream->WriteSamples(framedata, buffersize))
-                        Timekeeper::Instance().SetTime(m_Time.load());
+                    if (m_AudioStream->WriteSamples(framedata, buffersize, outsamples))
+                    {
+                        /**
+                         * This approach is not good definitely and neither it works fully, just something as a TODO for later
+                         * Need to fix this with a better and robust solution
+                         */
+                        #if __APPLE__
+                        std::this_thread::sleep_for(std::chrono::milliseconds((outsamples * 1000 / m_CodecContext->sample_rate) - 5));
+                        #else
+                        Timekeeper::Instance().SetTime(m_Time.load() - (m_AudioStream->Latency() / 1000));
+                        #endif
+                    }
                 }
             }
         }

@@ -9,7 +9,6 @@
 /* Internal */
 #include "Win.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -57,15 +56,21 @@ void AudioStream::Stop()
     m_AudioClient->Stop();
 }
 
-bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size)
+double AudioStream::Latency() const
 {
-    Tools::VoidProfiler<std::chrono::milliseconds> p("AudioStream::WriteSamples");
+    REFERENCE_TIME latency;
+    m_AudioClient->GetStreamLatency(&latency);
 
+    return latency / 10000.0; // nanoseconds to ms
+}
+
+bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
+{
     const int16_t* in = reinterpret_cast<const int16_t*>(buffer);
-    std::size_t samples = size / sizeof(int16_t);
-    UINT32 inframes = samples / m_Wfx->nChannels;
+    std::size_t insamples = size / sizeof(int16_t);
+    UINT32 inframes = insamples / m_Wfx->nChannels;
 
-    UINT32 framesAvailable;
+    UINT32 framesAvailable = 0;
     while (framesAvailable < inframes)
     {
         framesAvailable = AvailableFrames();

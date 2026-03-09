@@ -82,7 +82,7 @@ private: /* Methods */
 
     void ResetModel(MediaModel* model);
     void ItemDoubleClicked(const QModelIndex& index);
-    void ShowContextMenu(const Point& position);
+    void ShowContextMenu(const _QPoint& position);
     void PlaySelected();
     void RemoveSelected();
 };

@@ -59,7 +59,7 @@ private: /* Methods */
     /* Maps the Proxy Index to the source Model index before emitting */
     void ItemClicked(const QModelIndex& index);
 
-    void ShowContextMenu(const Point& position);
+    void ShowContextMenu(const _QPoint& position);
 
     Project* HighlightedProject();
     void ImportMedia();

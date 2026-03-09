@@ -211,7 +211,7 @@ void PlaylistMediaView::ItemDoubleClicked(const QModelIndex& index)
     emit itemDoubleClicked(proxy->mapToSource(index));
 }
 
-void PlaylistMediaView::ShowContextMenu(const Point& position)
+void PlaylistMediaView::ShowContextMenu(const _QPoint& position)
 {
      /* Show up only if we have selection */
     if (!HasSelection())

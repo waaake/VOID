@@ -54,7 +54,7 @@ private: /* enum */
 
 private: /* members */
     ResizeType m_Resize;
-    Point m_LastPos;
+    _QPoint m_LastPos;
 
     bool m_Dragging;
 

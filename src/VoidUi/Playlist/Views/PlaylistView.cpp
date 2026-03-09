@@ -194,7 +194,7 @@ void PlaylistView::ProjectChanged(const Project* project)
     ResetModel(project->PlaylistMediaModel());   
 }
 
-void PlaylistView::ShowContextMenu(const Point& position)
+void PlaylistView::ShowContextMenu(const _QPoint& position)
 {
     /* Show up only if we have selection */
     if (!HasSelection())
