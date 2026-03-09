@@ -51,6 +51,14 @@ void AudioStream::Stop()
 
 double AudioStream::Latency() const
 {
+    if (m_Stream)
+    {
+        int error;
+        uint64_t latency = pa_simple_get_latency(m_Stream, &error);
+    
+        return latency / 1000.0;
+    }
+
     return 0.0;
 }
 
