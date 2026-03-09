@@ -116,7 +116,6 @@ OSStatus AudioStream::RenderCallback(void* inRefCon, AudioUnitRenderActionFlags*
 
     UInt32 bytesToCopy = std::min(bytesRequested, bytesAvailable);
 
-    // self->m_Cond.notify_all();
     VOID_LOG_INFO("Requested: {0}, Available: {1}, ToCopy: {2}", bytesRequested, bytesAvailable, bytesToCopy);
 
     if (bytesToCopy > 0)
@@ -139,101 +138,5 @@ OSStatus AudioStream::RenderCallback(void* inRefCon, AudioUnitRenderActionFlags*
     Timekeeper::Instance().SetTime(self->m_SessionTime + self->m_PlaybackTime);
     return noErr;
 }
-
-
-// AudioStream::AudioStream(int samplerate, int channels)
-//     : m_Samplerate(samplerate)
-//     , m_Channels(channels)
-//     , m_Queue(nullptr)
-// {
-//     std::memset(&m_Format, 0, sizeof(m_Format));
-//     m_Format.mSampleRate = samplerate;
-//     m_Format.mFormatID = kAudioFormatLinearPCM;
-//     m_Format.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-//     m_Format.mBitsPerChannel = 16;
-//     m_Format.mChannelsPerFrame = channels;
-//     m_Format.mFramesPerPacket = 1;
-//     m_Format.mBytesPerFrame = (m_Format.mBitsPerChannel / 8) * channels;
-//     m_Format.mBytesPerPacket = m_Format.mBytesPerFrame;
-// }
-
-
-// AudioStream::~AudioStream()
-// {
-//     Stop();
-//     // if (m_AudioUnit)
-//     //     AudioComponentInstanceDispose(m_AudioUnit);
-    
-//     // m_AudioUnit = nullptr;
-// }
-
-// bool AudioStream::Start()
-// {
-//     if (AudioQueueNewOutput(&m_Format, OutputCallback, this, nullptr, nullptr, 0, &m_Queue) != noErr)
-//         return false;
-    
-//     for (int i = 0; i < 3; ++i)
-//     {
-//         AudioQueueBufferRef buffer;
-//         AudioQueueAllocateBuffer(m_Queue, 4096, &buffer);
-//         buffer->mAudioDataByteSize = 0;
-//         AudioQueueEnqueueBuffer(m_Queue, buffer, 0, nullptr);
-//     }
-
-//     if (AudioQueueStart(m_Queue, nullptr) != noErr)
-//     {
-//         VOID_LOG_INFO("Start Failed...");
-//         return false;
-//     }
-    
-//     return true;
-// }
-
-// void AudioStream::Stop()
-// {
-//     if (m_Queue)
-//     {
-//         AudioQueueStop(m_Queue, true);
-//         AudioQueueDispose(m_Queue, true);
-//     }
-//     m_Queue = nullptr;
-// }
-
-// bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size)
-// {
-//     std::lock_guard<std::mutex> lock(m_Mutex);
-//     m_Samples.insert(m_Samples.end(), buffer, buffer + size);
-//     VOID_LOG_INFO("Inserted...");
-//     return true;
-// }
-
-// void AudioStream::OutputCallback(void* inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer)
-// {
-//     AudioStream* self = static_cast<AudioStream*>(inUserData);
-
-//     std::lock_guard<std::mutex> lock(self->m_Mutex);
-//     UInt32 bytesRequested = inBuffer->mAudioDataBytesCapacity;
-//     UInt32 bytesAvailable = static_cast<UInt32>(self->m_Samples.size());
-
-//     UInt32 bytesToCopy = std::min(bytesRequested, bytesAvailable);
-
-//     VOID_LOG_INFO("Requested: {0}, Available: {1}, ToCopy: {2}", bytesRequested, bytesAvailable, bytesToCopy);
-
-//     if (bytesToCopy > 0)
-//     {
-//         std::memcpy(inBuffer->mAudioData, self->m_Samples.data(), bytesToCopy);
-//         inBuffer->mAudioDataByteSize = bytesToCopy;
-
-//         self->m_Samples.erase(self->m_Samples.begin(), self->m_Samples.begin() + bytesToCopy);
-//     }
-//     else
-//     {
-//         std::memset(inBuffer->mAudioData, 0, bytesRequested);
-//         inBuffer->mAudioDataByteSize = inBuffer->mAudioDataBytesCapacity;
-//     }
-
-//     AudioQueueEnqueueBuffer(inAQ, inBuffer, 0, nullptr);
-//     VOID_LOG_INFO("Called....");
-// }
 
 VOID_NAMESPACE_CLOSE

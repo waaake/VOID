@@ -163,10 +163,16 @@ void AudioDecoder::DecodeSamples()
                     // Update the current time on the Timekeeper, this makes the Video frames sync to this worker thread
                     if (m_AudioStream->WriteSamples(framedata, buffersize, outsamples))
                     {
+                        /**
+                         * This approach is not good definitely and neither it works fully, just something as a TODO for later
+                         * Need to fix this with a better and robust solution
+                         */
+                        #if __APPLE__
+                        std::this_thread::sleep_for(std::chrono::milliseconds((outsamples * 1000 / m_CodecContext->sample_rate) - 5));
+                        #else
                         Timekeeper::Instance().SetTime(m_Time.load() - (m_AudioStream->Latency() / 1000));
+                        #endif
                     }
-
-                    // std::this_thread::sleep_for(std::chrono::milliseconds((outsamples * 1000 / m_CodecContext->sample_rate) - 5));
                 }
             }
         }

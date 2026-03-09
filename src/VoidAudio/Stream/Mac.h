@@ -12,8 +12,6 @@
 
 /* MAC */
 #include <AudioToolbox/AudioToolbox.h>
-// #include <AudioToolbox/AudioQueue.h>
-
 
 /* Internal */
 #include "Definition.h"
@@ -46,29 +44,6 @@ private:
 private:
     static OSStatus RenderCallback(void* inRefCon, AudioUnitRenderActionFlags* ioActionFlags, const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData);
 };
-
-// class AudioStream
-// {
-// public:
-//     AudioStream(int samplerate, int channels);
-//     ~AudioStream();
-
-//     bool Start();
-//     void Stop();
-//     bool WriteSamples(const unsigned char* buffer, std::size_t size);
-
-// private:
-//     int m_Samplerate, m_Channels;
-//     // AudioUnit m_AudioUnit;
-//     AudioQueueRef m_Queue;
-//     AudioStreamBasicDescription m_Format;
-//     std::vector<unsigned char> m_Samples;
-//     std::mutex m_Mutex;
-
-// private:
-//     static void OutputCallback(void* inUserData, AudioQueueRef inAQ, AudioQueueBufferRef inBuffer);
-// };
-
 
 VOID_NAMESPACE_CLOSE
 
