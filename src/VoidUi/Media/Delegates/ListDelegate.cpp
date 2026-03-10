@@ -7,6 +7,7 @@
 /* Internal */
 #include "ListDelegate.h"
 #include "VoidUi/Media/MediaBridge.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -142,11 +143,9 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     /* Save the painter for restoring later */
     painter->save();
-
     
     /* Side Bar */
-    const QColor sidebar = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool() ? QColor(120, 180, 80) : bg.lighter(150);
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), sidebar);
+    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(150));
 
     /* Thumbnail */
     const QRect thumbrect = QRect(rect.left() + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
@@ -159,6 +158,9 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
+
+    if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
+        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), 14));
 
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;

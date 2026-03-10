@@ -47,6 +47,7 @@ enum class IconType : char16_t
     icon_title              = 0xe264,
     icon_trending_flat      = 0xe8e4,
     icon_view_stream        = 0xe8f2,
+    icon_volume_up          = 0xe050,
 };
 
 VOID_NAMESPACE_CLOSE
