@@ -15,6 +15,7 @@ namespace UIGlobals {
 VoidMainWindow* g_VoidMainWindow = nullptr;
 MenuSystem* g_MenuSystem = nullptr;
 static bool s_IsDarkTheme = false;
+static bool s_AudioEnabled = false;
 static float s_Framerate = 24.f;
 
 VoidMainWindow* GetMainWindow()
@@ -41,6 +42,16 @@ MetadataViewer* GetMetadataViewer()
         return g_VoidMainWindow->GetMetadataViewer();
 
     return nullptr;
+}
+
+void ToggleAudio(bool enable)
+{
+    s_AudioEnabled = enable;
+}
+
+bool AudioEnabled()
+{
+    return s_AudioEnabled;
 }
 
 void SetFramerate(float rate)

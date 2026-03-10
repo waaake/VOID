@@ -35,6 +35,7 @@ public:
      * @param framerate Rate of playback from the active timeline.
      */
     void SetFramerate(double framerate) { m_Framerate = framerate; }
+    double Framerate() const { return m_Framerate; }
 
     /**
      * @brief Set the current framerate of the media that is being played
@@ -42,6 +43,7 @@ public:
      * @param framerate Rate of playback of the active media.
      */
     void SetMediaFramerate(double framerate) { m_Mediarate = framerate; }
+    double MediaFramerate() const { return m_Mediarate; }
 
     /**
      * @brief Set the current frame. This method is likely to be called when the

@@ -24,6 +24,8 @@ EngineArguments ParseArgs(int argc, char** argv)
             args.basic = true;
         else if ("--framerate" == arg)
             args.framerate = std::atof(argv[++i]);
+        else if ("--audio" == arg)
+            args.audio = true;
     }
 
     return args;

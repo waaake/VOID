@@ -14,7 +14,6 @@ VOID_NAMESPACE_OPEN
 AudioDecoder::AudioDecoder()
     : m_Time(-1.0)
     , m_Running(false)
-    , m_Finished(false)
     , m_StreamID(-1)
     , m_FormatContext(nullptr)
     , m_CodecContext(nullptr)
@@ -75,6 +74,24 @@ void AudioDecoder::Start()
 {
     if (m_Valid && !m_Running.load())
     {
+        m_Running = true;
+        if (m_AudioStream->Start())
+            m_DecodeWorker = std::async(std::launch::async, &AudioDecoder::DecodeSamples, this);
+    }
+}
+
+void AudioDecoder::Restart()
+{
+    if (m_Valid)
+    {
+        m_Running = false;
+        // Wait till this gets finished
+        if (m_DecodeWorker.valid())
+            m_DecodeWorker.get();
+
+        m_AudioStream->Stop();
+        SeekTo(0.0);
+        
         m_Running = true;
         if (m_AudioStream->Start())
             m_DecodeWorker = std::async(std::launch::async, &AudioDecoder::DecodeSamples, this);
@@ -178,7 +195,9 @@ void AudioDecoder::DecodeSamples()
         }
         av_packet_unref(m_Packet);
     }
-    // m_Finished = true;
+
+    // Reset the internal time
+    Timekeeper::Instance().SetTime(-1.0);
 }
 
 VOID_NAMESPACE_CLOSE

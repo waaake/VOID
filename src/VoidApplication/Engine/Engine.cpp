@@ -87,6 +87,8 @@ void VoidEngine::Setup(QApplication& app)
 
     if (m_Args.framerate > 0)
         UIGlobals::SetFramerate(m_Args.framerate);
+
+    UIGlobals::ToggleAudio(m_Args.audio);
 }
 
 void VoidEngine::Initialize()
