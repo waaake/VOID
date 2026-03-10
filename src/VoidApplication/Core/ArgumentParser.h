@@ -19,6 +19,7 @@ struct EngineArguments
 
     float framerate = 0.f;
     bool basic = false;
+    bool audio = false;
 };
 
 EngineArguments ParseArgs(int argc, char** argv);

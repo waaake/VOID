@@ -9,7 +9,7 @@
 #include "Player.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidCore/Logging.h"
+#include "VoidUi/Engine/Globals.h"
 #include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
@@ -49,11 +49,11 @@ void Player::SetMedia(const SharedMediaClip& media)
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
 
-    m_AudioDecoder->Init(media->Fullpath());
-
     Timekeeper::Instance().Reset();
     Timekeeper::Instance().SetMediaFramerate(media->Framerate());
-    VOID_LOG_INFO("Media has Audio: {0}", media->HasAudio());
+
+    if (UIGlobals::AudioEnabled())
+        m_AudioDecoder->Init(media->Fullpath());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -255,7 +255,7 @@ void Player::Connect()
     });
     connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {
-        m_AudioDecoder->Reset();
+        m_AudioDecoder->Restart();
         state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
     });
     connect(m_Timeline, &Timeline::seeked, this, [this](v_frame_t frame)

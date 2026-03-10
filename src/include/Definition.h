@@ -10,6 +10,15 @@
 #define VOID_NAMESPACE_OPEN namespace VOID_NAMESPACE { /* voidplayer namespace */
 #define VOID_NAMESPACE_CLOSE } // namespace voidplayer
 
+/* Internal Platform Macro */
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define _VOID_WIN
+#elif __APPLE__
+#define _VOID_MAC
+#else
+#define _VOID_LINUX
+#endif
+
 /* Symbols Visibility */
 #if defined(_WIN32) || defined(__CYGWIN__)
 #if defined(VOID_LIB)

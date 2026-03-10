@@ -7,11 +7,18 @@
 /* Internal */
 #include "ThumbnailDelegate.h"
 #include "VoidUi/Media/MediaBridge.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
 constexpr int MAX_THUMBNAIL_WIDTH = 130;
 constexpr int MAX_THUMBNAIL_HEIGHT = 100;
+
+#ifdef _VOID_MAC
+constexpr int ICON_SIZE = 16;
+#else
+constexpr int ICON_SIZE = 12;
+#endif
 
 MediaThumbnailDelegate::MediaThumbnailDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
@@ -75,8 +82,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->save();
 
     /* Side Bar */
-    const QColor sidebar = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool() ? QColor(120, 180, 80) : bg.lighter(150);
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), sidebar);
+    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(150));
 
     const int left = rect.left() + 10;
 
@@ -91,6 +97,9 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
+
+    if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
+        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), ICON_SIZE));
 
     int thumbbottom = thumbrect.bottom() + 5;
 

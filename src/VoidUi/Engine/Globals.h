@@ -25,6 +25,8 @@ namespace UIGlobals {
     VOID_API MenuSystem* InternalMenuSystem();
     VOID_API Player* GetActivePlayer();
     VOID_API MetadataViewer* GetMetadataViewer();
+    VOID_API void ToggleAudio(bool enable);
+    VOID_API bool AudioEnabled();
     VOID_API void SetFramerate(float rate);
     VOID_API float Framerate();
     VOID_API std::string FramerateString();

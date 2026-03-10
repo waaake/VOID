@@ -44,6 +44,8 @@ public:
 
     // Start playback if the provided file had valid audio to be played
     void Start();
+    // Reset the internals and Start the playback
+    void Restart();
     // Stop Playback
     void Stop();
     // Reset the PTS and internal time, this makes the audio play from the start of the file
@@ -61,7 +63,7 @@ private: /* Methods */
 private: /* Members */
     std::atomic<double> m_Time;
     std::atomic<bool> m_Running;
-    std::atomic<bool> m_Finished;
+    bool m_Valid;
 
     int m_StreamID;
     AVFormatContext* m_FormatContext;
@@ -71,9 +73,7 @@ private: /* Members */
     AVPacket* m_Packet;
     SwrContext* m_SwrContext;
 
-    bool m_Valid;
     std::future<void> m_DecodeWorker;
-
     AudioStream* m_AudioStream;
 };
 
