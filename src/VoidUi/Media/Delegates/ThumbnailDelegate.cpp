@@ -14,6 +14,12 @@ VOID_NAMESPACE_OPEN
 constexpr int MAX_THUMBNAIL_WIDTH = 130;
 constexpr int MAX_THUMBNAIL_HEIGHT = 100;
 
+#ifdef _VOID_MAC
+constexpr int ICON_SIZE = 16;
+#else
+constexpr int ICON_SIZE = 12;
+#endif
+
 MediaThumbnailDelegate::MediaThumbnailDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
@@ -93,7 +99,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->drawPixmap(x, y, scaled);
 
     if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
-        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), 16));
+        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), ICON_SIZE));
 
     int thumbbottom = thumbrect.bottom() + 5;
 

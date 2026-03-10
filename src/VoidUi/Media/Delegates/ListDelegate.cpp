@@ -14,6 +14,13 @@ VOID_NAMESPACE_OPEN
 constexpr int MAX_THUMBNAIL_WIDTH = 80;
 constexpr int MAX_THUMBNAIL_HEIGHT = 50;
 
+#ifdef _VOID_MAC
+constexpr int ICON_SIZE = 14;
+#else
+constexpr int ICON_SIZE = 12;
+#endif
+
+
 /* Basic Media Item Delegate {{{ */
 
 BasicMediaItemDelegate::BasicMediaItemDelegate(QObject* parent)
@@ -160,7 +167,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawPixmap(x, y, scaled);
 
     if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
-        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), 14));
+        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), ICON_SIZE));
 
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;
