@@ -96,10 +96,20 @@ double AudioStream::Latency() const
 
 bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_Samples.insert(m_Samples.end(), buffer, buffer + size);
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_Samples.insert(m_Samples.end(), buffer, buffer + size);
+    }
 
     // m_Cond.wait(lock, [&] { return m_Samples.empty(); });
+
+    /** 
+     * The Decoder expects this function to be blocking till the time the samples are played
+     * well almost played to be precise, we don't want the buffer to underrun and cause stutters
+     * Instead we wait just till the time the next samples can be played keeping enough time buffer
+     * so that the additional processing for decoding and other bits can happen
+     */
+    std::this_thread::sleep_for(std::chrono::milliseconds((samples * 1000 / m_Samplerate) - 5))
 
     return true;
 }
@@ -125,11 +135,11 @@ OSStatus AudioStream::RenderCallback(void* inRefCon, AudioUnitRenderActionFlags*
 
         self->m_Samples.erase(self->m_Samples.begin(), self->m_Samples.begin() + bytesToCopy);
     }
-    else
-    {
-        std::memset(ioData->mBuffers[0].mData, 0, bytesRequested);
-        ioData->mBuffers[0].mDataByteSize = bytesRequested;
-    }
+    // else
+    // {
+    //     std::memset(ioData->mBuffers[0].mData, 0, bytesRequested);
+    //     ioData->mBuffers[0].mDataByteSize = bytesRequested;
+    // }
 
     // if (self->m_Samples.size() < bytesRequested)
     // self->m_Cond.notify_all();

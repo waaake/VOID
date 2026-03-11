@@ -37,10 +37,10 @@ void AudioDecoder::Init(const std::string& path)
     Cleanup();
 
     if (avformat_open_input(&m_FormatContext, path.c_str(), nullptr, nullptr) < 0)
-    return;
+        return;
 
     if (avformat_find_stream_info(m_FormatContext, nullptr) < 0)
-    return;
+        return;
 
     m_StreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
 
@@ -181,12 +181,12 @@ void AudioDecoder::DecodeSamples()
                     if (m_AudioStream->WriteSamples(framedata, buffersize, outsamples))
                     {
                         /**
-                         * This approach is not good definitely and neither it works fully, just something as a TODO for later
-                         * Need to fix this with a better and robust solution
+                         * For windows and linux we set the time manually based on the current time being decoded
+                         * Based on the way how we've gone for Mac for audio playback, the time is through the callback itself
+                         * which is a bit more accurate as to how many timestamps have been played since the playback started
+                         * with a bit of calculation around that, we get what's the current time being played currently
                          */
-                        #if __APPLE__
-                        std::this_thread::sleep_for(std::chrono::milliseconds((outsamples * 1000 / m_CodecContext->sample_rate) - 5));
-                        #else
+                        #if defined(_VOID_LINUX) || defined(_VOID_WIN)
                         Timekeeper::Instance().SetTime(m_Time.load() - (m_AudioStream->Latency() / 1000));
                         #endif
                     }
