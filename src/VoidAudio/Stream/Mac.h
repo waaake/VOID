@@ -27,6 +27,7 @@ public:
     bool Start();
     void Stop();
     bool WriteSamples(const unsigned char* buffer, std::size_t size, int samples);
+    void SeekTo(double time);
 
     double CurrentTime() const { return m_Time; }
     double Latency() const;

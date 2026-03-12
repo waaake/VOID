@@ -151,7 +151,14 @@ void AudioDecoder::SeekTo(double seconds)
     {
         int64_t pts = av_rescale_q(seconds * AV_TIME_BASE, AVRational{1, AV_TIME_BASE}, m_Stream->time_base);
         if (av_seek_frame(m_FormatContext, m_StreamID, pts, AVSEEK_FLAG_FRAME) >= 0)
+        {
             avcodec_flush_buffers(m_CodecContext);
+            // Handle stream level seeking if required
+            // with the current implementation of the audio stream, macos needs this, windows and linux do not
+            #if defined(_VOID_MAC)
+            m_AudioStream->SeekTo(seconds);
+            #endif
+        }
     }
 }
 

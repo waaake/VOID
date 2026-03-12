@@ -85,7 +85,6 @@ void AudioStream::Stop()
         AudioUnitUninitialize(m_AudioUnit);
 
         m_SessionTime = m_PlaybackTime;
-        VOID_LOG_INFO("Played: {}s", m_SessionTime);
     }
 }
 
@@ -109,9 +108,28 @@ bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, in
      * Instead we wait just till the time the next samples can be played keeping enough time buffer
      * so that the additional processing for decoding and other bits can happen
      */
-    std::this_thread::sleep_for(std::chrono::milliseconds((samples * 1000 / m_Samplerate) - 5))
+    std::this_thread::sleep_for(std::chrono::milliseconds((samples * 500 / m_Samplerate)));
 
     return true;
+}
+
+void AudioStream::SeekTo(double time)
+{
+    m_SessionTime = time;
+
+    if (m_AudioUnit)
+    {
+        AudioOutputUnitStop(m_AudioUnit);
+        AudioUnitUninitialize(m_AudioUnit);
+
+        // Safely clear any remaining samples from the buffer
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_Samples.clear();
+        }
+
+        Start();
+    }
 }
 
 OSStatus AudioStream::RenderCallback(void* inRefCon, AudioUnitRenderActionFlags* ioActionFlags, const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData)
