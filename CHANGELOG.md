@@ -7,6 +7,34 @@ and VOID player adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ---
 
+## [0.3.0-alpha] - 2026-03-12
+### Added
+- Support for dragging and dropping docked panels.
+- Initial concept of Player workspaces allowing the users to switch between Basic, Standard Playback, Review with playlist and scripting workspaces.
+- Support for Audio playback on Linux and Windows. Mac audio support is partly added (some bugs need to be fixed and overall experience improvements needed.)
+- Recent projects startup window, allowing the users to quickly choose from the last project(s) (upto 5) being worked on.
+- Custom media importer with support for Sequence representation (image_name.####.ext 1001-1120) format for image sequences when being browsed through the file browser for VOID.
+- Support for command-line arguments like --media, --project to load a media or a project directly when opening the player.
+- Support for switching to the basic workspace view with --basic command-line and can be used alongside --media for a quick view over the media.
+- Support for playing multiple media in a queue which makes them play one after the other and keeps the timeline range respective to the current media being played.
+
+### Fixed
+- Fixed an issue where the frameless titlebar allowed the player to move even when it is in maximized state.
+- Fixed the player to clear the current media before accepting the dropped media.
+
+### Misc
+- Minor UI elements overhaul for the playback controls and timeline to make the buttons more asthetic and improve usability/accessibility.
+- Icons appear with slightly better contrast with the backgrounds especially the dark themes.
+- Improved color schemes for the player and made the overall theme contrast better.
+- In project view, the saved projects can be easily identified with the sidebar color accent.
+- Imported media thumbnails are generated on thread, keeping the load process faster and smooth for improved user experience.
+- Playlists created within the project are also saved and loaded with the project.
+- Switched to OpenGL Pixel Buffer Objects for improved rendering and playback rate.
+- Improvements to how the internal FFmpegDecoder provides Data to the PixelReader.
+- Improvements to the Media entity construction for slight benefits in terms of performance.
+- Internal improvements to the Player architecture for better distinction of widget v/s the core logic.
+
+
 ## [0.2.0-alpha] - 2025-10-08
 ### Added
 - Projects are supported in VOID player.
