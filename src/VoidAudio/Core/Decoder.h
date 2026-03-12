@@ -19,9 +19,9 @@ extern "C"
 
 /* Internal */
 #include "Definition.h"
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_VOID_WIN)
 #include "VoidAudio/Stream/Win.h"
-#elif __APPLE__
+#elif defined(_VOID_MAC)
 #include "VoidAudio/Stream/Mac.h"
 #else
 #include "VoidAudio/Stream/Linux.h"
