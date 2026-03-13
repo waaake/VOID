@@ -149,9 +149,7 @@ protected: /* Members */
     double m_Framerate;
 
     Type m_Type;
-    /* Arrays to hold the media Frames for the type of media */
     std::unordered_map<v_frame_t, Frame> m_Mediaframes;
-    /* Array to hold the frame numbers for the frames which have been read */
     std::vector<v_frame_t> m_Framenumbers;
 
 private: /* Methods */
