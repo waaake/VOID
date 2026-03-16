@@ -80,7 +80,7 @@ public:
     inline v_frame_t FirstFrame() const { return m_FirstFrame; }
     inline v_frame_t LastFrame() const { return m_LastFrame; }
 
-    inline v_frame_t Duration() const { return (LastFrame() - FirstFrame()) + 1; }
+    inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
     /*
      * Returns whether a given frame falls in the range of Media
@@ -104,13 +104,14 @@ public:
 
     Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame); }
 
-    Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
-    Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
+    Frame FirstFrameData() const { return m_Mediaframes.at(m_FirstFrame); }
+    Frame LastFrameData() const { return m_Mediaframes.at(m_LastFrame); }
 
     inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame).Image(cached); }
+    inline std::size_t FrameSize() { return Image(m_FirstFrame)->FrameSize(); }
 
-    inline SharedPixels FirstImage() { return Image(FirstFrame()); }
-    inline SharedPixels LastImage() { return Image(LastFrame()); }
+    inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
+    inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
     inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.at(m_FirstFrame).Metadata(); }
 

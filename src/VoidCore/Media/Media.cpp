@@ -180,12 +180,8 @@ void Media::ProcessMovie()
 
 void Media::ClearCache()
 {
-    /* For all the frames in the media frames */
     for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
-    {
-        /* Clear the Data for the Frame from the memory */
         it.second.ClearCache();
-    }
 }
 
 
