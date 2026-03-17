@@ -76,7 +76,7 @@ SharedTrackItem TrackMap::At(const int frame) const
     SharedTrackItem item = m_Items.at(*(--it));
 
     /* The frame (with the offset applied back to match the media range) is in range of the item's media */
-    if (item->HasFrame(frame))
+    if (item->InRange(frame))
         return item;
 
     /* There wasn't any track item at the requested frame */

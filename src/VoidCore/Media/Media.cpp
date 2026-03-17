@@ -93,6 +93,16 @@ v_frame_t Media::NearestFrame(const v_frame_t frame) const
     return (it == m_Framenumbers.begin()) ? m_FirstFrame : *(--it);
 }
 
+bool Media::Contains(v_frame_t frame) const
+{
+    /**
+     * A movie would have all the frames in it, even if something is technially missing,
+     * movie still has still information about those, only an image sequence needs to be checked
+     * for actual frame being present even if it's still in the range 
+     */
+    return m_Type == Media::Type::MOVIE ? true : m_Mediaframes.find(frame) != m_Mediaframes.end();
+}
+
 void Media::Read(const MediaStruct& mstruct)
 {
     m_MediaStruct = mstruct;

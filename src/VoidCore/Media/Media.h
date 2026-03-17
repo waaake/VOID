@@ -87,14 +87,14 @@ public:
      * i.e. between the first and the last frame of media
      * Any frame missing does not matter as this method only returns whether a frame is in the range or not
      */
-    [[nodiscard]] inline bool HasFrame(v_frame_t frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
+    [[nodiscard]] inline bool InRange(v_frame_t frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
 
     /* 
      * Returns whether a given frame is available to read
      * There could be a scenario where the given frame is in the range of first - last but is not available
      * and is referred to as the missing frame.
      */
-    [[nodiscard]] inline bool Contains(v_frame_t frame) const { return m_Mediaframes.find(frame) != m_Mediaframes.end(); }
+    [[nodiscard]] bool Contains(v_frame_t frame) const;
 
     /*
      * Based on the available frames, returns the frame which is just lower than the provided frame
