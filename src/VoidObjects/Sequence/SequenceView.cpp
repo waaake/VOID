@@ -25,7 +25,7 @@ SharedTrackItem SequenceView::ItemAt(v_frame_t frame)
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     /* The current track item is good for the requested frame */
-    if (m_TrackItem && m_TrackItem->HasFrame(frame))
+    if (m_TrackItem && m_TrackItem->InRange(frame))
         return m_TrackItem;
 
     /* Query the item from the track instead and cache that for subsequent queries */
@@ -36,7 +36,7 @@ SharedTrackItem SequenceView::ItemAt(v_frame_t frame)
 SharedMediaClip SequenceView::MediaAt(v_frame_t frame)
 {
     /* The current track item is good for the requested frame */
-    if (m_TrackItem && m_TrackItem->HasFrame(frame))
+    if (m_TrackItem && m_TrackItem->InRange(frame))
         return m_TrackItem->GetMedia();
 
     /* Query the item from the track instead and cache that for subsequent queries */

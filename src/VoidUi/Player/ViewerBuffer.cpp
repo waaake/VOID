@@ -178,7 +178,7 @@ SharedPixels ViewerBuffer::Image(const v_frame_t frame)
             return nullptr;
 
         /* Check if we have the frame available in the Clip */
-        if (m_Clip->HasFrame(frame))
+        if (m_Clip->InRange(frame))
             return m_Clip->Image(frame);
         
         /* Return the nearest frame */
@@ -201,7 +201,7 @@ SharedTrackItem ViewerBuffer::ItemFromSequence(const v_frame_t frame)
      * if the cached track item is not preset or if the item does not have the requested frame
      * request for a track item from the track at the frame, cache it and return back
      */
-    if (!m_CachedTrackItem || !m_CachedTrackItem->HasFrame(frame))
+    if (!m_CachedTrackItem || !m_CachedTrackItem->InRange(frame))
     {
         /* Cache the item from the Sequence */
         m_CachedTrackItem = m_Sequence->GetTrackItem(frame);
@@ -218,7 +218,7 @@ SharedTrackItem ViewerBuffer::ItemFromTrack(const v_frame_t frame)
      * if the cached track item is not preset or if the item does not have the requested frame
      * request for a track item from the track at the frame, cache it and return back
      */
-    if (!m_CachedTrackItem || !m_CachedTrackItem->HasFrame(frame))
+    if (!m_CachedTrackItem || !m_CachedTrackItem->InRange(frame))
     {
         /* Cache the item from the track */
         m_CachedTrackItem = m_Track->GetTrackItem(frame);

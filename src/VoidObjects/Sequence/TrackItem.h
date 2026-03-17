@@ -78,7 +78,7 @@ public:
      * 
      * TODO: Consider handle frames when they are implemented.
      */
-    inline bool HasFrame(const v_frame_t frame) const { return m_Media->HasFrame(frame + m_Offset); }
+    inline bool InRange(const v_frame_t frame) const { return m_Media->InRange(frame + m_Offset); }
 
     /**
      * Returns the nearest frame of a given frame from the media in TrackItem space

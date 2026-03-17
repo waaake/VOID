@@ -258,10 +258,11 @@ MediaStruct::MediaStruct(const std::string& basepath,
         Clear();
 
     m_Frames.reserve(end - start + 1);
+    m_Entries.reserve(end - start + 1);
 
     for (v_frame_t frame = start; frame <= end; ++frame)
     {
-        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, padding,false));
+        m_Entries.emplace_back(basepath, name, extension, frame, padding, false);
         m_Frames.emplace_back(frame);
     }
 
@@ -283,6 +284,7 @@ MediaStruct::MediaStruct(const std::string& basepath,
         Clear();
 
     m_Frames.reserve((end - start + 1) - missing.size());
+    m_Entries.reserve((end - start + 1) - missing.size());
 
     std::unordered_set<v_frame_t> missingSet(missing.begin(), missing.end());
 
@@ -291,7 +293,7 @@ MediaStruct::MediaStruct(const std::string& basepath,
         if (missingSet.count(frame))
             continue;
 
-        m_Entries[frame] = std::move(MEntry(basepath, name, extension, frame, padding,false));
+        m_Entries.emplace_back(basepath, name, extension, frame, padding, false);
         m_Frames.emplace_back(frame);
     }
 
@@ -306,8 +308,6 @@ MediaStruct::MediaStruct(const MediaStruct& other)
 
     /* Clear Existing Frames */
     m_Frames.clear();
-
-    /* Copy the contents of the internal vector */
     m_Frames.reserve(other.m_Frames.size());
 
     /* Add back the frame */
@@ -367,69 +367,6 @@ MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
     return *this;
 }
 
-std::string MediaStruct::Name() const
-{
-    /* Empty container */
-    if (m_Entries.empty())
-        return "";
-
-    return m_Entries.begin()->second.Name();
-}
-
-std::string MediaStruct::Extension() const
-{
-    /* Empty container */
-    if (m_Entries.empty())
-        return "";
-
-    return m_Entries.begin()->second.Extension();
-}
-
-std::string MediaStruct::Basepath() const
-{
-    /* Empty container */
-    if (m_Entries.empty())
-        return "";
-
-    return m_Entries.begin()->second.Basepath();
-}
-
-std::string MediaStruct::FirstPath() const
-{
-    /* Empty container */
-    if (m_Entries.empty())
-        return "";
-
-    return m_Entries.begin()->second.Fullpath();
-}
-
-bool MediaStruct::SingleFile() const
-{
-    /* Empty container */
-    if (m_Entries.empty())
-        return false;
-
-    return m_Entries.begin()->second.SingleFile();
-}
-
-unsigned int MediaStruct::Framepadding() const
-{
-    /* Empty container */
-    if (m_Entries.empty())
-        return 0;
-
-    return m_Entries.begin()->second.Framepadding();
-}
-
-MEntry MediaStruct::First() const
-{
-    /* Empty container */
-    if (m_Entries.empty())
-        return MEntry();
-
-    return m_Entries.begin()->second;
-}
-
 MFrameRange MediaStruct::Framerange() const
 {
     auto [minIt, maxIt] = std::minmax_element(m_Frames.begin(), m_Frames.end());
@@ -439,8 +376,7 @@ MFrameRange MediaStruct::Framerange() const
 void MediaStruct::Add(const MEntry& entry)
 {
     /* Add the provided entry */
-    m_Entries.insert({entry.Framenumber(), entry});
-    /* Add the frame number on the vector */
+    m_Entries.push_back(entry);
     m_Frames.push_back(entry.Framenumber());
 }
 
@@ -450,7 +386,7 @@ bool MediaStruct::Validate(const MEntry& entry)
     if (m_Entries.empty())
         return false;
 
-    MEntry& e = m_Entries.begin()->second;
+    MEntry& e = m_Entries[0];
 
     /* Return if the provided entry is similar to the current entry */
     return e.Similar(entry);
@@ -517,8 +453,7 @@ void MediaStruct::Reset(const MEntry& entry, const MediaType& type)
         Clear();
 
     /* Add the first Entry */
-    m_Entries.insert({entry.Framenumber(), entry});
-    /* Add the frame number on the vector */
+    m_Entries.push_back(entry);
     m_Frames.push_back(entry.Framenumber());
 
     /* Update the media type */
@@ -527,11 +462,9 @@ void MediaStruct::Reset(const MEntry& entry, const MediaType& type)
 
 void MediaStruct::Clear()
 {
-    /* Clear entries */
     m_Entries.clear();
     m_Frames.clear();
 
-    /* Reset Media Type */
     m_MediaType = MediaType::NonMedia;
 }
 

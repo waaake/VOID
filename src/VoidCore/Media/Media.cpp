@@ -85,20 +85,22 @@ void Media::UpdateRange()
 
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
 {
-    /* We need the lower bound of the given frame available in the vector */
-    auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
-
-    if (it != m_Framenumbers.begin())
-    {
-        /* Return the value at the iter after moving it back */
-        return *(--it);
-    }
-
     /**
-     * As the provided frame is lower than the first frame,
-     * The most natural nearest frame to it is the first frame
+     * find a frame just next to given frame which exists in the set of frames that the media has
+     * if it exists, return that else we return that else the first frame from the media frames
      */
-    return m_FirstFrame;
+    auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
+    return (it == m_Framenumbers.begin()) ? m_FirstFrame : *(--it);
+}
+
+bool Media::Contains(v_frame_t frame) const
+{
+    /**
+     * A movie would have all the frames in it, even if something is technially missing,
+     * movie still has still information about those, only an image sequence needs to be checked
+     * for actual frame being present even if it's still in the range 
+     */
+    return m_Type == Media::Type::MOVIE ? true : m_Mediaframes.find(frame) != m_Mediaframes.end();
 }
 
 void Media::Read(const MediaStruct& mstruct)
@@ -153,7 +155,6 @@ void Media::ProcessSequence()
     UpdateRange();
 }
 
-// void Media::ProcessMovie(const MediaStruct& mstruct)
 void Media::ProcessMovie()
 {
     /* Get the First entry since it is a Single File Movie */
@@ -189,12 +190,8 @@ void Media::ProcessMovie()
 
 void Media::ClearCache()
 {
-    /* For all the frames in the media frames */
     for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
-    {
-        /* Clear the Data for the Frame from the memory */
         it.second.ClearCache();
-    }
 }
 
 

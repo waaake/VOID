@@ -271,14 +271,15 @@ public:
      */
     bool Validate(const MEntry& entry);
 
-    std::string Name() const;
-    std::string Extension() const;
-    std::string Basepath() const;
+    std::string Name() const { return m_Entries.empty() ? "" : m_Entries[0].Name(); }
+    std::string Extension() const { return m_Entries.empty() ? "" : m_Entries[0].Extension(); }
+    std::string Basepath() const { return m_Entries.empty() ? "" : m_Entries[0].Basepath(); }
 
-    std::string FirstPath() const;
-    [[nodiscard]] bool SingleFile() const;
+    std::string FirstPath() const { return m_Entries.empty() ? "" : m_Entries[0].Fullpath(); }
+    [[nodiscard]] bool SingleFile() const { return m_Entries.empty() ? false : m_Entries[0].SingleFile(); }
 
-    unsigned int Framepadding() const;
+    unsigned int Framepadding() const { return m_Entries.empty() ? 0 : m_Entries[0].Framepadding(); }
+
     MFrameRange Framerange() const;
 
     /**
@@ -299,7 +300,7 @@ public:
      * but could have a potential usecase for multi files as well like an image sequence else the underlying
      * struct needs to be ordered map
      */
-    MEntry First() const;
+    inline MEntry First() const { return m_Entries.empty() ? MEntry() : m_Entries[0]; }
 
     inline MediaType Type() const { return m_MediaType; }
 
@@ -311,7 +312,7 @@ public:
 
 private: /* Members */
     std::vector<v_frame_t> m_Frames;
-    std::unordered_map<v_frame_t, MEntry> m_Entries;
+    std::vector<MEntry> m_Entries;
 
     /* The kind of media */
     MediaType m_MediaType;
@@ -325,39 +326,40 @@ private: /* Methods */
     /* Clears underlying structs */
     void Clear();
 
-private: /* Iterator */
-    /**
-     * Custom Iterator for the MediaStruct to allow iterating over just the entries
-     * leaving the other internals
-     */
-    class Iterator
-    {
-        using Iter = std::unordered_map<v_frame_t, MEntry>::const_iterator;
-        Iter it;
+// private: /* Iterator */
+//     /**
+//      * Custom Iterator for the MediaStruct to allow iterating over just the entries
+//      * leaving the other internals
+//      */
+//     class Iterator
+//     {
+//         using Iter = std::unordered_map<v_frame_t, MEntry>::const_iterator;
+//         Iter it;
 
-    public:
-        explicit Iterator(Iter it)
-            : it(it) {}
+//     public:
+//         explicit Iterator(Iter it)
+//             : it(it) {}
 
-        /* Dereference operator */
-        const MEntry& operator*() const { return it->second; }
-        /* Arrow operator */
-        const MEntry* operator->() const { return &(it->second); }
+//         /* Dereference operator */
+//         const MEntry& operator*() const { return it->second; }
+//         /* Arrow operator */
+//         const MEntry* operator->() const { return &(it->second); }
 
-        /**
-         * Increment operator
-         * Increment internal iterator
-         */
-        Iterator& operator++() { ++it; return *this; }
+//         /**
+//          * Increment operator
+//          * Increment internal iterator
+//          */
+//         Iterator& operator++() { ++it; return *this; }
 
-        /* Not Equals */
-        bool operator!=(const Iterator& other) const { return it != other.it; }
-    };
+//         /* Not Equals */
+//         bool operator!=(const Iterator& other) const { return it != other.it; }
+//     };
 
 public: /* Iterator */
-    Iterator begin() const { return Iterator(m_Entries.begin()); }
-    Iterator end() const { return Iterator(m_Entries.end()); }
-
+    // Iterator begin() const { return Iterator(m_Entries.begin()); }
+    // Iterator end() const { return Iterator(m_Entries.end()); }
+    std::vector<MEntry>::const_iterator begin() const noexcept { return m_Entries.begin(); }
+    std::vector<MEntry>::const_iterator end() const noexcept { return m_Entries.end(); }
 };
 
 class VOID_API MediaFS

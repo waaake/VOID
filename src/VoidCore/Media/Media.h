@@ -80,21 +80,21 @@ public:
     inline v_frame_t FirstFrame() const { return m_FirstFrame; }
     inline v_frame_t LastFrame() const { return m_LastFrame; }
 
-    inline v_frame_t Duration() const { return (LastFrame() - FirstFrame()) + 1; }
+    inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
     /*
      * Returns whether a given frame falls in the range of Media
      * i.e. between the first and the last frame of media
      * Any frame missing does not matter as this method only returns whether a frame is in the range or not
      */
-    [[nodiscard]] inline bool HasFrame(v_frame_t frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
+    [[nodiscard]] inline bool InRange(v_frame_t frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
 
     /* 
      * Returns whether a given frame is available to read
      * There could be a scenario where the given frame is in the range of first - last but is not available
      * and is referred to as the missing frame.
      */
-    [[nodiscard]] inline bool Contains(v_frame_t frame) const { return m_Mediaframes.find(frame) != m_Mediaframes.end(); }
+    [[nodiscard]] bool Contains(v_frame_t frame) const;
 
     /*
      * Based on the available frames, returns the frame which is just lower than the provided frame
@@ -104,13 +104,14 @@ public:
 
     Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame); }
 
-    Frame FirstFrameData() const { return m_Mediaframes.at(FirstFrame()); }
-    Frame LastFrameData() const { return m_Mediaframes.at(LastFrame()); }
+    Frame FirstFrameData() const { return m_Mediaframes.at(m_FirstFrame); }
+    Frame LastFrameData() const { return m_Mediaframes.at(m_LastFrame); }
 
     inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame).Image(cached); }
+    inline std::size_t FrameSize() { return Image(m_FirstFrame)->FrameSize(); }
 
-    inline SharedPixels FirstImage() { return Image(FirstFrame()); }
-    inline SharedPixels LastImage() { return Image(LastFrame()); }
+    inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
+    inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
     inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.at(m_FirstFrame).Metadata(); }
 
@@ -149,9 +150,7 @@ protected: /* Members */
     double m_Framerate;
 
     Type m_Type;
-    /* Arrays to hold the media Frames for the type of media */
     std::unordered_map<v_frame_t, Frame> m_Mediaframes;
-    /* Array to hold the frame numbers for the frames which have been read */
     std::vector<v_frame_t> m_Framenumbers;
 
 private: /* Methods */
