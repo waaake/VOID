@@ -8,6 +8,9 @@ set(SOURCES
     Models/ProjectModel.cpp
     Models/PlaylistModel.cpp
 
+    Node/Graph.cpp
+    Node/Node.cpp
+
     Project/Project.cpp
 
     Playlist/Playlist.cpp
