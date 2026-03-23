@@ -22,12 +22,13 @@ void TranslucentDialog::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     QColor background = palette().color(QPalette::Window);
-    background.setAlpha(210);
+    background.setAlpha(220);
 
     painter.setBrush(background);
-    painter.setPen(Qt::NoPen);
+    // painter.setPen(Qt::NoPen);
+    painter.setPen(QPen(QBrush(palette().color(QPalette::Window).lighter(140)), 4));
 
-    // painter.drawRoundedRect(rect(), 10, 10);
+    // painter.drawRoundedRect(rect(), 6, 6);
     painter.drawRect(rect());
 }
 
