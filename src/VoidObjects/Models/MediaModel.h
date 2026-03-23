@@ -36,7 +36,8 @@ public:
         FrameRange,
         Thumbnail,
         Color,
-        Audio
+        Audio,
+        Tags
     };
 
 public:

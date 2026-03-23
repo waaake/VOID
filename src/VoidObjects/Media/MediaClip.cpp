@@ -17,6 +17,7 @@ MediaClip::MediaClip(QObject* parent)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+    m_TagModel = new TagModel(this);
 }
 
 MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
@@ -26,6 +27,7 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+    m_TagModel = new TagModel(this);
 }
 
 MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
@@ -35,6 +37,7 @@ MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+    m_TagModel = new TagModel(this);
 }
 
 MediaClip::MediaClip(const std::string& basepath,
@@ -48,6 +51,7 @@ MediaClip::MediaClip(const std::string& basepath,
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+    m_TagModel = new TagModel(this);
 }
 
 MediaClip::MediaClip(const std::string& basepath,
@@ -64,6 +68,7 @@ MediaClip::MediaClip(const std::string& basepath,
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+    m_TagModel = new TagModel(this);
 }
 
 MediaClip::MediaClip(const std::string& basepath,
@@ -81,11 +86,14 @@ MediaClip::MediaClip(const std::string& basepath,
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+    m_TagModel = new TagModel(this);
 }
-
 
 MediaClip::~MediaClip()
 {
+    m_TagModel->deleteLater();
+    delete m_TagModel;
+    m_TagModel = nullptr;
 }
 
 QPixmap MediaClip::Thumbnail()
@@ -166,6 +174,18 @@ void MediaClip::RemoveAnnotation(const v_frame_t frame)
     emit updated();
 
     VOID_LOG_INFO("Annotation Removed. Frame {0}", frame);
+}
+
+void MediaClip::AddTag(const std::string& name)
+{
+    m_TagModel->AddTag(name);
+    emit updated();
+}
+
+void MediaClip::ClearTags()
+{
+    m_TagModel->ClearAll();
+    emit updated();
 }
 
 std::vector<int> MediaClip::AnnotatedFrames() const

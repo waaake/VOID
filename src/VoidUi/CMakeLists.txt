@@ -33,6 +33,7 @@ set(SOURCES
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
     Media/MetadataViewer.cpp
+    Media/TagWidget.cpp
     Media/Models/MetadataModel.cpp
     Media/Models/MediaFilesModel.cpp
     Media/Views/FileView.cpp
@@ -90,6 +91,7 @@ set(SOURCES
 
     # QExtensions
     QExtensions/Delegates.cpp
+    QExtensions/Dialog.cpp
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
     QExtensions/MessageBox.cpp

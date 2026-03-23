@@ -168,6 +168,9 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
         painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), ICON_SIZE));
+    
+    if (index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+        painter->drawPixmap(x, y + ICON_SIZE + 2, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Highlight), ICON_SIZE));
 
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;
