@@ -17,6 +17,7 @@
 #include "Definition.h"
 #include "VoidCore/Media/Media.h"
 #include "VoidObjects/VoidObject.h"
+#include "VoidObjects/Models/TagModel.h"
 #include "VoidRenderer/Core/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
@@ -74,6 +75,12 @@ public:
     /* Remove Anotation for the frame */
     void RemoveAnnotation(const v_frame_t frame);
 
+    void AddTag(const std::string& name);
+    void ClearTags();
+    inline const std::vector<Tag*>& Tags() const { return m_TagModel->Tags(); }
+    inline bool HasTags() const { return m_TagModel->HasTags(); }
+    inline TagModel* TagsModel() const { return m_TagModel; }
+
     /**
      * Returns the Annotation for the frame 
      * nullptr if the annotation isn't found
@@ -115,6 +122,7 @@ private: /* Members */
      * Each Shared Annotation Pointer is mapped to a frame (as simple as it can be :D)
      */
     std::unordered_map<v_frame_t, Renderer::SharedAnnotation> m_Annotations;
+    TagModel* m_TagModel;
 
 private: /* Methods */
     void ReadThumbnail();

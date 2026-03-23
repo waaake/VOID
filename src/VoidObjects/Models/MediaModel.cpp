@@ -63,6 +63,7 @@ QVariant MediaModel::data(const QModelIndex& index, int role) const
         case MRoles::Framerate: return QVariant(ItemFramerate(item).c_str());
         case MRoles::Color: return item->Color();
         case MRoles::Audio: return item->HasAudio();
+        case MRoles::Tags: return item->HasTags();
         default: return QVariant();
     }
 }
