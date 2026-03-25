@@ -98,7 +98,6 @@ private: /* Members */
     QAction* m_RemoveAction;
     QAction* m_InspectMetadataAction;
     QAction* m_AddTagAction;
-    QAction* m_EditTagsAction;
     QAction* m_ClearTagsAction;
     QMenu* m_PlaylistMenu;
     QAction* m_CreatePlaylistAction;
@@ -113,7 +112,7 @@ private: /* Methods */
     void RebuildPlaylistMenu();
     void AddSelectionToPlaylist(Playlist* playlist);
     void AddTagToSelected();
-    void EditSelectedTags();
+    void EditSelectedTags(const QModelIndex& index, const QPoint& position);
     void ClearTagsFromSelected();
 };
 

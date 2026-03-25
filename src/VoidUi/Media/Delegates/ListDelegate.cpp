@@ -2,12 +2,15 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QEvent>
+#include <QMouseEvent>
 #include <QPainter>
 
 /* Internal */
 #include "ListDelegate.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/IconForge.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -103,7 +106,28 @@ QSize BasicMediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const
 
 MediaItemDelegate::MediaItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
+    , m_TagX(0)
+    , m_TagY(0)
 {
+}
+
+bool MediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, const QStyleOptionViewItem& option, const QModelIndex& index)
+{
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        const QRect r(m_TagX, m_TagY, ICON_SIZE, ICON_SIZE);
+        auto mevent = static_cast<QMouseEvent*>(event);
+        #if _QT6_COMPACT
+        _QPoint pos = mevent->position();
+        #else
+        _QPoint pos = mevent->pos();
+        #endif
+        
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+            emit tagClicked(index, pos);
+    }
+
+    return QStyledItemDelegate::editorEvent(event, item, option, index);
 }
 
 void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -163,6 +187,9 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     const int x = thumbrect.left() + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
     const int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
+    m_TagX = x;
+    m_TagY = y + ICON_SIZE + 2;
+
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
@@ -170,7 +197,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), ICON_SIZE));
     
     if (index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
-        painter->drawPixmap(x, y + ICON_SIZE + 2, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Highlight), ICON_SIZE));
+        painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Highlight), ICON_SIZE));
 
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;

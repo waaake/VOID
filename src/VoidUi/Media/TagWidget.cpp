@@ -85,6 +85,12 @@ void TagWidget::MoveTo(const _QPoint& position)
         move(position);
 }
 
+void TagWidget::showEvent(QShowEvent* event)
+{
+    TranslucentDialog::showEvent(event);
+    m_TagBase->m_NameEdit->setFocus();
+}
+
 void TagWidget::Build()
 {
     m_Layout = new QVBoxLayout(this);
@@ -179,6 +185,7 @@ void TagEditor::Setup()
         {
             m_TagList->setModel(media->TagsModel());
             m_TagList->setCurrentIndex(m_TagList->model()->index(0, 0));
+            TagSelected(m_TagList->currentIndex());
         }
     }
 }

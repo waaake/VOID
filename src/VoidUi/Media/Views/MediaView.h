@@ -10,6 +10,8 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidUi/Media/MediaBridge.h"
+#include "VoidUi/Media/Delegates/ListDelegate.h"
+#include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -52,28 +54,24 @@ protected:
 signals:
     /* Sends the Source Model Index mapped from the proxy model */
     void itemDoubleClicked(const QModelIndex&);
+    void tagClicked(const QModelIndex&, const QPoint&);
 
 private: /* Models */
     /* Proxy for filtering and sorting */
     MediaProxyModel* proxy;
 
+    BasicMediaItemDelegate* m_BasicDelegate;
+    MediaItemDelegate* m_MediaDelegate;
+    MediaThumbnailDelegate* m_ThumbnailDelegate;
+
     /* View Type for display */
     ViewType m_ViewType;
 
 private: /* Methods */
-    /* Setup the View */
     void Setup();
-
-    /* (Re)sets the view of the list */
     void ResetView();
-
-    /* Setup Signals */
     void Connect();
-
-    /* (Re)sets the Media Model */
     void ResetModel(MediaModel* model);
-
-    /* Maps the Proxy Index to the source Model index before emitting */
     void ItemDoubleClicked(const QModelIndex& index);
 };
 

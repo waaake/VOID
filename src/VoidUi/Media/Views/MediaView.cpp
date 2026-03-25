@@ -13,8 +13,8 @@
 #include "MediaView.h"
 #include "VoidCore/Logging.h"
 #include "VoidUi/Descriptors.h"
-#include "VoidUi/Media/Delegates/ListDelegate.h"
-#include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
+// #include "VoidUi/Media/Delegates/ListDelegate.h"
+// #include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
 #include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
@@ -22,15 +22,28 @@ VOID_NAMESPACE_OPEN
 MediaView::MediaView(QWidget* parent)
     : QListView(parent)
     , m_ViewType(ViewType::DetailedListView)
+    , m_BasicDelegate(nullptr)
+    , m_MediaDelegate(nullptr)
+    , m_ThumbnailDelegate(nullptr)
 {
     Setup();
-
-    /* Connect Signals */
     Connect();
 }
 
 MediaView::~MediaView()
 {
+    m_BasicDelegate->deleteLater();
+    delete m_BasicDelegate;
+    m_BasicDelegate = nullptr;
+
+    m_MediaDelegate->deleteLater();
+    delete m_MediaDelegate;
+    m_MediaDelegate = nullptr;
+
+    m_ThumbnailDelegate->deleteLater();
+    delete m_ThumbnailDelegate;
+    m_ThumbnailDelegate = nullptr;
+
     /**
      * Set the source Model as nullpointer so that we don't actually delete
      * the original source model
@@ -106,53 +119,46 @@ void MediaView::ResetView()
 {
     if (m_ViewType == ViewType::ListView)
     {
-        /* Set Delegate */
-        setItemDelegate(new BasicMediaItemDelegate(this));
+        if (!m_BasicDelegate)
+        {
+            m_BasicDelegate = new BasicMediaItemDelegate(this);
+        }
 
-        /* List View */
+        setItemDelegate(m_BasicDelegate);
+
         setViewMode(QListView::ListMode);
-
-        /* Spacing between entries */
         setSpacing(1);
-
-        /* Resize Mode */
         setResizeMode(QListView::Fixed);
-
-        /* Reset Grid Size */
         setGridSize(QSize());
     }
     else if (m_ViewType == ViewType::DetailedListView)
     {
-        /* Set Delegate */
-        setItemDelegate(new MediaItemDelegate(this));
+        if (!m_MediaDelegate)
+        {
+            m_MediaDelegate = new MediaItemDelegate(this);
+            connect(m_MediaDelegate, &MediaItemDelegate::tagClicked, this, &MediaView::tagClicked);
+        }
 
-        /* List View */
+        setItemDelegate(m_MediaDelegate);
+
         setViewMode(QListView::ListMode);
-
-        /* Spacing between entries */
         setSpacing(1);
-
-        /* Resize Mode */
         setResizeMode(QListView::Fixed);
-
-        /* Reset Grid Size */
         setGridSize(QSize());
     }
     else
     {
-        /* Set Delegate */
-        setItemDelegate(new MediaThumbnailDelegate(this));
-        
-        /* Icon View */
-        setViewMode(QListView::IconMode);
-        
-        /* Spacing between entries */
-        setSpacing(2);
-        
-        /* Resize Mode */
-        setResizeMode(QListView::Adjust);
+        if (!m_ThumbnailDelegate)
+        {
+            m_ThumbnailDelegate = new MediaThumbnailDelegate(this);
+        }
 
-        /* Grid Size */
+        setItemDelegate(m_ThumbnailDelegate);
+
+        setViewMode(QListView::IconMode);
+
+        setSpacing(2);
+        setResizeMode(QListView::Adjust);
         setGridSize(QSize(154, 150)); // Delegate Item::SizeHint().width() + 4, .Height() + 4;
     }
 }

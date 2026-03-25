@@ -48,6 +48,9 @@ public:
 
     void MoveTo(const _QPoint& position);
 
+protected:
+    void showEvent(QShowEvent* event) override;
+
 private: /* Members */
     QVBoxLayout* m_Layout;
 
