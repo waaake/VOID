@@ -13,8 +13,6 @@
 #include "MediaView.h"
 #include "VoidCore/Logging.h"
 #include "VoidUi/Descriptors.h"
-// #include "VoidUi/Media/Delegates/ListDelegate.h"
-// #include "VoidUi/Media/Delegates/ThumbnailDelegate.h"
 #include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
@@ -93,26 +91,18 @@ void MediaView::startDrag(Qt::DropActions supportedActions)
 void MediaView::Setup()
 {
     /* Set Model */
-    /* Source Model */
     MediaModel* model = _MediaBridge.DataModel();
-
-    /* Proxy */
     proxy = new MediaProxyModel(this);
+
     /* Setup the Proxy's Source Model */
     ResetModel(model);
-
     setModel(proxy);
 
-    /* Selection Mode */
     setSelectionMode(QAbstractItemView::ExtendedSelection);
+    setContextMenuPolicy(Qt::CustomContextMenu);
     setUniformItemSizes(true);
 
     ResetView();
-
-    /* Context Menu */
-    setContextMenuPolicy(Qt::CustomContextMenu);
-
-    setDragEnabled(true);
 }
 
 void MediaView::ResetView()
@@ -122,6 +112,7 @@ void MediaView::ResetView()
         if (!m_BasicDelegate)
         {
             m_BasicDelegate = new BasicMediaItemDelegate(this);
+            connect(m_BasicDelegate, &BasicMediaItemDelegate::tagClicked, this, &MediaView::tagClicked);
         }
 
         setItemDelegate(m_BasicDelegate);
@@ -151,16 +142,18 @@ void MediaView::ResetView()
         if (!m_ThumbnailDelegate)
         {
             m_ThumbnailDelegate = new MediaThumbnailDelegate(this);
+            connect(m_ThumbnailDelegate, &MediaThumbnailDelegate::tagClicked, this, &MediaView::tagClicked);
         }
 
         setItemDelegate(m_ThumbnailDelegate);
 
         setViewMode(QListView::IconMode);
-
         setSpacing(2);
         setResizeMode(QListView::Adjust);
         setGridSize(QSize(154, 150)); // Delegate Item::SizeHint().width() + 4, .Height() + 4;
     }
+
+    setDragEnabled(true);
 }
 
 void MediaView::Connect()
@@ -191,15 +184,11 @@ const std::vector<QModelIndex> MediaView::SelectedIndexes() const
 {
     std::vector<QModelIndex> sources;
 
-    /* Get the selection model */
     QItemSelectionModel* selection = selectionModel();
-
-    /* Nothing is selected at the moment */
     if (!selection)
         return sources;
 
     const QModelIndexList proxyindexes = selection->selectedRows();
-    /* We know how many items are selected */
     sources.reserve(proxyindexes.size());
 
     for (const QModelIndex& index: proxyindexes)
@@ -209,21 +198,15 @@ const std::vector<QModelIndex> MediaView::SelectedIndexes() const
             sources.emplace_back(source);
     }
 
-    /* Return the updated source indexes that are selected */
     return sources;
 }
 
 bool MediaView::HasSelection()
 {
-    /* Underlying selection model */
-    QItemSelectionModel* s = selectionModel();
+    if (QItemSelectionModel* s = selectionModel())
+        return s->hasSelection();
 
-    /* Doesn't have the selection model ?*/
-    if (!s)
-        return false;
-
-    /* Return whether the selection model has any selection currently */
-    return s->hasSelection();
+    return false;
 }
 
 void MediaView::EnableSorting(bool state, const Qt::SortOrder& order)
@@ -235,8 +218,6 @@ void MediaView::SetViewType(const ViewType& type)
 {
     /* Update the internal view type */
     m_ViewType = type;
-
-    /* Reset the view */
     ResetView();
 }
 

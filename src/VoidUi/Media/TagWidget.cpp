@@ -47,7 +47,9 @@ void TagBase::Build()
     m_Layout->addWidget(nameLabel, 0, 0, 1, 1);
     m_Layout->addWidget(m_NameEdit, 0, 1, 1, 2);
     m_Layout->addWidget(dataLabel, 1, 0, 1, 1);
-    m_Layout->addWidget(m_DataTree, 1, 1, 3, 2);
+    m_Layout->addWidget(m_DataTree, 1, 1, 7, 2);
+
+    m_Layout->setContentsMargins(0, 0, 0, 0);
 }
 
 void TagBase::Setup()
@@ -193,7 +195,7 @@ void TagEditor::Setup()
 void TagEditor::Connect()
 {
     connect(m_TagList, &QListView::clicked, this, &TagEditor::TagSelected);
-    connect(m_RemoveButton, &QPushButton::clicked, this, &TagEditor::RemoveSelected); 
+    connect(m_RemoveButton, &QPushButton::clicked, this, &TagEditor::RemoveSelected);
 }
 
 void TagEditor::RemoveSelected()

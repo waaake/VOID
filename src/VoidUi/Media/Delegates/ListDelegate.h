@@ -21,6 +21,15 @@ public:
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+signals:
+    void tagClicked(const QModelIndex&, const QPoint&);
+
+protected:
+    bool editorEvent(QEvent* event, QAbstractItemModel* item, const QStyleOptionViewItem& option, const QModelIndex& index) override;
+
+private:
+    mutable int m_TagX, m_TagY;
 };
 
 class MediaItemDelegate : public QStyledItemDelegate
