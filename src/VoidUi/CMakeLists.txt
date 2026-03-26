@@ -122,6 +122,7 @@ if (WIN32)
         ../VoidObjects/Models/MediaModel.h
         ../VoidObjects/Models/PlaylistModel.h
         ../VoidObjects/Models/ProjectModel.h
+        ../VoidObjects/Models/TagModel.h
         # TODO: Find a better way around this....
     )
 endif()
