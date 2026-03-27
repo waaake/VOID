@@ -219,7 +219,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     const int x = thumbrect.left() + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
     const int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
-    m_TagX = x;
+    m_TagX = thumbrect.left();
     m_TagY = y + ICON_SIZE + 2;
 
     /* Draw the pixmap at the calculated coords */
@@ -231,8 +231,8 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     if (audio || tags)
     {
         QLinearGradient fade(thumbrect.topLeft(), thumbrect.bottomRight());
-        fade.setColorAt(0.0, option.palette.color(QPalette::Highlight));
-        fade.setColorAt(0.05, option.palette.color(QPalette::Highlight));
+        fade.setColorAt(0.0, option.palette.color(QPalette::Highlight).darker(180));
+        fade.setColorAt(0.05, option.palette.color(QPalette::Highlight).darker(180));
         fade.setColorAt(0.3, QColor(0, 0, 0, 0));
         
         painter->fillRect(thumbrect, fade);

@@ -118,7 +118,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     int x = left + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
     int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
-    m_TagX = x;
+    m_TagX = thumbrect.left();
     m_TagY = y + ICON_SIZE + 2;
 
     /* Draw the pixmap at the calculated coords */
@@ -127,14 +127,11 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
     const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
 
-    // if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
-    //     painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), ICON_SIZE));
-
     if (audio || tags)
     {
         QLinearGradient fade(thumbrect.topLeft(), thumbrect.bottomRight());
-        fade.setColorAt(0.0, option.palette.color(QPalette::Highlight));
-        fade.setColorAt(0.05, option.palette.color(QPalette::Highlight));
+        fade.setColorAt(0.0, option.palette.color(QPalette::Highlight).darker(180));
+        fade.setColorAt(0.05, option.palette.color(QPalette::Highlight).darker(180));
         fade.setColorAt(0.3, QColor(0, 0, 0, 0));
         
         painter->fillRect(thumbrect, fade);
