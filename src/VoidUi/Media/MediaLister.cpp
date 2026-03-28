@@ -14,6 +14,7 @@
 
 /* Internal */
 #include "MediaLister.h"
+#include "TagWidget.h"
 #include "VoidCore/Logging.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/Player/PlayerBridge.h"
@@ -71,6 +72,14 @@ VoidMediaLister::~VoidMediaLister()
     m_InspectMetadataAction->deleteLater();
     delete m_InspectMetadataAction;
     m_InspectMetadataAction = nullptr;
+
+    m_AddTagAction->deleteLater();
+    delete m_AddTagAction;
+    m_AddTagAction = nullptr;
+
+    m_ClearTagsAction->deleteLater();
+    delete m_ClearTagsAction;
+    m_ClearTagsAction = nullptr;
 }
 
 QSize VoidMediaLister::sizeHint() const
@@ -115,6 +124,9 @@ void VoidMediaLister::Build()
     m_AddToQueueAction = new QAction("Add Selected to Queue");
     m_RemoveAction = new QAction("Remove Selected");
     m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
+
+    m_AddTagAction = new QAction("Add tag...");
+    m_ClearTagsAction = new QAction("Clear all tags");
 
     m_PlaylistMenu = new QMenu("Add to Playlist");
     /* Add any playlists which are present in the active project */
@@ -247,6 +259,8 @@ void VoidMediaLister::Connect()
     connect(m_AddToQueueAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToQueue);
     connect(m_RemoveAction, &QAction::triggered, this, &VoidMediaLister::RemoveSelectedMedia);
     connect(m_InspectMetadataAction, &QAction::triggered, this, &VoidMediaLister::InspectMetadata);
+    connect(m_AddTagAction, &QAction::triggered, this, &VoidMediaLister::AddTagToSelected);
+    connect(m_ClearTagsAction, &QAction::triggered, this, &VoidMediaLister::ClearTagsFromSelected);
 
     /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
@@ -263,6 +277,7 @@ void VoidMediaLister::Connect()
     /* List */
     connect(m_MediaView, &MediaView::itemDoubleClicked, this, &VoidMediaLister::IndexSelected);
     connect(m_MediaView, &MediaView::customContextMenuRequested, this, &VoidMediaLister::ShowContextMenu);
+    connect(m_MediaView, &MediaView::tagClicked, this, &VoidMediaLister::EditSelectedTags);
 
     connect(m_ProjectView, &ProjectView::itemClicked, this, [this](const QModelIndex& index)
     {
@@ -353,6 +368,10 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     contextMenu.addAction(m_RemoveAction);
 
     contextMenu.addSeparator();
+    contextMenu.addAction(m_AddTagAction);
+    contextMenu.addAction(m_ClearTagsAction);
+
+    contextMenu.addSeparator();
     contextMenu.addAction(m_InspectMetadataAction);
 
     contextMenu.addSeparator();
@@ -428,6 +447,39 @@ void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
         return;
 
     _MediaBridge.AddToPlaylist(selected, playlist);
+}
+
+void VoidMediaLister::AddTagToSelected()
+{
+    QModelIndex current = m_MediaView->currentIndex();
+    if (current.isValid())
+    {
+        SharedMediaClip clip = _MediaBridge.MediaAt(current);
+        TagWidget t(clip, this);
+        t.MoveTo(m_MediaView->mapToGlobal(m_MediaView->visualRect(current).center()));
+        t.exec();
+    }
+}
+
+void VoidMediaLister::EditSelectedTags(const QModelIndex& index, const QPoint& position)
+{
+    SharedMediaClip clip = _MediaBridge.MediaAt(index);
+    if (clip->HasTags())
+    {
+        TagEditor t(clip, this);
+        t.MoveTo(m_MediaView->mapToGlobal(position));
+        t.exec();
+    }
+}
+
+void VoidMediaLister::ClearTagsFromSelected()
+{
+    QModelIndex current = m_MediaView->currentIndex();
+    if (current.isValid())
+    {
+        SharedMediaClip clip = _MediaBridge.MediaAt(current);
+        clip->ClearTags();
+    }
 }
 
 VOID_NAMESPACE_CLOSE

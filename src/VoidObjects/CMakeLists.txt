@@ -3,10 +3,13 @@ set(SOURCES
     Core/Threads.cpp
 
     Media/MediaClip.cpp
+    Media/Tag.cpp
 
     Models/MediaModel.cpp
     Models/ProjectModel.cpp
     Models/PlaylistModel.cpp
+    Models/TagModel.cpp
+    Models/TagMetadataModel.cpp
 
     Project/Project.cpp
 

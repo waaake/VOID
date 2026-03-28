@@ -2,6 +2,8 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QEvent>
+#include <QMouseEvent>
 #include <QPainter>
 
 /* Internal */
@@ -22,7 +24,28 @@ constexpr int ICON_SIZE = 12;
 
 MediaThumbnailDelegate::MediaThumbnailDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
+    , m_TagX(0)
+    , m_TagY(0)
 {
+}
+
+bool MediaThumbnailDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, const QStyleOptionViewItem& option, const QModelIndex& index)
+{
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        const QRect r(m_TagX, m_TagY, ICON_SIZE, ICON_SIZE);
+        auto mevent = static_cast<QMouseEvent*>(event);
+        #if _QT6_COMPACT
+        _QPoint pos = mevent->position();
+        #else
+        _QPoint pos = mevent->pos();
+        #endif
+        
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+            emit tagClicked(index, pos);
+    }
+
+    return QStyledItemDelegate::editorEvent(event, item, option, index);
 }
 
 void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -95,11 +118,30 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     int x = left + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
     int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
+    m_TagX = thumbrect.left();
+    m_TagY = y + ICON_SIZE + 2;
+
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
-    if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
-        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Highlight), ICON_SIZE));
+    const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
+    const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
+
+    if (audio || tags)
+    {
+        QLinearGradient fade(thumbrect.topLeft(), thumbrect.bottomRight());
+        fade.setColorAt(0.0, option.palette.color(QPalette::Highlight).darker(180));
+        fade.setColorAt(0.05, option.palette.color(QPalette::Highlight).darker(180));
+        fade.setColorAt(0.3, QColor(0, 0, 0, 0));
+        
+        painter->fillRect(thumbrect, fade);
+    }
+    
+    if (audio)
+        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Text), ICON_SIZE));
+
+    if (tags)
+        painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Text), ICON_SIZE));
 
     int thumbbottom = thumbrect.bottom() + 5;
 
