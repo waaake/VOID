@@ -39,9 +39,9 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
-    m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
-
     m_CacheProcessor.SetMedia(media);
+    
+    m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
     SetMediaFrame(m_Timeline->Frame());
@@ -118,9 +118,9 @@ void Player::SetTrack(const SharedPlaybackTrack& track)
 
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(track);
-    m_Timeline->SetRange(track->StartFrame(), track->EndFrame());
-    
     m_CacheProcessor.SetTrack(track);
+
+    m_Timeline->SetRange(track->StartFrame(), track->EndFrame());
     SetTrackFrame(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
@@ -168,9 +168,9 @@ void Player::SetSequence(const SharedPlaybackSequence& sequence)
 
     /* Update what is being played on the Active Viewer Buffer */
     m_ActiveViewBuffer->Set(sequence);
-    m_Timeline->SetRange(sequence->StartFrame(), sequence->EndFrame());
-    
     m_CacheProcessor.SetSequence(sequence);
+    
+    m_Timeline->SetRange(sequence->StartFrame(), sequence->EndFrame());
     SetSequenceFrame(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
