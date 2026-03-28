@@ -76,6 +76,7 @@ public:
     void RemoveAnnotation(const v_frame_t frame);
 
     void AddTag(const std::string& name);
+    void AddTag(const std::string& name, TagMetadataModel*& metadata);
     void ClearTags();
     inline const std::vector<Tag*>& Tags() const { return m_TagModel->Tags(); }
     inline bool HasTags() const { return m_TagModel->HasTags(); }

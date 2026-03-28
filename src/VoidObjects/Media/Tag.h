@@ -10,24 +10,25 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Models/TagMetadataModel.h"
 
 VOID_NAMESPACE_OPEN
 
 class VOID_API Tag
 {
 public:
-    Tag(const std::string& name);
+    explicit Tag(const std::string& name);
+    Tag(const std::string& name, TagMetadataModel*& metadata);
     ~Tag();
 
     void SetName(const std::string& name) { m_Name = name; }
-    void AddMetadata(const std::string& key, const std::string& value);
     
     const std::string& Name() const { return m_Name; }
-    const std::unordered_map<std::string, std::string>& Metadata() const { return m_Metadata; }
+    TagMetadataModel* MetadataModel() const { return m_Metadata; }
 
 private: /* Members */
     std::string m_Name;
-    std::unordered_map<std::string, std::string> m_Metadata;
+    TagMetadataModel* m_Metadata;
 };
 
 VOID_NAMESPACE_CLOSE

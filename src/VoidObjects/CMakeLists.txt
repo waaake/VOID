@@ -9,6 +9,7 @@ set(SOURCES
     Models/ProjectModel.cpp
     Models/PlaylistModel.cpp
     Models/TagModel.cpp
+    Models/TagMetadataModel.cpp
 
     Project/Project.cpp
 

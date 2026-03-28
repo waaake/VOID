@@ -163,7 +163,7 @@ void MediaClip::SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnot
 }
 
 void MediaClip::RemoveAnnotation(const v_frame_t frame)
-{ 
+{
     /**
      * Remove Annotation at frame
      * Since the map holds a shared pointer to the Annotation, which should get
@@ -179,6 +179,12 @@ void MediaClip::RemoveAnnotation(const v_frame_t frame)
 void MediaClip::AddTag(const std::string& name)
 {
     m_TagModel->AddTag(name);
+    emit updated();
+}
+
+void MediaClip::AddTag(const std::string& name, TagMetadataModel*& metadata)
+{
+    m_TagModel->AddTag(name, metadata);
     emit updated();
 }
 
@@ -252,7 +258,7 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
 }
 
 void MediaClip::Serialize(std::ostream& out) const
-{   
+{
     WriteString(out, m_MediaStruct.Basepath());
     WriteString(out, m_MediaStruct.Name());
     WriteString(out, m_MediaStruct.Extension());
@@ -346,7 +352,7 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
                 in["framePadding"].GetUint(),
                 missing
             )
-        );   
+        );
     }
 
     const rapidjson::Value::ConstArray annotations = in["annotations"].GetArray();

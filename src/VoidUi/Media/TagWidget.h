@@ -4,10 +4,9 @@
 /* Qt */
 #include <QLayout>
 #include <QLineEdit>
-#include <QListWidget>
 #include <QListView>
 #include <QPushButton>
-#include <QTreeWidget>
+#include <QTreeView>
 
 /* Internal */
 #include "QDefinition.h"
@@ -30,7 +29,7 @@ public:
 private: /* Members */
     QGridLayout* m_Layout;
     QLineEdit* m_NameEdit;
-    QTreeWidget* m_DataTree;
+    QTreeView* m_DataTree;
 
 private: /* Methods */
     void Build();
@@ -58,6 +57,7 @@ private: /* Members */
     QPushButton* m_AcceptButton;
 
     std::weak_ptr<MediaClip> m_Media;
+    TagMetadataModel* m_Metadata;
 
 private: /* Methods */
     void Build();

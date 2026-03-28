@@ -64,6 +64,15 @@ void TagModel::AddTag(const std::string& name)
     endInsertRows();
 }
 
+void TagModel::AddTag(const std::string& name, TagMetadataModel*& metadata)
+{
+    int insertidx = static_cast<int>(m_Tags.size());
+
+    beginInsertRows(QModelIndex(), insertidx, insertidx);
+    m_Tags.push_back(new Tag(name, metadata));
+    endInsertRows();
+}
+
 void TagModel::RemoveTag(const QModelIndex& index)
 {
     if (!index.isValid() || index.row() > static_cast<int>(m_Tags.size()))

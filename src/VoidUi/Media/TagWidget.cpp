@@ -31,7 +31,6 @@ TagBase::~TagBase()
 void TagBase::Reset()
 {
     m_NameEdit->clear();
-    m_DataTree->clear();
 }
 
 void TagBase::Build()
@@ -42,7 +41,7 @@ void TagBase::Build()
     QLabel* dataLabel = new QLabel("Data:");
 
     m_NameEdit = new QLineEdit;
-    m_DataTree = new QTreeWidget;
+    m_DataTree = new QTreeView;
 
     m_Layout->addWidget(nameLabel, 0, 0, 1, 1);
     m_Layout->addWidget(m_NameEdit, 0, 1, 1, 2);
@@ -54,8 +53,6 @@ void TagBase::Build()
 
 void TagBase::Setup()
 {
-    m_DataTree->setColumnCount(2);
-    m_DataTree->setHeaderLabels({"Key", "Value"});
     m_DataTree->setAlternatingRowColors(true);
 }
 
@@ -66,6 +63,7 @@ void TagBase::Setup()
 TagWidget::TagWidget(const SharedMediaClip& clip, QWidget* parent)
     : TranslucentDialog(parent)
     , m_Media(clip)
+    , m_Metadata(new TagMetadataModel)
 {
     Build();
     Setup();
@@ -77,6 +75,13 @@ TagWidget::~TagWidget()
     m_Layout->deleteLater();
     delete m_Layout;
     m_Layout = nullptr;
+
+    if (m_Metadata)
+    {
+        m_Metadata->deleteLater();
+        delete m_Metadata;
+        m_Metadata = nullptr;
+    }
 }
 
 void TagWidget::MoveTo(const _QPoint& position)
@@ -110,6 +115,7 @@ void TagWidget::Build()
 
 void TagWidget::Setup()
 {
+    m_TagBase->m_DataTree->setModel(m_Metadata);
 }
 
 void TagWidget::Connect()
@@ -121,7 +127,7 @@ void TagWidget::Connect()
             return;
 
         if (SharedMediaClip media = m_Media.lock())
-            media->AddTag(name.toStdString());
+            m_Metadata->IsValid() ? media->AddTag(name.toStdString(), m_Metadata) : media->AddTag(name.toStdString());
 
         accept();
     });
@@ -218,7 +224,7 @@ void TagEditor::TagSelected(const QModelIndex& index)
 void TagEditor::SetCurrentTag(const Tag* tag)
 {
     m_TagBase->m_NameEdit->setText(tag->Name().c_str());
-    // TODO: Populate metadata
+    m_TagBase->m_DataTree->setModel(tag->MetadataModel());
 }
 
 /* }}} */

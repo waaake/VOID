@@ -43,6 +43,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     void AddTag(const std::string& name);
+    void AddTag(const std::string& name, TagMetadataModel*& metadata);
     void RemoveTag(const QModelIndex& index);
     void RemoveTag(int row);
     Tag* TagAt(const QModelIndex& index) const;
