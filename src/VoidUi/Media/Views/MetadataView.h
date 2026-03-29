@@ -27,6 +27,7 @@ public:
     ~MetadataTree();
 
     inline void SetMetadata(const std::map<std::string, std::string>& metadata) { m_Metadata->SetMetadata(metadata); }
+    inline void SetMetadata(const SharedMediaClip& media) { m_Metadata->SetMetadata(media); }
     inline void Clear() { m_Metadata->Clear(); }
 
 private: /* Members */

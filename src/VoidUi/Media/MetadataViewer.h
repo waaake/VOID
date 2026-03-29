@@ -30,7 +30,7 @@ public:
     virtual inline QSize sizeHint() const override { return QSize(880, 720); }
 
     /* Set Metadata on the viewer from the media clip */
-    inline void SetFromMedia(const SharedMediaClip& clip) { m_Tree->SetMetadata(clip->Metadata()); }
+    inline void SetFromMedia(const SharedMediaClip& clip) { m_Tree->SetMetadata(clip); }
     /* Set the Metadata on the viewer from the provided map of data */
     inline void SetMetadata(const std::map<std::string, std::string>& metadata) { m_Tree->SetMetadata(metadata); }
     

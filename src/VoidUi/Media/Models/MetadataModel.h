@@ -12,6 +12,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -19,6 +20,7 @@ class MetadataModel : public QAbstractItemModel
 {
 public:
     explicit MetadataModel(QObject* parent = nullptr);
+    void SetMetadata(const SharedMediaClip& media);
     void SetMetadata(const std::map<std::string, std::string>& metadata);
     void Clear();
 
