@@ -10,6 +10,7 @@
 /* Qt */
 #include <QDropEvent>
 #include <QLayout>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QTreeView>
 #include <QWidget>
@@ -41,6 +42,7 @@ protected:
 private: /* Members */
     QVBoxLayout* m_Layout;
     QHBoxLayout* m_ButtonLayout;
+    QLineEdit* m_SearchBox;
     QPushButton* m_ClearButton;
     MetadataTree* m_Tree;
 

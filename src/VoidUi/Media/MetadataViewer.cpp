@@ -17,6 +17,7 @@ MetadataViewer::MetadataViewer(QWidget* parent)
     Build();
 
     connect(m_ClearButton, &QPushButton::clicked, m_Tree, &MetadataTree::Clear);
+    connect(m_SearchBox, &QLineEdit::textChanged, m_Tree, &MetadataTree::SetSearchKey);
     setAcceptDrops(true);
 }
 
@@ -32,8 +33,13 @@ void MetadataViewer::Build()
     m_Layout = new QVBoxLayout(this);
 
     m_ButtonLayout = new QHBoxLayout();
-    m_ClearButton = new QPushButton("Clear");
 
+    m_SearchBox = new QLineEdit(this);
+    m_SearchBox->setPlaceholderText("Search Metadata");
+
+    m_ClearButton = new QPushButton("Clear", this);
+
+    m_ButtonLayout->addWidget(m_SearchBox);
     m_ButtonLayout->addStretch(1);
     m_ButtonLayout->addWidget(m_ClearButton);
 

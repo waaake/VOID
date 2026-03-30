@@ -75,4 +75,33 @@ QVariant MetadataModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
+/* Metadata Sort Proxy Model {{{ */
+
+MetadataSortProxyModel::MetadataSortProxyModel(QObject* parent)
+    : QSortFilterProxyModel(parent)
+    , m_SearchKey("")
+{
+}
+
+void MetadataSortProxyModel::SetSearchKey(const QString& key)
+{
+    m_SearchKey = key;
+    invalidateFilter();
+}
+
+bool MetadataSortProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
+{
+    return left.data(Qt::DisplayRole).toString() < right.data(Qt::DisplayRole).toString();
+}
+
+bool MetadataSortProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+{
+    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    QString data = index.data(Qt::DisplayRole).toString();
+
+    return data.contains(m_SearchKey, Qt::CaseInsensitive);
+}
+
+/* }}} */
+
 VOID_NAMESPACE_CLOSE
