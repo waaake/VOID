@@ -9,9 +9,12 @@
 
 /* Qt */
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
+#include <QString>
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -19,6 +22,7 @@ class MetadataModel : public QAbstractItemModel
 {
 public:
     explicit MetadataModel(QObject* parent = nullptr);
+    void SetMetadata(const SharedMediaClip& media);
     void SetMetadata(const std::map<std::string, std::string>& metadata);
     void Clear();
 
@@ -34,6 +38,20 @@ public:
 
 private: /* Members */
     std::map<std::string, std::string> m_Metadata;
+};
+
+class MetadataSortProxyModel : public QSortFilterProxyModel
+{
+public:
+    explicit MetadataSortProxyModel(QObject* parent = nullptr);
+    void SetSearchKey(const QString& key);
+
+protected:
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+
+private:
+    QString m_SearchKey;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -26,11 +26,14 @@ public:
     explicit MetadataTree(QWidget* parent = nullptr);
     ~MetadataTree();
 
+    inline void SetSearchKey(const QString& key) { m_MetadataProxy->SetSearchKey(key); }
     inline void SetMetadata(const std::map<std::string, std::string>& metadata) { m_Metadata->SetMetadata(metadata); }
+    inline void SetMetadata(const SharedMediaClip& media) { m_Metadata->SetMetadata(media); }
     inline void Clear() { m_Metadata->Clear(); }
 
 private: /* Members */
     MetadataModel* m_Metadata;
+    MetadataSortProxyModel* m_MetadataProxy;
 
 private: /* Methods */
     void Setup();

@@ -11,6 +11,30 @@ MetadataModel::MetadataModel(QObject* parent)
 {
 }
 
+void MetadataModel::SetMetadata(const SharedMediaClip& media)
+{
+    beginResetModel();
+
+    // Basic metadata from the media
+    m_Metadata = media->Metadata();
+
+    // Custom Tags metadata
+    for (const Tag* tag : media->Tags())
+    {
+        for (const auto& [key, value] : tag->Metdata())
+        {
+            // Key
+            std::string key_;
+            key_.reserve(6 + tag->Name().size() + 1 + key.size());
+            key_.append("Tags/").append(tag->Name()).append("/").append(key);
+
+            m_Metadata[key_] = value;
+        }
+    }
+
+    endResetModel();
+}
+
 void MetadataModel::SetMetadata(const std::map<std::string, std::string>& metadata)
 {
     beginResetModel();
@@ -50,5 +74,34 @@ QVariant MetadataModel::headerData(int section, Qt::Orientation orientation, int
 
     return QVariant();
 }
+
+/* Metadata Sort Proxy Model {{{ */
+
+MetadataSortProxyModel::MetadataSortProxyModel(QObject* parent)
+    : QSortFilterProxyModel(parent)
+    , m_SearchKey("")
+{
+}
+
+void MetadataSortProxyModel::SetSearchKey(const QString& key)
+{
+    m_SearchKey = key;
+    invalidateFilter();
+}
+
+bool MetadataSortProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
+{
+    return left.data(Qt::DisplayRole).toString() < right.data(Qt::DisplayRole).toString();
+}
+
+bool MetadataSortProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+{
+    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    QString data = index.data(Qt::DisplayRole).toString();
+
+    return data.contains(m_SearchKey, Qt::CaseInsensitive);
+}
+
+/* }}} */
 
 VOID_NAMESPACE_CLOSE
