@@ -207,13 +207,27 @@ std::vector<int> MediaClip::AnnotatedFrames() const
 
 void MediaClip::CacheFrame(v_frame_t frame)
 {
-    m_Mediaframes.at(frame).Cache();
+    /**
+     * Same logic as mentioned before, the frames in the underlying vector are always sorted
+     * and point to the index same as the distance between the frames
+     * 
+     * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+     * will be 1010 - 1001 = 9
+     */
+    m_Mediaframes.at(frame - m_FirstFrame).Cache();
     // emit frameCached(frame);
 }
 
 void MediaClip::UncacheFrame(v_frame_t frame)
 {
-    m_Mediaframes.at(frame).ClearCache();
+    /**
+     * Same logic as mentioned before, the frames in the underlying vector are always sorted
+     * and point to the index same as the distance between the frames
+     * 
+     * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+     * will be 1010 - 1001 = 9
+     */
+    m_Mediaframes.at(frame - m_FirstFrame).ClearCache();
     // emit frameUncached(frame);
 }
 
@@ -234,7 +248,7 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     rapidjson::Value missingFrames(rapidjson::kArrayType);
     for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
     {
-        if (m_Mediaframes.find(i) == m_Mediaframes.end())
+        if (m_Mediaframes.at(i).Invalid())
             missingFrames.PushBack(static_cast<int64_t>(i), allocator);
     }
 
@@ -282,7 +296,7 @@ void MediaClip::Serialize(std::ostream& out) const
 
     for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
     {
-        if (m_Mediaframes.find(i) == m_Mediaframes.end())
+        if (m_Mediaframes.at(i).Invalid())
         {
             out.write(reinterpret_cast<const char*>(&i), sizeof(i));
             count++;

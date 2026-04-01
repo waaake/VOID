@@ -43,6 +43,8 @@ public:
     inline const std::string& Name() const { return m_MediaEntry.Name(); }
     inline const std::string& Extension() const { return m_MediaEntry.Extension(); }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
+    [[nodiscard]] inline bool Valid() const { return bool(m_ImageData); }
+    [[nodiscard]] inline bool Invalid() const { return !m_ImageData; }
 
     /**
      * Returns Shared Pointer to the ImageData

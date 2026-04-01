@@ -68,21 +68,6 @@ Media::Media(const std::string& basepath,
     Read(MediaStruct(basepath, name, extension, start, end, padding, missing));
 }
 
-
-void Media::UpdateRange()
-{
-    /* Check if we have any frames to arrange */
-    if (m_Framenumbers.empty())
-        return;
-
-    /* Sort the Updated frames vector */
-    std::sort(m_Framenumbers.begin(), m_Framenumbers.end());
-
-    /* Update the first and last frame after the framenumbers have been sorted */
-    m_FirstFrame = m_Framenumbers.front();
-    m_LastFrame = m_Framenumbers.back();
-}
-
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
 {
     /**
@@ -100,7 +85,7 @@ bool Media::Contains(v_frame_t frame) const
      * movie still has still information about those, only an image sequence needs to be checked
      * for actual frame being present even if it's still in the range 
      */
-    return m_Type == Media::Type::MOVIE ? true : m_Mediaframes.find(frame) != m_Mediaframes.end();
+    return m_Type == Media::Type::MOVIE ? true : InRange(frame) && GetFrame(frame).Valid();
 }
 
 void Media::Read(const MediaStruct& mstruct)
@@ -117,7 +102,6 @@ void Media::Read(const MediaStruct& mstruct)
         return;
     }
 
-    /* If it is a movie -> process it as one */
     m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
@@ -135,24 +119,33 @@ void Media::Read(MediaStruct&& mstruct)
         return;
     }
 
-    /* If it is a movie -> process it as one */
     m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
 void Media::ProcessSequence()
 {
-    m_Framenumbers.reserve(m_MediaStruct.Size());
+    const MFrameRange& frange = m_MediaStruct.Framerange();
+    m_FirstFrame = frange.startframe;
+    m_LastFrame = frange.endframe;
 
-    /* Iterate over the struct's internal Media Entry */
-    for (const MEntry& e: m_MediaStruct)
+    m_Framenumbers.reserve(frange.duration);
+    m_Mediaframes.resize(frange.duration);
+
+    for (const MEntry& e : m_MediaStruct)
     {
-        /* Update internal structures with the frame information */
-        m_Mediaframes[e.Framenumber()] = std::move(Frame(e));
+        /**
+         * Index here is basically the distance between the current frame being processed
+         * and the start frame, this is how we actually want the data to always be layed out
+         * meaning that the frames are always ordered and correspond to the distance between the frames
+         * 
+         * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+         * will be 1010 - 1001 = 9
+         */
+        m_Mediaframes[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
         m_Framenumbers.emplace_back(e.Framenumber());
     }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
-    UpdateRange();
 }
 
 void Media::ProcessMovie()
@@ -167,32 +160,51 @@ void Media::ProcessMovie()
     std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_MediaStruct.Extension(), entry.Fullpath());
 
     MFrameRange frange = r->Framerange();
-    VOID_LOG_INFO("Movie Media Range: {0}-{1}", frange.startframe, frange.endframe);
+    VOID_LOG_INFO("Movie Media Range: {0}-{1}--{2}", frange.startframe, frange.endframe, frange.duration);
 
     /* Update internal framerate */
     m_Framerate = r->Framerate();
     m_Samplerate = r->Samplerate();
 
-    m_Framenumbers.reserve(frange.endframe - frange.startframe + 1);
+    m_Mediaframes.resize(frange.duration);
+    m_Framenumbers.reserve(frange.duration);
 
-    /* Add each of the Frame with the same entry and the varying frame number */
-    for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
+    m_FirstFrame = frange.startframe;
+    m_LastFrame = frange.endframe;
+
+    for (v_frame_t i = frange.startframe; i < frange.duration; ++i)
     {
-        /* Update internal structures with the frame information */
         m_Mediaframes[i] = std::move(MovieFrame(entry, i));
         m_Framenumbers.emplace_back(i);
     }
 
     m_Type = Media::Type::MOVIE;
-    UpdateRange();
 }
-
 
 void Media::ClearCache()
 {
-    for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
-        it.second.ClearCache();
+    for (Frame& f : m_Mediaframes)
+        f.ClearCache();
 }
 
+// Frame Media::GetFrame(v_frame_t frame) const
+// {
+//     /**
+//      * Same logic as mentioned before, the frames in the underlying vector are always sorted
+//      * and point to the index same as the distance between the frames
+//      * 
+//      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+//      * will be 1010 - 1001 = 9
+//      */
+//     return m_Mediaframes.at(frame - m_FirstFrame);
+// }
+
+void Media::Clear()
+{
+    /* Clear underlying structs */
+    m_Framenumbers.clear();
+    m_Mediaframes.clear();
+    m_Mediaframes.shrink_to_fit();
+}
 
 VOID_NAMESPACE_CLOSE

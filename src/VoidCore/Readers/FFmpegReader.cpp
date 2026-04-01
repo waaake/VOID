@@ -240,8 +240,9 @@ void FFmpegPixReader::ProcessInformation()
             if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
             {
                 /* This always has been 2 less than the total number of frames, need a bit more information here... */
-                m_Endframe = stream->nb_frames - 2;
+                m_Duration = stream->nb_frames - 2;
                 m_Framerate = av_q2d(stream->r_frame_rate);
+                m_Endframe = m_Duration - 1;
             }
             else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
             {
