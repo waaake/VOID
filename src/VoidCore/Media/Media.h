@@ -102,18 +102,19 @@ public:
      */
     v_frame_t NearestFrame(v_frame_t frame) const;
 
-    Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame); }
+    // Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame); }
+    Frame GetFrame(v_frame_t frame) const;
 
-    Frame FirstFrameData() const { return m_Mediaframes.at(m_FirstFrame); }
-    Frame LastFrameData() const { return m_Mediaframes.at(m_LastFrame); }
+    Frame FirstFrameData() const { return GetFrame(m_FirstFrame); }
+    Frame LastFrameData() const { return GetFrame(m_LastFrame); }
 
-    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame).Image(cached); }
+    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return GetFrame(frame).Image(cached); }
     inline std::size_t FrameSize() { return Image(m_FirstFrame)->FrameSize(); }
 
     inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
     inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
-    inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.at(m_FirstFrame).Metadata(); }
+    inline const std::map<std::string, std::string> Metadata() const { return GetFrame(m_FirstFrame).Metadata(); }
 
     inline double Framerate() const { return m_Framerate; }
     inline bool Empty() const { return m_Mediaframes.empty(); }
@@ -128,6 +129,7 @@ public:
         /* Clear underlying structs */
         m_Framenumbers.clear();
         m_Mediaframes.clear();
+        m_Mediaframes.shrink_to_fit();
     }
 
     /*
@@ -136,8 +138,8 @@ public:
     void ClearCache();
 
     /* Allow iterating over the Media frames */
-    inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
-    inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_Mediaframes.end(); }
+    // inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
+    // inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_Mediaframes.end(); }
 
 protected: /* Members */
     /**
@@ -150,7 +152,9 @@ protected: /* Members */
     double m_Framerate;
 
     Type m_Type;
-    std::unordered_map<v_frame_t, Frame> m_Mediaframes;
+    // std::unordered_map<v_frame_t, Frame> m_Mediaframes;
+    // MFrameStruct m_Mediaframes;
+    std::vector<Frame> m_Mediaframes;
     std::vector<v_frame_t> m_Framenumbers;
 
 private: /* Methods */
