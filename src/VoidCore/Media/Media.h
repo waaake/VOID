@@ -138,8 +138,8 @@ public:
     void ClearCache();
 
     /* Allow iterating over the Media frames */
-    // inline std::unordered_map<v_frame_t, Frame>::iterator begin() { return m_Mediaframes.begin(); }
-    // inline std::unordered_map<v_frame_t, Frame>::iterator end() { return m_Mediaframes.end(); }
+    inline std::vector<Frame>::iterator begin() { return m_Mediaframes.begin(); }
+    inline std::vector<Frame>::iterator end() { return m_Mediaframes.end(); }
 
 protected: /* Members */
     /**
@@ -152,17 +152,13 @@ protected: /* Members */
     double m_Framerate;
 
     Type m_Type;
-    // std::unordered_map<v_frame_t, Frame> m_Mediaframes;
-    // MFrameStruct m_Mediaframes;
+
     std::vector<Frame> m_Mediaframes;
     std::vector<v_frame_t> m_Framenumbers;
 
 private: /* Methods */
     void ProcessSequence();
     void ProcessMovie();
-
-    /* Updates the internal range based on the read frames */
-    void UpdateRange();
 };
 
 VOID_NAMESPACE_CLOSE

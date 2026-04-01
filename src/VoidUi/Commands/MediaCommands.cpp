@@ -3,7 +3,6 @@
 
 /* Internal */
 #include "MediaCommands.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -30,7 +29,6 @@ void MediaImportCommand::undo()
 
 bool MediaImportCommand::Redo()
 {
-    /* Add the Media to the Model */
     return _MediaBridge.AddMedia(MediaStruct::FromFile(m_Path));
 }
 

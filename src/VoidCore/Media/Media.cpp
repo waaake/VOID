@@ -68,21 +68,6 @@ Media::Media(const std::string& basepath,
     Read(MediaStruct(basepath, name, extension, start, end, padding, missing));
 }
 
-
-void Media::UpdateRange()
-{
-    /* Check if we have any frames to arrange */
-    if (m_Framenumbers.empty())
-        return;
-
-    /* Sort the Updated frames vector */
-    std::sort(m_Framenumbers.begin(), m_Framenumbers.end());
-
-    /* Update the first and last frame after the framenumbers have been sorted */
-    m_FirstFrame = m_Framenumbers.front();
-    m_LastFrame = m_Framenumbers.back();
-}
-
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
 {
     /**
@@ -100,8 +85,7 @@ bool Media::Contains(v_frame_t frame) const
      * movie still has still information about those, only an image sequence needs to be checked
      * for actual frame being present even if it's still in the range 
      */
-    // return m_Type == Media::Type::MOVIE ? true : m_Mediaframes.find(frame) != m_Mediaframes.end();
-    return true;
+    return m_Type == Media::Type::MOVIE ? true : InRange(frame) && GetFrame(frame).Valid();
 }
 
 void Media::Read(const MediaStruct& mstruct)
@@ -142,21 +126,11 @@ void Media::Read(MediaStruct&& mstruct)
 
 void Media::ProcessSequence()
 {
-    // m_Framenumbers.reserve(m_MediaStruct.Size());
-
-    /* Iterate over the struct's internal Media Entry */
-    // for (const MEntry& e: m_MediaStruct)
-    // {
-    //     /* Update internal structures with the frame information */
-    //     m_Mediaframes[e.Framenumber()] = std::move(Frame(e));
-    //     m_Framenumbers.emplace_back(e.Framenumber());
-    // }
-
     const MFrameRange& frange = m_MediaStruct.Framerange();
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    m_Framenumbers.resize(frange.duration);
+    m_Framenumbers.reserve(frange.duration);
     m_Mediaframes.resize(frange.duration);
 
     for (const MEntry& e : m_MediaStruct)
@@ -172,11 +146,10 @@ void Media::ProcessSequence()
         const int index = e.Framenumber() - m_FirstFrame;
 
         m_Mediaframes[index] = std::move(Frame(e));
-        m_Framenumbers[index] = e.Framenumber();
+        m_Framenumbers.emplace_back(e.Framenumber());
     }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
-    // UpdateRange();
 }
 
 void Media::ProcessMovie()
@@ -198,40 +171,24 @@ void Media::ProcessMovie()
     m_Samplerate = r->Samplerate();
 
     m_Mediaframes.resize(frange.duration);
-    m_Framenumbers.resize(frange.duration);
+    m_Framenumbers.reserve(frange.duration);
 
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
     for (v_frame_t i = frange.startframe; i < frange.duration; ++i)
     {
-        // VOID_LOG_INFO("Adding Frame: {0}", i);
         m_Mediaframes[i] = std::move(MovieFrame(entry, i));
-        m_Framenumbers[i] = i;
-        // m_Mediaframes.emplace_back(entry, i);
-        // m_Framenumbers.emplace_back(i);
+        m_Framenumbers.emplace_back(i);
     }
 
-    // m_Framenumbers.reserve(frange.endframe - frange.startframe + 1);
-
-    // /* Add each of the Frame with the same entry and the varying frame number */
-    // for (v_frame_t i = frange.startframe; i < frange.endframe; i++)
-    // {
-    //     /* Update internal structures with the frame information */
-    //     m_Mediaframes[i] = std::move(MovieFrame(entry, i));
-    //     m_Framenumbers.emplace_back(i);
-    // }
-
     m_Type = Media::Type::MOVIE;
-    // UpdateRange();
 }
 
 void Media::ClearCache()
 {
     for (Frame& f : m_Mediaframes)
         f.ClearCache();
-    // for (std::pair<const v_frame_t, Frame>& it: m_Mediaframes)
-    //     it.second.ClearCache();
 }
 
 Frame Media::GetFrame(v_frame_t frame) const
