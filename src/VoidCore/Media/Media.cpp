@@ -102,7 +102,6 @@ void Media::Read(const MediaStruct& mstruct)
         return;
     }
 
-    /* If it is a movie -> process it as one */
     m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
@@ -120,7 +119,6 @@ void Media::Read(MediaStruct&& mstruct)
         return;
     }
 
-    /* If it is a movie -> process it as one */
     m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
@@ -143,9 +141,7 @@ void Media::ProcessSequence()
          * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
          * will be 1010 - 1001 = 9
          */
-        const int index = e.Framenumber() - m_FirstFrame;
-
-        m_Mediaframes[index] = std::move(Frame(e));
+        m_Mediaframes[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
         m_Framenumbers.emplace_back(e.Framenumber());
     }
 
@@ -191,16 +187,24 @@ void Media::ClearCache()
         f.ClearCache();
 }
 
-Frame Media::GetFrame(v_frame_t frame) const
+// Frame Media::GetFrame(v_frame_t frame) const
+// {
+//     /**
+//      * Same logic as mentioned before, the frames in the underlying vector are always sorted
+//      * and point to the index same as the distance between the frames
+//      * 
+//      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+//      * will be 1010 - 1001 = 9
+//      */
+//     return m_Mediaframes.at(frame - m_FirstFrame);
+// }
+
+void Media::Clear()
 {
-    /**
-     * Same logic as mentioned before, the frames in the underlying vector are always sorted
-     * and point to the index same as the distance between the frames
-     * 
-     * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
-     * will be 1010 - 1001 = 9
-     */
-    return m_Mediaframes.at(frame - m_FirstFrame);
+    /* Clear underlying structs */
+    m_Framenumbers.clear();
+    m_Mediaframes.clear();
+    m_Mediaframes.shrink_to_fit();
 }
 
 VOID_NAMESPACE_CLOSE

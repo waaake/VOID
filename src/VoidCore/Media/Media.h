@@ -82,31 +82,29 @@ public:
 
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
-    /*
+    /**
      * Returns whether a given frame falls in the range of Media
      * i.e. between the first and the last frame of media
      * Any frame missing does not matter as this method only returns whether a frame is in the range or not
      */
     [[nodiscard]] inline bool InRange(v_frame_t frame) const { return frame >= m_FirstFrame && frame <= m_LastFrame; }
 
-    /* 
+    /** 
      * Returns whether a given frame is available to read
      * There could be a scenario where the given frame is in the range of first - last but is not available
      * and is referred to as the missing frame.
      */
     [[nodiscard]] bool Contains(v_frame_t frame) const;
 
-    /*
+    /**
      * Based on the available frames, returns the frame which is just lower than the provided frame
      * This is used when the current frame is not available but we want the neartest frame to be used in it's place
      */
     v_frame_t NearestFrame(v_frame_t frame) const;
 
-    // Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame); }
-    Frame GetFrame(v_frame_t frame) const;
-
-    Frame FirstFrameData() const { return GetFrame(m_FirstFrame); }
-    Frame LastFrameData() const { return GetFrame(m_LastFrame); }
+    inline Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame - m_FirstFrame); }
+    inline Frame FirstFrameData() const { return GetFrame(m_FirstFrame); }
+    inline Frame LastFrameData() const { return GetFrame(m_LastFrame); }
 
     inline SharedPixels Image(v_frame_t frame, bool cached = true) { return GetFrame(frame).Image(cached); }
     inline std::size_t FrameSize() { return Image(m_FirstFrame)->FrameSize(); }
@@ -118,21 +116,14 @@ public:
 
     inline double Framerate() const { return m_Framerate; }
     inline bool Empty() const { return m_Mediaframes.empty(); }
-    /*
+    /**
      * A Media can be considered invalid if it is empty
      * Any valid media will have atleast one frame
      */
     inline bool Valid() const { return !Empty(); }
+    void Clear();
 
-    inline void Clear()
-    {
-        /* Clear underlying structs */
-        m_Framenumbers.clear();
-        m_Mediaframes.clear();
-        m_Mediaframes.shrink_to_fit();
-    }
-
-    /*
+    /**
      * Clears the cache for all the frames of the Media
      */
     void ClearCache();
@@ -142,9 +133,6 @@ public:
     inline std::vector<Frame>::iterator end() { return m_Mediaframes.end(); }
 
 protected: /* Members */
-    /**
-     * The Media structure for the Media
-     */
     MediaStruct m_MediaStruct;
 
     v_frame_t m_FirstFrame, m_LastFrame;
@@ -152,7 +140,6 @@ protected: /* Members */
     double m_Framerate;
 
     Type m_Type;
-
     std::vector<Frame> m_Mediaframes;
     std::vector<v_frame_t> m_Framenumbers;
 
