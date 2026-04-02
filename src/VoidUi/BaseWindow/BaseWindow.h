@@ -4,22 +4,16 @@
 #ifndef _VOID_FRAMELESS_WINDOW_H
 #define _VOID_FRAMELESS_WINDOW_H
 
-/* Qt */
-#include <QMainWindow>
-
 /* Internal */
 #include "QDefinition.h"
+#include "VoidUi/QExtensions/Window.h"
 
 VOID_NAMESPACE_OPEN
 
 #ifdef USE_FRAMED_WINDOW
-class VOID_API BaseWindow : public QMainWindow
-{
-public:
-    BaseWindow(QWidget* parent = nullptr) : QMainWindow(parent) {}
-};
+typedef MainWindow BaseWindow;
 #else
-class VOID_API BaseWindow : public QMainWindow
+class VOID_API BaseWindow : public MainWindow
 {
 public:
     BaseWindow(QWidget* parent = nullptr);
@@ -57,7 +51,6 @@ private: /* members */
     _QPoint m_LastPos;
 
     bool m_Dragging;
-
 };
 #endif // USE_FRAMED_WINDOW
 

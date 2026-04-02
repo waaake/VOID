@@ -100,6 +100,7 @@ set(SOURCES
     QExtensions/Slider.cpp
     QExtensions/SpinBox.cpp
     QExtensions/Tooltip.cpp
+    QExtensions/Window.cpp
 )
 
 if (WIN32)

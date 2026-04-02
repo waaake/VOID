@@ -36,12 +36,6 @@ VoidMainWindow::~VoidMainWindow()
     m_WorkspaceManager = nullptr;
 }
 
-void VoidMainWindow::paintEvent(QPaintEvent* event)
-{
-    QPainter painter(this);
-    painter.fillRect(rect(), palette().color(QPalette::Dark));
-}
-
 QMenuBar* VoidMainWindow::MenuBar() const
 {
     #ifdef USE_FRAMED_WINDOW
