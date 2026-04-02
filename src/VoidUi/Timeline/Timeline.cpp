@@ -217,15 +217,15 @@ void Timeline::StartPlayback()
 {
 	m_FrameInterval = 1000 / Framerate();
 
-	// bool expected = false;
-	// if (!m_Playing.compare_exchange_strong(expected, true))
-	// {
-	// 	return;
-	// }
-	// /* Start Playback worker async */
-	// m_Worker = std::async(std::launch::async, &Timeline::PlaybackLoop, this);
+	bool expected = false;
+	if (!m_Playing.compare_exchange_strong(expected, true))
+	{
+		return;
+	}
+	/* Start Playback worker async */
+	m_Worker = std::async(std::launch::async, &Timeline::PlaybackLoop, this);
 
-	m_PlayTimer.start(m_FrameInterval);
+	// m_PlayTimer.start(m_FrameInterval);
 }
 
 void Timeline::PlaybackLoop()
@@ -241,6 +241,8 @@ void Timeline::PlaybackLoop()
 				PlayNextFrame();
 			else if (m_Playstate == PlayState::BACKWARDS)
 				PlayPreviousFrame();
+			else if (m_Playstate == PlayState::STOPPED)
+				break;
 
 			timer.restart();
 		}
@@ -401,12 +403,12 @@ void Timeline::Stop()
 	m_Playing = false;
 	m_Playstate = PlayState::STOPPED;
 
-	m_PlayTimer.stop();
-	emit playbackStateChanged(m_Playstate);
+	// m_PlayTimer.stop();
+	// emit playbackStateChanged(m_Playstate);
 
-	// /* Wait for the task to complete */
-	// if (m_Worker.valid())
-	// 	m_Worker.get();
+	/* Wait for the task to complete */
+	if (m_Worker.valid())
+		m_Worker.get();
 }
 
 void Timeline::Replay()
