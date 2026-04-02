@@ -17,12 +17,10 @@ static const int RESIZE_MARGIN = 10;
 static const int TITLEBAR_MARGIN = 40;
 
 BaseWindow::BaseWindow(QWidget* parent)
-    : QMainWindow(parent)
+    : MainWindow(parent, Qt::FramelessWindowHint)
     , m_Resize(ResizeType::None)
     , m_Dragging(false)
 {
-    /* Base window needs to be frameless*/
-    setWindowFlags(Qt::FramelessWindowHint);
 }
 
 #if _QT6        /* Qt 6 Compat */

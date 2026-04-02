@@ -7,7 +7,7 @@
 VOID_NAMESPACE_OPEN
 
 WorkspaceManager::WorkspaceManager(QWidget* parent)
-    : QMainWindow(parent)
+    : MainWindow(parent)
 {
 }
 
@@ -120,7 +120,7 @@ void WorkspaceManager::InspectMetadata(const SharedMediaClip& media)
 
 void WorkspaceManager::ShowComponent(const Component& component) const
 {
-    QMainWindow* window = new QMainWindow;
+    MainWindow* window = new MainWindow;
 	DockSplitter* splitter = new DockSplitter(Qt::Horizontal, window);
 	DockWidget* undocked = new DockWidget(splitter, true);
 	window->setCentralWidget(undocked);

@@ -5,7 +5,6 @@
 #include <QApplication>
 #include <QByteArray>
 #include <QDrag>
-#include <QMainWindow>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
@@ -18,6 +17,7 @@
 #include "VoidCore/Logging.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Engine/IconForge.h"
+#include "VoidUi/QExtensions/Window.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -251,7 +251,7 @@ void DockWidget::RemoveTab(int index)
 
 void DockWidget::UndockTab(int index, const QPoint& position)
 {
-	QMainWindow* window = new QMainWindow;
+	MainWindow* window = new MainWindow;
 	DockSplitter* splitter = new DockSplitter(Qt::Horizontal, window);
 	DockWidget* undocked = new DockWidget(splitter, true);
 	window->setCentralWidget(undocked);
@@ -354,7 +354,7 @@ void DockWidget::CloseParent()
 	 * so from the dock widget we start getting the parent -> parent, i.e. the main window
 	 * and free the pointer to the window, clearing all of the children
 	 */
-	QMainWindow* window = dynamic_cast<QMainWindow*>(parentWidget()->window());
+	MainWindow* window = dynamic_cast<MainWindow*>(parentWidget()->window());
 
 	if (window)
 	{

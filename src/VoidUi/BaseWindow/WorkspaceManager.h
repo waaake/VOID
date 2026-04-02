@@ -4,9 +4,6 @@
 #ifndef _VOID_WORKSPACE_MANAGER_H
 #define _VOID_WORKSPACE_MANAGER_H
 
-/* Qt */
-#include <QMainWindow>
-
 /* Internal */
 #include "Definition.h"
 #include "MenuSystem.h"
@@ -19,6 +16,7 @@
 #include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
+#include "VoidUi/QExtensions/Window.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -46,7 +44,7 @@ enum class Component
     PlayLister,
 };
 
-class WorkspaceManager : public QMainWindow
+class WorkspaceManager : public MainWindow
 {
 public:
     WorkspaceManager(QWidget* parent = nullptr);
@@ -63,7 +61,6 @@ public:
     QWidget* Widget(const Component& component) const;
 
 private: /* Members */
-    QMainWindow* m_Parent;
     DockSplitter* m_Splitter;
 
     VoidMediaLister* m_MediaLister;

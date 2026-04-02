@@ -4,9 +4,6 @@
 #ifndef _VOID_PLAYER_WINDOW_H
 #define _VOID_PLAYER_WINDOW_H
 
-/* Qt */
-#include <QMainWindow>
-
 /* Internal */
 #include "Definition.h"
 #include "BaseWindow.h"
@@ -42,7 +39,6 @@ private: /* Methods */
 
 protected:
     inline QSize sizeHint() const override { return QSize(1280, 760); }
-    void paintEvent(QPaintEvent* event) override;
 
 private: /* Members */
     VoidTitleBar* m_TitleBar;
