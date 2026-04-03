@@ -17,7 +17,6 @@ VOID_NAMESPACE_OPEN
 
 TextAnnotationsRenderLayer::TextAnnotationsRenderLayer()
     : m_Annotation(nullptr)
-    , m_Shader(nullptr)
     , m_VAO(0)
     , m_VBO(0)
     , m_BoxVAO(0)
@@ -45,16 +44,6 @@ TextAnnotationsRenderLayer::TextAnnotationsRenderLayer()
 
 TextAnnotationsRenderLayer::~TextAnnotationsRenderLayer()
 {
-    if (m_Shader)
-    {
-        delete m_Shader;
-        m_Shader = nullptr;
-    }
-    if (m_BoxShader)
-    {
-        delete m_BoxShader;
-        m_BoxShader = nullptr;
-    }
 }
 
 void TextAnnotationsRenderLayer::Begin(const glm::vec2& position)
@@ -209,12 +198,9 @@ void TextAnnotationsRenderLayer::SetAspect(float aspect)
 
 void TextAnnotationsRenderLayer::Initialize()
 {
-    m_Shader = new TextShaderProgram;
-    m_BoxShader = new TextBoxShaderProgram;
-
     /* Initialize the Shaders */
-    m_Shader->Initialize();
-    m_BoxShader->Initialize();
+    m_Shader.Initialize();
+    m_BoxShader.Initialize();
 
     /* Initialize the Array Buffers */
     SetupBuffers();
@@ -223,15 +209,15 @@ void TextAnnotationsRenderLayer::Initialize()
     FontEngine::Instance().ClearTextures();
 
     /* Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
-    m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
-    m_UText = glGetUniformLocation(m_Shader->ProgramId(), "uText");
+    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UColor = glGetUniformLocation(m_Shader.ProgramId(), "uColor");
+    m_UText = glGetUniformLocation(m_Shader.ProgramId(), "uText");
 
-    m_UBoxProjection = glGetUniformLocation(m_BoxShader->ProgramId(), "uMVP");
-    m_UBoxColor = glGetUniformLocation(m_BoxShader->ProgramId(), "uColor");
-    m_UBoxThickness = glGetUniformLocation(m_BoxShader->ProgramId(), "uThickness");
-    m_UBoxMin = glGetUniformLocation(m_BoxShader->ProgramId(), "uMin");
-    m_UBoxMax = glGetUniformLocation(m_BoxShader->ProgramId(), "uMax");
+    m_UBoxProjection = glGetUniformLocation(m_BoxShader.ProgramId(), "uMVP");
+    m_UBoxColor = glGetUniformLocation(m_BoxShader.ProgramId(), "uColor");
+    m_UBoxThickness = glGetUniformLocation(m_BoxShader.ProgramId(), "uThickness");
+    m_UBoxMin = glGetUniformLocation(m_BoxShader.ProgramId(), "uMin");
+    m_UBoxMax = glGetUniformLocation(m_BoxShader.ProgramId(), "uMax");
 }
 
 void TextAnnotationsRenderLayer::Render(const glm::mat4& projection)
@@ -292,7 +278,7 @@ void TextAnnotationsRenderLayer::SetupBuffers()
 bool TextAnnotationsRenderLayer::PreDraw()
 {
     /* Use the Shader Program */
-    m_Shader->Bind();
+    m_Shader.Bind();
 
     /* Bind the Vertex Array */
     glBindVertexArray(m_VAO);
@@ -397,7 +383,7 @@ void TextAnnotationsRenderLayer::PostDraw()
 {
     /* Cleanup */
     glBindVertexArray(0);
-    m_Shader->Release();
+    m_Shader.Release();
 }
 
 void TextAnnotationsRenderLayer::DrawChar(char& c, float& x, float y)
@@ -476,7 +462,7 @@ void TextAnnotationsRenderLayer::DrawCaret(float x, float y)
 
 void TextAnnotationsRenderLayer::DrawTextbox()
 {
-    m_BoxShader->Bind();
+    m_BoxShader.Bind();
 
     const Renderer::RenderText& r = m_Annotation->draft;
 
@@ -511,7 +497,7 @@ void TextAnnotationsRenderLayer::DrawTextbox()
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
 
-    m_BoxShader->Release();
+    m_BoxShader.Release();
 }
 
 VOID_NAMESPACE_CLOSE

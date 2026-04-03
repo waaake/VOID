@@ -47,12 +47,6 @@ ImageComparisonRenderLayer::~ImageComparisonRenderLayer()
     /* Destroy the bound texture */
     glDeleteTextures(1, &m_TextureA);
     glDeleteTextures(1, &m_TextureB);
-
-    if (m_Shader)
-    {
-        delete m_Shader;
-        m_Shader = nullptr;
-    }
 }
 
 void ImageComparisonRenderLayer::Reset()
@@ -65,28 +59,25 @@ void ImageComparisonRenderLayer::Initialize()
 {
     Reset();
 
-    /* Initialize the Image Render Component */
-    m_Shader = new ImageComparisonShaderProgram;
-
     /* Initialize the Shaders */
-    m_Shader->Initialize();
+    m_Shader.Initialize();
 
     /* Initialize the Array Buffers */
     SetupBuffers();
 
     /* Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
-    m_UTextureA = glGetUniformLocation(m_Shader->ProgramId(), "uTexture");
-    m_UTextureB = glGetUniformLocation(m_Shader->ProgramId(), "uTextureB");
-    m_UExposure = glGetUniformLocation(m_Shader->ProgramId(), "exposure");
-    m_UGamma = glGetUniformLocation(m_Shader->ProgramId(), "gamma");
-    m_UGain = glGetUniformLocation(m_Shader->ProgramId(), "gain");
-    m_UChannelMode = glGetUniformLocation(m_Shader->ProgramId(), "channelMode");
-    m_UComparisonMode = glGetUniformLocation(m_Shader->ProgramId(), "comparisonMode");
-    m_UBlendMode = glGetUniformLocation(m_Shader->ProgramId(), "blendMode");
-    m_USwipeX = glGetUniformLocation(m_Shader->ProgramId(), "swipeX");
-    m_UInputColorSpaceA = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceA");
-    m_UInputColorSpaceB = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceB");
+    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UTextureA = glGetUniformLocation(m_Shader.ProgramId(), "uTexture");
+    m_UTextureB = glGetUniformLocation(m_Shader.ProgramId(), "uTextureB");
+    m_UExposure = glGetUniformLocation(m_Shader.ProgramId(), "exposure");
+    m_UGamma = glGetUniformLocation(m_Shader.ProgramId(), "gamma");
+    m_UGain = glGetUniformLocation(m_Shader.ProgramId(), "gain");
+    m_UChannelMode = glGetUniformLocation(m_Shader.ProgramId(), "channelMode");
+    m_UComparisonMode = glGetUniformLocation(m_Shader.ProgramId(), "comparisonMode");
+    m_UBlendMode = glGetUniformLocation(m_Shader.ProgramId(), "blendMode");
+    m_USwipeX = glGetUniformLocation(m_Shader.ProgramId(), "swipeX");
+    m_UInputColorSpaceA = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceA");
+    m_UInputColorSpaceB = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceB");
 
     /* Gen Texture for Render */
     glGenTextures(1, &m_TextureA);
@@ -197,21 +188,21 @@ void ImageComparisonRenderLayer::Render(const glm::mat4& projection)
 void ImageComparisonRenderLayer::ReinitShaderProgram()
 {
     /* Re-Initialize the Shader */
-    m_Shader->Reinitialize();
+    m_Shader.Reinitialize();
 
     /* Re-Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
-    m_UTextureA = glGetUniformLocation(m_Shader->ProgramId(), "uTexture");
-    m_UTextureB = glGetUniformLocation(m_Shader->ProgramId(), "uTextureB");
-    m_UExposure = glGetUniformLocation(m_Shader->ProgramId(), "exposure");
-    m_UGamma = glGetUniformLocation(m_Shader->ProgramId(), "gamma");
-    m_UGain = glGetUniformLocation(m_Shader->ProgramId(), "gain");
-    m_UChannelMode = glGetUniformLocation(m_Shader->ProgramId(), "channelMode");
-    m_UComparisonMode = glGetUniformLocation(m_Shader->ProgramId(), "comparisonMode");
-    m_UBlendMode = glGetUniformLocation(m_Shader->ProgramId(), "blendMode");
-    m_USwipeX = glGetUniformLocation(m_Shader->ProgramId(), "swipeX");
-    m_UInputColorSpaceA = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceA");
-    m_UInputColorSpaceB = glGetUniformLocation(m_Shader->ProgramId(), "inputColorSpaceB");
+    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UTextureA = glGetUniformLocation(m_Shader.ProgramId(), "uTexture");
+    m_UTextureB = glGetUniformLocation(m_Shader.ProgramId(), "uTextureB");
+    m_UExposure = glGetUniformLocation(m_Shader.ProgramId(), "exposure");
+    m_UGamma = glGetUniformLocation(m_Shader.ProgramId(), "gamma");
+    m_UGain = glGetUniformLocation(m_Shader.ProgramId(), "gain");
+    m_UChannelMode = glGetUniformLocation(m_Shader.ProgramId(), "channelMode");
+    m_UComparisonMode = glGetUniformLocation(m_Shader.ProgramId(), "comparisonMode");
+    m_UBlendMode = glGetUniformLocation(m_Shader.ProgramId(), "blendMode");
+    m_USwipeX = glGetUniformLocation(m_Shader.ProgramId(), "swipeX");
+    m_UInputColorSpaceA = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceA");
+    m_UInputColorSpaceB = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceB");
 }
 
 void ImageComparisonRenderLayer::SetupBuffers()
@@ -273,7 +264,7 @@ void ImageComparisonRenderLayer::SetupBuffers()
 bool ImageComparisonRenderLayer::PreDraw()
 {
     /* Use the Shader Program */
-    m_Shader->Bind();
+    m_Shader.Bind();
 
     /* Bind the Vertex Array */
     glBindVertexArray(m_VAO);
@@ -357,7 +348,7 @@ void ImageComparisonRenderLayer::PostDraw()
     /* Unbind texture */
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindVertexArray(0);
-    m_Shader->Release();
+    m_Shader.Release();
 }
 
 VOID_NAMESPACE_CLOSE

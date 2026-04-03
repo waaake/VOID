@@ -68,7 +68,7 @@ public:
 
 private: /* Members */
     Renderer::SharedAnnotation m_Annotation;
-    StrokeShaderProgram* m_Shader;
+    StrokeShaderProgram m_Shader;
 
     glm::mat4 m_Projection;
 

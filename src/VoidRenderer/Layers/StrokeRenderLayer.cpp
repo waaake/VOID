@@ -15,7 +15,6 @@ VOID_NAMESPACE_OPEN
 
 StrokeRenderLayer::StrokeRenderLayer()
     : m_Annotation(nullptr)
-    , m_Shader(nullptr)
     , m_VAO(0)
     , m_VBO(0)
     , m_UProjection(-1)
@@ -29,11 +28,6 @@ StrokeRenderLayer::StrokeRenderLayer()
 
 StrokeRenderLayer::~StrokeRenderLayer()
 {
-    if (m_Shader)
-    {
-        delete m_Shader;
-        m_Shader = nullptr;
-    }
 }
 
 void StrokeRenderLayer::DrawPoint(const glm::vec2& point)
@@ -120,18 +114,16 @@ void StrokeRenderLayer::CommitStroke()
 
 void StrokeRenderLayer::Initialize()
 {
-    m_Shader = new StrokeShaderProgram;
-
     /* Initialize the Shaders */
-    m_Shader->Initialize();
+    m_Shader.Initialize();
 
     /* Initialize the Array Buffers */
     SetupBuffers();
 
     /* Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
-    m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
-    m_USize = glGetUniformLocation(m_Shader->ProgramId(), "uThickness");
+    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UColor = glGetUniformLocation(m_Shader.ProgramId(), "uColor");
+    m_USize = glGetUniformLocation(m_Shader.ProgramId(), "uThickness");
 }
 
 void StrokeRenderLayer::Render(const glm::mat4& projection)
@@ -170,7 +162,7 @@ void StrokeRenderLayer::SetupBuffers()
 bool StrokeRenderLayer::PreDraw()
 {
     /* Use the Shader Program */
-    m_Shader->Bind();
+    m_Shader.Bind();
 
     /* Bind the Vertex Array */
     glBindVertexArray(m_VAO);
@@ -218,7 +210,7 @@ void StrokeRenderLayer::PostDraw()
 
     /* Cleanup */
     glBindVertexArray(0);
-    m_Shader->Release();
+    m_Shader.Release();
 }
 
 VOID_NAMESPACE_CLOSE

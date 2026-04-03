@@ -93,8 +93,8 @@ public:
 
 private: /* Members */
     Renderer::SharedAnnotation m_Annotation;
-    TextShaderProgram* m_Shader;
-    TextBoxShaderProgram* m_BoxShader;
+    TextShaderProgram m_Shader;
+    TextBoxShaderProgram m_BoxShader;
     glm::mat4 m_Projection;
 
     /* Array Buffers */

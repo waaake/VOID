@@ -38,7 +38,7 @@ private: /* Members */
     float m_Offset;
 
     /* Render Components */
-    SwiperShaderProgram* m_Shader;
+    SwiperShaderProgram m_Shader;
 
     /**
      * Array and Buffer objects

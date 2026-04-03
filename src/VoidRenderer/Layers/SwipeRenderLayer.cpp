@@ -24,11 +24,6 @@ SwipeRenderLayer::SwipeRenderLayer()
 
 SwipeRenderLayer::~SwipeRenderLayer()
 {
-    if (m_Shader)
-    {
-        delete m_Shader;
-        m_Shader = nullptr;
-    }
 }
 
 void SwipeRenderLayer::Reset()
@@ -38,18 +33,15 @@ void SwipeRenderLayer::Reset()
 
 void SwipeRenderLayer::Initialize()
 {
-    /* Initialize the Image Render Component */
-    m_Shader = new SwiperShaderProgram;
-
     /* Initialize the Shaders */
-    m_Shader->Initialize();
+    m_Shader.Initialize();
 
     /* Initialize the Array Buffers */
     SetupBuffers();
 
     /* Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
-    m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
+    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UColor = glGetUniformLocation(m_Shader.ProgramId(), "uColor");
 }
 
 void SwipeRenderLayer::Render()
@@ -63,11 +55,11 @@ void SwipeRenderLayer::Render()
 void SwipeRenderLayer::ReinitShaderProgram()
 {
     /* Re-Initialize the Shader */
-    m_Shader->Reinitialize();
+    m_Shader.Reinitialize();
 
     /* Re-Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader->ProgramId(), "uMVP");
-    m_UColor = glGetUniformLocation(m_Shader->ProgramId(), "uColor");
+    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UColor = glGetUniformLocation(m_Shader.ProgramId(), "uColor");
 }
 
 void SwipeRenderLayer::SetupBuffers()
@@ -97,7 +89,7 @@ void SwipeRenderLayer::SetupBuffers()
 bool SwipeRenderLayer::PreDraw()
 {
     /* Use the Shader Program */
-    m_Shader->Bind();
+    m_Shader.Bind();
 
     /* Bind the Vertex Array */
     glBindVertexArray(m_VAO);
@@ -139,7 +131,7 @@ void SwipeRenderLayer::PostDraw()
 {
     /* Cleanup */
     glBindVertexArray(0);
-    m_Shader->Release();
+    m_Shader.Release();
 }
 
 VOID_NAMESPACE_CLOSE
