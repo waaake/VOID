@@ -12,11 +12,11 @@
 
 /* Internal Platform Macro */
 #if defined(_WIN32) || defined(__CYGWIN__)
-#define _VOID_WIN
+#define _VOID_PLATFORM_WINDOWS
 #elif __APPLE__
-#define _VOID_MAC
+#define _VOID_PLATFORM_APPLE
 #else
-#define _VOID_LINUX
+#define _VOID_PLATFORM_LINUX
 #endif
 
 /* Symbols Visibility */

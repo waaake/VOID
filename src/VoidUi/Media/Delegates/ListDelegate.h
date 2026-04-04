@@ -8,7 +8,7 @@
 #include <QStyledItemDelegate>
 
 /* Internal */
-#include "QDefinition.h"
+#include "Definition.h"
 
 VOID_NAMESPACE_OPEN
 

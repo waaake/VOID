@@ -155,7 +155,7 @@ void AudioDecoder::SeekTo(double seconds)
             avcodec_flush_buffers(m_CodecContext);
             // Handle stream level seeking if required
             // with the current implementation of the audio stream, macos needs this, windows and linux do not
-            #if defined(_VOID_MAC)
+            #if defined(_VOID_PLATFORM_APPLE)
             m_AudioStream->SeekTo(seconds);
             #endif
         }
@@ -193,7 +193,7 @@ void AudioDecoder::DecodeSamples()
                          * which is a bit more accurate as to how many timestamps have been played since the playback started
                          * with a bit of calculation around that, we get what's the current time being played currently
                          */
-                        #if defined(_VOID_LINUX) || defined(_VOID_WIN)
+                        #if defined(_VOID_PLATFORM_LINUX) || defined(_VOID_PLATFORM_WINDOWS)
                         Timekeeper::Instance().SetTime(m_Time.load() - (m_AudioStream->Latency() / 1000));
                         #endif
                     }

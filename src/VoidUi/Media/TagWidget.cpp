@@ -84,7 +84,7 @@ TagWidget::~TagWidget()
     }
 }
 
-void TagWidget::MoveTo(const _QPoint& position)
+void TagWidget::MoveTo(const QPoint& position)
 {
     if (position.y() > (QGuiApplication::primaryScreen()->geometry().height() * 0.5))
         move({position.x(), position.y() - sizeHint().height()});
@@ -153,7 +153,7 @@ TagEditor::~TagEditor()
     m_Layout = nullptr;
 }
 
-void TagEditor::MoveTo(const _QPoint& position)
+void TagEditor::MoveTo(const QPoint& position)
 {
     if (position.y() > (QGuiApplication::primaryScreen()->geometry().height() * 0.5))
         move({position.x(), position.y() - sizeHint().height()});

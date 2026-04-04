@@ -17,7 +17,7 @@ VOID_NAMESPACE_OPEN
 constexpr int MAX_THUMBNAIL_WIDTH = 80;
 constexpr int MAX_THUMBNAIL_HEIGHT = 50;
 
-#ifdef _VOID_MAC
+#ifdef _VOID_PLATFORM_APPLE
 constexpr int ICON_SIZE = 14;
 #else
 constexpr int ICON_SIZE = 12;
@@ -40,9 +40,9 @@ bool BasicMediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
         const QRect r(m_TagX, m_TagY, ICON_SIZE, ICON_SIZE);
         auto mevent = static_cast<QMouseEvent*>(event);
         #if _QT6_COMPACT
-        _QPoint pos = mevent->position();
+        QPoint pos = mevent->position();
         #else
-        _QPoint pos = mevent->pos();
+        QPoint pos = mevent->pos();
         #endif
         
         if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
@@ -150,9 +150,9 @@ bool MediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, con
         const QRect r(m_TagX, m_TagY, ICON_SIZE, ICON_SIZE);
         auto mevent = static_cast<QMouseEvent*>(event);
         #if _QT6_COMPACT
-        _QPoint pos = mevent->position();
+        QPoint pos = mevent->position();
         #else
-        _QPoint pos = mevent->pos();
+        QPoint pos = mevent->pos();
         #endif
         
         if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
