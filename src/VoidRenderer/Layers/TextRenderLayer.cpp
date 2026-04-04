@@ -309,11 +309,11 @@ void TextAnnotationsRenderLayer::DrawText(const Renderer::RenderText& text)
     std::vector<float> vertices;
     vertices.reserve(6 * 4 * text.text.size());
 
-    FontAtlas* atlas = FontStore::Instance().Atlas(text.size);
+    FontAtlas& atlas = FontStore::Instance().Atlas(text.size);
 
     for (char c : text.text)
     {
-        const FChar& fc = atlas->GetChar(c);
+        const FChar& fc = atlas.GetChar(c);
 
         float xpos = x + fc.bearing.x * m_Scalex;
         float ypos = y - (fc.size.y - fc.bearing.y) * m_Scale;
@@ -334,7 +334,7 @@ void TextAnnotationsRenderLayer::DrawText(const Renderer::RenderText& text)
     }
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, atlas->TextureId());
+    glBindTexture(GL_TEXTURE_2D, atlas.TextureId());
 
     /* Set the Color and the text to be used */
     glUniform3fv(m_UColor, 1, glm::value_ptr(text.color));

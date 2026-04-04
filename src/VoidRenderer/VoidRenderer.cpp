@@ -39,38 +39,24 @@ VoidRenderer::VoidRenderer(QWidget* parent)
     , m_Annotating(false)
     , m_Pan(0.f, 0.f)
 {
-    /* Renderer for Annotations */
-    m_ImageRenderer = new ImageRenderLayer;
-    m_ImageComparisonRenderer = new ImageComparisonRenderLayer;
-    m_SwipeRenderer = new SwipeRenderLayer;
-    m_StrokeRenderer = new StrokeRenderLayer;
-    m_TextRenderer = new TextAnnotationsRenderLayer;
-
     setFocusPolicy(Qt::StrongFocus);
     installEventFilter(this);
 }
 
 VoidRenderer::~VoidRenderer()
 {
-    /* Delete the Render Layers */
-    delete m_ImageRenderer;
-    delete m_ImageComparisonRenderer;
-    delete m_SwipeRenderer;
-    delete m_StrokeRenderer;
-    delete m_TextRenderer;
 }
 
 void VoidRenderer::Initialize()
 {
-
     /* Initialize the Image Render Layer */
-    m_ImageRenderer->Initialize();
+    m_ImageRenderer.Initialize();
     /* Initialize the Comparison Image Render Layer */
-    m_ImageComparisonRenderer->Initialize();
+    m_ImageComparisonRenderer.Initialize();
 
-    m_SwipeRenderer->Initialize();
-    m_StrokeRenderer->Initialize();
-    m_TextRenderer->Initialize();
+    m_SwipeRenderer.Initialize();
+    m_StrokeRenderer.Initialize();
+    m_TextRenderer.Initialize();
 
     /* (Re)Load Any textures if available */
     ReloadTextures();
@@ -87,21 +73,21 @@ void VoidRenderer::Draw()
         if (m_CompareMode == ComparisonMode::NONE)
         {
             /* Render the Image Texture */
-            m_ImageRenderer->Render(m_VProjection);
+            m_ImageRenderer.Render(m_VProjection);
 
             /* Draw Annotations */
             if (m_Annotating && m_Annotation)
             {
                 /* Render the stokes with the projection */
-                m_StrokeRenderer->Render(m_VProjection);
-                m_TextRenderer->Render(m_VProjection);
+                m_StrokeRenderer.Render(m_VProjection);
+                m_TextRenderer.Render(m_VProjection);
             }
         }
         else
         {
             /* Render Images with Comparison */
-            m_ImageComparisonRenderer->Render(m_VProjection);
-            m_SwipeRenderer->Render();
+            m_ImageComparisonRenderer.Render(m_VProjection);
+            m_SwipeRenderer.Render();
         }
 
         /* Exit Programs */
@@ -125,14 +111,11 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
     if (m_CompareMode == ComparisonMode::WIPE)
     {
         /* Convert the Swipe onto Qt Coordinates actual window width */
-        float swipex = (m_SwipeRenderer->SwipeX() + m_SwipeOffet) * width();
+        float swipex = (m_SwipeRenderer.SwipeX() + m_SwipeOffet) * width();
 
         /* A Buffer of 10 pixels to allow swiping */
         if (std::abs(m_LastMouse.x() - swipex) < 10.f)
-        {
-            /* Update to indicate that we're now swiping and not panning */
             m_Swiping = true;
-        }
     }
 
     /* Annotating? */
@@ -150,18 +133,18 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         if (m_DrawType == DrawType::BRUSH)
         {
             EnsureHasAnnotation();
-            m_StrokeRenderer->DrawPoint(p);
+            m_StrokeRenderer.DrawPoint(p);
         }
         else if (m_DrawType == DrawType::ERASER)
         {
             /* Remove a Stroke which contains the point */
-            m_StrokeRenderer->EraseStroke(p);
+            m_StrokeRenderer.EraseStroke(p);
         }
         else if (m_DrawType == DrawType::TEXT)
         {
             EnsureHasAnnotation();
-            if (!m_TextRenderer->Typing())
-                m_TextRenderer->Begin(p);            
+            if (!m_TextRenderer.Typing())
+                m_TextRenderer.Begin(p);            
             setFocus();
         }
     }
@@ -174,7 +157,7 @@ void VoidRenderer::mouseReleaseEvent(QMouseEvent* event)
 
     if (m_Annotating)
     {
-        m_StrokeRenderer->CommitStroke();
+        m_StrokeRenderer.CommitStroke();
         update();
     }
 }
@@ -202,12 +185,12 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         /* Draw Textures on Screen */
         if (m_DrawType == DrawType::BRUSH)
         {
-            m_StrokeRenderer->DrawPoint(InverseWorldPoint({glX, glY}));
+            m_StrokeRenderer.DrawPoint(InverseWorldPoint({glX, glY}));
             update();
         }
         else if (m_DrawType == DrawType::ERASER)
         {
-            m_StrokeRenderer->EraseStroke(InverseWorldPoint({glX, glY}));
+            m_StrokeRenderer.EraseStroke(InverseWorldPoint({glX, glY}));
             update();
         }
 
@@ -218,7 +201,7 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
     if (m_CompareMode == ComparisonMode::WIPE)
     {
         /* Convert the Swipe onto Qt Coordinates actual window width */
-        float swipex = (m_SwipeRenderer->SwipeX() + m_SwipeOffet) * width();
+        float swipex = (m_SwipeRenderer.SwipeX() + m_SwipeOffet) * width();
 
         /* A Buffer of 10 pixels to allow swiping */
         if (std::abs(x - swipex) < 10.f)
@@ -236,8 +219,8 @@ void VoidRenderer::mouseMoveEvent(QMouseEvent* event)
         if (m_Swiping)
         {
             /* Update the Swipe in it's normalized system (0.f - +1.f)*/
-            m_SwipeRenderer->SetSwipeX(std::clamp(x / float(width()), 0.f, 1.f));
-            m_ImageComparisonRenderer->SetSwipeX(std::clamp(x / float(width()), 0.f, 1.f));
+            m_SwipeRenderer.SetSwipeX(std::clamp(x / float(width()), 0.f, 1.f));
+            m_ImageComparisonRenderer.SetSwipeX(std::clamp(x / float(width()), 0.f, 1.f));
 
             /* Redraw the Texture */
             update();
@@ -341,7 +324,7 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
 void VoidRenderer::keyPressEvent(QKeyEvent* event)
 {
     /* If we're annotating and typing */
-    if (m_Annotating && m_TextRenderer->Typing())
+    if (m_Annotating && m_TextRenderer.Typing())
     {
         HandleAnnotationTyping(event);
         /* No other operation while the typing is ongoing */
@@ -364,7 +347,7 @@ bool VoidRenderer::eventFilter(QObject* object, QEvent* event)
          * in a funny manner, hence accept the event which was going to be passed on
          * to the Shortcut, to now be a keyPressEvent in the focussed widget i.e. this
          */
-        if (m_TextRenderer->Typing())
+        if (m_TextRenderer.Typing())
             event->accept();
     }
 
@@ -392,13 +375,13 @@ void VoidRenderer::Render(SharedPixels data)
     if (m_ImageA)
     {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-        m_TextRenderer->SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
+        m_TextRenderer.SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
     }
 
     RemoveAnnotation();
 
     /* Load the Textures to be rendered */
-    m_ImageRenderer->SetImage(m_ImageA);
+    m_ImageRenderer.SetImage(m_ImageA);
 
     /* Trigger a Re-paint */
     update();
@@ -413,7 +396,7 @@ void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& anno
 
     /* We're no longer comparing */
     m_CompareMode = ComparisonMode::NONE;
-    m_ImageComparisonRenderer->SetComparisonMode(m_CompareMode);
+    m_ImageComparisonRenderer.SetComparisonMode(m_CompareMode);
 
     /* Clear Secondary Image Data*/
     m_ImageB = nullptr;
@@ -426,14 +409,14 @@ void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& anno
     if (m_ImageA)
     {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-        m_TextRenderer->SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
+        m_TextRenderer.SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
     }
 
     /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
     SetAnnotation(annotation);
 
     /* Load the Textures to be rendered */
-    m_ImageRenderer->SetImage(m_ImageA);
+    m_ImageRenderer.SetImage(m_ImageA);
 
     /* Trigger a Re-paint */
     update();
@@ -450,8 +433,8 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
     /* Update the Blend Mode */
     m_BlendMode = blend;
 
-    m_ImageComparisonRenderer->SetComparisonMode(m_CompareMode);
-    m_ImageComparisonRenderer->SetBlendMode(blend);
+    m_ImageComparisonRenderer.SetComparisonMode(m_CompareMode);
+    m_ImageComparisonRenderer.SetBlendMode(blend);
 
     /* Hide the Error Label */
     SetMessage("");
@@ -462,13 +445,11 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
-    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-    }
 
     /* Load the Textures to be rendered */
-    m_ImageComparisonRenderer->SetImageA(m_ImageA);
-    m_ImageComparisonRenderer->SetImageB(m_ImageB);
+    m_ImageComparisonRenderer.SetImageA(m_ImageA);
+    m_ImageComparisonRenderer.SetImageB(m_ImageB);
 
     /* Trigger a Re-paint */
     update();
@@ -484,8 +465,8 @@ void VoidRenderer::Clear()
     SetMessage("");
 
     /* Reset Buffers */
-    m_ImageRenderer->Reset();
-    m_ImageComparisonRenderer->Reset();
+    m_ImageRenderer.Reset();
+    m_ImageComparisonRenderer.Reset();
 
     /*
      * Trigger a Re-paint
@@ -530,21 +511,21 @@ float VoidRenderer::MaxZoom() const
 
 void VoidRenderer::SetExposure(const float exposure)
 {
-    m_ImageRenderer->SetExposure(exposure);
+    m_ImageRenderer.SetExposure(exposure);
     /* Redraw the texture */
     update();
 }
 
 void VoidRenderer::SetGamma(const float gamma)
 {
-    m_ImageRenderer->SetGamma(gamma);
+    m_ImageRenderer.SetGamma(gamma);
     /* Redraw the texture */
     update();
 }
 
 void VoidRenderer::SetGain(const float gain)
 {
-    m_ImageRenderer->SetGain(gain);
+    m_ImageRenderer.SetGain(gain);
     /* Redraw the texture */
     update();
 }
@@ -552,7 +533,7 @@ void VoidRenderer::SetGain(const float gain)
 void VoidRenderer::SetChannelMode(int mode)
 {
     /* Update the channel mode for the Renderer */
-    m_ImageRenderer->SetChannelMode(mode);
+    m_ImageRenderer.SetChannelMode(mode);
 
     /* Redraw the texture */
     update();
@@ -564,8 +545,8 @@ void VoidRenderer::SetColorDisplay(const std::string& display)
     ColorProcessor::Instance().SetDisplay(display);
 
     /* Reinit the Image Shaders */
-    m_ImageRenderer->ReinitShaderProgram();
-    m_ImageComparisonRenderer->ReinitShaderProgram();
+    m_ImageRenderer.ReinitShaderProgram();
+    m_ImageComparisonRenderer.ReinitShaderProgram();
 
     /* Once the Shaders are initialized with the Current OCIO Display -> Redraw */
     update();
@@ -621,13 +602,13 @@ void VoidRenderer::ReloadTextures()
     if (m_CompareMode != ComparisonMode::NONE)
     {
         /* Set The Image Buffer with the Images */
-        m_ImageComparisonRenderer->SetImageA(m_ImageA);
-        m_ImageComparisonRenderer->SetImageB(m_ImageB);
+        m_ImageComparisonRenderer.SetImageA(m_ImageA);
+        m_ImageComparisonRenderer.SetImageB(m_ImageB);
     }
     else
     {
         /* Update Image Render Buffer */
-        m_ImageRenderer->SetImage(m_ImageA);
+        m_ImageRenderer.SetImage(m_ImageA);
     }
 }
 
@@ -641,8 +622,8 @@ void VoidRenderer::ToggleAnnotation(bool t)
 
 void VoidRenderer::SetAnnotationColor(const glm::vec3& color)
 {
-    m_StrokeRenderer->SetColor(color);
-    m_TextRenderer->SetColor(color);
+    m_StrokeRenderer.SetColor(color);
+    m_TextRenderer.SetColor(color);
 
     ResetAnnotationPointer();
 }
@@ -651,19 +632,19 @@ void VoidRenderer::SetAnnotationColor(const QColor& color)
     /* This Renderer takes colors normalized to 0.f - 1.f */
     const glm::vec3 c = { color.red() / 255.f, color.green() / 255.f, color.blue() / 255.f };
 
-    m_StrokeRenderer->SetColor(c);
-    m_TextRenderer->SetColor(c);
+    m_StrokeRenderer.SetColor(c);
+    m_TextRenderer.SetColor(c);
 
     ResetAnnotationPointer();
 }
 
 void VoidRenderer::SetAnnotationSize(const float size)
 {
-    m_StrokeRenderer->SetBrushSize(size);
+    m_StrokeRenderer.SetBrushSize(size);
 
     /* Ensure we set a valid size fot the text */
     if (size > 0)
-        m_TextRenderer->SetFontSize(static_cast<size_t>(size));
+        m_TextRenderer.SetFontSize(static_cast<size_t>(size));
 
     /* Reset the Mouse Pointer to reflect the brush size */
     ResetAnnotationPointer();
@@ -681,8 +662,8 @@ void VoidRenderer::ClearAnnotations()
 {
     /* Clear the Annotation */
     m_Annotation = nullptr;
-    m_StrokeRenderer->DeleteAnnotation();
-    m_TextRenderer->DeleteAnnotation();
+    m_StrokeRenderer.DeleteAnnotation();
+    m_TextRenderer.DeleteAnnotation();
     /* Redraw */
     update();
 
@@ -701,7 +682,7 @@ void VoidRenderer::ResetAnnotationPointer()
     }
 
     /* Size to be Used for Brush and Eraser */
-    const int diameter = (m_StrokeRenderer->BrushSize() * 500) + 4; // 4 units for boundaries
+    const int diameter = (m_StrokeRenderer.BrushSize() * 500) + 4; // 4 units for boundaries
 
     /* For each of the Annotation Tool -> Set the Mouse Pointer */
     if (m_DrawType == Renderer::DrawType::BRUSH)
@@ -714,7 +695,7 @@ void VoidRenderer::ResetAnnotationPointer()
         painter.setRenderHint(QPainter::Antialiasing);
 
         /* Fetch the current color from the Renderer */
-        const glm::vec3 color = m_StrokeRenderer->Color();
+        const glm::vec3 color = m_StrokeRenderer.Color();
         /* Normalize to QColor RGB space (0 - 255) */
         painter.setBrush(QColor(color[0] * 255, color[1] * 255, color[2] * 255));
         painter.drawEllipse(0, 0, diameter, diameter);
@@ -756,34 +737,34 @@ void VoidRenderer::HandleAnnotationTyping(QKeyEvent* event)
     switch (event->key())
     {
         case Qt::Key_Delete:
-            m_TextRenderer->Delete();
+            m_TextRenderer.Delete();
             break;
         case Qt::Key_Backspace:
-            m_TextRenderer->Backspace();
+            m_TextRenderer.Backspace();
             break;
         case Qt::Key_Home:
-            m_TextRenderer->MoveCaretHome();
+            m_TextRenderer.MoveCaretHome();
             break;
         case Qt::Key_Left:
-            m_TextRenderer->MoveCaretLeft();
+            m_TextRenderer.MoveCaretLeft();
             break;
         case Qt::Key_Right:
-            m_TextRenderer->MoveCaretRight();
+            m_TextRenderer.MoveCaretRight();
             break;
         case Qt::Key_End:
-            m_TextRenderer->MoveCaretEnd();
+            m_TextRenderer.MoveCaretEnd();
             break;
         case Qt::Key_Return:
         case Qt::Key_Enter:
-            m_TextRenderer->Commit();
+            m_TextRenderer.Commit();
             clearFocus();
             break;
         case Qt::Key_Escape:
-            m_TextRenderer->Discard();
+            m_TextRenderer.Discard();
             clearFocus();
             break;
         default:
-            m_TextRenderer->Type(event->text().toStdString());
+            m_TextRenderer.Type(event->text().toStdString());
     }
 
     /* Redraw */
@@ -803,15 +784,15 @@ void VoidRenderer::SetAnnotation(const Renderer::SharedAnnotation& annotation)
 {
     m_Annotation = annotation;
     /* Render layers get the same update */
-    m_StrokeRenderer->SetAnnotation(m_Annotation);
-    m_TextRenderer->SetAnnotation(m_Annotation);   
+    m_StrokeRenderer.SetAnnotation(m_Annotation);
+    m_TextRenderer.SetAnnotation(m_Annotation);   
 }
 
 void VoidRenderer::RemoveAnnotation()
 {
     m_Annotation = nullptr;
-    m_StrokeRenderer->DeleteAnnotation();
-    m_TextRenderer->DeleteAnnotation();
+    m_StrokeRenderer.DeleteAnnotation();
+    m_TextRenderer.DeleteAnnotation();
 }
 
 VOID_NAMESPACE_CLOSE
