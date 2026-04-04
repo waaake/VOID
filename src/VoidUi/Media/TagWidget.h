@@ -9,7 +9,7 @@
 #include <QTreeView>
 
 /* Internal */
-#include "QDefinition.h"
+#include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidUi/QExtensions/Dialog.h"
 
@@ -45,7 +45,7 @@ public:
     TagWidget(const SharedMediaClip& clip, QWidget* parent = nullptr);
     ~TagWidget();
 
-    void MoveTo(const _QPoint& position);
+    void MoveTo(const QPoint& position);
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -71,7 +71,7 @@ public:
     TagEditor(const SharedMediaClip& clip, QWidget* parent = nullptr);
     ~TagEditor();
 
-    void MoveTo(const _QPoint& position);
+    void MoveTo(const QPoint& position);
 
 private: /* Members */
     QVBoxLayout* m_Layout;

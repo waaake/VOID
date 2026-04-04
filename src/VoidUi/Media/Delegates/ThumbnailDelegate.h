@@ -8,7 +8,7 @@
 #include <QStyledItemDelegate>
 
 /* Internal */
-#include "QDefinition.h"
+#include "Definition.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -23,7 +23,7 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 signals:
-    void tagClicked(const QModelIndex&, const _QPoint&);
+    void tagClicked(const QModelIndex&, const QPoint&);
 
 protected:
     bool editorEvent(QEvent* event, QAbstractItemModel* item, const QStyleOptionViewItem& option, const QModelIndex& index) override;
