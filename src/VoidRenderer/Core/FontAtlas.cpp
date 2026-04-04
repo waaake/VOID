@@ -111,39 +111,22 @@ const FChar& FontAtlas::AddChar(char c)
 
 /* Font Store {{{ */
 
-FontStore::FontStore()
-{
-}
-
-FontStore::~FontStore()
-{
-    for (FontAtlas*& atlas : m_Fonts)
-    {
-        delete atlas;
-        atlas = nullptr;
-    }
-
-    m_Fonts.clear();
-}
-
 FontStore& FontStore::Instance()
 {
     static FontStore instance;
     return instance;
 }
 
-FontAtlas* FontStore::Atlas(int size)
+FontAtlas& FontStore::Atlas(int size)
 {
-    for (FontAtlas* atlas : m_Fonts)
+    for (FontAtlas& atlas : m_Fonts)
     {
-        if (atlas->Size() == size)
+        if (atlas.Size() == size)
             return atlas;
     }
 
-    FontAtlas* atlas = new FontAtlas(FontEngine::Instance().GetStandardFace(), size);
-    m_Fonts.push_back(atlas);
-
-    return atlas;
+    m_Fonts.push_back(std::move(FontAtlas(FontEngine::Instance().GetStandardFace(), size)));
+    return m_Fonts.back();
 }
 
 /* }}} */

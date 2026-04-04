@@ -53,7 +53,7 @@ private: /* Members */
     int m_InputColorSpace;
 
     /* Render Components */
-    ImageShaderProgram* m_Shader;
+    ImageShaderProgram m_Shader;
 
     /**
      * Array and Buffer objects

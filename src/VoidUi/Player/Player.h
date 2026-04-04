@@ -66,7 +66,7 @@ protected:
 
 private: /* Members */
     PlayBuffer m_CacheProcessor;
-    AudioDecoder* m_AudioDecoder;
+    AudioDecoder m_AudioDecoder;
 
 private: /* Methods */
     void SetMediaFrame(int frame);

@@ -135,14 +135,14 @@ private: /* Members */
      * Renders Textures and other elements on the Viewer
      */
     /* Renders the Main Texture */
-    ImageRenderLayer* m_ImageRenderer;
+    ImageRenderLayer m_ImageRenderer;
     /* Renders the Textures when the compare mode is set */
-    ImageComparisonRenderLayer* m_ImageComparisonRenderer;
+    ImageComparisonRenderLayer m_ImageComparisonRenderer;
     /* Renders all forms of annotations (text | strokes) */
     /* Renders Swipe bar when comparing in Stack */
-    SwipeRenderLayer* m_SwipeRenderer;
-    StrokeRenderLayer* m_StrokeRenderer;
-    TextAnnotationsRenderLayer* m_TextRenderer;
+    SwipeRenderLayer m_SwipeRenderer;
+    StrokeRenderLayer m_StrokeRenderer;
+    TextAnnotationsRenderLayer m_TextRenderer;
 
     SharedAnnotation m_Annotation;
 

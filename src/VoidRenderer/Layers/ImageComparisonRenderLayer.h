@@ -66,7 +66,7 @@ private: /* Members */
     float m_SwipeX;
 
     /* Render Components */
-    ImageComparisonShaderProgram* m_Shader;
+    ImageComparisonShaderProgram m_Shader;
 
     /**
      * Array and Buffer objects

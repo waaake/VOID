@@ -62,10 +62,9 @@ private: /* Methods */
 
 class FontStore
 {
-    FontStore();
+    FontStore() = default;
 public:
     static FontStore& Instance();
-    ~FontStore();
 
     /**
      * @brief Returns the pointer to the FontAtlas for the default font with the
@@ -74,7 +73,7 @@ public:
      * @param size Size of the font to be rendered.
      * @return FontAtlas* Pointer to the FontAtlas with the mentioned font size.
      */
-    FontAtlas* Atlas(int size);
+    FontAtlas& Atlas(int size);
 
 private: /* Members */
     /**
@@ -82,7 +81,7 @@ private: /* Members */
      * Plus the fonts used is just one at the moment, the varying factor is the size
      * which is not more than 10, so all of the fonts can be fetched in a single cache line
      */
-    std::vector<FontAtlas*> m_Fonts;
+    std::vector<FontAtlas> m_Fonts;
 };
 
 VOID_NAMESPACE_CLOSE

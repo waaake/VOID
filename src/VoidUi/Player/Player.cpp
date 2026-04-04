@@ -18,17 +18,11 @@ Player::Player(QWidget* parent)
     : PlayerWidget(parent)
 {
     m_CacheProcessor.SetActivePlayer(this);
-    m_AudioDecoder = new AudioDecoder;
     Connect();
 }
 
 Player::~Player()
 {
-    if (m_AudioDecoder)
-    {
-        delete m_AudioDecoder;
-        m_AudioDecoder = nullptr;
-    }
 }
 
 void Player::SetMedia(const SharedMediaClip& media)
@@ -53,7 +47,7 @@ void Player::SetMedia(const SharedMediaClip& media)
     Timekeeper::Instance().SetMediaFramerate(media->Framerate());
 
     if (UIGlobals::AudioEnabled())
-        m_AudioDecoder->Init(media->Fullpath());
+        m_AudioDecoder.Init(media->Fullpath());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -244,23 +238,23 @@ void Player::Connect()
         if (state == Timeline::PlayState::STOPPED)
         {
             m_CacheProcessor.StopPlaybackCache();
-            if (m_AudioDecoder) m_AudioDecoder->Stop();
+            m_AudioDecoder.Stop();
         }
         else
         {
             m_CacheProcessor.StartPlaybackCache(static_cast<PlayBuffer::Direction>(state));
             if (state == Timeline::PlayState::FORWARDS)
-                m_AudioDecoder->Start();
+                m_AudioDecoder.Start();
         }
     });
     connect(m_Timeline, &Timeline::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {
-        m_AudioDecoder->Restart();
+        m_AudioDecoder.Restart();
         state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
     });
     connect(m_Timeline, &Timeline::seeked, this, [this](v_frame_t frame)
     { 
-        m_AudioDecoder->SeekTo((double)frame / m_Timeline->Framerate());
+        m_AudioDecoder.SeekTo((double)frame / m_Timeline->Framerate());
     });
 
     /* ControlBar */
