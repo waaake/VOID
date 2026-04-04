@@ -65,7 +65,6 @@ class FontStore
     FontStore() = default;
 public:
     static FontStore& Instance();
-    // ~FontStore();
 
     /**
      * @brief Returns the pointer to the FontAtlas for the default font with the

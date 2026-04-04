@@ -111,14 +111,6 @@ const FChar& FontAtlas::AddChar(char c)
 
 /* Font Store {{{ */
 
-// FontStore::FontStore()
-// {
-// }
-
-// FontStore::~FontStore()
-// {
-// }
-
 FontStore& FontStore::Instance()
 {
     static FontStore instance;
