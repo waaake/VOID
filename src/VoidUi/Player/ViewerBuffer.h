@@ -4,9 +4,18 @@
 #ifndef _VOID_VIEWER_BUFFER_H
 #define _VOID_VIEWER_BUFFER_H
 
+/* STD */
+#include <deque>
+#include <memory>
+#include <mutex>
+#include <unordered_set>
+
 /* Qt */
 #include <QColor>
 #include <QObject>
+#include <QRunnable>
+#include <QThreadPool>
+#include <QTimer>
 
 /* Internal */
 #include "Definition.h"
@@ -16,6 +25,9 @@
 #include "VoidObjects/Playlist/Playlist.h"
 
 VOID_NAMESPACE_OPEN
+
+/* Forward decl for Player as this needs to know the current playback type and frame */
+class Player;
 
 /**
  * Enum decribing which viewer buffer is currently active and can be used to set an
@@ -35,6 +47,26 @@ class ViewerBuffer : public QObject
 {
     Q_OBJECT
 
+    class CacheNextFrameTask : public QRunnable
+    {
+    public:
+        explicit CacheNextFrameTask(ViewerBuffer* parent) : m_Parent(parent) {}
+        inline void run() override { m_Parent->CacheNextFrame(); }
+
+    private:
+        ViewerBuffer* m_Parent;
+    };
+
+    class CachePreviousFrameTask : public QRunnable
+    {
+    public:
+        explicit CachePreviousFrameTask(ViewerBuffer* parent) : m_Parent(parent) {}
+        inline void run() override { m_Parent->CachePreviousFrame(); }
+
+    private:
+        ViewerBuffer* m_Parent;
+    };
+
 public: /* Enums */
     /**
      * Describes the playing components on the Buffer
@@ -51,9 +83,22 @@ public: /* Enums */
         Playlist
     };
 
+    enum class Direction
+    {
+        None,
+		Forwards,
+		Backwards
+    };
+
+    enum class State
+    {
+        Paused,
+        Enabled,
+        Disabled,
+    };
+
 public:
-    ViewerBuffer(const std::string& name, QObject* parent = nullptr);
-    ViewerBuffer(QObject* parent = nullptr);
+    explicit ViewerBuffer(QObject* parent = nullptr);
     ~ViewerBuffer();
 
     SharedPlaybackTrack ActiveTrack() const;
@@ -61,8 +106,38 @@ public:
     /**
      * Range for the buffer
      */
-    inline int StartFrame() const { return m_Startframe; }
-    inline int EndFrame() const { return m_Endframe; }
+    inline v_frame_t StartFrame() const { return m_Startframe; }
+    inline v_frame_t EndFrame() const { return m_Endframe; }
+
+    inline void SetActivePlayer(Player* player) { m_Player = player; }
+    inline void SetMaxMemory(unsigned long long gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
+    inline void SetMaxThreads(unsigned int count) { m_ThreadPool.setMaxThreadCount(count); }
+
+    void StartPlaybackCache(const Direction& direction = Direction::Forwards);
+    inline void RestartPlaybackCache() { StartPlaybackCache(m_Direction); }
+    void StopPlaybackCache();
+
+    /**
+     * Pauses the cache till it is manually resumed or another media set as
+     * active on the processor
+     */
+    void PauseCaching();
+
+    /**
+     * Stops the Cache Process completely and it is enabled only when it is resumed manually
+     */
+    void DisableCaching();
+
+    /**
+     * Stops the cache process completely
+     */
+    void StopCaching();
+    void ResumeCaching();
+
+    void Recache();
+    void ClearCache();
+
+    void EnsureCached(v_frame_t frame);
 
     /**
      * Returns the current Component Type which is playing in the buffer
@@ -72,15 +147,7 @@ public:
     /**
      * Returns a track item at a given frame
      */
-    inline SharedTrackItem TrackItem(const v_frame_t frame)
-    {
-        /* Return from the sequence if that is currently playing */
-        if (m_PlayingComponent == PlayableComponent::Sequence)
-            return ItemFromSequence(frame);
-
-        /* Else return the TrackItem from track */
-        return ItemFromTrack(frame);
-    }
+    SharedTrackItem TrackItem(const v_frame_t frame);
 
     /**
      * Returns the Image Pixels from the active item in the buffer
@@ -111,7 +178,7 @@ public:
      * Active state of the Viewer Buffer
      */
     [[nodiscard]] inline bool Active() const { return m_Active; }
-    inline void SetActive(const bool active) { m_Active = active; emit updated();}
+    inline void SetActive(const bool active) { m_Active = active; emit updated(); }
 
     /**
      * Name of the viewer buffer
@@ -137,11 +204,6 @@ public:
     void Clear();
 
     /**
-     * Clears any cache from underlying components
-     */
-    void ClearCache();
-
-    /**
      * Set a playable component on the Buffer
      */
     void Set(const SharedMediaClip& media);
@@ -150,8 +212,8 @@ public:
     void Set(const std::vector<SharedMediaClip>& media);
 
     void SetPlaylist(Playlist* playlist);
-    bool NextMedia();
-    bool PreviousMedia();
+    [[nodiscard]] bool NextMedia();
+    [[nodiscard]] bool PreviousMedia();
 
     /**
      * Set Annotation on the Active Media Item
@@ -163,7 +225,6 @@ public:
     void RemoveAnnotation(const v_frame_t);
 
 signals:
-    /* The updated signal is emitted when the viewer buffer receives a change */
     void updated();
 
 private: /* Members */
@@ -186,23 +247,38 @@ private: /* Members */
      */
     SharedTrackItem m_CachedTrackItem;
 
-    /* Currently playing component */
     PlayableComponent m_PlayingComponent;
+    Direction m_Direction;
+    State m_State;
 
-    /* Frame range of the playing component */
-    int m_Startframe, m_Endframe;
-
-    /* Name of the Viewer Buffer */
     std::string m_Name;
-
-    /* Color associated with the Buffer to indicate where possible */
     QColor m_Color;
 
-    /** 
-     * Represents the state of the Buffer
-     * Whether the buffer is active or not at the moment
+    Player* m_Player;
+    QThreadPool m_ThreadPool;
+
+    /**
+     * Bytes representation of the amount of maximum available memory for caching media
+     * if the memory is full then the caching is stopped unless a force request (evict = true) is made
+     * this makes the last first or frame based on direction be evicted (cleared of any cached data) from memory
      */
+    std::size_t m_MaxMemory;
+    std::size_t m_UsedMemory;
+    std::size_t m_FrameSize;
+
+    v_frame_t m_Startframe, m_Endframe;
+    unsigned int m_Duration;
+
+    v_frame_t m_LastCached;
+
+    int m_BackBuffer;
     bool m_Active;
+
+    QTimer m_CacheTimer;
+    std::mutex m_Mutex;
+
+    std::deque<v_frame_t> m_Framenumbers;
+    std::unordered_set<v_frame_t> m_Buffered;
 
 private: /* Methods */
     /**
@@ -212,6 +288,58 @@ private: /* Methods */
      */
     SharedTrackItem ItemFromTrack(const v_frame_t frame);
     SharedTrackItem ItemFromSequence(const v_frame_t frame);
+
+    inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
+
+    /**
+     * Frame Eviction from the cached array
+     */
+    void EvictFront();
+    void EvictBack();
+
+    /**
+     * Update to refresh the cache to available frames after removing the frames
+     * that may no longer be required
+     */
+    void Update();
+
+    void UpdateRange(v_frame_t start, v_frame_t end);
+    inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
+    
+    /**
+     * A Cache process which caches all frames till the memory size allows
+     */
+    void CacheAvailable();
+
+    /**
+     * Request caching the next available frame depending on the direction
+     * if the memory limit allows based on the average memory usage of the current frame
+     * then the request will be approved and true will be returned
+     * else false is returned to indicate that the next frame cannot be added to the cache
+     *
+     * however, the evict flag allows a frame to be cached despite the memory limit
+     * as evicting would remove the First or the Last frame depending on the Direction of cache
+     * if memory limit does not allow
+     */
+    bool Request(v_frame_t frame, bool evict = false);
+
+    /**
+     * Cache the provided frame for the media, if the frame is already cached nothing happens in terms
+     * of memory usage
+     */
+    void Cache(v_frame_t frame);
+
+    void CacheNextFrame();
+    void CachePreviousFrame();
+
+    void CacheNext();
+    void CachePrevious();
+
+    v_frame_t GetNextFrame();
+    v_frame_t GetPreviousFrame();
+
+    inline bool Cached(v_frame_t frame) const { return m_Buffered.find(frame) != m_Buffered.end(); }
+    void SettingsUpdated();
 };
 
 VOID_NAMESPACE_CLOSE

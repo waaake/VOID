@@ -17,7 +17,8 @@ VOID_NAMESPACE_OPEN
 Player::Player(QWidget* parent)
     : PlayerWidget(parent)
 {
-    m_CacheProcessor.SetActivePlayer(this);
+    m_ViewBufferA.SetActivePlayer(this);
+    m_ViewBufferB.SetActivePlayer(this);
     Connect();
 }
 
@@ -33,7 +34,6 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
-    m_CacheProcessor.SetMedia(media);
     
     m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
@@ -61,13 +61,13 @@ void Player::SetMedia(const std::vector<SharedMediaClip>& media, const PlayerVie
     switch (buffer)
     {
         case PlayerViewBuffer::B:
-            m_ViewBufferB->Set(media);
-            SetTrack(m_ViewBufferB->ActiveTrack(), buffer);
+            m_ViewBufferB.Set(media);
+            SetTrack(m_ViewBufferB.ActiveTrack(), buffer);
             break;
         case PlayerViewBuffer::A:
         default:
-            m_ViewBufferA->Set(media);
-            SetTrack(m_ViewBufferA->ActiveTrack(), buffer);
+            m_ViewBufferA.Set(media);
+            SetTrack(m_ViewBufferA.ActiveTrack(), buffer);
     }
 }
 
@@ -77,7 +77,7 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
     m_Timeline->Clear();
     m_Renderer->Clear();
 
-    buffer == PlayerViewBuffer::A ? m_ViewBufferA->Set(media) : m_ViewBufferB->Set(media);
+    buffer == PlayerViewBuffer::A ? m_ViewBufferA.Set(media) : m_ViewBufferB.Set(media);
 
     if (Comparing())
         return CompareMediaFrame(m_Timeline->Frame());
@@ -85,18 +85,14 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
     ViewerBuffer *active, *inactive;
 
     buffer == PlayerViewBuffer::A
-        ? (active = m_ViewBufferA, inactive = m_ViewBufferB)
-        : (active = m_ViewBufferB, inactive = m_ViewBufferA);
+        ? (active = &m_ViewBufferA, inactive = &m_ViewBufferB)
+        : (active = &m_ViewBufferB, inactive = &m_ViewBufferA);
 
     m_ActiveViewBuffer = active;
     /* Update active states for the buffers */
     active->SetActive(true);
     inactive->SetActive(false);
 
-    /* Refresh the player with the updated content from the Buffer */
-    ResetCacheMedia();
-
-    /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
     SetMediaFrame(m_Timeline->Frame());
 
@@ -112,7 +108,6 @@ void Player::SetTrack(const SharedPlaybackTrack& track)
 
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(track);
-    m_CacheProcessor.SetTrack(track);
 
     m_Timeline->SetRange(track->StartFrame(), track->EndFrame());
     SetTrackFrame(m_Timeline->Frame());
@@ -127,7 +122,7 @@ void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& 
     m_Timeline->Clear();
     m_Renderer->Clear();
 
-    buffer == PlayerViewBuffer::A ? m_ViewBufferA->Set(track) : m_ViewBufferB->Set(track);
+    buffer == PlayerViewBuffer::A ? m_ViewBufferA.Set(track) : m_ViewBufferB.Set(track);
 
     if (Comparing())
         return CompareMediaFrame(m_Timeline->Frame());
@@ -135,20 +130,16 @@ void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& 
     ViewerBuffer *active, *inactive;
 
     buffer == PlayerViewBuffer::A
-        ? (active = m_ViewBufferA, inactive = m_ViewBufferB)
-        : (active = m_ViewBufferB, inactive = m_ViewBufferA);
+        ? (active = &m_ViewBufferA, inactive = &m_ViewBufferB)
+        : (active = &m_ViewBufferB, inactive = &m_ViewBufferA);
 
     m_ActiveViewBuffer = active;
     /* Update active states for the buffers */
     active->SetActive(true);
     inactive->SetActive(false);
 
-    /* Refresh the player with the updated content from the Buffer */
-    ResetCacheMedia();
-    SetTrackFrame(m_Timeline->Frame());
-
-    /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    SetTrackFrame(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
@@ -162,8 +153,7 @@ void Player::SetSequence(const SharedPlaybackSequence& sequence)
 
     /* Update what is being played on the Active Viewer Buffer */
     m_ActiveViewBuffer->Set(sequence);
-    m_CacheProcessor.SetSequence(sequence);
-    
+
     m_Timeline->SetRange(sequence->StartFrame(), sequence->EndFrame());
     SetSequenceFrame(m_Timeline->Frame());
 
@@ -179,8 +169,6 @@ void Player::SetPlaylist(Playlist* playlist)
     /* Update what is being played on the Active Viewer Buffer */
     m_ActiveViewBuffer->SetPlaylist(playlist);
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
-
-    m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip());
     SetMediaFrame(m_Timeline->Frame());
 }
 
@@ -210,9 +198,6 @@ void Player::NextMedia()
     if (m_ActiveViewBuffer->NextMedia())
     {
         m_Renderer->Clear();
-        ResetCacheMedia();
-        m_CacheProcessor.RestartPlaybackCache();
-
         SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
     }
 }
@@ -222,9 +207,6 @@ void Player::PreviousMedia()
     if (m_ActiveViewBuffer->PreviousMedia())
     {
         m_Renderer->Clear();
-        ResetCacheMedia();
-        m_CacheProcessor.RestartPlaybackCache();
-
         SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
     }
 }
@@ -237,12 +219,13 @@ void Player::Connect()
     {
         if (state == Timeline::PlayState::STOPPED)
         {
-            m_CacheProcessor.StopPlaybackCache();
+            if (m_ActiveViewBuffer)
+                m_ActiveViewBuffer->StopPlaybackCache();
             m_AudioDecoder.Stop();
         }
         else
         {
-            m_CacheProcessor.StartPlaybackCache(static_cast<PlayBuffer::Direction>(state));
+            m_ActiveViewBuffer->StartPlaybackCache(static_cast<ViewerBuffer::Direction>(state));
             if (state == Timeline::PlayState::FORWARDS)
                 m_AudioDecoder.Start();
         }
@@ -263,21 +246,38 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode); 
 }
 
-void Player::ResetCacheMedia()
+void Player::PauseCache()
 {
-    switch (m_ActiveViewBuffer->PlayingComponent())
-    {
-        case ViewerBuffer::PlayableComponent::Sequence:
-            m_CacheProcessor.SetSequence(m_ActiveViewBuffer->GetSequence());
-            break;
-        case ViewerBuffer::PlayableComponent::Track:
-            m_CacheProcessor.SetTrack(m_ActiveViewBuffer->GetTrack());
-            break;
-        case ViewerBuffer::PlayableComponent::Clip:
-        case ViewerBuffer::PlayableComponent::Playlist:
-        default:
-            m_CacheProcessor.SetMedia(m_ActiveViewBuffer->GetMediaClip());
-    }
+    m_ViewBufferA.PauseCaching();
+    m_ViewBufferB.PauseCaching();
+}
+
+void Player::DisableCache()
+{
+    m_ViewBufferA.DisableCaching();
+    m_ViewBufferB.DisableCaching();
+}
+
+void Player::StopCache()
+{
+    m_ViewBufferA.StopCaching();
+    m_ViewBufferB.StopCaching();
+}
+
+void Player::Recache()
+{
+    m_ActiveViewBuffer->Recache();
+}
+
+void Player::ResumeCache()
+{
+    m_ActiveViewBuffer->ResumeCaching();
+}
+
+void Player::ClearCache()
+{
+    m_ViewBufferA.ClearCache();
+    m_ViewBufferB.ClearCache();
 }
 
 void Player::SetSequenceFrame(int frame)
@@ -324,7 +324,7 @@ void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
      * This GetImage itself runs a check if Media.Contains(frame) as it has to offset values internally
      * based on where the trackitem is present in the sequence
      */
-    m_CacheProcessor.EnsureCached(frame);
+    m_ActiveViewBuffer->EnsureCached(frame);
     SharedPixels data = item->GetImage(frame);
 
     /* A standard frame which is available for any trackitem/media */
@@ -379,7 +379,7 @@ void Player::SetMediaFrame(int frame)
      */
     if (clip->Contains(frame))
     {
-        m_CacheProcessor.EnsureCached(frame);
+        m_ActiveViewBuffer->EnsureCached(frame);
         /* Read the image for the frame from the sequence and set it on the player */
         m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
     }
@@ -409,8 +409,8 @@ void Player::SetMediaFrame(int frame)
 void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second)
 {
     /* Update the Viewer Buffer with the Media Clips --> And then ask for them to be compared in the viewer */
-    m_ViewBufferA->Set(first);
-    m_ViewBufferB->Set(second);
+    m_ViewBufferA.Set(first);
+    m_ViewBufferB.Set(second);
 
     /* Compare frames */
     CompareMediaFrame(m_Timeline->Frame());
@@ -442,7 +442,7 @@ void Player::InspectCurrentMetadata()
 void Player::CompareMediaFrame(v_frame_t frame)
 {
     /* Compare on the Viewer */
-    m_Renderer->Compare(m_ViewBufferA->Image(frame), m_ViewBufferB->Image(frame), m_ComparisonMode, m_BlendMode);
+    m_Renderer->Compare(m_ViewBufferA.Image(frame), m_ViewBufferB.Image(frame), m_ComparisonMode, m_BlendMode);
 }
 
 void Player::SetComparisonMode(int mode)
@@ -453,17 +453,17 @@ void Player::SetComparisonMode(int mode)
     if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
     {
         /* Mark both the viewer Buffers as active */
-        m_ViewBufferA->SetActive(true);
-        m_ViewBufferB->SetActive(true);
+        m_ViewBufferA.SetActive(true);
+        m_ViewBufferB.SetActive(true);
     }
     else
     {
         /* Revert to the actual active Buffer */
-        bool activeA = m_ActiveViewBuffer == m_ViewBufferA;
+        bool activeA = m_ActiveViewBuffer == &m_ViewBufferA;
         /* Set its Active state */
-        m_ViewBufferA->SetActive(activeA);
+        m_ViewBufferA.SetActive(activeA);
         /* Reset the active state for the other buffer */
-        m_ViewBufferB->SetActive(!activeA);
+        m_ViewBufferB.SetActive(!activeA);
     }
 
     /* Update to show the current frame */
@@ -494,8 +494,8 @@ void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)
     ViewerBuffer *active, *inactive;
 
     buffer == PlayerViewBuffer::A
-        ? (active = m_ViewBufferA, inactive = m_ViewBufferB)
-        : (active = m_ViewBufferB, inactive = m_ViewBufferA);
+        ? (active = &m_ViewBufferA, inactive = &m_ViewBufferB)
+        : (active = &m_ViewBufferB, inactive = &m_ViewBufferA);
 
     m_ActiveViewBuffer = active;
     /* Update active states for the buffers */
@@ -504,12 +504,7 @@ void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)
 
     /* Clear the viewport */
     m_Renderer->Clear();
-
-    /* Refresh the player with the updated content from the Buffer */
-    ResetCacheMedia();
     Refresh();
-
-    /* Update the frame range */
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
 }
 

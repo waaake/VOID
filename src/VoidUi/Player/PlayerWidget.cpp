@@ -19,16 +19,15 @@ PlayerWidget::PlayerWidget(QWidget* parent)
     , m_BlendMode(Renderer::BlendMode::UNDER)
     , m_MFrameHandler(static_cast<MissingFrameHandler>(VoidPreferences::Instance().GetMissingFrameHandler()))
 {
-    /* Init the Viewer Buffer */
-    m_ViewBufferA = new ViewerBuffer("A");
-    m_ViewBufferB = new ViewerBuffer("B");
+    m_ViewBufferA.SetName("A");
+    m_ViewBufferB.SetName("B");
 
     /* Set the Associated Color for Viewer Buffer B */
-    m_ViewBufferB->SetColor(QColor(70, 180, 220));      // Blue
+    m_ViewBufferB.SetColor(QColor(70, 180, 220));      // Blue
 
     /* The default buffer is Viewer Buffer A */
-    m_ActiveViewBuffer = m_ViewBufferA;
-    m_ViewBufferA->SetActive(true);
+    m_ActiveViewBuffer = &m_ViewBufferA;
+    m_ViewBufferA.SetActive(true);
 
     /* Setup the OpenGL Profile before the OpenGL Context is initialised */
     VoidRenderer::SetProfile();
@@ -45,18 +44,6 @@ PlayerWidget::PlayerWidget(QWidget* parent)
 
 PlayerWidget::~PlayerWidget()
 {
-    /* Cleanup the buffers */
-    if (m_ViewBufferA)
-    {
-        delete m_ViewBufferA;
-        m_ViewBufferA = nullptr;
-    }
-    if (m_ViewBufferB)
-    {
-        delete m_ViewBufferB;
-        m_ViewBufferB = nullptr;
-    }
-
     m_ActiveViewBuffer = nullptr;
 }
 
@@ -147,7 +134,7 @@ void PlayerWidget::Build()
     m_RendererLayout->setContentsMargins(0, 0, 0, 0);
 
     /* Instantiate widgets */
-    m_ControlBar = new ControlBar(m_ViewBufferA, m_ViewBufferB, this);
+    m_ControlBar = new ControlBar(&m_ViewBufferA, &m_ViewBufferB, this);
     m_Renderer = new VoidRenderer(this);
     /* The placeholder renderer for when the actual renderer is fullscreen */
     m_PlaceholderRenderer = new VoidPlaceholderRenderer(this);

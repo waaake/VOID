@@ -51,8 +51,6 @@ void BufferPage::mousePressEvent(QMouseEvent* event)
 {
     /* Emit that this was clicked along with it's Buffer state */
     emit selected(m_Buffer);
-
-    /* Base Mouse Press */
     QFrame::mousePressEvent(event);
 }
 

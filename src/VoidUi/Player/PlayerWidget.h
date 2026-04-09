@@ -19,7 +19,6 @@
 #include "VoidUi/Timeline/Timeline.h"
 #include "VoidUi/Toolkit/AnnotationController.h"
 #include "VoidUi/Toolkit/ControlBar.h"
-#include "VoidUi/Media/MediaCache.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -159,8 +158,8 @@ protected:  /* Members */
     Renderer::ComparisonMode m_ComparisonMode;
     Renderer::BlendMode m_BlendMode;
 
-    ViewerBuffer* m_ViewBufferA;
-    ViewerBuffer* m_ViewBufferB;
+    ViewerBuffer m_ViewBufferA;
+    ViewerBuffer m_ViewBufferB;
     ViewerBuffer* m_ActiveViewBuffer;
 
     MissingFrameHandler m_MFrameHandler;
