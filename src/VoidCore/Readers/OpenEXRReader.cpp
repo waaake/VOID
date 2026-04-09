@@ -52,26 +52,7 @@ void OpenEXRReader::Clear()
 
 const unsigned char* OpenEXRReader::ThumbnailPixels()
 {
-    /* This is always assuming that the frame has been read */
-    if (m_TPixels.empty())
-    {
-        /* Reserve the size on Thumbnail Data */
-        m_TPixels.reserve(m_Pixels.size());
-
-        unsigned char* dest = m_TPixels.data();
-
-        for (size_t i = 0; i < (m_Width * m_Height); ++i)
-        {
-            int index = i * 4;
-            dest[index + 0] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 0], 0.f, 1.f) * 255.f);
-            dest[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
-            dest[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
-            dest[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
-        }
-    }
-
-    /* Return the Thumbnail data */
-    return m_TPixels.data();
+    return m_Pixels.data();
 }
 
 void OpenEXRReader::Read()
@@ -114,6 +95,7 @@ void OpenEXRReader::Read()
      * TODO: Check if we can use this data onto Renderer directly without casting this ?
      */
     /* Convert floating point exr pixels to 8-bit RGB/RGBA format */
+    std::vector<float> ipixels(m_Width * m_Height * m_Channels);
     m_Pixels.resize(m_Width * m_Height * m_Channels);
 
     for (int y = 0; y < m_Height; y++)
@@ -125,12 +107,23 @@ void OpenEXRReader::Read()
             /* Find the index at which we will be writing to on the pixel buffer */
             int index = (y * m_Width + x) * m_Channels;
 
-            m_Pixels[index] = pixel.r;
-            m_Pixels[index + 1] = pixel.g;
-            m_Pixels[index + 2] = pixel.b;
-            m_Pixels[index + 3] = pixel.a;
+            ipixels[index] = pixel.r;
+            ipixels[index + 1] = pixel.g;
+            ipixels[index + 2] = pixel.b;
+            ipixels[index + 3] = pixel.a;
         }
     }
+
+    unsigned char* dest = m_Pixels.data();
+
+    for (size_t i = 0; i < (m_Width * m_Height); ++i)
+    {
+        int index = i * 4;
+        dest[index + 0] = static_cast<unsigned char>(std::clamp(ipixels[index + 0], 0.f, 1.f) * 255.f);
+        dest[index + 1] = static_cast<unsigned char>(std::clamp(ipixels[index + 1], 0.f, 1.f) * 255.f);
+        dest[index + 2] = static_cast<unsigned char>(std::clamp(ipixels[index + 2], 0.f, 1.f) * 255.f);
+        dest[index + 3] = static_cast<unsigned char>(std::clamp(ipixels[index + 3], 0.f, 1.f) * 255.f);
+    }   
 }
 
 const std::map<std::string, std::string> OpenEXRReader::Metadata() const

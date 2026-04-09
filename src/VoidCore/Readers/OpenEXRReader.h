@@ -28,13 +28,13 @@ public:
      * Returns the OpenGL data type
      * e.g. GL_UNSIGNED_BYTE, GL_FLOAT
      */
-    inline virtual unsigned int GLType() const override { return VOID_GL_FLOAT; }
+    inline virtual unsigned int GLType() const override { return VOID_GL_UNSIGNED_BYTE; }
 
     /**
      * Specifies the number of color components in the texture
      * e.g. GL_RGBA32F | GL_RGBA32I | GL_RGBA32UI | GL_RGBA16 | GL_RGBA16F | GL_RGBA16I
      */
-    inline virtual unsigned int GLInternalFormat() const override { return VOID_GL_RGBA32F; }
+    inline virtual unsigned int GLInternalFormat() const override { return GLFormat(); }
 
     /**
      * Returns OpenGL format of the pixel data
@@ -84,7 +84,7 @@ public:
     /**
      * Returns the Size of the frame data
      */
-    virtual size_t FrameSize() const override { return sizeof(float) * m_Pixels.size(); }
+    virtual size_t FrameSize() const override { return sizeof(unsigned char) * m_Pixels.size(); }
 
     /**
      * Read the metadata from the underlying image/frame
@@ -100,8 +100,8 @@ private: /* Methods */
     int m_Channels;
 
     /* Internal data store */
-    std::vector<unsigned char> m_TPixels;
-    std::vector<float> m_Pixels;
+    // std::vector<unsigned char> m_TPixels;
+    std::vector<unsigned char> m_Pixels;
 };
 
 VOID_NAMESPACE_CLOSE
