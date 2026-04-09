@@ -29,7 +29,6 @@ set(SOURCES
     Media/Browser.cpp
     Media/FileDialog.cpp
     Media/MediaBridge.cpp
-    Media/MediaCache.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
     Media/MetadataViewer.cpp

@@ -3,27 +3,39 @@
 
 /* Internal */
 #include "ViewerBuffer.h"
+#include "VoidCore/Logging.h"
+#include "VoidUi/Player/Player.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
-ViewerBuffer::ViewerBuffer(const std::string& name, QObject* parent)
+ViewerBuffer::ViewerBuffer(QObject* parent)
     : QObject(parent)
     , m_Clip(std::make_shared<MediaClip>())
     , m_Track(std::make_shared<PlaybackTrack>())
     , m_Sequence(std::make_shared<PlaybackSequence>())
     , m_Playlist(nullptr)
+    , m_CachedTrackItem(nullptr)
     , m_PlayingComponent(PlayableComponent::Clip)
-    , m_Startframe(0)
-    , m_Endframe(100)
-    , m_Name(name)
+    , m_Direction(Direction::Forwards)
+    , m_State(State::Enabled)
+    , m_Name("Viewer")
     , m_Color(130, 110, 190)    // Purple
+    , m_Player(nullptr)
+    , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
+    , m_UsedMemory(0)
+    , m_FrameSize(0)
+    , m_Startframe(0)
+    , m_Endframe(1)
+    , m_Duration(2)
+    , m_LastCached(0)
+    , m_BackBuffer(3)
     , m_Active(false)
 {
-}
+    m_ThreadPool.setMaxThreadCount(VoidPreferences::Instance().GetCacheThreads());
 
-ViewerBuffer::ViewerBuffer(QObject* parent)
-    : ViewerBuffer("", parent)
-{
+    connect(&m_CacheTimer, &QTimer::timeout, this, &ViewerBuffer::Update, Qt::DirectConnection);
+    connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &ViewerBuffer::SettingsUpdated);
 }
 
 ViewerBuffer::~ViewerBuffer()
@@ -32,80 +44,76 @@ ViewerBuffer::~ViewerBuffer()
 
 void ViewerBuffer::Set(const SharedMediaClip& media)
 {
-    /* Update the internal media clip */
-    m_Clip = media;
+    Refresh();
 
-    /* Update the color on the Media to indicate that it belongs to this buffer */
+    m_Clip = media;
     m_Clip->SetColor(m_Color);
 
-    /* Update the current Playing Component */
     m_PlayingComponent = PlayableComponent::Clip;
-
-    /* Update frame range */
-    m_Startframe = m_Clip->FirstFrame();
-    m_Endframe = m_Clip->LastFrame();
-
-    /* Refresh to clear any underlying caches */
-    Refresh();
+    UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
+    EnsureCached(media->FirstFrame());
+    CacheAvailable();
 }
 
 void ViewerBuffer::Set(const SharedPlaybackTrack& track)
 {
-    /* Update the internal track */
-    m_Track = track;
+    Refresh();
 
-    /* Update the color on the Track to indicate that it belongs to this buffer */
+    m_Track = track;
     m_Track->SetColor(m_Color);
 
-    /* Update the current Playing component */
     m_PlayingComponent = PlayableComponent::Track;
+    UpdateRange(m_Track->StartFrame(), m_Track->EndFrame());
 
-    /* Update frame range */
-    m_Startframe = m_Track->StartFrame();
-    m_Endframe = m_Track->EndFrame();
+    if (auto item = ItemFromTrack(m_Startframe))
+        EnsureCached(item->StartFrame());
 
-    /* Refresh to clear any underlying caches */
-    Refresh();
+    CacheAvailable();
 }
 
 void ViewerBuffer::Set(const SharedPlaybackSequence& sequence)
 {
-    /* Update the internal sequence */
-    m_Sequence = sequence;
-
-    /* Update the current Playing Component */
-    m_PlayingComponent = PlayableComponent::Sequence;
-
-    /* Update frame range */
-    m_Startframe = m_Sequence->StartFrame();
-    m_Endframe = m_Sequence->EndFrame();
-
-    /* Refresh to clear any underlying caches */
     Refresh();
+    
+    m_Sequence = sequence;
+    m_PlayingComponent = PlayableComponent::Sequence;
+    UpdateRange(m_Sequence->StartFrame(), m_Sequence->EndFrame());
+
+    if (auto item = ItemFromTrack(m_Startframe))
+        EnsureCached(item->StartFrame());
+
+    CacheAvailable();
 }
 
 void ViewerBuffer::Set(const std::vector<SharedMediaClip>& media)
 {
-    m_Track->Clear();
+    Refresh();
 
+    m_Track->Clear();
     for (const SharedMediaClip& media : media)
         m_Track->AddMedia(media);
 
     m_PlayingComponent = PlayableComponent::Track;
+    UpdateRange(m_Track->StartFrame(), m_Track->EndFrame());
+
+    if (auto item = ItemFromTrack(m_Startframe))
+        EnsureCached(item->StartFrame());
+
+    CacheAvailable();
 }
 
 void ViewerBuffer::SetPlaylist(Playlist* playlist)
 {
+    Refresh();
+
     m_Playlist = playlist;
     m_Clip = playlist->CurrentMedia();
 
     m_PlayingComponent = PlayableComponent::Playlist;
+    UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
 
-    /* Update frame range */
-    m_Startframe = m_Clip->FirstFrame();
-    m_Endframe = m_Clip->LastFrame();
-
-    Refresh();
+    EnsureCached(m_Clip->FirstFrame());
+    CacheAvailable();
 }
 
 void ViewerBuffer::SetColor(const QColor& color)
@@ -156,16 +164,23 @@ void ViewerBuffer::Refresh()
 {
     /* Clear any cached item */
     m_CachedTrackItem = nullptr;
+    ClearCache();
 }
 
 void ViewerBuffer::ClearCache()
 {
-    /* Clear Cache from the playing components */
-    if (m_Clip)
-        m_Clip->ClearCache();
+    StopCaching();
 
-    if (m_Track)
+    m_Framenumbers.clear();
+    m_Buffered.clear();
+    m_UsedMemory = 0;
+
+    if (m_PlayingComponent == PlayableComponent::Track)
         m_Track->ClearCache();
+    else if (m_PlayingComponent == PlayableComponent::Sequence)
+        m_Sequence->ClearCache();
+    else
+        m_Clip->ClearCache();
 }
 
 SharedPixels ViewerBuffer::Image(const v_frame_t frame)
@@ -180,7 +195,7 @@ SharedPixels ViewerBuffer::Image(const v_frame_t frame)
         /* Check if we have the frame available in the Clip */
         if (m_Clip->InRange(frame))
             return m_Clip->Image(frame);
-        
+
         /* Return the nearest frame */
         return m_Clip->Image(m_Clip->NearestFrame(frame));
     }
@@ -189,7 +204,7 @@ SharedPixels ViewerBuffer::Image(const v_frame_t frame)
 
     if (!item)
         return nullptr;
-    
+
     /* The pixels from the track item */
     return item->GetImage(frame);
 }
@@ -226,6 +241,11 @@ SharedTrackItem ViewerBuffer::ItemFromTrack(const v_frame_t frame)
 
     /* Return what has been cached */
     return m_CachedTrackItem;
+}
+
+SharedTrackItem ViewerBuffer::TrackItem(const v_frame_t frame)
+{
+    return (m_PlayingComponent == PlayableComponent::Sequence) ? ItemFromSequence(frame) : ItemFromTrack(frame);
 }
 
 void ViewerBuffer::Clear()
@@ -280,11 +300,12 @@ bool ViewerBuffer::NextMedia()
 {
     if (m_PlayingComponent == PlayableComponent::Playlist)
     {
+        Refresh();
         m_Clip = m_Playlist->NextMedia();
 
-        /* Update frame range */
-        m_Startframe = m_Clip->FirstFrame();
-        m_Endframe = m_Clip->LastFrame();
+        UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
+        EnsureCached(m_Clip->FirstFrame());
+        CacheAvailable();
 
         return true;
     }
@@ -296,16 +317,408 @@ bool ViewerBuffer::PreviousMedia()
 {
     if (m_PlayingComponent == PlayableComponent::Playlist)
     {
+        Refresh();
         m_Clip = m_Playlist->PreviousMedia();
 
-        /* Update frame range */
-        m_Startframe = m_Clip->FirstFrame();
-        m_Endframe = m_Clip->LastFrame();
+        UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
+        EnsureCached(m_Clip->FirstFrame());
+        CacheAvailable();
 
         return true;
     }
 
     return false;
+}
+
+void ViewerBuffer::StartPlaybackCache(const Direction& direction)
+{
+    m_Direction = direction;
+    if (m_Framenumbers.size() >= m_Duration || m_State != State::Enabled)
+        return;
+
+    m_CacheTimer.start(10);
+
+    if (!m_ThreadPool.activeThreadCount() && !m_Framenumbers.empty())
+        m_LastCached = m_Direction == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
+}
+
+void ViewerBuffer::StopPlaybackCache()
+{
+    m_Direction = Direction::None;
+    m_CacheTimer.stop();
+}
+
+void ViewerBuffer::PauseCaching()
+{
+    StopCaching();
+    m_State = State::Paused;
+}
+
+void ViewerBuffer::DisableCaching()
+{
+    StopCaching();
+    m_State = State::Disabled;
+}
+
+void ViewerBuffer::StopCaching()
+{
+    /* Clear all the function threads that have not yet started */
+    m_ThreadPool.clear();
+    /* Wait for the remaining to be done */
+    m_ThreadPool.waitForDone();
+
+    m_Player->ClearCachedFrames();
+    m_LastCached = m_Player->Frame();
+}
+
+void ViewerBuffer::ResumeCaching()
+{
+    m_State = State::Enabled;
+    CacheAvailable();
+}
+
+void ViewerBuffer::Update()
+{
+    /**
+     * Ensure that we do not have any other cache process running
+     * or a cache process which is to spawn other cache processes
+     */
+    if (m_ThreadPool.activeThreadCount())
+    {
+        VOID_LOG_INFO("Already Caching");
+        return;
+    }
+
+    else if (m_Direction == Direction::Forwards && m_Framenumbers.size() != m_Duration)
+        CacheNext();
+    else if (m_Direction == Direction::Backwards && m_Framenumbers.size() != m_Duration)
+        CachePrevious();
+    else
+        m_CacheTimer.stop();
+
+    VOID_LOG_INFO("Update Cache.....");
+}
+
+void ViewerBuffer::UpdateRange(v_frame_t start, v_frame_t end)
+{
+    m_Startframe = start;
+    m_Endframe = end;
+    m_Duration = (m_Endframe - m_Startframe) + 1;
+
+    /**
+     * The Back buffer refers to the amount of frames which stay behind the playhead
+     * This needs to be between 3 - 10 depending on the overall size of the entity
+     * being played
+     */
+    m_BackBuffer = std::min(10, std::max(3, static_cast<int>(m_Duration * 0.02)));
+}
+
+bool ViewerBuffer::Request(v_frame_t frame, bool evict)
+{
+    /**
+     * Size isn't yet set so we can definitely go for caching the first frame
+     * well, unless the first frame itself is more than the max available memory
+     * (highly unlikely unless we're on 256 MB allocation)
+     */
+    if (!m_FrameSize)
+    {
+        m_Direction == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+        return true;
+    }
+
+    /**
+     * Check if we've cached all of our frames
+     * if so, then there is no need to cache any further
+     */
+    if (m_Framenumbers.size() >= m_Duration)
+    {
+        m_CacheTimer.stop();
+        return false;
+    }
+
+    if (m_FrameSize > AvailableMemory())
+    {
+        if (evict)
+        {
+            if (m_Direction == Direction::Backwards)
+            {
+                EvictBack();
+                m_Framenumbers.push_front(frame);
+            }
+            else
+            {
+                EvictFront();
+                m_Framenumbers.push_back(frame);
+            }
+
+            m_UsedMemory += m_FrameSize;
+            return true;
+        }
+
+        /* Cannot grant this request as we do not have enough memory */
+        return false;
+    }
+
+    m_UsedMemory += m_FrameSize;
+    m_Direction == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+    return true;
+}
+
+void ViewerBuffer::Cache(v_frame_t frame)
+{
+    if (m_PlayingComponent == PlayableComponent::Track)
+    {
+        SharedTrackItem item = ItemFromTrack(frame);
+        if (item)
+        {
+            item->CacheFrame(frame);
+            m_FrameSize = item->FrameSize();
+
+            {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+                m_Player->AddCacheFrame(frame);
+            }
+        }
+
+        return;
+    }
+
+    if (m_PlayingComponent == PlayableComponent::Sequence)
+    {
+        SharedTrackItem item = ItemFromSequence(frame);
+        if (item)
+        {
+            item->CacheFrame(frame);
+            m_FrameSize = item->FrameSize();
+
+            {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+                m_Player->AddCacheFrame(frame);
+            }
+        }
+
+        return;
+    }
+
+    if (m_Clip->Valid() && m_Clip->Contains(frame))
+    {
+        m_Clip->CacheFrame(frame);
+        m_FrameSize = m_Clip->FrameSize();
+
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_Player->AddCacheFrame(frame);
+        }
+    }
+
+    // Now that the frame is cached/buffered, insert it to the set so that can be used to check
+    // whether a frame is cached or not
+    m_Buffered.insert(frame);
+}
+
+void ViewerBuffer::EvictFront()
+{
+    v_frame_t frame = m_Framenumbers.front();
+
+    switch (m_PlayingComponent)
+    {
+        case PlayableComponent::Track:
+            ItemFromTrack(frame)->UncacheFrame(frame);
+            break;
+        case PlayableComponent::Sequence:
+            ItemFromSequence(frame)->UncacheFrame(frame);
+            break;
+        case PlayableComponent::Clip:
+        case PlayableComponent::Playlist:
+        default:
+            if (m_Clip->Valid() && m_Clip->Contains(frame))
+                m_Clip->UncacheFrame(frame);
+    }
+
+    m_UsedMemory -= m_FrameSize;
+
+    m_Framenumbers.pop_front();
+    m_Buffered.erase(frame);
+    m_Player->RemoveCachedFrame(frame);
+}
+
+void ViewerBuffer::EvictBack()
+{
+    v_frame_t frame = m_Framenumbers.back();
+
+    switch (m_PlayingComponent)
+    {
+        case PlayableComponent::Track:
+            ItemFromTrack(frame)->UncacheFrame(frame);
+            break;
+        case PlayableComponent::Sequence:
+            ItemFromSequence(frame)->UncacheFrame(frame);
+            break;
+        case PlayableComponent::Clip:
+        case PlayableComponent::Playlist:
+        default:
+            if (m_Clip->Valid() && m_Clip->Contains(frame))
+                m_Clip->UncacheFrame(frame);
+    }
+
+    m_UsedMemory -= m_FrameSize;
+    m_Framenumbers.pop_back();
+    m_Buffered.erase(frame);
+    m_Player->RemoveCachedFrame(frame);
+}
+
+void ViewerBuffer::EnsureCached(v_frame_t frame)
+{
+    if (m_Buffered.find(frame) == m_Buffered.end())
+    {
+        VOID_LOG_INFO("Force Caching Frame: {0}", frame);
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            m_LastCached = frame;
+        }
+
+        /* Evict a frame if necessary as this needs to be cached */
+        Request(frame, true);
+        Cache(frame);
+    }
+}
+
+void ViewerBuffer::Recache()
+{
+    ClearCache();
+    CacheAvailable();
+}
+
+void ViewerBuffer::CacheAvailable()
+{
+    if (m_State == State::Disabled)
+        return;
+
+    int count = 0;
+
+    /**
+     * This is invoked whenever the media is set/changed on the player buffer
+     * so the usual direction is Forwards, unless we were going backwards
+     */
+    if (m_Direction == Direction::Backwards)
+    {
+        for (v_frame_t frame = m_Endframe; frame >= m_Startframe; --frame)
+        {
+            if (Cached(frame))
+                continue;
+
+            if (!Request(frame, false))
+                break;
+
+            AddTask(new CachePreviousFrameTask(this));
+        }
+    }
+    else
+    {
+        for (v_frame_t frame = m_Startframe; frame <= m_Endframe; ++frame)
+        {
+            if (Cached(frame))
+                continue;
+
+            if (!Request(frame, false))
+                break;
+
+            AddTask(new CacheNextFrameTask(this));
+        }
+    }
+}
+
+v_frame_t ViewerBuffer::GetNextFrame()
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    v_frame_t frame = 0;
+
+    if (m_LastCached > m_Endframe)
+        frame = m_Startframe;
+    else
+        frame = ++m_LastCached;
+
+    m_LastCached = frame;
+
+    return frame;
+}
+
+v_frame_t ViewerBuffer::GetPreviousFrame()
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    v_frame_t frame = 0;
+
+    if (m_LastCached <= m_Startframe)
+        frame = m_Endframe;
+    else
+        frame = --m_LastCached;
+
+    /* Update the last cached so that the next frame is the next to this */
+    m_LastCached = frame;
+
+    return frame;
+}
+
+void ViewerBuffer::CacheNextFrame()
+{
+    Cache(GetNextFrame());
+}
+
+void ViewerBuffer::CachePreviousFrame()
+{
+    Cache(GetPreviousFrame());
+}
+
+void ViewerBuffer::CacheNext()
+{
+    v_frame_t frame = m_LastCached;
+
+    /* Determine how many frames are used up and can be removed */
+    while (!m_Framenumbers.empty())
+    {
+        /* Ensure the cached frame is just between the current frame and the back buffer */
+        if (m_Player->Frame() - m_BackBuffer < m_Framenumbers.front() && m_Framenumbers.front() <= m_Player->Frame())
+            break;
+
+        frame++;
+
+        if (frame > m_Endframe)
+            frame = m_Startframe;
+
+        Request(frame, true);
+        AddTask(new CacheNextFrameTask(this));
+    }
+}
+
+void ViewerBuffer::CachePrevious()
+{
+    v_frame_t frame = m_LastCached;
+
+    /* Determine how many frames are used up and can be removed */
+    while (!m_Framenumbers.empty())
+    {
+        /* Ensure the cached frame is just between the current frame and the back buffer */
+        if (m_Player->Frame() + m_BackBuffer > m_Framenumbers.back() && m_Framenumbers.back() >= m_Player->Frame())
+            break;
+
+        frame--;
+
+        if (frame < m_Startframe)
+            frame = m_Endframe;
+
+        Request(frame, true);
+        AddTask(new CachePreviousFrameTask(this));
+    }
+}
+
+void ViewerBuffer::SettingsUpdated()
+{
+    SetMaxMemory(VoidPreferences::Instance().GetCacheMemory());
+    SetMaxThreads(VoidPreferences::Instance().GetCacheThreads());
+
+    VOID_LOG_INFO("Cache Settings Updated.");
 }
 
 VOID_NAMESPACE_CLOSE

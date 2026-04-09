@@ -44,12 +44,12 @@ public:
     void Compare(const SharedMediaClip& first, const SharedMediaClip& second);
     void InspectCurrentMetadata();
 
-    inline void PauseCache() { m_CacheProcessor.PauseCaching(); }
-    inline void DisableCache() { m_CacheProcessor.DisableCaching(); }
-    inline void StopCache() { m_CacheProcessor.StopCaching(); }
-    inline void Recache() { m_CacheProcessor.Recache(); }
-    inline void ResumeCache() { m_CacheProcessor.ResumeCaching(); }
-    inline void ClearCache() { m_CacheProcessor.ClearCache(); }
+    void PauseCache();
+    void DisableCache();
+    void StopCache();
+    void Recache();
+    void ResumeCache();
+    void ClearCache();
 
 signals:
     /**
@@ -65,7 +65,6 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 private: /* Members */
-    PlayBuffer m_CacheProcessor;
     AudioDecoder m_AudioDecoder;
 
 private: /* Methods */
@@ -78,7 +77,6 @@ private: /* Methods */
     void ResetViewBuffer(const PlayerViewBuffer& buffer);
 
     void Connect();
-    void ResetCacheMedia();
 
     void PreviousMedia();
     void NextMedia();
