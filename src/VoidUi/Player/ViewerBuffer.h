@@ -43,6 +43,15 @@ enum class VOID_API PlayerViewBuffer
     /* In Future the Buffer type may also include Compare buffers like switch/swipe and others. */
 };
 
+struct BufferData
+{
+    SharedPixels image = nullptr;
+    Renderer::SharedAnnotation annotation = nullptr;
+
+    bool Valid() const { return (bool)image; }
+    explicit operator bool() const { return (bool)image; }
+};
+
 class ViewerBuffer : public QObject
 {
     Q_OBJECT
@@ -153,6 +162,24 @@ public:
      * Returns the Image Pixels from the active item in the buffer
      */
     SharedPixels Image(const v_frame_t frame);
+
+    /**
+     * @brief Returns the active media's buffer data which includes the image data
+     * and the annotations if available on the media
+     * 
+     * @param frame Frame number.
+     * @param nearest If the frame does not exist, whether a nearest available frame's data is required
+     * @return BufferData Media data from the active media.
+     */
+    BufferData MData(const v_frame_t frame, bool nearest = false);
+
+    /**
+     * @brief Returns the Media from the active component.
+     * 
+     * @param frame Frame number.
+     * @return SharedMediaClip Media clip from the active component at the given frame.
+     */
+    SharedMediaClip Media(const v_frame_t frame);
 
     /**
      * Returns the shared media clip instance
@@ -288,6 +315,10 @@ private: /* Methods */
      */
     SharedTrackItem ItemFromTrack(const v_frame_t frame);
     SharedTrackItem ItemFromSequence(const v_frame_t frame);
+
+    BufferData ClipData(const v_frame_t frame, bool nearest = false);
+    BufferData TrackData(const v_frame_t frame, bool nearest = false);
+    BufferData SequenceData(const v_frame_t frame, bool nearest = false);
 
     inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
 

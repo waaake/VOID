@@ -188,16 +188,10 @@ SharedPixels ViewerBuffer::Image(const v_frame_t frame)
     /* The active element is a clip */
     if (m_PlayingComponent == PlayableComponent::Clip)
     {
-        /* Nothing being played at the moment */
-        if (m_Clip->Empty())
+        if (m_Clip->Empty() || !m_Clip->InRange(frame))
             return nullptr;
 
-        /* Check if we have the frame available in the Clip */
-        if (m_Clip->InRange(frame))
-            return m_Clip->Image(frame);
-
-        /* Return the nearest frame */
-        return m_Clip->Image(m_Clip->NearestFrame(frame));
+        return m_Clip->Image(frame);
     }
 
     SharedTrackItem item = ItemFromTrack(frame);
@@ -207,6 +201,81 @@ SharedPixels ViewerBuffer::Image(const v_frame_t frame)
 
     /* The pixels from the track item */
     return item->GetImage(frame);
+}
+
+BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
+{
+    switch (m_PlayingComponent)
+    {
+        case PlayableComponent::Track: return TrackData(frame, nearest);
+        case PlayableComponent::Sequence: return SequenceData(frame, nearest);
+        default: return ClipData(frame, nearest);
+    }
+}
+
+SharedMediaClip ViewerBuffer::Media(const v_frame_t frame)
+{   
+    if (m_PlayingComponent == PlayableComponent::Track)
+    {
+        if (SharedTrackItem item = ItemFromTrack(frame))
+            return item->GetMedia();
+        return nullptr;
+    }
+
+    if (m_PlayingComponent == PlayableComponent::Sequence)
+    {
+        if (SharedTrackItem item = ItemFromSequence(frame))
+            return item->GetMedia();
+        return nullptr;
+    }
+
+    return m_Clip;
+}
+
+BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
+{
+    BufferData d;
+    if (m_Clip->InRange(frame) && m_Clip->Contains(frame))
+    {
+        EnsureCached(frame);
+        d.image = m_Clip->Image(frame);
+        d.annotation = m_Clip->Annotation(frame);
+        return d;
+    }
+
+    return (nearest) ? ClipData(m_Clip->NearestFrame(frame), false) : d;
+}
+
+BufferData ViewerBuffer::TrackData(const v_frame_t frame, bool nearest)
+{
+    BufferData d;
+    if (SharedTrackItem item = ItemFromTrack(frame))
+    {
+        if (item->InRange(frame))
+        {
+            EnsureCached(frame);
+            d.image = item->GetImage(frame);
+            return d;
+        }
+    }
+
+    return d;
+}
+
+BufferData ViewerBuffer::SequenceData(const v_frame_t frame, bool nearest)
+{
+    BufferData d;
+    if (SharedTrackItem item = ItemFromSequence(frame))
+    {
+        if (item->InRange(frame))
+        {
+            EnsureCached(frame);
+            d.image = item->GetImage(frame);
+            return d;
+        }
+    }
+
+    return d;
 }
 
 SharedTrackItem ViewerBuffer::ItemFromSequence(const v_frame_t frame)

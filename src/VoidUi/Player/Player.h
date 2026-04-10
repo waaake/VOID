@@ -68,10 +68,11 @@ private: /* Members */
     AudioDecoder m_AudioDecoder;
 
 private: /* Methods */
-    void SetMediaFrame(int frame);
-    void SetTrackFrame(int frame);
-    void SetSequenceFrame(int frame);
-    void SetTrackItemFrame(SharedTrackItem item, const int frame);
+    void Render(int frame);
+    // void SetMediaFrame(int frame);
+    // void SetTrackFrame(int frame);
+    // void SetSequenceFrame(int frame);
+    // void SetTrackItemFrame(SharedTrackItem item, const int frame);
     void CompareMediaFrame(v_frame_t frame);
 
     void ResetViewBuffer(const PlayerViewBuffer& buffer);
