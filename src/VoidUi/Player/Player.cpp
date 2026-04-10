@@ -469,6 +469,11 @@ void Player::SetComparisonMode(int mode)
     Refresh();
 }
 
+void Player::ToggleChannels(int channel)
+{
+    m_ControlBar->ToggleChannels(channel);
+}
+
 void Player::SetBlendMode(const int mode)
 {
     /* Update the blend mode */

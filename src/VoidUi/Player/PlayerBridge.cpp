@@ -93,12 +93,23 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     /* Viewer Contols Menu {{{ */
     QMenu* viewerMenu = menuSystem->AddMenu("Viewer");
 
+    QAction* redToggleAction = menuSystem->AddAction(viewerMenu, "Toggle Red channel", QKeySequence(Qt::Key_R));
+    QAction* greenToggleAction = menuSystem->AddAction(viewerMenu, "Toggle Green channel", QKeySequence(Qt::Key_G));
+    QAction* blueToggleAction = menuSystem->AddAction(viewerMenu, "Toggle Blue channel", QKeySequence(Qt::Key_B));
+    QAction* alphaToggleAction = menuSystem->AddAction(viewerMenu, "Toggle Alpha channel", QKeySequence(Qt::Key_A));
+
+    viewerMenu->addSeparator();
+
     QAction* zoomInAction = menuSystem->AddAction(viewerMenu, "Zoom In", QKeySequence(Qt::Key_Plus));
     QAction* zoomOutAction = menuSystem->AddAction(viewerMenu, "Zoom Out", QKeySequence(Qt::Key_Minus));
     QAction* zoomToFitAction = menuSystem->AddAction(viewerMenu, "Zoom to Fit", QKeySequence(Qt::Key_F));
     QAction* fullscreenAction = menuSystem->AddAction(viewerMenu, "Show Fullscreen", QKeySequence("Ctrl+F"));
     QAction* exitFullscreenAction = menuSystem->AddAction(viewerMenu, "Exit Fullscreen");
 
+    connect(redToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(0); });
+    connect(greenToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(1); });
+    connect(blueToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(2); });
+    connect(alphaToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(3); });
     connect(zoomInAction, &QAction::triggered, this, &PlayerBridge::ZoomIn);
     connect(zoomOutAction, &QAction::triggered, this, &PlayerBridge::ZoomOut);
     connect(zoomToFitAction, &QAction::triggered, this, &PlayerBridge::ZoomToFit);

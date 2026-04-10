@@ -44,6 +44,7 @@ public:
     inline void ZoomIn() { m_Zoomer->setValue(m_Zoomer->value() + 10); }
     inline void ZoomOut() { m_Zoomer->setValue(m_Zoomer->value() - 10); }
     void SetZoomLimits(float min, float max);
+    void ToggleChannels(int channel);
 
     /**
      * Sets the current Compare mode
