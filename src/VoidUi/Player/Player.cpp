@@ -216,7 +216,7 @@ void Player::Connect()
         }
         else
         {
-            m_ActiveViewBuffer->StartPlaybackCache(static_cast<ViewerBuffer::Direction>(state));
+            m_ActiveViewBuffer->StartPlaybackCache(static_cast<ViewerBuffer::PlayState>(state));
             if (state == Timeline::PlayState::FORWARDS)
                 m_AudioDecoder.Start();
         }

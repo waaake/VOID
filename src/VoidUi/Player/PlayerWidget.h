@@ -112,6 +112,8 @@ public:
 
     inline void Stop() { m_Timeline->Stop(); }
 
+    inline v_frame_t Startframe() const { return m_Timeline->Minimum(); }
+    inline v_frame_t Endframe() const { return m_Timeline->Maximum(); }
     inline v_frame_t Frame() const { return m_Timeline->Frame(); }
     inline void NextFrame() { m_Timeline->NextFrame(); }
     inline void PreviousFrame() { m_Timeline->PreviousFrame(); }

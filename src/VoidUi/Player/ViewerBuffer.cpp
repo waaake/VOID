@@ -17,8 +17,7 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     , m_Playlist(nullptr)
     , m_CachedTrackItem(nullptr)
     , m_PlayingComponent(PlayableComponent::Clip)
-    , m_Direction(Direction::Forwards)
-    , m_State(State::Enabled)
+    , m_State(PlayState::Forwards)
     , m_Name("Viewer")
     , m_Color(130, 110, 190)    // Purple
     , m_Player(nullptr)
@@ -27,7 +26,6 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     , m_FrameSize(0)
     , m_Startframe(0)
     , m_Endframe(1)
-    , m_Duration(2)
     , m_LastCached(0)
     , m_BackBuffer(3)
     , m_Active(false)
@@ -399,34 +397,41 @@ bool ViewerBuffer::PreviousMedia()
     return false;
 }
 
-void ViewerBuffer::StartPlaybackCache(const Direction& direction)
+// void ViewerBuffer::StartPlaybackCache(const Direction& direction)
+void ViewerBuffer::StartPlaybackCache(const PlayState& state)
 {
-    m_Direction = direction;
-    if (m_Framenumbers.size() >= m_Duration || m_State != State::Enabled)
+    // m_Direction = direction;
+    if (Completed() || m_State == PlayState::Disabled)
         return;
-
+    
+    m_State = state;
     m_CacheTimer.start(10);
 
+    // if (!m_ThreadPool.activeThreadCount() && !m_Framenumbers.empty())
+    //     m_LastCached = m_Direction == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
     if (!m_ThreadPool.activeThreadCount() && !m_Framenumbers.empty())
-        m_LastCached = m_Direction == Direction::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
+        m_LastCached = m_State == PlayState::Forwards ? m_Framenumbers.back() : m_Framenumbers.front();
 }
 
 void ViewerBuffer::StopPlaybackCache()
 {
-    m_Direction = Direction::None;
+    // m_Direction = Direction::None;
+    // m_State = PlayState::Paused;
     m_CacheTimer.stop();
 }
 
 void ViewerBuffer::PauseCaching()
 {
     StopCaching();
-    m_State = State::Paused;
+    // m_State = State::Paused;
+    m_State = PlayState::Paused;
 }
 
 void ViewerBuffer::DisableCaching()
 {
     StopCaching();
-    m_State = State::Disabled;
+    // m_State = State::Disabled;
+    m_State = PlayState::Disabled;
 }
 
 void ViewerBuffer::StopCaching()
@@ -442,7 +447,8 @@ void ViewerBuffer::StopCaching()
 
 void ViewerBuffer::ResumeCaching()
 {
-    m_State = State::Enabled;
+    // m_State = State::Enabled;
+    m_State = PlayState::Forwards;
     CacheAvailable();
 }
 
@@ -458,9 +464,9 @@ void ViewerBuffer::Update()
         return;
     }
 
-    else if (m_Direction == Direction::Forwards && m_Framenumbers.size() != m_Duration)
+    else if (m_State == PlayState::Forwards && !Completed())
         CacheNext();
-    else if (m_Direction == Direction::Backwards && m_Framenumbers.size() != m_Duration)
+    else if (m_State == PlayState::Backwards && !Completed())
         CachePrevious();
     else
         m_CacheTimer.stop();
@@ -472,14 +478,13 @@ void ViewerBuffer::UpdateRange(v_frame_t start, v_frame_t end)
 {
     m_Startframe = start;
     m_Endframe = end;
-    m_Duration = (m_Endframe - m_Startframe) + 1;
 
     /**
      * The Back buffer refers to the amount of frames which stay behind the playhead
      * This needs to be between 3 - 10 depending on the overall size of the entity
      * being played
      */
-    m_BackBuffer = std::min(10, std::max(3, static_cast<int>(m_Duration * 0.02)));
+    m_BackBuffer = std::min(10, std::max(3, static_cast<int>(((m_Endframe - m_Startframe) + 1) * 0.02)));
 }
 
 bool ViewerBuffer::Request(v_frame_t frame, bool evict)
@@ -491,7 +496,7 @@ bool ViewerBuffer::Request(v_frame_t frame, bool evict)
      */
     if (!m_FrameSize)
     {
-        m_Direction == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+        m_State == PlayState::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
         return true;
     }
 
@@ -499,7 +504,7 @@ bool ViewerBuffer::Request(v_frame_t frame, bool evict)
      * Check if we've cached all of our frames
      * if so, then there is no need to cache any further
      */
-    if (m_Framenumbers.size() >= m_Duration)
+    if (Completed())
     {
         m_CacheTimer.stop();
         return false;
@@ -509,7 +514,7 @@ bool ViewerBuffer::Request(v_frame_t frame, bool evict)
     {
         if (evict)
         {
-            if (m_Direction == Direction::Backwards)
+            if (m_State == PlayState::Backwards)
             {
                 EvictBack();
                 m_Framenumbers.push_front(frame);
@@ -529,7 +534,7 @@ bool ViewerBuffer::Request(v_frame_t frame, bool evict)
     }
 
     m_UsedMemory += m_FrameSize;
-    m_Direction == Direction::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
+    m_State == PlayState::Backwards ? m_Framenumbers.push_front(frame) : m_Framenumbers.push_back(frame);
     return true;
 }
 
@@ -660,7 +665,7 @@ void ViewerBuffer::Recache()
 
 void ViewerBuffer::CacheAvailable()
 {
-    if (m_State == State::Disabled)
+    if (m_State == PlayState::Disabled)
         return;
 
     int count = 0;
@@ -669,7 +674,7 @@ void ViewerBuffer::CacheAvailable()
      * This is invoked whenever the media is set/changed on the player buffer
      * so the usual direction is Forwards, unless we were going backwards
      */
-    if (m_Direction == Direction::Backwards)
+    if (m_State == PlayState::Backwards)
     {
         for (v_frame_t frame = m_Endframe; frame >= m_Startframe; --frame)
         {
@@ -697,14 +702,41 @@ void ViewerBuffer::CacheAvailable()
     }
 }
 
+v_frame_t ViewerBuffer::InternalStartframe() const
+{
+    return (m_Player) ? std::max(m_Startframe, m_Player->Startframe()) : m_Startframe;
+    // return m_Startframe;
+}
+
+v_frame_t ViewerBuffer::InternalEndframe() const
+{
+    return (m_Player) ? std::min(m_Endframe, m_Player->Endframe()) : m_Endframe;
+    // return m_Endframe;
+}
+
+int ViewerBuffer::InternalDuration() const
+{
+    return InternalEndframe() - InternalStartframe() + 1;
+}
+
+bool ViewerBuffer::Completed() const
+{
+    /**
+     * The cache/buffer is said to be completed if the internal frame store has the start
+     * and the end frames present
+     * 
+     */
+    return m_Framenumbers.size() >= InternalDuration();
+}
+
 v_frame_t ViewerBuffer::GetNextFrame()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     v_frame_t frame = 0;
 
-    if (m_LastCached > m_Endframe)
-        frame = m_Startframe;
+    if (m_LastCached > InternalEndframe())
+        frame = InternalStartframe();
     else
         frame = ++m_LastCached;
 
@@ -719,8 +751,8 @@ v_frame_t ViewerBuffer::GetPreviousFrame()
 
     v_frame_t frame = 0;
 
-    if (m_LastCached <= m_Startframe)
-        frame = m_Endframe;
+    if (m_LastCached <= InternalStartframe())
+        frame = InternalEndframe();
     else
         frame = --m_LastCached;
 
@@ -753,8 +785,8 @@ void ViewerBuffer::CacheNext()
 
         frame++;
 
-        if (frame > m_Endframe)
-            frame = m_Startframe;
+        if (frame > InternalEndframe())
+            frame = InternalStartframe();
 
         Request(frame, true);
         AddTask(new CacheNextFrameTask(this));
@@ -774,8 +806,8 @@ void ViewerBuffer::CachePrevious()
 
         frame--;
 
-        if (frame < m_Startframe)
-            frame = m_Endframe;
+        if (frame < InternalStartframe())
+            frame = InternalEndframe();
 
         Request(frame, true);
         AddTask(new CachePreviousFrameTask(this));
