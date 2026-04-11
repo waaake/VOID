@@ -324,7 +324,7 @@ void Player::Render(int frame)
 //      * based on where the trackitem is present in the sequence
 //      */
 //     m_ActiveViewBuffer->EnsureCached(frame);
-//     SharedPixels data = item->GetImage(frame);
+//     SharedPixels data = item->Image(frame);
 
 //     /* A standard frame which is available for any trackitem/media */
 //     if (data)

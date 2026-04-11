@@ -67,7 +67,7 @@ public:
     /**
      * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
      */
-    SharedPixels GetImage(const v_frame_t frame);
+    SharedPixels Image(const v_frame_t frame);
 
     inline v_frame_t StartFrame() const { return m_StartFrame; }
     inline v_frame_t EndFrame() const { return m_EndFrame; }
