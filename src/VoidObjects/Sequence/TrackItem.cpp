@@ -64,7 +64,7 @@ void TrackItem::Cache()
 void TrackItem::CacheFrame(v_frame_t frame)
 {
     /* Update the frame value with the offset so that we match the original media range */
-    v_frame_t f = frame + m_Offset;
+    const v_frame_t f = frame + m_Offset;
 
     if (m_Media->Contains(f))
         m_Media->CacheFrame(f);
@@ -73,13 +73,13 @@ void TrackItem::CacheFrame(v_frame_t frame)
 void TrackItem::UncacheFrame(v_frame_t frame)
 {
     /* Update the frame value with the offset so that we match the original media range */
-    v_frame_t f = frame + m_Offset;
+    const v_frame_t f = frame + m_Offset;
 
     if (m_Media->Contains(f))
         m_Media->UncacheFrame(f);
 }
 
-SharedPixels TrackItem::GetImage(const v_frame_t frame)
+SharedPixels TrackItem::Image(const v_frame_t frame)
 {
     /* Update the frame value with the offset so that we match the original media range */
     v_frame_t f = frame + m_Offset;

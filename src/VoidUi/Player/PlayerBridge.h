@@ -68,6 +68,7 @@ public:
     inline void ResetRange() { m_Player->ResetRange(); }
 
     inline void InspectCurrentMetadata() { m_Player->InspectCurrentMetadata(); }
+    inline void ToggleChannels(int channel) { m_Player->ToggleChannels(channel); }
 
     inline void ZoomIn() { m_Player->ZoomIn(); }
     inline void ZoomOut() { m_Player->ZoomOut(); }

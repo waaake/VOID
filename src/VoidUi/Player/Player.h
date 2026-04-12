@@ -38,6 +38,7 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence);
     void SetPlaylist(Playlist* playlist);
 
+    void ToggleChannels(int channel);
     void SetBlendMode(int mode);
     void SetComparisonMode(int mode);
     /* Compare Media on the Player */
@@ -68,10 +69,11 @@ private: /* Members */
     AudioDecoder m_AudioDecoder;
 
 private: /* Methods */
-    void SetMediaFrame(int frame);
-    void SetTrackFrame(int frame);
-    void SetSequenceFrame(int frame);
-    void SetTrackItemFrame(SharedTrackItem item, const int frame);
+    void Render(int frame);
+    // void SetMediaFrame(int frame);
+    // void SetTrackFrame(int frame);
+    // void SetSequenceFrame(int frame);
+    // void SetTrackItemFrame(SharedTrackItem item, const int frame);
     void CompareMediaFrame(v_frame_t frame);
 
     void ResetViewBuffer(const PlayerViewBuffer& buffer);

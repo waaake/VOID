@@ -181,6 +181,15 @@ void Media::ProcessMovie()
     m_Type = Media::Type::MOVIE;
 }
 
+std::size_t Media::FrameSize()
+{
+    if (m_Framesize)
+        return m_Framesize;
+
+    m_Framesize = FirstImage()->FrameSize();
+    return m_Framesize;
+}
+
 void Media::ClearCache()
 {
     for (Frame& f : m_Mediaframes)

@@ -34,11 +34,11 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     /* Update what's currently being played on the viewer buffer */
     m_ActiveViewBuffer->Set(media);
-    
+
     m_Timeline->SetRange(media->FirstFrame(), media->LastFrame());
     m_Timeline->SetAnnotatedFrames(std::move(media->AnnotatedFrames()));
 
-    SetMediaFrame(m_Timeline->Frame());
+    Render(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
@@ -52,8 +52,16 @@ void Player::SetMedia(const SharedMediaClip& media)
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
 {
+    /* Reset timeline | Renderer */
+    m_Timeline->Clear();
+    m_Renderer->Clear();
+
     m_ActiveViewBuffer->Set(media);
-    SetTrack(m_ActiveViewBuffer->ActiveTrack());
+    m_Timeline->SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    Render(m_Timeline->Frame());
+
+    m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
+    m_ControlBar->SetZoom(m_Renderer->Zoom());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer)
@@ -94,7 +102,7 @@ void Player::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buff
     inactive->SetActive(false);
 
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
-    SetMediaFrame(m_Timeline->Frame());
+    Render(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
@@ -110,7 +118,7 @@ void Player::SetTrack(const SharedPlaybackTrack& track)
     m_ActiveViewBuffer->Set(track);
 
     m_Timeline->SetRange(track->StartFrame(), track->EndFrame());
-    SetTrackFrame(m_Timeline->Frame());
+    Render(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
@@ -139,7 +147,7 @@ void Player::SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& 
     inactive->SetActive(false);
 
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
-    SetTrackFrame(m_Timeline->Frame());
+    Render(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
@@ -155,7 +163,7 @@ void Player::SetSequence(const SharedPlaybackSequence& sequence)
     m_ActiveViewBuffer->Set(sequence);
 
     m_Timeline->SetRange(sequence->StartFrame(), sequence->EndFrame());
-    SetSequenceFrame(m_Timeline->Frame());
+    Render(m_Timeline->Frame());
 
     m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
     m_ControlBar->SetZoom(m_Renderer->Zoom());
@@ -169,7 +177,7 @@ void Player::SetPlaylist(Playlist* playlist)
     /* Update what is being played on the Active Viewer Buffer */
     m_ActiveViewBuffer->SetPlaylist(playlist);
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
-    SetMediaFrame(m_Timeline->Frame());
+    Render(m_Timeline->Frame());
 }
 
 void Player::SetFrame(int frame)
@@ -181,16 +189,7 @@ void Player::SetFrame(int frame)
     if (Comparing())
         return CompareMediaFrame(frame);
 
-    /**
-     * Check what do we want to play
-     * if currently playing component on the Active ViewerBuffer is Sequence, meaning that was latest set on it
-     */
-    if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Sequence)
-        return SetSequenceFrame(frame);
-    else if (m_ActiveViewBuffer->PlayingComponent() == ViewerBuffer::PlayableComponent::Track)
-        return SetTrackFrame(frame);
-
-    return SetMediaFrame(frame);
+    return Render(frame);
 }
 
 void Player::NextMedia()
@@ -225,7 +224,7 @@ void Player::Connect()
         }
         else
         {
-            m_ActiveViewBuffer->StartPlaybackCache(static_cast<ViewerBuffer::Direction>(state));
+            m_ActiveViewBuffer->StartPlaybackCache(static_cast<ViewerBuffer::PlayState>(state));
             if (state == Timeline::PlayState::FORWARDS)
                 m_AudioDecoder.Start();
         }
@@ -236,14 +235,14 @@ void Player::Connect()
         state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
     });
     connect(m_Timeline, &Timeline::seeked, this, [this](v_frame_t frame)
-    { 
+    {
         m_AudioDecoder.SeekTo((double)frame / m_Timeline->Framerate());
     });
 
     /* ControlBar */
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
-    connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode); 
+    connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
 }
 
 void Player::PauseCache()
@@ -280,131 +279,139 @@ void Player::ClearCache()
     m_ViewBufferB.ClearCache();
 }
 
-void Player::SetSequenceFrame(int frame)
+void Player::Render(int frame)
 {
-    /* Ensure We have Valid sequence with media to process before setting the frame */
-    if (m_ActiveViewBuffer->GetSequence()->IsEmpty())
-        return;
+    BufferData data = m_ActiveViewBuffer->MData(frame);
 
-    /* Try to get the trackItem at a given frame in the current sequence */
-    /**
-     * Instead of fetching the image data directly from the sequence, fetch the trackItem at any given point
-     * This for the time being (till we have a best case O(1) for finding a track item at any given available)
-     * is a better approach as the nearest frame logic causes a recursion which could end up looping over the same entity
-     * Multiple times in order to find the media first, then it's nearest frame and then the image data for that frame which is very costly
-     */
-    SharedTrackItem item = m_ActiveViewBuffer->TrackItem(frame);
-
-    if (item)
-        SetTrackItemFrame(item, frame);
-}
-
-void Player::SetTrackFrame(int frame)
-{
-    /* Ensure We have Valid sequence with media to process before setting the frame */
-    if (m_ActiveViewBuffer->GetTrack()->IsEmpty())
-        return;
-
-    /* Try to get the trackItem at a given frame in the current sequence */
-    /**
-     * Instead of fetching the image data directly from the sequence, fetch the trackItem at any given point
-     * This for the time being (till we have a best case O(1) for finding a track item at any given available)
-     * is a better approach as the nearest frame logic causes a recursion which could end up looping over the same entity
-     * Multiple times in order to find the media first, then it's nearest frame and then the image data for that frame which is very costly
-     */
-    SharedTrackItem item = m_ActiveViewBuffer->TrackItem(frame);
-
-    if (item)
-        SetTrackItemFrame(item, frame);
-}
-
-void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
-{
-    /**
-     * This GetImage itself runs a check if Media.Contains(frame) as it has to offset values internally
-     * based on where the trackitem is present in the sequence
-     */
-    m_ActiveViewBuffer->EnsureCached(frame);
-    SharedPixels data = item->GetImage(frame);
-
-    /* A standard frame which is available for any trackitem/media */
     if (data)
-    {
-        m_Renderer->Render(data);
-    }
-    else
-    {
-        /**
-         * This maybe a case where the given frame does not exist for the track item
-         * What happens next is based on how the missing frame handler is set
-         */
-        switch(m_MFrameHandler)
-        {
-            /* Show only black frame on the viewer */
-            case MissingFrameHandler::BLACK_FRAME:
-                m_Renderer->Clear();
-                break;
-            case MissingFrameHandler::ERROR_FRAME:
-                m_Renderer->Clear();
-                m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
-                break;
-            case MissingFrameHandler::NEAREST:
-                /**
-                 * Recursively call the method but with the nearest available frame
-                 * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
-                 * to read and render on the renderer
-                 */
-                SetTrackItemFrame(item, item->NearestFrame(frame));
-                break;
-        }
-    }
+        m_Renderer->Render(data.image, data.annotation);
 }
 
-void Player::SetMediaFrame(int frame)
-{
-    const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
-    /* Ensure we have a valid media to process before setting the frame */
-    if (clip->Empty())
-        return;
+// void Player::SetSequenceFrame(int frame)
+// {
+//     /* Ensure We have Valid sequence with media to process before setting the frame */
+//     if (m_ActiveViewBuffer->GetSequence()->IsEmpty())
+//         return;
 
-    /**
-     * If the frame does not have any data, this could mean that the frame is missing
-     * if the provided frame is in range of the Media
-     * How such a case is handled is based on the MissingFrameHandler
-     * This determines what to do when a frame data is not available
-     *
-     * ERROR: Display an error on the Viewport stating the frame is not available.
-     * BLACKFRAME: Display a black frame instead of anything else. No error is displayed.
-     * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
-     */
-    if (clip->Contains(frame))
-    {
-        m_ActiveViewBuffer->EnsureCached(frame);
-        /* Read the image for the frame from the sequence and set it on the player */
-        m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
-    }
-    else
-    {
-        switch(m_MFrameHandler)
-        {
-            case MissingFrameHandler::BLACK_FRAME:
-                m_Renderer->Clear();
-                break;
-            case MissingFrameHandler::ERROR_FRAME:
-                m_Renderer->Clear();
-                m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
-                break;
-            case MissingFrameHandler::NEAREST:
-                /**
-                 * Recursively call the method but with the nearest available frame
-                 * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
-                 * to read and render on the renderer
-                 */
-                SetMediaFrame(clip->NearestFrame(frame));
-                break;
-        }
-    }
-}
+//     /* Try to get the trackItem at a given frame in the current sequence */
+//     /**
+//      * Instead of fetching the image data directly from the sequence, fetch the trackItem at any given point
+//      * This for the time being (till we have a best case O(1) for finding a track item at any given available)
+//      * is a better approach as the nearest frame logic causes a recursion which could end up looping over the same entity
+//      * Multiple times in order to find the media first, then it's nearest frame and then the image data for that frame which is very costly
+//      */
+//     SharedTrackItem item = m_ActiveViewBuffer->TrackItem(frame);
+
+//     if (item)
+//         SetTrackItemFrame(item, frame);
+// }
+
+// void Player::SetTrackFrame(int frame)
+// {
+//     /* Ensure We have Valid sequence with media to process before setting the frame */
+//     if (m_ActiveViewBuffer->GetTrack()->IsEmpty())
+//         return;
+
+//     /* Try to get the trackItem at a given frame in the current sequence */
+//     /**
+//      * Instead of fetching the image data directly from the sequence, fetch the trackItem at any given point
+//      * This for the time being (till we have a best case O(1) for finding a track item at any given available)
+//      * is a better approach as the nearest frame logic causes a recursion which could end up looping over the same entity
+//      * Multiple times in order to find the media first, then it's nearest frame and then the image data for that frame which is very costly
+//      */
+//     SharedTrackItem item = m_ActiveViewBuffer->TrackItem(frame);
+
+//     if (item)
+//         SetTrackItemFrame(item, frame);
+// }
+
+// void Player::SetTrackItemFrame(SharedTrackItem item, const int frame)
+// {
+//     /**
+//      * This GetImage itself runs a check if Media.Contains(frame) as it has to offset values internally
+//      * based on where the trackitem is present in the sequence
+//      */
+//     m_ActiveViewBuffer->EnsureCached(frame);
+//     SharedPixels data = item->Image(frame);
+
+//     /* A standard frame which is available for any trackitem/media */
+//     if (data)
+//     {
+//         m_Renderer->Render(data);
+//     }
+//     else
+//     {
+//         /**
+//          * This maybe a case where the given frame does not exist for the track item
+//          * What happens next is based on how the missing frame handler is set
+//          */
+//         switch(m_MFrameHandler)
+//         {
+//             /* Show only black frame on the viewer */
+//             case MissingFrameHandler::BLACK_FRAME:
+//                 m_Renderer->Clear();
+//                 break;
+//             case MissingFrameHandler::ERROR_FRAME:
+//                 m_Renderer->Clear();
+//                 m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
+//                 break;
+//             case MissingFrameHandler::NEAREST:
+//                 /**
+//                  * Recursively call the method but with the nearest available frame
+//                  * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
+//                  * to read and render on the renderer
+//                  */
+//                 SetTrackItemFrame(item, item->NearestFrame(frame));
+//                 break;
+//         }
+//     }
+// }
+
+// void Player::SetMediaFrame(int frame)
+// {
+//     const SharedMediaClip& clip = m_ActiveViewBuffer->GetMediaClip();
+//     /* Ensure we have a valid media to process before setting the frame */
+//     if (clip->Empty())
+//         return;
+
+//     /**
+//      * If the frame does not have any data, this could mean that the frame is missing
+//      * if the provided frame is in range of the Media
+//      * How such a case is handled is based on the MissingFrameHandler
+//      * This determines what to do when a frame data is not available
+//      *
+//      * ERROR: Display an error on the Viewport stating the frame is not available.
+//      * BLACKFRAME: Display a black frame instead of anything else. No error is displayed.
+//      * NEAREST: Don't do anything here, as we continue to show the last frame which was rendered.
+//      */
+//     if (clip->Contains(frame))
+//     {
+//         m_ActiveViewBuffer->EnsureCached(frame);
+//         /* Read the image for the frame from the sequence and set it on the player */
+//         m_Renderer->Render(clip->Image(frame), clip->Annotation(frame));
+//     }
+//     else
+//     {
+//         switch(m_MFrameHandler)
+//         {
+//             case MissingFrameHandler::BLACK_FRAME:
+//                 m_Renderer->Clear();
+//                 break;
+//             case MissingFrameHandler::ERROR_FRAME:
+//                 m_Renderer->Clear();
+//                 m_Renderer->SetMessage("Frame " + std::to_string(frame) + " not available.");
+//                 break;
+//             case MissingFrameHandler::NEAREST:
+//                 /**
+//                  * Recursively call the method but with the nearest available frame
+//                  * For any given frame, this recursion should happen only once as the nearest frame is a valid frame
+//                  * to read and render on the renderer
+//                  */
+//                 SetMediaFrame(clip->NearestFrame(frame));
+//                 break;
+//         }
+//     }
+// }
 
 void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second)
 {
@@ -470,6 +477,11 @@ void Player::SetComparisonMode(int mode)
     Refresh();
 }
 
+void Player::ToggleChannels(int channel)
+{
+    m_ControlBar->ToggleChannels(channel);
+}
+
 void Player::SetBlendMode(const int mode)
 {
     /* Update the blend mode */
@@ -507,7 +519,6 @@ void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)
     Refresh();
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
 }
-
 
 void Player::dragEnterEvent(QDragEnterEvent* event)
 {

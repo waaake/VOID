@@ -6,6 +6,7 @@
 
 /* STD */
 #include <unordered_map>
+#include <vector>
 
 /* Freetype */
 #include <ft2build.h>
@@ -79,7 +80,7 @@ private: /* Members */
     /**
      * Going with a vector over a map, due to the cache benefits
      * Plus the fonts used is just one at the moment, the varying factor is the size
-     * which is not more than 10, so all of the fonts can be fetched in a single cache line
+     * which is not more than 10, so all of the fonts can be fetched in a few cache lines
      */
     std::vector<FontAtlas> m_Fonts;
 };

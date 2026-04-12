@@ -31,7 +31,7 @@ class Player;
 
 /**
  * Enum decribing which viewer buffer is currently active and can be used to set an
- * active viewer buffer for the 
+ * active viewer buffer for the
  */
 enum class VOID_API PlayerViewBuffer
 {
@@ -41,6 +41,15 @@ enum class VOID_API PlayerViewBuffer
     B
 
     /* In Future the Buffer type may also include Compare buffers like switch/swipe and others. */
+};
+
+struct BufferData
+{
+    SharedPixels image = nullptr;
+    Renderer::SharedAnnotation annotation = nullptr;
+
+    bool Valid() const { return (bool)image; }
+    explicit operator bool() const { return (bool)image; }
 };
 
 class ViewerBuffer : public QObject
@@ -83,18 +92,13 @@ public: /* Enums */
         Playlist
     };
 
-    enum class Direction
-    {
-        None,
-		Forwards,
-		Backwards
-    };
-
-    enum class State
+    enum class PlayState
     {
         Paused,
+        Forwards,
+        Backwards,
         Enabled,
-        Disabled,
+        Disabled
     };
 
 public:
@@ -113,8 +117,8 @@ public:
     inline void SetMaxMemory(unsigned long long gigs) { m_MaxMemory = gigs * 1024 * 1024 * 1024; }
     inline void SetMaxThreads(unsigned int count) { m_ThreadPool.setMaxThreadCount(count); }
 
-    void StartPlaybackCache(const Direction& direction = Direction::Forwards);
-    inline void RestartPlaybackCache() { StartPlaybackCache(m_Direction); }
+    void StartPlaybackCache(const PlayState& state = PlayState::Forwards);
+    inline void RestartPlaybackCache() { StartPlaybackCache(m_State); }
     void StopPlaybackCache();
 
     /**
@@ -155,6 +159,24 @@ public:
     SharedPixels Image(const v_frame_t frame);
 
     /**
+     * @brief Returns the active media's buffer data which includes the image data
+     * and the annotations if available on the media
+     *
+     * @param frame Frame number.
+     * @param nearest If the frame does not exist, whether a nearest available frame's data is required
+     * @return BufferData Media data from the active media.
+     */
+    BufferData MData(const v_frame_t frame, bool nearest = false);
+
+    /**
+     * @brief Returns the Media from the active component.
+     *
+     * @param frame Frame number.
+     * @return SharedMediaClip Media clip from the active component at the given frame.
+     */
+    SharedMediaClip Media(const v_frame_t frame);
+
+    /**
      * Returns the shared media clip instance
      */
     inline SharedMediaClip GetMediaClip() const { return m_Clip; }
@@ -163,7 +185,7 @@ public:
      * Returns the shared media track instance
      */
     inline SharedPlaybackTrack GetTrack() const { return m_Track; }
-    
+
     /**
      * Returns the shared sequence instance
      */
@@ -229,7 +251,7 @@ signals:
 
 private: /* Members */
     /**
-     * Playable Entities 
+     * Playable Entities
      * Obviously one will get played at a time but can be governed what gets played
      */
     SharedMediaClip m_Clip;
@@ -248,8 +270,7 @@ private: /* Members */
     SharedTrackItem m_CachedTrackItem;
 
     PlayableComponent m_PlayingComponent;
-    Direction m_Direction;
-    State m_State;
+    PlayState m_State;
 
     std::string m_Name;
     QColor m_Color;
@@ -267,8 +288,6 @@ private: /* Members */
     std::size_t m_FrameSize;
 
     v_frame_t m_Startframe, m_Endframe;
-    unsigned int m_Duration;
-
     v_frame_t m_LastCached;
 
     int m_BackBuffer;
@@ -289,6 +308,16 @@ private: /* Methods */
     SharedTrackItem ItemFromTrack(const v_frame_t frame);
     SharedTrackItem ItemFromSequence(const v_frame_t frame);
 
+    BufferData ClipData(const v_frame_t frame, bool nearest = false);
+    BufferData TrackData(const v_frame_t frame, bool nearest = false);
+    BufferData SequenceData(const v_frame_t frame, bool nearest = false);
+
+    v_frame_t InternalStartframe() const;
+    v_frame_t InternalEndframe() const;
+    int InternalDuration() const;
+
+    bool Completed() const;
+
     inline std::size_t AvailableMemory() const { return m_MaxMemory - m_UsedMemory; }
 
     /**
@@ -305,7 +334,8 @@ private: /* Methods */
 
     void UpdateRange(v_frame_t start, v_frame_t end);
     inline void AddTask(QRunnable* runnable, int priority = 0) { m_ThreadPool.start(runnable, priority); }
-    
+    inline bool Cached(v_frame_t frame) const { return m_Buffered.find(frame) != m_Buffered.end(); }
+
     /**
      * A Cache process which caches all frames till the memory size allows
      */
@@ -328,17 +358,15 @@ private: /* Methods */
      * of memory usage
      */
     void Cache(v_frame_t frame);
-
-    void CacheNextFrame();
-    void CachePreviousFrame();
-
-    void CacheNext();
-    void CachePrevious();
+    void Store(v_frame_t frame);
 
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();
+    void CacheNextFrame();
+    void CachePreviousFrame();
+    void CacheNext();
+    void CachePrevious();
 
-    inline bool Cached(v_frame_t frame) const { return m_Buffered.find(frame) != m_Buffered.end(); }
     void SettingsUpdated();
 };
 

@@ -266,4 +266,14 @@ void ControlBar::SetZoomLimits(float min, float max)
     m_Zoomer->setMaximum(max);
 }
 
+void ControlBar::ToggleChannels(int channel)
+{
+    const int max = m_ChannelModeController->count() - 1;   // RGBA
+
+    if (channel > max)
+        return;
+
+    m_ChannelModeController->setCurrentIndex((channel == m_ChannelModeController->currentIndex()) ? max : channel);
+}
+
 VOID_NAMESPACE_CLOSE
