@@ -52,8 +52,16 @@ void Player::SetMedia(const SharedMediaClip& media)
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
 {
+    /* Reset timeline | Renderer */
+    m_Timeline->Clear();
+    m_Renderer->Clear();
+
     m_ActiveViewBuffer->Set(media);
-    SetTrack(m_ActiveViewBuffer->ActiveTrack());
+    m_Timeline->SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    Render(m_Timeline->Frame());
+
+    m_ControlBar->SetZoomLimits(m_Renderer->MinZoom(), m_Renderer->MaxZoom());
+    m_ControlBar->SetZoom(m_Renderer->Zoom());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer)

@@ -58,7 +58,7 @@ public:
 
     void CacheFrame(v_frame_t frame);
     void UncacheFrame(v_frame_t frame);
-    inline size_t FrameSize() { return m_Media->FrameSize(); }
+    inline std::size_t FrameSize() { return m_Media->FrameSize(); }
 
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }

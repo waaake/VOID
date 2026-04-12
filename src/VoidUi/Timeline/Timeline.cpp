@@ -175,6 +175,7 @@ void Timeline::Build()
 void Timeline::Connect()
 {
 	qRegisterMetaType<PlayState>("PlayState");
+	qRegisterMetaType<v_frame_t>("v_frame_t");
 
 	connect(m_Timeslider, &QSlider::valueChanged, this, &Timeline::TimeUpdated, Qt::DirectConnection);
 	connect(m_Timeslider, &Timeslider::seeked, this, &Timeline::seeked, Qt::DirectConnection);

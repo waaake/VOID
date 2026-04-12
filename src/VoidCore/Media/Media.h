@@ -107,7 +107,7 @@ public:
     inline Frame LastFrameData() const { return GetFrame(m_LastFrame); }
 
     inline SharedPixels Image(v_frame_t frame, bool cached = true) { return GetFrame(frame).Image(cached); }
-    inline std::size_t FrameSize() { return Image(m_FirstFrame)->FrameSize(); }
+    std::size_t FrameSize();
 
     inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
     inline SharedPixels LastImage() { return Image(m_LastFrame); }
@@ -138,6 +138,7 @@ protected: /* Members */
     v_frame_t m_FirstFrame, m_LastFrame;
     int m_Samplerate;
     double m_Framerate;
+    std::size_t m_Framesize = {0};
 
     Type m_Type;
     std::vector<Frame> m_Mediaframes;

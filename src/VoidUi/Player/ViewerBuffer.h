@@ -358,6 +358,7 @@ private: /* Methods */
      * of memory usage
      */
     void Cache(v_frame_t frame);
+    void Store(v_frame_t frame);
 
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();

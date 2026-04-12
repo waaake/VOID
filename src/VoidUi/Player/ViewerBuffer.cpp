@@ -9,6 +9,16 @@
 
 VOID_NAMESPACE_OPEN
 
+// std::ostream& operator<<(std::ostream& stream, const std::unordered_set<v_frame_t>& s)
+// {
+//     stream << "unordered_set<v_frame_t> [";
+//     for (v_frame_t frame : s)
+//         stream << frame << ", ";
+//     stream << "]";
+
+//     return stream;
+// }
+
 ViewerBuffer::ViewerBuffer(QObject* parent)
     : QObject(parent)
     , m_Clip(std::make_shared<MediaClip>())
@@ -72,7 +82,7 @@ void ViewerBuffer::Set(const SharedPlaybackTrack& track)
 void ViewerBuffer::Set(const SharedPlaybackSequence& sequence)
 {
     Refresh();
-    
+
     m_Sequence = sequence;
     m_PlayingComponent = PlayableComponent::Sequence;
     UpdateRange(m_Sequence->StartFrame(), m_Sequence->EndFrame());
@@ -212,7 +222,7 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
 }
 
 SharedMediaClip ViewerBuffer::Media(const v_frame_t frame)
-{   
+{
     if (m_PlayingComponent == PlayableComponent::Track)
     {
         if (SharedTrackItem item = ItemFromTrack(frame))
@@ -247,14 +257,12 @@ BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
 BufferData ViewerBuffer::TrackData(const v_frame_t frame, bool nearest)
 {
     BufferData d;
-    if (SharedTrackItem item = ItemFromTrack(frame))
+    SharedTrackItem item = ItemFromTrack(frame);
+    if (item && item ->InRange(frame))
     {
-        if (item->InRange(frame))
-        {
-            EnsureCached(frame);
-            d.image = item->Image(frame);
-            return d;
-        }
+        EnsureCached(frame);
+        d.image = item->Image(frame);
+        return d;
     }
 
     return d;
@@ -263,14 +271,12 @@ BufferData ViewerBuffer::TrackData(const v_frame_t frame, bool nearest)
 BufferData ViewerBuffer::SequenceData(const v_frame_t frame, bool nearest)
 {
     BufferData d;
-    if (SharedTrackItem item = ItemFromSequence(frame))
+    SharedTrackItem item = ItemFromSequence(frame);
+    if (item && item->InRange(frame))
     {
-        if (item->InRange(frame))
-        {
-            EnsureCached(frame);
-            d.image = item->Image(frame);
-            return d;
-        }
+        EnsureCached(frame);
+        d.image = item->Image(frame);
+        return d;
     }
 
     return d;
@@ -401,7 +407,7 @@ void ViewerBuffer::StartPlaybackCache(const PlayState& state)
 {
     if (Completed() || m_State == PlayState::Disabled)
         return;
-    
+
     m_State = state;
     m_CacheTimer.start(10);
 
@@ -536,13 +542,10 @@ void ViewerBuffer::Cache(v_frame_t frame)
         SharedTrackItem item = ItemFromTrack(frame);
         if (item)
         {
-            auto image = item->Image(frame);
-            m_FrameSize = image->FrameSize();
+            item->CacheFrame(frame);
+            m_FrameSize = item->FrameSize();
 
-            {
-                std::lock_guard<std::mutex> lock(m_Mutex);
-                m_Player->AddCacheFrame(frame);
-            }
+            Store(frame);
         }
 
         return;
@@ -550,16 +553,14 @@ void ViewerBuffer::Cache(v_frame_t frame)
 
     if (m_PlayingComponent == PlayableComponent::Sequence)
     {
-        SharedTrackItem item = ItemFromSequence(frame);
-        if (item)
+        if (SharedTrackItem item = ItemFromSequence(frame))
         {
-            auto image = item->Image(frame);
-            m_FrameSize = image->FrameSize();
+            // auto image = item->Image(frame);
+            // m_FrameSize = image->FrameSize();
+            item->CacheFrame(frame);
+            m_FrameSize = item->FrameSize();
 
-            {
-                std::lock_guard<std::mutex> lock(m_Mutex);
-                m_Player->AddCacheFrame(frame);
-            }
+            Store(frame);
         }
 
         return;
@@ -567,18 +568,13 @@ void ViewerBuffer::Cache(v_frame_t frame)
 
     if (m_Clip->Valid() && m_Clip->Contains(frame))
     {
-        auto image = m_Clip->Image(frame);
-        m_FrameSize = image->FrameSize();
+        // auto image = m_Clip->Image(frame);
+        // m_FrameSize = image->FrameSize();
+        m_Clip->CacheFrame(frame);
+        m_FrameSize = m_Clip->FrameSize();
 
-        {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-            m_Player->AddCacheFrame(frame);
-        }
+        Store(frame);
     }
-
-    // Now that the frame is cached/buffered, insert it to the set so that can be used to check
-    // whether a frame is cached or not
-    m_Buffered.insert(frame);
 }
 
 void ViewerBuffer::EvictFront()
@@ -632,6 +628,14 @@ void ViewerBuffer::EvictBack()
     m_Player->RemoveCachedFrame(frame);
 }
 
+void ViewerBuffer::Store(v_frame_t frame)
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    m_Buffered.insert(frame);
+    m_Player->AddCacheFrame(frame);
+}
+
 void ViewerBuffer::EnsureCached(v_frame_t frame)
 {
     if (m_Buffered.find(frame) == m_Buffered.end())
@@ -642,7 +646,6 @@ void ViewerBuffer::EnsureCached(v_frame_t frame)
             m_LastCached = frame;
         }
 
-        /* Evict a frame if necessary as this needs to be cached */
         Request(frame, true);
         Cache(frame);
     }
@@ -658,8 +661,6 @@ void ViewerBuffer::CacheAvailable()
 {
     if (m_State == PlayState::Disabled)
         return;
-
-    int count = 0;
 
     /**
      * This is invoked whenever the media is set/changed on the player buffer
@@ -705,7 +706,8 @@ v_frame_t ViewerBuffer::InternalEndframe() const
 
 int ViewerBuffer::InternalDuration() const
 {
-    return InternalEndframe() - InternalStartframe() + 1;
+    // return InternalEndframe() - InternalStartframe() + 1;
+    return m_Endframe - m_Startframe + 1;
 }
 
 bool ViewerBuffer::Completed() const
@@ -713,7 +715,7 @@ bool ViewerBuffer::Completed() const
     /**
      * The cache/buffer is said to be completed if the internal frame store has the start
      * and the end frames present
-     * 
+     *
      */
     return m_Framenumbers.size() >= InternalDuration();
 }
@@ -724,8 +726,8 @@ v_frame_t ViewerBuffer::GetNextFrame()
 
     v_frame_t frame = 0;
 
-    if (m_LastCached >= InternalEndframe())
-        frame = InternalStartframe();
+    if (m_LastCached >= m_Endframe)
+        frame = m_Startframe;
     else
         frame = ++m_LastCached;
 
@@ -740,8 +742,8 @@ v_frame_t ViewerBuffer::GetPreviousFrame()
 
     v_frame_t frame = 0;
 
-    if (m_LastCached <= InternalStartframe())
-        frame = InternalEndframe();
+    if (m_LastCached <= m_Startframe)
+        frame = m_Endframe;
     else
         frame = --m_LastCached;
 
@@ -771,7 +773,7 @@ void ViewerBuffer::CacheNext()
         // This might be a good idea to keep? in case all the frames are cached?
         // if (Completed())
         //     break;
-        
+
         /* Ensure the cached frame is just between the current frame and the back buffer */
         if (m_Player->Frame() - m_BackBuffer < m_Framenumbers.front() && m_Framenumbers.front() <= m_Player->Frame())
             break;
