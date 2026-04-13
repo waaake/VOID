@@ -80,7 +80,7 @@ void BindCore(py::module_& m)
         .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int>(),
                 py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"))
 
-        .def("get_frame", &Media::GetFrame, py::arg("frame"));
+        .def("get_frame", &Media::FramePtr, py::arg("frame"));
 
     /* MediaClip */
     py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")

@@ -85,7 +85,7 @@ bool Media::Contains(v_frame_t frame) const
      * movie still has still information about those, only an image sequence needs to be checked
      * for actual frame being present even if it's still in the range 
      */
-    return m_Type == Media::Type::MOVIE ? true : InRange(frame) && GetFrame(frame).Valid();
+    return m_Type == Media::Type::MOVIE ? true : InRange(frame) && m_Mediaframes.at(frame - m_FirstFrame).Valid();
 }
 
 void Media::Read(const MediaStruct& mstruct)
