@@ -98,6 +98,14 @@ public:
     virtual const void* Pixels() const = 0;
 
     /**
+     * @brief Returns a pointer to the underlying buffer which can be written to, this will be used
+     * for additional processing that will be applied on the image data
+     * 
+     * @return void* Writeable pointer to the buffer.
+     */
+    virtual void* Writable() = 0;
+
+    /**
      * Returns the frame data as unsigned char*
      * This would be used to create thumbnails for qt
      * Not all frames will be used so this function can create a vector on the fly if unsigned char

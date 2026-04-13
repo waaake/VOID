@@ -103,6 +103,7 @@ public:
     v_frame_t NearestFrame(v_frame_t frame) const;
 
     inline Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame - m_FirstFrame); }
+    inline Frame* GetFramePtr(v_frame_t frame) { return &m_Mediaframes.at(frame - m_FirstFrame); }
     inline Frame FirstFrameData() const { return GetFrame(m_FirstFrame); }
     inline Frame LastFrameData() const { return GetFrame(m_LastFrame); }
 

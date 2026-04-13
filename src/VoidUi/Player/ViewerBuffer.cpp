@@ -555,8 +555,6 @@ void ViewerBuffer::Cache(v_frame_t frame)
     {
         if (SharedTrackItem item = ItemFromSequence(frame))
         {
-            // auto image = item->Image(frame);
-            // m_FrameSize = image->FrameSize();
             item->CacheFrame(frame);
             m_FrameSize = item->FrameSize();
 
@@ -568,8 +566,6 @@ void ViewerBuffer::Cache(v_frame_t frame)
 
     if (m_Clip->Valid() && m_Clip->Contains(frame))
     {
-        // auto image = m_Clip->Image(frame);
-        // m_FrameSize = image->FrameSize();
         m_Clip->CacheFrame(frame);
         m_FrameSize = m_Clip->FrameSize();
 

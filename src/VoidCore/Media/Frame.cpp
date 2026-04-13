@@ -108,7 +108,10 @@ void Frame::Cache()
 
     /* Read and load the image data onto the memory */
     if (m_ImageData->Empty())
+    {
         m_ImageData->Read();
+        m_Dirty = true;
+    }
 }
 
 void Frame::ClearCache()

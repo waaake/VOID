@@ -27,6 +27,12 @@ set(SOURCES
     Readers/OpenEXRReader.cpp
     Readers/FFmpegReader.cpp
     Readers/TurboJpegReader.cpp
+
+    # Operators
+    Operators/Inverter.cpp
+
+    # Processors
+    Processors/ImageProcessor.cpp
 )
 
 add_library(

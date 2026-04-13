@@ -43,8 +43,10 @@ public:
     inline const std::string& Name() const { return m_MediaEntry.Name(); }
     inline const std::string& Extension() const { return m_MediaEntry.Extension(); }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
+    inline void SetDirty(bool dirty) { m_Dirty = dirty; }
     [[nodiscard]] inline bool Valid() const { return bool(m_ImageData); }
     [[nodiscard]] inline bool Invalid() const { return !m_ImageData; }
+    [[nodiscard]] inline bool Dirty() const { return m_Dirty; }
 
     /**
      * Returns Shared Pointer to the ImageData
@@ -65,9 +67,8 @@ public:
 protected: /* Members */
     MEntry m_MediaEntry;
     SharedPixels m_ImageData;
-
-    /* Internally associated framenumer */
     v_frame_t m_Framenumber;
+    bool m_Dirty = {false};
 
 private: /* Members*/
     std::mutex m_Mutex;
