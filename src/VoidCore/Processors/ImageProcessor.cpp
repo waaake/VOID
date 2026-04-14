@@ -4,6 +4,7 @@
 /* Internal */
 #include "ImageProcessor.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -13,19 +14,34 @@ ImageProcessor& ImageProcessor::Instance()
     return instance;
 }
 
-ImageProcessor::~ImageProcessor()
-{
-}
+// ImageProcessor::~ImageProcessor()
+// {
+// }
 
 bool ImageProcessor::Process(Frame* frame, const SharedImageOp& iop)
 {
     bool status = false;
     if (frame->Dirty())
     {
-        status = iop->Evaluate(frame->Image());
-        frame->SetDirty(false);
+        Tools::VoidProfiler<std::chrono::duration<double>> p("ImageProcessor::Process");
 
-        VOID_LOG_INFO("Processed frame");
+        /**
+         * Process this loop parallelly
+         * Since we are dealing with each Row of Pixels for the image separately,
+         * they can all be processed without having any overlap on the other
+         * 
+         * TODO: Check how can we safely allow one ImageOp::Evaluate to access other rows
+         * maybe with or without guarantee that it will be modified
+         */
+        #pragma omp parallel for
+        for (int i = 0; i < frame->Image()->Height(); ++i)
+        {
+            ImageRow row = frame->Image()->Row(i);
+            iop->Evaluate(row);
+        }
+
+        frame->SetDirty(false);
+        status = true;
     }
 
     return status;

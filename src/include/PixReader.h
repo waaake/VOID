@@ -13,6 +13,7 @@
 #include "Colorspace.h"
 #include "Definition.h"
 #include "FrameRange.h"
+#include "Row.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -104,6 +105,15 @@ public:
      * @return void* Writeable pointer to the buffer.
      */
     virtual void* Writable() = 0;
+
+    /**
+     * @brief Returns the width wide buffer for the requested row. This holds the information of pixels * channels
+     * for the full width of the image i.e. one set of pixel rows.
+     * 
+     * @param row Index of the row of pixels required.
+     * @return ImageRow Buffer.
+     */
+    virtual ImageRow Row(std::size_t row) = 0;
 
     /**
      * Returns the frame data as unsigned char*

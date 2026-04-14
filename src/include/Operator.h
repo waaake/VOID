@@ -5,7 +5,6 @@
 #define _BASE_OPERATOR_H
 
 /* STD */
-#include <cstddef>
 #include <memory>
 
 /* Internal */
@@ -18,7 +17,7 @@ class ImageOp
 {
 public:
     virtual ~ImageOp() = default;
-    virtual bool Evaluate(const SharedPixels& image) = 0;
+    virtual bool Evaluate(ImageRow& row) = 0;
 };
 
 typedef std::shared_ptr<ImageOp> SharedImageOp;

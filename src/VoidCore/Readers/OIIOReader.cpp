@@ -31,6 +31,13 @@ void OIIOPixReader::Clear()
     m_Pixels.shrink_to_fit();
 }
 
+ImageRow OIIOPixReader::Row(std::size_t row)
+{
+    return (row >= m_Pixels.size())
+            ? ImageRow()
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
+}
+
 void OIIOPixReader::Read()
 {
     /* As the underlying path is updated -> Invoke the actual Read */
@@ -46,7 +53,7 @@ void OIIOPixReader::Read()
         return;
     }
 
-    /* 
+    /*
      * As we have the image read
      * Get the ImageSpecs from it
      */

@@ -34,6 +34,13 @@ void TurboJpegReader::Clear()
     m_Pixels.shrink_to_fit();
 }
 
+ImageRow TurboJpegReader::Row(std::size_t row)
+{
+    return (row >= m_Pixels.size())
+            ? ImageRow()
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
+}
+
 void TurboJpegReader::Read()
 {
     /* Load JPEG */
@@ -44,7 +51,7 @@ void TurboJpegReader::Read()
         VOID_LOG_ERROR("Cannot Open file: {0}", m_Path);
         return;
     }
-    
+
     /* Determine the file size */
     file.seekg(0, std::ios::end);
     size_t jpegSize = file.tellg();
@@ -54,7 +61,7 @@ void TurboJpegReader::Read()
     std::vector<unsigned char> jpegBuffer(jpegSize);
     file.read(reinterpret_cast<char*>(jpegBuffer.data()), jpegSize);
     file.close();
-    
+
     tjhandle handle = tjInitDecompress();
 
     if (!handle)

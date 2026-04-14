@@ -50,6 +50,7 @@ public:
      */
     inline virtual const void* Pixels() const override { return m_Pixels.data(); }
     inline void* Writable() override { return m_Pixels.data(); }
+    ImageRow Row(std::size_t row) override;
 
     /**
      * Returns the frame data as unsigned char*

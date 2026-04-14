@@ -62,6 +62,7 @@ target_link_libraries(
     pybind11::embed
     Python::Python
     ${TurboJPEG_LIBRARIES}
+    OpenMP::OpenMP_CXX
 )
 
 # Mac for some reason needs this explicitly

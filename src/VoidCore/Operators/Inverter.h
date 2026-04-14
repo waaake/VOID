@@ -13,7 +13,7 @@ VOID_NAMESPACE_OPEN
 class VOID_API InvertOp : public ImageOp
 {
 public:
-    bool Evaluate(const SharedPixels& image) override;
+    bool Evaluate(ImageRow& row) override;
 };
 
 VOID_NAMESPACE_CLOSE

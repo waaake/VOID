@@ -15,7 +15,7 @@ class VOID_API ImageProcessor
 {
     ImageProcessor() = default;
 public:
-    ~ImageProcessor();
+    // ~ImageProcessor();
     static ImageProcessor& Instance();
 
     bool Process(Frame* frame, const SharedImageOp& iop);

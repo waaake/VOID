@@ -7,13 +7,15 @@
 
 VOID_NAMESPACE_OPEN
 
-bool InvertOp::Evaluate(const SharedPixels& image)
+bool InvertOp::Evaluate(ImageRow& row)
 {
-    unsigned char* buffer = static_cast<unsigned char*>(image->Writable());
-    for (std::size_t i = 0; i < image->FrameSize(); ++i)
-        buffer[i] = 255 - buffer[i];
+    for (std::size_t i = 0; i < row.width; ++i)
+    {
+        unsigned char* pixel = row.Pixel<unsigned char>(i);
+        for (std::size_t channel = 0; channel < row.channels; ++channel)
+            pixel[channel] = 255 - pixel[channel];
+    }
 
-    VOID_LOG_INFO("InvertOp::Process Done.");
     return true;
 }
 

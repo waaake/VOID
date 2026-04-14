@@ -4,6 +4,9 @@
 #ifndef _VOID_BASIC_DEFINITIONS_H
 #define _VOID_BASIC_DEFINITIONS_H
 
+/* STD includes */
+#include <cstddef>  // Included for std::size_t and std::byte
+
 /* Namespaces */
 #define VOID_NAMESPACE voidplayer
 

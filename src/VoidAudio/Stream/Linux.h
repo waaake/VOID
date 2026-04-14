@@ -4,9 +4,6 @@
 #ifndef _LINUX_AUDIO_STREAM_H
 #define _LINUX_AUDIO_STREAM_H
 
-/* STD */
-#include <cstddef>
-
 /* Pulse */
 #include <pulse/error.h>
 #include <pulse/simple.h>

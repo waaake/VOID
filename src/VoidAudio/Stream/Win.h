@@ -4,9 +4,7 @@
 #ifndef _WINDOWS_AUDIO_STREAM_H
 #define _WINDOWS_AUDIO_STREAM_H
 
-/* STD */
-#include <cstddef>
-
+/* Windows */
 #include <windows.h>
 #include <mmdeviceapi.h>
 #include <audioclient.h>
