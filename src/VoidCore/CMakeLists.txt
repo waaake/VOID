@@ -29,6 +29,7 @@ set(SOURCES
     Readers/TurboJpegReader.cpp
 
     # Operators
+    Operators/Flipper.cpp
     Operators/Inverter.cpp
 
     # Processors
