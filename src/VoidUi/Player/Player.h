@@ -28,6 +28,7 @@ public:
     void SetFrame(int frame);
 
     inline void Refresh() { SetFrame(m_Timeline->Frame()); }
+    inline ViewerBuffer* ActiveViewer() const { return m_ActiveViewBuffer; }
 
     void SetMedia(const SharedMediaClip& media);
     void SetMedia(const std::vector<SharedMediaClip>& media);

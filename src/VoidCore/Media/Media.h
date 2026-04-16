@@ -123,6 +123,7 @@ public:
      */
     inline bool Valid() const { return !Empty(); }
     void Clear();
+    void SetDirty(bool dirty = true);
 
     /**
      * Clears the cache for all the frames of the Media

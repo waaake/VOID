@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Operator.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidObjects/Media/MediaClip.h"
 
@@ -101,6 +102,34 @@ void BindCore(py::module_& m)
         .def("startframe", &MediaClip::FirstFrame)
         .def("endframe", &MediaClip::LastFrame)
         .def("metadata", &MediaClip::Metadata);
+
+    /* Operator */
+    py::class_<ParamValue>(m, "ParamValue")
+        .def("get_float", &ParamValue::GetFloat)
+        .def("get_bool", &ParamValue::GetBool)
+        .def("get_int", &ParamValue::GetInt)
+        .def("get_string", &ParamValue::GetString);
+
+    py::enum_<Param::TypeDesc>(m, "ParamTypeDesc")
+        .value("Float", Param::TypeDesc::Float)
+        .value("Int", Param::TypeDesc::Int)
+        .value("Boolean", Param::TypeDesc::Boolean)
+        .value("String", Param::TypeDesc::String)
+        .export_values();
+
+    py::class_<Param>(m, "Param")
+        .def("get_float", &Param::GetFloat)
+        .def("get_int", &Param::GetInt)
+        .def("get_bool", &Param::GetBool)
+        .def("get_string", &Param::GetString)
+        .def("set_float", &Param::SetFloat)
+        .def("set_int", &Param::SetInt)
+        .def("set_bool", &Param::SetBool)
+        .def("set_string", &Param::SetString)
+        .def("get_type", [](const Param* self) -> Param::TypeDesc { return self->type; });
+
+    py::class_<ImageOp, SharedImageOp>(m, "ImageOp")
+        .def("get_param", &ImageOp::GetParam, py::arg("name"));
 }
 
 } // namespace bindings

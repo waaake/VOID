@@ -34,13 +34,21 @@ bool Forge::Register(const FormatRegistry<MPixForge>& registry)
     return true;
 }
 
+bool Forge::Register(const IOpRegistry& registry)
+{
+    VOID_LOG_INFO("Registering Image Operator: {0}", registry.name);
+    auto it = m_IOpForger.emplace(registry.name, std::move(registry.iop));
+    return it.second;
+}
+
 void Forge::UnregisterPlugins()
 {
     /* Clear All of underlying structs */
     m_ImageForger.clear();
     m_MovieForger.clear();
+    m_IOpForger.clear();
 
-    VOID_LOG_INFO("Unregistered All Reader Plugins.");
+    VOID_LOG_INFO("Unregistered All Plugins.");
 }
 
 void Forge::RegisterImageReader(const std::string& extension, PixForge forger)
@@ -83,6 +91,12 @@ std::unique_ptr<VoidMPixReader> Forge::GetMovieReader(const std::string& extensi
 {
     std::unordered_map<std::string, MPixForge>::const_iterator it = m_MovieForger.find(extension);
     return it == m_MovieForger.end() ? nullptr : it->second(path, framenumber);
+}
+
+std::unique_ptr<ImageOp> Forge::GetImageOp(const std::string& name) const
+{
+    std::unordered_map<std::string, IOpForge>::const_iterator it = m_IOpForger.find(name);
+    return it == m_IOpForger.end() ? nullptr : it->second();
 }
 
 bool Forge::IsRegistered(const std::string& extension) const

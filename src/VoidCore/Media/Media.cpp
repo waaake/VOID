@@ -216,4 +216,10 @@ void Media::Clear()
     m_Mediaframes.shrink_to_fit();
 }
 
+void Media::SetDirty(bool dirty)
+{
+    for (auto& frame : m_Mediaframes)
+        frame.SetDirty(dirty);
+}
+
 VOID_NAMESPACE_CLOSE
