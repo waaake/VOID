@@ -19,7 +19,10 @@ public:
     static ImageProcessor& Instance();
 
     bool Process(Frame* frame, const SharedImageOp& iop);
+    bool Process(SharedPixels& image, ImageOp* iop);
+
     static void ProcessFrame(Frame* frame, const SharedImageOp& iop);
+    static void ProcessImage(SharedPixels& image, ImageOp* iop);
 };
 
 VOID_NAMESPACE_CLOSE

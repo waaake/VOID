@@ -110,7 +110,6 @@ void Frame::Cache()
     if (m_ImageData->Empty() || m_Dirty)
     {
         m_ImageData->Read();
-        m_Dirty = true;
     }
 }
 

@@ -7,6 +7,7 @@
 /* Internal */
 #include "MediaClip.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Processors/ImageProcessor.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidObjects/Effects/Bridge.h"
 
@@ -204,6 +205,7 @@ Effect* MediaClip::AddEffect(const std::string& type)
         VOID_LOG_INFO("Effect Created -> {}", effect->Name());
         m_Effects.push_back(effect);
 
+        SetDirty(true);
         return effect;
     }
 
@@ -460,6 +462,22 @@ void MediaClip::Deserialize(std::istream& in)
 
     /* Load thumbnail */
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+}
+
+void MediaClip::Evaluate(v_frame_t frame)
+{
+    Frame* f = FramePtr(frame);
+    SharedPixels image = f->Image();
+    if (f->Dirty())
+    {
+        for (auto effect : m_Effects)
+        {
+            VOID_LOG_INFO("Processing {}", effect->Name());
+            ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+
+            f->SetDirty(false);
+        }
+    }
 }
 
 VOID_NAMESPACE_CLOSE

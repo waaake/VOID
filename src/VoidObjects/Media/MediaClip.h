@@ -106,6 +106,8 @@ public:
 
     const char* TypeName() const override { return "Media"; }
 
+    void Evaluate(v_frame_t frame);
+
 signals: /* Signals defining any change that has happened */
     /*
      * Defines if the media or any entity internally has been updated

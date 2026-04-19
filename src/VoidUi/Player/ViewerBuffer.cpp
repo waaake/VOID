@@ -246,6 +246,10 @@ BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
     if (m_Clip->InRange(frame) && m_Clip->Contains(frame))
     {
         EnsureCached(frame);
+
+        // Image Processing
+        m_Clip->Evaluate(frame);
+
         d.image = m_Clip->Image(frame);
         d.annotation = m_Clip->Annotation(frame);
         return d;
