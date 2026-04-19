@@ -10,6 +10,7 @@
 #include "Operator.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Effects/Effects.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -101,7 +102,8 @@ void BindCore(py::module_& m)
         .def("extension", &MediaClip::Extension)
         .def("startframe", &MediaClip::FirstFrame)
         .def("endframe", &MediaClip::LastFrame)
-        .def("metadata", &MediaClip::Metadata);
+        .def("metadata", &MediaClip::Metadata)
+        .def("add_effect", &MediaClip::AddEffect, py::arg("type"), py::return_value_policy::reference);
 
     /* Operator */
     py::class_<ParamValue>(m, "ParamValue")
@@ -126,10 +128,12 @@ void BindCore(py::module_& m)
         .def("set_int", &Param::SetInt)
         .def("set_bool", &Param::SetBool)
         .def("set_string", &Param::SetString)
-        .def("get_type", [](const Param* self) -> Param::TypeDesc { return self->type; });
+        .def("type", [](const Param* self) -> Param::TypeDesc { return self->type; });
 
-    py::class_<ImageOp, SharedImageOp>(m, "ImageOp")
-        .def("get_param", &ImageOp::GetParam, py::arg("name"));
+    py::class_<Effect>(m, "Effect")
+        .def("name", &Effect::Name)
+        .def("set_name", &Effect::SetName, py::arg("name"))
+        .def("get_param", &Effect::GetParam, py::arg("name"), py::return_value_policy::reference);
 }
 
 } // namespace bindings

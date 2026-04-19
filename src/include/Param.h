@@ -14,7 +14,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class ParamValue
+class VOID_API ParamValue
 {
 public:
     ParamValue() = default;
@@ -46,7 +46,7 @@ private:
     std::variant<bool, int, float, std::string> data;
 };
 
-struct Param
+struct VOID_API Param
 {
     enum class TypeDesc { Int, Float, Boolean, String };
 

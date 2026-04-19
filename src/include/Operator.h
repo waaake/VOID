@@ -15,7 +15,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class ImageOp
+class VOID_API ImageOp
 {
 public:
     virtual ~ImageOp() = default;

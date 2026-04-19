@@ -2,6 +2,9 @@
 set(SOURCES
     Core/Threads.cpp
 
+    Effects/Effects.cpp
+    Effects/Bridge.cpp
+
     Media/MediaClip.cpp
     Media/Tag.cpp
 

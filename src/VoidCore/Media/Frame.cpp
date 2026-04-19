@@ -107,7 +107,7 @@ void Frame::Cache()
     std::lock_guard<std::mutex> guard(m_Mutex);
 
     /* Read and load the image data onto the memory */
-    if (m_ImageData->Empty())
+    if (m_ImageData->Empty() || m_Dirty)
     {
         m_ImageData->Read();
         m_Dirty = true;

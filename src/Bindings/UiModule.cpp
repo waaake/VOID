@@ -85,6 +85,7 @@ void BindUi(py::module_& m)
         .def("move_to_start", &Player::MoveToStart)
         .def("move_to_end", &Player::MoveToEnd)
         .def("set_frame", &Player::SetFrame, py::arg("frame"))
+        .def("refresh", &Player::Refresh)
         .def("set_media", py::overload_cast<const SharedMediaClip&>(&Player::SetMedia), py::arg("media_clip"))
         .def("active_viewer", &Player::ActiveViewer, py::return_value_policy::reference);
 

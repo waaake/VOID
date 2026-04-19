@@ -33,10 +33,12 @@ bool ImageProcessor::Process(Frame* frame, const SharedImageOp& iop)
          * TODO: Check how can we safely allow one ImageOp::Evaluate to access other rows
          * maybe with or without guarantee that it will be modified
          */
+        SharedPixels image = frame->Image(false);
+
         #pragma omp parallel for
-        for (int i = 0; i < frame->Image()->Height(); ++i)
+        for (int i = 0; i < image->Height(); ++i)
         {
-            ImageRow row = frame->Image()->Row(i);
+            ImageRow row = image->Row(i);
             iop->Evaluate(row);
         }
 
