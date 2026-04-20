@@ -6,13 +6,15 @@
 
 /* STD */
 #include <string>
-#include <variant>
 #include <optional>
+#include <variant>
 
 /* Internal */
 #include "Definition.h"
 
 VOID_NAMESPACE_OPEN
+
+typedef std::variant<bool, int, float, std::string> ValueType;
 
 class VOID_API ParamValue
 {
@@ -22,9 +24,11 @@ public:
     ParamValue(float v) : data(v) {}
     ParamValue(bool v) : data(v) {}
     ParamValue(std::string v) : data(std::move(v)) {}
+    ParamValue(ValueType v) : data(std::move(v)) {}
 
     template <typename _Ty>
     void Set(_Ty v) { data = v; }
+    void SetValue(ValueType v) { data = v; }
 
     template <typename _Ty>
     bool IsType() const { return std::holds_alternative<_Ty>(data); }
@@ -42,8 +46,10 @@ public:
     bool GetBool() const;
     std::string GetString() const;
 
+    const ValueType& Value() const { return data; }
+
 private:
-    std::variant<bool, int, float, std::string> data;
+    ValueType data;
 };
 
 struct VOID_API Param
@@ -62,6 +68,8 @@ struct VOID_API Param
 
     template <typename _Ty>
     void SetValue(_Ty v) { value.Set(v); }
+    void SetValue(ValueType v) { value.SetValue(v); }
+    const ValueType& Value() const { return value.Value(); }
 
     // Helpers
     void SetInt(int v) { value.Set(v); }

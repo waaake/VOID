@@ -133,7 +133,10 @@ void BindCore(py::module_& m)
     py::class_<Effect>(m, "Effect")
         .def("name", &Effect::Name)
         .def("set_name", &Effect::SetName, py::arg("name"))
-        .def("get_param", &Effect::GetParam, py::arg("name"), py::return_value_policy::reference);
+        .def("enabled", &Effect::Enabled)
+        .def("set_enabled", &Effect::SetEnabled, py::arg("enable"))
+        .def("get_value", &Effect::Value, py::return_value_policy::reference)
+        .def("set_value", &Effect::SetValue, py::arg("param"), py::arg("value"));
 }
 
 } // namespace bindings

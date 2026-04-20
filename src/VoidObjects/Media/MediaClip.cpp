@@ -205,6 +205,9 @@ Effect* MediaClip::AddEffect(const std::string& type)
         VOID_LOG_INFO("Effect Created -> {}", effect->Name());
         m_Effects.push_back(effect);
 
+        // For every effect that gets updated, the media will be set dirty
+        connect(effect, &Effect::updated, this, [&]() -> void { SetDirty(true); });
+
         SetDirty(true);
         return effect;
     }
@@ -216,6 +219,7 @@ void MediaClip::ClearEffects()
 {
     for (auto& effect : m_Effects)
     {
+        effect->deleteLater();
         delete effect;
         effect = nullptr;
     }
@@ -472,8 +476,12 @@ void MediaClip::Evaluate(v_frame_t frame)
     {
         for (auto effect : m_Effects)
         {
-            VOID_LOG_INFO("Processing {}", effect->Name());
-            ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+            // Only process the effects that are enabled
+            if (effect->Enabled())
+            {
+                VOID_LOG_INFO("Processing {}", effect->Name());
+                ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+            }
 
             f->SetDirty(false);
         }
