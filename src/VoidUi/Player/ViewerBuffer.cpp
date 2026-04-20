@@ -246,6 +246,10 @@ BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
     if (m_Clip->InRange(frame) && m_Clip->Contains(frame))
     {
         EnsureCached(frame);
+
+        // Image Processing
+        m_Clip->Evaluate(frame);
+
         d.image = m_Clip->Image(frame);
         d.annotation = m_Clip->Annotation(frame);
         return d;
@@ -555,8 +559,6 @@ void ViewerBuffer::Cache(v_frame_t frame)
     {
         if (SharedTrackItem item = ItemFromSequence(frame))
         {
-            // auto image = item->Image(frame);
-            // m_FrameSize = image->FrameSize();
             item->CacheFrame(frame);
             m_FrameSize = item->FrameSize();
 
@@ -568,8 +570,6 @@ void ViewerBuffer::Cache(v_frame_t frame)
 
     if (m_Clip->Valid() && m_Clip->Contains(frame))
     {
-        // auto image = m_Clip->Image(frame);
-        // m_FrameSize = image->FrameSize();
         m_Clip->CacheFrame(frame);
         m_FrameSize = m_Clip->FrameSize();
 

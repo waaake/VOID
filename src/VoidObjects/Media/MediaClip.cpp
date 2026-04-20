@@ -7,7 +7,9 @@
 /* Internal */
 #include "MediaClip.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Processors/ImageProcessor.h"
 #include "VoidObjects/Core/Threads.h"
+#include "VoidObjects/Effects/Bridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -94,6 +96,8 @@ MediaClip::~MediaClip()
     m_TagModel->deleteLater();
     delete m_TagModel;
     m_TagModel = nullptr;
+
+    ClearEffects();
 }
 
 QPixmap MediaClip::Thumbnail()
@@ -192,6 +196,35 @@ void MediaClip::ClearTags()
 {
     m_TagModel->ClearAll();
     emit updated();
+}
+
+Effect* MediaClip::AddEffect(const std::string& type)
+{
+    if (Effect* effect = _EffectsBridge.CreateEffect(type))
+    {
+        VOID_LOG_INFO("Effect Created -> {}", effect->Name());
+        m_Effects.push_back(effect);
+
+        // For every effect that gets updated, the media will be set dirty
+        connect(effect, &Effect::updated, this, [&]() -> void { SetDirty(true); });
+
+        SetDirty(true);
+        return effect;
+    }
+
+    return nullptr;
+}
+
+void MediaClip::ClearEffects()
+{
+    for (auto& effect : m_Effects)
+    {
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.clear();
 }
 
 std::vector<int> MediaClip::AnnotatedFrames() const
@@ -433,6 +466,26 @@ void MediaClip::Deserialize(std::istream& in)
 
     /* Load thumbnail */
     ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+}
+
+void MediaClip::Evaluate(v_frame_t frame)
+{
+    Frame* f = FramePtr(frame);
+    SharedPixels image = f->Image();
+    if (f->Dirty())
+    {
+        for (auto effect : m_Effects)
+        {
+            // Only process the effects that are enabled
+            if (effect->Enabled())
+            {
+                VOID_LOG_INFO("Processing {}", effect->Name());
+                ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+            }
+
+            f->SetDirty(false);
+        }
+    }
 }
 
 VOID_NAMESPACE_CLOSE

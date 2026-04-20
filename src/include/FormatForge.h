@@ -13,12 +13,14 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
+#include "Operator.h"
 
 VOID_NAMESPACE_OPEN
 
 /* Type defs */
 using PixForge = std::function<std::unique_ptr<VoidPixReader>(const std::string&, v_frame_t)>;
 using MPixForge = std::function<std::unique_ptr<VoidMPixReader>(const std::string&, v_frame_t)>;
+using IOpForge = std::function<std::unique_ptr<ImageOp>()>;
 
 /**
  * Registry describing the Plugin
@@ -37,6 +39,12 @@ struct FormatRegistry
 
     /* The Image or Movie Reader to be registered */
     Ty reader;
+};
+
+struct IOpRegistry
+{
+    std::string name;
+    IOpForge iop;
 };
 
 class VOID_API Forge
@@ -65,6 +73,7 @@ public:
      */
     bool Register(const FormatRegistry<PixForge>& registry);
     bool Register(const FormatRegistry<MPixForge>& registry);
+    bool Register(const IOpRegistry& registry);
 
     /* Unregister all of the loaded plugins */
     void UnregisterPlugins();
@@ -75,6 +84,7 @@ public:
      */
     std::unique_ptr<VoidPixReader> GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
+    std::unique_ptr<ImageOp> GetImageOp(const std::string& name) const;
 
     inline bool IsMovie(const std::string& extension) const { return m_MovieForger.find(extension) != m_MovieForger.end(); }
     inline bool IsImage(const std::string& extension) const { return m_ImageForger.find(extension) != m_ImageForger.end(); }
@@ -84,6 +94,7 @@ public:
 private: /* Members */
     std::unordered_map<std::string, PixForge> m_ImageForger;
     std::unordered_map<std::string, MPixForge> m_MovieForger;
+    std::unordered_map<std::string, IOpForge> m_IOpForger;
 
 private: /* Methods */
     void RegisterImageReader(const std::string& extension, PixForge forger);

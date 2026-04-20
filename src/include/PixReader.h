@@ -13,6 +13,7 @@
 #include "Colorspace.h"
 #include "Definition.h"
 #include "FrameRange.h"
+#include "Row.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -96,6 +97,23 @@ public:
      * is correct to be rendered on GL Viewer, this can be returned from here
      */
     virtual const void* Pixels() const = 0;
+
+    /**
+     * @brief Returns a pointer to the underlying buffer which can be written to, this will be used
+     * for additional processing that will be applied on the image data
+     * 
+     * @return void* Writeable pointer to the buffer.
+     */
+    virtual void* Writable() = 0;
+
+    /**
+     * @brief Returns the width wide buffer for the requested row. This holds the information of pixels * channels
+     * for the full width of the image i.e. one set of pixel rows.
+     * 
+     * @param row Index of the row of pixels required.
+     * @return ImageRow Buffer.
+     */
+    virtual ImageRow Row(std::size_t row) = 0;
 
     /**
      * Returns the frame data as unsigned char*

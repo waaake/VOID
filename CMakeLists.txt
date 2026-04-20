@@ -69,6 +69,9 @@ else()
     file(TO_CMAKE_PATH ${Qt5_DIR} QT_CMAKE_PATH)
 endif()
 
+# Multiprocessing
+find_package(OpenMP REQUIRED)
+
 # GL
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 

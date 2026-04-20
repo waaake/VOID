@@ -7,6 +7,7 @@
 /* STD */
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 /* Qt */
 #include <QColor>
@@ -25,6 +26,8 @@ VOID_NAMESPACE_OPEN
 /* Forward Declaration for typedef */
 class MediaClip;
 typedef std::shared_ptr<MediaClip> SharedMediaClip;
+
+class Effect;
 
 class VOID_API MediaClip : public VoidObject, public Media
 {
@@ -78,6 +81,10 @@ public:
     void AddTag(const std::string& name);
     void AddTag(const std::string& name, TagMetadataModel*& metadata);
     void ClearTags();
+
+    Effect* AddEffect(const std::string& type);
+    void ClearEffects();
+
     inline const std::vector<Tag*>& Tags() const { return m_TagModel->Tags(); }
     inline bool HasTags() const { return m_TagModel->HasTags(); }
     inline TagModel* TagsModel() const { return m_TagModel; }
@@ -99,6 +106,8 @@ public:
 
     const char* TypeName() const override { return "Media"; }
 
+    void Evaluate(v_frame_t frame);
+
 signals: /* Signals defining any change that has happened */
     /*
      * Defines if the media or any entity internally has been updated
@@ -117,13 +126,14 @@ signals: /* Signals defining any change that has happened */
 private: /* Members */
     QColor m_Color;
     QPixmap m_Thumbnail;
+    TagModel* m_TagModel;
 
     /**
      * This struct saves the Annotations for the frames
      * Each Shared Annotation Pointer is mapped to a frame (as simple as it can be :D)
      */
     std::unordered_map<v_frame_t, Renderer::SharedAnnotation> m_Annotations;
-    TagModel* m_TagModel;
+    std::vector<Effect*> m_Effects;
 
 private: /* Methods */
     void ReadThumbnail();

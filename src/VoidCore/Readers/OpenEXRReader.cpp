@@ -2,7 +2,7 @@
 // Licensed under the MIT License
 
 #ifdef _WIN32
-/* https://github.com/AcademySoftwareFoundation/Imath/issues/212 
+/* https://github.com/AcademySoftwareFoundation/Imath/issues/212
  * This needs to be declared else we get unresolved symbol from imath library
  * unresolved external symbol imath_half_to_float_table
  * The declaration of imath_half_to_float_table picks up the extern from the extern "C"
@@ -50,6 +50,13 @@ void OpenEXRReader::Clear()
     m_Pixels.shrink_to_fit();
 }
 
+ImageRow OpenEXRReader::Row(std::size_t row)
+{
+    return (row >= m_Pixels.size())
+            ? ImageRow()
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
+}
+
 const unsigned char* OpenEXRReader::ThumbnailPixels()
 {
     return m_Pixels.data();
@@ -89,8 +96,8 @@ void OpenEXRReader::Read()
     /* Read the scanlines */
     f.readPixels(dw.min.y, dw.max.y);
 
-    /* 
-     * Once we have the pixel data from the EXR 
+    /*
+     * Once we have the pixel data from the EXR
      * Cast this data into unsigned char buffer
      * TODO: Check if we can use this data onto Renderer directly without casting this ?
      */
@@ -123,7 +130,7 @@ void OpenEXRReader::Read()
         dest[index + 1] = static_cast<unsigned char>(std::clamp(ipixels[index + 1], 0.f, 1.f) * 255.f);
         dest[index + 2] = static_cast<unsigned char>(std::clamp(ipixels[index + 2], 0.f, 1.f) * 255.f);
         dest[index + 3] = static_cast<unsigned char>(std::clamp(ipixels[index + 3], 0.f, 1.f) * 255.f);
-    }   
+    }
 }
 
 const std::map<std::string, std::string> OpenEXRReader::Metadata() const

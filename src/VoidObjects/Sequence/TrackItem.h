@@ -63,6 +63,7 @@ public:
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
+    inline Frame* FramePtr(const v_frame_t frame) const { return m_Media->FramePtr(frame + m_Offset); }
 
     /**
      * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset

@@ -7,8 +7,10 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Operator.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Effects/Effects.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -80,7 +82,7 @@ void BindCore(py::module_& m)
         .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int>(),
                 py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"))
 
-        .def("get_frame", &Media::GetFrame, py::arg("frame"));
+        .def("get_frame", &Media::FramePtr, py::arg("frame"));
 
     /* MediaClip */
     py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")
@@ -100,7 +102,41 @@ void BindCore(py::module_& m)
         .def("extension", &MediaClip::Extension)
         .def("startframe", &MediaClip::FirstFrame)
         .def("endframe", &MediaClip::LastFrame)
-        .def("metadata", &MediaClip::Metadata);
+        .def("metadata", &MediaClip::Metadata)
+        .def("add_effect", &MediaClip::AddEffect, py::arg("type"), py::return_value_policy::reference);
+
+    /* Operator */
+    py::class_<ParamValue>(m, "ParamValue")
+        .def("get_float", &ParamValue::GetFloat)
+        .def("get_bool", &ParamValue::GetBool)
+        .def("get_int", &ParamValue::GetInt)
+        .def("get_string", &ParamValue::GetString);
+
+    py::enum_<Param::TypeDesc>(m, "ParamTypeDesc")
+        .value("Float", Param::TypeDesc::Float)
+        .value("Int", Param::TypeDesc::Int)
+        .value("Boolean", Param::TypeDesc::Boolean)
+        .value("String", Param::TypeDesc::String)
+        .export_values();
+
+    py::class_<Param>(m, "Param")
+        .def("get_float", &Param::GetFloat)
+        .def("get_int", &Param::GetInt)
+        .def("get_bool", &Param::GetBool)
+        .def("get_string", &Param::GetString)
+        .def("set_float", &Param::SetFloat)
+        .def("set_int", &Param::SetInt)
+        .def("set_bool", &Param::SetBool)
+        .def("set_string", &Param::SetString)
+        .def("type", [](const Param* self) -> Param::TypeDesc { return self->type; });
+
+    py::class_<Effect>(m, "Effect")
+        .def("name", &Effect::Name)
+        .def("set_name", &Effect::SetName, py::arg("name"))
+        .def("enabled", &Effect::Enabled)
+        .def("set_enabled", &Effect::SetEnabled, py::arg("enable"))
+        .def("get_value", &Effect::Value, py::return_value_policy::reference)
+        .def("set_value", &Effect::SetValue, py::arg("param"), py::arg("value"));
 }
 
 } // namespace bindings

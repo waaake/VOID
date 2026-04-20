@@ -5,7 +5,6 @@
 #define _MACOS_AUDIO_STREAM_H
 
 /* STD */
-#include <cstddef>
 #include <mutex>
 #include <vector>
 #include <condition_variable>

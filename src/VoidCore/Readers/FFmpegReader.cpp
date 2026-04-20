@@ -122,7 +122,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
     while (!found && retryCount < 3)
     {
         /**
-         * Calculate the distance between the requested and the last frame which was read 
+         * Calculate the distance between the requested and the last frame which was read
          * this helps us determine whether or not to save any data and also if we need to seek forwards in order
          * to reach the frame quickly
          * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
@@ -135,7 +135,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
         /**
          * Then we check if the return value was greater than the requested frame
          * if so, we might need to seek back and try again (max 3 times)
-         * 
+         *
          * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
          */
         if (ret > framenumber || ret == -1)
@@ -223,6 +223,13 @@ void FFmpegPixReader::Clear()
     /* Remove any data from the pixels vector and shrink it back in place */
     m_Pixels.clear();
     m_Pixels.shrink_to_fit();
+}
+
+ImageRow FFmpegPixReader::Row(std::size_t row)
+{
+    return (row >= m_Pixels.size())
+            ? ImageRow()
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
 }
 
 void FFmpegPixReader::ProcessInformation()

@@ -10,6 +10,7 @@
 /* Reader Registration */
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
+#include "VoidCore/Operators/Registration.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidUi/Engine/Bridge.h"
 #include "VoidUi/Engine/Globals.h"
@@ -112,6 +113,8 @@ void VoidEngine::PostInit()
 {
     /* Register Media Readers */
     RegisterReaders();
+    /* Register Operators */
+    RegisterOperators();
 
     /* Register Any other Media plugins that are found in the way */
     // ReaderPluginLoader::Instance().LoadExternals();

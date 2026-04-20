@@ -102,17 +102,18 @@ public:
      */
     v_frame_t NearestFrame(v_frame_t frame) const;
 
-    inline Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame - m_FirstFrame); }
-    inline Frame FirstFrameData() const { return GetFrame(m_FirstFrame); }
-    inline Frame LastFrameData() const { return GetFrame(m_LastFrame); }
+    // inline Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame - m_FirstFrame); }
+    inline Frame* FramePtr(v_frame_t frame) { return &m_Mediaframes.at(frame - m_FirstFrame); }
+    inline Frame FirstFrameData() const { return m_Mediaframes.front(); }
+    inline Frame LastFrameData() const { return m_Mediaframes.back(); }
 
-    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return GetFrame(frame).Image(cached); }
+    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
     std::size_t FrameSize();
 
     inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
     inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
-    inline const std::map<std::string, std::string> Metadata() const { return GetFrame(m_FirstFrame).Metadata(); }
+    inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.front().Metadata(); }
 
     inline double Framerate() const { return m_Framerate; }
     inline bool Empty() const { return m_Mediaframes.empty(); }
@@ -122,6 +123,7 @@ public:
      */
     inline bool Valid() const { return !Empty(); }
     void Clear();
+    void SetDirty(bool dirty = true);
 
     /**
      * Clears the cache for all the frames of the Media

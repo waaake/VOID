@@ -85,7 +85,16 @@ void BindUi(py::module_& m)
         .def("move_to_start", &Player::MoveToStart)
         .def("move_to_end", &Player::MoveToEnd)
         .def("set_frame", &Player::SetFrame, py::arg("frame"))
-        .def("set_media", py::overload_cast<const SharedMediaClip&>(&Player::SetMedia), py::arg("media_clip"));
+        .def("refresh", &Player::Refresh)
+        .def("set_media", py::overload_cast<const SharedMediaClip&>(&Player::SetMedia), py::arg("media_clip"))
+        .def("active_viewer", &Player::ActiveViewer, py::return_value_policy::reference);
+
+    /* Viewer Buffer */
+    py::class_<ViewerBuffer>(m, "Viewer")
+        .def("active", &ViewerBuffer::Active)
+        .def("set_active", &ViewerBuffer::SetActive, py::arg("active"))
+        .def("active_media", &ViewerBuffer::Media, py::arg("frame"), py::return_value_policy::reference)
+        .def("media", &ViewerBuffer::GetMediaClip, py::return_value_policy::reference);
 
     /* PlayerViewBuffer */
     py::enum_<PlayerViewBuffer>(m, "PlayerViewBuffer")

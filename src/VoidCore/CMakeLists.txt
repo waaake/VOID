@@ -27,6 +27,16 @@ set(SOURCES
     Readers/OpenEXRReader.cpp
     Readers/FFmpegReader.cpp
     Readers/TurboJpegReader.cpp
+
+    # Operators
+    Operators/Grader.cpp
+    Operators/Flipper.cpp
+    Operators/Inverter.cpp
+    Operators/Operator.cpp
+    Operators/Param.cpp
+
+    # Processors
+    Processors/ImageProcessor.cpp
 )
 
 add_library(
@@ -56,6 +66,7 @@ target_link_libraries(
     pybind11::embed
     Python::Python
     ${TurboJPEG_LIBRARIES}
+    OpenMP::OpenMP_CXX
 )
 
 # Mac for some reason needs this explicitly

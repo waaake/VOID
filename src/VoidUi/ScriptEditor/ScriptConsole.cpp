@@ -103,7 +103,7 @@ void InputScriptConsole::Connect()
 void InputScriptConsole::HighlightCurrentLine()
 {
     QTextEdit::ExtraSelection selection;
-    selection.format.setBackground(palette().color(QPalette::Base).lighter(200));
+    selection.format.setBackground(palette().color(QPalette::Base).lighter(140));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.clearSelection();
