@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "Properties.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -28,6 +29,8 @@ PropertiesPanel::PropertiesPanel(QWidget* parent)
     : QWidget(parent)
 {
     Build();
+    Setup();
+    Connect();
 }
 
 PropertiesPanel::~PropertiesPanel()
@@ -55,9 +58,22 @@ void PropertiesPanel::EditEffect(Effect* effect)
     m_ScrollLayout->addWidget(new EffectEditor(effect, this));
 }
 
+void PropertiesPanel::Clear()
+{
+    for (auto w : findChildren<EffectEditor*>())
+        w->Close();
+}
+
 void PropertiesPanel::Build()
 {
     m_Layout = new QVBoxLayout(this);
+
+    QHBoxLayout* optionsLayout = new QHBoxLayout;
+    optionsLayout->setContentsMargins(8, 0, 8, 0);
+    m_ClearButton = new QPushButton;
+
+    optionsLayout->addWidget(m_ClearButton);
+    optionsLayout->addStretch(1);
 
     BaseWidget* scrollWidget = new BaseWidget;
     scrollWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
@@ -69,8 +85,20 @@ void PropertiesPanel::Build()
     scrollArea->setWidgetResizable(true);
     scrollArea->setWidget(scrollWidget);
 
+    m_Layout->addLayout(optionsLayout);
     m_Layout->addWidget(scrollArea);
-    m_Layout->setContentsMargins(1, 1, 1, 1);
+    m_Layout->setContentsMargins(1, 8, 1, 1);
+}
+
+void PropertiesPanel::Setup()
+{
+    m_ClearButton->setFixedSize(25, 25);
+    m_ClearButton->setIcon(IconForge::GetIcon(IconType::icon_clear_all, _DARK_COLOR(QPalette::Text, 100)));
+}
+
+void PropertiesPanel::Connect()
+{
+    connect(m_ClearButton, &QPushButton::clicked, this, &PropertiesPanel::Clear);
 }
 
 VOID_NAMESPACE_CLOSE

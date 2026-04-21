@@ -60,10 +60,6 @@ void EffectEditor::Build()
 {
     m_Layout = new QVBoxLayout(this);
 
-    // int margins[4];
-    // m_Layout->getContentsMargins(&margins[0], &margins[1], &margins[2], &margins[3]);
-    // m_Layout->setContentsMargins(margins[0], 1, 1, margins[3]);
-
     QHBoxLayout* title = new QHBoxLayout;
     title->setContentsMargins(2, 0, 6, 8);
 
@@ -183,7 +179,7 @@ void EffectEditor::Connect()
     {
         m_Effect->SetEnabled(checked);
         _PlayerBridge.Refresh();
-    });
+    }, Qt::DirectConnection);
 }
 
 VOID_NAMESPACE_CLOSE

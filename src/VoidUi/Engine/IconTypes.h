@@ -19,6 +19,7 @@ enum class IconType : char16_t
     icon_build              = 0xe869,
     icon_browse             = 0xeb13,
     icon_brush              = 0xe3ae,
+    icon_clear_all          = 0xe0b8,
     icon_close              = 0xe5cd,
     icon_computer_cancel    = 0xf2f6,
     icon_delete             = 0xe872,

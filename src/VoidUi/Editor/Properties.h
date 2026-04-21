@@ -7,6 +7,7 @@
 /* Qt */
 #include <QWidget>
 #include <QLayout>
+#include <QPushButton>
 
 /* Internal */
 #include "Definition.h"
@@ -25,12 +26,17 @@ public:
     void Show(QWidget* panel);
     void EditEffect(Effect* effect);
 
+    void Clear();
+
 private: /* Members */
     QVBoxLayout* m_Layout;
     QVBoxLayout* m_ScrollLayout;
+    QPushButton* m_ClearButton;
 
 private: /* Methods */
     void Build();
+    void Setup();
+    void Connect();
 };
 
 VOID_NAMESPACE_CLOSE
