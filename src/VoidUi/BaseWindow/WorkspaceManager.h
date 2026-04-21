@@ -11,6 +11,7 @@
 #include "VoidUi/Dock/Docker.h"
 
 /* Internal Widget Components */
+#include "VoidUi/Editor/Properties.h"
 #include "VoidUi/Media/MediaLister.h"
 #include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/Player/PlayerBridge.h"
@@ -42,6 +43,7 @@ enum class Component
     ScriptEditor,
     MetadataViewer,
     PlayLister,
+    Properties,
 };
 
 class WorkspaceManager : public MainWindow
@@ -67,10 +69,12 @@ private: /* Members */
     VoidPlayLister* m_PlayLister;
     PyScriptEditor* m_ScriptEditor;
     MetadataViewer* m_MetadataViewer;
+    PropertiesPanel* m_PropertiesEditor;
 
 private: /* Members */
     void Clear();
     void InspectMetadata(const SharedMediaClip& media);
+    void EditEffects(const SharedMediaClip& media);
     void ShowComponent(const Component& component) const;
 };
 

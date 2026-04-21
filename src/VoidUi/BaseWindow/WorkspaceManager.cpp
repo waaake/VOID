@@ -26,32 +26,37 @@ QWidget* WorkspaceManager::Widget(const Component& component) const
 
 void WorkspaceManager::Init()
 {
-    /* Register Dock Widgets in the Dock Manager */
+    // Register Dock Widgets in the Dock Manager
     DockManager& manager = DockManager::Instance();
 
-    /* Media Lister Widget */
+    // Media Lister Widget
     m_MediaLister = new VoidMediaLister();
     m_PlayLister = new VoidPlayLister();
 
-    /* Python Script Editor */
+    // Python Script Editor
     m_ScriptEditor = new PyScriptEditor();
 
-    /* Media Metadata Viewer */
+    // Media Metadata Viewer
     m_MetadataViewer = new MetadataViewer();
+
+    // Properties Editor
+    m_PropertiesEditor = new PropertiesPanel();
 
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
     manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
     manager.RegisterDock(m_PlayLister, "Playlist View");
+    manager.RegisterDock(m_PropertiesEditor, "Properties");
 
-    /* Docker */
+    // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
     setCentralWidget(m_Splitter);
 }
 
 void WorkspaceManager::Connect()
 {
+    connect(m_MediaLister, &VoidMediaLister::effectsEdited, this, &WorkspaceManager::EditEffects);
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
 }
@@ -112,10 +117,20 @@ void WorkspaceManager::InspectMetadata(const SharedMediaClip& media)
 {
     m_MetadataViewer->SetFromMedia(media);
 
-    /* Show if it's not already being shown */
+    // Show if it's not already being shown
     const DockStruct d = DockManager::Instance().Dock(static_cast<int>(Component::MetadataViewer));
     if (!d.widget->isVisible())
         ShowComponent(Component::MetadataViewer);
+}
+
+void WorkspaceManager::EditEffects(const SharedMediaClip& media)
+{
+    for (auto effect : media->Effects())
+        m_PropertiesEditor->EditEffect(effect);
+
+    const DockStruct d = DockManager::Instance().Dock(static_cast<int>(Component::Properties));
+    if (!d.widget->isVisible())
+        ShowComponent(Component::Properties);
 }
 
 void WorkspaceManager::ShowComponent(const Component& component) const

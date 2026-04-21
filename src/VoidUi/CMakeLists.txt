@@ -19,6 +19,10 @@ set(SOURCES
     Dock/DockManager.cpp
     Dock/DockPanel.cpp
     Dock/DockSplitter.cpp
+
+    # Editors
+    Editor/Properties.cpp
+    Editor/Effects.cpp
     
     # Core Engine Globals
     Engine/Bridge.cpp
@@ -111,6 +115,8 @@ if (WIN32)
 
         # # Objects   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
         # # the staticMetaObject for MediaClip, Track, TrackItem, Sequence and MediaBridge to be present at compile time rather link time
+        ../VoidObjects/Effects/Effects.h
+
         ../VoidObjects/Media/MediaClip.h
 
         ../VoidObjects/Playlist/Playlist.h

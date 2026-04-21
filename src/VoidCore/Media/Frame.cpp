@@ -105,8 +105,6 @@ void Frame::Cache()
      * crashes
      */
     std::lock_guard<std::mutex> guard(m_Mutex);
-
-    /* Read and load the image data onto the memory */
     if (m_ImageData->Empty() || m_Dirty)
     {
         m_ImageData->Read();
@@ -117,12 +115,11 @@ void Frame::ClearCache()
 {
     if (!m_ImageData->Empty())
     {
-        /**
-         * Don't allow concurrent access when clearing the underlying data vector
-         */
+        // Don't allow concurrent access when clearing the underlying data vector
         std::lock_guard<std::mutex> guard(m_Mutex);
         m_ImageData->Clear();
     }
+    m_Dirty = true;
 }
 
 MovieFrame::MovieFrame(const MEntry& e, const v_frame_t frame)

@@ -95,6 +95,7 @@ public:
      */
     Renderer::SharedAnnotation Annotation(const v_frame_t frame) const;
     std::vector<int> AnnotatedFrames() const;
+    const std::vector<Effect*>& Effects() const { return m_Effects; }
 
     QPixmap Thumbnail();
 
