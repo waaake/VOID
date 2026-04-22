@@ -12,6 +12,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Effects.h"
+#include "VoidUi/QExtensions/LineEdit.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -27,11 +28,13 @@ public:
     void EditEffect(Effect* effect);
 
     void Clear();
+    void ClearAdditionalPanels(int limit);
 
 private: /* Members */
     QVBoxLayout* m_Layout;
     QVBoxLayout* m_ScrollLayout;
     QPushButton* m_ClearButton;
+    IntBoundLineEdit* m_PanelCounter;
 
 private: /* Methods */
     void Build();

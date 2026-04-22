@@ -97,6 +97,7 @@ set(SOURCES
     QExtensions/Dialog.cpp
     QExtensions/Frame.cpp
     QExtensions/Label.cpp
+    QExtensions/LineEdit.cpp
     QExtensions/MessageBox.cpp
     QExtensions/ProgressTask.cpp
     QExtensions/PushButton.cpp

@@ -4,6 +4,7 @@
 /* Qt */
 #include <QPainter>
 #include <QScrollArea>
+#include <QValidator>
 
 /* Internal */
 #include "Properties.h"
@@ -55,13 +56,26 @@ void PropertiesPanel::EditEffect(Effect* effect)
     for (auto w : findChildren<EffectEditor*>(effect->Name().c_str()))
         w->Close();
 
-    m_ScrollLayout->addWidget(new EffectEditor(effect, this));
+    // Ensure we have only panels till the limit
+    // Going one lesser here as we are also adding another widget
+    ClearAdditionalPanels(m_PanelCounter->CurrentValue() - 1);
+    m_ScrollLayout->insertWidget(0, new EffectEditor(effect, this));
 }
 
 void PropertiesPanel::Clear()
 {
     for (auto w : findChildren<EffectEditor*>())
         w->Close();
+}
+
+void PropertiesPanel::ClearAdditionalPanels(int limit)
+{
+    QList<EffectEditor*> panels = findChildren<EffectEditor*>();
+    if (panels.size() >= limit)
+    {
+        for (int i = 0; i < panels.size() - limit; ++i)
+            panels.at(i)->Close();
+    }
 }
 
 void PropertiesPanel::Build()
@@ -71,9 +85,11 @@ void PropertiesPanel::Build()
     QHBoxLayout* optionsLayout = new QHBoxLayout;
     optionsLayout->setContentsMargins(8, 0, 8, 0);
     m_ClearButton = new QPushButton;
+    m_PanelCounter = new IntBoundLineEdit(1, 20, 10, this);
 
-    optionsLayout->addWidget(m_ClearButton);
+    optionsLayout->addWidget(m_PanelCounter);
     optionsLayout->addStretch(1);
+    optionsLayout->addWidget(m_ClearButton);
 
     BaseWidget* scrollWidget = new BaseWidget;
     scrollWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
@@ -92,6 +108,8 @@ void PropertiesPanel::Build()
 
 void PropertiesPanel::Setup()
 {
+    m_PanelCounter->setFixedWidth(25);
+
     m_ClearButton->setFixedSize(25, 25);
     m_ClearButton->setIcon(IconForge::GetIcon(IconType::icon_clear_all, _DARK_COLOR(QPalette::Text, 100)));
 }
@@ -99,6 +117,7 @@ void PropertiesPanel::Setup()
 void PropertiesPanel::Connect()
 {
     connect(m_ClearButton, &QPushButton::clicked, this, &PropertiesPanel::Clear);
+    connect(m_PanelCounter, &IntBoundLineEdit::currentValueChanged, this, &PropertiesPanel::ClearAdditionalPanels);
 }
 
 VOID_NAMESPACE_CLOSE
