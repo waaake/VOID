@@ -24,6 +24,8 @@ public:
     explicit PropertiesPanel(QWidget* parent = nullptr);
     ~PropertiesPanel();
 
+    QSize sizeHint() const override { return QSize(300, 720); }
+
     void Show(QWidget* panel);
     void EditEffect(Effect* effect);
 

@@ -26,16 +26,10 @@ VOID_NAMESPACE_OPEN
 VoidMediaLister::VoidMediaLister(QWidget* parent)
     : QWidget(parent)
 {
-    /* Build Layout */
     Build();
-
-    /* Connect Signals */
     Connect();
-
-    /* Setup UI */
     Setup();
 
-    /* Accept drops */
     setAcceptDrops(true);
 }
 
@@ -86,18 +80,11 @@ VoidMediaLister::~VoidMediaLister()
     m_ClearTagsAction = nullptr;
 }
 
-QSize VoidMediaLister::sizeHint() const
-{
-    return QSize(300, 720);
-}
-
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
 {
     /* Check if we have urls in the mime data */
     if (event->mimeData()->hasUrls())
-    {
         event->acceptProposedAction();
-    }
 }
 
 void VoidMediaLister::dropEvent(QDropEvent* event)

@@ -23,10 +23,11 @@ VOID_NAMESPACE_OPEN
 
 enum class Workspace
 {
-    BASIC,
     PLAYBACK,
+    BASIC,
     REVIEW,
-    SCRIPTING
+    SCRIPTING,
+    EDITING
 };
 
 /**
@@ -70,6 +71,8 @@ private: /* Members */
     PyScriptEditor* m_ScriptEditor;
     MetadataViewer* m_MetadataViewer;
     PropertiesPanel* m_PropertiesEditor;
+
+    Workspace m_Current;
 
 private: /* Members */
     void Clear();

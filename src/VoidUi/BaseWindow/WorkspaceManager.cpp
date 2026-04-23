@@ -3,11 +3,13 @@
 
 /* Internal */
 #include "WorkspaceManager.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
 WorkspaceManager::WorkspaceManager(QWidget* parent)
     : MainWindow(parent)
+    , m_Current(Workspace::BASIC)
 {
 }
 
@@ -65,20 +67,39 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
 {
     QMenu* workspaceMenu = menuSystem->AddMenu("Workspace");
 
-    QAction* basicWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Basic Workspace", QKeySequence("Shift+F1"));
-    QAction* playbackWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Playback Workspace", QKeySequence("Shift+F2"));
+    QAction* playbackWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Playback Workspace", QKeySequence("Shift+F1"));
+    QAction* basicWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Basic Workspace", QKeySequence("Shift+F2"));
     QAction* reviewWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Review Workspace", QKeySequence("Shift+F3"));
     QAction* scriptingWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Scripting Workspace", QKeySequence("Shift+F4"));
+    QAction* editingWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Switch to Editing Workspace", QKeySequence("Shift+F5"));
 
-    connect(basicWorkspaceAction, &QAction::triggered, this, [this]() { Switch(Workspace::BASIC); });
-    connect(playbackWorkspaceAction, &QAction::triggered, this, [this]() { Switch(Workspace::PLAYBACK); });
-    connect(reviewWorkspaceAction, &QAction::triggered, this, [this]() { Switch(Workspace::REVIEW); });
-    connect(scriptingWorkspaceAction, &QAction::triggered, this, [this]() { Switch(Workspace::SCRIPTING); });
+    workspaceMenu->addSeparator();
+
+    QAction* setCurrentWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Set current workspace as default");
+    QAction* resetDefaultWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Reset the default workspace");
+
+    connect(playbackWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::PLAYBACK); });
+    connect(basicWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::BASIC); });
+    connect(reviewWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::REVIEW); });
+    connect(scriptingWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::SCRIPTING); });
+    connect(editingWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::EDITING); });
+
+    connect(setCurrentWorkspaceAction, &QAction::triggered, this, [&]() -> void
+    {
+        VoidPreferences::Instance().Set(Settings::DefaultWorkspace, static_cast<int>(m_Current));
+    });
+
+    connect(resetDefaultWorkspaceAction, &QAction::triggered, this, [&]() -> void
+    {
+        VoidPreferences::Instance().Set(Settings::DefaultWorkspace, 0);
+        Switch(Workspace::PLAYBACK);
+    });
 }
 
 void WorkspaceManager::Switch(const Workspace& workspace)
 {
     m_Splitter->ClearPanes();
+    m_Current = workspace;
 
     switch (workspace)
     {
@@ -100,6 +121,11 @@ void WorkspaceManager::Switch(const Workspace& workspace)
                 Qt::Vertical
             );
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
+            break;
+        case Workspace::EDITING:
+            m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
+            m_Splitter->AddPane(static_cast<int>(Component::Viewer));
+            m_Splitter->AddPane(static_cast<int>(Component::Properties));
             break;
         case Workspace::PLAYBACK:
         default:

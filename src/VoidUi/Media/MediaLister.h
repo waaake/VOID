@@ -37,7 +37,7 @@ public:
     virtual ~VoidMediaLister();
 
     /* Override the default size of the widget */
-    QSize sizeHint() const override;
+    QSize sizeHint() const override { return QSize(300, 720); }
 
 signals:
     void mediaChanged(const SharedMediaClip&);
