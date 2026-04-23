@@ -26,16 +26,10 @@ VOID_NAMESPACE_OPEN
 VoidMediaLister::VoidMediaLister(QWidget* parent)
     : QWidget(parent)
 {
-    /* Build Layout */
     Build();
-
-    /* Connect Signals */
     Connect();
-
-    /* Setup UI */
     Setup();
 
-    /* Accept drops */
     setAcceptDrops(true);
 }
 
@@ -73,6 +67,10 @@ VoidMediaLister::~VoidMediaLister()
     delete m_InspectMetadataAction;
     m_InspectMetadataAction = nullptr;
 
+    m_EditEffectsAction->deleteLater();
+    delete m_EditEffectsAction;
+    m_EditEffectsAction = nullptr;
+
     m_AddTagAction->deleteLater();
     delete m_AddTagAction;
     m_AddTagAction = nullptr;
@@ -82,18 +80,11 @@ VoidMediaLister::~VoidMediaLister()
     m_ClearTagsAction = nullptr;
 }
 
-QSize VoidMediaLister::sizeHint() const
-{
-    return QSize(300, 720);
-}
-
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
 {
     /* Check if we have urls in the mime data */
     if (event->mimeData()->hasUrls())
-    {
         event->acceptProposedAction();
-    }
 }
 
 void VoidMediaLister::dropEvent(QDropEvent* event)
@@ -124,6 +115,7 @@ void VoidMediaLister::Build()
     m_AddToQueueAction = new QAction("Add Selected to Queue");
     m_RemoveAction = new QAction("Remove Selected");
     m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
+    m_EditEffectsAction = new QAction("Edit Effects");
 
     m_AddTagAction = new QAction("Add tag...");
     m_ClearTagsAction = new QAction("Clear all tags");
@@ -259,6 +251,7 @@ void VoidMediaLister::Connect()
     connect(m_AddToQueueAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToQueue);
     connect(m_RemoveAction, &QAction::triggered, this, &VoidMediaLister::RemoveSelectedMedia);
     connect(m_InspectMetadataAction, &QAction::triggered, this, &VoidMediaLister::InspectMetadata);
+    connect(m_EditEffectsAction, &QAction::triggered, this, &VoidMediaLister::EditEffects);
     connect(m_AddTagAction, &QAction::triggered, this, &VoidMediaLister::AddTagToSelected);
     connect(m_ClearTagsAction, &QAction::triggered, this, &VoidMediaLister::ClearTagsFromSelected);
 
@@ -373,6 +366,7 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
 
     contextMenu.addSeparator();
     contextMenu.addAction(m_InspectMetadataAction);
+    contextMenu.addAction(m_EditEffectsAction);
 
     contextMenu.addSeparator();
     contextMenu.addMenu(m_PlaylistMenu);
@@ -402,6 +396,15 @@ void VoidMediaLister::InspectMetadata()
 
     /* We can only inspect one item at a time */
     emit metadataInspected(*(static_cast<SharedMediaClip*>(selected[0].internalPointer())));
+}
+
+void VoidMediaLister::EditEffects()
+{
+    QModelIndex current = m_MediaView->currentIndex();
+    if (current.isValid())
+    {
+        emit effectsEdited(_MediaBridge.MediaAt(current));
+    }
 }
 
 void VoidMediaLister::SetFromPreferences()

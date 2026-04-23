@@ -52,7 +52,7 @@ struct BufferData
     explicit operator bool() const { return (bool)image; }
 };
 
-class ViewerBuffer : public QObject
+class VOID_API ViewerBuffer : public QObject
 {
     Q_OBJECT
 

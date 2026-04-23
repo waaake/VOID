@@ -76,7 +76,13 @@ void FFmpegDecoder::Close()
     if (m_Packet) av_packet_free(&m_Packet);
     if (m_CodecContext) avcodec_free_context(&m_CodecContext);
     if (m_FormatContext) avformat_close_input(&m_FormatContext);
+
+    #if LIBSWSCALE_VERSION_MAJOR < 9
+    if (m_SwsContext) sws_freeContext(m_SwsContext);
+    m_SwsContext = nullptr;
+    #else
     if (m_SwsContext) sws_free_context(&m_SwsContext);
+    #endif
 
     /* The read stream ID */
     m_StreamID = -1;

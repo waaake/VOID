@@ -32,6 +32,13 @@ public:
     bool SetValue(const std::string& param, ValueType value);
 
     /**
+     * @brief Resets the value on the param to the default value.
+     * 
+     * @param param Parameter name.
+     */
+    void ResetValue(const std::string& param);
+
+    /**
      * @brief Returns the Value from the parameter, if found with the provided name.
      * Else a Value bearing -1 is returned.
      * 
@@ -46,8 +53,11 @@ public:
     Param* GetParam(const std::string& name) const { return m_Operator->GetParam(name); }
     ImageOp* ImageOperator() { return m_Operator; }
 
+    const std::map<std::string, Param>& Params() const { return m_Operator->Params(); }
+
 signals:
     void updated();
+    void valueChanged(const Param*);
 
 private:
     ImageOp* m_Operator;

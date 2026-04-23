@@ -37,7 +37,7 @@ public:
     virtual ~VoidMediaLister();
 
     /* Override the default size of the widget */
-    QSize sizeHint() const override;
+    QSize sizeHint() const override { return QSize(300, 720); }
 
 signals:
     void mediaChanged(const SharedMediaClip&);
@@ -46,6 +46,7 @@ signals:
     void mediaDropped(const std::string&);
     /* When a Media is inspected of its Metdata */
     void metadataInspected(const SharedMediaClip&);
+    void effectsEdited(const SharedMediaClip&);
 
 protected: /* Methods */
     void dragEnterEvent(QDragEnterEvent* event) override;
@@ -68,6 +69,7 @@ private: /* Methods */
     void AddSelectionToQueue();
     void RemoveSelectedMedia();
     void InspectMetadata();
+    void EditEffects();
 
     void IndexSelected(const QModelIndex& index);
 
@@ -97,6 +99,7 @@ private: /* Members */
     QAction* m_AddToQueueAction;
     QAction* m_RemoveAction;
     QAction* m_InspectMetadataAction;
+    QAction* m_EditEffectsAction;
     QAction* m_AddTagAction;
     QAction* m_ClearTagsAction;
     QMenu* m_PlaylistMenu;

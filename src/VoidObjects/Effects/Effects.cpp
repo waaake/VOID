@@ -30,10 +30,22 @@ bool Effect::SetValue(const std::string& param, ValueType value)
         p->SetValue(value);
 
         emit updated();
+        emit valueChanged(p);
         return true;
     }
 
     return false;
+}
+
+void Effect::ResetValue(const std::string& param)
+{
+    if (Param* p = m_Operator->GetParam(param))
+    {
+        p->ResetValue();
+
+        emit updated();
+        emit valueChanged(p);
+    }
 }
 
 const ValueType& Effect::Value(const std::string& param) const
@@ -41,7 +53,8 @@ const ValueType& Effect::Value(const std::string& param) const
     if (Param* p = m_Operator->GetParam(param))
         return p->Value();
 
-    return -1;
+    static ValueType invalid = std::monostate{};
+    return invalid;
 }
 
 void Effect::SetEnabled(bool enable)

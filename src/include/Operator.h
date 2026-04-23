@@ -6,7 +6,7 @@
 
 /* STD */
 #include <memory>
-#include <unordered_map>
+#include <map>
 
 /* Internal */
 #include "Definition.h"
@@ -23,12 +23,14 @@ public:
     Param* GetParam(const std::string& name);    
     virtual bool Evaluate(ImageRow& row) = 0;
 
+    const std::map<std::string, Param>& Params() const { return m_Params; }
+
 protected:
     Param* AddParam(const Param& param);
     Param* AddParam(Param&& param);
 
 private:
-    std::unordered_map<std::string, Param> m_Params;
+    std::map<std::string, Param> m_Params;
 };
 
 typedef std::shared_ptr<ImageOp> SharedImageOp;

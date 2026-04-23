@@ -19,6 +19,7 @@ enum class IconType : char16_t
     icon_build              = 0xe869,
     icon_browse             = 0xeb13,
     icon_brush              = 0xe3ae,
+    icon_clear_all          = 0xe0b8,
     icon_close              = 0xe5cd,
     icon_computer_cancel    = 0xf2f6,
     icon_delete             = 0xe872,
@@ -49,6 +50,8 @@ enum class IconType : char16_t
     icon_title              = 0xe264,
     icon_trending_flat      = 0xe8e4,
     icon_view_stream        = 0xe8f2,
+    icon_visible            = 0xe8f4,
+    icon_visible_off        = 0xe8f5,
     icon_volume_up          = 0xe050,
 };
 

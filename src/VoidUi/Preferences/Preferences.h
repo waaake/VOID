@@ -23,6 +23,7 @@ namespace Settings
     constexpr auto RecentProjects = "recents/projects";
     constexpr auto DontShowStartup = "startup/dontShowPopup";
     constexpr auto LastBrowsedLocation = "recents/browsed";
+    constexpr auto DefaultWorkspace = "ui/workspace";
 }
 
 class VOID_API VoidPreferences : public QObject
@@ -57,6 +58,7 @@ public:
     inline int GetColorStyle() const { return GetSetting(Settings::ColorStyle).toInt(); }
     inline bool ShowStartup() const { return !GetSetting(Settings::DontShowStartup).toBool(); }
     inline QString LastBrowsed() const { return GetSetting(Settings::LastBrowsedLocation).toString(); }
+    inline int GetDefaultWorkspace() const { return GetSetting(Settings::DefaultWorkspace).toInt(); }
 
     void AddRecentProject(const std::string& path);
     std::vector<std::string> RecentProjects();

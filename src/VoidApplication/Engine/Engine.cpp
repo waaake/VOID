@@ -98,8 +98,10 @@ void VoidEngine::Initialize()
     m_Imager = new VoidMainWindow;
     UIGlobals::g_VoidMainWindow = m_Imager;
 
-    /* Workspace */
-    m_Imager->SwitchWorkspace(m_Args.basic ? Workspace::BASIC : Workspace::PLAYBACK);
+    // Workspace
+    m_Imager->SwitchWorkspace(m_Args.basic
+                ? Workspace::BASIC
+                : static_cast<Workspace>(VoidPreferences::Instance().GetDefaultWorkspace()));
 
     /* Init Menu */
     m_MenuSystem = new MenuSystem(m_Imager);

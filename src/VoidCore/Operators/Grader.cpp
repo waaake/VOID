@@ -13,9 +13,9 @@ VOID_NAMESPACE_OPEN
 GradeOp::GradeOp()
 {
     // std::string gain = "r_gain";
-    m_RedGain = AddParam(Param("r_gain", 1.f, Param::TypeDesc::Float));
-    m_GreenGain = AddParam(Param("g_gain", 1.f, Param::TypeDesc::Float));
-    m_BlueGain = AddParam(Param("b_gain", 1.f, Param::TypeDesc::Float));
+    m_RedGain = AddParam(Param("r_gain", "Red", 1.f, Param::TypeDesc::Float));
+    m_GreenGain = AddParam(Param("g_gain", "Green", 1.f, Param::TypeDesc::Float));
+    m_BlueGain = AddParam(Param("b_gain", "Blue", 1.f, Param::TypeDesc::Float));
     // m_GreenGain = Add
 }
 

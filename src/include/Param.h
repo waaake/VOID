@@ -14,7 +14,7 @@
 
 VOID_NAMESPACE_OPEN
 
-typedef std::variant<bool, int, float, std::string> ValueType;
+typedef std::variant<bool, int, float, std::string, std::monostate> ValueType;
 
 class VOID_API ParamValue
 {
@@ -57,18 +57,27 @@ struct VOID_API Param
     enum class TypeDesc { Int, Float, Boolean, String };
 
     std::string name;
+    std::string label;
+    std::string description;
     TypeDesc type;
     ParamValue value;
+    ParamValue preset;
 
     Param()
-        : name(""), type(TypeDesc::Int), value(0) {}
+        : name(""), label(""), description(""), type(TypeDesc::Int), value(0), preset(0) {}
 
-    Param(std::string name, ParamValue value, const TypeDesc& type)
-        : name(std::move(name)), type(type), value(std::move(value)) {}
+    Param(std::string name, std::string label, ParamValue value, const TypeDesc& type)
+        : name(std::move(name)), label(std::move(label)), description("")
+        , type(type), value(value), preset(std::move(value)) {}
+
+    Param(std::string name, std::string label, std::string description, ParamValue value, const TypeDesc& type)
+        : name(std::move(name)), label(std::move(label)), description(std::move(description))
+        , type(type), value(value), preset(std::move(value)) {}
 
     template <typename _Ty>
     void SetValue(_Ty v) { value.Set(v); }
     void SetValue(ValueType v) { value.SetValue(v); }
+    void ResetValue() { value = preset; }
     const ValueType& Value() const { return value.Value(); }
 
     // Helpers
