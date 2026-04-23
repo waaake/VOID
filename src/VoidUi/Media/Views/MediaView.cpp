@@ -30,17 +30,26 @@ MediaView::MediaView(QWidget* parent)
 
 MediaView::~MediaView()
 {
-    m_BasicDelegate->deleteLater();
-    delete m_BasicDelegate;
-    m_BasicDelegate = nullptr;
+    if (m_BasicDelegate)
+    {
+        m_BasicDelegate->deleteLater();
+        delete m_BasicDelegate;
+        m_BasicDelegate = nullptr;
+    }
 
-    m_MediaDelegate->deleteLater();
-    delete m_MediaDelegate;
-    m_MediaDelegate = nullptr;
+    if (m_MediaDelegate)
+    {
+        m_MediaDelegate->deleteLater();
+        delete m_MediaDelegate;
+        m_MediaDelegate = nullptr;
+    }
 
-    m_ThumbnailDelegate->deleteLater();
-    delete m_ThumbnailDelegate;
-    m_ThumbnailDelegate = nullptr;
+    if (m_ThumbnailDelegate)
+    {
+        m_ThumbnailDelegate->deleteLater();
+        delete m_ThumbnailDelegate;
+        m_ThumbnailDelegate = nullptr;
+    }
 
     /**
      * Set the source Model as nullpointer so that we don't actually delete
