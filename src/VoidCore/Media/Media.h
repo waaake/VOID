@@ -68,6 +68,8 @@ public:
 
     /* Getters */
     inline std::string Fullpath() const { return m_MediaStruct.FirstPath(); }
+    inline std::string TemplatedPath() const { return m_MediaStruct.TemplatedPath(); }
+    inline std::string TemplatedName() const { return m_MediaStruct.TemplatedName(); }
     inline std::string Path() const { return m_MediaStruct.Basepath(); }
     inline std::string Name() const { return m_MediaStruct.Name(); }
     inline std::string Extension() const { return m_MediaStruct.Extension(); }
