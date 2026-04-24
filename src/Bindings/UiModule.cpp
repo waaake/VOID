@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <sstream>
+
 /* Pybind11 */
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -91,6 +94,13 @@ void BindUi(py::module_& m)
 
     /* Viewer Buffer */
     py::class_<ViewerBuffer>(m, "Viewer")
+        .def("__repr__", [](py::handle h)
+        {   
+            const ViewerBuffer& v = h.cast<ViewerBuffer&>();
+            std::stringstream ss;
+            ss << "Viewer <" << v.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
         .def("active", &ViewerBuffer::Active)
         .def("set_active", &ViewerBuffer::SetActive, py::arg("active"))
         .def("active_media", &ViewerBuffer::Media, py::arg("frame"), py::return_value_policy::reference)
@@ -122,6 +132,13 @@ void BindUi(py::module_& m)
         .export_values();
 
     project
+        .def("__repr__", [](py::handle h)
+        {
+            const Project& p = h.cast<Project&>();
+            std::stringstream ss;
+            ss << "Project <" << p.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
         .def("add_media", &Project::AddMedia, py::arg("media_clip"))
         .def("document", &Project::Document, py::arg("name"))
         .def("modified", &Project::Modified)

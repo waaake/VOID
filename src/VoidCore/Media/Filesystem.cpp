@@ -219,6 +219,39 @@ std::string MEntry::PaddedFrame(v_frame_t frame) const
     return ss.str();
 }
 
+std::string MEntry::TemplatedPath() const
+{
+    std::string path;
+    path.reserve(m_Basepath.size() + 1 + m_Name.size() + 1 + m_FramePadding + 1 + m_Extension.size());
+
+    path += m_Basepath;
+    path += "/";
+    path += m_Name;
+    path += ".";
+
+    path.append(m_FramePadding, '#');
+    path += ".";
+    path += m_Extension;
+
+    return path;
+}
+
+std::string MEntry::TemplatedName() const
+{
+    std::string name;
+    name.reserve(m_Name.size() + 1 + m_FramePadding + 1 + m_Extension.size());
+
+    name += m_Name;
+    name += ".";
+
+    name.append(m_FramePadding, '#');
+    name += ".";
+    name += m_Extension;
+
+    return name;
+}
+
+
 /* }}} */
 
 /* Media Struct {{{ */
@@ -536,9 +569,7 @@ std::vector<MediaStruct> MediaFS::FromDirectory(const std::string& path)
 
             /* Check if no entry in the MediaStruct adopted our newly created Media entry */
             if (new_entry)
-            {
                 vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
-            }
         }
     }
     catch (const std::filesystem::filesystem_error& e)
@@ -597,9 +628,7 @@ std::vector<MediaStruct> MediaFS::GetAllMedia(const std::string& path, int level
 
             /* Check if no entry in the MediaStruct adopted our newly created Media entry */
             if (new_entry)
-            {
                 vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
-            }
         }
     }
     catch (const std::filesystem::filesystem_error& e)

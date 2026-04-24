@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <sstream>
+
 /* Pybind11 */
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -9,6 +12,7 @@
 #include "Definition.h"
 #include "Operator.h"
 #include "VoidCore/Media/Filesystem.h"
+#include "VoidCore/VoidTools.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Effects/Effects.h"
 
@@ -97,6 +101,14 @@ void BindCore(py::module_& m)
         .def(py::init<const std::string&, const std::string&, const std::string&, v_frame_t, v_frame_t, unsigned int, const std::vector<v_frame_t>&>(),
                 py::arg("basepath"), py::arg("name"), py::arg("extension"), py::arg("startframe"), py::arg("endframe"), py::arg("frame_padding"), py::arg("missing"))
 
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const MediaClip& m = h.cast<MediaClip&>();
+            std::stringstream ss;
+            ss << "Media <" << m.TemplatedPath() << " - " << m.Duration() << "f@" << m.Framerate() << "fps at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+
         .def("basepath", &MediaClip::Path)
         .def("name", &MediaClip::Name)
         .def("extension", &MediaClip::Extension)
@@ -120,6 +132,14 @@ void BindCore(py::module_& m)
         .export_values();
 
     py::class_<Param>(m, "Param")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const Param& p = h.cast<Param&>();
+            std::stringstream ss;
+            ss << "Param <" << p.name << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) <<">";
+            return ss.str();
+        })
+
         .def("get_float", &Param::GetFloat)
         .def("get_int", &Param::GetInt)
         .def("get_bool", &Param::GetBool)
@@ -131,6 +151,14 @@ void BindCore(py::module_& m)
         .def("type", [](const Param* self) -> Param::TypeDesc { return self->type; });
 
     py::class_<Effect>(m, "Effect")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const Effect& e = h.cast<Effect&>();
+            std::stringstream ss;
+            ss << "Effect <" << e.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+
         .def("name", &Effect::Name)
         .def("set_name", &Effect::SetName, py::arg("name"))
         .def("enabled", &Effect::Enabled)

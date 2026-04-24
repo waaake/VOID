@@ -73,6 +73,8 @@ public:
     inline const std::string& Extension() const { return m_Extension; }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
     inline unsigned int Framepadding() const { return m_FramePadding; }
+    std::string TemplatedPath() const;
+    std::string TemplatedName() const;
 
     /**
      * Returns True if the Media does not have a frame number on it to denote that this
@@ -276,6 +278,8 @@ public:
     std::string Basepath() const { return m_Entries.empty() ? "" : m_Entries[0].Basepath(); }
 
     std::string FirstPath() const { return m_Entries.empty() ? "" : m_Entries[0].Fullpath(); }
+    std::string TemplatedPath() const { return m_Entries.empty() ? "" : m_Entries[0].TemplatedPath(); }
+    std::string TemplatedName() const { return m_Entries.empty() ? "" : m_Entries[0].TemplatedName(); }
     [[nodiscard]] bool SingleFile() const { return m_Entries.empty() ? false : m_Entries[0].SingleFile(); }
 
     unsigned int Framepadding() const { return m_Entries.empty() ? 0 : m_Entries[0].Framepadding(); }
