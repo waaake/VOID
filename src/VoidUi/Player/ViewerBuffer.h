@@ -248,6 +248,7 @@ public:
 
 signals:
     void updated();
+    void playlistUpdated(Playlist*);
 
 private: /* Members */
     /**

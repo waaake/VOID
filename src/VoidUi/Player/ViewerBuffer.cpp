@@ -60,6 +60,8 @@ void ViewerBuffer::Set(const SharedMediaClip& media)
     m_PlayingComponent = PlayableComponent::Clip;
     UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
     EnsureCached(media->FirstFrame());
+
+    emit playlistUpdated(nullptr);
     CacheAvailable();
 }
 
@@ -119,6 +121,8 @@ void ViewerBuffer::SetPlaylist(Playlist* playlist)
 
     m_PlayingComponent = PlayableComponent::Playlist;
     UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
+
+    emit playlistUpdated(playlist);
 
     EnsureCached(m_Clip->FirstFrame());
     CacheAvailable();

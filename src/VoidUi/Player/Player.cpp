@@ -243,6 +243,9 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
+
+    // ViewerBuffer
+    connect(&m_ViewBufferA, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);
 }
 
 void Player::PauseCache()

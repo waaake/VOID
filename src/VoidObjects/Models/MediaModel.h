@@ -52,6 +52,9 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
+    Qt::DropActions supportedDropActions() const override { return Qt::MoveAction; }
+
+    bool moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild) override;
 
     /* Media */
     void Add(const SharedMediaClip& media);
@@ -67,6 +70,9 @@ public:
     SharedMediaClip LastMedia() const;
 
     void Clear() { m_Media.clear(); }
+
+    QModelIndex ShiftIndexUp(const QModelIndex& index);
+    QModelIndex ShiftIndexDown(const QModelIndex& index);
 
     /* Iterator */
     inline std::vector<SharedMediaClip>::const_iterator cbegin() const noexcept { return m_Media.cbegin(); }

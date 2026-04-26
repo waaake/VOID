@@ -19,6 +19,8 @@ WorkspaceManager::~WorkspaceManager()
     m_PlayLister->deleteLater();
     m_ScriptEditor->deleteLater();
     m_MetadataViewer->deleteLater();
+    m_PropertiesEditor->deleteLater();
+    m_MediaQueue->deleteLater();
 }
 
 QWidget* WorkspaceManager::Widget(const Component& component) const
@@ -32,17 +34,20 @@ void WorkspaceManager::Init()
     DockManager& manager = DockManager::Instance();
 
     // Media Lister Widget
-    m_MediaLister = new VoidMediaLister();
-    m_PlayLister = new VoidPlayLister();
+    m_MediaLister = new VoidMediaLister;
+    m_PlayLister = new VoidPlayLister;
 
     // Python Script Editor
-    m_ScriptEditor = new PyScriptEditor();
+    m_ScriptEditor = new PyScriptEditor;
 
     // Media Metadata Viewer
-    m_MetadataViewer = new MetadataViewer();
+    m_MetadataViewer = new MetadataViewer;
 
     // Properties Editor
-    m_PropertiesEditor = new PropertiesPanel();
+    m_PropertiesEditor = new PropertiesPanel;
+
+    // Queue viewer
+    m_MediaQueue = new MediaQueue;
 
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
@@ -50,6 +55,7 @@ void WorkspaceManager::Init()
     manager.RegisterDock(m_MetadataViewer, "Metadata Viewer");
     manager.RegisterDock(m_PlayLister, "Playlist View");
     manager.RegisterDock(m_PropertiesEditor, "Properties");
+    manager.RegisterDock(m_MediaQueue, "Media Queue");
 
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
@@ -61,6 +67,7 @@ void WorkspaceManager::Connect()
     connect(m_MediaLister, &VoidMediaLister::effectsEdited, this, &WorkspaceManager::EditEffects);
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
+    connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
 }
 
 void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
@@ -147,6 +154,11 @@ void WorkspaceManager::InspectMetadata(const SharedMediaClip& media)
     const DockStruct d = DockManager::Instance().Dock(static_cast<int>(Component::MetadataViewer));
     if (!d.widget->isVisible())
         ShowComponent(Component::MetadataViewer);
+}
+
+void WorkspaceManager::UpdateMediaQueue(Playlist* playlist)
+{
+    m_MediaQueue->Set(playlist);
 }
 
 void WorkspaceManager::EditEffects(const SharedMediaClip& media)

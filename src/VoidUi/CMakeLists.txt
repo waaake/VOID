@@ -37,11 +37,13 @@ set(SOURCES
     Media/MediaSearchBar.cpp
     Media/MetadataViewer.cpp
     Media/TagWidget.cpp
+    Media/MediaQueue.cpp
     Media/Models/MetadataModel.cpp
     Media/Models/MediaFilesModel.cpp
     Media/Views/FileView.cpp
     Media/Views/MediaView.cpp
     Media/Views/MetadataView.cpp
+    Media/Views/QueueView.cpp
     Media/Delegates/ListDelegate.cpp
     Media/Delegates/ThumbnailDelegate.cpp
 

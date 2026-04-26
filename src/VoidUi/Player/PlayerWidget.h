@@ -133,7 +133,6 @@ public:
     inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
     inline void ResetRange() { m_Timeline->ResetRange(); }
 
-public:
     void Clear();
 
 protected:  /* Methods */
