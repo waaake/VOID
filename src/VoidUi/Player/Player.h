@@ -59,6 +59,7 @@ signals:
      * @param clip: The Shared pointer to the Media clip for which the metadata is to be inspected.
      */
     void metadataInspected(const SharedMediaClip&);
+    void playlistUpdated(Playlist*);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;

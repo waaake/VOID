@@ -4,6 +4,7 @@
 /* Internal */
 #include "MediaModel.h"
 #include "VoidCore/VoidTools.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -73,7 +74,22 @@ Qt::ItemFlags MediaModel::flags(const QModelIndex& index) const
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled;
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+}
+
+bool MediaModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild)
+{
+    if (sourceRow < 0 || sourceRow >= static_cast<int>(m_Media.size()) ||
+        destinationChild < 0 || destinationChild >= static_cast<int>(m_Media.size()) || count != 1)
+        return false;
+
+    beginMoveRows(sourceParent, sourceRow, sourceRow, destinationParent, destinationChild);
+    auto media = m_Media[sourceRow];
+    m_Media.erase(m_Media.begin() + sourceRow);
+
+    m_Media.insert(m_Media.begin() + destinationChild, media);
+    endMoveRows();
+    return true;
 }
 
 std::string MediaModel::ItemFramerate(const SharedMediaClip& clip) const
@@ -159,6 +175,24 @@ SharedMediaClip MediaModel::LastMedia() const
         return nullptr;
 
     return m_Media.back();
+}
+
+QModelIndex MediaModel::ShiftIndexUp(const QModelIndex& index)
+{
+    if (!index.isValid() || index.row() == 0)
+        return QModelIndex();
+
+    std::swap(m_Media[index.row()], m_Media[index.row() - 1]);
+    return createIndex(index.row() - 1, index.column());
+}
+
+QModelIndex MediaModel::ShiftIndexDown(const QModelIndex& index)
+{
+    if (!index.isValid() || index.row() == m_Media.size() - 1)
+        return QModelIndex();
+
+    std::swap(m_Media[index.row()], m_Media[index.row() + 1]);
+    return createIndex(index.row() + 1, index.column());
 }
 
 void MediaModel::Update()

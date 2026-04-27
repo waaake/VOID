@@ -18,6 +18,7 @@
 #include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
 #include "VoidUi/QExtensions/Window.h"
+#include "VoidUi/Media/MediaQueue.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -45,6 +46,7 @@ enum class Component
     MetadataViewer,
     PlayLister,
     Properties,
+    MediaQueue,
 };
 
 class WorkspaceManager : public MainWindow
@@ -71,12 +73,14 @@ private: /* Members */
     PyScriptEditor* m_ScriptEditor;
     MetadataViewer* m_MetadataViewer;
     PropertiesPanel* m_PropertiesEditor;
+    MediaQueue* m_MediaQueue;
 
     Workspace m_Current;
 
 private: /* Members */
     void Clear();
     void InspectMetadata(const SharedMediaClip& media);
+    void UpdateMediaQueue(Playlist* playlist);
     void EditEffects(const SharedMediaClip& media);
     void ShowComponent(const Component& component) const;
 };

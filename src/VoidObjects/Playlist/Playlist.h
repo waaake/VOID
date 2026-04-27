@@ -42,6 +42,9 @@ public:
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip Media(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
 
+    QModelIndex ShiftIndexUp(const QModelIndex& index) { return m_Media->ShiftIndexUp(index); }
+    QModelIndex ShiftIndexDown(const QModelIndex& index) { return m_Media->ShiftIndexDown(index); }
+
     inline SharedMediaClip CurrentMedia() const { return m_Media->Media(m_Media->index(m_CurrentRow, 0)); }
     SharedMediaClip NextMedia();
     SharedMediaClip PreviousMedia();
