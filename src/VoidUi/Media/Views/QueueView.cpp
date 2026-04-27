@@ -7,7 +7,6 @@
 /* Internal */
 #include "QueueView.h"
 #include "VoidUi/Media/Delegates/ListDelegate.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 

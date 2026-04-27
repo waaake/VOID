@@ -2,10 +2,12 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QKeyEvent>
 
 /* Internal */
 #include "MediaQueue.h"
 #include "VoidUi/Engine/IconForge.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -32,6 +34,20 @@ void MediaQueue::Set(Playlist* playlist)
 {
     m_Playlist = playlist;
     m_Playlist ? m_View->Set(playlist) : m_View->Clear();
+}
+
+bool MediaQueue::eventFilter(QObject* object, QEvent* event)
+{
+    if (event->type() == QEvent::ShortcutOverride)
+    {
+        QKeyEvent* k = static_cast<QKeyEvent*>(event);
+        #ifdef _VOID_PLATFORM_APPLE
+        if (k->key() == Qt::Key_Backspace) m_Playlist->RemoveMedia(m_View->currentIndex());
+        #else
+        if (k->key() == Qt::Key_Delete) m_Playlist->RemoveMedia(m_View->currentIndex());
+        #endif
+    }
+    return true;
 }
 
 void MediaQueue::Build()
@@ -62,6 +78,8 @@ void MediaQueue::Setup()
 
     m_MoveDownArrow->setIcon(IconForge::GetIcon(IconType::icon_expand_circle_down, _DARK_COLOR(QPalette::Text, 100)));
     m_MoveUpArrow->setIcon(IconForge::GetIcon(IconType::icon_expand_circle_up, _DARK_COLOR(QPalette::Text, 100)));
+
+    installEventFilter(this);
 }
 
 void MediaQueue::Connect()
@@ -76,7 +94,7 @@ void MediaQueue::Connect()
     {
         QModelIndex index = m_Playlist->ShiftIndexUp(m_View->currentIndex());
         if (index.isValid())
-            m_View->setCurrentIndex(index);    
+            m_View->setCurrentIndex(index);
     });
 }
 

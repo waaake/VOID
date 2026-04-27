@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _QUEUE_VIEW_H
+#define _QUEUE_VIEW_H
+
 /* Qt */
 #include <QListView>
 
@@ -24,3 +27,5 @@ protected:
 };
 
 VOID_NAMESPACE_CLOSE
+
+#endif // _QUEUE_VIEW_H

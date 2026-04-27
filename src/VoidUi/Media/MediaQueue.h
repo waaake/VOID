@@ -21,6 +21,10 @@ public:
     void Set(Playlist* playlist);
     void Clear() { m_View->Clear(); }
 
+protected:
+    // TODO: Check why the shortcut doesn't work and replace this with the Shortcut Override
+    bool eventFilter(QObject* object, QEvent* event) override;
+
 private: /* Members */
     QVBoxLayout* m_Layout;
     QPushButton* m_MoveUpArrow;
