@@ -42,13 +42,24 @@ void VoidBase::drawPrimitive(PrimitiveElement element, const QStyleOption* optio
     switch (element)
     {
         case PE_PanelButtonCommand:
-            /* Dark buttons */
+            painter->save();
             if (option->state & State_Sunken)
                 painter->fillRect(option->rect, option->palette.color(QPalette::AlternateBase));
             else if (option->state & State_MouseOver)
-                painter->fillRect(option->rect, option->palette.color(QPalette::Base));
+            {
+                painter->setPen(QPen(QBrush(option->palette.color(QPalette::Highlight)), 0.4));
+                painter->setBrush(option->palette.color(QPalette::Base));
+                painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+                // painter->fillRect(option->rect, option->palette.color(QPalette::Base));
+            }
             else
-                painter->fillRect(option->rect, option->palette.color(QPalette::Button));
+            {
+                painter->setPen(QPen(QBrush(option->palette.color(QPalette::Highlight)), 0.2));
+                painter->setBrush(option->palette.color(QPalette::Button));
+                painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+                // painter->fillRect(option->rect, option->palette.color(QPalette::Button));
+            }
+            painter->restore();
             break;
         case PE_FrameTabWidget:
             painter->save();
@@ -63,11 +74,9 @@ void VoidBase::drawPrimitive(PrimitiveElement element, const QStyleOption* optio
         //     painter->fillRect(option->rect, QColor(40, 40, 40));
         //     break;
         default:
-            /* Let everything else get drawn */
             QProxyStyle::drawPrimitive(element, option, painter, widget);
     }
 
-    // /* Let everything else get drawn */
     // QProxyStyle::drawPrimitive(element, option, painter, widget);
 }
 
@@ -82,9 +91,9 @@ void VoidBase::drawControl(ControlElement element, const QStyleOption* option, Q
             if (!item)
                 break;
 
-            /* Get the sub element rect for the icon */
+            // Get the sub element rect for the icon
             QRect textRect = item->rect;
-            /* Consider the icon width */
+            // Consider the icon width
             textRect.setLeft(textRect.left() + item->maxIconWidth + 6); // Add the spacing across icon sides
 
             if (item->state & QStyle::State_Enabled)
@@ -139,12 +148,12 @@ void VoidBase::drawControl(ControlElement element, const QStyleOption* option, Q
 
             painter->save();
 
-            /* Background */
+            // Background
             painter->fillRect(tab->rect, option->palette.color(QPalette::Window));
             QColor tabColor = tab->state & State_Selected ? option->palette.color(QPalette::Window) : option->palette.color(QPalette::Window).darker(125);
             painter->fillRect(tab->rect.adjusted(0, 0, 0, -2), tabColor);
 
-            /* Text */
+            // Text
             QRect textRect = subElementRect(SE_TabBarTabText, tab, widget);
             QColor textColor = tab->state & State_Selected ? option->palette.color(QPalette::WindowText) : option->palette.color(QPalette::WindowText).darker(150);
             painter->setPen(textColor);
