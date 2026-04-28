@@ -8,6 +8,7 @@
 #include <QIODevice>
 #include <QMimeData>
 #include <QPainter>
+#include <QScrollBar>
 
 /* Internal */
 #include "MediaView.h"
@@ -55,11 +56,11 @@ MediaView::~MediaView()
      * Set the source Model as nullpointer so that we don't actually delete
      * the original source model
      */
-    proxy->setSourceModel(nullptr);
+    m_Proxy->setSourceModel(nullptr);
 
-    proxy->deleteLater();
-    delete proxy;
-    proxy = nullptr;
+    m_Proxy->deleteLater();
+    delete m_Proxy;
+    m_Proxy = nullptr;
 }
 
 void MediaView::startDrag(Qt::DropActions supportedActions)
@@ -101,11 +102,11 @@ void MediaView::Setup()
 {
     /* Set Model */
     MediaModel* model = _MediaBridge.DataModel();
-    proxy = new MediaProxyModel(this);
+    m_Proxy = new MediaProxyModel(this);
 
     /* Setup the Proxy's Source Model */
     ResetModel(model);
-    setModel(proxy);
+    setModel(m_Proxy);
 
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -176,7 +177,7 @@ void MediaView::Connect()
 
 void MediaView::ResetModel(MediaModel* model)
 {
-    proxy->setSourceModel(model);
+    m_Proxy->setSourceModel(model);
     VOID_LOG_INFO("Source Model Updated");
 }
 
@@ -186,7 +187,7 @@ void MediaView::ItemDoubleClicked(const QModelIndex& index)
         return;
 
     /* The source index */
-    emit itemDoubleClicked(proxy->mapToSource(index));
+    emit itemDoubleClicked(m_Proxy->mapToSource(index));
 }
 
 const std::vector<QModelIndex> MediaView::SelectedIndexes() const
@@ -202,7 +203,7 @@ const std::vector<QModelIndex> MediaView::SelectedIndexes() const
 
     for (const QModelIndex& index: proxyindexes)
     {
-        QModelIndex source = proxy->mapToSource(index);
+        QModelIndex source = m_Proxy->mapToSource(index);
         if (source.isValid())
             sources.emplace_back(source);
     }
@@ -220,7 +221,7 @@ bool MediaView::HasSelection()
 
 void MediaView::EnableSorting(bool state, const Qt::SortOrder& order)
 {
-    proxy->sort(state ? 0 : -1, order);
+    m_Proxy->sort(state ? 0 : -1, order);
 }
 
 void MediaView::SetViewType(const ViewType& type)
@@ -228,6 +229,31 @@ void MediaView::SetViewType(const ViewType& type)
     /* Update the internal view type */
     m_ViewType = type;
     ResetView();
+}
+
+void MediaView::RemoveSelectedMedia()
+{
+    if (QItemSelectionModel* selection = selectionModel())
+    {
+        const QModelIndexList proxies = selection->selectedRows();
+        std::vector<QModelIndex> sources;
+        sources.reserve(proxies.size());
+
+        for (const QModelIndex& index : proxies)
+        {
+            const QModelIndex source = m_Proxy->mapToSource(index);
+            if (source.isValid())
+                sources.emplace_back(source);
+        }
+
+        if (!sources.empty())
+        {
+            const int scroll = verticalScrollBar()->value();
+            _MediaBridge.RemoveMedia(sources);
+
+            verticalScrollBar()->setValue(scroll);
+        }
+    }
 }
 
 VOID_NAMESPACE_CLOSE

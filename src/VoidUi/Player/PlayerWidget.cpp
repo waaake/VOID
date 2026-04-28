@@ -95,17 +95,15 @@ void PlayerWidget::Connect()
     connect(m_Renderer, &VoidRenderer::zoomChanged, m_ControlBar, &ControlBar::SetZoom);
 
     /* When a MediaClip is about to be removed from the MediaBride */
-    connect(&_MediaBridge, &MBridge::mediaAboutToBeRemoved, this, &PlayerWidget::RemoveMedia);
+    connect(&_MediaBridge, &MBridge::mediaAboutToBeRemoved, this, &PlayerWidget::RemoveMedia, Qt::DirectConnection);
 }
 
 void PlayerWidget::RemoveMedia(const SharedMediaClip& media)
 {
-    /* Check if the media was playing currently */
+    // Check if the media was playing currently
     if (m_ActiveViewBuffer->Playing(media))
     {
-        /* Clear the active Viewer Buffer */
         m_ActiveViewBuffer->Clear();
-        /* Clear the player */
         Clear();
     }
 }

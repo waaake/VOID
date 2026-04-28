@@ -249,7 +249,7 @@ void VoidMediaLister::Connect()
     connect(m_PlayAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToSequence);
     connect(m_PlayAsListAction, &QAction::triggered, this, &VoidMediaLister::PlaySelectionAsQueue);
     connect(m_AddToQueueAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToQueue);
-    connect(m_RemoveAction, &QAction::triggered, this, &VoidMediaLister::RemoveSelectedMedia);
+    connect(m_RemoveAction, &QAction::triggered, m_MediaView, &MediaView::RemoveSelectedMedia);
     connect(m_InspectMetadataAction, &QAction::triggered, this, &VoidMediaLister::InspectMetadata);
     connect(m_EditEffectsAction, &QAction::triggered, this, &VoidMediaLister::EditEffects);
     connect(m_AddTagAction, &QAction::triggered, this, &VoidMediaLister::AddTagToSelected);
@@ -281,7 +281,7 @@ void VoidMediaLister::Connect()
     connect(&_MediaBridge, &MBridge::updated, this, &VoidMediaLister::RebuildPlaylistMenu);
 
     /* Shortcut */
-    connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidMediaLister::RemoveSelectedMedia);
+    connect(m_DeleteShortcut, &QShortcut::activated, m_MediaView, &MediaView::RemoveSelectedMedia);
 
     /* Preferences */
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &VoidMediaLister::SetFromPreferences);
@@ -382,11 +382,11 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     #endif // _QT6
 }
 
-void VoidMediaLister::RemoveSelectedMedia()
-{
-    /* Push all of the selected indexes for removal */
-    _MediaBridge.RemoveMedia(m_MediaView->SelectedIndexes());
-}
+// void VoidMediaLister::RemoveSelectedMedia()
+// {
+//     /* Push all of the selected indexes for removal */
+//     _MediaBridge.RemoveMedia(m_MediaView->SelectedIndexes());
+// }
 
 void VoidMediaLister::InspectMetadata()
 {

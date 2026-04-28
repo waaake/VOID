@@ -39,7 +39,11 @@ void QueueView::Clear()
 
 void QueueView::dropEvent(QDropEvent* event)
 {
+    #if _QT6
+    QModelIndex index = indexAt(event->position());
+    #else
     QModelIndex index = indexAt(event->pos());
+    #endif // _QT6
     int dest = index.isValid() ? index.row() : model()->rowCount();
 
     // Currently we have single selection only
