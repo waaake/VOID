@@ -33,7 +33,7 @@ public:
     ~MediaView();
 
     /* Search and filter items from the Model */
-    inline void Search(const std::string& text) { proxy->SetSearchText(text); }
+    inline void Search(const std::string& text) { m_Proxy->SetSearchText(text); }
 
     /* Returns the currently selected Media row Model Indices */
     const std::vector<QModelIndex> SelectedIndexes() const;
@@ -47,6 +47,7 @@ public:
     const ViewType GetViewType() const { return m_ViewType; }
     /* Set the View Type */
     void SetViewType(const ViewType& type);
+    void RemoveSelectedMedia();
 
 protected:
     void startDrag(Qt::DropActions supportedActions) override;
@@ -58,7 +59,7 @@ signals:
 
 private: /* Models */
     /* Proxy for filtering and sorting */
-    MediaProxyModel* proxy;
+    MediaProxyModel* m_Proxy;
 
     BasicMediaItemDelegate* m_BasicDelegate;
     MediaItemDelegate* m_MediaDelegate;

@@ -67,7 +67,7 @@ private: /* Methods */
     void AddSelectionToSequence();
     void PlaySelectionAsQueue();
     void AddSelectionToQueue();
-    void RemoveSelectedMedia();
+    // void RemoveSelectedMedia();
     void InspectMetadata();
     void EditEffects();
 

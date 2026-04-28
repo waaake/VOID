@@ -63,7 +63,7 @@ void Project::InsertMedia(const SharedMediaClip& media, const int index)
 
 void Project::RemoveMedia(const QModelIndex& index)
 {
-    m_Media->Remove(index);
+    m_Media->Remove(index, false);
     /* Update the modification state for the project */
     m_Modified = true;
 }

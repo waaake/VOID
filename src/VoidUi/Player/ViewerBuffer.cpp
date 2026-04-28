@@ -331,10 +331,8 @@ SharedTrackItem ViewerBuffer::TrackItem(const v_frame_t frame)
 
 void ViewerBuffer::Clear()
 {
-    /* Clear up --> Point to an empty clip */
-    m_Clip = std::make_shared<MediaClip>();
-    /* Clear Cache */
     ClearCache();
+    m_Clip = std::make_shared<MediaClip>();
 }
 
 bool ViewerBuffer::Playing(const SharedMediaClip& media) const

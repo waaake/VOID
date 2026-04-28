@@ -8,7 +8,7 @@
 #include <QListView>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "VoidObjects/Playlist/Playlist.h"
 
 VOID_NAMESPACE_OPEN
