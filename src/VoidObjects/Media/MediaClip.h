@@ -84,6 +84,10 @@ public:
     bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
     void RemoveTag(const QModelIndex& index);
     void RemoveTag(int row);
+
+    Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
+    Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+
     void ClearTags();
 
     Effect* AddEffect(const std::string& type);

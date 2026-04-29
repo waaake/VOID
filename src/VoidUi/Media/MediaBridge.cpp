@@ -407,6 +407,11 @@ void MBridge::AddTag(const SharedMediaClip& media, const std::string& tag, const
     }
 }
 
+void MBridge::RemoveTag(const QModelIndex& mindex, const QModelIndex& tindex)
+{
+    if (m_Project) m_Project->PushCommand(new RemoveTagCommand(mindex, tindex));
+}
+
 bool MBridge::Remove(SharedMediaClip clip)
 {
     /* Emit the mediaAboutToBeRemoved signal for all listeners to clear the item */

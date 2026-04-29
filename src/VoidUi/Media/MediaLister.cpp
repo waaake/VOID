@@ -468,7 +468,7 @@ void VoidMediaLister::EditSelectedTags(const QModelIndex& index, const QPoint& p
     SharedMediaClip clip = _MediaBridge.MediaAt(index);
     if (clip->HasTags())
     {
-        TagEditor t(clip, this);
+        TagEditor t(clip, index, this);
         t.MoveTo(m_MediaView->mapToGlobal(position));
         t.exec();
     }

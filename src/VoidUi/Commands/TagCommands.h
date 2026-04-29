@@ -26,6 +26,21 @@ private: /* Members */
     TagMetaStruct m_Metadata;
 };
 
+class RemoveTagCommand : public VoidUndoCommand
+{
+public:
+    RemoveTagCommand(const QModelIndex& mindex, const QModelIndex& tindex, QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    bool Redo() override;
+
+private: /* Members */
+    QModelIndex m_MediaIndex;
+    QModelIndex m_TagIndex;
+    std::string m_Name;
+    TagMetaStruct m_Metadata;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _TAG_COMMANDS_H
