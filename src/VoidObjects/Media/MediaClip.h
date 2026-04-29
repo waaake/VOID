@@ -78,8 +78,12 @@ public:
     /* Remove Anotation for the frame */
     void RemoveAnnotation(const v_frame_t frame);
 
-    void AddTag(const std::string& name);
-    void AddTag(const std::string& name, TagMetadataModel*& metadata);
+    bool AddTag(const std::string& name);
+    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
+    bool InsertTag(const std::string& name, int index);
+    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
+    void RemoveTag(const QModelIndex& index);
+    void RemoveTag(int row);
     void ClearTags();
 
     Effect* AddEffect(const std::string& type);

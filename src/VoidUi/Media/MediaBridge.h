@@ -93,6 +93,11 @@ public:
     bool InsertMedia(MediaStruct&& mstruct, int index);
     bool InsertMedia(const MediaStruct& mstruct, int index);
 
+    void AddTag(const QModelIndex& index, const std::string& tag);
+    void AddTag(const SharedMediaClip& media, const std::string& tag);
+    void AddTag(const QModelIndex& index, const std::string& tag, const TagMetaStruct& metadata);
+    void AddTag(const SharedMediaClip& media, const std::string& tag, const TagMetaStruct& metadata);
+
     /**
      * Playlist
      */

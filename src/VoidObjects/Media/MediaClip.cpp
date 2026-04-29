@@ -180,15 +180,59 @@ void MediaClip::RemoveAnnotation(const v_frame_t frame)
     VOID_LOG_INFO("Annotation Removed. Frame {0}", frame);
 }
 
-void MediaClip::AddTag(const std::string& name)
+bool MediaClip::AddTag(const std::string& name)
 {
-    m_TagModel->AddTag(name);
+    if (m_TagModel->AddTag(name))
+    {
+        emit updated();
+        return true;
+    }
+
+    return false;
+}
+
+bool MediaClip::AddTag(const std::string& name, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->AddTag(name, metadata))
+    {
+        emit updated();
+        return true;
+    }
+
+    return false;
+}
+
+bool MediaClip::InsertTag(const std::string& name, int index)
+{
+    if (m_TagModel->InsertTag(name, index))
+    {
+        emit updated();
+        return true;
+    }
+
+    return false;
+}
+
+bool MediaClip::InsertTag(const std::string& name, int index, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->InsertTag(name, index, metadata))
+    {
+        emit updated();
+        return true;
+    }
+
+    return false;
+}
+
+void MediaClip::RemoveTag(const QModelIndex& index)
+{
+    m_TagModel->RemoveTag(index);
     emit updated();
 }
 
-void MediaClip::AddTag(const std::string& name, TagMetadataModel*& metadata)
+void MediaClip::RemoveTag(int row)
 {
-    m_TagModel->AddTag(name, metadata);
+    m_TagModel->RemoveTag(row);
     emit updated();
 }
 

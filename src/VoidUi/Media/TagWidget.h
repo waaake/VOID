@@ -42,7 +42,7 @@ private: /* Methods */
 class TagWidget : public TranslucentDialog
 {
 public:
-    TagWidget(const SharedMediaClip& clip, QWidget* parent = nullptr);
+    TagWidget(const QModelIndex& index, QWidget* parent = nullptr);
     ~TagWidget();
 
     void MoveTo(const QPoint& position);
@@ -56,7 +56,7 @@ private: /* Members */
     TagBase* m_TagBase;
     QPushButton* m_AcceptButton;
 
-    std::weak_ptr<MediaClip> m_Media;
+    QModelIndex m_MediaIndex;
     TagMetadataModel* m_Metadata;
 
 private: /* Methods */

@@ -16,6 +16,7 @@
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
 #include "VoidUi/Commands/PlaylistCommands.h"
+#include "VoidUi/Commands/TagCommands.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -376,6 +377,34 @@ bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
 
     /* Added successfully */
     return true;
+}
+
+void MBridge::AddTag(const QModelIndex& index, const std::string& tag)
+{
+    if (m_Project) m_Project->PushCommand(new ApplyTagCommand(index, tag));
+}
+
+void MBridge::AddTag(const SharedMediaClip& media, const std::string& tag)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new ApplyTagCommand(index, tag));
+    }
+}
+
+void MBridge::AddTag(const QModelIndex& index, const std::string& tag, const TagMetaStruct& metadata)
+{
+    if (m_Project) m_Project->PushCommand(new ApplyTagCommand(index, tag, metadata));
+}
+
+void MBridge::AddTag(const SharedMediaClip& media, const std::string& tag, const TagMetaStruct& metadata)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new ApplyTagCommand(index, tag, metadata));
+    }
 }
 
 bool MBridge::Remove(SharedMediaClip clip)
