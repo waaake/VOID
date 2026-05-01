@@ -346,7 +346,7 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     rapidjson::Value missingFrames(rapidjson::kArrayType);
     for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
     {
-        if (m_Mediaframes.at(i).Invalid())
+        if (m_Mediaframes.at(i - m_FirstFrame).Invalid())
             missingFrames.PushBack(static_cast<int64_t>(i), allocator);
     }
 
@@ -394,7 +394,7 @@ void MediaClip::Serialize(std::ostream& out) const
 
     for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
     {
-        if (m_Mediaframes.at(i).Invalid())
+        if (m_Mediaframes.at(i - m_FirstFrame).Invalid())
         {
             out.write(reinterpret_cast<const char*>(&i), sizeof(i));
             count++;
