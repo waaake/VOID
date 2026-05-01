@@ -212,8 +212,6 @@ void TagEditor::RemoveSelected()
     const QModelIndex& index = m_TagList->currentIndex();
     if (index.isValid())
     {
-        // if (SharedMediaClip media = m_Media.lock())
-        //     media->TagsModel()->RemoveTag(index);
         _MediaBridge.RemoveTag(m_Index, index);
         TagSelected(m_TagList->currentIndex());
     }
