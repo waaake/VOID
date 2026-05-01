@@ -114,8 +114,7 @@ void BindCore(py::module_& m)
         .def("extension", &MediaClip::Extension)
         .def("startframe", &MediaClip::FirstFrame)
         .def("endframe", &MediaClip::LastFrame)
-        .def("metadata", &MediaClip::Metadata)
-        .def("add_effect", &MediaClip::AddEffect, py::arg("type"), py::return_value_policy::reference);
+        .def("metadata", &MediaClip::Metadata);
 
     /* Operator */
     py::class_<ParamValue>(m, "ParamValue")

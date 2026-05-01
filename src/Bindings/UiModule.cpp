@@ -34,6 +34,10 @@ void BindUi(py::module_& m)
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
     m.def("menu_system", &UIGlobals::InternalMenuSystem, py::return_value_policy::reference);
     m.def("player_controller", &PlayerBridge::Instance, py::return_value_policy::reference);
+    m.def("create_effect", [](const SharedMediaClip& media, const std::string& type) -> void
+    {
+        _MediaBridge.CreateEffect(media, type); 
+    }, py::arg("media"), py::arg("type"));
 
     auto register_action = []
     (const std::string& m, const std::string& action, std::function<void()> f, const std::string& shortcut = "") -> void

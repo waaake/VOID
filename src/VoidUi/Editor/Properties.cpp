@@ -68,6 +68,12 @@ void PropertiesPanel::Clear()
         w->Close();
 }
 
+void PropertiesPanel::Remove(const std::string& name)
+{
+    if (auto w = findChild<EffectEditor*>(name.c_str()))
+        w->Close();
+}
+
 void PropertiesPanel::ClearAdditionalPanels(int limit)
 {
     QList<EffectEditor*> panels = findChildren<EffectEditor*>();

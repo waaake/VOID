@@ -78,11 +78,20 @@ public:
     /* Remove Anotation for the frame */
     void RemoveAnnotation(const v_frame_t frame);
 
-    void AddTag(const std::string& name);
-    void AddTag(const std::string& name, TagMetadataModel*& metadata);
+    bool AddTag(const std::string& name);
+    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
+    bool InsertTag(const std::string& name, int index);
+    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
+    void RemoveTag(const QModelIndex& index);
+    void RemoveTag(int row);
+
+    Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
+    Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+
     void ClearTags();
 
-    Effect* AddEffect(const std::string& type);
+    Effect* CreateEffect(const std::string& type);
+    bool RemoveEffect(const std::string& name);
     void ClearEffects();
 
     inline const std::vector<Tag*>& Tags() const { return m_TagModel->Tags(); }
@@ -123,6 +132,9 @@ signals: /* Signals defining any change that has happened */
      */
     void frameCached(v_frame_t frame);
     void frameUncached(v_frame_t frame);
+
+    // Emitted before an effect gets deleted
+    void effectAboutToBeRemoved(const std::string&);
 
 private: /* Members */
     QColor m_Color;

@@ -19,6 +19,7 @@ class VOID_API Tag
 public:
     explicit Tag(const std::string& name);
     Tag(const std::string& name, TagMetadataModel*& metadata);
+    Tag(const std::string& name, const TagMetaStruct& metadata);
     ~Tag();
 
     void SetName(const std::string& name) { m_Name = name; }

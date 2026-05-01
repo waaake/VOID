@@ -19,6 +19,12 @@ Tag::Tag(const std::string& name, TagMetadataModel*& metadata)
     metadata = nullptr;
 }
 
+Tag::Tag(const std::string& name, const TagMetaStruct& metadata)
+    : m_Name(name)
+    , m_Metadata(new TagMetadataModel(metadata))
+{
+}
+
 Tag::~Tag()
 {
     m_Metadata->deleteLater();

@@ -55,22 +55,40 @@ Qt::ItemFlags TagModel::flags(const QModelIndex& index) const
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-void TagModel::AddTag(const std::string& name)
+bool TagModel::AddTag(const std::string& name)
 {
     int insertidx = static_cast<int>(m_Tags.size());
 
     beginInsertRows(QModelIndex(), insertidx, insertidx);
     m_Tags.push_back(new Tag(name));
     endInsertRows();
+    return true;
 }
 
-void TagModel::AddTag(const std::string& name, TagMetadataModel*& metadata)
+bool TagModel::AddTag(const std::string& name, const TagMetaStruct& metadata)
 {
     int insertidx = static_cast<int>(m_Tags.size());
 
     beginInsertRows(QModelIndex(), insertidx, insertidx);
     m_Tags.push_back(new Tag(name, metadata));
     endInsertRows();
+    return true;
+}
+
+bool TagModel::InsertTag(const std::string& name, int index)
+{
+    beginInsertRows(QModelIndex(), index, index);
+    m_Tags.insert(m_Tags.begin() + index, new Tag(name));
+    endInsertRows();
+    return true;
+}
+
+bool TagModel::InsertTag(const std::string& name, int index, const TagMetaStruct& metadata)
+{
+    beginInsertRows(QModelIndex(), index, index);
+    m_Tags.insert(m_Tags.begin() + index, new Tag(name, metadata));
+    endInsertRows();
+    return true;
 }
 
 void TagModel::RemoveTag(const QModelIndex& index)

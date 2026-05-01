@@ -13,6 +13,8 @@ set(SOURCES
     Commands/VoidCommand.cpp
     Commands/MediaCommands.cpp
     Commands/PlaylistCommands.cpp
+    Commands/TagCommands.cpp
+    Commands/EffectCommands.cpp
     
     # Dock
     Dock/Docker.cpp

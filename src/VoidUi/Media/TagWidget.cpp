@@ -9,6 +9,7 @@
 /* Internal */
 #include "TagWidget.h"
 #include "VoidUi/Engine/IconForge.h"
+#include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -60,9 +61,9 @@ void TagBase::Setup()
 
 /* Tag Widget {{{ */
 
-TagWidget::TagWidget(const SharedMediaClip& clip, QWidget* parent)
+TagWidget::TagWidget(const QModelIndex& index, QWidget* parent)
     : TranslucentDialog(parent)
-    , m_Media(clip)
+    , m_MediaIndex(index)
     , m_Metadata(new TagMetadataModel)
 {
     Build();
@@ -126,8 +127,9 @@ void TagWidget::Connect()
         if (name.isEmpty())
             return;
 
-        if (SharedMediaClip media = m_Media.lock())
-            m_Metadata->IsValid() ? media->AddTag(name.toStdString(), m_Metadata) : media->AddTag(name.toStdString());
+        m_Metadata->IsValid()
+            ? _MediaBridge.AddTag(m_MediaIndex, name.toStdString(), m_Metadata->Metadata())
+            : _MediaBridge.AddTag(m_MediaIndex, name.toStdString());
 
         accept();
     });
@@ -137,9 +139,10 @@ void TagWidget::Connect()
 
 /* Tag Editor {{{ */
 
-TagEditor::TagEditor(const SharedMediaClip& clip, QWidget* parent)
+TagEditor::TagEditor(const SharedMediaClip& clip, const QModelIndex& index, QWidget* parent)
     : TranslucentDialog(parent)
     , m_Media(clip)
+    , m_Index(index)
 {
     Build();
     Setup();
@@ -209,9 +212,7 @@ void TagEditor::RemoveSelected()
     const QModelIndex& index = m_TagList->currentIndex();
     if (index.isValid())
     {
-        if (SharedMediaClip media = m_Media.lock())
-            media->TagsModel()->RemoveTag(index);
-
+        _MediaBridge.RemoveTag(m_Index, index);
         TagSelected(m_TagList->currentIndex());
     }
 }

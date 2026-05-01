@@ -42,8 +42,10 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    void AddTag(const std::string& name);
-    void AddTag(const std::string& name, TagMetadataModel*& metadata);
+    bool AddTag(const std::string& name);
+    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
+    bool InsertTag(const std::string& name, int index);
+    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metdata);
     void RemoveTag(const QModelIndex& index);
     void RemoveTag(int row);
     Tag* TagAt(const QModelIndex& index) const;

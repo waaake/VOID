@@ -163,6 +163,9 @@ void WorkspaceManager::UpdateMediaQueue(Playlist* playlist)
 
 void WorkspaceManager::EditEffects(const SharedMediaClip& media)
 {
+    // Also connect the media for removing effects
+    connect(media.get(), &MediaClip::effectAboutToBeRemoved, m_PropertiesEditor, &PropertiesPanel::Remove);
+
     for (auto effect : media->Effects())
         m_PropertiesEditor->EditEffect(effect);
 

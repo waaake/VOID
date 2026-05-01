@@ -16,6 +16,8 @@
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"
 #include "VoidUi/Commands/PlaylistCommands.h"
+#include "VoidUi/Commands/TagCommands.h"
+#include "VoidUi/Commands/EffectCommands.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -376,6 +378,53 @@ bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
 
     /* Added successfully */
     return true;
+}
+
+void MBridge::AddTag(const QModelIndex& index, const std::string& tag)
+{
+    if (m_Project) m_Project->PushCommand(new ApplyTagCommand(index, tag));
+}
+
+void MBridge::AddTag(const SharedMediaClip& media, const std::string& tag)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new ApplyTagCommand(index, tag));
+    }
+}
+
+void MBridge::AddTag(const QModelIndex& index, const std::string& tag, const TagMetaStruct& metadata)
+{
+    if (m_Project) m_Project->PushCommand(new ApplyTagCommand(index, tag, metadata));
+}
+
+void MBridge::AddTag(const SharedMediaClip& media, const std::string& tag, const TagMetaStruct& metadata)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new ApplyTagCommand(index, tag, metadata));
+    }
+}
+
+void MBridge::RemoveTag(const QModelIndex& mindex, const QModelIndex& tindex)
+{
+    if (m_Project) m_Project->PushCommand(new RemoveTagCommand(mindex, tindex));
+}
+
+void MBridge::CreateEffect(const SharedMediaClip& media, const std::string& type)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new CreateEffectCommand(index, type));
+    }
+}
+
+void MBridge::CreateEffect(const QModelIndex& index, const std::string& type)
+{
+    if (m_Project) m_Project->PushCommand(new CreateEffectCommand(index, type));
 }
 
 bool MBridge::Remove(SharedMediaClip clip)

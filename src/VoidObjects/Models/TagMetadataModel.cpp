@@ -12,6 +12,12 @@ TagMetadataModel::TagMetadataModel(QObject* parent)
 {
 }
 
+TagMetadataModel::TagMetadataModel(const TagMetaStruct& metadata, QObject* parent)
+    : QAbstractTableModel(parent)
+    , m_Metadata(metadata)
+{
+}
+
 int TagMetadataModel::rowCount(const QModelIndex& parent) const
 {
     return parent.isValid() ? 0 : static_cast<int>(m_Metadata.size()) + 1;
