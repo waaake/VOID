@@ -30,6 +30,7 @@ public:
     void EditEffect(Effect* effect);
 
     void Clear();
+    void Remove(const std::string& name);
     void ClearAdditionalPanels(int limit);
 
 private: /* Members */

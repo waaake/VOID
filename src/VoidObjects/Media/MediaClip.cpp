@@ -242,7 +242,7 @@ void MediaClip::ClearTags()
     emit updated();
 }
 
-Effect* MediaClip::AddEffect(const std::string& type)
+Effect* MediaClip::CreateEffect(const std::string& type)
 {
     if (Effect* effect = _EffectsBridge.CreateEffect(type))
     {
@@ -257,6 +257,27 @@ Effect* MediaClip::AddEffect(const std::string& type)
     }
 
     return nullptr;
+}
+
+bool MediaClip::RemoveEffect(const std::string& name)
+{
+    for (int i = static_cast<int>(m_Effects.size()) - 1; i >= 0; --i)
+    {
+        Effect* effect = m_Effects[i];
+        if (effect->Name() == name)
+        {
+            emit effectAboutToBeRemoved(effect->Name());
+
+            effect->deleteLater();
+            delete effect;
+            effect = nullptr;
+
+            m_Effects.erase(m_Effects.begin() + i);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void MediaClip::ClearEffects()

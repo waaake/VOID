@@ -99,6 +99,11 @@ public:
     void AddTag(const SharedMediaClip& media, const std::string& tag, const TagMetaStruct& metadata);
     void RemoveTag(const QModelIndex& mindex, const QModelIndex& tindex);
 
+    void CreateEffect(const SharedMediaClip& media, const std::string& type);
+    void CreateEffect(const QModelIndex& index, const std::string& type);
+    // void RemoveEffect(const QModelIndex& index, const std::string& name);
+    // void RemoveEffect(const SharedMediaClip& index, const std::string& name);
+
     /**
      * Playlist
      */

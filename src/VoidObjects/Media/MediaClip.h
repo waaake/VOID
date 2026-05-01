@@ -90,7 +90,8 @@ public:
 
     void ClearTags();
 
-    Effect* AddEffect(const std::string& type);
+    Effect* CreateEffect(const std::string& type);
+    bool RemoveEffect(const std::string& name);
     void ClearEffects();
 
     inline const std::vector<Tag*>& Tags() const { return m_TagModel->Tags(); }
@@ -131,6 +132,9 @@ signals: /* Signals defining any change that has happened */
      */
     void frameCached(v_frame_t frame);
     void frameUncached(v_frame_t frame);
+
+    // Emitted before an effect gets deleted
+    void effectAboutToBeRemoved(const std::string&);
 
 private: /* Members */
     QColor m_Color;
