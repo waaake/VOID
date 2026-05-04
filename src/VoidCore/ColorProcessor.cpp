@@ -28,7 +28,6 @@ void ColorProcessor::SetConfig(const Config& type)
     else
         m_Config = OCIO::Config::CreateFromEnv();
 
-    /* Set the Color Config */
     OCIO::SetCurrentConfig(m_Config);
 }
 
@@ -36,7 +35,6 @@ void ColorProcessor::SetConfig(const std::string& path)
 {
     m_Config = OCIO::Config::CreateFromFile(path.c_str());
 
-    /* Set the Color Config */
     OCIO::SetCurrentConfig(m_Config);
 }
 
@@ -44,22 +42,19 @@ void ColorProcessor::SetConfig(std::istream& stream)
 {
     m_Config = OCIO::Config::CreateFromStream(stream);
 
-    /* Set the color Config */
     OCIO::SetCurrentConfig(m_Config);
 }
 
 std::vector<std::string> ColorProcessor::Displays() const
 {
     std::vector<std::string> displays;
-    
+
     /* Number of Displays */
     int num = m_Config->getNumDisplays();
     displays.reserve(num);
 
     for (int i = 0; i < num; ++i)
-    {
         displays.emplace_back(m_Config->getDisplay(i));
-    }
 
     return displays;
 }
@@ -67,15 +62,13 @@ std::vector<std::string> ColorProcessor::Displays() const
 std::vector<std::string> ColorProcessor::Views(const std::string& display) const
 {
     std::vector<std::string> views;
-    
+
     /* Number of Views */
     int num = m_Config->getNumViews(display.c_str());
     views.reserve(num);
 
     for (int i = 0; i < num; ++i)
-    {
         views.emplace_back(m_Config->getView(display.c_str(), i));
-    }
 
     return views;
 }
@@ -83,15 +76,13 @@ std::vector<std::string> ColorProcessor::Views(const std::string& display) const
 std::vector<std::string> ColorProcessor::Colorspaces() const
 {
     std::vector<std::string> colospaces;
-    
+
     /* Number of Colorspaces */
     int num = m_Config->getNumColorSpaces();
     colospaces.reserve(num);
 
     for (int i = 0; i < num; ++i)
-    {
         colospaces.emplace_back(m_Config->getColorSpaceNameByIndex(i));
-    }
 
     return colospaces;
 }
@@ -131,6 +122,21 @@ void ColorProcessor::Create(const std::string& inputcolorspace, const std::strin
 
     /* Get the GPU processor */
     m_GProcessor = processor->getDefaultGPUProcessor();
+}
+
+void ColorProcessor::Set(const std::string& display)
+{
+    Create(OCIO_NAMESPACE::ROLE_SCENE_LINEAR, display);
+}
+
+void ColorProcessor::Set(const std::string& display, const std::string& view)
+{
+    Create(OCIO_NAMESPACE::ROLE_SCENE_LINEAR, display, view);
+}
+
+void ColorProcessor::ResetDisplay()
+{
+    Create(OCIO_NAMESPACE::ROLE_SCENE_LINEAR, m_Config->getDefaultDisplay());
 }
 
 std::string ColorProcessor::Shader(const std::string& function) const

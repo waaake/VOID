@@ -46,6 +46,7 @@ public:
      * Default display value from the current config
      */
     inline std::string DefaultDisplay() const { return m_Config->getDefaultDisplay(); }
+    inline std::string DefaultView(const std::string& display) const { return m_Config->getDefaultView(display.c_str()); }
 
     /**
      * Setup Processor Config
@@ -58,8 +59,10 @@ public:
     /**
      * Set Display for the processor
      */
-    inline void SetDisplay(const std::string& display) { Create(OCIO_NAMESPACE::ROLE_SCENE_LINEAR, display); }
-    inline void SetDefaultDisplay() { Create(OCIO_NAMESPACE::ROLE_SCENE_LINEAR, m_Config->getDefaultDisplay()); }
+    void Set(const std::string& display);
+    void Set(const std::string& display, const std::string& view);
+
+    void ResetDisplay();
 
     /**
      * Returns the Generated shader code from the Constructed GPU Processor

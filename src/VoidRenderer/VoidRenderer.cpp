@@ -541,14 +541,11 @@ void VoidRenderer::SetChannelMode(int mode)
 
 void VoidRenderer::SetColorDisplay(const std::string& display)
 {
-    /* Set the display on the Color Processor */
-    ColorProcessor::Instance().SetDisplay(display);
+    ColorProcessor::Instance().Set(display);
 
-    /* Reinit the Image Shaders */
     m_ImageRenderer.ReinitShaderProgram();
     m_ImageComparisonRenderer.ReinitShaderProgram();
 
-    /* Once the Shaders are initialized with the Current OCIO Display -> Redraw */
     update();
 }
 

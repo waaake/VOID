@@ -69,8 +69,7 @@ void ColorController::InitColorProcessor()
         }
     }
 
-    /* Setup default color display */
-    proc.SetDefaultDisplay();
+    proc.ResetDisplay();
 }
 
 void ColorController::Setup()
