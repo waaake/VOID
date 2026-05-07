@@ -89,7 +89,6 @@ void StartupWindow::Build()
     m_SideButtonsLayout->addWidget(m_OpenProjectBtn);
     m_SideButtonsLayout->addStretch(1);
 
-    QLabel* recentProjectsLabel = new QLabel("Recent Projects");
     m_ProjectsLister = new QListView;
 
     m_DontShowCheck = new QCheckBox("Don't Show this dialog on startup");
@@ -101,7 +100,7 @@ void StartupWindow::Build()
     m_BottomButtonsLayout->addWidget(m_LoadBtn);
     m_BottomButtonsLayout->addWidget(m_CloseBtn);
 
-    m_ProjectsLayout->addWidget(recentProjectsLabel);
+    m_ProjectsLayout->addWidget(new QLabel("Recent Projects", this));
     m_ProjectsLayout->addWidget(m_ProjectsLister);
 
     m_InternalSplitLayout->addLayout(m_SideButtonsLayout);

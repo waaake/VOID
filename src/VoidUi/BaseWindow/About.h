@@ -50,18 +50,13 @@ private: /* Members */
     QLabel* m_Author;
 
     QLabel* m_ContactHeader;
-    QLabel* m_Contact;
     
     QLabel* m_VersionHeader;
-    QLabel* m_Version;
 
     QLabel* m_GithubHeader;
-    QLabel* m_Github;
 
 private: /* Methods */
     void Build();
-    void Connect();
-
 };
 
 VOID_NAMESPACE_CLOSE
