@@ -106,7 +106,7 @@ void PyScriptEditor::Connect()
     connect(m_SaveScriptButton, &QPushButton::clicked, this, &PyScriptEditor::SaveScript);
     connect(m_LoadScriptButton, &QPushButton::clicked, this, &PyScriptEditor::LoadScript);
 
-    connect(m_ClearOutputButton, &QPushButton::clicked, this, [&]() -> void { m_OutputConsole->clear(); });
+    connect(m_ClearOutputButton, &QPushButton::clicked, this, [this]() -> void { m_OutputConsole->clear(); });
 }
 
 void PyScriptEditor::Setup()

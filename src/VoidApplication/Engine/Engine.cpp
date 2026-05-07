@@ -132,7 +132,7 @@ void VoidEngine::PostStartup()
         EngineBridge::LoadMedia(m_Args.media);
 
     /* Defer the callbacks */
-    QTimer::singleShot(800, m_Imager, [&]() -> void { Callback(); });
+    QTimer::singleShot(800, m_Imager, [this]() -> void { Callback(); });
 }
 
 void VoidEngine::Callback()

@@ -85,18 +85,18 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
     QAction* setCurrentWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Set current workspace as default");
     QAction* resetDefaultWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Reset the default workspace");
 
-    connect(playbackWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::PLAYBACK); });
-    connect(basicWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::BASIC); });
-    connect(reviewWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::REVIEW); });
-    connect(scriptingWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::SCRIPTING); });
-    connect(editingWorkspaceAction, &QAction::triggered, this, [&]() -> void { Switch(Workspace::EDITING); });
+    connect(playbackWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::PLAYBACK); });
+    connect(basicWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::BASIC); });
+    connect(reviewWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::REVIEW); });
+    connect(scriptingWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::SCRIPTING); });
+    connect(editingWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::EDITING); });
 
-    connect(setCurrentWorkspaceAction, &QAction::triggered, this, [&]() -> void
+    connect(setCurrentWorkspaceAction, &QAction::triggered, this, [this]() -> void
     {
         VoidPreferences::Instance().Set(Settings::DefaultWorkspace, static_cast<int>(m_Current));
     });
 
-    connect(resetDefaultWorkspaceAction, &QAction::triggered, this, [&]() -> void
+    connect(resetDefaultWorkspaceAction, &QAction::triggered, this, [this]() -> void
     {
         VoidPreferences::Instance().Set(Settings::DefaultWorkspace, 0);
         Switch(Workspace::PLAYBACK);

@@ -84,13 +84,13 @@ void MediaQueue::Setup()
 
 void MediaQueue::Connect()
 {
-    connect(m_MoveDownArrow, &QPushButton::clicked, this, [&]() -> void
+    connect(m_MoveDownArrow, &QPushButton::clicked, this, [this]() -> void
     {
         QModelIndex index = m_Playlist->ShiftIndexDown(m_View->currentIndex());
         if (index.isValid())
             m_View->setCurrentIndex(index);
     });
-    connect(m_MoveUpArrow, &QPushButton::clicked, this, [&]() -> void
+    connect(m_MoveUpArrow, &QPushButton::clicked, this, [this]() -> void
     {
         QModelIndex index = m_Playlist->ShiftIndexUp(m_View->currentIndex());
         if (index.isValid())
