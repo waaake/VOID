@@ -121,21 +121,19 @@ void Timeslider::mouseReleaseEvent(QMouseEvent* event)
 
 void Timeslider::paintEvent(QPaintEvent* event)
 {
-	/* Painter to draw components for the Timeslider */
 	QPainter painter(this);
 
-	/* Pos for Framing User Defined Frame */
 	int startpos = 0, endpos = 0;
-
-	/* Width of each unit value represented in the slider */
 	const float uwidth = float(width()) / (maximum() - minimum());
 	const float halfuwidth = uwidth * 0.5f;
 
-	/* Groove {{{ */
+	// const int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
+	const int step = (maximum() - minimum() + 1) / std::max((maximum() - minimum() + 1) / SL_MARKING_STEP, 1);
+	const float rec_range = 1.f / (maximum() - minimum() + 1);
+
 	painter.setPen(QColor(30, 30, 30));
 	painter.setBrush(QBrush(QColor(30, 30, 30)));
 
-	/* Base track color */
 	painter.fillRect(rect(), Qt::black);
 
 	/**
@@ -145,96 +143,70 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	 */
 	QRect r(rect());
 
-	/* Draw In and Out Frames with Red if they have been defined {{{ */
 	if (m_UserStartframe)
 	{
-		/* Position */
 		startpos = (m_UserStartframe - minimum()) * uwidth;
 		r.setLeft(startpos);
 	}
 
 	if (m_UserEndframe)
 	{
-		/* Position */
 		endpos = (m_UserEndframe - minimum()) * uwidth;
 		r.setRight(endpos);
 	}
-	/* }}} */
 
-	// painter.drawRect(r);
 	painter.fillRect(r, palette().color(QPalette::AlternateBase));
 
-	/* Position Handle */
-	const int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
 	painter.setBrush(palette().color(QPalette::Highlight));
-
-	/* The position handle should have a minimum width */
-	const int hwidth = std::max(uwidth, 4.0f);
-
-	painter.drawRect(hpos - hwidth * 0.5f, 0, hwidth, height());
+	painter.drawRect(
+		// Handle pos - half of the width of the handle
+		width() * (value() - minimum()) / std::max((maximum() - minimum()), 1) - std::max(uwidth, 4.0f) * 0.5f,
+		0,
+		std::max(uwidth, 4.0f),
+		height()
+	);
 	/* }}} */
 
-	const int range = maximum() - minimum() + 1;
-
-	/* Step here would give the step based on the number of markings are being generated */
-	const int step = range / std::max(range / SL_MARKING_STEP, 1);
-	const float rec_range = 1.f / range;
-
-	for (int i = minimum(); i <= maximum(); i+=step)
+	for (int i = minimum(); i <= maximum(); i += step)
 	{
 		painter.setPen(QPen(Qt::gray, 1));
-		/* Position of the line */
-		const int pos = width() * (i - minimum()) * rec_range;
-		/* Draw Line representing Marked frames on the timeslider */
-		painter.drawLine(pos, height() - 10, pos, height());
+		painter.drawLine(
+			width() * (i - minimum()) * rec_range, height() - 10,
+			width() * (i - minimum()) * rec_range, height()
+		);
 	}
 
 	for (int frame : m_CachedFrames)
 	{
-		const int xpos = (frame - minimum()) * uwidth;
 		painter.setPen(QPen(SL_CACHE_COLOR, 3));
-		/* Draw line representing the frame which has been cached */
-		painter.drawLine(xpos, 0, xpos + uwidth, 0);
+		painter.drawLine((frame - minimum()) * uwidth, 0, (frame - minimum()) * uwidth + uwidth, 0);
 	}
 
 	for (int frame : m_AnnotatedFrames)
 	{
-		const int xpos = (frame - minimum()) * uwidth;
 		painter.setPen(QPen(SL_ANNOTATED_COLOR, 3));
-		/* Draw line representing that the frame has been cached */
-		painter.drawLine(xpos - halfuwidth, 6, xpos + halfuwidth, 6);
+		painter.drawLine((frame - minimum()) * uwidth - halfuwidth, 6, (frame - minimum()) * uwidth + halfuwidth, 6);
 	}
 
-	/* Draw In and Out Frames with Red if they have been defined {{{ */
 	if (startpos)
 	{
-		/* Draw a Line to indicate that this is a marked frame */
 		painter.setPen(QPen(QColor(200, 75, 60), 2));
 		painter.drawLine(startpos, 0, startpos, height());
-
-		/* Draw Text to indicate the frame */
 		painter.drawText(startpos + 4, height() * 0.5f, QString::number(m_UserStartframe));
 	}
 
 	if (endpos)
 	{
-		/* Draw a Line to indicate that this is a marked frame */
 		painter.setPen(QPen(QColor(200, 75, 60), 2));
 		painter.drawLine(endpos, 0, endpos, height());
-
-		/* Draw Text to indicate the frame */
 		painter.drawText(endpos + 4, height() * 0.5f, QString::number(m_UserEndframe));
 	}
-	/* }}} */
 
-	/* This is the part where we draw the focussed frame on the timeslider when mouse is hovered {{{ */
 	if (m_Focussed)
 	{
-		/* Draw the frame number */
 		painter.setPen(SL_FRAME_COLOR);
 		painter.drawText(m_HovXPos - halfuwidth, height() * 0.5f, QString::number(m_HoveredFrame));
 	}
-	/* }}} */
 }
 
 void Timeslider::UpdateHovered(int xpos)
