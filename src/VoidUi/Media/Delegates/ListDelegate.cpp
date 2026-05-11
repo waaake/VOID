@@ -61,20 +61,14 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
      * ------------------------------
      */
 
-    /* Base Rect */
-    QRect rect = option.rect;
-    painter->save();
-
-    /* Default background */
-    QColor bg = option.palette.color(QPalette::Window).lighter(150);
-    painter->fillRect(rect, bg);
+    painter->fillRect(option.rect, option.palette.color(QPalette::Window).lighter(150));
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {   
         /* Gradient */
-        QLinearGradient gradient(0, 0, rect.width(), 0);
-        gradient.setColorAt(0, bg);
+        QLinearGradient gradient(0, 0, option.rect.width(), 0);
+        gradient.setColorAt(0, option.palette.color(QPalette::Window).lighter(150));
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
 
         painter->save();
@@ -82,36 +76,48 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         /* Draw the Background */
         painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
-        painter->drawRect(rect);
+        painter->drawRect(option.rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(QRect(rect.width() - 4, rect.top(), 4, rect.height()), option.palette.color(QPalette::Highlight));
+        painter->fillRect(
+            option.rect.width() - 4,
+            option.rect.top(),
+            4,
+            option.rect.height(),
+            option.palette.color(QPalette::Highlight)
+        );
 
         painter->restore();
     }
 
-    painter->restore();
-
-    /* Save the painter for restoring later */
-    painter->save();
-
     /* Side Bar */
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(150));
+    painter->fillRect(
+        option.rect.left(),
+        option.rect.top(),
+        6,
+        option.rect.height(),
+        option.palette.color(QPalette::Window).lighter(300)
+    );
 
-    const int x = rect.left() + 10;
-    const int y = rect.top() + 4;
-
-    m_TagX = x;
-    m_TagY = y + ICON_SIZE + 2;
+    m_TagX = option.rect.left() + 10;
+    m_TagY = option.rect.top() + 4 + ICON_SIZE + 2;
 
     if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
-        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Text), ICON_SIZE));
+        painter->drawPixmap(
+            option.rect.left() + 10, option.rect.top() + 4,
+            IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Text),
+            ICON_SIZE
+        ));
 
     if (index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
-        painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Text), ICON_SIZE));
+        painter->drawPixmap(
+            m_TagX,
+            m_TagY,
+            IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Text), ICON_SIZE)
+        );
 
     /* Name */
-    const QRect namerect = QRect(rect.left() + 30, rect.top(), rect.right(), rect.height());
+    const QRect namerect(option.rect.left() + 30, option.rect.top(), option.rect.right(), option.rect.height());
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
@@ -120,13 +126,13 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     /* Frame Range */
     painter->drawText(
-        QRect(namerect.left(), rect.top(), rect.right() - 40, rect.height()),
+        namerect.left(),
+        option.rect.top(),
+        option.rect.right() - 40,
+        option.rect.height(),
         Qt::AlignRight | Qt::AlignVCenter,
         index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
     );
-
-    /* Restore for other use */
-    painter->restore();
 }
 
 QSize BasicMediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -175,18 +181,16 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     /* Base Rect */
     QRect rect = option.rect;
-    painter->save();
 
     /* Default background */
-    QColor bg = option.palette.color(QPalette::Window).lighter(150);
-    painter->fillRect(rect, bg);
+    painter->fillRect(rect, option.palette.color(QPalette::Window).lighter(150));
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {
         /* Gradient */
         QLinearGradient gradient(0, 0, rect.width(), 0);
-        gradient.setColorAt(0, bg);
+        gradient.setColorAt(0, option.palette.color(QPalette::Window).lighter(150));
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(150));
         
         painter->save();
@@ -197,21 +201,16 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         painter->drawRect(rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(QRect(rect.width() - 4, rect.top(), 4, rect.height()), option.palette.color(QPalette::Highlight));
+        painter->fillRect(rect.width() - 4, rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
 
         painter->restore();
     }
 
-    painter->restore();
-
-    /* Save the painter for restoring later */
-    painter->save();
-    
     /* Side Bar */
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(150));
+    painter->fillRect(rect.left(), rect.top(), 6, rect.height(), option.palette.color(QPalette::Window).lighter(300));
 
     /* Thumbnail */
-    const QRect thumbrect = QRect(rect.left() + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+    const QRect thumbrect(rect.left() + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
     QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
@@ -249,25 +248,40 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     const int namewidth = rect.width() - (thumbrect.width() + 70);
 
     /* Name */
-    const QRect namerect = QRect(thumbright, rect.top(), namewidth, halfheight);
-    QString name = index.data(static_cast<int>(MediaModel::MRoles::Name)).toString();
-    painter->drawText(namerect, Qt::AlignLeft | Qt::AlignVCenter, name);
+    const QRect namerect(thumbright, rect.top(), namewidth, halfheight);
+    painter->drawText(
+        namerect,
+        Qt::AlignLeft | Qt::AlignVCenter,
+        index.data(static_cast<int>(MediaModel::MRoles::Name)).toString()
+    );
 
     /* Extension */
-    const QRect extrect = QRect(namerect.right(), rect.top(), 46, halfheight);
-    QString extension = index.data(static_cast<int>(MediaModel::MRoles::Extension)).toString();
-    painter->drawText(extrect, Qt::AlignRight | Qt::AlignVCenter, extension);
+    const QRect extrect(namerect.right(), rect.top(), 46, halfheight);
+    painter->drawText(
+        extrect,
+        Qt::AlignRight | Qt::AlignVCenter,
+        index.data(static_cast<int>(MediaModel::MRoles::Extension)).toString()
+    );
 
     /* Frame range */
-    QString framerange = index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString();
-    painter->drawText(QRect(thumbright, namerect.bottom(), namewidth, halfheight), Qt::AlignLeft | Qt::AlignVCenter, framerange);
+    painter->drawText(
+        thumbright,
+        namerect.bottom(),
+        namewidth,
+        halfheight,
+        Qt::AlignLeft | Qt::AlignVCenter,
+        index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
+    );
 
     /* Framerate */
-    QString framerate = index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString();
-    painter->drawText(QRect(namerect.right(), extrect.bottom(), 46, halfheight), Qt::AlignRight | Qt::AlignVCenter, framerate);
-
-    /* Restore for other use */
-    painter->restore();
+    painter->drawText(
+        namerect.right(),
+        extrect.bottom(),
+        46,
+        halfheight,
+        Qt::AlignRight | Qt::AlignVCenter,
+        index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString()
+    );
 }
 
 QSize MediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const

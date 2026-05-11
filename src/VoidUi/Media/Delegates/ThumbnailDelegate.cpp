@@ -10,6 +10,7 @@
 #include "ThumbnailDelegate.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/IconForge.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -50,6 +51,7 @@ bool MediaThumbnailDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
 
 void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+    Tools::VoidProfiler<std::chrono::microseconds> pro("MediaThumbnailDelegate::paint");
     /**
      * The main Rect for the Item will be divided into 5 sub sections 
      * --------------------------
@@ -70,20 +72,17 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     /* Size of the Grid Item */
     // int width = 150;
-    int height = rect.height();
-
-    painter->save();
+    // int height = rect.height();
 
     /* Default background */
-    QColor bg = option.palette.color(QPalette::Window).lighter(150);
-    painter->fillRect(rect, bg);
+    painter->fillRect(rect, option.palette.color(QPalette::Window).lighter(150));
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {
         /* Gradient */
         QLinearGradient gradient(rect.left(), rect.top(), rect.left() + 150, rect.top());
-        gradient.setColorAt(0, bg);
+        gradient.setColorAt(0, option.palette.color(QPalette::Window).lighter(150));
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
         
         painter->save();
@@ -94,23 +93,17 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         painter->drawRect(rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(QRect(rect.left() + (150 - 4), rect.top(), 4, height), option.palette.color(QPalette::Highlight));
-
+        painter->fillRect(rect.left() + (150 - 4), rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
         painter->restore();
     }
 
-    painter->restore();
-
-    /* Save the painter for restoring later */
-    painter->save();
-
     /* Side Bar */
-    painter->fillRect(QRect(rect.left(), rect.top(), 6, rect.height()), bg.lighter(150));
+    painter->fillRect(rect.left(), rect.top(), 6, rect.height(), option.palette.color(QPalette::Window).lighter(300));
 
     const int left = rect.left() + 10;
 
     /* Thumbnail */
-    const QRect thumbrect = QRect(left, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);   // Square of 130 x 100;
+    const QRect thumbrect(left, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);   // Square of 130 x 100;
     QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
@@ -143,10 +136,8 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     if (tags)
         painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Text), ICON_SIZE));
 
-    int thumbbottom = thumbrect.bottom() + 5;
-
     /* Name */
-    const QRect namerect = QRect(left, thumbrect.bottom(), 100, 20);
+    const QRect namerect(left, thumbrect.bottom(), 100, 20);
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
@@ -154,7 +145,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     );
 
     /* Extension */
-    const QRect extrect = QRect(namerect.right(), thumbrect.bottom(), 30, 20);
+    const QRect extrect(namerect.right(), thumbrect.bottom(), 30, 20);
     painter->drawText(
         extrect,
         Qt::AlignRight | Qt::AlignVCenter,
@@ -162,7 +153,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     );
 
     /* Frame range */
-    const QRect rangerect = QRect(left, namerect.bottom(), 80, 20);
+    const QRect rangerect(left, namerect.bottom(), 80, 20);
     painter->drawText(
         rangerect,
         Qt::AlignLeft | Qt::AlignVCenter,
@@ -171,13 +162,13 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     /* Framerate */
     painter->drawText(
-        QRect(rangerect.right(), extrect.bottom(), 50, 20),
+        rangerect.right(),
+        extrect.bottom(),
+        50,
+        20,
         Qt::AlignRight | Qt::AlignVCenter,
         index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString()
     );
-
-    /* Restore for other use */
-    painter->restore();
 }
 
 QSize MediaThumbnailDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
