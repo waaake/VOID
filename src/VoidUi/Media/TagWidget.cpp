@@ -38,15 +38,12 @@ void TagBase::Build()
 {
     m_Layout = new QGridLayout(this);
 
-    QLabel* nameLabel = new QLabel("Name:");
-    QLabel* dataLabel = new QLabel("Data:");
-
     m_NameEdit = new QLineEdit;
     m_DataTree = new QTreeView;
 
-    m_Layout->addWidget(nameLabel, 0, 0, 1, 1);
+    m_Layout->addWidget(new QLabel("Name:", this), 0, 0, 1, 1);
     m_Layout->addWidget(m_NameEdit, 0, 1, 1, 2);
-    m_Layout->addWidget(dataLabel, 1, 0, 1, 1);
+    m_Layout->addWidget(new QLabel("Data:", this), 1, 0, 1, 1);
     m_Layout->addWidget(m_DataTree, 1, 1, 7, 2);
 
     m_Layout->setContentsMargins(0, 0, 0, 0);

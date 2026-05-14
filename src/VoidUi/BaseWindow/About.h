@@ -29,10 +29,6 @@ private: /* Members */
 
     /* Main Layout for the Dialog */
     QVBoxLayout* m_Layout;
-    QHBoxLayout* m_ButtonLayout;
-
-    /* Internal Layout for Details */
-    QGridLayout* m_DetailsLayout;
 
     /* Separators */
     QFrame* m_LogoSeparator;
@@ -50,18 +46,13 @@ private: /* Members */
     QLabel* m_Author;
 
     QLabel* m_ContactHeader;
-    QLabel* m_Contact;
     
     QLabel* m_VersionHeader;
-    QLabel* m_Version;
 
     QLabel* m_GithubHeader;
-    QLabel* m_Github;
 
 private: /* Methods */
     void Build();
-    void Connect();
-
 };
 
 VOID_NAMESPACE_CLOSE

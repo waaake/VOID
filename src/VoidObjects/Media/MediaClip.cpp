@@ -250,8 +250,7 @@ Effect* MediaClip::CreateEffect(const std::string& type)
         m_Effects.push_back(effect);
 
         // For every effect that gets updated, the media will be set dirty
-        connect(effect, &Effect::updated, this, [&]() -> void { SetDirty(true); });
-
+        connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
         SetDirty(true);
         return effect;
     }
@@ -344,9 +343,9 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
 
     /* Save any missing frames from the media */
     rapidjson::Value missingFrames(rapidjson::kArrayType);
-    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
     {
-        if (m_Mediaframes.at(i - m_FirstFrame).Invalid())
+        if (m_Mediaframes.at(i).Invalid())
             missingFrames.PushBack(static_cast<int64_t>(i), allocator);
     }
 
@@ -392,9 +391,9 @@ void MediaClip::Serialize(std::ostream& out) const
     uint32_t count = 0;
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
-    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
     {
-        if (m_Mediaframes.at(i - m_FirstFrame).Invalid())
+        if (m_Mediaframes.at(i).Invalid())
         {
             out.write(reinterpret_cast<const char*>(&i), sizeof(i));
             count++;

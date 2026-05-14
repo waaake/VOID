@@ -106,13 +106,13 @@ void PyScriptEditor::Connect()
     connect(m_SaveScriptButton, &QPushButton::clicked, this, &PyScriptEditor::SaveScript);
     connect(m_LoadScriptButton, &QPushButton::clicked, this, &PyScriptEditor::LoadScript);
 
-    connect(m_ClearOutputButton, &QPushButton::clicked, this, [this]() { m_OutputConsole->clear(); });
+    connect(m_ClearOutputButton, &QPushButton::clicked, this, [this]() -> void { m_OutputConsole->clear(); });
 }
 
 void PyScriptEditor::Setup()
 {
     #ifdef __APPLE__
-    QFont scriptf("Arial");
+    QFont scriptf("Courier New");
     #else
     QFont scriptf("Courier");
     #endif

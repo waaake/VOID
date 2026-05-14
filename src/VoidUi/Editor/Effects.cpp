@@ -167,7 +167,7 @@ void EffectEditor::Setup()
 
 void EffectEditor::Connect()
 {
-    connect(m_NameEdit, &QLineEdit::editingFinished, this, [&]() -> void
+    connect(m_NameEdit, &QLineEdit::editingFinished, this, [this]() -> void
     {
         const QString text = m_NameEdit->text();
         m_Effect->SetName(text.toStdString());
@@ -175,7 +175,7 @@ void EffectEditor::Connect()
     });
 
     connect(m_CloseButton, &QToolButton::clicked, this, &EffectEditor::Close);
-    connect(m_EnableButton, &QToolButton::toggled, this, [&](bool checked) -> void
+    connect(m_EnableButton, &QToolButton::toggled, this, [this](bool checked) -> void
     {
         m_Effect->SetEnabled(checked);
         _PlayerBridge.Refresh();

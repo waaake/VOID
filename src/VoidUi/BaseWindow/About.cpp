@@ -22,56 +22,15 @@ VOID_NAMESPACE_OPEN
 AboutVoid::AboutVoid(QWidget* parent)
     : QDialog(parent)
 {
-    /* Build Base UI */
     Build();
+    connect(m_OkButton, &QPushButton::clicked, this, &QDialog::close);
 
-    /* Connect Signals */
-    Connect();
-
-    /* Fixed size of the dialog */
     setFixedSize(600, 400);
-
-    /* Frameless */
     setWindowFlag(Qt::FramelessWindowHint);
 }
 
 AboutVoid::~AboutVoid()
 {
-    /* Cleanup the widgets first */
-    m_OkButton->deleteLater();
-    delete m_OkButton;
-    m_LogoSeparator->deleteLater();
-    delete m_LogoSeparator;
-    m_ButtonSeparator->deleteLater();
-    delete m_ButtonSeparator;
-    m_VoidLabel->deleteLater();
-    delete m_VoidLabel;
-    m_About->deleteLater();
-    delete m_About;
-    m_Description->deleteLater();
-    delete m_Description;
-    m_AuthorHeader->deleteLater();
-    delete m_AuthorHeader;
-    m_Author->deleteLater();
-    delete m_Author;
-    m_ContactHeader->deleteLater();
-    delete m_ContactHeader;
-    m_Contact->deleteLater();
-    delete m_Contact;
-    m_VersionHeader->deleteLater();
-    delete m_VersionHeader;
-    m_Version->deleteLater();
-    delete m_Version;
-    m_GithubHeader->deleteLater();
-    delete m_GithubHeader;
-    m_Github->deleteLater();
-    delete m_Github;
-
-    /* Delete the layouts after we have deleted the widgets */
-    m_ButtonLayout->deleteLater();
-    delete m_ButtonLayout;
-    m_DetailsLayout->deleteLater();
-    delete m_DetailsLayout;
     /* Delete the main layout at last*/
     m_Layout->deleteLater();
     delete m_Layout;
@@ -81,6 +40,9 @@ void AboutVoid::Build()
 {
     /* Base Layout */
     m_Layout = new QVBoxLayout(this);
+
+    QHBoxLayout* buttonLayout = new QHBoxLayout;
+    QGridLayout* detailsLayout = new QGridLayout;
 
     /* VOID Logo */
     m_VoidLabel = new QLabel;
@@ -126,30 +88,24 @@ void AboutVoid::Build()
 
     m_ContactHeader = new QLabel("Contact: ");
     m_ContactHeader->setFont(header);
-    m_Contact = new QLabel(CONTACT);
     
     m_VersionHeader = new QLabel("Version: ");
     m_VersionHeader->setFont(header);
-    m_Version = new QLabel(VOID_VERSION_STRING);
 
     m_GithubHeader = new QLabel("Github: ");
     m_GithubHeader->setFont(header);
-    m_Github = new QLabel(GITHUB);
 
-    /* Add to details layouts */
-    m_DetailsLayout = new QGridLayout;
+    detailsLayout->addWidget(m_AuthorHeader, 0, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(m_Author, 0, 1);
 
-    m_DetailsLayout->addWidget(m_AuthorHeader, 0, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(m_Author, 0, 1);
+    detailsLayout->addWidget(m_ContactHeader, 1, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(new QLabel(CONTACT, this), 1, 1);
 
-    m_DetailsLayout->addWidget(m_ContactHeader, 1, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(m_Contact, 1, 1);
+    detailsLayout->addWidget(m_VersionHeader, 2, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(new QLabel(VOID_VERSION_STRING, this), 2, 1);
 
-    m_DetailsLayout->addWidget(m_VersionHeader, 2, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(m_Version, 2, 1);
-
-    m_DetailsLayout->addWidget(m_GithubHeader, 3, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(m_Github, 3, 1);
+    detailsLayout->addWidget(m_GithubHeader, 3, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(new QLabel(GITHUB, this), 3, 1);
 
     /* --------------------------------------------- */
     m_ButtonSeparator = new QFrame;
@@ -159,11 +115,10 @@ void AboutVoid::Build()
     m_ButtonSeparator->setMidLineWidth(3);
 
     /* Buttons */
-    m_ButtonLayout = new QHBoxLayout;
     m_OkButton = new QPushButton("Close");
 
-    m_ButtonLayout->addStretch(1);
-    m_ButtonLayout->addWidget(m_OkButton);
+    buttonLayout->addStretch(1);
+    buttonLayout->addWidget(m_OkButton);
 
     /* Add to the Layout */
     m_Layout->addWidget(m_VoidLabel);
@@ -173,18 +128,12 @@ void AboutVoid::Build()
 
     /* Spacing */
     m_Layout->addStretch(1);
-
-    m_Layout->addLayout(m_DetailsLayout);
+    m_Layout->addLayout(detailsLayout);
 
     /* Spacing */
     m_Layout->addStretch(1);
     m_Layout->addWidget(m_ButtonSeparator);
-    m_Layout->addLayout(m_ButtonLayout);
-}
-
-void AboutVoid::Connect()
-{
-    connect(m_OkButton, &QPushButton::clicked, this, &QDialog::close);
+    m_Layout->addLayout(buttonLayout);
 }
 
 VOID_NAMESPACE_CLOSE

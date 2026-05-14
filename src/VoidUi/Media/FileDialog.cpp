@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QLabel>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QShortcut>
@@ -67,7 +68,6 @@ void MediaFileDialog::Build()
     m_FileLayout = new QHBoxLayout;
     m_FilterLayout = new QHBoxLayout;
 
-    m_LookInLabel = new QLabel("Look in:", this);
     m_DirectoryEdit = new QLineEdit(this);
 
     m_BackButton = new QToolButton(this);
@@ -95,8 +95,6 @@ void MediaFileDialog::Build()
     m_BrowserSplitter->addWidget(m_FileTree);
 
     m_SequencesCheck = new QCheckBox("Sequences");
-    m_NameLabel = new QLabel("File name:", this);
-    m_FilterLabel = new QLabel("Files of type:", this);
 
     m_NameEdit = new QLineEdit(this);
     m_FilterCombo = new QComboBox(this);
@@ -105,19 +103,19 @@ void MediaFileDialog::Build()
     m_CancelButton = new QPushButton("Cancel");
     m_CancelButton->setIcon(style()->standardIcon(style()->SP_DialogCancelButton));
 
-    m_OptionsLayout->addWidget(m_LookInLabel);
+    m_OptionsLayout->addWidget(new QLabel("Look in:", this));
     m_OptionsLayout->addWidget(m_DirectoryEdit);
     m_OptionsLayout->addWidget(m_BackButton);
     m_OptionsLayout->addWidget(m_ForwardButton);
     m_OptionsLayout->addWidget(m_UpButton);
     m_OptionsLayout->addWidget(m_NewDirButton);
 
-    m_FileLayout->addWidget(m_NameLabel);
+    m_FileLayout->addWidget(new QLabel("File name:", this));
     m_FileLayout->addWidget(m_NameEdit);
     m_FileLayout->addWidget(m_AcceptButton);
 
     m_FilterLayout->addWidget(m_SequencesCheck);
-    m_FilterLayout->addWidget(m_FilterLabel);
+    m_FilterLayout->addWidget(new QLabel("Files of type:", this));
     m_FilterLayout->addWidget(m_FilterCombo);
     m_FilterLayout->addWidget(m_CancelButton);
 

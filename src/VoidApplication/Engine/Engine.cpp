@@ -11,6 +11,7 @@
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
 #include "VoidCore/Operators/Registration.h"
+#include "VoidCore/Profiler.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidUi/Engine/Bridge.h"
 #include "VoidUi/Engine/Globals.h"
@@ -94,6 +95,7 @@ void VoidEngine::Setup(QApplication& app)
 
 void VoidEngine::Initialize()
 {
+    Tools::VoidProfiler<std::chrono::duration<double>> p("VoidEngine::Initialize");
     ThreadPool::Init();
     m_Imager = new VoidMainWindow;
     UIGlobals::g_VoidMainWindow = m_Imager;
@@ -130,7 +132,7 @@ void VoidEngine::PostStartup()
         EngineBridge::LoadMedia(m_Args.media);
 
     /* Defer the callbacks */
-    QTimer::singleShot(800, m_Imager, [this]() { Callback(); });
+    QTimer::singleShot(800, m_Imager, [this]() -> void { Callback(); });
 }
 
 void VoidEngine::Callback()

@@ -10,7 +10,6 @@
 #include <QDialog>
 #include <QFileDialog>
 #include <QFileSystemModel>
-#include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QPushButton>
@@ -66,10 +65,7 @@ private: /* Members */
     QToolButton* m_NewDirButton;
     QuickLinkView* m_QuickLinks;
     FileTree* m_FileTree;
-    
-    QLabel* m_LookInLabel;
-    QLabel* m_NameLabel;
-    QLabel* m_FilterLabel;
+
     QLineEdit* m_NameEdit;
     QLineEdit* m_DirectoryEdit;
     QComboBox* m_FilterCombo;
