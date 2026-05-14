@@ -41,6 +41,9 @@ void AboutVoid::Build()
     /* Base Layout */
     m_Layout = new QVBoxLayout(this);
 
+    QHBoxLayout* buttonLayout = new QHBoxLayout;
+    QGridLayout* detailsLayout = new QGridLayout;
+
     /* VOID Logo */
     m_VoidLabel = new QLabel;
     QImage logo(":resources/images/VOID_Logo_900x200.png");
@@ -85,30 +88,24 @@ void AboutVoid::Build()
 
     m_ContactHeader = new QLabel("Contact: ");
     m_ContactHeader->setFont(header);
-    // m_Contact = new QLabel(CONTACT, this);
     
     m_VersionHeader = new QLabel("Version: ");
     m_VersionHeader->setFont(header);
-    // m_Version = new QLabel(VOID_VERSION_STRING, this);
 
     m_GithubHeader = new QLabel("Github: ");
     m_GithubHeader->setFont(header);
-    // m_Github = new QLabel(GITHUB);
 
-    /* Add to details layouts */
-    m_DetailsLayout = new QGridLayout;
+    detailsLayout->addWidget(m_AuthorHeader, 0, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(m_Author, 0, 1);
 
-    m_DetailsLayout->addWidget(m_AuthorHeader, 0, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(m_Author, 0, 1);
+    detailsLayout->addWidget(m_ContactHeader, 1, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(new QLabel(CONTACT, this), 1, 1);
 
-    m_DetailsLayout->addWidget(m_ContactHeader, 1, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(new QLabel(CONTACT, this), 1, 1);
+    detailsLayout->addWidget(m_VersionHeader, 2, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(new QLabel(VOID_VERSION_STRING, this), 2, 1);
 
-    m_DetailsLayout->addWidget(m_VersionHeader, 2, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(new QLabel(VOID_VERSION_STRING, this), 2, 1);
-
-    m_DetailsLayout->addWidget(m_GithubHeader, 3, 0, Qt::AlignLeft);
-    m_DetailsLayout->addWidget(new QLabel(GITHUB, this), 3, 1);
+    detailsLayout->addWidget(m_GithubHeader, 3, 0, Qt::AlignLeft);
+    detailsLayout->addWidget(new QLabel(GITHUB, this), 3, 1);
 
     /* --------------------------------------------- */
     m_ButtonSeparator = new QFrame;
@@ -118,11 +115,10 @@ void AboutVoid::Build()
     m_ButtonSeparator->setMidLineWidth(3);
 
     /* Buttons */
-    m_ButtonLayout = new QHBoxLayout;
     m_OkButton = new QPushButton("Close");
 
-    m_ButtonLayout->addStretch(1);
-    m_ButtonLayout->addWidget(m_OkButton);
+    buttonLayout->addStretch(1);
+    buttonLayout->addWidget(m_OkButton);
 
     /* Add to the Layout */
     m_Layout->addWidget(m_VoidLabel);
@@ -132,13 +128,12 @@ void AboutVoid::Build()
 
     /* Spacing */
     m_Layout->addStretch(1);
-
-    m_Layout->addLayout(m_DetailsLayout);
+    m_Layout->addLayout(detailsLayout);
 
     /* Spacing */
     m_Layout->addStretch(1);
     m_Layout->addWidget(m_ButtonSeparator);
-    m_Layout->addLayout(m_ButtonLayout);
+    m_Layout->addLayout(buttonLayout);
 }
 
 VOID_NAMESPACE_CLOSE

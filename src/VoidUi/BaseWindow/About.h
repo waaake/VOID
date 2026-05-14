@@ -29,10 +29,6 @@ private: /* Members */
 
     /* Main Layout for the Dialog */
     QVBoxLayout* m_Layout;
-    QHBoxLayout* m_ButtonLayout;
-
-    /* Internal Layout for Details */
-    QGridLayout* m_DetailsLayout;
 
     /* Separators */
     QFrame* m_LogoSeparator;

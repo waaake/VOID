@@ -40,7 +40,7 @@ void QueueView::Clear()
 void QueueView::dropEvent(QDropEvent* event)
 {
     #if _QT6
-    QModelIndex index = indexAt(event->position());
+    QModelIndex index = indexAt(event->position().toPoint());
     #else
     QModelIndex index = indexAt(event->pos());
     #endif // _QT6
