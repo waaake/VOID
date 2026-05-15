@@ -158,9 +158,8 @@ void MediaView::ResetView()
         setItemDelegate(m_ThumbnailDelegate);
 
         setViewMode(QListView::IconMode);
-        setSpacing(2);
+        setSpacing(4);
         setResizeMode(QListView::Adjust);
-        setGridSize(QSize(154, 150)); // Delegate Item::SizeHint().width() + 4, .Height() + 4;
     }
 
     setDragEnabled(true);
@@ -229,6 +228,18 @@ void MediaView::SetViewType(const ViewType& type)
     /* Update the internal view type */
     m_ViewType = type;
     ResetView();
+}
+
+void MediaView::SetThumbnailScale(float scale)
+{
+    if (!m_ThumbnailDelegate)
+    {
+        m_ThumbnailDelegate = new MediaThumbnailDelegate(this);
+        connect(m_ThumbnailDelegate, &MediaThumbnailDelegate::tagClicked, this, &MediaView::tagClicked);
+    }
+
+    m_ThumbnailDelegate->SetScale(scale);
+    doItemsLayout();
 }
 
 void MediaView::RemoveSelectedMedia()

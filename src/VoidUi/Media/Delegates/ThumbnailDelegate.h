@@ -19,6 +19,7 @@ class MediaThumbnailDelegate : public QStyledItemDelegate
 public:
     explicit MediaThumbnailDelegate(QObject* parent = nullptr);
 
+    void SetScale(float scale) { m_Scale = std::max(scale, 1.f); }
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
@@ -30,6 +31,7 @@ protected:
 
 private:
     mutable int m_TagX, m_TagY;
+    float m_Scale;
 };
 
 VOID_NAMESPACE_CLOSE

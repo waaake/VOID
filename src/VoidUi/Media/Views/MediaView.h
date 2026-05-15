@@ -47,6 +47,7 @@ public:
     const ViewType GetViewType() const { return m_ViewType; }
     /* Set the View Type */
     void SetViewType(const ViewType& type);
+    void SetThumbnailScale(float scale);
     void RemoveSelectedMedia();
 
 protected:
