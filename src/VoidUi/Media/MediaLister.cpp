@@ -191,8 +191,8 @@ void VoidMediaLister::Build()
         ).c_str()
     );
 
-    m_OptionsLayout->addWidget(m_ListViewToggle);
     m_OptionsLayout->addWidget(m_DetailedListViewToggle);
+    m_OptionsLayout->addWidget(m_ListViewToggle);
     m_OptionsLayout->addWidget(m_ThumbnailViewToggle);
     m_OptionsLayout->addWidget(m_SearchBar);
     m_OptionsLayout->addWidget(m_SortButton);
@@ -409,13 +409,14 @@ void VoidMediaLister::EditEffects()
 
 void VoidMediaLister::SetFromPreferences()
 {
-    /* Default View */
     switch(static_cast<MediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType()))
     {
         case MediaView::ViewType::ListView:
             m_ListViewToggle->setChecked(true);
+            break;
         case MediaView::ViewType::ThumbnailView:
             m_ThumbnailViewToggle->setChecked(true);
+            break;
         case MediaView::ViewType::DetailedListView:
         default:
             m_DetailedListViewToggle->setChecked(true);
