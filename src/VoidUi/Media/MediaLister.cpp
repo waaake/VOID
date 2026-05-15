@@ -191,10 +191,13 @@ void VoidMediaLister::Build()
         ).c_str()
     );
 
-    m_OptionsLayout->addWidget(m_ListViewToggle);
+    m_ScaleSlider = new QSlider(Qt::Horizontal, this);
+
     m_OptionsLayout->addWidget(m_DetailedListViewToggle);
+    m_OptionsLayout->addWidget(m_ListViewToggle);
     m_OptionsLayout->addWidget(m_ThumbnailViewToggle);
     m_OptionsLayout->addWidget(m_SearchBar);
+    m_OptionsLayout->addWidget(m_ScaleSlider);
     m_OptionsLayout->addWidget(m_SortButton);
 
     /* Setup margins */
@@ -233,6 +236,8 @@ void VoidMediaLister::Setup()
 
     this->setPalette(p);
 
+    m_ScaleSlider->setRange(100, 150);
+
     /* Splitter sizes */
     int w = sizeHint().width();
     int p_width = static_cast<int>(w * 0.3);
@@ -258,13 +263,18 @@ void VoidMediaLister::Connect()
     /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
     connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
+    connect(m_ScaleSlider, &QSlider::valueChanged, this, [this](int value) { RescaleThumbnails((float)value / 100); });
 
     /* View Changed */
     /* The call to buttonToggled is a slightly expensive as this gets called 2 times if we have n buttons (once for checked off and once for checked on) */
     connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(QAbstractButton*, bool)>(&QButtonGroup::buttonToggled), this, [this](QAbstractButton* b, bool s)
     {
         if (s)
-            m_MediaView->SetViewType(static_cast<MediaView::ViewType>(m_ViewButtonGroup->id(b)));
+        {
+            auto viewType = static_cast<MediaView::ViewType>(m_ViewButtonGroup->id(b));
+            m_MediaView->SetViewType(viewType);
+            m_ScaleSlider->setVisible(viewType == MediaView::ViewType::ThumbnailView);
+        }
     });
 
     /* List */
@@ -382,6 +392,11 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     #endif // _QT6
 }
 
+void VoidMediaLister::RescaleThumbnails(float scale)
+{
+    m_MediaView->SetThumbnailScale(scale);
+}
+
 // void VoidMediaLister::RemoveSelectedMedia()
 // {
 //     /* Push all of the selected indexes for removal */
@@ -409,13 +424,14 @@ void VoidMediaLister::EditEffects()
 
 void VoidMediaLister::SetFromPreferences()
 {
-    /* Default View */
     switch(static_cast<MediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType()))
     {
         case MediaView::ViewType::ListView:
             m_ListViewToggle->setChecked(true);
+            break;
         case MediaView::ViewType::ThumbnailView:
             m_ThumbnailViewToggle->setChecked(true);
+            break;
         case MediaView::ViewType::DetailedListView:
         default:
             m_DetailedListViewToggle->setChecked(true);

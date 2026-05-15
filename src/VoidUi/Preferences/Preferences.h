@@ -37,15 +37,17 @@ public:
     ~VoidPreferences();
 
     inline QVariant GetSetting(const std::string key) const { return m_Settings.value(key.c_str()); }
-    inline void Set(const std::string& key, const QVariant& value)
+    inline void Set(const std::string& key, const QVariant& value, bool refresh = true)
     {
-        /* Setup values */
         m_Settings.setValue(key.c_str(), value);
         /* and emit that something was changed if the hash changed */
-        if (size_t h = Hash() != m_Hash)
+        if (refresh)
         {
-            emit updated();
-            m_Hash = h;
+            if (size_t h = Hash() != m_Hash)
+            {
+                emit updated();
+                m_Hash = h;
+            }
         }
     }
 

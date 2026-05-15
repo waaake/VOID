@@ -197,7 +197,7 @@ QString FileTree::DefaultDirectory()
 
 void FileTree::Accept(const QString& path)
 {
-    VoidPreferences::Instance().Set(Settings::LastBrowsedLocation, s_LastAccessedDir);
+    VoidPreferences::Instance().Set(Settings::LastBrowsedLocation, s_LastAccessedDir, false);
     emit accepted(path);
 }
 

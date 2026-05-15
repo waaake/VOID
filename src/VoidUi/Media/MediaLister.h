@@ -11,6 +11,7 @@
 /* Qt */
 #include <QAction>
 #include <QButtonGroup>
+#include <QSlider>
 #include <QLayout>
 #include <QPushButton>
 #include <QScrollArea>
@@ -63,6 +64,7 @@ private: /* Methods */
 
     /* Show Context Menu at the given position */
     void ShowContextMenu(const _QPoint& position);
+    void RescaleThumbnails(float scale);
 
     void AddSelectionToSequence();
     void PlaySelectionAsQueue();
@@ -87,6 +89,7 @@ private: /* Members */
     QButtonGroup* m_ViewButtonGroup;
 
     MediaSearchBar* m_SearchBar;
+    QSlider* m_ScaleSlider;
     HighlightToggleButton* m_SortButton;
 
     /* Views */

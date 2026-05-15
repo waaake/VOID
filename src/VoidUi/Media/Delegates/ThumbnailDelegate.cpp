@@ -10,11 +10,10 @@
 #include "ThumbnailDelegate.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/IconForge.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
-constexpr int MAX_THUMBNAIL_WIDTH = 130;
+constexpr int MAX_THUMBNAIL_WIDTH = 120;
 constexpr int MAX_THUMBNAIL_HEIGHT = 100;
 
 #ifdef _VOID_PLATFORM_APPLE
@@ -27,6 +26,7 @@ MediaThumbnailDelegate::MediaThumbnailDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
     , m_TagX(0)
     , m_TagY(0)
+    , m_Scale(1.f)
 {
 }
 
@@ -41,7 +41,7 @@ bool MediaThumbnailDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
         #else
         QPoint pos = mevent->pos();
         #endif
-        
+
         if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
@@ -51,9 +51,8 @@ bool MediaThumbnailDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
 
 void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    Tools::VoidProfiler<std::chrono::microseconds> pro("MediaThumbnailDelegate::paint");
     /**
-     * The main Rect for the Item will be divided into 5 sub sections 
+     * The main Rect for the Item will be divided into 5 sub sections
      * --------------------------
      * |                        |
      * |                        |
@@ -84,7 +83,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         QLinearGradient gradient(rect.left(), rect.top(), rect.left() + 150, rect.top());
         gradient.setColorAt(0, option.palette.color(QPalette::Window).lighter(150));
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
-        
+
         painter->save();
 
         /* Draw the Background */
@@ -93,26 +92,26 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         painter->drawRect(rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(rect.left() + (150 - 4), rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
+        painter->fillRect(rect.left() + (rect.width() - 4), rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
         painter->restore();
     }
 
     /* Side Bar */
-    painter->fillRect(rect.left(), rect.top(), 6, rect.height(), option.palette.color(QPalette::Window).lighter(300));
+    painter->fillRect(rect.left(), rect.top(), ICON_SIZE + 6, rect.height(), option.palette.color(QPalette::Window).lighter(220));
 
-    const int left = rect.left() + 10;
+    const int left = rect.left() + ICON_SIZE + 10;
 
     /* Thumbnail */
-    const QRect thumbrect(left, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);   // Square of 130 x 100;
+    const QRect thumbrect(left, rect.top() + 5, rect.width() - 30, rect.height() - 46);   // Rect of 120 x 100 * scale;
     QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
-    QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
+    QPixmap scaled = p.scaled(rect.width() - 30, thumbrect.height(), Qt::KeepAspectRatio);
 
     /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
-    int x = left + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
-    int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
+    int x = left + ((rect.width() - 30) - scaled.width()) * 0.5;
+    int y = thumbrect.top() + ((rect.height() - 46) - scaled.height()) * 0.5;
 
-    m_TagX = thumbrect.left();
-    m_TagY = y + ICON_SIZE + 2;
+    m_TagX = rect.left() + 2;
+    m_TagY = rect.top() + ICON_SIZE + 4;
 
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
@@ -120,24 +119,20 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
     const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
 
-    if (audio || tags)
-    {
-        QLinearGradient fade(thumbrect.topLeft(), thumbrect.bottomRight());
-        fade.setColorAt(0.0, option.palette.color(QPalette::Highlight).darker(180));
-        fade.setColorAt(0.05, option.palette.color(QPalette::Highlight).darker(180));
-        fade.setColorAt(0.3, QColor(0, 0, 0, 0));
-        
-        painter->fillRect(thumbrect, fade);
-    }
-    
-    if (audio)
-        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Text), ICON_SIZE));
+    painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
+        IconType::icon_volume_up,
+        audio ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        ICON_SIZE
+    ));
 
-    if (tags)
-        painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Text), ICON_SIZE));
+    painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
+        IconType::icon_style,
+        tags ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        ICON_SIZE
+    ));
 
     /* Name */
-    const QRect namerect(left, thumbrect.bottom(), 100, 20);
+    const QRect namerect(left, thumbrect.bottom(), 90 * m_Scale, 20);
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
@@ -145,7 +140,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     );
 
     /* Extension */
-    const QRect extrect(namerect.right(), thumbrect.bottom(), 30, 20);
+    const QRect extrect(namerect.right(), thumbrect.bottom(), 30 * m_Scale, 20);
     painter->drawText(
         extrect,
         Qt::AlignRight | Qt::AlignVCenter,
@@ -153,7 +148,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     );
 
     /* Frame range */
-    const QRect rangerect(left, namerect.bottom(), 80, 20);
+    const QRect rangerect(left, namerect.bottom(), 70 * m_Scale, 20);
     painter->drawText(
         rangerect,
         Qt::AlignLeft | Qt::AlignVCenter,
@@ -164,7 +159,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->drawText(
         rangerect.right(),
         extrect.bottom(),
-        50,
+        50 * m_Scale,
         20,
         Qt::AlignRight | Qt::AlignVCenter,
         index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString()
@@ -173,7 +168,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
 QSize MediaThumbnailDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    return QSize(150, 146);
+    return QSize(150, 146) * m_Scale;
 }
 
 VOID_NAMESPACE_CLOSE
