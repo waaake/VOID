@@ -94,27 +94,37 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->fillRect(
         option.rect.left(),
         option.rect.top(),
-        6,
+        ICON_SIZE + 6,
         option.rect.height(),
-        option.palette.color(QPalette::Window).lighter(300)
+        option.palette.color(QPalette::Window).lighter(220)
     );
 
-    m_TagX = option.rect.left() + 10;
-    m_TagY = option.rect.top() + 4 + ICON_SIZE + 2;
+    m_TagX = option.rect.left() + 2;
+    m_TagY = option.rect.top() + ICON_SIZE + 4;
 
-    if (index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool())
-        painter->drawPixmap(
-            option.rect.left() + 10, option.rect.top() + 4,
-            IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Text),
+    painter->drawPixmap(
+        option.rect.left() + 2, option.rect.top() + 2,
+        IconForge::GetPixmap(
+            IconType::icon_volume_up,
+            index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool()
+            ? option.palette.color(QPalette::Text)
+            : option.palette.color(QPalette::Window).lighter(280),
             ICON_SIZE
-        ));
+        )
+    );
 
-    if (index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
-        painter->drawPixmap(
-            m_TagX,
-            m_TagY,
-            IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Text), ICON_SIZE)
-        );
+    // if (index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+    painter->drawPixmap(
+        m_TagX,
+        m_TagY,
+        IconForge::GetPixmap(
+            IconType::icon_style,
+            index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool()
+            ? option.palette.color(QPalette::Text)
+            : option.palette.color(QPalette::Window).lighter(280),
+            ICON_SIZE
+        )
+    );
 
     /* Name */
     const QRect namerect(option.rect.left() + 30, option.rect.top(), option.rect.right(), option.rect.height());
@@ -137,7 +147,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
 QSize BasicMediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 40);
+    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 54);
 }
 
 /* }}} */
@@ -207,10 +217,10 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     }
 
     /* Side Bar */
-    painter->fillRect(rect.left(), rect.top(), 6, rect.height(), option.palette.color(QPalette::Window).lighter(300));
+    painter->fillRect(rect.left(), rect.top(), ICON_SIZE + 6, rect.height(), option.palette.color(QPalette::Window).lighter(220));
 
     /* Thumbnail */
-    const QRect thumbrect(rect.left() + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+    const QRect thumbrect(rect.left() + ICON_SIZE + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
     QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
@@ -218,8 +228,8 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     const int x = thumbrect.left() + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
     const int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
-    m_TagX = thumbrect.left();
-    m_TagY = y + ICON_SIZE + 2;
+    m_TagX = rect.left() + 2;
+    m_TagY = rect.top() + ICON_SIZE + 4;
 
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
@@ -227,25 +237,21 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
     const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
 
-    if (audio || tags)
-    {
-        QLinearGradient fade(thumbrect.topLeft(), thumbrect.bottomRight());
-        fade.setColorAt(0.0, option.palette.color(QPalette::Highlight).darker(180));
-        fade.setColorAt(0.05, option.palette.color(QPalette::Highlight).darker(180));
-        fade.setColorAt(0.3, QColor(0, 0, 0, 0));
-        
-        painter->fillRect(thumbrect, fade);
-    }
-    
-    if (audio)
-        painter->drawPixmap(x, y, IconForge::GetPixmap(IconType::icon_volume_up, option.palette.color(QPalette::Text), ICON_SIZE));
+    painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
+        IconType::icon_volume_up,
+        audio ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        ICON_SIZE
+    ));
 
-    if (tags)
-        painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(IconType::icon_style, option.palette.color(QPalette::Text), ICON_SIZE));
+    painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
+        IconType::icon_style,
+        tags ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        ICON_SIZE
+    ));
 
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;
-    const int namewidth = rect.width() - (thumbrect.width() + 70);
+    const int namewidth = rect.width() - (thumbrect.width() + 80);
 
     /* Name */
     const QRect namerect(thumbright, rect.top(), namewidth, halfheight);
