@@ -124,6 +124,8 @@ public:
     inline void SetUserFirstframe(int frame) { m_Timeline->SetUserFirstframe(frame); }
     inline void SetUserEndframe(int frame) { m_Timeline->SetUserEndframe(frame); }
 
+    inline void EditFramerate() { m_Timeline->EditFramerate(); }
+
     /**
      * (Re)sets the In and out framing of the Timeslider
      * Calling it once sets the frame as in/out frame (User-In/User-Out)
