@@ -63,6 +63,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     QAction* setInFrameAction = menuSystem->AddAction(playbackMenu, "Set In Frame", QKeySequence(Qt::Key_BracketLeft));
     QAction* setOutFrameAction = menuSystem->AddAction(playbackMenu, "Set Out Frame", QKeySequence(Qt::Key_BracketRight));
     QAction* resetRangeAction = menuSystem->AddAction(playbackMenu, "Reset In/Out Frames", QKeySequence(Qt::Key_Backslash));
+    QAction* editRateAction = menuSystem->AddAction(playbackMenu, "Edit Framerate", QKeySequence("Shift + F"));
 
     /* -------------------------------- */
     playbackMenu->addSeparator();
@@ -86,6 +87,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     connect(setInFrameAction, &QAction::triggered, this, &PlayerBridge::ResetInFrame);
     connect(setOutFrameAction, &QAction::triggered, this, &PlayerBridge::ResetOutFrame);
     connect(resetRangeAction, &QAction::triggered, this, &PlayerBridge::ResetRange);
+    connect(editRateAction, &QAction::triggered, this, &PlayerBridge::EditFramerate);
 
     connect(inspectMetdataAction, &QAction::triggered, this, &PlayerBridge::InspectCurrentMetadata);
     /* }}} */

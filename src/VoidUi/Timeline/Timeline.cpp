@@ -6,7 +6,6 @@
 
 /* Qt */
 #include <QCoreApplication>
-#include <QElapsedTimer>
 #include <QIcon>
 #include <QLayout>
 #include <QStyle>
@@ -30,13 +29,8 @@ Timeline::Timeline(QWidget* parent)
 	, m_Playing(false)
 	, m_Playstate(PlayState::STOPPED)
 {
-	/* Build the layout of the widget */
 	Build();
-
-	/* Setup any values */
 	Setup();
-
-	/* Connect Signals */
 	Connect();
 }
 
@@ -203,14 +197,12 @@ void Timeline::Connect()
 
 void Timeline::Setup()
 {
-	/* Set the default rate */
 	SetFramerate(UIGlobals::FramerateString());
 	SetFrame(m_Timeslider->minimum());
+	m_PlayTimer.setTimerType(Qt::PreciseTimer);
 
-	/* Fixed Height for the timeslider panel */
 	setFixedHeight(50);
 
-	/* Update the internal range */
 	Timekeeper::Instance().SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
 }
 
@@ -226,6 +218,7 @@ void Timeline::StartPlayback()
 	// /* Start Playback worker async */
 	// m_Worker = std::async(std::launch::async, &Timeline::PlaybackLoop, this);
 
+	m_ElapsedTimer.start();
 	m_PlayTimer.start(m_FrameInterval);
 }
 
@@ -410,6 +403,16 @@ void Timeline::Stop()
 	// 	m_Worker.get();
 }
 
+int Timeline::ElapsedFrames()
+{
+	if (m_FrameInterval > 20)
+		return 1;
+
+	int elapsed = m_ElapsedTimer.elapsed() / m_FrameInterval;
+	m_ElapsedTimer.restart();
+	return std::max(elapsed, 1);
+}
+
 void Timeline::Replay()
 {
 	if (m_Playstate == PlayState::FORWARDS)
@@ -431,9 +434,10 @@ void Timeline::PreviousFrame()
 void Timeline::PlayNextFrame()
 {
 	Timekeeper& t = Timekeeper::Instance();
-	if (m_Timeslider->value() < t.EndFrame())
+	v_frame_t next = t.NextFrame(ElapsedFrames());
+	if (next <= t.EndFrame())
 	{
-		m_Timeslider->setValue(t.NextFrame());
+		m_Timeslider->setValue(next);
 	}
 	else
 	{
@@ -450,7 +454,8 @@ void Timeline::PlayNextFrame()
 void Timeline::PlayPreviousFrame()
 {
 	Timekeeper& t = Timekeeper::Instance();
-	if (m_Timeslider->value() == t.StartFrame())
+	v_frame_t previous = t.PreviousFrame(ElapsedFrames());
+	if (previous < t.StartFrame())
 	{
 		switch (m_LoopType)
 		{
@@ -462,7 +467,7 @@ void Timeline::PlayPreviousFrame()
 	}
 	else
 	{
-		m_Timeslider->setValue(t.PreviousFrame());
+		m_Timeslider->setValue(previous);
 	}
 }
 
