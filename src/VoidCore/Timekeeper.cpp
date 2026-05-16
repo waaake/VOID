@@ -95,6 +95,41 @@ v_frame_t Timekeeper::NextFrame()
     return m_CurrentFrame;
 }
 
+v_frame_t Timekeeper::NextFrame(int offset)
+{
+    /**
+     * We can't really ever sync to audio when the playback rate of video is different
+     * than the actual rate of the media and the audio, don't even bother to continue here
+     */
+    if (m_CurrentTime < 0 || HasDifferentRate())
+        return NextFrame__(offset);
+
+    int distance = m_CurrentFrame - ConvertedTime();
+    /**
+     * The time is lagging behind --
+     * For now return the Next Frame as supposed to
+     * with the understanding that the time will catch up
+     */
+    if (std::abs(distance) < 3)
+        return NextFrame__();
+
+    // -ve Distance: time (from the audio) is ahead than the threshold
+    if (distance < 0)
+    {
+        // Catch up to it slowly
+        m_CurrentFrame += std::abs(distance) / 2;
+
+        if (m_CurrentFrame > m_End)
+            m_CurrentFrame = m_Start;
+
+        return m_CurrentFrame;
+    }
+
+    // Time (from the audio) is trailing behind at the moment, return the frame without increment
+    // This basically mimics slowing down the video fps to catch-up to the audio
+    return m_CurrentFrame;
+}
+
 v_frame_t Timekeeper::PreviousFrame()
 {
     /**
@@ -103,6 +138,41 @@ v_frame_t Timekeeper::PreviousFrame()
      */
     if (m_CurrentTime < 0 || HasDifferentRate())
         return PreviousFrame__();
+
+    int distance = m_CurrentFrame - ConvertedTime();
+    /**
+     * The time is lagging behind --
+     * For now return the Next Frame as supposed to
+     * with the understanding that the time will catch up
+     */
+    if (std::abs(distance) < 3)
+        return PreviousFrame__();
+
+    // Time (from the audio) is trailing behind at the moment, return the frame without increment
+    if (distance > 0)
+    {
+        // Catch up to it slowly
+        m_CurrentFrame += std::abs(distance) / 2;
+
+        if (m_CurrentFrame < m_Start)
+            m_CurrentFrame = m_End;
+
+        return m_CurrentFrame;
+    }
+
+    // +ve Distance: time (from the audio) is ahead than the threshold
+    // This basically mimics slowing down the video fps to catch-up to the audio
+    return m_CurrentFrame;
+}
+
+v_frame_t Timekeeper::PreviousFrame(int offset)
+{
+    /**
+     * We can't really ever sync to audio when the playback rate of video is different
+     * than the actual rate of the media and the audio, don't even bother to continue here
+     */
+    if (m_CurrentTime < 0 || HasDifferentRate())
+        return PreviousFrame__(offset);
 
     int distance = m_CurrentFrame - ConvertedTime();
     /**
@@ -139,12 +209,31 @@ v_frame_t Timekeeper::NextFrame__()
     return m_CurrentFrame;
 }
 
+v_frame_t Timekeeper::NextFrame__(int offset)
+{
+    if (m_CurrentFrame + offset >= m_End)
+        m_CurrentFrame = m_Start;
+    else
+        m_CurrentFrame += offset;
+
+    return m_CurrentFrame;
+}
+
 v_frame_t Timekeeper::PreviousFrame__()
 {
     if (m_CurrentFrame <= m_Start)
         m_CurrentFrame = m_End;
     else
         m_CurrentFrame--;
+    return m_CurrentFrame;
+}
+
+v_frame_t Timekeeper::PreviousFrame__(int offset)
+{
+    if (m_CurrentFrame - offset <= m_Start)
+        m_CurrentFrame = m_End;
+    else
+        m_CurrentFrame -= offset;
     return m_CurrentFrame;
 }
 

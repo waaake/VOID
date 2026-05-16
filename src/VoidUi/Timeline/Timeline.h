@@ -14,6 +14,7 @@
 #include <QLayout>
 #include <QPushButton>
 #include <QTimer>
+#include <QElapsedTimer>
 #include <QWidget>
 
 /* Internal */
@@ -43,6 +44,8 @@ public:
 	Timeline(QWidget* parent = nullptr);
 	virtual ~Timeline();
 
+	void EditFramerate() { m_FramerateBox->setFocus(Qt::FocusReason::TabFocusReason); }
+
 	/* Getters */
 	inline double Framerate() const { return m_FramerateBox->Framerate(); }
 	inline int Frame() const { return m_Timeslider->value(); }
@@ -67,7 +70,6 @@ public:
 	void SetUserEndframe(int frame);
 
 	void SetRange(const int min, const int max);
-
 	void ResetRange();
 
 	/**
@@ -137,6 +139,7 @@ private: /* Members */
 
 	QDoubleValidator* m_DoubleValidator;
 	QTimer m_PlayTimer;
+	QElapsedTimer m_ElapsedTimer;
 
 	/* Loop mode for playback */
 	LoopType m_LoopType;
@@ -169,6 +172,8 @@ protected: /* Methods */
 
 	void PlayNextFrame();
 	void PlayPreviousFrame();
+
+	int ElapsedFrames();
 
 	inline void MoveToStart() { m_Timeslider->setValue(m_Timeslider->Minimum()); }
 	inline void MoveToEnd() { m_Timeslider->setValue(m_Timeslider->Maximum()); }

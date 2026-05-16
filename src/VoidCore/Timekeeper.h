@@ -87,6 +87,7 @@ public:
      * @return v_frame_t The next frame.
      */
     v_frame_t NextFrame();
+    v_frame_t NextFrame(int offset);
 
     /**
      * @brief Returns the Previous Frame based on the current frame and also on the current time
@@ -98,6 +99,7 @@ public:
      * @return v_frame_t The previous frame.
      */
     v_frame_t PreviousFrame();
+    v_frame_t PreviousFrame(int offset);
 
 private: /* Members */
     v_frame_t m_Start, m_End, m_CurrentFrame;
@@ -108,7 +110,9 @@ private: /* Methods */
     inline v_frame_t ConvertedTime() const { return m_CurrentTime * m_Framerate; }
     inline bool HasDifferentRate() const { return m_Mediarate != m_Framerate; }
     v_frame_t NextFrame__();
+    v_frame_t NextFrame__(int offset);
     v_frame_t PreviousFrame__();
+    v_frame_t PreviousFrame__(int offset);
 };
 
 VOID_NAMESPACE_CLOSE
