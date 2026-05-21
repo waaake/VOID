@@ -47,7 +47,7 @@ public:
     void ReinitShaderProgram();
 
     /* Main Render Function */
-    void Render(const glm::mat4& projection);
+    void Render(const glm::mat4& projection, float width, float height);
 
 private: /* Members */
     /* Projection for the Texture for the viewport */

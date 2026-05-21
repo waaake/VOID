@@ -220,9 +220,10 @@ void TextAnnotationsRenderLayer::Initialize()
     m_UBoxMax = glGetUniformLocation(m_BoxShader.ProgramId(), "uMax");
 }
 
-void TextAnnotationsRenderLayer::Render(const glm::mat4& projection)
+void TextAnnotationsRenderLayer::Render(const glm::mat4& projection, float width, float height)
 {
     m_Projection = projection;
+    SetAspect(width / height);
 
     if (PreDraw())
         Draw();

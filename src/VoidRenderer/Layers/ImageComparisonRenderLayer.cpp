@@ -174,7 +174,7 @@ void ImageComparisonRenderLayer::SetImageB(const SharedPixels& image)
     m_InputColorSpaceB = static_cast<int>(image->InputColorSpace());
 }
 
-void ImageComparisonRenderLayer::Render(const glm::mat4& projection)
+void ImageComparisonRenderLayer::Render(const glm::mat4& projection, float, float)
 {
     /* Update the Data for Render */
     m_Projection = projection;

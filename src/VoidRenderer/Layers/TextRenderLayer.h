@@ -56,7 +56,7 @@ public:
     void MoveCaretEnd();
 
     /* Draw the Points */
-    void Render(const glm::mat4& projection);
+    void Render(const glm::mat4& projection, float width, float height);
 
     /**
      * Returns if there is an active annotation present

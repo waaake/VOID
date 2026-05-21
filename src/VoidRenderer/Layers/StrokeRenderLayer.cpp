@@ -126,7 +126,7 @@ void StrokeRenderLayer::Initialize()
     m_USize = glGetUniformLocation(m_Shader.ProgramId(), "uThickness");
 }
 
-void StrokeRenderLayer::Render(const glm::mat4& projection)
+void StrokeRenderLayer::Render(const glm::mat4& projection, float, float)
 {
     m_Projection = projection;
     

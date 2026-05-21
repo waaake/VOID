@@ -42,7 +42,7 @@ public:
     void EraseStroke(const glm::vec2& point);
 
     /* Draw the Points */
-    void Render(const glm::mat4& projection);
+    void Render(const glm::mat4& projection, float width, float height);
 
     /**
      * Returns if there is an active annotation present

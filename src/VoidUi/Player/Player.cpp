@@ -473,9 +473,7 @@ void Player::CompareMediaFrame(v_frame_t frame)
 
 void Player::RenderGrid(v_frame_t frame)
 {
-    std::vector<SharedPixels> grid = m_ActiveViewBuffer->GridFrame(frame);
-    if (!grid.empty())
-        m_Renderer->RenderGrid(grid);
+    m_Renderer->RenderGrid(m_ActiveViewBuffer->GridFrame(frame));
 }
 
 void Player::SetComparisonMode(int mode)

@@ -82,21 +82,22 @@ void VoidRenderer::Draw()
         if (m_CompareMode == ComparisonMode::NONE)
         {
             /* Render the Image Texture */
-            m_ImageRenderer.Render(m_VProjection);
+            m_ImageRenderer.Render(m_VProjection, width(), height());
 
             /* Draw Annotations */
             if (m_Annotating && m_Annotation)
             {
                 /* Render the stokes with the projection */
-                m_StrokeRenderer.Render(m_VProjection);
-                m_TextRenderer.Render(m_VProjection);
+                m_StrokeRenderer.Render(m_VProjection, width(), height());
+                m_TextRenderer.Render(m_VProjection, m_ImageA->Width(), m_ImageA->Height());
             }
         }
         else
         {
             /* Render Images with Comparison */
-            m_ImageComparisonRenderer.Render(m_VProjection);
-            m_SwipeRenderer.Render();
+            m_ImageComparisonRenderer.Render(m_VProjection, width(), height());
+            if (m_CompareMode == ComparisonMode::WIPE)
+                m_SwipeRenderer.Render();
         }
 
         /* Exit Programs */
@@ -382,10 +383,7 @@ void VoidRenderer::Render(SharedPixels data)
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
-    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-        m_TextRenderer.SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
-    }
 
     RemoveAnnotation();
 
@@ -416,10 +414,7 @@ void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& anno
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
-    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-        m_TextRenderer.SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
-    }
 
     /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
     SetAnnotation(annotation);
@@ -474,7 +469,7 @@ void VoidRenderer::RenderGrid(const std::vector<SharedPixels>& grid)
     m_CompareMode = ComparisonMode::GRID;
     m_ImageComparisonRenderer.SetComparisonMode(ComparisonMode::NONE);
 
-    m_RenderStatus->SetRenderResolution(0, 0);
+    m_RenderStatus->SetRenderResolution(width(), height());
 
     // Re-paint
     update();
@@ -537,6 +532,9 @@ float VoidRenderer::MaxZoom() const
 void VoidRenderer::SetExposure(const float exposure)
 {
     m_ImageRenderer.SetExposure(exposure);
+    m_ImageComparisonRenderer.SetExposure(exposure);
+    m_GridRenderer.SetExposure(exposure);
+
     /* Redraw the texture */
     update();
 }
@@ -544,6 +542,9 @@ void VoidRenderer::SetExposure(const float exposure)
 void VoidRenderer::SetGamma(const float gamma)
 {
     m_ImageRenderer.SetGamma(gamma);
+    m_ImageComparisonRenderer.SetGamma(gamma);
+    m_GridRenderer.SetGamma(gamma);
+
     /* Redraw the texture */
     update();
 }
@@ -551,6 +552,9 @@ void VoidRenderer::SetGamma(const float gamma)
 void VoidRenderer::SetGain(const float gain)
 {
     m_ImageRenderer.SetGain(gain);
+    m_ImageComparisonRenderer.SetGain(gain);
+    m_GridRenderer.SetGain(gain);
+
     /* Redraw the texture */
     update();
 }
@@ -559,6 +563,8 @@ void VoidRenderer::SetChannelMode(int mode)
 {
     /* Update the channel mode for the Renderer */
     m_ImageRenderer.SetChannelMode(mode);
+    m_ImageComparisonRenderer.SetChannelMode(mode);
+    m_GridRenderer.SetChannelMode(mode);
 
     /* Redraw the texture */
     update();
@@ -570,6 +576,7 @@ void VoidRenderer::SetColorDisplay(const std::string& display)
 
     m_ImageRenderer.ReinitShaderProgram();
     m_ImageComparisonRenderer.ReinitShaderProgram();
+    m_GridRenderer.ReinitShaderProgram();
 
     update();
 }

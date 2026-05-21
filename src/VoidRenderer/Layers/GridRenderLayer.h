@@ -12,9 +12,18 @@
 #include "Definition.h"
 #include "PixReader.h"
 #include "VoidRenderer/Core/RenderTypes.h"
-#include "VoidRenderer/Programs/GridShaderProgram.h"
+#include "VoidRenderer/Programs/ImageShaderProgram.h"
 
 VOID_NAMESPACE_OPEN
+
+struct ImageData
+{
+    int width;
+    int height;
+    int colorspace;
+
+    ImageData(int width, int height, int colorspace) : width(width), height(height), colorspace(colorspace) {}
+};
 
 class GridRenderLayer
 {
@@ -27,30 +36,42 @@ public:
 
     void SetImages(const std::vector<SharedPixels>& images);
 
+    inline void SetExposure(const float exposure) { m_Exposure = exposure; }
+    inline void SetGamma(const float gamma) { m_Gamma = gamma; }
+    inline void SetGain(const float gain) { m_Gain = gain; }
+
+    inline void SetChannelMode(const int mode) { m_ChannelMode = mode; }
+    inline void SetChannelMode(const Renderer::ChannelMode& mode) { m_ChannelMode = static_cast<int>(mode); }
+
     void ReinitShaderProgram();
     void Render(const glm::mat4& projection, float width, float height);
 
 private: /* Members */
-    glm::mat4 m_Projection;
+    /* Render Attributes affecting how the image is displayed */
+    float m_Exposure;
+    float m_Gamma;
+    float m_Gain;
+    int m_ChannelMode;
 
-    GridShaderProgram m_Shader;
+    ImageShaderProgram m_Shader;
 
     int m_UProjection;
     int m_UTexture;
+    int m_UExposure;
+    int m_UGamma;
+    int m_UGain;
+    int m_UChannelMode;
+    int m_UInputColorSpace;
 
     float m_CellWidth, m_CellHeight;
     int m_Rows, m_Columns;
     unsigned int m_VAO, m_VBO, m_EBO;
 
     std::vector<unsigned int> m_Textures;
-    // std::vector<unsigned int> m_Vaos;
-    // std::vector<unsigned int> m_Vbos;
-    // std::vector<unsigned int> m_Ebos;
-    std::vector<std::pair<int, int>> m_TexSizes;
+    std::vector<ImageData> m_TexData;
 
 private: /* Methods */
     void SetupBuffers();
-    glm::mat4 ModelViewProjectionMat(float width, float height, float offsetx, float offsety) const;
 };
 
 VOID_NAMESPACE_CLOSE
