@@ -53,7 +53,6 @@ protected:
 
 private: /* Members */
     QOpenGLShaderProgram* m_Program;
-
 };
 
 VOID_NAMESPACE_CLOSE

@@ -225,6 +225,21 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
     }
 }
 
+std::vector<SharedPixels> ViewerBuffer::GridFrame(const v_frame_t frame)
+{
+    std::vector<SharedPixels> grid;
+    grid.reserve(m_Playlist->Size());
+    for (auto& media : m_Playlist->AllMedia())
+    {
+        if (media->Contains(frame))
+            grid.push_back(media->Image(frame));
+        else
+            grid.push_back(media->Image(media->NearestFrame(frame)));
+    }
+
+    return grid;
+}
+
 SharedMediaClip ViewerBuffer::Media(const v_frame_t frame)
 {
     if (m_PlayingComponent == PlayableComponent::Track)

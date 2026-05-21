@@ -13,6 +13,7 @@ set(SOURCES
     Core/RenderTypes.cpp
 
     # Render Layers
+    Layers/GridRenderLayer.cpp
     Layers/ImageRenderLayer.cpp
     Layers/ImageComparisonRenderLayer.cpp
     Layers/StrokeRenderLayer.cpp
@@ -20,6 +21,7 @@ set(SOURCES
     Layers/TextRenderLayer.cpp
 
     # Shader Programs
+    Programs/GridShaderProgram.cpp
     Programs/ImageShaderProgram.cpp
     Programs/ImageComparisonShaderProgram.cpp
     Programs/StrokeShaderProgram.cpp

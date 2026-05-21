@@ -89,7 +89,8 @@ public: /* Enums */
         Sequence,
         Track,
         Clip,
-        Playlist
+        Playlist,
+        Grid
     };
 
     enum class PlayState
@@ -167,6 +168,14 @@ public:
      * @return BufferData Media data from the active media.
      */
     BufferData MData(const v_frame_t frame, bool nearest = false);
+
+    /**
+     * @brief Returns a set of images that are to be shown in the Grid of Images (Layout/Contact Sheet)
+     * 
+     * @param frame Frame number.
+     * @return std::vector<SharedPixels>& Set of image data from the Media.
+     */
+    std::vector<SharedPixels> GridFrame(const v_frame_t frame);
 
     /**
      * @brief Returns the Media from the active component.

@@ -7,7 +7,7 @@
 /* Internal */
 #include "MediaQueue.h"
 #include "VoidUi/Engine/IconForge.h"
-#include "VoidCore/Logging.h"
+#include "VoidUi/Player/PlayerBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -58,10 +58,12 @@ void MediaQueue::Build()
 
     m_MoveUpArrow = new QPushButton;
     m_MoveDownArrow = new QPushButton;
+    m_GridPlay = new QPushButton("Play in Grid View");
 
     buttonLayout->addWidget(m_MoveDownArrow);
     buttonLayout->addWidget(m_MoveUpArrow);
     buttonLayout->addStretch(1);
+    buttonLayout->addWidget(m_GridPlay);
 
     m_View = new QueueView(this);
     m_Layout->addLayout(buttonLayout);
@@ -95,6 +97,10 @@ void MediaQueue::Connect()
         QModelIndex index = m_Playlist->ShiftIndexUp(m_View->currentIndex());
         if (index.isValid())
             m_View->setCurrentIndex(index);
+    });
+    connect(m_GridPlay, &QPushButton::clicked, this, [this]() -> void
+    {
+        _PlayerBridge.SetGrid(m_Playlist);
     });
 }
 

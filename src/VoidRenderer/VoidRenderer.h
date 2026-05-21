@@ -21,6 +21,7 @@
 #include "Layers/SwipeRenderLayer.h"
 #include "Layers/StrokeRenderLayer.h"
 #include "Layers/TextRenderLayer.h"
+#include "Layers/GridRenderLayer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -46,6 +47,8 @@ public:
     void Render(const SharedPixels& data, const SharedAnnotation& annotation);
     /* Compare 2 Images */
     void Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend);
+    /* Render Media in a Grid Representation (Layout/Contact Sheet) */
+    void RenderGrid(const std::vector<SharedPixels>& grid);
     /* Clears current Frame and rids of any textures that were loaded */
     void Clear();
 
@@ -143,6 +146,7 @@ private: /* Members */
     SwipeRenderLayer m_SwipeRenderer;
     StrokeRenderLayer m_StrokeRenderer;
     TextAnnotationsRenderLayer m_TextRenderer;
+    GridRenderLayer m_GridRenderer;
 
     SharedAnnotation m_Annotation;
 

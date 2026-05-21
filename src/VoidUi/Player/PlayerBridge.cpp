@@ -137,4 +137,19 @@ void PlayerBridge::AddToQueue(const std::vector<SharedMediaClip>& media, bool re
         m_Player->SetPlaylist(m_Playlist);
 }
 
+void PlayerBridge::SetGrid(const std::vector<SharedMediaClip>& media)
+{
+    m_Playlist->Clear();
+
+    for (const SharedMediaClip& m : media)
+        m_Playlist->AddMedia(m);
+
+    m_Player->SetGrid(m_Playlist);
+}
+
+void PlayerBridge::SetGrid(Playlist* playlist)
+{
+    m_Player->SetGrid(playlist);
+}
+
 VOID_NAMESPACE_CLOSE

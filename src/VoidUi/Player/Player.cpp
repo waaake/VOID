@@ -180,8 +180,24 @@ void Player::SetPlaylist(Playlist* playlist)
     Render(m_Timeline->Frame());
 }
 
+void Player::SetGrid(Playlist* playlist)
+{
+    m_Timeline->Clear();
+    m_Renderer->Clear();
+
+    // Update what is being played on the Active Viewer Buffer
+    m_ActiveViewBuffer->SetPlaylist(playlist);
+    SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+
+    // This internally calls refresh which renders the grid
+    SetComparisonMode(5); // ComparisonMode::GRID;
+}
+
 void Player::SetFrame(int frame)
 {
+    if (ActiveGrid())
+        return RenderGrid(frame);
+
     /**
      * Comparison Gets precedence --> If we're in comparing mode -> Compare Media frames
      * the media frames could be from any component Track, Clip
@@ -453,6 +469,13 @@ void Player::CompareMediaFrame(v_frame_t frame)
 {
     /* Compare on the Viewer */
     m_Renderer->Compare(m_ViewBufferA.Image(frame), m_ViewBufferB.Image(frame), m_ComparisonMode, m_BlendMode);
+}
+
+void Player::RenderGrid(v_frame_t frame)
+{
+    std::vector<SharedPixels> grid = m_ActiveViewBuffer->GridFrame(frame);
+    if (!grid.empty())
+        m_Renderer->RenderGrid(grid);
 }
 
 void Player::SetComparisonMode(int mode)

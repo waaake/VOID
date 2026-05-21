@@ -58,12 +58,21 @@ void VoidRenderer::Initialize()
     m_StrokeRenderer.Initialize();
     m_TextRenderer.Initialize();
 
+    m_GridRenderer.Initialize();
+
     /* (Re)Load Any textures if available */
     ReloadTextures();
 }
 
 void VoidRenderer::Draw()
 {
+    if (m_CompareMode == ComparisonMode::GRID)
+    {
+        m_GridRenderer.Render(m_VProjection, width(), height());
+        glUseProgram(0);
+        return;
+    }
+
     if (m_ImageA && !m_ImageA->Empty())
     {
         /* Calculate the Projection Matrix */
@@ -452,6 +461,22 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
     m_ImageComparisonRenderer.SetImageB(m_ImageB);
 
     /* Trigger a Re-paint */
+    update();
+}
+
+void VoidRenderer::RenderGrid(const std::vector<SharedPixels>& grid)
+{
+    m_GridRenderer.SetImages(grid);
+
+    // Hide the Error Label
+    SetMessage("");
+
+    m_CompareMode = ComparisonMode::GRID;
+    m_ImageComparisonRenderer.SetComparisonMode(ComparisonMode::NONE);
+
+    m_RenderStatus->SetRenderResolution(0, 0);
+
+    // Re-paint
     update();
 }
 

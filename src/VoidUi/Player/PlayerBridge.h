@@ -48,6 +48,8 @@ public:
     inline void ClearQueue() { m_Playlist->Clear(); }
     void AddToQueue(const SharedMediaClip& media, bool refresh = true);
     void AddToQueue(const std::vector<SharedMediaClip>& media, bool refresh = true);
+    void SetGrid(const std::vector<SharedMediaClip>& media);
+    void SetGrid(Playlist* playlist);
 
     inline void ResumeCache() { m_Player->ResumeCache(); }
     inline void DisableCache() { m_Player->DisableCache(); }

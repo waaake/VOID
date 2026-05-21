@@ -38,6 +38,7 @@ public:
     void SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer);
     void SetSequence(const SharedPlaybackSequence& sequence);
     void SetPlaylist(Playlist* playlist);
+    void SetGrid(Playlist* playlist);
 
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);
@@ -77,6 +78,7 @@ private: /* Methods */
     // void SetSequenceFrame(int frame);
     // void SetTrackItemFrame(SharedTrackItem item, const int frame);
     void CompareMediaFrame(v_frame_t frame);
+    void RenderGrid(v_frame_t frame);
 
     void ResetViewBuffer(const PlayerViewBuffer& buffer);
 
