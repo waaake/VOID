@@ -4,6 +4,7 @@
 /* Internal */
 #include "Playlist.h"
 #include "VoidObjects/Project/Project.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -15,6 +16,11 @@ Playlist::Playlist(const std::string& name, Core::Project* parent)
     , m_CurrentRow(0)
 {
     m_Media = new MediaModel(this);
+    connect(m_Media, &QAbstractItemModel::rowsMoved, this, [this]() -> void
+    {
+        emit updated(this);
+    });
+    connect(this, &Playlist::updated, this, [this]() -> void { m_Modified = true; });
 }
 
 Playlist::Playlist(Core::Project* parent)
@@ -66,7 +72,7 @@ void Playlist::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTy
     out.SetObject();
     out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
     out.AddMember("name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
-    
+
     rapidjson::Value media(rapidjson::kArrayType);
 
     for (const SharedMediaClip& clip : *m_Media)
@@ -122,6 +128,24 @@ void Playlist::Deserialize(std::istream& in)
     emit updated(this);
 }
 
+QModelIndex Playlist::ShiftIndexUp(const QModelIndex& index)
+{
+    QModelIndex shifted = m_Media->ShiftIndexUp(index);
+    if (shifted.isValid())
+        emit updated(this);
+
+    return shifted;
+}
+
+QModelIndex Playlist::ShiftIndexDown(const QModelIndex& index)
+{
+    QModelIndex shifted = m_Media->ShiftIndexDown(index);
+    if (shifted.isValid())
+        emit updated(this);
+
+    return shifted;
+}
+
 SharedMediaClip Playlist::NextMedia()
 {
     m_CurrentRow = m_CurrentRow == m_Media->rowCount() - 1 ? 0 : ++m_CurrentRow;
@@ -130,7 +154,7 @@ SharedMediaClip Playlist::NextMedia()
 
 SharedMediaClip Playlist::PreviousMedia()
 {
-    m_CurrentRow = m_CurrentRow == 0 ? m_Media->rowCount() - 1 : --m_CurrentRow;    
+    m_CurrentRow = m_CurrentRow == 0 ? m_Media->rowCount() - 1 : --m_CurrentRow;
     return m_Media->Media(m_Media->index(m_CurrentRow, 0));
 }
 

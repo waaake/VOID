@@ -74,7 +74,7 @@ void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
         m_TexData.shrink_to_fit();
 
         m_Textures.resize(images.size());
-        m_TexData.reserve(images.size());
+        m_TexData.resize(images.size());
 
         glGenTextures(images.size(), m_Textures.data());
 
@@ -108,11 +108,11 @@ void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        m_TexData.emplace_back(
+        m_TexData[i] = std::move(ImageData(
             images[i]->Width(),
             images[i]->Height(),
             static_cast<int>(images[i]->InputColorSpace())
-        );
+        ));
     }
 }
 

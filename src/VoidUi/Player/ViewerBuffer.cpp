@@ -115,9 +115,13 @@ void ViewerBuffer::Set(const std::vector<SharedMediaClip>& media)
 void ViewerBuffer::SetPlaylist(Playlist* playlist)
 {
     Refresh();
+    if (m_Playlist)
+        disconnect(m_Playlist, &Playlist::updated, this, &ViewerBuffer::updated);
 
     m_Playlist = playlist;
     m_Clip = playlist->CurrentMedia();
+
+    connect(m_Playlist, &Playlist::updated, this, &ViewerBuffer::updated);
 
     m_PlayingComponent = PlayableComponent::Playlist;
     UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());

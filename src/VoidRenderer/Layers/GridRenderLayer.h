@@ -22,6 +22,7 @@ struct ImageData
     int height;
     int colorspace;
 
+    ImageData() : width(1), height(1), colorspace(0) {}
     ImageData(int width, int height, int colorspace) : width(width), height(height), colorspace(colorspace) {}
 };
 

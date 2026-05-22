@@ -7,10 +7,10 @@
 
 /* Internal */
 #include "Player.h"
+#include "VoidCore/Timekeeper.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/Globals.h"
-#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -262,6 +262,9 @@ void Player::Connect()
 
     // ViewerBuffer
     connect(&m_ViewBufferA, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);
+    connect(&m_ViewBufferB, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);
+    connect(&m_ViewBufferA, &ViewerBuffer::updated, this, &Player::Refresh);
+    connect(&m_ViewBufferB, &ViewerBuffer::updated, this, &Player::Refresh);
 }
 
 void Player::PauseCache()
