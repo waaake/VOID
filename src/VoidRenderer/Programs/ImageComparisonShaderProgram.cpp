@@ -250,20 +250,20 @@ void main() {
     // By Now we know the pixel color which will be finally rendered
     // Next are the adjustments for exposure and color
 
+    // Once the pixel is converted to linear color space
+    // Add the viewer transform to that linear pixel
+    vec4 transformed = OCIOViewerTransform(color);
+
     // Apply linear gain multiplier
-    color.rgb *= gain;
+    transformed.rgb *= gain;
 
     // Apply exposure adjustment
     // +1 Exposure doubles the light and -1 Exposure halves the light
     // To mimic that behaviour the rgb is multiplied by 2^exposure
-    color.rgb *= pow(2.f, exposure);
+    transformed.rgb *= pow(2.f, exposure);
 
     // Apply gamma correction
-    color.rgb = pow(color.rgb, vec3(1.0 / gamma));
-
-    // Once the pixel is converted to linear color space
-    // Add the viewer transform to that linear pixel
-    vec4 transformed = OCIOViewerTransform(color);
+    transformed.rgb = pow(transformed.rgb, vec3(1.0 / gamma));
 
     // Render a channel based on the color
     // 0 = R; 1 = G; 2 = B; 3 = A; 4 = RGB; 5 = RGBA (All)
