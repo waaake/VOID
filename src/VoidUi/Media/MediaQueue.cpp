@@ -102,6 +102,11 @@ void MediaQueue::Connect()
     {
         _PlayerBridge.SetGrid(m_Playlist);
     });
+    connect(m_View, &QueueView::doubleClicked, this, [this](const QModelIndex& index) -> void
+    {
+        m_Playlist->SetCurrentMedia(index);
+        _PlayerBridge.ResetPlaylistMedia();
+    });
 }
 
 VOID_NAMESPACE_CLOSE

@@ -63,7 +63,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     QAction* setInFrameAction = menuSystem->AddAction(playbackMenu, "Set In Frame", QKeySequence(Qt::Key_BracketLeft));
     QAction* setOutFrameAction = menuSystem->AddAction(playbackMenu, "Set Out Frame", QKeySequence(Qt::Key_BracketRight));
     QAction* resetRangeAction = menuSystem->AddAction(playbackMenu, "Reset In/Out Frames", QKeySequence(Qt::Key_Backslash));
-    QAction* editRateAction = menuSystem->AddAction(playbackMenu, "Edit Framerate", QKeySequence("Shift + F"));
+    QAction* editRateAction = menuSystem->AddAction(playbackMenu, "Edit Framerate", QKeySequence("Shift+F"));
 
     /* -------------------------------- */
     playbackMenu->addSeparator();
@@ -145,11 +145,6 @@ void PlayerBridge::SetGrid(const std::vector<SharedMediaClip>& media)
         m_Playlist->AddMedia(m);
 
     m_Player->SetGrid(m_Playlist);
-}
-
-void PlayerBridge::SetGrid(Playlist* playlist)
-{
-    m_Player->SetGrid(playlist);
 }
 
 VOID_NAMESPACE_CLOSE

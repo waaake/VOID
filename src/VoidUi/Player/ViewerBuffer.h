@@ -245,6 +245,7 @@ public:
     void SetPlaylist(Playlist* playlist);
     [[nodiscard]] bool NextMedia();
     [[nodiscard]] bool PreviousMedia();
+    [[nodiscard]] bool ResetPlaylistMedia();
 
     /**
      * Set Annotation on the Active Media Item

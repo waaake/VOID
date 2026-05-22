@@ -146,6 +146,12 @@ QModelIndex Playlist::ShiftIndexDown(const QModelIndex& index)
     return shifted;
 }
 
+void Playlist::SetCurrentMedia(const QModelIndex& index)
+{
+    if (index.isValid())
+        m_CurrentRow = index.row();
+}
+
 SharedMediaClip Playlist::NextMedia()
 {
     m_CurrentRow = m_CurrentRow == m_Media->rowCount() - 1 ? 0 : ++m_CurrentRow;

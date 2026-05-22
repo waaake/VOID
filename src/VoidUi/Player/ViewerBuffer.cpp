@@ -428,6 +428,28 @@ bool ViewerBuffer::PreviousMedia()
     return false;
 }
 
+bool ViewerBuffer::ResetPlaylistMedia()
+{
+    /**
+     * This is supposed to be invoked when we have reset the current index of the playlist
+     * and we want that to be played now,
+     * this clears existing cache and fetches the current media info from the playlist if available
+     */
+    if (m_PlayingComponent == PlayableComponent::Playlist)
+    {
+        Refresh();
+        m_Clip = m_Playlist->CurrentMedia();
+
+        UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
+        EnsureCached(m_Clip->FirstFrame());
+        CacheAvailable();
+
+        return true;
+    }
+
+    return false;
+}
+
 void ViewerBuffer::StartPlaybackCache(const PlayState& state)
 {
     if (Completed() || m_State == PlayState::Disabled)

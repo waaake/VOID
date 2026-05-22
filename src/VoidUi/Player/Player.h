@@ -39,6 +39,7 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence);
     void SetPlaylist(Playlist* playlist);
     void SetGrid(Playlist* playlist);
+    void ResetPlaylistMedia();
 
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);

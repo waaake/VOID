@@ -226,6 +226,16 @@ void Player::PreviousMedia()
     }
 }
 
+void Player::ResetPlaylistMedia()
+{
+    if (m_ActiveViewBuffer->ResetPlaylistMedia())
+    {
+        m_Renderer->Clear();
+        SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+        Render(m_Timeline->Frame());
+    }
+}
+
 void Player::Connect()
 {
     /* Timeline */

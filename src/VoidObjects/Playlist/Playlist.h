@@ -45,6 +45,7 @@ public:
     QModelIndex ShiftIndexUp(const QModelIndex& index);
     QModelIndex ShiftIndexDown(const QModelIndex& index);
 
+    void SetCurrentMedia(const QModelIndex& index);
     inline SharedMediaClip CurrentMedia() const { return m_Media->Media(m_Media->index(m_CurrentRow, 0)); }
     SharedMediaClip NextMedia();
     SharedMediaClip PreviousMedia();
