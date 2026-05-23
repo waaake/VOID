@@ -46,47 +46,11 @@ void GridController::Build()
 
 void GridController::Connect()
 {
-    connect(m_ColumnsEdit, &QLineEdit::editingFinished, this, [this]() -> void
-    {
-        QString t = m_ColumnsEdit->text();
-        if (!t.isEmpty())
-        {
-            _PlayerBridge.SetGridColumns(t.toInt());
-            m_RowsEdit->setPlaceholderText(QString::number(_PlayerBridge.GridRows()));
-            m_RowsEdit->clear();
-        }
-    });
-    connect(m_ColumnsEdit, &QLineEdit::returnPressed, this, [this]() -> void
-    {
-        QString t = m_ColumnsEdit->text();
-        if (!t.isEmpty())
-        {
-            _PlayerBridge.SetGridColumns(t.toInt());
-            m_RowsEdit->setPlaceholderText(QString::number(_PlayerBridge.GridRows()));
-            m_RowsEdit->clear();
-        }
-    });
+    connect(m_ColumnsEdit, &QLineEdit::editingFinished, this, &GridController::ColumnsUpdated);
+    connect(m_ColumnsEdit, &QLineEdit::returnPressed, this, &GridController::ColumnsUpdated);
 
-    connect(m_RowsEdit, &QLineEdit::editingFinished, this, [this]() -> void
-    {
-        QString t = m_RowsEdit->text();
-        if (!t.isEmpty())
-        {
-            _PlayerBridge.SetGridRows(t.toInt());
-            m_ColumnsEdit->setPlaceholderText(QString::number(_PlayerBridge.GridColumns()));
-            m_ColumnsEdit->clear();
-        }
-    });
-    connect(m_RowsEdit, &QLineEdit::returnPressed, this, [this]() -> void
-    {
-        QString t = m_RowsEdit->text();
-        if (!t.isEmpty())
-        {
-            _PlayerBridge.SetGridRows(t.toInt());
-            m_ColumnsEdit->setPlaceholderText(QString::number(_PlayerBridge.GridColumns()));
-            m_ColumnsEdit->clear();
-        }
-    });
+    connect(m_RowsEdit, &QLineEdit::editingFinished, this, &GridController::RowsUpdated);
+    connect(m_RowsEdit, &QLineEdit::returnPressed, this, &GridController::RowsUpdated);
 }
 
 void GridController::Setup()
@@ -98,6 +62,28 @@ void GridController::Setup()
 
     m_RowsEdit->setValidator(m_Validator);
     m_ColumnsEdit->setValidator(m_Validator);
+}
+
+void GridController::ColumnsUpdated()
+{
+    QString t = m_ColumnsEdit->text();
+    if (t.isEmpty())
+        return;
+
+    _PlayerBridge.SetGridColumns(t.toInt());
+    m_RowsEdit->setPlaceholderText(QString::number(_PlayerBridge.GridRows()));
+    m_RowsEdit->clear();
+}
+
+void GridController::RowsUpdated()
+{
+    QString t = m_RowsEdit->text();
+    if (t.isEmpty())
+        return;
+
+    _PlayerBridge.SetGridRows(t.toInt());
+    m_ColumnsEdit->setPlaceholderText(QString::number(_PlayerBridge.GridColumns()));
+    m_ColumnsEdit->clear();
 }
 
 VOID_NAMESPACE_CLOSE

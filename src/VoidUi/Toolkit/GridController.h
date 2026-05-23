@@ -34,6 +34,9 @@ private: /* Methods */
     void Build();
     void Connect();
     void Setup();
+
+    void ColumnsUpdated();
+    void RowsUpdated();
 };
 
 VOID_NAMESPACE_CLOSE

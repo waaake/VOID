@@ -96,12 +96,6 @@ void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
 
         glGenTextures(images.size(), m_Textures.data());
 
-        // m_Rows = std::ceil(std::sqrt(m_Textures.size()));
-        // m_Columns = std::ceil((float)m_Textures.size() / m_Rows);
-
-        // m_CellWidth = 2.f / m_Columns;
-        // m_CellHeight = 2.f / m_Rows;
-    
         // Auto layout grid
         SetRows(std::ceil(std::sqrt(m_Textures.size())));
     }

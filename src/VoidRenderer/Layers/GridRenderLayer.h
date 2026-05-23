@@ -6,7 +6,6 @@
 
 /* STD */
 #include <vector>
-#include <utility> // std::pair
 
 /* Internal */
 #include "Definition.h"
