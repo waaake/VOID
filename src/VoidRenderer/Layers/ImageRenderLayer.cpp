@@ -121,7 +121,7 @@ void ImageRenderLayer::SetImage(const SharedPixels& image)
     m_InputColorSpace = static_cast<int>(image->InputColorSpace());
 }
 
-void ImageRenderLayer::Render(const glm::mat4& projection)
+void ImageRenderLayer::Render(const glm::mat4& projection, float, float)
 {
     /* Update the Data for Render */
     m_Projection = projection;

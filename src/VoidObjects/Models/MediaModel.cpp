@@ -83,6 +83,11 @@ bool MediaModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int co
         destinationChild < 0 || destinationChild >= static_cast<int>(m_Media.size()) || count != 1)
         return false;
 
+    /**
+     * TODO: The endMoveRows() gives a crash when moving rows where sourceRow and destinationRow have a difference of 1
+     * e.g. sourceRow is 2 and destinationRow is 3 or anything similar
+     * Need to see why that is happening and a better way around that. maybe I'm not doing this correctly...
+     */
     beginMoveRows(sourceParent, sourceRow, sourceRow, destinationParent, destinationChild);
     auto media = m_Media[sourceRow];
     m_Media.erase(m_Media.begin() + sourceRow);

@@ -40,7 +40,8 @@ enum class ComparisonMode : int
     WIPE,
     STACK,
     HORIZONTAL,
-    VERTICAL
+    VERTICAL,
+    GRID
 };
 
 enum class BlendMode : int

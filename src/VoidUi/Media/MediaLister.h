@@ -69,6 +69,7 @@ private: /* Methods */
     void AddSelectionToSequence();
     void PlaySelectionAsQueue();
     void AddSelectionToQueue();
+    void PlaySelectionAsGrid();
     // void RemoveSelectedMedia();
     void InspectMetadata();
     void EditEffects();
@@ -100,6 +101,7 @@ private: /* Members */
     QAction* m_PlayAction;
     QAction* m_PlayAsListAction;
     QAction* m_AddToQueueAction;
+    QAction* m_PlayAsGridAction;
     QAction* m_RemoveAction;
     QAction* m_InspectMetadataAction;
     QAction* m_EditEffectsAction;

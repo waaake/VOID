@@ -29,6 +29,7 @@ private: /* Members */
     QVBoxLayout* m_Layout;
     QPushButton* m_MoveUpArrow;
     QPushButton* m_MoveDownArrow;
+    QPushButton* m_GridPlay;
     QueueView* m_View;
 
     Playlist* m_Playlist;

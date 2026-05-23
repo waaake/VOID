@@ -135,23 +135,23 @@ void main() {
     // Texture pixel values from the buffers
     vec4 color = texture(uTexture, TexCoord);
 
-    // Apply linear gain multiplier
-    color.rgb *= gain;
-
-    // Apply exposure adjustment
-    // +1 Exposure doubles the light and -1 Exposure halves the light
-    // To mimic that behaviour the rgb is multiplied by 2^exposure
-    color.rgb *= pow(2.f, exposure);
-
-    // Apply gamma correction
-    color.rgb = pow(color.rgb, vec3(1.0 / gamma));
-
     // Ensure we have linear output depending on the input colorspace
     vec4 linear = Linearize(color, inputColorSpace);
 
     // Once the pixel is converted to linear color space
     // Add the viewer transform to that linear pixel
     vec4 transformed = OCIOViewerTransform(linear);
+
+    // Apply linear gain multiplier
+    transformed.rgb *= gain;
+
+    // Apply exposure adjustment
+    // +1 Exposure doubles the light and -1 Exposure halves the light
+    // To mimic that behaviour the rgb is multiplied by 2^exposure
+    transformed.rgb *= pow(2.f, exposure);
+
+    // Apply gamma correction
+    transformed.rgb = pow(transformed.rgb, vec3(1.0 / gamma));
 
     // Render a channel based on the color
     // 0 = R; 1 = G; 2 = B; 3 = A; 4 = RGB; 5 = RGBA (All)

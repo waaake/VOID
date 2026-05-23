@@ -13,6 +13,7 @@ set(SOURCES
     Core/RenderTypes.cpp
 
     # Render Layers
+    Layers/GridRenderLayer.cpp
     Layers/ImageRenderLayer.cpp
     Layers/ImageComparisonRenderLayer.cpp
     Layers/StrokeRenderLayer.cpp

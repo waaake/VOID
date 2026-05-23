@@ -95,6 +95,7 @@ set(SOURCES
     Toolkit/ColorController.cpp
     Toolkit/ControlBar.cpp
     Toolkit/ControlScroller.cpp
+    Toolkit/GridController.cpp
 
     # QExtensions
     QExtensions/Delegates.cpp

@@ -38,6 +38,12 @@ public:
     void SetTrack(const SharedPlaybackTrack& track, const PlayerViewBuffer& buffer);
     void SetSequence(const SharedPlaybackSequence& sequence);
     void SetPlaylist(Playlist* playlist);
+    void SetGrid(Playlist* playlist);
+    void ResetPlaylistMedia();
+    void SetGridRows(int rows) { m_Renderer->SetRows(rows); }
+    void SetGridColumns(int columns) { m_Renderer->SetColumns(columns); }
+    int GridRows() const { return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Rows() : 1; }
+    int GridColumns() const { return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Columns() : 1; }
 
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);
@@ -77,6 +83,7 @@ private: /* Methods */
     // void SetSequenceFrame(int frame);
     // void SetTrackItemFrame(SharedTrackItem item, const int frame);
     void CompareMediaFrame(v_frame_t frame);
+    void RenderGrid(v_frame_t frame);
 
     void ResetViewBuffer(const PlayerViewBuffer& buffer);
 

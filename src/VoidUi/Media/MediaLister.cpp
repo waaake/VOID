@@ -55,6 +55,10 @@ VoidMediaLister::~VoidMediaLister()
     delete m_AddToQueueAction;
     m_AddToQueueAction = nullptr;
 
+    m_PlayAsGridAction->deleteLater();
+    delete m_PlayAsGridAction;
+    m_PlayAsGridAction = nullptr;
+
     m_RemoveAction->deleteLater();
     delete m_RemoveAction;
     m_RemoveAction = nullptr;
@@ -113,6 +117,7 @@ void VoidMediaLister::Build()
     m_PlayAction = new QAction("Play Selected As Sequence");
     m_PlayAsListAction = new QAction("Play Selected in Queue");
     m_AddToQueueAction = new QAction("Add Selected to Queue");
+    m_PlayAsGridAction = new QAction("Play Selected as Grid");
     m_RemoveAction = new QAction("Remove Selected");
     m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
     m_EditEffectsAction = new QAction("Edit Effects");
@@ -254,6 +259,7 @@ void VoidMediaLister::Connect()
     connect(m_PlayAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToSequence);
     connect(m_PlayAsListAction, &QAction::triggered, this, &VoidMediaLister::PlaySelectionAsQueue);
     connect(m_AddToQueueAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToQueue);
+    connect(m_PlayAsGridAction, &QAction::triggered, this, &VoidMediaLister::PlaySelectionAsGrid);
     connect(m_RemoveAction, &QAction::triggered, m_MediaView, &MediaView::RemoveSelectedMedia);
     connect(m_InspectMetadataAction, &QAction::triggered, this, &VoidMediaLister::InspectMetadata);
     connect(m_EditEffectsAction, &QAction::triggered, this, &VoidMediaLister::EditEffects);
@@ -336,7 +342,7 @@ void VoidMediaLister::PlaySelectionAsQueue()
         m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
 
     _PlayerBridge.ClearQueue();
-    _PlayerBridge.AddToQueue(m);    
+    _PlayerBridge.AddToQueue(m);
 }
 
 void VoidMediaLister::AddSelectionToQueue()
@@ -355,6 +361,22 @@ void VoidMediaLister::AddSelectionToQueue()
     _PlayerBridge.AddToQueue(m, false);
 }
 
+void VoidMediaLister::PlaySelectionAsGrid()
+{
+    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
+
+    if (selected.empty())
+        return;
+
+    std::vector<SharedMediaClip> m;
+    m.reserve(selected.size());
+
+    for (const QModelIndex& index: selected)
+        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+
+    _PlayerBridge.SetGrid(m);
+}
+
 void VoidMediaLister::ShowContextMenu(const _QPoint& position)
 {
     /* Show up only if we have selection */
@@ -368,6 +390,7 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     contextMenu.addAction(m_PlayAction);
     contextMenu.addAction(m_PlayAsListAction);
     contextMenu.addAction(m_AddToQueueAction);
+    contextMenu.addAction(m_PlayAsGridAction);
     contextMenu.addAction(m_RemoveAction);
 
     contextMenu.addSeparator();

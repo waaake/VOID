@@ -115,9 +115,13 @@ void ViewerBuffer::Set(const std::vector<SharedMediaClip>& media)
 void ViewerBuffer::SetPlaylist(Playlist* playlist)
 {
     Refresh();
+    if (m_Playlist)
+        disconnect(m_Playlist, &Playlist::updated, this, &ViewerBuffer::updated);
 
     m_Playlist = playlist;
     m_Clip = playlist->CurrentMedia();
+
+    connect(m_Playlist, &Playlist::updated, this, &ViewerBuffer::updated);
 
     m_PlayingComponent = PlayableComponent::Playlist;
     UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
@@ -223,6 +227,21 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
         case PlayableComponent::Sequence: return SequenceData(frame, nearest);
         default: return ClipData(frame, nearest);
     }
+}
+
+std::vector<SharedPixels> ViewerBuffer::GridFrame(const v_frame_t frame)
+{
+    std::vector<SharedPixels> grid;
+    grid.reserve(m_Playlist->Size());
+    for (auto& media : m_Playlist->AllMedia())
+    {
+        if (media->Contains(frame))
+            grid.push_back(media->Image(frame));
+        else
+            grid.push_back(media->Image(media->NearestFrame(frame)));
+    }
+
+    return grid;
 }
 
 SharedMediaClip ViewerBuffer::Media(const v_frame_t frame)
@@ -398,6 +417,28 @@ bool ViewerBuffer::PreviousMedia()
     {
         Refresh();
         m_Clip = m_Playlist->PreviousMedia();
+
+        UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
+        EnsureCached(m_Clip->FirstFrame());
+        CacheAvailable();
+
+        return true;
+    }
+
+    return false;
+}
+
+bool ViewerBuffer::ResetPlaylistMedia()
+{
+    /**
+     * This is supposed to be invoked when we have reset the current index of the playlist
+     * and we want that to be played now,
+     * this clears existing cache and fetches the current media info from the playlist if available
+     */
+    if (m_PlayingComponent == PlayableComponent::Playlist)
+    {
+        Refresh();
+        m_Clip = m_Playlist->CurrentMedia();
 
         UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
         EnsureCached(m_Clip->FirstFrame());

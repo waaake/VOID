@@ -58,12 +58,21 @@ void VoidRenderer::Initialize()
     m_StrokeRenderer.Initialize();
     m_TextRenderer.Initialize();
 
+    m_GridRenderer.Initialize();
+
     /* (Re)Load Any textures if available */
     ReloadTextures();
 }
 
 void VoidRenderer::Draw()
 {
+    if (m_CompareMode == ComparisonMode::GRID)
+    {
+        m_GridRenderer.Render(m_VProjection, width(), height());
+        glUseProgram(0);
+        return;
+    }
+
     if (m_ImageA && !m_ImageA->Empty())
     {
         /* Calculate the Projection Matrix */
@@ -73,21 +82,22 @@ void VoidRenderer::Draw()
         if (m_CompareMode == ComparisonMode::NONE)
         {
             /* Render the Image Texture */
-            m_ImageRenderer.Render(m_VProjection);
+            m_ImageRenderer.Render(m_VProjection, width(), height());
 
             /* Draw Annotations */
             if (m_Annotating && m_Annotation)
             {
                 /* Render the stokes with the projection */
-                m_StrokeRenderer.Render(m_VProjection);
-                m_TextRenderer.Render(m_VProjection);
+                m_StrokeRenderer.Render(m_VProjection, width(), height());
+                m_TextRenderer.Render(m_VProjection, m_ImageA->Width(), m_ImageA->Height());
             }
         }
         else
         {
             /* Render Images with Comparison */
-            m_ImageComparisonRenderer.Render(m_VProjection);
-            m_SwipeRenderer.Render();
+            m_ImageComparisonRenderer.Render(m_VProjection, width(), height());
+            if (m_CompareMode == ComparisonMode::WIPE)
+                m_SwipeRenderer.Render();
         }
 
         /* Exit Programs */
@@ -144,7 +154,7 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         {
             EnsureHasAnnotation();
             if (!m_TextRenderer.Typing())
-                m_TextRenderer.Begin(p);            
+                m_TextRenderer.Begin(p);
             setFocus();
         }
     }
@@ -373,10 +383,7 @@ void VoidRenderer::Render(SharedPixels data)
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
-    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-        m_TextRenderer.SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
-    }
 
     RemoveAnnotation();
 
@@ -407,10 +414,7 @@ void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& anno
      * So constantly redrawing this is just too ineffecient
      */
     if (m_ImageA)
-    {
         m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-        m_TextRenderer.SetAspect((float)m_ImageA->Width() / m_ImageA->Height());
-    }
 
     /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
     SetAnnotation(annotation);
@@ -452,6 +456,22 @@ void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMo
     m_ImageComparisonRenderer.SetImageB(m_ImageB);
 
     /* Trigger a Re-paint */
+    update();
+}
+
+void VoidRenderer::RenderGrid(const std::vector<SharedPixels>& grid)
+{
+    m_GridRenderer.SetImages(grid);
+
+    // Hide the Error Label
+    SetMessage("");
+
+    m_CompareMode = ComparisonMode::GRID;
+    m_ImageComparisonRenderer.SetComparisonMode(ComparisonMode::NONE);
+
+    m_RenderStatus->SetRenderResolution(width(), height());
+
+    // Re-paint
     update();
 }
 
@@ -509,9 +529,24 @@ float VoidRenderer::MaxZoom() const
     return m_ImageA ? (float)width() / m_ImageA->Width() * MAX_ZOOM * 100 : 0.f;
 }
 
+void VoidRenderer::SetRows(int rows)
+{
+    m_GridRenderer.SetRows(rows);
+    update();
+}
+
+void VoidRenderer::SetColumns(int columns)
+{
+    m_GridRenderer.SetColumns(columns);
+    update();
+}
+
 void VoidRenderer::SetExposure(const float exposure)
 {
     m_ImageRenderer.SetExposure(exposure);
+    m_ImageComparisonRenderer.SetExposure(exposure);
+    m_GridRenderer.SetExposure(exposure);
+
     /* Redraw the texture */
     update();
 }
@@ -519,6 +554,9 @@ void VoidRenderer::SetExposure(const float exposure)
 void VoidRenderer::SetGamma(const float gamma)
 {
     m_ImageRenderer.SetGamma(gamma);
+    m_ImageComparisonRenderer.SetGamma(gamma);
+    m_GridRenderer.SetGamma(gamma);
+
     /* Redraw the texture */
     update();
 }
@@ -526,6 +564,9 @@ void VoidRenderer::SetGamma(const float gamma)
 void VoidRenderer::SetGain(const float gain)
 {
     m_ImageRenderer.SetGain(gain);
+    m_ImageComparisonRenderer.SetGain(gain);
+    m_GridRenderer.SetGain(gain);
+
     /* Redraw the texture */
     update();
 }
@@ -534,6 +575,8 @@ void VoidRenderer::SetChannelMode(int mode)
 {
     /* Update the channel mode for the Renderer */
     m_ImageRenderer.SetChannelMode(mode);
+    m_ImageComparisonRenderer.SetChannelMode(mode);
+    m_GridRenderer.SetChannelMode(mode);
 
     /* Redraw the texture */
     update();
@@ -545,6 +588,7 @@ void VoidRenderer::SetColorDisplay(const std::string& display)
 
     m_ImageRenderer.ReinitShaderProgram();
     m_ImageComparisonRenderer.ReinitShaderProgram();
+    m_GridRenderer.ReinitShaderProgram();
 
     update();
 }
@@ -782,7 +826,7 @@ void VoidRenderer::SetAnnotation(const Renderer::SharedAnnotation& annotation)
     m_Annotation = annotation;
     /* Render layers get the same update */
     m_StrokeRenderer.SetAnnotation(m_Annotation);
-    m_TextRenderer.SetAnnotation(m_Annotation);   
+    m_TextRenderer.SetAnnotation(m_Annotation);
 }
 
 void VoidRenderer::RemoveAnnotation()

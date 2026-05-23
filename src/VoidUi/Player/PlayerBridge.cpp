@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "PlayerBridge.h"
+#include "VoidUi/Toolkit/GridController.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -63,7 +64,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     QAction* setInFrameAction = menuSystem->AddAction(playbackMenu, "Set In Frame", QKeySequence(Qt::Key_BracketLeft));
     QAction* setOutFrameAction = menuSystem->AddAction(playbackMenu, "Set Out Frame", QKeySequence(Qt::Key_BracketRight));
     QAction* resetRangeAction = menuSystem->AddAction(playbackMenu, "Reset In/Out Frames", QKeySequence(Qt::Key_Backslash));
-    QAction* editRateAction = menuSystem->AddAction(playbackMenu, "Edit Framerate", QKeySequence("Shift + F"));
+    QAction* editRateAction = menuSystem->AddAction(playbackMenu, "Edit Framerate", QKeySequence("Shift+F"));
 
     /* -------------------------------- */
     playbackMenu->addSeparator();
@@ -108,6 +109,10 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     QAction* fullscreenAction = menuSystem->AddAction(viewerMenu, "Show Fullscreen", QKeySequence("Ctrl+F"));
     QAction* exitFullscreenAction = menuSystem->AddAction(viewerMenu, "Exit Fullscreen");
 
+    viewerMenu->addSeparator();
+
+    QAction* editGridAction = menuSystem->AddAction(viewerMenu, "Edit Render Grid");
+
     connect(redToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(0); });
     connect(greenToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(1); });
     connect(blueToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(2); });
@@ -117,6 +122,11 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     connect(zoomToFitAction, &QAction::triggered, this, &PlayerBridge::ZoomToFit);
     connect(fullscreenAction, &QAction::triggered, this, &PlayerBridge::SetFullscreen);
     connect(exitFullscreenAction, &QAction::triggered, this, &PlayerBridge::ExitFullscreen);
+    connect(editGridAction, &QAction::triggered, this, [this]() -> void
+    {
+        GridController g;
+        g.exec();
+    });
     /* }}} */
 }
 
@@ -135,6 +145,16 @@ void PlayerBridge::AddToQueue(const std::vector<SharedMediaClip>& media, bool re
 
     if (refresh)
         m_Player->SetPlaylist(m_Playlist);
+}
+
+void PlayerBridge::SetGrid(const std::vector<SharedMediaClip>& media)
+{
+    m_Playlist->Clear();
+
+    for (const SharedMediaClip& m : media)
+        m_Playlist->AddMedia(m);
+
+    m_Player->SetGrid(m_Playlist);
 }
 
 VOID_NAMESPACE_CLOSE

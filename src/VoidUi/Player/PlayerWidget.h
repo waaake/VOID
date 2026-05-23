@@ -68,6 +68,7 @@ public:
      * Returns true if the current comparison mode is not Compare None
      */
     [[nodiscard]] inline bool Comparing() { return m_ComparisonMode != Renderer::ComparisonMode::NONE; }
+    [[nodiscard]] inline bool ActiveGrid() { return m_ComparisonMode == Renderer::ComparisonMode::GRID; }
 
     /**
      * Updates the Handler for Missing frame

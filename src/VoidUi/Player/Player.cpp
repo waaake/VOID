@@ -7,10 +7,10 @@
 
 /* Internal */
 #include "Player.h"
+#include "VoidCore/Timekeeper.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/Globals.h"
-#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -180,8 +180,24 @@ void Player::SetPlaylist(Playlist* playlist)
     Render(m_Timeline->Frame());
 }
 
+void Player::SetGrid(Playlist* playlist)
+{
+    m_Timeline->Clear();
+    m_Renderer->Clear();
+
+    // Update what is being played on the Active Viewer Buffer
+    m_ActiveViewBuffer->SetPlaylist(playlist);
+    SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+
+    // This internally calls refresh which renders the grid
+    SetComparisonMode(5); // ComparisonMode::GRID;
+}
+
 void Player::SetFrame(int frame)
 {
+    if (ActiveGrid())
+        return RenderGrid(frame);
+
     /**
      * Comparison Gets precedence --> If we're in comparing mode -> Compare Media frames
      * the media frames could be from any component Track, Clip
@@ -207,6 +223,16 @@ void Player::PreviousMedia()
     {
         m_Renderer->Clear();
         SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+    }
+}
+
+void Player::ResetPlaylistMedia()
+{
+    if (m_ActiveViewBuffer->ResetPlaylistMedia())
+    {
+        m_Renderer->Clear();
+        SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+        Render(m_Timeline->Frame());
     }
 }
 
@@ -246,6 +272,9 @@ void Player::Connect()
 
     // ViewerBuffer
     connect(&m_ViewBufferA, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);
+    connect(&m_ViewBufferB, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);
+    connect(&m_ViewBufferA, &ViewerBuffer::updated, this, &Player::Refresh);
+    connect(&m_ViewBufferB, &ViewerBuffer::updated, this, &Player::Refresh);
 }
 
 void Player::PauseCache()
@@ -453,6 +482,11 @@ void Player::CompareMediaFrame(v_frame_t frame)
 {
     /* Compare on the Viewer */
     m_Renderer->Compare(m_ViewBufferA.Image(frame), m_ViewBufferB.Image(frame), m_ComparisonMode, m_BlendMode);
+}
+
+void Player::RenderGrid(v_frame_t frame)
+{
+    m_Renderer->RenderGrid(m_ActiveViewBuffer->GridFrame(frame));
 }
 
 void Player::SetComparisonMode(int mode)
