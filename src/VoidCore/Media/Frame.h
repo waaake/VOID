@@ -69,7 +69,7 @@ protected: /* Members */
     MEntry m_MediaEntry;
     SharedPixels m_ImageData;
     v_frame_t m_Framenumber;
-    int m_Channels = {3};
+    int m_Channels = {0};
     bool m_Dirty = {false};
 
 private: /* Members*/
