@@ -49,8 +49,11 @@ public:
     void AddToQueue(const SharedMediaClip& media, bool refresh = true);
     void AddToQueue(const std::vector<SharedMediaClip>& media, bool refresh = true);
     void SetGrid(const std::vector<SharedMediaClip>& media);
-
+    
     inline void SetGrid(Playlist* playlist) { m_Player->SetGrid(playlist); }
+    void SetGridColumns(int columns) { m_Player->SetGridColumns(columns); }
+    void SetGridRows(int rows) { m_Player->SetGridRows(rows); }
+
     inline void ResetPlaylistMedia() { m_Player->ResetPlaylistMedia(); }
 
     inline void ResumeCache() { m_Player->ResumeCache(); }

@@ -64,6 +64,12 @@ public:
     float MaxZoom() const;
     inline float Zoom() const { return m_ImageA ? (float)width() / m_ImageA->Width() * m_ZoomFactor * 100 : 0.f; }
 
+    // Grid //
+    void SetRows(int rows);
+    void SetColumns(int columns);
+    int Rows() const { return m_GridRenderer.Rows(); }
+    int Columns() const { return m_GridRenderer.Columns(); }
+
     /**
      * Annotation Features
      */

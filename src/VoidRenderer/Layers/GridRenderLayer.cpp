@@ -61,6 +61,24 @@ void GridRenderLayer::Reset()
 
 }
 
+void GridRenderLayer::SetRows(int rows)
+{
+    m_Rows = rows;
+    m_Columns = std::ceil(static_cast<float>(m_Textures.size()) / rows);
+
+    m_CellWidth = 2.f / m_Columns;
+    m_CellHeight = 2.f / m_Rows;
+}
+
+void GridRenderLayer::SetColumns(int columns)
+{
+    m_Columns = columns;
+    m_Rows = std::ceil(static_cast<float>(m_Textures.size()) / columns);
+
+    m_CellWidth = 2.f / m_Columns;
+    m_CellHeight = 2.f / m_Rows;
+}
+
 void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
 {
     if (m_Textures.size() != images.size())
@@ -78,11 +96,14 @@ void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
 
         glGenTextures(images.size(), m_Textures.data());
 
-        m_Rows = std::ceil(std::sqrt(m_Textures.size()));
-        m_Columns = std::ceil((float)m_Textures.size() / m_Rows);
+        // m_Rows = std::ceil(std::sqrt(m_Textures.size()));
+        // m_Columns = std::ceil((float)m_Textures.size() / m_Rows);
 
-        m_CellWidth = 2.f / m_Columns;
-        m_CellHeight = 2.f / m_Rows;
+        // m_CellWidth = 2.f / m_Columns;
+        // m_CellHeight = 2.f / m_Rows;
+    
+        // Auto layout grid
+        SetRows(std::ceil(std::sqrt(m_Textures.size())));
     }
 
     for (int i = 0; i < images.size(); ++i)

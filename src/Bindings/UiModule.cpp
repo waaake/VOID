@@ -79,7 +79,9 @@ void BindUi(py::module_& m)
             py::arg("media_list"))
         .def("set_media",
             py::overload_cast<const std::vector<SharedMediaClip>&, const PlayerViewBuffer&>(&PlayerBridge::SetMedia),
-            py::arg("media_list"), py::arg("buffer"));
+            py::arg("media_list"), py::arg("buffer"))
+        .def("set_grid_rows", &PlayerBridge::SetGridRows, py::arg("rows"))
+        .def("set_grid_columns", &PlayerBridge::SetGridColumns, py::arg("columns"));
 
     /* Player */
     py::class_<Player>(m, "Player")

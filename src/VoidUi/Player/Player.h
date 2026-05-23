@@ -40,6 +40,8 @@ public:
     void SetPlaylist(Playlist* playlist);
     void SetGrid(Playlist* playlist);
     void ResetPlaylistMedia();
+    void SetGridRows(int rows) { m_Renderer->SetRows(rows); }
+    void SetGridColumns(int columns) { m_Renderer->SetColumns(columns); }
 
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);

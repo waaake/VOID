@@ -44,6 +44,12 @@ public:
     inline void SetChannelMode(const int mode) { m_ChannelMode = mode; }
     inline void SetChannelMode(const Renderer::ChannelMode& mode) { m_ChannelMode = static_cast<int>(mode); }
 
+    void SetRows(int rows);
+    void SetColumns(int columns);
+
+    inline int Rows() const { return m_Rows; }
+    inline int Columns() const { return m_Columns; }
+
     void ReinitShaderProgram();
     void Render(const glm::mat4& projection, float width, float height);
 

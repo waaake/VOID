@@ -154,7 +154,7 @@ void VoidRenderer::mousePressEvent(QMouseEvent* event)
         {
             EnsureHasAnnotation();
             if (!m_TextRenderer.Typing())
-                m_TextRenderer.Begin(p);            
+                m_TextRenderer.Begin(p);
             setFocus();
         }
     }
@@ -529,6 +529,18 @@ float VoidRenderer::MaxZoom() const
     return m_ImageA ? (float)width() / m_ImageA->Width() * MAX_ZOOM * 100 : 0.f;
 }
 
+void VoidRenderer::SetRows(int rows)
+{
+    m_GridRenderer.SetRows(rows);
+    update();
+}
+
+void VoidRenderer::SetColumns(int columns)
+{
+    m_GridRenderer.SetColumns(columns);
+    update();
+}
+
 void VoidRenderer::SetExposure(const float exposure)
 {
     m_ImageRenderer.SetExposure(exposure);
@@ -814,7 +826,7 @@ void VoidRenderer::SetAnnotation(const Renderer::SharedAnnotation& annotation)
     m_Annotation = annotation;
     /* Render layers get the same update */
     m_StrokeRenderer.SetAnnotation(m_Annotation);
-    m_TextRenderer.SetAnnotation(m_Annotation);   
+    m_TextRenderer.SetAnnotation(m_Annotation);
 }
 
 void VoidRenderer::RemoveAnnotation()
