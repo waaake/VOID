@@ -115,6 +115,7 @@ public:
     inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
     inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
+    inline int Channels() const { return m_Mediaframes.front().Channels(); }
     inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.front().Metadata(); }
 
     inline double Framerate() const { return m_Framerate; }

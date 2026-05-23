@@ -108,6 +108,7 @@ void Frame::Cache()
     if (m_ImageData->Empty() || m_Dirty)
     {
         m_ImageData->Read();
+        m_Channels = m_ImageData->Channels();
     }
 }
 
