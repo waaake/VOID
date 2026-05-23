@@ -53,6 +53,8 @@ public:
     inline void SetGrid(Playlist* playlist) { m_Player->SetGrid(playlist); }
     void SetGridColumns(int columns) { m_Player->SetGridColumns(columns); }
     void SetGridRows(int rows) { m_Player->SetGridRows(rows); }
+    int GridRows() const { return m_Player->GridRows(); }
+    int GridColumns() const { return m_Player->GridColumns(); }
 
     inline void ResetPlaylistMedia() { m_Player->ResetPlaylistMedia(); }
 

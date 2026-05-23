@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "PlayerBridge.h"
+#include "VoidUi/Toolkit/GridController.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -108,6 +109,10 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     QAction* fullscreenAction = menuSystem->AddAction(viewerMenu, "Show Fullscreen", QKeySequence("Ctrl+F"));
     QAction* exitFullscreenAction = menuSystem->AddAction(viewerMenu, "Exit Fullscreen");
 
+    viewerMenu->addSeparator();
+
+    QAction* editGridAction = menuSystem->AddAction(viewerMenu, "Edit Render Grid");
+
     connect(redToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(0); });
     connect(greenToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(1); });
     connect(blueToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(2); });
@@ -117,6 +122,11 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     connect(zoomToFitAction, &QAction::triggered, this, &PlayerBridge::ZoomToFit);
     connect(fullscreenAction, &QAction::triggered, this, &PlayerBridge::SetFullscreen);
     connect(exitFullscreenAction, &QAction::triggered, this, &PlayerBridge::ExitFullscreen);
+    connect(editGridAction, &QAction::triggered, this, [this]() -> void
+    {
+        GridController g;
+        g.exec();
+    });
     /* }}} */
 }
 
