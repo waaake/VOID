@@ -131,6 +131,23 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         ICON_SIZE
     ));
 
+    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    if (channels == 3)
+    {
+        const int w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+    }
+    else if (channels == 4)
+    {
+        const int w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+    }
+
     /* Name */
     const QRect namerect(left, thumbrect.bottom(), 90 * m_Scale, 20);
     painter->drawText(
