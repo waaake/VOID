@@ -47,6 +47,7 @@ public:
     [[nodiscard]] inline bool Valid() const { return bool(m_ImageData); }
     [[nodiscard]] inline bool Invalid() const { return !m_ImageData; }
     [[nodiscard]] inline bool Dirty() const { return m_Dirty; }
+    [[nodiscard]] inline int Channels() const { return m_Channels; }
 
     /**
      * Returns Shared Pointer to the ImageData
@@ -68,6 +69,7 @@ protected: /* Members */
     MEntry m_MediaEntry;
     SharedPixels m_ImageData;
     v_frame_t m_Framenumber;
+    int m_Channels = {0};
     bool m_Dirty = {false};
 
 private: /* Members*/

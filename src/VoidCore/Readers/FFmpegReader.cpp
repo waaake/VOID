@@ -254,6 +254,7 @@ void FFmpegPixReader::ProcessInformation()
             {
                 /* This always has been 2 less than the total number of frames, need a bit more information here... */
                 m_Duration = stream->nb_frames - 2;
+                m_Startframe = av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
                 m_Framerate = av_q2d(stream->r_frame_rate);
                 m_Endframe = m_Duration - 1;
             }

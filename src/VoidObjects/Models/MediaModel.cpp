@@ -65,6 +65,7 @@ QVariant MediaModel::data(const QModelIndex& index, int role) const
         case MRoles::Color: return item->Color();
         case MRoles::Audio: return item->HasAudio();
         case MRoles::Tags: return item->HasTags();
+        case MRoles::Channels: return item->Channels();
         default: return QVariant();
     }
 }

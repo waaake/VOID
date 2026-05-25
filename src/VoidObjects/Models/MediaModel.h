@@ -37,7 +37,8 @@ public:
         Thumbnail,
         Color,
         Audio,
-        Tags
+        Tags,
+        Channels
     };
 
 public:

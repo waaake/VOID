@@ -10,7 +10,6 @@
 #include "ListDelegate.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/IconForge.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -126,6 +125,23 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         )
     );
 
+    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    if (channels == 3)
+    {
+        const int w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 1, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 1, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+    }
+    else if (channels == 4)
+    {
+        const int w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 1, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 1, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+    }
+
     /* Name */
     const QRect namerect(option.rect.left() + 30, option.rect.top(), option.rect.right(), option.rect.height());
     painter->drawText(
@@ -236,6 +252,23 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
     const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
+
+    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    if (channels == 3)
+    {
+        const int w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+    }
+    else if (channels == 4)
+    {
+        const int w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+    }
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
         IconType::icon_volume_up,
