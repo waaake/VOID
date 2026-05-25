@@ -172,9 +172,9 @@ void Media::ProcessMovie()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    for (v_frame_t i = frange.startframe; i < frange.duration; ++i)
+    for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
     {
-        m_Mediaframes[i] = std::move(MovieFrame(entry, i));
+        m_Mediaframes[counter] = std::move(MovieFrame(entry, i));
         m_Framenumbers.emplace_back(i);
     }
 
