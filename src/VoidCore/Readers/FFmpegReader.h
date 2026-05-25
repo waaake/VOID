@@ -27,15 +27,10 @@ VOID_NAMESPACE_OPEN
 
 class FFmpegDecoder
 {
-    FFmpegDecoder();
-
 public:
-    static FFmpegDecoder& Instance()
-    {
-        static FFmpegDecoder instance;
-        return instance;
-    }
-
+    static FFmpegDecoder& Instance(const std::string& path);
+        
+    FFmpegDecoder();
     ~FFmpegDecoder();    
 
     FFmpegDecoder(const FFmpegDecoder&) = delete;
@@ -86,7 +81,6 @@ private: /* Methods */
      */
     v_frame_t DecodeNextFrame(bool save = true);
 };
-
 
 class VOID_API FFmpegPixReader : public VoidMPixReader
 {
