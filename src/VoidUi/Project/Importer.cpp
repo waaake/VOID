@@ -10,6 +10,11 @@
 
 VOID_NAMESPACE_OPEN
 
+DirectoryImporter::DirectoryImporter(QObject* parent)
+    : DirectoryImporter("", 5, parent)
+{
+}
+
 DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel, QObject* parent)
     : QObject(parent)
     , m_Directory(directory)
@@ -20,13 +25,25 @@ DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel,
 
 DirectoryImporter::~DirectoryImporter()
 {
+    m_Cancelled.store(true);
+    if (m_Worker.valid())
+        m_Worker.get();
+}
+
+void DirectoryImporter::Import(const std::string& directory, int maxlevel)
+{
+    m_Directory = directory;
+    m_MaxLevel = maxlevel;
+    m_Cancelled.store(false);
+
+    m_Worker = std::async(std::launch::async, &DirectoryImporter::Process, this);
 }
 
 void DirectoryImporter::Process()
 {
     const std::vector<MediaStruct> media = std::move(GetMedia(m_Directory));
 
-    if (media.empty() || m_Cancelled)
+    if (media.empty() || m_Cancelled.load())
     {
         emit finished();
         return;
@@ -39,7 +56,7 @@ void DirectoryImporter::Process()
     int count = 0;
     for (MediaStruct m : media)
     {
-        if (m_Cancelled)
+        if (m_Cancelled.load())
             break;
 
         emit progressUpdated(++count);
@@ -62,7 +79,7 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
         for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator(directory))
         {
 
-            if (m_Cancelled)
+            if (m_Cancelled.load())
                 return vec;
 
             /* Recurse through the directory if the level allows */

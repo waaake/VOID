@@ -5,6 +5,8 @@
 #define _VOID_MEDIA_DIRECTORY_IMPORTER_H
 
 /* STD */
+#include <atomic>
+#include <future>
 #include <vector>
 
 /* Qt */
@@ -21,10 +23,11 @@ class DirectoryImporter : public QObject
     Q_OBJECT
 
 public:
+    DirectoryImporter(QObject* parent = nullptr);
     DirectoryImporter(const std::string& directory, int maxLevel = 5, QObject* parent = nullptr);
     ~DirectoryImporter();
-    void Process();
-    inline void Cancel() { m_Cancelled = true; }
+    void Import(const std::string& directory, int maxlevel = 5);
+    inline void Cancel() { m_Cancelled.store(true); }
 
 signals:
     void maxCount(int);
@@ -39,9 +42,11 @@ signals:
 private: /* Members */
     std::string m_Directory;
     int m_MaxLevel;
-    bool m_Cancelled;
+    std::atomic<bool> m_Cancelled;
+    std::future<void> m_Worker;
 
 private: /* Methods */
+    void Process();
     std::vector<MediaStruct> GetMedia(const std::string& directory, int level = 0) const;
 };
 
