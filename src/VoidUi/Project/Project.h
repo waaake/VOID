@@ -63,6 +63,7 @@ private: /* Members */
 private: /* Methods */
     void SetupProgressTask();
     void DeleteProgressTask();
+    void SetupImporter();
     void DeleteImporter();
     void CancelImporting();
     /**

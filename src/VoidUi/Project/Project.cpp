@@ -18,6 +18,7 @@ Project::Project(const std::string& name, bool active, QObject* parent)
     , m_DirectoryImporter(nullptr)
 {
     m_UndoStack = new QUndoStack(this);
+    SetupImporter();
 }
 
 Project::Project(bool active, QObject* parent)
@@ -41,41 +42,7 @@ void Project::ImportDirectory(const std::string& directory, bool progressive)
 void Project::ImportDirectoryP(const std::string& directory)
 {
     SetupProgressTask();
-
-    QThread* thread = new QThread;
-    m_DirectoryImporter = new DirectoryImporter(directory, 5);
-
-    m_DirectoryImporter->moveToThread(thread);
-
-    /* Thread */
-    connect(thread, &QThread::started, m_DirectoryImporter, &DirectoryImporter::Process);
-    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-
-    /* Importer */
-    connect(m_DirectoryImporter, &DirectoryImporter::startedImporting, this, [this]()
-    {
-        m_UndoStack->beginMacro("Import Directory");
-        m_ProgressTask->SetTaskType("Importing...");
-    });
-    connect(m_DirectoryImporter, &DirectoryImporter::finishedImporting, this, [this]() { m_UndoStack->endMacro(); });
-
-    connect(m_DirectoryImporter, &DirectoryImporter::finished, this, [this]()
-    {
-        DeleteProgressTask();
-        DeleteImporter();
-    });
-
-    connect(m_DirectoryImporter, &DirectoryImporter::mediaFound, this, [this](const QString& path)
-    {
-        m_ProgressTask->SetCurrentTask(path.toStdString().c_str());
-        m_UndoStack->push(new MediaImportCommand(path.toStdString()));
-    });
-
-    connect(m_DirectoryImporter, &DirectoryImporter::maxCount, m_ProgressTask, &ProgressTask::SetMaximum);
-    connect(m_DirectoryImporter, &DirectoryImporter::progressUpdated, m_ProgressTask, &ProgressTask::SetValue);
-
-    /* Start Import process */
-    thread->start();
+    m_DirectoryImporter->Import(directory, 5);
 }
 
 
@@ -181,6 +148,34 @@ void Project::DeleteProgressTask()
     }
 }
 
+void Project::SetupImporter()
+{
+    m_DirectoryImporter = new DirectoryImporter;
+
+    connect(m_DirectoryImporter, &DirectoryImporter::startedImporting, this, [this]() -> void
+    {
+        m_UndoStack->beginMacro("Import Directory");
+        m_ProgressTask->SetTaskType("Importing...");
+    });
+    connect(m_DirectoryImporter, &DirectoryImporter::finishedImporting, this, [this]() -> void { m_UndoStack->endMacro(); });
+
+    connect(m_DirectoryImporter, &DirectoryImporter::mediaFound, this, [this](const QString& path) -> void
+    {
+        m_ProgressTask->SetCurrentTask(path.toStdString().c_str());
+        m_UndoStack->push(new MediaImportCommand(path.toStdString()));
+    });
+
+    connect(m_DirectoryImporter, &DirectoryImporter::maxCount, this, [this](int value) -> void
+    {
+        m_ProgressTask->SetMaximum(value);
+    });
+    connect(m_DirectoryImporter, &DirectoryImporter::progressUpdated, this, [this](int value) -> void
+    {
+        m_ProgressTask->SetValue(value);
+    });
+    connect(m_DirectoryImporter, &DirectoryImporter::finished, this, &Project::DeleteProgressTask);
+}
+
 void Project::DeleteImporter()
 {
     if (m_DirectoryImporter)
@@ -195,6 +190,7 @@ void Project::CancelImporting()
 {
     if (m_DirectoryImporter)
         m_DirectoryImporter->Cancel();
+    DeleteProgressTask();
 }
 
 Playlist* Project::NewPlaylist()
