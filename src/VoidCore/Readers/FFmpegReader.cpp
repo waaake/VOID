@@ -47,14 +47,16 @@ FFmpegDecoder& FFmpegDecoder::Instance(const std::string& path)
     auto it = s_decoders.find(path);
     if (it == s_decoders.end())
     {
+        std::unique_ptr<FFmpegDecoder> decoder = nullptr;
         if (s_decoders.size() == MAX_DECODERS)
         {
             auto iter = s_decoders.begin();
             std::advance(iter, s_head);
+            decoder = std::move(iter->second);
             s_decoders.erase(iter);
         }
 
-        s_decoders[path] = std::make_unique<FFmpegDecoder>();
+        s_decoders[path] = decoder == nullptr ? std::make_unique<FFmpegDecoder>() : std::move(decoder);
         s_head = (s_head + 1) % MAX_DECODERS;
     }
 
