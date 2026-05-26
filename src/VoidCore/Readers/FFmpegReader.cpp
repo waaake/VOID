@@ -1,12 +1,19 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <memory>
+
 /* Internal */
 #include "FFmpegReader.h"
-#include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
+
+// This governs how many parallel instances of the Decoder can exist at ones
+// allowing multiple streams of videos to be decoded for playback
+// we may want to allow configuring this later on depending on system specs
+// For now we allow 16 as something to test as well
+static constexpr std::size_t MAX_DECODERS = 16;
 
 /* FFmpegDecoder {{{ */
 FFmpegDecoder::FFmpegDecoder()
@@ -29,6 +36,30 @@ FFmpegDecoder::FFmpegDecoder()
 FFmpegDecoder::~FFmpegDecoder()
 {
     Close();
+}
+
+FFmpegDecoder& FFmpegDecoder::Instance(const std::string& path)
+{
+    static std::unordered_map<std::string, std::unique_ptr<FFmpegDecoder>> s_decoders;
+    static std::size_t s_head = 0;
+
+    auto it = s_decoders.find(path);
+    if (it == s_decoders.end())
+    {
+        std::unique_ptr<FFmpegDecoder> decoder = nullptr;
+        if (s_decoders.size() == MAX_DECODERS)
+        {
+            auto iter = s_decoders.begin();
+            std::advance(iter, s_head);
+            decoder = std::move(iter->second);
+            s_decoders.erase(iter);
+        }
+
+        s_decoders[path] = decoder == nullptr ? std::make_unique<FFmpegDecoder>() : std::move(decoder);
+        s_head = (s_head + 1) % MAX_DECODERS;
+    }
+
+    return *(s_decoders[path].get());
 }
 
 void FFmpegDecoder::Open()
@@ -289,7 +320,7 @@ double FFmpegPixReader::Framerate()
 void FFmpegPixReader::Read()
 {
     /* Decoder */
-    FFmpegDecoder& decoder = FFmpegDecoder::Instance();
+    FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
     if (decoder.Decode(m_Path, m_Framenumber, m_Pixels))
     {
         /* Read the Frame Dimensions */
