@@ -60,19 +60,9 @@ void MetadataViewer::dropEvent(QDropEvent* event)
     if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
     {
         QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
-
-        /* Read Input data */
-        QDataStream stream(&data, QIODevice::ReadOnly);
-        int row, column;
-        stream >> row >> column;
-
-        /**
-         * Media from the Media Bridge
-         * The media is always retrieved from the active project
-         * the assumption is that a drag-drop event would always happen when the project is active
-         */
-        SharedMediaClip media = _MediaBridge.MediaAt(row, column);
-        SetFromMedia(media);
+        const std::vector<SharedMediaClip> media = _MediaBridge.UnpackProjectMedia(data);
+        if (!media.empty())
+            SetFromMedia(media[0]);
     }
 }
 
