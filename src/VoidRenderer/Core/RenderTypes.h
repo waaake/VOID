@@ -70,7 +70,7 @@ static const std::map<BlendMode, std::string> BlendModesMap =
     { BlendMode::ONION_SKIN, "Onion Skin" },
     { BlendMode::MINUS, "Minus" },
     { BlendMode::DIFF, "Difference" },
-    { BlendMode::INVERT_ADD, "Invert & Add" },
+    { BlendMode::INVERT_ADD, "Invert && Add" },
 };
 
 /**
