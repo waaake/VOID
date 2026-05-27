@@ -198,8 +198,14 @@ void main() {
             case 2: // Onion Peel
                 color = mix(colorA, colorB, peelFactor * colorB.a);
                 break;
-            case 3:
-                color = mix(colorA, colorB, 0.5);
+            case 3: // Minus
+                color = vec4(max(colorA.rgb - colorB.rgb, 0.0), 1.0);
+                break;
+            case 4: // Difference
+                color = vec4(abs(colorA.rgb - colorB.rgb), 1.0);
+                break;
+            case 5: // Invert & Add
+                color = vec4(clamp((1 - colorA.rgb) + colorB.rgb, 0.0, 1.0), 1.0);
                 break;
             default:
                 color = colorA; 
