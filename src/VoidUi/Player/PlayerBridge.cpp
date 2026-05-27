@@ -3,7 +3,6 @@
 
 /* Internal */
 #include "PlayerBridge.h"
-#include "VoidUi/Toolkit/GridController.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -111,12 +110,8 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
 
     viewerMenu->addSeparator();
 
-    QAction* cycleBlendForwardsAction = menuSystem->AddAction(viewerMenu, "Cycle Next Blend Mode", QKeySequence("Shift+9"));
-    QAction* cycleBlendBackwardsAction = menuSystem->AddAction(viewerMenu, "Cycle Previous Blend Mode", QKeySequence("Shift+0"));
-
-    viewerMenu->addSeparator();
-
-    QAction* editGridAction = menuSystem->AddAction(viewerMenu, "Edit Render Grid");
+    QAction* cycleBlendForwardsAction = menuSystem->AddAction(viewerMenu, "Cycle Next Blend Mode", QKeySequence("Shift+0"));
+    QAction* cycleBlendBackwardsAction = menuSystem->AddAction(viewerMenu, "Cycle Previous Blend Mode", QKeySequence("Shift+9"));
 
     connect(redToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(0); });
     connect(greenToggleAction, &QAction::triggered, this, [&]() -> void { ToggleChannels(1); });
@@ -134,11 +129,6 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     connect(cycleBlendBackwardsAction, &QAction::triggered, this, [this]() -> void
     {
         m_Player->SwitchBlendMode(-1);
-    });
-    connect(editGridAction, &QAction::triggered, this, [this]() -> void
-    {
-        GridController g;
-        g.exec();
     });
     /* }}} */
 }

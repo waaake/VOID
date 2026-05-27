@@ -76,6 +76,9 @@ ControlBar::ControlBar(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent)
 
 ControlBar::~ControlBar()
 {
+    m_Layout->deleteLater();
+    delete m_Layout;
+    m_Layout = nullptr;
 }
 
 QFrame* ControlBar::Separator()
@@ -137,6 +140,8 @@ void ControlBar::Build()
     m_Zoomer = new ControlSpinner();
     m_Zoomer->setToolTip(ToolTipString("Zoom Controller", "Adjust viewer image zoom.").c_str());
 
+    m_ViewerController = new ViewerController;
+
     /* The Left Side Widget */
     m_LeftControls = new QWidget();
     m_LeftLayout = new QHBoxLayout(m_LeftControls);
@@ -160,6 +165,7 @@ void ControlBar::Build()
 
     /* Add to the Right Layout */
     /* Spacer from the left side */
+    m_RightLayout->addWidget(m_ViewerController);
     m_RightLayout->addStretch(1);
     m_RightLayout->addWidget(m_ColorDisplayController);
     m_RightLayout->addWidget(m_Zoomer);

@@ -191,6 +191,7 @@ void Player::SetGrid(Playlist* playlist)
 
     // This internally calls refresh which renders the grid
     SetComparisonMode(5); // ComparisonMode::GRID;
+    m_ControlBar->SetViewerControl(ViewerControl::GridControl);
 }
 
 void Player::SetFrame(int frame)
@@ -491,26 +492,23 @@ void Player::RenderGrid(v_frame_t frame)
 
 void Player::SetComparisonMode(int mode)
 {
-    /* Update Comparison Mode */
     m_ComparisonMode = static_cast<Renderer::ComparisonMode>(mode);
 
     if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
     {
-        /* Mark both the viewer Buffers as active */
         m_ViewBufferA.SetActive(true);
         m_ViewBufferB.SetActive(true);
     }
     else
     {
-        /* Revert to the actual active Buffer */
         bool activeA = m_ActiveViewBuffer == &m_ViewBufferA;
-        /* Set its Active state */
+
         m_ViewBufferA.SetActive(activeA);
-        /* Reset the active state for the other buffer */
         m_ViewBufferB.SetActive(!activeA);
+
+        m_ControlBar->SetViewerControl(ViewerControl::None);
     }
 
-    /* Update to show the current frame */
     Refresh();
 }
 
@@ -522,8 +520,14 @@ void Player::ToggleChannels(int channel)
 void Player::SetBlendMode(const int mode)
 {
     m_BlendMode = static_cast<Renderer::BlendMode>(mode);
-    if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
-        Refresh();
+    if (m_ComparisonMode == Renderer::ComparisonMode::NONE)
+        return;
+
+    m_BlendMode == Renderer::BlendMode::ONION_SKIN && !ActiveGrid() 
+        ? m_ControlBar->SetViewerControl(ViewerControl::OnionSkinControl)
+        : m_ControlBar->SetViewerControl(ViewerControl::None);
+
+    Refresh();
 }
 
 void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)

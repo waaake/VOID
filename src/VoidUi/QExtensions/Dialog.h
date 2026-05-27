@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _Q_EXT_DIALOG_H
+#define _Q_EXT_DIALOG_H
+
 /* Qt */
 #include <QDialog>
 
@@ -17,3 +20,5 @@ public:
 };
 
 VOID_NAMESPACE_CLOSE
+
+#endif // _Q_EXT_DIALOG_H

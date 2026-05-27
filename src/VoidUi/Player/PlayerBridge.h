@@ -56,6 +56,9 @@ public:
     int GridRows() const { return m_Player->GridRows(); }
     int GridColumns() const { return m_Player->GridColumns(); }
 
+    float PeelFactor() const { return m_Player->PeelFactor(); }
+    void SetPeelFactor(float factor) { m_Player->SetPeelFactor(factor); }
+
     inline void ResetPlaylistMedia() { m_Player->ResetPlaylistMedia(); }
 
     inline void ResumeCache() { m_Player->ResumeCache(); }
