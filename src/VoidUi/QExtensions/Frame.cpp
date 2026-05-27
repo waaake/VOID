@@ -90,23 +90,19 @@ void SplitSectionSelector::CycleRadioActionsForwards()
 void SplitSectionSelector::CycleRadioActionsBackwards()
 {
     auto action = m_RadioGroup->checkedAction();
-    int previous = (action->objectName().toInt() + 1) % static_cast<int>(m_RadioActions.size());
+    int previous = std::abs((action->objectName().toInt() - 1) % static_cast<int>(m_RadioActions.size()));
 
     m_RadioActions[previous]->trigger();
 }
 
 void SplitSectionSelector::PrimaryItemSelected(const QString& text, const int index)
 {
-    /* The text would get displayed on the Frame */
     setText(text);
-
-    /* And the index gets emitted */
     emit primaryIndexChanged(index);
 }
 
 void SplitSectionSelector::RadioItemSelected(const QString& text, const int index)
 {
-    /* Emit the index */
     emit radioIndexChanged(index);
 }
 
@@ -124,7 +120,7 @@ void VLine::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     painter.fillRect(rect(), palette().color(QPalette::Window).darker(150));
-    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 2));
+    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 1));
 
     painter.drawLine(0, 0, 0, height());
     painter.drawLine(width() - 1, 0, width(), height());
