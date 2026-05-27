@@ -521,14 +521,9 @@ void Player::ToggleChannels(int channel)
 
 void Player::SetBlendMode(const int mode)
 {
-    /* Update the blend mode */
     m_BlendMode = static_cast<Renderer::BlendMode>(mode);
-
     if (m_ComparisonMode != Renderer::ComparisonMode::NONE)
-    {
-        /* Update to show the current frame */
         Refresh();
-    }
 }
 
 void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)

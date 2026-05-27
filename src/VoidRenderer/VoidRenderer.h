@@ -110,6 +110,8 @@ public:
      */
     void SetChannelMode(int mode);
 
+    void SetPeelFactor(float factor);
+
     /**
      * The color display to be set for the OCIO Color Process
      */

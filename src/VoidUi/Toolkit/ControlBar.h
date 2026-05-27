@@ -50,6 +50,7 @@ public:
      * Sets the current Compare mode
      */
     inline void SetCompareMode(const Renderer::ComparisonMode& mode) { m_BufferSwitch->SetCompareMode(mode); }
+    inline void SwitchBlendMode(int delta) { m_BufferSwitch->SwitchBlendMode(delta); }
 
 signals:
     void zoomChanged(const float factor);

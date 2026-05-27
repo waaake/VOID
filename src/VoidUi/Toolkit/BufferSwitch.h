@@ -47,6 +47,7 @@ public:
      * Sets the Comparison Mode
      */
     void SetCompareMode(const Renderer::ComparisonMode& mode);
+    void SwitchBlendMode(int delta);
 
 private:
     /**
@@ -64,6 +65,7 @@ public:
     ~BufferSwitch();
 
     inline void SetCompareMode(const Renderer::ComparisonMode& mode) { m_ComparisonModes->SetCompareMode(mode); }
+    inline void SwitchBlendMode(int delta) { m_ComparisonModes->SwitchBlendMode(delta); }
 
 signals:
     void switched(const PlayerViewBuffer&);

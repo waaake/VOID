@@ -65,6 +65,7 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
         QString text = texts[i];
         QAction* action = new QAction(text, m_Menu);
         action->setCheckable(true);
+        action->setObjectName(QString::number(i));
         action->setActionGroup(m_RadioGroup);
 
         /* Any Item selection would trigger a signal to invoke that the Radio Item has been selected */
@@ -76,6 +77,22 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
         /* Store them in the Vector */
         m_RadioActions.push_back(action);
     }
+}
+
+void SplitSectionSelector::CycleRadioActionsForwards()
+{
+    auto action = m_RadioGroup->checkedAction();
+    int next = (action->objectName().toInt() + 1) % static_cast<int>(m_RadioActions.size());
+
+    m_RadioActions[next]->trigger();
+}
+
+void SplitSectionSelector::CycleRadioActionsBackwards()
+{
+    auto action = m_RadioGroup->checkedAction();
+    int previous = (action->objectName().toInt() + 1) % static_cast<int>(m_RadioActions.size());
+
+    m_RadioActions[previous]->trigger();
 }
 
 void SplitSectionSelector::PrimaryItemSelected(const QString& text, const int index)

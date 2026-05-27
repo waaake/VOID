@@ -582,6 +582,12 @@ void VoidRenderer::SetChannelMode(int mode)
     update();
 }
 
+void VoidRenderer::SetPeelFactor(float factor)
+{
+    m_ImageComparisonRenderer.SetPeelFactor(factor);
+    update();
+}
+
 void VoidRenderer::SetColorDisplay(const std::string& display)
 {
     ColorProcessor::Instance().Set(display);

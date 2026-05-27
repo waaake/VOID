@@ -20,6 +20,7 @@ ImageComparisonRenderLayer::ImageComparisonRenderLayer()
     , m_BlendMode(0)
     , m_ComparisonMode(0)
     , m_SwipeX(0.5f)
+    , m_PeelFactor(0.5f)
     , m_VAO(0)
     , m_VBO(0)
     , m_IBO(0)
@@ -35,6 +36,7 @@ ImageComparisonRenderLayer::ImageComparisonRenderLayer()
     , m_UComparisonMode(-1)
     , m_UBlendMode(-1)
     , m_USwipeX(-1)
+    , m_UPeelFactor(-1)
     , m_UInputColorSpaceA(-1)
     , m_UInputColorSpaceB(-1)
     , m_TextureA(0)
@@ -76,6 +78,7 @@ void ImageComparisonRenderLayer::Initialize()
     m_UComparisonMode = glGetUniformLocation(m_Shader.ProgramId(), "comparisonMode");
     m_UBlendMode = glGetUniformLocation(m_Shader.ProgramId(), "blendMode");
     m_USwipeX = glGetUniformLocation(m_Shader.ProgramId(), "swipeX");
+    m_UPeelFactor = glGetUniformLocation(m_Shader.ProgramId(), "peelFactor");
     m_UInputColorSpaceA = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceA");
     m_UInputColorSpaceB = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceB");
 
@@ -320,6 +323,7 @@ void ImageComparisonRenderLayer::Draw()
      * Update the swipe factor
      */
     glUniform1f(m_USwipeX, m_SwipeX);
+    glUniform1f(m_UPeelFactor, m_PeelFactor);
 
     /**
      * Update the input colorspaces on the shader to ensure output is linear before applying the final

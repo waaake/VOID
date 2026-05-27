@@ -48,6 +48,7 @@ enum class BlendMode : int
 {
     UNDER,
     OVER,
+    ONION_SKIN,
     // MINUS,
     // DIFF,
 };
@@ -65,6 +66,7 @@ static const std::map<BlendMode, std::string> BlendModesMap =
 {
     { BlendMode::UNDER, "Under" },
     { BlendMode::OVER, "Over" },
+    { BlendMode::ONION_SKIN, "Onion Skin" },
 };
 
 /**
