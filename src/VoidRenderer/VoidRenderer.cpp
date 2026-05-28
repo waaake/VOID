@@ -651,6 +651,7 @@ void VoidRenderer::ReloadTextures()
         /* Set The Image Buffer with the Images */
         m_ImageComparisonRenderer.SetImageA(m_ImageA);
         m_ImageComparisonRenderer.SetImageB(m_ImageB);
+        m_GridRenderer.Reset();
     }
     else
     {

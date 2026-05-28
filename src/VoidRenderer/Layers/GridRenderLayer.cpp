@@ -58,7 +58,13 @@ void GridRenderLayer::Initialize()
 
 void GridRenderLayer::Reset()
 {
+    glDeleteTextures(m_Textures.size(), m_Textures.data());
 
+    m_Textures.clear();
+    m_Textures.shrink_to_fit();
+
+    m_TexData.clear();
+    m_TexData.shrink_to_fit();
 }
 
 void GridRenderLayer::SetRows(int rows)
@@ -83,13 +89,7 @@ void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
 {
     if (m_Textures.size() != images.size())
     {
-        glDeleteTextures(m_Textures.size(), m_Textures.data());
-
-        m_Textures.clear();
-        m_Textures.shrink_to_fit();
-
-        m_TexData.clear();
-        m_TexData.shrink_to_fit();
+        Reset();
 
         m_Textures.resize(images.size());
         m_TexData.resize(images.size());
