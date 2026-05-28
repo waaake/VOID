@@ -91,9 +91,9 @@ void StartupWindow::Build()
 
     m_ProjectsLister = new QListView;
 
-    m_DontShowCheck = new QCheckBox("Don't Show this dialog on startup");
-    m_LoadBtn = new QPushButton("Load Selected");
-    m_CloseBtn = new QPushButton("Close");
+    m_DontShowCheck = new QCheckBox("Don't &Show this dialog on startup");
+    m_LoadBtn = new QPushButton("&Load Selected");
+    m_CloseBtn = new QPushButton("&Close");
 
     m_BottomButtonsLayout->addWidget(m_DontShowCheck);
     m_BottomButtonsLayout->addStretch(1);

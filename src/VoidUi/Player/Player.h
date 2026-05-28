@@ -47,7 +47,12 @@ public:
 
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);
+    void SwitchBlendMode(int delta) { m_ControlBar->SwitchBlendMode(delta); }
     void SetComparisonMode(int mode);
+
+    float PeelFactor() const { return m_Renderer->PeelFactor(); }
+    void SetPeelFactor(float factor) { m_Renderer->SetPeelFactor(factor); }
+
     /* Compare Media on the Player */
     void Compare(const SharedMediaClip& first, const SharedMediaClip& second);
     void InspectCurrentMetadata();

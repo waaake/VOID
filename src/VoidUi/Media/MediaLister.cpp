@@ -135,6 +135,8 @@ void VoidMediaLister::Build()
 #else
     m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
 #endif
+    m_PrimaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_1), this);
+    m_SecondaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_2), this);
 
     /* Base */
     m_layout = new QVBoxLayout(this);
@@ -298,6 +300,8 @@ void VoidMediaLister::Connect()
 
     /* Shortcut */
     connect(m_DeleteShortcut, &QShortcut::activated, m_MediaView, &MediaView::RemoveSelectedMedia);
+    connect(m_PrimaryViewShortcut, &QShortcut::activated, this, &VoidMediaLister::AddToPrimaryViewer);
+    connect(m_SecondaryViewShortcut, &QShortcut::activated, this, &VoidMediaLister::AddToSecondaryViewer);
 
     /* Preferences */
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &VoidMediaLister::SetFromPreferences);
@@ -475,6 +479,24 @@ void VoidMediaLister::RebuildPlaylistMenu()
         connect(action, &QAction::triggered, this, [=]() { AddSelectionToPlaylist(playlist); });
         m_PlaylistMenu->addAction(action);
     }
+}
+
+void VoidMediaLister::AddToPrimaryViewer()
+{
+    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
+    if (selected.empty())
+        return;
+    
+    _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::A);
+}
+
+void VoidMediaLister::AddToSecondaryViewer()
+{
+    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
+    if (selected.empty())
+        return;
+    
+    _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::B);
 }
 
 void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)

@@ -45,6 +45,9 @@ public:
      */
     void AddRadioItems(const QStringList& texts);
 
+    void CycleRadioActionsForwards();
+    void CycleRadioActionsBackwards();
+
 signals:
     /**
      * Emitted when any of the Primary Items are selected from the Menu

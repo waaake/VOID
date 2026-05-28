@@ -44,6 +44,9 @@ public:
     inline float SwipeX() const { return m_SwipeX; }
     inline void SetSwipeX(const float x) { m_SwipeX = x; }
 
+    float PeelFactor() const { return m_PeelFactor; }
+    void SetPeelFactor(float factor) { m_PeelFactor = factor; }
+
     void ReinitShaderProgram();
 
     /* Main Render Function */
@@ -64,6 +67,7 @@ private: /* Members */
     int m_InputColorSpaceB;
 
     float m_SwipeX;
+    float m_PeelFactor;
 
     /* Render Components */
     ImageComparisonShaderProgram m_Shader;
@@ -94,6 +98,7 @@ private: /* Members */
     int m_UComparisonMode;
     int m_UBlendMode;
     int m_USwipeX;
+    int m_UPeelFactor;
     int m_UInputColorSpaceA;
     int m_UInputColorSpaceB;
 

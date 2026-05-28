@@ -56,6 +56,9 @@ uniform int blendMode;
 // Swipe
 uniform float swipeX;
 
+// Onion Skin
+uniform float peelFactor;
+
 // Input Colorspace
 uniform int inputColorSpaceA;
 uniform int inputColorSpaceB;
@@ -192,11 +195,17 @@ void main() {
             case 1: // A Over B
                 color = colorA;
                 break;
-            case 2:
-                color = colorA + colorB;
+            case 2: // Onion Peel
+                color = mix(colorA, colorB, peelFactor * colorB.a);
                 break;
-            case 3:
-                color = mix(colorA, colorB, 0.5);
+            case 3: // Minus
+                color = vec4(max(colorA.rgb - colorB.rgb, 0.0), 1.0);
+                break;
+            case 4: // Difference
+                color = vec4(abs(colorA.rgb - colorB.rgb), 1.0);
+                break;
+            case 5: // Invert & Add
+                color = vec4(clamp((1 - colorA.rgb) + colorB.rgb, 0.0, 1.0), 1.0);
                 break;
             default:
                 color = colorA; 

@@ -110,6 +110,9 @@ public:
      */
     void SetChannelMode(int mode);
 
+    float PeelFactor() const { return m_ImageComparisonRenderer.PeelFactor(); }
+    void SetPeelFactor(float factor);
+
     /**
      * The color display to be set for the OCIO Color Process
      */

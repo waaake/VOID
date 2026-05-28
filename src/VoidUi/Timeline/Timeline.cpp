@@ -435,18 +435,15 @@ void Timeline::PlayNextFrame()
 {
 	Timekeeper& t = Timekeeper::Instance();
 	v_frame_t next = t.NextFrame(ElapsedFrames());
-	if (next <= t.EndFrame())
-	{
-		m_Timeslider->setValue(next);
-	}
-	else
+	m_Timeslider->setValue(next);
+
+	if (next == t.EndFrame())
 	{
 		switch (m_LoopType)
 		{
-			case LoopType::PlayOnce: Stop(); break;
-			case LoopType::PingPong: PlayBackwards(); break;
+			case LoopType::PlayOnce: return Stop();
+			case LoopType::PingPong: return PlayBackwards();
 			case LoopType::LoopInfinitely: emit mediaFinished(PlayState::FORWARDS);
-			default: m_Timeslider->setValue(t.StartFrame());
 		}
 	}
 }
@@ -455,19 +452,16 @@ void Timeline::PlayPreviousFrame()
 {
 	Timekeeper& t = Timekeeper::Instance();
 	v_frame_t previous = t.PreviousFrame(ElapsedFrames());
-	if (previous < t.StartFrame())
+	m_Timeslider->setValue(previous);
+
+	if (previous == t.StartFrame())
 	{
 		switch (m_LoopType)
 		{
-			case LoopType::PlayOnce: Stop(); break;
-			case LoopType::PingPong: PlayForwards(); break;
-			case LoopType::LoopInfinitely: emit mediaFinished(PlayState::BACKWARDS);
-			default: m_Timeslider->setValue(t.EndFrame()); 
+			case LoopType::PlayOnce: return Stop();
+			case LoopType::PingPong: return PlayForwards();
+			case LoopType::LoopInfinitely: emit mediaFinished(PlayState::BACKWARDS);	
 		}
-	}
-	else
-	{
-		m_Timeslider->setValue(previous);
 	}
 }
 

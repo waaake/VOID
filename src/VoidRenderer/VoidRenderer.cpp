@@ -582,6 +582,12 @@ void VoidRenderer::SetChannelMode(int mode)
     update();
 }
 
+void VoidRenderer::SetPeelFactor(float factor)
+{
+    m_ImageComparisonRenderer.SetPeelFactor(factor);
+    update();
+}
+
 void VoidRenderer::SetColorDisplay(const std::string& display)
 {
     ColorProcessor::Instance().Set(display);
@@ -645,6 +651,7 @@ void VoidRenderer::ReloadTextures()
         /* Set The Image Buffer with the Images */
         m_ImageComparisonRenderer.SetImageA(m_ImageA);
         m_ImageComparisonRenderer.SetImageB(m_ImageB);
+        m_GridRenderer.Reset();
     }
     else
     {

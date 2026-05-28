@@ -115,7 +115,7 @@ void AboutVoid::Build()
     m_ButtonSeparator->setMidLineWidth(3);
 
     /* Buttons */
-    m_OkButton = new QPushButton("Close");
+    m_OkButton = new QPushButton("&Close");
 
     buttonLayout->addStretch(1);
     buttonLayout->addWidget(m_OkButton);

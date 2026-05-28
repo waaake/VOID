@@ -51,9 +51,9 @@ void VoidPreferencesWidget::Build()
     m_PreferencesLayout->addWidget(m_SettingsStacked);
 
     /* Buttons */
-    m_OkButton = new QPushButton("Ok");
-    m_ApplyButton = new QPushButton("Apply");
-    m_CancelButton = new QPushButton("Cancel");
+    m_OkButton = new QPushButton("&Ok");
+    m_ApplyButton = new QPushButton("&Apply");
+    m_CancelButton = new QPushButton("&Cancel");
 
     m_ButtonsLayout = new QHBoxLayout;
     

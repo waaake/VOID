@@ -6,7 +6,6 @@
 
 /* Internal */
 #include "BufferSwitch.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -97,6 +96,11 @@ void ComparisonModeSelector::SetCompareMode(const Renderer::ComparisonMode& mode
 
     /* Emit the index of the Mode so that other components can receive them */
     emit primaryIndexChanged(static_cast<int>(mode));
+}
+
+void ComparisonModeSelector::SwitchBlendMode(int delta)
+{
+    delta < 0 ? CycleRadioActionsBackwards() : CycleRadioActionsForwards();
 }
 
 /* }}} */

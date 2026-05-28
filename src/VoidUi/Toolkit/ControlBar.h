@@ -15,6 +15,7 @@
 #include "ControlScroller.h"
 #include "ColorController.h"
 #include "Definition.h"
+#include "ViewerController.h"
 #include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
@@ -50,6 +51,10 @@ public:
      * Sets the current Compare mode
      */
     inline void SetCompareMode(const Renderer::ComparisonMode& mode) { m_BufferSwitch->SetCompareMode(mode); }
+    inline void SwitchBlendMode(int delta) { m_BufferSwitch->SwitchBlendMode(delta); }
+
+    // Update the current viewer control that needs to be active
+    inline void SetViewerControl(const ViewerControl& control) { m_ViewerController->SetControl(control); }
 
 signals:
     void zoomChanged(const float factor);
@@ -94,9 +99,11 @@ private: /* Members */
     /* Viewer Buffers */
     ViewerBuffer* m_ViewerBufferA;
     ViewerBuffer* m_ViewerBufferB;
-    
+
     /* Viewer Buffer Switch */
     BufferSwitch* m_BufferSwitch;
+
+    ViewerController* m_ViewerController;
 
     /**
      * In order to keep the ViewerBuffer selector always in the center,

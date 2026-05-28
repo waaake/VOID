@@ -50,6 +50,7 @@ enum class IconType : char16_t
     icon_style              = 0xe41d,
     icon_sync_alt           = 0xea18,
     icon_title              = 0xe264,
+    icon_trail_length_short = 0xeb6d,
     icon_trending_flat      = 0xe8e4,
     icon_view_stream        = 0xe8f2,
     icon_visible            = 0xe8f4,

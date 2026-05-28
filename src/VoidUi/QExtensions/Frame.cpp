@@ -65,6 +65,7 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
         QString text = texts[i];
         QAction* action = new QAction(text, m_Menu);
         action->setCheckable(true);
+        action->setObjectName(QString::number(i));
         action->setActionGroup(m_RadioGroup);
 
         /* Any Item selection would trigger a signal to invoke that the Radio Item has been selected */
@@ -78,18 +79,30 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
     }
 }
 
+void SplitSectionSelector::CycleRadioActionsForwards()
+{
+    auto action = m_RadioGroup->checkedAction();
+    int next = (action->objectName().toInt() + 1) % static_cast<int>(m_RadioActions.size());
+
+    m_RadioActions[next]->trigger();
+}
+
+void SplitSectionSelector::CycleRadioActionsBackwards()
+{
+    auto action = m_RadioGroup->checkedAction();
+    int previous = std::abs((action->objectName().toInt() - 1) % static_cast<int>(m_RadioActions.size()));
+
+    m_RadioActions[previous]->trigger();
+}
+
 void SplitSectionSelector::PrimaryItemSelected(const QString& text, const int index)
 {
-    /* The text would get displayed on the Frame */
     setText(text);
-
-    /* And the index gets emitted */
     emit primaryIndexChanged(index);
 }
 
 void SplitSectionSelector::RadioItemSelected(const QString& text, const int index)
 {
-    /* Emit the index */
     emit radioIndexChanged(index);
 }
 
@@ -107,7 +120,7 @@ void VLine::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     painter.fillRect(rect(), palette().color(QPalette::Window).darker(150));
-    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 2));
+    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 1));
 
     painter.drawLine(0, 0, 0, height());
     painter.drawLine(width() - 1, 0, width(), height());
