@@ -186,7 +186,7 @@ void Player::SetGrid(Playlist* playlist)
     m_Renderer->Clear();
 
     // Update what is being played on the Active Viewer Buffer
-    m_ActiveViewBuffer->SetPlaylist(playlist);
+    m_ActiveViewBuffer->SetGrid(playlist);
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
 
     // This internally calls refresh which renders the grid

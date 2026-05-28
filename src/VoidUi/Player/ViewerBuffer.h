@@ -242,6 +242,7 @@ public:
     void Set(const SharedPlaybackSequence& sequence);
     void Set(const std::vector<SharedMediaClip>& media);
 
+    void SetGrid(Playlist* playlist);
     void SetPlaylist(Playlist* playlist);
     [[nodiscard]] bool NextMedia();
     [[nodiscard]] bool PreviousMedia();

@@ -112,6 +112,26 @@ void ViewerBuffer::Set(const std::vector<SharedMediaClip>& media)
     CacheAvailable();
 }
 
+void ViewerBuffer::SetGrid(Playlist* playlist)
+{
+    Refresh();
+    if (m_Playlist)
+        disconnect(m_Playlist, &Playlist::updated, this, &ViewerBuffer::updated);
+
+    m_Playlist = playlist;
+    m_Clip = playlist->CurrentMedia();
+
+    connect(m_Playlist, &Playlist::updated, this, &ViewerBuffer::updated);
+
+    m_PlayingComponent = PlayableComponent::Grid;
+    UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
+
+    emit playlistUpdated(playlist);
+
+    EnsureCached(m_Clip->FirstFrame());
+    CacheAvailable();
+}
+
 void ViewerBuffer::SetPlaylist(Playlist* playlist)
 {
     Refresh();
@@ -169,6 +189,7 @@ SharedPlaybackTrack ViewerBuffer::ActiveTrack() const
              * if added, where does the media go to? at the last of track or clears it?
              */
             return m_Sequence->ActiveVideoTrack();
+        case PlayableComponent::Grid:
         case PlayableComponent::Playlist:
             return nullptr;
     }
@@ -233,12 +254,16 @@ std::vector<SharedPixels> ViewerBuffer::GridFrame(const v_frame_t frame)
 {
     std::vector<SharedPixels> grid;
     grid.reserve(m_Playlist->Size());
-    for (auto& media : m_Playlist->AllMedia())
+
+    if (m_PlayingComponent == PlayableComponent::Grid)
     {
-        if (media->Contains(frame))
-            grid.push_back(media->Image(frame));
-        else
-            grid.push_back(media->Image(media->NearestFrame(frame)));
+        for (auto& media : m_Playlist->AllMedia())
+        {
+            if (media->Contains(frame))
+                grid.push_back(media->Image(frame));
+            else
+                grid.push_back(media->Image(media->NearestFrame(frame)));
+        }
     }
 
     return grid;
@@ -633,6 +658,7 @@ void ViewerBuffer::EvictFront()
             ItemFromSequence(frame)->UncacheFrame(frame);
             break;
         case PlayableComponent::Clip:
+        case PlayableComponent::Grid:
         case PlayableComponent::Playlist:
         default:
             if (m_Clip->Valid() && m_Clip->Contains(frame))
@@ -659,6 +685,7 @@ void ViewerBuffer::EvictBack()
             ItemFromSequence(frame)->UncacheFrame(frame);
             break;
         case PlayableComponent::Clip:
+        case PlayableComponent::Grid:
         case PlayableComponent::Playlist:
         default:
             if (m_Clip->Valid() && m_Clip->Contains(frame))

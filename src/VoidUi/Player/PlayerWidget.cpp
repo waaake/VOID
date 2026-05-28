@@ -45,6 +45,10 @@ PlayerWidget::PlayerWidget(QWidget* parent)
 PlayerWidget::~PlayerWidget()
 {
     m_ActiveViewBuffer = nullptr;
+
+    m_Timeline->deleteLater();
+    delete m_Timeline;
+    m_Timeline = nullptr;
 }
 
 void PlayerWidget::Connect()
