@@ -112,12 +112,16 @@ private: /* Members */
 
     /* Shortcuts */
     QShortcut* m_DeleteShortcut;
+    QShortcut* m_PrimaryViewShortcut;
+    QShortcut* m_SecondaryViewShortcut;
 
 private: /* Methods */
     /* Set values from User preferences */
     void SetFromPreferences();
     // void ProjectChanged();
     void RebuildPlaylistMenu();
+    void AddToPrimaryViewer();
+    void AddToSecondaryViewer();
     void AddSelectionToPlaylist(Playlist* playlist);
     void AddTagToSelected();
     void EditSelectedTags(const QModelIndex& index, const QPoint& position);
