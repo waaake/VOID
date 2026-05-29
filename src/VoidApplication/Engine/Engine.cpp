@@ -32,6 +32,8 @@ int VoidEngine::Exec(int argc, char** argv)
 
     InitLogging();
 
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication app(argc, argv);
 
     Setup(app);
