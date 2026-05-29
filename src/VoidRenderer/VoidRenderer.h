@@ -163,6 +163,7 @@ private: /* Members */
      * ModelViewProjection matrix for the Texture
      */
     glm::mat4 m_VProjection;
+    glm::mat4 m_VProjectionB;
     glm::mat4 m_InverseProjection;
 
     ComparisonMode m_CompareMode;
@@ -219,6 +220,8 @@ private: /* Methods */
      * Calculates the ModelViewProjection Matrix for the Image Texture
      */
     void CalculateModelViewProjection();
+    void CalculateModelViewProjectionA();
+    void CalculateModelViewProjectionB();
 
     /**
      * @brief Applies inverse Projection tranformation to the Normalized x, y position

@@ -75,8 +75,7 @@ void VoidRenderer::Draw()
 
     if (m_ImageA && !m_ImageA->Empty())
     {
-        /* Calculate the Projection Matrix */
-        CalculateModelViewProjection();
+        CalculateModelViewProjectionA();
 
         /* Render Layers */
         if (m_CompareMode == ComparisonMode::NONE)
@@ -94,8 +93,10 @@ void VoidRenderer::Draw()
         }
         else
         {
+            CalculateModelViewProjectionB();
+
             /* Render Images with Comparison */
-            m_ImageComparisonRenderer.Render(m_VProjection, width(), height());
+            m_ImageComparisonRenderer.Render(m_VProjection, m_VProjectionB, width(), height());
             if (m_CompareMode == ComparisonMode::WIPE)
                 m_SwipeRenderer.Render();
         }
@@ -601,6 +602,12 @@ void VoidRenderer::SetColorDisplay(const std::string& display)
 
 void VoidRenderer::CalculateModelViewProjection()
 {
+    CalculateModelViewProjectionA();
+    CalculateModelViewProjectionB();
+}
+
+void VoidRenderer::CalculateModelViewProjectionA()
+{
     /**
      * No Image Data to Proceed
      */
@@ -641,6 +648,47 @@ void VoidRenderer::CalculateModelViewProjection()
 
     /* Calculate the inverse projection as well */
     m_InverseProjection = glm::inverse(m_VProjection);
+}
+
+void VoidRenderer::CalculateModelViewProjectionB()
+{
+    /**
+     * No Image Data to Proceed
+     */
+    if (!m_ImageB || m_ImageB->Empty())
+        return;
+
+    /**
+     * To ensure the image is of the correct aspect while render
+     * Calculate the aspect of the current view (Renderer Width / Renderer Height)
+     * And the aspect of the image being rendered
+     */
+    float viewAspect = (width() * WidthDivisor()) / (height() * HeightDivisor());
+    float imageAspect = float(m_ImageB->Width()) / float((m_ImageB->Height() ? m_ImageB->Height() : 1));
+
+    /* Find the overall scale of the image */
+    glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
+
+    /**
+     * Get the Model matrix,
+     * This is how our image/model looks like as a 4x4 matrix
+     */
+    glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
+
+    /* Update the model with the aspect and the zoom scale */
+    model = glm::scale(model, glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
+
+    /**
+     * And the projection matrix of how it's supposed to be projected on the viewport
+     * Holds the scaling and aspect
+     */
+    glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+
+    /**
+     * Calculate the model view prohection matrix
+     * For any 2D Texture/image the transform from the camera is unity
+     */
+    m_VProjectionB = model * projection; // * unity view i.e. glm::mat4(1.f)
 }
 
 void VoidRenderer::ReloadTextures()

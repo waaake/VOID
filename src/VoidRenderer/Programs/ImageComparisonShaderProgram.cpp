@@ -21,13 +21,21 @@ static const char* s_VertexShaderSrc = R"(
 #version 330 core
 layout (location = 0) in vec2 position;
 layout (location = 1) in vec2 v_TexCoord;
+layout (location = 2) in int v_TexID;
 
-uniform mat4 uMVP;
+uniform mat4 uMVPA;
+uniform mat4 uMVPB;
 out vec2 TexCoord;
+flat out int TexID;
 
 void main() {
-    gl_Position = uMVP * vec4(position, 0.0, 1.0);
+    if (v_TexID == 0)
+        gl_Position = uMVPA * vec4(position, 0.0, 1.0);
+    else
+        gl_Position = uMVPB * vec4(position, 0.0, 1.0);
+
     TexCoord = v_TexCoord;
+    TexID = v_TexID;
 }
 )";
 
@@ -36,6 +44,7 @@ std::string ComparisonFragmentShader(const std::string& ocioShader)
     std::string fragmentShaderSrc = R"(
 #version 330 core
 in vec2 TexCoord;
+flat in int TexID;
 out vec4 FragColor;
 
 uniform sampler2D uTexture;
@@ -144,8 +153,13 @@ void main() {
 
     // Texture pixel values from the buffers
     // Ensure we have linear output depending on the input colorspaces for each of the texture
-    vec4 colorA = Linearize(texture(uTexture, TexCoord), inputColorSpaceA);
-    vec4 colorB = Linearize(texture(uTextureB, TexCoord), inputColorSpaceB);
+    vec4 colorA = vec4(0.f);
+    vec4 colorB = vec4(0.f);
+
+    if (TexID == 0)
+        colorA = Linearize(texture(uTexture, TexCoord), inputColorSpaceA);
+    else
+        colorB = Linearize(texture(uTextureB, TexCoord), inputColorSpaceB);
 
     // Clamped swipe to Texture Coordinates
     float swipe = clamp(swipeX, 0.0, 1.0);

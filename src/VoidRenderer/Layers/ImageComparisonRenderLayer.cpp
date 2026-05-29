@@ -26,7 +26,8 @@ ImageComparisonRenderLayer::ImageComparisonRenderLayer()
     , m_IBO(0)
     , m_PBOIndexA(0)
     , m_PBOIndexB(0)
-    , m_UProjection(-1)
+    , m_UProjectionA(-1)
+    , m_UProjectionB(-1)
     , m_UTextureA(-1)
     , m_UTextureB(-1)
     , m_UExposure(-1)
@@ -68,7 +69,8 @@ void ImageComparisonRenderLayer::Initialize()
     SetupBuffers();
 
     /* Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UProjectionA = glGetUniformLocation(m_Shader.ProgramId(), "uMVPA");
+    m_UProjectionB = glGetUniformLocation(m_Shader.ProgramId(), "uMVPB");
     m_UTextureA = glGetUniformLocation(m_Shader.ProgramId(), "uTexture");
     m_UTextureB = glGetUniformLocation(m_Shader.ProgramId(), "uTextureB");
     m_UExposure = glGetUniformLocation(m_Shader.ProgramId(), "exposure");
@@ -177,10 +179,11 @@ void ImageComparisonRenderLayer::SetImageB(const SharedPixels& image)
     m_InputColorSpaceB = static_cast<int>(image->InputColorSpace());
 }
 
-void ImageComparisonRenderLayer::Render(const glm::mat4& projection, float, float)
+void ImageComparisonRenderLayer::Render(const glm::mat4& projectionA, const glm::mat4& projectionB, float, float)
 {
     /* Update the Data for Render */
-    m_Projection = projection;
+    m_ProjectionA = projectionA;
+    m_ProjectionB = projectionB;
 
     if (PreDraw())
         Draw();
@@ -194,7 +197,8 @@ void ImageComparisonRenderLayer::ReinitShaderProgram()
     m_Shader.Reinitialize();
 
     /* Re-Load all the locations for uniforms */
-    m_UProjection = glGetUniformLocation(m_Shader.ProgramId(), "uMVP");
+    m_UProjectionA = glGetUniformLocation(m_Shader.ProgramId(), "uMVPA");
+    m_UProjectionB = glGetUniformLocation(m_Shader.ProgramId(), "uMVPB");
     m_UTextureA = glGetUniformLocation(m_Shader.ProgramId(), "uTexture");
     m_UTextureB = glGetUniformLocation(m_Shader.ProgramId(), "uTextureB");
     m_UExposure = glGetUniformLocation(m_Shader.ProgramId(), "exposure");
@@ -214,12 +218,17 @@ void ImageComparisonRenderLayer::SetupBuffers()
      * Quad vertices with texture coords
      * Create Vertex Attrib Object and Vertex Buffer Objects
      */
-    float vertices[16] = {
+    float vertices[40] = {
         // Positions  // Texture Coords
-        -1.f, -1.f,  0.f,  1.f,
-         1.f, -1.f,  1.f,  1.f,
-         1.f,  1.f,  1.f,  0.f,
-        -1.f,  1.f,  0.f,  0.f,
+        -1.f, -1.f,  0.f,  1.f, 0,
+         1.f, -1.f,  1.f,  1.f, 0,
+         1.f,  1.f,  1.f,  0.f, 0,
+        -1.f,  1.f,  0.f,  0.f, 0,
+
+        -1.f, -1.f,  0.f,  1.f, 1,
+         1.f, -1.f,  1.f,  1.f, 1,
+         1.f,  1.f,  1.f,  0.f, 1,
+        -1.f,  1.f,  0.f,  0.f, 1,
     };
 
     /**
@@ -228,7 +237,10 @@ void ImageComparisonRenderLayer::SetupBuffers()
      */
     unsigned int indices[] = {
         0, 1, 2,
-        2, 3, 0
+        2, 3, 0,
+
+        4, 5, 6,
+        6, 7, 4
     };
 
     /**
@@ -248,11 +260,14 @@ void ImageComparisonRenderLayer::SetupBuffers()
 
     /* Setup Vertex Attribs */
     /* Layout location 0 */
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     /* Layout location 1 */
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    /* Layout location 2 */
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(4 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     /* Pixel Buffer Objects */
     glGenBuffers(2, m_PBOs_A);
@@ -293,7 +308,8 @@ void ImageComparisonRenderLayer::Draw()
     /* Tell this to the shader to use this texture as the second sampler2D */
     glUniform1i(m_UTextureB, 1);
 
-    glUniformMatrix4fv(m_UProjection, 1, GL_FALSE, glm::value_ptr(m_Projection));
+    glUniformMatrix4fv(m_UProjectionA, 1, GL_FALSE, glm::value_ptr(m_ProjectionA));
+    glUniformMatrix4fv(m_UProjectionB, 1, GL_FALSE, glm::value_ptr(m_ProjectionB));
 
     /* Update the viewer properties to the shader */
     glUniform1f(m_UExposure, m_Exposure);
@@ -343,7 +359,7 @@ void ImageComparisonRenderLayer::Draw()
      * 0 - 1 - 2
      * 2 - 3 - 0
      */
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 }
 
 void ImageComparisonRenderLayer::PostDraw()

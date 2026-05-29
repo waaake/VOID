@@ -50,11 +50,12 @@ public:
     void ReinitShaderProgram();
 
     /* Main Render Function */
-    void Render(const glm::mat4& projection, float width, float height);
+    void Render(const glm::mat4& projectionA, const glm::mat4& projectionB, float width, float height);
 
 private: /* Members */
     /* Projection for the Texture for the viewport */
-    glm::mat4 m_Projection;
+    glm::mat4 m_ProjectionA;
+    glm::mat4 m_ProjectionB;
 
     /* Render Attributes affecting how the image is displayed */
     float m_Exposure;
@@ -88,7 +89,8 @@ private: /* Members */
     int m_PBOIndexB;
 
     /* Uniforms */
-    int m_UProjection;
+    int m_UProjectionA;
+    int m_UProjectionB;
     int m_UTextureA;
     int m_UTextureB;
     int m_UExposure;
