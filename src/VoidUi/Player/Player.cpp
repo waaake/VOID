@@ -8,9 +8,12 @@
 /* Internal */
 #include "Player.h"
 #include "VoidCore/Timekeeper.h"
+#include "VoidCore/Media/Renderer.h"
 #include "VoidUi/Descriptors.h"
+#include "VoidUi/Media/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/Globals.h"
+#include "VoidUi/QExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -510,6 +513,87 @@ void Player::SetComparisonMode(int mode)
     }
 
     Refresh();
+}
+
+void Player::RenderCurrentFrame()
+{
+    MediaExportBrowser browser;
+    if (browser.Save())
+    {
+        const MediaExportDescriptor descriptor = browser.File();
+        const Renderer::RenderData r = m_Renderer->FrameBuffer();
+
+        Renderer::ImageRenderer ir(descriptor.entry, r.width, r.height, r.channels);
+        ir.Render(r.pixels.data(), r.Size(), r.type);
+
+        InfoMessageBox box("Frame exported.", "Success", this);
+        box.exec();
+    }
+}
+
+void Player::RenderAnnotatedFrames()
+{
+    const auto& annotations = m_ActiveViewBuffer->Annotations();
+    if (annotations.empty())
+    {
+        ErrorMessageBox box("No annotated frames found for current media.", "Error", this);
+        box.exec();
+        return;
+    }
+
+    MediaExportBrowser browser;
+    if (browser.Save())
+    {
+        const MediaExportDescriptor descriptor = browser.File();
+        if (descriptor.type == WriterType::Image && descriptor.entry.Templated())
+        {
+            const Renderer::RenderData r = m_Renderer->FrameBuffer();
+            Renderer::ImageRenderer ir(descriptor.entry, r.width, r.height, r.channels);
+
+            for (auto& [frame, _] : annotations)
+            {
+                if (auto data = m_ActiveViewBuffer->MData(frame))
+                {
+                    m_Renderer->Render(data.image, data.annotation);
+                    const Renderer::RenderData r = m_Renderer->FrameBuffer();
+                    ir.Render(frame, r.pixels.data(), r.Size(), r.type);
+                }
+            }
+
+            // Render back the current frame
+            // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
+            Refresh();
+
+            InfoMessageBox box("Annotated frames have been exported.", "Success", this);
+            box.exec();
+            return;
+        }
+        else if (descriptor.type == WriterType::Movie)
+        {
+            const Renderer::RenderData r = m_Renderer->FrameBuffer();
+            Renderer::MovieRenderer mr(descriptor.entry, r.width, r.height, r.channels);
+
+            for (auto& [frame, _] : annotations)
+            {
+                if (auto data = m_ActiveViewBuffer->MData(frame))
+                {
+                    m_Renderer->Render(data.image, data.annotation);
+                    const Renderer::RenderData r = m_Renderer->FrameBuffer();
+                    mr.AddBuffer(r.pixels.data(), r.Size(), r.type);
+                }
+            }
+
+            mr.Render();
+
+            // Render back the current frame
+            // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
+            Refresh();
+
+            InfoMessageBox box("Annotated frames have been exported.", "Success", this);
+            box.exec();
+            return;
+        }
+    }
 }
 
 void Player::ToggleChannels(int channel)

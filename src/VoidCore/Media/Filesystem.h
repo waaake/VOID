@@ -75,6 +75,7 @@ public:
     inline unsigned int Framepadding() const { return m_FramePadding; }
     std::string TemplatedPath() const;
     std::string TemplatedName() const;
+    std::string ResolvedPath(v_frame_t frame) const;
 
     /**
      * Returns True if the Media does not have a frame number on it to denote that this

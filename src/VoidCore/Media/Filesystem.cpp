@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* STD */
+#include <cmath>
 #include <iomanip>
 #include <regex>
 #include <sstream>
@@ -251,6 +252,28 @@ std::string MEntry::TemplatedName() const
     return name;
 }
 
+std::string MEntry::ResolvedPath(v_frame_t frame) const
+{
+    if (m_Templated)
+    {
+        std::string path;
+        int padding = frame == 0 ? 1 : static_cast<int>(std::log10(frame)) + 1;
+        path.reserve(m_Basepath.size() + 1 + m_Name.size() + 1 + padding + 1 + m_Extension.size());
+
+        path += m_Basepath;
+        path += "/";
+        path += m_Name;
+        path += ".";
+        path += std::to_string(frame);
+        path += ".";
+        path += m_Extension;
+
+        return path;
+    }
+
+    // The internals are not templated and we don't want to resolve to another frame directly
+    return m_Path;
+}
 
 /* }}} */
 

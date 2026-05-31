@@ -13,6 +13,7 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
+#include "PixWriter.h"
 #include "Operator.h"
 
 VOID_NAMESPACE_OPEN
@@ -21,6 +22,7 @@ VOID_NAMESPACE_OPEN
 using PixForge = std::function<std::unique_ptr<VoidPixReader>(const std::string&, v_frame_t)>;
 using MPixForge = std::function<std::unique_ptr<VoidMPixReader>(const std::string&, v_frame_t)>;
 using IOpForge = std::function<std::unique_ptr<ImageOp>()>;
+using PixWriterForge = std::function<std::unique_ptr<PixWriter>(int, int, int, const WriterType&)>;
 
 /**
  * Registry describing the Plugin
@@ -39,6 +41,14 @@ struct FormatRegistry
 
     /* The Image or Movie Reader to be registered */
     Ty reader;
+};
+
+struct WriterRegistry
+{
+    WriterType type;
+    PixWriterForge writer;
+    std::string name;
+    std::vector<std::string> extensions;
 };
 
 struct IOpRegistry
@@ -74,6 +84,7 @@ public:
     bool Register(const FormatRegistry<PixForge>& registry);
     bool Register(const FormatRegistry<MPixForge>& registry);
     bool Register(const IOpRegistry& registry);
+    bool Register(const WriterRegistry& registry);
 
     /* Unregister all of the loaded plugins */
     void UnregisterPlugins();
@@ -85,6 +96,8 @@ public:
     std::unique_ptr<VoidPixReader> GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<ImageOp> GetImageOp(const std::string& name) const;
+    std::unique_ptr<PixWriter> GetImageWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const;
+    std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const;
 
     inline bool IsMovie(const std::string& extension) const { return m_MovieForger.find(extension) != m_MovieForger.end(); }
     inline bool IsImage(const std::string& extension) const { return m_ImageForger.find(extension) != m_ImageForger.end(); }
@@ -95,11 +108,14 @@ private: /* Members */
     std::unordered_map<std::string, PixForge> m_ImageForger;
     std::unordered_map<std::string, MPixForge> m_MovieForger;
     std::unordered_map<std::string, IOpForge> m_IOpForger;
+    std::unordered_map<std::string, PixWriterForge> m_ImageWriters;
+    std::unordered_map<std::string, PixWriterForge> m_MovieWriters;
 
 private: /* Methods */
     void RegisterImageReader(const std::string& extension, PixForge forger);
     void RegisterMovieReader(const std::string& extension, MPixForge forger);
-
+    void RegisterImageWriter(const std::string& extension, PixWriterForge forger);
+    void RegisterMovieWriter(const std::string& extension, PixWriterForge forger);
 };
 
 VOID_NAMESPACE_CLOSE

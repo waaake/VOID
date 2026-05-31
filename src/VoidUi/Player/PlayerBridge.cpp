@@ -131,6 +131,15 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
         m_Player->SwitchBlendMode(-1);
     });
     /* }}} */
+
+    /// Render Menu
+    QMenu* renderMenu = menuSystem->AddMenu("Render");
+
+    QAction* renderCurrentFrameAction = menuSystem->AddAction(renderMenu, "Export Current Frame...");
+    QAction* renderAnnotatedFramesAction = menuSystem->AddAction(renderMenu, "Export Annotated Frames...");
+
+    connect(renderCurrentFrameAction, &QAction::triggered, this, &PlayerBridge::RenderCurrentFrame);
+    connect(renderAnnotatedFramesAction, &QAction::triggered, this, &PlayerBridge::RenderAnnotatedFrames);
 }
 
 void PlayerBridge::AddToQueue(const SharedMediaClip& media, bool refresh)

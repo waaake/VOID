@@ -17,6 +17,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "PixWriter.h"
 #include "VoidCore/Serialization.h"
 
 VOID_NAMESPACE_OPEN
@@ -232,6 +233,38 @@ enum class DrawType
     TEXT,
     /* Erase Strokes/Text */
     ERASER
+};
+
+template <typename Ty>
+struct BufferTypeTrait;
+
+template <>
+struct BufferTypeTrait<unsigned char>
+{
+    static constexpr BufferType value = BufferType::Uint8;
+};
+
+template <>
+struct BufferTypeTrait<unsigned int>
+{
+    static constexpr BufferType value = BufferType::Uint16;
+};
+
+template <>
+struct BufferTypeTrait<float>
+{
+    static constexpr BufferType value = BufferType::Float;
+};
+
+template <typename Ty>
+struct RenderData
+{
+    int width, height;
+    int channels;
+    std::vector<Ty> pixels;
+    static constexpr BufferType type = BufferTypeTrait<Ty>::value;
+
+    std::size_t Size() const { return static_cast<std::size_t>(width) * height * channels; }
 };
 
 } // namespace Renderer

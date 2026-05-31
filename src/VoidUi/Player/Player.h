@@ -45,6 +45,9 @@ public:
     int GridRows() const { return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Rows() : 1; }
     int GridColumns() const { return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Columns() : 1; }
 
+    void RenderCurrentFrame();
+    void RenderAnnotatedFrames();
+
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);
     void SwitchBlendMode(int delta) { m_ControlBar->SwitchBlendMode(delta); }

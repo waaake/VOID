@@ -89,6 +89,9 @@ public:
     inline void SetFullscreen() { m_Player->SetRendererFullscreen(); }
     inline void ExitFullscreen() { m_Player->ExitFullscreenRenderer(); }
 
+    inline void RenderCurrentFrame() { m_Player->RenderCurrentFrame(); }
+    inline void RenderAnnotatedFrames() { m_Player->RenderAnnotatedFrames(); }
+
 private: /* Members */
     Player* m_Player;
     Playlist* m_Playlist;

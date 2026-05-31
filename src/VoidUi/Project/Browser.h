@@ -24,7 +24,7 @@ class VoidProjectBrowser : public QFileDialog
 {
 public:
     VoidProjectBrowser(QWidget* parent = nullptr);
-    virtual ~VoidProjectBrowser();
+    ~VoidProjectBrowser();
 
     /*
      * Begin browsing

@@ -105,6 +105,7 @@ public:
     Renderer::SharedAnnotation Annotation(const v_frame_t frame) const;
     std::vector<int> AnnotatedFrames() const;
     const std::vector<Effect*>& Effects() const { return m_Effects; }
+    const std::unordered_map<v_frame_t, Renderer::SharedAnnotation>& Annotations() const { return m_Annotations; }
 
     QPixmap Thumbnail();
 

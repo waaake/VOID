@@ -31,6 +31,7 @@ bool Forge::Register(const FormatRegistry<MPixForge>& registry)
         RegisterMovieReader(extension, registry.reader);
     }
 
+    // Need to have a better way to deal with the return status or not have this at all
     return true;
 }
 
@@ -39,6 +40,22 @@ bool Forge::Register(const IOpRegistry& registry)
     VOID_LOG_INFO("Registering Image Operator: {0}", registry.name);
     auto it = m_IOpForger.emplace(registry.name, std::move(registry.iop));
     return it.second;
+}
+
+bool Forge::Register(const WriterRegistry& registry)
+{
+    if (registry.type == WriterType::Image)
+    {
+        for (const auto& extension : registry.extensions)
+            RegisterImageWriter(extension, registry.writer);
+    }
+    else
+    {
+        for (const auto& extension : registry.extensions)
+            RegisterMovieWriter(extension, registry.writer);
+    }
+
+    return true;
 }
 
 void Forge::UnregisterPlugins()
@@ -81,6 +98,30 @@ void Forge::RegisterMovieReader(const std::string& extension, MPixForge forger)
     m_MovieForger[extension] = std::move(forger);
 }
 
+void Forge::RegisterImageWriter(const std::string& extension, PixWriterForge forger)
+{
+    if (m_ImageWriters.find(extension) != m_ImageWriters.end())
+    {
+        VOID_LOG_WARN("Image writer for {0} extension is already registered. Ignoring registration");
+        return;
+    }
+
+    VOID_LOG_INFO("Registering Image Writer for extension: {0}", extension);
+    m_ImageWriters[extension] = std::move(forger);
+}
+
+void Forge::RegisterMovieWriter(const std::string& extension, PixWriterForge forger)
+{
+    if (m_MovieWriters.find(extension) != m_MovieWriters.end())
+    {
+        VOID_LOG_WARN("Movie writer for {0} extension is already registered. Ignoring registration");
+        return;
+    }
+
+    VOID_LOG_INFO("Registering Movie Writer for extension: {0}", extension);
+    m_MovieWriters[extension] = std::move(forger);
+}
+
 std::unique_ptr<VoidPixReader> Forge::GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber) const
 {
     std::unordered_map<std::string, PixForge>::const_iterator it = m_ImageForger.find(extension);
@@ -97,6 +138,18 @@ std::unique_ptr<ImageOp> Forge::GetImageOp(const std::string& name) const
 {
     std::unordered_map<std::string, IOpForge>::const_iterator it = m_IOpForger.find(name);
     return it == m_IOpForger.end() ? nullptr : it->second();
+}
+
+std::unique_ptr<PixWriter> Forge::GetImageWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const
+{
+    auto it = m_ImageWriters.find(extension);
+    return it == m_ImageWriters.end() ? nullptr : it->second(width, height, channels, type);
+}
+
+std::unique_ptr<PixWriter> Forge::GetMovieWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const
+{
+    auto it = m_MovieWriters.find(extension);
+    return it == m_MovieWriters.end() ? nullptr : it->second(width, height, channels, type);
 }
 
 bool Forge::IsRegistered(const std::string& extension) const

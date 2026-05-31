@@ -256,6 +256,7 @@ public:
      * Removes Annotation from the Active Media item
      */
     void RemoveAnnotation(const v_frame_t);
+    const std::unordered_map<v_frame_t, Renderer::SharedAnnotation>& Annotations() const { return m_Clip->Annotations(); }
 
 signals:
     void updated();

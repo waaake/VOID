@@ -52,6 +52,8 @@ public:
     /* Clears current Frame and rids of any textures that were loaded */
     void Clear();
 
+    Renderer::RenderData<unsigned char> FrameBuffer();
+
     /* Set zoom values */
     /**
      * @brief Sets the Zoom of the image based on the zoom percentage
