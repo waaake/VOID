@@ -1,6 +1,10 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <cstdlib>
+#include <iostream>
+
 /* Internal */
 #include "Engine.h"
 /* LOGGING */
@@ -33,6 +37,18 @@ int VoidEngine::Exec(int argc, char** argv)
     m_Args = ArgParser::ParseArgs(argc, argv);
 
     InitLogging();
+
+    if (m_Args.help)
+        return PrintHelp();
+
+    if (m_Args.scale > 1)
+    {
+        #if defined(_VOID_PLATFORM_WINDOWS)
+        _putenv_s("QT_SCALE_FACTOR", std::to_string(m_Args.scale).c_str());
+        #else
+        setenv("QT_SCALE_FACTOR", std::to_string(m_Args.scale).c_str(), 1);
+        #endif
+    }
 
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
@@ -148,6 +164,45 @@ void VoidEngine::Callback()
         /* Startup window pop-up */
         StartupWindow::Exec(m_Imager);
     }
+}
+
+int VoidEngine::PrintHelp()
+{
+    #if defined(_VOID_PLATFORM_WINDOWS)
+    std::cout << "Usage: VOID.exe [options]" << "\n";
+    #else
+    std::cout << "Usage: VOID [options]" << "\n";
+    #endif
+
+    // Options
+    std::cout << "\n" << "Options:" << "\n";
+
+    // Help is separate
+    std::cout << "  --help              Shows this help message" << "\n\n";
+
+    // Main args
+    std::cout << "  --audio             Enable audio playback" << "\n";
+    std::cout << "  --basic             Launch VOID with basic workspace" << "\n";
+    std::cout << "  --framerate         Specify the default framerate for VOID" << "\n";
+    std::cout << "  --media             Specify media to open/load at startup" << "\n";
+    std::cout << "  --project           Specify project to load at startup (.ether .nether)" << "\n";
+    std::cout << "  --scale             Specify the scale factor for the UI, defaults to using the DPI scaling from the system" << "\n";
+
+    // Examples
+    std::cout << "\n" << "Examples:" << "\n";
+    std::cout << "  VOID --project /path/to/project/file.ether" << "\n";
+    std::cout << "  VOID --media /path/to/media.mp4" << "\n";
+    std::cout << "  VOID --media /path/to/image/sequence.####.png" << "\n";
+    std::cout << "  VOID --media /path/to/another/media.mov --basic" << "\n";
+    std::cout << "  VOID --framerate 23.976" << "\n";
+    std::cout << "  VOID --framerate 30.0" << "\n";
+    std::cout << "  VOID --audio" << "\n";
+    std::cout << "  VOID --scale 2" << "\n";
+
+    // Final block
+    std::cout << "\n";
+
+    return 0;
 }
 
 VOID_NAMESPACE_CLOSE
