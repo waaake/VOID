@@ -112,9 +112,9 @@ find_package(spdlog REQUIRED)
 
 # Definitions
 # Enable Logging if we have spdlog present and we're on the debug build
-if (CMAKE_BUILD_TYPE STREQUAL "debug")
-    add_definitions(-DVOID_ENABLE_LOGGING)
-endif()
+# if (CMAKE_BUILD_TYPE STREQUAL "debug")
+add_definitions(-DVOID_ENABLE_LOGGING)
+# endif()
 
 # Add the VOID Source
 add_subdirectory(src)

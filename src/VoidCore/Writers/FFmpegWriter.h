@@ -31,7 +31,8 @@ private:
     AVFormatContext* m_FormatCtx;
     AVCodecContext* m_CodecCtx;
     SwsContext* m_SwsCtx;
-    unsigned int m_Frame;
+    AVStream* m_Stream;
+    int64_t m_Pts;
 
     std::string m_Path;
 };

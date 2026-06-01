@@ -7,7 +7,7 @@
 VOID_NAMESPACE_OPEN
 
 const QString images = "Image Media (*.png *.jpg)";
-const QString movies = "Movie Media (*.mov)";
+const QString movies = "Movie Media (*.mov *.mp4)";
 
 MediaBrowser::MediaBrowser(QWidget* parent)
     : MediaFileDialog(parent)
