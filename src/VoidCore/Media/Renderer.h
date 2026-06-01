@@ -19,13 +19,14 @@ public:
     ImageRenderer(const MEntry& entry, int width, int height, int channels);
     ~ImageRenderer();
 
+    bool Valid() const { return (bool)m_Writer; }
+
     bool AddBuffer(const void* buf, std::size_t size, const BufferType& type);
     bool AddBuffer(v_frame_t frame, const void* buffer, std::size_t size, const BufferType& type);
 
     bool Render();
     bool Render(const void* buffer, std::size_t size, const BufferType& type);
     bool Render(v_frame_t frame, const void* buffer, std::size_t size, const BufferType& type);
-    // bool Render(v_frame_t frame);
 
 private:
     std::unique_ptr<PixWriter> m_Writer;
@@ -38,6 +39,8 @@ public:
     MovieRenderer(const MEntry& entry, int width, int height, int channels);
     ~MovieRenderer();
 
+    bool Valid() const { return (bool)m_Writer; }
+
     bool AddBuffer(const void* buf, std::size_t size, const BufferType& type);
     bool Render();
 
@@ -45,12 +48,6 @@ private:
     std::unique_ptr<PixWriter> m_Writer;
     MEntry m_MediaEntry;
 };
-
-VOID_API bool RenderImage(const MEntry& e, int w, int h, int ch, const void* buf, std::size_t size, const BufferType& type);
-
-VOID_API bool RenderImage(
-    const MEntry& e, v_frame_t f, int w, int h, int ch, const void* buf, std::size_t size, const BufferType& type
-);
 
 } // namespace Renderer
 

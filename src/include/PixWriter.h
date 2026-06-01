@@ -34,7 +34,7 @@ public:
     virtual ~PixWriter() = default;
 
     virtual bool Setup(const std::string& path) = 0;
-    virtual void AddBuffer(const void* buffer, std::size_t size, const BufferType& type) = 0;
+    virtual bool AddBuffer(const void* buffer, std::size_t size, const BufferType& type) = 0;
     virtual bool Write() = 0;
     virtual void Cleanup() = 0;
 

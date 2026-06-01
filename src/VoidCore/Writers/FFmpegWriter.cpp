@@ -43,7 +43,8 @@ bool FFmpegWriter::Setup(const std::string& path)
         int ret = avcodec_open2(m_CodecCtx, codec, nullptr);
         if (ret < 0)
         {
-            VOID_LOG_INFO("Unable to open Codec");
+            VOID_LOG_WARN("Unable to open specified codec");
+            Cleanup();
             return false;
         }
 
@@ -56,11 +57,12 @@ bool FFmpegWriter::Setup(const std::string& path)
 
         // open
         avio_open(&m_FormatCtx->pb, path.c_str(), AVIO_FLAG_WRITE);
-        avformat_write_header(m_FormatCtx, nullptr);
-        // {
-        //     Cleanup();
-        //     return false;
-        // }
+        if (avformat_write_header(m_FormatCtx, nullptr))
+        {
+            VOID_LOG_WARN("Unable to write header");
+            Cleanup();
+            return false;
+        }
 
         m_SwsCtx = sws_getContext(m_Width, m_Height, AV_PIX_FMT_RGBA, m_Width, m_Height, AV_PIX_FMT_YUV420P, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
@@ -70,10 +72,10 @@ bool FFmpegWriter::Setup(const std::string& path)
     return false;
 }
 
-void FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const BufferType& type)
+bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const BufferType& type)
 {
     if (!m_FormatCtx)
-        return;
+        return false;
 
     AVFrame* frame = av_frame_alloc();
     frame->format = m_CodecCtx->pix_fmt;
@@ -82,10 +84,10 @@ void FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const BufferT
 
     // 32 byte align
     if (av_frame_get_buffer(frame, 32) < 0)
-        return;
+        return false;
 
     if (av_frame_make_writable(frame) < 0)
-        return;
+        return false;
 
     const uint8_t* srcSlice[1] = { static_cast<const uint8_t*>(buffer) };
     int srcStride[1] = { 4 * m_Width };
@@ -101,7 +103,7 @@ void FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const BufferT
         av_strerror(ret, errbuf, sizeof(errbuf));
 
         VOID_LOG_INFO("Unable to send frame: {0}, {1}, {2}", errbuf, ret, ret == AVERROR(EINVAL));
-        return;
+        return false;
     }
 
     AVPacket* packet = av_packet_alloc();
@@ -118,6 +120,8 @@ void FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const BufferT
 
     // This ensures that the framerate of the encoded container is the expected
     m_Pts += av_rescale_q(1, m_CodecCtx->time_base, m_Stream->time_base);
+
+    return true;
 }
 
 bool FFmpegWriter::Write()

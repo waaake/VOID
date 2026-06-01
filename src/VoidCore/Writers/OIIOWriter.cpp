@@ -34,7 +34,7 @@ bool OIIOWriter::Setup(const std::string& path)
     return true;
 }
 
-void OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const BufferType& type)
+bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const BufferType& type)
 {
     if (m_OutPtr)
     {
@@ -52,7 +52,10 @@ void OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const BufferTyp
         }
 
         VOID_LOG_INFO("Image written to file");
+        return true;
     }
+
+    return false;
 }
 
 bool OIIOWriter::Write()

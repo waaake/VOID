@@ -556,7 +556,12 @@ void Player::RenderAnnotatedFrames()
                 {
                     m_Renderer->Render(data.image, data.annotation);
                     const Renderer::RenderData r = m_Renderer->FrameBuffer();
-                    ir.Render(frame, r.pixels.data(), r.Size(), r.type);
+                    if (!ir.Render(frame, r.pixels.data(), r.Size(), r.type))
+                    {
+                        ErrorMessageBox box("There was an error in exporting media.", "Error", this);
+                        box.exec();
+                        return;
+                    }
                 }
             }
 
@@ -579,7 +584,12 @@ void Player::RenderAnnotatedFrames()
                 {
                     m_Renderer->Render(data.image, data.annotation);
                     const Renderer::RenderData r = m_Renderer->FrameBuffer();
-                    mr.AddBuffer(r.pixels.data(), r.Size(), r.type);
+                    if (!mr.AddBuffer(r.pixels.data(), r.Size(), r.type))
+                    {
+                        ErrorMessageBox box("There was an error in exporting media.", "Error", this);
+                        box.exec();
+                        return;
+                    }
                 }
             }
 
@@ -607,7 +617,7 @@ void Player::SetBlendMode(const int mode)
     if (m_ComparisonMode == Renderer::ComparisonMode::NONE)
         return;
 
-    m_BlendMode == Renderer::BlendMode::ONION_SKIN && !ActiveGrid() 
+    m_BlendMode == Renderer::BlendMode::ONION_SKIN && !ActiveGrid()
         ? m_ControlBar->SetViewerControl(ViewerControl::OnionSkinControl)
         : m_ControlBar->SetViewerControl(ViewerControl::None);
 
