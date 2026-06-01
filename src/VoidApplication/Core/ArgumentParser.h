@@ -17,9 +17,11 @@ struct EngineArguments
     std::string project;
     std::string media;
 
+    float scale = 1.f;
     float framerate = 0.f;
     bool basic = false;
     bool audio = false;
+    bool help = false;
 };
 
 EngineArguments ParseArgs(int argc, char** argv);

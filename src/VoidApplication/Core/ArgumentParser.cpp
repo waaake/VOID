@@ -22,10 +22,14 @@ EngineArguments ParseArgs(int argc, char** argv)
             args.media = argv[++i];
         else if ("--basic" == arg)
             args.basic = true;
+        else if ("--scale" == arg)
+            args.scale = std::atof(argv[++i]);
         else if ("--framerate" == arg)
             args.framerate = std::atof(argv[++i]);
         else if ("--audio" == arg)
             args.audio = true;
+        else if ("--help" == arg)
+            args.help = true;
     }
 
     return args;
