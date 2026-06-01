@@ -495,6 +495,24 @@ void VoidRenderer::Clear()
     update();
 }
 
+Renderer::RenderData<unsigned char> VoidRenderer::FrameBuffer()
+{
+    Renderer::RenderData<unsigned char> r;
+
+    // This is temporary, till we get to do this ourselves
+    // The main prob is that the glReadPixels are giving wrong values at the moment
+    // Need to see how qt does that correctly
+    QImage image = grabFramebuffer();
+    QImage rgbimage(image.convertToFormat(QImage::Format::Format_RGBA8888));
+
+    r.width = rgbimage.width();
+    r.height = rgbimage.height();
+    r.channels = 4;
+
+    r.pixels.assign(rgbimage.constBits(), rgbimage.constBits() + rgbimage.sizeInBytes());
+    return r;
+}
+
 void VoidRenderer::SetZoom(float zoom)
 {
     m_ZoomFactor = float(m_ImageA->Width()) * zoom / (width() * 100);

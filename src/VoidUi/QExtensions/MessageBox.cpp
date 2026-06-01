@@ -28,4 +28,20 @@ QMessageBox::StandardButton SaveMessageBox::Prompt()
     return static_cast<QMessageBox::StandardButton>(exec());
 }
 
+/// InfoMessageBox
+
+InfoMessageBox::InfoMessageBox(const QString& text, const QString& title, QWidget* parent)
+    : QMessageBox(QMessageBox::Information, title, text, QMessageBox::Ok)
+{
+    button(QMessageBox::Ok)->setText("&Ok");
+}
+
+/// ErrorMessageBox
+
+ErrorMessageBox::ErrorMessageBox(const QString& text, const QString& title, QWidget* parent)
+    : QMessageBox(QMessageBox::Critical, title, text, QMessageBox::Ok)
+{
+    button(QMessageBox::Ok)->setText("&Ok");
+}
+
 VOID_NAMESPACE_CLOSE

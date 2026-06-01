@@ -7,10 +7,12 @@
 #include "VoidCore/Logging.h"
 /* Theme */
 #include "VoidStyle.h"
-/* Reader Registration */
+/* Plugin Registration */
 #include "VoidCore/Plugins/Loader.h"
 #include "VoidCore/Readers/Registration.h"
 #include "VoidCore/Operators/Registration.h"
+#include "VoidCore/Writers/Registration.h"
+
 #include "VoidCore/Profiler.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidUi/Engine/Bridge.h"
@@ -117,10 +119,12 @@ void VoidEngine::Initialize()
 
 void VoidEngine::PostInit()
 {
-    /* Register Media Readers */
+    // Register Media Readers
     RegisterReaders();
-    /* Register Operators */
+    // Register Operators
     RegisterOperators();
+    // Register Media Writers
+    RegisterWriters();
 
     /* Register Any other Media plugins that are found in the way */
     // ReaderPluginLoader::Instance().LoadExternals();
@@ -140,7 +144,7 @@ void VoidEngine::PostStartup()
 void VoidEngine::Callback()
 {
     if (m_Args.project.empty() && m_Args.media.empty() && !m_Args.basic)
-    {    
+    {
         /* Startup window pop-up */
         StartupWindow::Exec(m_Imager);
     }

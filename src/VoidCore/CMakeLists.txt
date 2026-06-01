@@ -21,6 +21,7 @@ set(SOURCES
     Media/Filesystem.cpp
     Media/Frame.cpp
     Media/Media.cpp
+    Media/Renderer.cpp
 
     # Media Readers
     Readers/OIIOReader.cpp
@@ -37,6 +38,10 @@ set(SOURCES
 
     # Processors
     Processors/ImageProcessor.cpp
+
+    # Media Writers
+    Writers/OIIOWriter.cpp
+    Writers/FFmpegWriter.cpp
 )
 
 add_library(

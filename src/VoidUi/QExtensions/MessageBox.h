@@ -26,6 +26,18 @@ public:
     QMessageBox::StandardButton Prompt();
 };
 
+class InfoMessageBox : public QMessageBox
+{
+public:
+    InfoMessageBox(const QString& text, const QString& title = "Info", QWidget* parent = nullptr);
+};
+
+class ErrorMessageBox : public QMessageBox
+{
+public:
+    ErrorMessageBox(const QString& text, const QString& title = "Error", QWidget* parent = nullptr);
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_Q_EXT_MESSAGE_BOX_H
