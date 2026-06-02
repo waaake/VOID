@@ -9,7 +9,7 @@ VOID_NAMESPACE_OPEN
 
 WorkspaceManager::WorkspaceManager(QWidget* parent)
     : MainWindow(parent)
-    , m_Current(Workspace::BASIC)
+    , m_Current(Workspace::PLAYBACK)
 {
 }
 
@@ -21,6 +21,7 @@ WorkspaceManager::~WorkspaceManager()
     m_MetadataViewer->deleteLater();
     m_PropertiesEditor->deleteLater();
     m_MediaQueue->deleteLater();
+    m_TaskQueue->deleteLater();
 }
 
 QWidget* WorkspaceManager::Widget(const Component& component) const
@@ -49,6 +50,9 @@ void WorkspaceManager::Init()
     // Queue viewer
     m_MediaQueue = new MediaQueue;
 
+    // Task View
+    m_TaskQueue = new TaskView;
+
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
@@ -56,6 +60,7 @@ void WorkspaceManager::Init()
     manager.RegisterDock(m_PlayLister, "Playlist View");
     manager.RegisterDock(m_PropertiesEditor, "Properties");
     manager.RegisterDock(m_MediaQueue, "Media Queue");
+    manager.RegisterDock(m_TaskQueue, "Task Queue");
 
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
@@ -85,6 +90,9 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
     QAction* setCurrentWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Set current workspace as default");
     QAction* resetDefaultWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Reset the default workspace");
 
+    /// Temp
+    QAction* addTaskAction = menuSystem->AddAction(workspaceMenu, "Add Test task");
+
     connect(playbackWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::PLAYBACK); });
     connect(basicWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::BASIC); });
     connect(reviewWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::REVIEW); });
@@ -100,6 +108,11 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
     {
         VoidPreferences::Instance().Set(Settings::DefaultWorkspace, 0);
         Switch(Workspace::PLAYBACK);
+    });
+
+    connect(addTaskAction, &QAction::triggered, this, [this]() -> void
+    {
+        m_TaskQueue->AddTask();
     });
 }
 

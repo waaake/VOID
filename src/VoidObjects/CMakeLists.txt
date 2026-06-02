@@ -1,5 +1,6 @@
 # Build Intermediate Objects Library
 set(SOURCES
+    Core/Task.cpp
     Core/Threads.cpp
 
     Effects/Effects.cpp

@@ -99,6 +99,8 @@ private: /* Methods */
 
     void PreviousMedia();
     void NextMedia();
+
+    friend class ExportAnnotatedFramesTask;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _INTERNAL_THREADS_H
+#define _INTERNAL_THREADS_H
+
 /* Qt */
 #include <QThreadPool>
 
@@ -29,5 +32,7 @@ protected: /* Methods */
     void Initialize();
     void Uninitialize();
 };
+
+#endif // _INTERNAL_THREADS_H
 
 VOID_NAMESPACE_CLOSE
