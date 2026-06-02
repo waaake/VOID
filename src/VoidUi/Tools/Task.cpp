@@ -90,7 +90,7 @@ void TaskWidget::Connect()
 
 void TaskWidget::Setup()
 {
-    m_TaskLabel->setText(m_Task->Name().c_str());
+    m_TaskLabel->setText(Label());
     m_LogButton->setIcon(IconForge::GetIcon(IconType::icon_assignment, _DARK_COLOR(QPalette::Text, 100)));
     m_ProgressBar->setVisible(false);
 
@@ -136,6 +136,17 @@ void TaskWidget::UpdateState(const TaskState& state)
     
     m_StateLabel->setPalette(p);
     m_StateLabel->setFont(f);
+}
+
+QString TaskWidget::Label()
+{
+    QString name = m_Task->Name().c_str();
+    QString label = m_Task->Label().c_str();
+
+    if (label.isEmpty())
+        return name;
+    
+    return QString("%1 - %2").arg(name).arg(label);
 }
 
 void TaskWidget::Cancel()

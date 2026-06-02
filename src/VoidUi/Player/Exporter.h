@@ -7,6 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Core/Task.h"
+#include "VoidObjects/Media/MediaClip.h"
 #include "VoidUi/Media/Browser.h"
 
 VOID_NAMESPACE_OPEN
@@ -24,6 +25,20 @@ protected:
 
 private:
     Player* m_Player;
+    MediaExportDescriptor m_Descriptor;
+};
+
+class ExportMediaFramesTask : public Task
+{
+public:
+    ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor);
+    inline std::string Label() const { return m_Descriptor.entry.TemplatedName(); }
+
+protected:
+    bool Work() override;
+
+private:
+    std::weak_ptr<MediaClip> m_Media;
     MediaExportDescriptor m_Descriptor;
 };
 

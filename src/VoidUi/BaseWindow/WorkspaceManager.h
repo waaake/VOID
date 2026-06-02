@@ -62,6 +62,8 @@ public:
     void InitMenu(MenuSystem* menuSystem);
     void Switch(const Workspace& workspace = Workspace::PLAYBACK);
 
+    void QueueTask(Task* task);
+
     /**
      * Returns any component Widget which is part of the Dock Setup
      */

@@ -91,6 +91,7 @@ public:
 
     inline void RenderCurrentFrame() { m_Player->RenderCurrentFrame(); }
     inline void RenderAnnotatedFrames() { m_Player->RenderAnnotatedFrames(); }
+    inline void TranscodeMedia() { m_Player->TranscodeMedia(); }
 
 private: /* Members */
     Player* m_Player;

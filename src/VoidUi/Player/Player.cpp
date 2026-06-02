@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "Player.h"
+#include "Exporter.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidCore/Media/Renderer.h"
 #include "VoidUi/Descriptors.h"
@@ -603,6 +604,15 @@ void Player::RenderAnnotatedFrames()
             box.exec();
             return;
         }
+    }
+}
+
+void Player::TranscodeMedia()
+{
+    MediaExportBrowser browser;
+    if (browser.Save())
+    {
+        UIGlobals::QueueTask(new ExportMediaFramesTask(m_ActiveViewBuffer->GetMediaClip(), browser.File()));
     }
 }
 

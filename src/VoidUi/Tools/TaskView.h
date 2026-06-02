@@ -20,6 +20,7 @@ class TaskView : public QWidget
 public:
     TaskView(QWidget* parent = nullptr);
     ~TaskView();
+    inline QSize sizeHint() const { return QSize(400, 720); }
 
     // void AddTask();
     void AddTask(Task* task);

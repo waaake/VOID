@@ -60,6 +60,7 @@ private: /* Methods */
     void UpdateActionState(const ActionState& state);
 
     // Task Specific
+    QString Label();
     void Cancel();
     void Restart();
     void Finished(const TaskState& state);

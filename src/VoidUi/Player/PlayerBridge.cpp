@@ -137,9 +137,11 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
 
     QAction* renderCurrentFrameAction = menuSystem->AddAction(renderMenu, "Export Current Frame...");
     QAction* renderAnnotatedFramesAction = menuSystem->AddAction(renderMenu, "Export Annotated Frames...");
+    QAction* renderMediaFramesAction = menuSystem->AddAction(renderMenu, "Export Media Frames...");
 
     connect(renderCurrentFrameAction, &QAction::triggered, this, &PlayerBridge::RenderCurrentFrame);
     connect(renderAnnotatedFramesAction, &QAction::triggered, this, &PlayerBridge::RenderAnnotatedFrames);
+    connect(renderMediaFramesAction, &QAction::triggered, this, &PlayerBridge::TranscodeMedia);
 }
 
 void PlayerBridge::AddToQueue(const SharedMediaClip& media, bool refresh)

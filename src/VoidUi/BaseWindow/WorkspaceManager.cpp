@@ -24,6 +24,13 @@ WorkspaceManager::~WorkspaceManager()
     m_TaskQueue->deleteLater();
 }
 
+void WorkspaceManager::QueueTask(Task* task)
+{
+    m_TaskQueue->AddTask(task);
+    if (!m_TaskQueue->isVisible())
+        ShowComponent(Component::TaskQueue);
+}
+
 QWidget* WorkspaceManager::Widget(const Component& component) const
 {
     return DockManager::Instance().Dock(static_cast<int>(component)).widget;
@@ -90,9 +97,6 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
     QAction* setCurrentWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Set current workspace as default");
     QAction* resetDefaultWorkspaceAction = menuSystem->AddAction(workspaceMenu, "Reset the default workspace");
 
-    /// Temp
-    QAction* addTaskAction = menuSystem->AddAction(workspaceMenu, "Add Test task");
-
     connect(playbackWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::PLAYBACK); });
     connect(basicWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::BASIC); });
     connect(reviewWorkspaceAction, &QAction::triggered, this, [this]() -> void { Switch(Workspace::REVIEW); });
@@ -108,11 +112,6 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
     {
         VoidPreferences::Instance().Set(Settings::DefaultWorkspace, 0);
         Switch(Workspace::PLAYBACK);
-    });
-
-    connect(addTaskAction, &QAction::triggered, this, [this]() -> void
-    {
-        m_TaskQueue->AddTask();
     });
 }
 

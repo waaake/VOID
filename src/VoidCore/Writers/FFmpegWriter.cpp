@@ -64,7 +64,17 @@ bool FFmpegWriter::Setup(const std::string& path)
             return false;
         }
 
-        m_SwsCtx = sws_getContext(m_Width, m_Height, AV_PIX_FMT_RGBA, m_Width, m_Height, AV_PIX_FMT_YUV420P, SWS_BILINEAR, nullptr, nullptr, nullptr);
+        m_SwsCtx = sws_getContext(
+            m_Width,
+            m_Height,
+            m_Channels == 3 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_RGBA,
+            m_Width,
+            m_Height,
+            AV_PIX_FMT_YUV420P,
+            SWS_BILINEAR,
+            nullptr,
+            nullptr,
+            nullptr);
 
         return true;
     }
@@ -90,7 +100,7 @@ bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const BufferT
         return false;
 
     const uint8_t* srcSlice[1] = { static_cast<const uint8_t*>(buffer) };
-    int srcStride[1] = { 4 * m_Width };
+    int srcStride[1] = { m_Channels * m_Width };
 
     sws_scale(m_SwsCtx, srcSlice, srcStride, 0, m_Height, frame->data, frame->linesize);
     frame->pts = m_Pts;

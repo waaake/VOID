@@ -23,6 +23,9 @@ void Task::run()
     SetState(TaskState::Running);
     bool status = Work();
     Finish(m_Cancelled.load() ? TaskState::Cancelled : (status) ? TaskState::Success : TaskState::Failed);
+
+    // Reset the cancel status, in case we want to restart the task later on if it's cancelled
+    m_Cancelled.store(false);
 }
 
 VOID_NAMESPACE_CLOSE

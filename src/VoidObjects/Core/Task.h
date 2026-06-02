@@ -39,6 +39,7 @@ public:
     inline bool Cancelled() const noexcept { return m_Cancelled.load(); }
     
     inline const std::string& Name() const noexcept { return m_Name; }
+    inline virtual std::string Label() const { return ""; }
 
     inline const TaskState State() const noexcept { return m_State; }
     inline bool Started() const noexcept { return m_State != TaskState::Queued; }

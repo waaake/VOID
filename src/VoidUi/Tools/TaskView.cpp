@@ -11,7 +11,7 @@
 #include "Task.h"
 #include "TaskView.h"
 #include "VoidObjects/Core/Threads.h"
-// #include "VoidCore/Logging.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 

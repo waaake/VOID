@@ -10,6 +10,9 @@
 
 VOID_NAMESPACE_OPEN
 
+// Forward decl
+class ExportAnnotatedFramesTask;
+
 class VOID_API Player : public PlayerWidget
 {
     Q_OBJECT
@@ -47,6 +50,7 @@ public:
 
     void RenderCurrentFrame();
     void RenderAnnotatedFrames();
+    void TranscodeMedia();
 
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);
