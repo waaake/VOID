@@ -36,10 +36,10 @@ void LoggerWindow::Build()
 
     QHBoxLayout* optionsLayout = new QHBoxLayout;
 
-    m_Filter = new FilterTable({"Debug", "Info", "Warning", "Error", "Critical"}, this);
+    m_Filter = new FilterTable({"Debug", "Info", "Warning", "Error", "Critical"}, 0, this);
 
     optionsLayout->addStretch(1);
-    optionsLayout->addWidget(new QLabel("Log level:"))
+    optionsLayout->addWidget(new QLabel("Log level:"));
     optionsLayout->addWidget(m_Filter);
 
     m_Layout->addLayout(optionsLayout);

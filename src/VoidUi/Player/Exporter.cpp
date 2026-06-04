@@ -110,10 +110,30 @@ bool ExportMediaFramesTask::Work()
     {
         int count = 0;
         SetMax(media->Duration());
-        if (m_Descriptor.type == WriterType::Image && m_Descriptor.entry.Templated())
+        if (m_Descriptor.type == WriterType::Image)
         {
-            Log(QString("Starting Image render. Output will be saved to: %1").arg(m_Descriptor.entry.Fullpath().c_str()), TaskLog::Level::InfoLog);
-            Renderer::ImageRenderer ir(m_Descriptor.entry, media->FirstImage()->Width(), media->FirstImage()->Height(), media->FirstImage()->Channels());
+            if (!m_Descriptor.entry.Templated())
+            {
+                Log(
+                    QString("Provied filepath to render is not templated (i.e. filename.####.ext). %1")
+                        .arg(m_Descriptor.entry.Fullpath().c_str()),
+                    TaskLog::Level::ErrorLog
+                );
+                return false;
+            }
+
+            Log(
+                QString("Starting Image render. Output will be saved to: %1")
+                    .arg(m_Descriptor.entry.Fullpath().c_str()),
+                    TaskLog::Level::InfoLog
+                );
+
+            Renderer::ImageRenderer ir(
+                m_Descriptor.entry,
+                media->FirstImage()->Width(),
+                media->FirstImage()->Height(),
+                media->FirstImage()->Channels()
+            );
     
             for (int i = media->FirstFrame(); i <= media->LastFrame(); ++i)
             {
@@ -130,7 +150,10 @@ bool ExportMediaFramesTask::Work()
 
                 count++;
                 SetProgress(count);
-                Log(QString("ImageRenderer: Frame %1 of %2 rendered").arg(i).arg(media->LastFrame()), TaskLog::Level::InfoLog);
+                Log(
+                    QString("ImageRenderer: Frame %1 of %2 rendered").arg(i).arg(media->LastFrame()),
+                    TaskLog::Level::InfoLog
+                );
             }
 
             Log("Image render completed", TaskLog::Level::InfoLog);
@@ -138,8 +161,17 @@ bool ExportMediaFramesTask::Work()
         }
         else if (m_Descriptor.type == WriterType::Movie)
         {
-            Log(QString("Starting Movie render. Output will be saved to: %1").arg(m_Descriptor.entry.Fullpath().c_str()), TaskLog::Level::InfoLog);
-            Renderer::MovieRenderer mr(m_Descriptor.entry, media->FirstImage()->Width(), media->FirstImage()->Height(), media->FirstImage()->Channels());
+            Log(
+                QString("Starting Movie render. Output will be saved to: %1").arg(m_Descriptor.entry.Fullpath().c_str()),
+                TaskLog::Level::InfoLog
+            );
+            
+            Renderer::MovieRenderer mr(
+                m_Descriptor.entry,
+                media->FirstImage()->Width(),
+                media->FirstImage()->Height(),
+                media->FirstImage()->Channels()
+            );
     
             for (int i = media->FirstFrame(); i <= media->LastFrame(); ++i)
             {
@@ -154,18 +186,25 @@ bool ExportMediaFramesTask::Work()
                     return false;
                 }
 
-                Log(QString("MovieRenderer: Frame %1 of %2 buffered").arg(i).arg(media->LastFrame()), TaskLog::Level::InfoLog);
                 count++;
                 SetProgress(count);
+                Log(
+                    QString("MovieRenderer: Frame %1 of %2 buffered").arg(i).arg(media->LastFrame()),
+                    TaskLog::Level::InfoLog
+                );
             }
 
             mr.Render();
 
-            Log("Image render completed", TaskLog::Level::InfoLog);
+            Log("Movie render completed", TaskLog::Level::InfoLog);
             return true;
         }
 
-        Log(QString("Unable to determine the path/extension for render correctly. %1").arg(m_Descriptor.entry.Fullpath().c_str()), TaskLog::Level::ErrorLog);
+        Log(
+            QString("Unable to determine the path/extension for render correctly. %1")
+                .arg(m_Descriptor.entry.Fullpath().c_str()),
+            TaskLog::Level::ErrorLog
+        );
         return false;
     }
 
