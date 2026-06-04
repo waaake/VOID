@@ -9,7 +9,7 @@
 
 VOID_NAMESPACE_OPEN
 
-FilterTable::FilterTable(const std::vector<QString>& filters, QWidget* parent)
+FilterTable::FilterTable(const std::vector<QString>& filters, int selected, QWidget* parent)
     : QTableWidget(parent)
 {
     setColumnCount(static_cast<int>(filters.size()));
@@ -26,6 +26,7 @@ FilterTable::FilterTable(const std::vector<QString>& filters, QWidget* parent)
     {
         QTableWidgetItem* item = new QTableWidgetItem(filter);
         item->setTextAlignment(Qt::AlignCenter);
+        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
         setItem(0, count, item);
 
         int textWidth = fm.horizontalAdvance(filter);
@@ -35,9 +36,9 @@ FilterTable::FilterTable(const std::vector<QString>& filters, QWidget* parent)
         count++;
     }
 
-    connect(this, &QTableWidget::itemClicked, this, [this](QTableWidgetItem* item) -> void
+    connect(this, &QTableWidget::itemSelectionChanged, this, [this]() -> void
     {
-        emit filterChanged(item->column());
+        emit filterChanged(currentItem()->column());
     });
 
     // Fixed size based on the filters
@@ -51,7 +52,7 @@ FilterTable::FilterTable(const std::vector<QString>& filters, QWidget* parent)
 
     setSelectionMode(QTableView::SelectionMode::SingleSelection);
     // Always the first is selected
-    setItemSelected(item(0, 0), true);
+    setCurrentItem(item(0, selected));
 }
 
 VOID_NAMESPACE_CLOSE
