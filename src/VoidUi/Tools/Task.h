@@ -64,6 +64,7 @@ private: /* Methods */
     void Cancel();
     void Restart();
     void Finished(const TaskState& state);
+    void ShowLog();
 };
 
 VOID_NAMESPACE_CLOSE

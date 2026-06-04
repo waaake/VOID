@@ -7,11 +7,20 @@
 VOID_NAMESPACE_OPEN
 
 Task::Task(const std::string& name)
-    : m_Cancelled(false)
+    : QObject()
+    , m_Cancelled(false)
     , m_State(TaskState::Queued)
     , m_Name(name)
 {
     setAutoDelete(false);
+    m_Logs = new TaskLogModel(this);
+}
+
+Task::~Task()
+{
+    m_Logs->deleteLater();
+    delete m_Logs;
+    m_Logs = nullptr;
 }
 
 void Task::run()

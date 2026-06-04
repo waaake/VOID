@@ -108,11 +108,11 @@ bool ExportMediaFramesTask::Work()
 {
     if (SharedMediaClip media = m_Media.lock())
     {
-        SetMax(media->Duration());
         int count = 0;
-
+        SetMax(media->Duration());
         if (m_Descriptor.type == WriterType::Image && m_Descriptor.entry.Templated())
         {
+            Log(QString("Starting Image render. Output will be saved to: %1").arg(m_Descriptor.entry.Fullpath().c_str()), TaskLog::Level::InfoLog);
             Renderer::ImageRenderer ir(m_Descriptor.entry, media->FirstImage()->Width(), media->FirstImage()->Height(), media->FirstImage()->Channels());
     
             for (int i = media->FirstFrame(); i <= media->LastFrame(); ++i)
@@ -124,17 +124,21 @@ bool ExportMediaFramesTask::Work()
                 SharedPixels image = media->Image(i);
                 if (!ir.Render(i, image->Pixels(), image->FrameSize(), BufferType::Uint8))
                 {
+                    Log(QString("Unable to render current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
                 }
 
                 count++;
                 SetProgress(count);
+                Log(QString("ImageRenderer: Frame %1 of %2 rendered").arg(i).arg(media->LastFrame()), TaskLog::Level::InfoLog);
             }
 
+            Log("Image render completed", TaskLog::Level::InfoLog);
             return true;
         }
         else if (m_Descriptor.type == WriterType::Movie)
         {
+            Log(QString("Starting Movie render. Output will be saved to: %1").arg(m_Descriptor.entry.Fullpath().c_str()), TaskLog::Level::InfoLog);
             Renderer::MovieRenderer mr(m_Descriptor.entry, media->FirstImage()->Width(), media->FirstImage()->Height(), media->FirstImage()->Channels());
     
             for (int i = media->FirstFrame(); i <= media->LastFrame(); ++i)
@@ -146,18 +150,26 @@ bool ExportMediaFramesTask::Work()
                 SharedPixels image = media->Image(i);
                 if (!mr.AddBuffer(image->Pixels(), image->FrameSize(), BufferType::Uint8))
                 {
+                    Log(QString("Unable to buffer current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
                 }
 
+                Log(QString("MovieRenderer: Frame %1 of %2 buffered").arg(i).arg(media->LastFrame()), TaskLog::Level::InfoLog);
                 count++;
                 SetProgress(count);
             }
 
             mr.Render();
+
+            Log("Image render completed", TaskLog::Level::InfoLog);
             return true;
         }
+
+        Log(QString("Unable to determine the path/extension for render correctly. %1").arg(m_Descriptor.entry.Fullpath().c_str()), TaskLog::Level::ErrorLog);
+        return false;
     }
 
+    Log("Unable to access media.", TaskLog::Level::ErrorLog);
     return false;
 }
 

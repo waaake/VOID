@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Task.h"
+#include "LogWindow.h"
 #include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
@@ -53,7 +54,7 @@ void TaskWidget::Build()
 
     m_TaskLabel = new QLabel;
     m_ActionButton = new QPushButton;
-    
+
     m_StateLabel = new QLabel;
     m_ProgressBar = new QProgressBar;
     m_LogButton = new QPushButton;
@@ -86,6 +87,7 @@ void TaskWidget::Connect()
     {
         m_ActionState == ActionState::Cancel ? Cancel() : Restart();
     });
+    connect(m_LogButton, &QPushButton::clicked, this, &TaskWidget::ShowLog);
 }
 
 void TaskWidget::Setup()
@@ -133,7 +135,7 @@ void TaskWidget::UpdateState(const TaskState& state)
             p.setColor(QPalette::WindowText, QColor(200, 200, 200));
             m_StateLabel->setText("Queued");
     }
-    
+
     m_StateLabel->setPalette(p);
     m_StateLabel->setFont(f);
 }
@@ -145,7 +147,7 @@ QString TaskWidget::Label()
 
     if (label.isEmpty())
         return name;
-    
+
     return QString("%1 - %2").arg(name).arg(label);
 }
 
@@ -173,9 +175,11 @@ void TaskWidget::Finished(const TaskState& state)
     if (state == TaskState::Success)
     {
         m_ProgressBar->setValue(m_ProgressBar->maximum());
-        m_Task->deleteLater();
-        delete m_Task;
-        m_Task = nullptr;
+
+        /// Check if we can do something about this, and show logger too
+        // m_Task->deleteLater();
+        // delete m_Task;
+        // m_Task = nullptr;
     }
     else if (state == TaskState::Failed || state == TaskState::Cancelled)
     {
@@ -192,5 +196,10 @@ void TaskWidget::UpdateActionState(const ActionState& state)
         state == ActionState::Cancel ? IconType::icon_close : IconType::icon_restart_alt,
         _DARK_COLOR(QPalette::Text, 100)));
 }
+
+void TaskWidget::ShowLog()
+{
+    LoggerWindow(m_Task->Logs(), this).exec();
+} 
 
 VOID_NAMESPACE_CLOSE

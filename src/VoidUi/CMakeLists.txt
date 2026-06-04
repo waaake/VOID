@@ -102,6 +102,7 @@ set(SOURCES
     # Tools
     Tools/Task.cpp
     Tools/TaskView.cpp
+    Tools/LogWindow.cpp
 
     # QExtensions
     QExtensions/Delegates.cpp
@@ -114,6 +115,7 @@ set(SOURCES
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp
     QExtensions/SpinBox.cpp
+    QExtensions/Table.cpp
     QExtensions/Tooltip.cpp
     QExtensions/Window.cpp
 )

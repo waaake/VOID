@@ -32,7 +32,7 @@ class ExportMediaFramesTask : public Task
 {
 public:
     ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor);
-    inline std::string Label() const { return m_Descriptor.entry.TemplatedName(); }
+    inline std::string Label() const override { return m_Descriptor.entry.TemplatedName(); }
 
 protected:
     bool Work() override;

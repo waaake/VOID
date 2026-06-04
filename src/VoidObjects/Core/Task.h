@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "TaskLog.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -31,9 +32,11 @@ class VOID_API Task : public QObject, public QRunnable
     Q_OBJECT
 public:
     Task(const std::string& name);
-    virtual ~Task() = default;
+    virtual ~Task();
 
     void run() override;
+
+    inline TaskLogModel* Logs() { return m_Logs; }
 
     void Cancel() noexcept { m_Cancelled.store(true); }
     inline bool Cancelled() const noexcept { return m_Cancelled.load(); }
@@ -56,6 +59,7 @@ protected:
     inline void SetProgress(int steps) { emit progressed(steps); }
     inline void SetState(const TaskState& state) { m_State = state; emit stateChanged(state); }
     inline void Finish(const TaskState& state) { m_State = state; emit finished(state); }
+    inline void Log(const QString& text, const TaskLog::Level& level) { m_Logs->AddLog(text, level); }
 
     // The actual work happens here
     // run method above just takes care of the statuses and starting up the work
@@ -65,6 +69,7 @@ protected:
 private:
     std::atomic_bool m_Cancelled;
     TaskState m_State;
+    TaskLogModel* m_Logs;
     std::string m_Name;
 };
 
