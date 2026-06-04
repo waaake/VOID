@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "Threads.h"
+#include "Task.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -25,6 +26,7 @@ ThreadPool::~ThreadPool()
 void ThreadPool::Initialize()
 {
     setMaxThreadCount(1);
+    qRegisterMetaType<TaskState>("TaskState");
 }
 
 void ThreadPool::Uninitialize()

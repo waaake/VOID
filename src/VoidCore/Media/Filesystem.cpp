@@ -222,6 +222,9 @@ std::string MEntry::PaddedFrame(v_frame_t frame) const
 
 std::string MEntry::TemplatedPath() const
 {
+    if (m_SingleFile)
+        return m_Path;
+
     std::string path;
     path.reserve(m_Basepath.size() + 1 + m_Name.size() + 1 + m_FramePadding + 1 + m_Extension.size());
 
@@ -240,6 +243,19 @@ std::string MEntry::TemplatedPath() const
 std::string MEntry::TemplatedName() const
 {
     std::string name;
+
+    if (m_SingleFile)
+    {
+        name.reserve(m_Name.size() + 1 + m_Extension.size());
+        name += m_Name;
+        name += ".";
+        name += m_Extension;
+        return name;
+    }
+
+    if (m_Templated)
+        return std::filesystem::path(m_Path).filename().string();
+    
     name.reserve(m_Name.size() + 1 + m_FramePadding + 1 + m_Extension.size());
 
     name += m_Name;

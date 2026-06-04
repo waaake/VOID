@@ -19,6 +19,7 @@
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
 #include "VoidUi/QExtensions/Window.h"
 #include "VoidUi/Media/MediaQueue.h"
+#include "VoidUi/Tools/TaskView.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -47,6 +48,7 @@ enum class Component
     PlayLister,
     Properties,
     MediaQueue,
+    TaskQueue,
 };
 
 class WorkspaceManager : public MainWindow
@@ -59,6 +61,8 @@ public:
     void Connect();
     void InitMenu(MenuSystem* menuSystem);
     void Switch(const Workspace& workspace = Workspace::PLAYBACK);
+
+    void QueueTask(Task* task);
 
     /**
      * Returns any component Widget which is part of the Dock Setup
@@ -74,6 +78,7 @@ private: /* Members */
     MetadataViewer* m_MetadataViewer;
     PropertiesPanel* m_PropertiesEditor;
     MediaQueue* m_MediaQueue;
+    TaskView* m_TaskQueue;
 
     Workspace m_Current;
 

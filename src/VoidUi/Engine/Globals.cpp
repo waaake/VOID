@@ -87,6 +87,12 @@ bool IsDarkTheme()
     return s_IsDarkTheme;
 }
 
+void QueueTask(Task* task)
+{
+    if (g_VoidMainWindow)
+        g_VoidMainWindow->QueueTask(task);
+}
+
 } // namespace UIGlobals
 
 VOID_NAMESPACE_CLOSE

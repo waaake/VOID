@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Core/Task.h"
 #include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/BaseWindow/MenuSystem.h"
 #include "VoidUi/BaseWindow/PlayerWindow.h"
@@ -32,6 +33,7 @@ namespace UIGlobals {
     VOID_API std::string FramerateString();
     VOID_API void SetLuminance(const QColor& color);
     VOID_API bool IsDarkTheme();
+    VOID_API void QueueTask(Task* task);
 
 } // namespace Globals
 

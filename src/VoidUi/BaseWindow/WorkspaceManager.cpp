@@ -9,7 +9,7 @@ VOID_NAMESPACE_OPEN
 
 WorkspaceManager::WorkspaceManager(QWidget* parent)
     : MainWindow(parent)
-    , m_Current(Workspace::BASIC)
+    , m_Current(Workspace::PLAYBACK)
 {
 }
 
@@ -21,6 +21,14 @@ WorkspaceManager::~WorkspaceManager()
     m_MetadataViewer->deleteLater();
     m_PropertiesEditor->deleteLater();
     m_MediaQueue->deleteLater();
+    m_TaskQueue->deleteLater();
+}
+
+void WorkspaceManager::QueueTask(Task* task)
+{
+    m_TaskQueue->AddTask(task);
+    if (!m_TaskQueue->isVisible())
+        ShowComponent(Component::TaskQueue);
 }
 
 QWidget* WorkspaceManager::Widget(const Component& component) const
@@ -49,6 +57,9 @@ void WorkspaceManager::Init()
     // Queue viewer
     m_MediaQueue = new MediaQueue;
 
+    // Task View
+    m_TaskQueue = new TaskView;
+
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
@@ -56,6 +67,7 @@ void WorkspaceManager::Init()
     manager.RegisterDock(m_PlayLister, "Playlist View");
     manager.RegisterDock(m_PropertiesEditor, "Properties");
     manager.RegisterDock(m_MediaQueue, "Media Queue");
+    manager.RegisterDock(m_TaskQueue, "Task Queue");
 
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);

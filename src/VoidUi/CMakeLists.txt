@@ -65,6 +65,7 @@ set(SOURCES
     Preferences/PlayerPreferences.cpp
 
     # Player
+    Player/Exporter.cpp
     Player/OverlayWidget.cpp
     Player/Player.cpp
     Player/PlayerBridge.cpp
@@ -98,6 +99,11 @@ set(SOURCES
     Toolkit/GridController.cpp
     Toolkit/ViewerController.cpp
 
+    # Tools
+    Tools/Task.cpp
+    Tools/TaskView.cpp
+    Tools/LogWindow.cpp
+
     # QExtensions
     QExtensions/Delegates.cpp
     QExtensions/Dialog.cpp
@@ -109,6 +115,7 @@ set(SOURCES
     QExtensions/PushButton.cpp
     QExtensions/Slider.cpp
     QExtensions/SpinBox.cpp
+    QExtensions/Table.cpp
     QExtensions/Tooltip.cpp
     QExtensions/Window.cpp
 )
@@ -122,6 +129,8 @@ if (WIN32)
 
         # # Objects   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
         # # the staticMetaObject for MediaClip, Track, TrackItem, Sequence and MediaBridge to be present at compile time rather link time
+        ../VoidObjects/Core/Task.h
+
         ../VoidObjects/Effects/Effects.h
 
         ../VoidObjects/Media/MediaClip.h
