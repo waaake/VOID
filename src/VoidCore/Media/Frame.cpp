@@ -112,7 +112,7 @@ void Frame::Cache()
     }
 }
 
-void Frame::ClearCache()
+void Frame::ClearCache(bool dirty)
 {
     if (!m_ImageData->Empty())
     {
@@ -120,7 +120,7 @@ void Frame::ClearCache()
         std::lock_guard<std::mutex> guard(m_Mutex);
         m_ImageData->Clear();
     }
-    m_Dirty = true;
+    m_Dirty = dirty;
 }
 
 MovieFrame::MovieFrame(const MEntry& e, const v_frame_t frame)
