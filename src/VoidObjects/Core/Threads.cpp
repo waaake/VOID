@@ -25,7 +25,7 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::Initialize()
 {
-    setMaxThreadCount(1);
+    // setMaxThreadCount(1);
     qRegisterMetaType<TaskState>("TaskState");
 }
 
