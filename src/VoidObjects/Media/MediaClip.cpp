@@ -10,15 +10,17 @@
 #include "VoidCore/Processors/ImageProcessor.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidObjects/Effects/Bridge.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
 MediaClip::MediaClip(QObject* parent)
     : VoidObject(parent)
     , Media()
+    , m_Thumbnail()
+    , m_Working(false)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
     m_TagModel = new TagModel(this);
 }
 
@@ -26,9 +28,9 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     : VoidObject(parent)
     , Media(mstruct)
     , m_Thumbnail()
+    , m_Working(false)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
     m_TagModel = new TagModel(this);
 }
 
@@ -36,9 +38,9 @@ MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
     : VoidObject(parent)
     , Media(mstruct)
     , m_Thumbnail()
+    , m_Working(false)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
     m_TagModel = new TagModel(this);
 }
 
@@ -50,9 +52,9 @@ MediaClip::MediaClip(const std::string& basepath,
     : VoidObject(parent)
     , Media(basepath, name, extension)
     , m_Thumbnail()
+    , m_Working(false)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
     m_TagModel = new TagModel(this);
 }
 
@@ -67,9 +69,9 @@ MediaClip::MediaClip(const std::string& basepath,
     : VoidObject(parent)
     , Media(basepath, name, extension, start, end, padding)
     , m_Thumbnail()
+    , m_Working(false)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
     m_TagModel = new TagModel(this);
 }
 
@@ -85,9 +87,9 @@ MediaClip::MediaClip(const std::string& basepath,
     : VoidObject(parent)
     , Media(basepath, name, extension, start, end, padding, missing)
     , m_Thumbnail()
+    , m_Working(false)
 {
     VOID_LOG_INFO("Clip Created: {0}", Vuid());
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
     m_TagModel = new TagModel(this);
 }
 
@@ -107,7 +109,7 @@ QPixmap MediaClip::Thumbnail()
      * in case it's not yet read, use the default thumbnail, once the thumbnail is updated the updated
      * signal will force the model to requery the thumbnail and that's when the actual thumbnail is returned
      */
-    return m_Thumbnail.isNull() ? DefaultThumbnail() : m_Thumbnail;
+    return m_Thumbnail.isNull() ? FetchThumbnail() : m_Thumbnail;
 }
 
 void MediaClip::ReadThumbnail()
@@ -117,22 +119,26 @@ void MediaClip::ReadThumbnail()
 
     /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
     SharedPixels im = Media::FirstImage();
-    QImage::Format format = (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888;
-
     QPixmap frame;
-    frame = QPixmap::fromImage(QImage(im->ThumbnailPixels(), im->Width(), im->Height(), format));
+    frame = std::move(QPixmap::fromImage(QImage(
+        im->ThumbnailPixels(),
+        im->Width(),
+        im->Height(),
+        (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
+    )));
 
-    /* Fallback to default thumbnail if we can't read the frame from the Media */
+    // Fallback to default thumbnail if we can't read the frame from the Media
     if (frame.isNull())
     {
         frame = DefaultThumbnail();
         VOID_LOG_WARN("Unable to fetch image from the Media, using default");
     }
 
-    m_Thumbnail = frame.scaledToWidth(400, Qt::SmoothTransformation);
-    /* Clear the data for when required */
+    m_Thumbnail = std::move(frame.scaledToWidth(400, Qt::SmoothTransformation));
+    // Clear the data for when required
     im->Clear();
 
+    m_Working.store(false);
     emit updated();
 }
 
@@ -143,6 +149,17 @@ QPixmap MediaClip::DefaultThumbnail()
     pix.fill(Qt::black);
 
     return pix;
+}
+
+QPixmap MediaClip::FetchThumbnail()
+{
+    if (m_Thumbnail.isNull() && !m_Working.load())
+    {
+        ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
+        m_Working.store(true);
+    }
+
+    return DefaultThumbnail();
 }
 
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const
@@ -324,8 +341,16 @@ void MediaClip::UncacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    m_Mediaframes.at(frame - m_FirstFrame).ClearCache();
+    m_Mediaframes.at(frame - m_FirstFrame).ClearCache(HasEffects());
     // emit frameUncached(frame);
+}
+
+void MediaClip::ClearCache()
+{
+    // Mark the underlying frames as dirty only if this has effects added to it
+    // This obviously is temporary till we have the actual workflow where effects are applied
+    // only on the track item and not on the media
+    Media::ClearCache(HasEffects());
 }
 
 void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
@@ -346,7 +371,7 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
     {
         if (m_Mediaframes.at(i).Invalid())
-            missingFrames.PushBack(static_cast<int64_t>(i), allocator);
+            missingFrames.PushBack(static_cast<int64_t>(i + 1), allocator);
     }
 
     out.AddMember("missingFrames", missingFrames, allocator);
@@ -395,7 +420,8 @@ void MediaClip::Serialize(std::ostream& out) const
     {
         if (m_Mediaframes.at(i).Invalid())
         {
-            out.write(reinterpret_cast<const char*>(&i), sizeof(i));
+            int frame = i + 1;
+            out.write(reinterpret_cast<const char*>(&frame), sizeof(i));
             count++;
         }
     }
@@ -477,9 +503,6 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
             m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
         }
     }
-
-    /* Load thumbnail */
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 void MediaClip::Deserialize(std::istream& in)
@@ -527,9 +550,6 @@ void MediaClip::Deserialize(std::istream& in)
 
         m_Annotations[f] = annotation;
     }
-
-    /* Load thumbnail */
-    ThreadPool::Instance().start(new MediaThumbnailCacheRunner(this));
 }
 
 void MediaClip::Evaluate(v_frame_t frame)
