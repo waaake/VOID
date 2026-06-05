@@ -63,7 +63,7 @@ public:
 
     /* Frame Caches */
     void Cache();
-    void ClearCache();
+    void ClearCache(bool dirty = true);
 
 protected: /* Members */
     MEntry m_MediaEntry;

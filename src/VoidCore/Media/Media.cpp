@@ -190,10 +190,10 @@ std::size_t Media::FrameSize()
     return m_Framesize;
 }
 
-void Media::ClearCache()
+void Media::ClearCache(bool dirty)
 {
     for (Frame& f : m_Mediaframes)
-        f.ClearCache();
+        f.ClearCache(dirty);
 }
 
 // Frame Media::GetFrame(v_frame_t frame) const

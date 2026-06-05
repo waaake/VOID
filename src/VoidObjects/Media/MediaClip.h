@@ -5,6 +5,7 @@
 #define _VOID_MEDIA_CLIP_H
 
 /* STD */
+#include <atomic>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -72,6 +73,7 @@ public:
 
     void CacheFrame(v_frame_t frame);
     void UncacheFrame(v_frame_t frame);
+    void ClearCache();
 
     /* Add Annotation for a Frame */
     void SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation);
@@ -93,6 +95,7 @@ public:
     Effect* CreateEffect(const std::string& type);
     bool RemoveEffect(const std::string& name);
     void ClearEffects();
+    inline bool HasEffects() const { return !m_Effects.empty(); }
 
     inline const std::vector<Tag*>& Tags() const { return m_TagModel->Tags(); }
     inline bool HasTags() const { return m_TagModel->HasTags(); }
@@ -141,6 +144,7 @@ private: /* Members */
     QColor m_Color;
     QPixmap m_Thumbnail;
     TagModel* m_TagModel;
+    std::atomic_bool m_Working;
 
     /**
      * This struct saves the Annotations for the frames
@@ -152,6 +156,7 @@ private: /* Members */
 private: /* Methods */
     void ReadThumbnail();
     QPixmap DefaultThumbnail();
+    QPixmap FetchThumbnail();
 
 private: /* Classes */
     class MediaThumbnailCacheRunner : public QRunnable
