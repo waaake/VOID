@@ -131,7 +131,7 @@ public:
     /**
      * Clears the cache for all the frames of the Media
      */
-    void ClearCache();
+    void ClearCache(bool dirty = true);
 
     /* Allow iterating over the Media frames */
     inline std::vector<Frame>::iterator begin() { return m_Mediaframes.begin(); }
