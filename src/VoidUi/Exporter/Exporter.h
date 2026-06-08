@@ -31,7 +31,7 @@ private:
 class ExportMediaFramesTask : public Task
 {
 public:
-    ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor);
+    ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor, const EncodeSpec& spec, const MFrameRange& range);
     inline std::string Label() const override { return m_Descriptor.entry.TemplatedName(); }
 
 protected:
@@ -40,6 +40,8 @@ protected:
 private:
     std::weak_ptr<MediaClip> m_Media;
     MediaExportDescriptor m_Descriptor;
+    EncodeSpec m_Spec;
+    MFrameRange m_Range;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -30,6 +30,11 @@ set(SOURCES
     Engine/Bridge.cpp
     Engine/Globals.cpp
     Engine/IconForge.cpp
+
+    # Exporter
+    Exporter/Exporter.cpp
+    Exporter/ExportOptions.cpp
+    Exporter/MediaExporter.cpp
     
     # Media
     Media/Browser.cpp
@@ -65,7 +70,6 @@ set(SOURCES
     Preferences/PlayerPreferences.cpp
 
     # Player
-    Player/Exporter.cpp
     Player/OverlayWidget.cpp
     Player/Player.cpp
     Player/PlayerBridge.cpp
@@ -100,6 +104,7 @@ set(SOURCES
     Toolkit/ViewerController.cpp
 
     # Tools
+    Tools/Delegates/LogDelegate.cpp
     Tools/Task.cpp
     Tools/TaskView.cpp
     Tools/LogWindow.cpp

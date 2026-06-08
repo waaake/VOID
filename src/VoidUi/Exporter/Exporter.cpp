@@ -3,7 +3,7 @@
 
 /* Internal */
 #include "Exporter.h"
-#include "Player.h"
+#include "VoidUi/Player/Player.h"
 #include "VoidCore/Media/Renderer.h"
 
 VOID_NAMESPACE_OPEN
@@ -29,7 +29,7 @@ bool ExportAnnotatedFramesTask::Work()
     if (m_Descriptor.type == WriterType::Image && m_Descriptor.entry.Templated())
     {
         const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
-        Renderer::ImageRenderer ir(m_Descriptor.entry, r.width, r.height, r.channels);
+        Renderer::ImageRenderer ir(m_Descriptor.entry, {r.width, r.height, r.channels, r.type});
 
         for (auto& [frame, _] : annotations)
         {
@@ -38,7 +38,7 @@ bool ExportAnnotatedFramesTask::Work()
                 m_Player->m_Renderer->Render(data.image, data.annotation);
                 const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
 
-                if (!ir.Render(frame, r.pixels.data(), r.Size(), r.type))
+                if (!ir.Render(frame, r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
                 {
                     // ErrorMessageBox box("There was an error in exporting media.", "Error", this);
                     // box.exec();
@@ -61,7 +61,7 @@ bool ExportAnnotatedFramesTask::Work()
     else if (m_Descriptor.type == WriterType::Movie)
     {
         const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
-        Renderer::MovieRenderer mr(m_Descriptor.entry, r.width, r.height, r.channels);
+        Renderer::MovieRenderer mr(m_Descriptor.entry, {r.width, r.height, r.channels, r.type});
 
         for (auto& [frame, _] : annotations)
         {
@@ -69,7 +69,7 @@ bool ExportAnnotatedFramesTask::Work()
             {
                 m_Player->m_Renderer->Render(data.image, data.annotation);
                 const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
-                if (!mr.AddBuffer(r.pixels.data(), r.Size(), r.type))
+                if (!mr.AddBuffer(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
                 {
                     // ErrorMessageBox box("There was an error in exporting media.", "Error", this);
                     // box.exec();
@@ -97,10 +97,12 @@ bool ExportAnnotatedFramesTask::Work()
 
 /// ExportMediaFramesTask
 
-ExportMediaFramesTask::ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor)
+ExportMediaFramesTask::ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor, const EncodeSpec& spec, const MFrameRange& range)
     : Task("Transcode Media")
     , m_Media(media)
     , m_Descriptor(descriptor)
+    , m_Spec(spec)
+    , m_Range(range)
 {
 }
 
@@ -109,7 +111,8 @@ bool ExportMediaFramesTask::Work()
     if (SharedMediaClip media = m_Media.lock())
     {
         int count = 0;
-        SetMax(media->Duration());
+        SetMax(m_Range.duration);
+
         if (m_Descriptor.type == WriterType::Image)
         {
             if (!m_Descriptor.entry.Templated())
@@ -123,26 +126,29 @@ bool ExportMediaFramesTask::Work()
             }
 
             Log(
-                QString("Starting Image render. Output will be saved to: %1")
-                    .arg(m_Descriptor.entry.Fullpath().c_str()),
+                QString("Starting Image render. Output will be saved to: %1, Range: %2 - %3")
+                    .arg(m_Descriptor.entry.Fullpath().c_str())
+                    .arg(m_Range.startframe)
+                    .arg(m_Range.endframe),
                     TaskLog::Level::InfoLog
                 );
 
-            Renderer::ImageRenderer ir(
-                m_Descriptor.entry,
-                media->FirstImage()->Width(),
-                media->FirstImage()->Height(),
-                media->FirstImage()->Channels()
-            );
+            Renderer::ImageRenderer ir(m_Descriptor.entry, m_Spec);
     
-            for (int i = media->FirstFrame(); i <= media->LastFrame(); ++i)
+            for (int i = m_Range.startframe; i <= m_Range.endframe; ++i)
             {
                 // Check for whether the task was cancelled
                 if (Cancelled())
                     return false;
 
+                if (!media->Contains(i))
+                {
+                    Log(QString("Media does not contain frame %1 for render. Skipping.").arg(i), TaskLog::Level::WarningLog);
+                    continue;
+                }
+
                 SharedPixels image = media->Image(i);
-                if (!ir.Render(i, image->Pixels(), image->FrameSize(), BufferType::Uint8))
+                if (!ir.Render(i, image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Uint8}))
                 {
                     Log(QString("Unable to render current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
@@ -151,7 +157,7 @@ bool ExportMediaFramesTask::Work()
                 count++;
                 SetProgress(count);
                 Log(
-                    QString("ImageRenderer: Frame %1 of %2 rendered").arg(i).arg(media->LastFrame()),
+                    QString("ImageRenderer: Frame %1 of %2 rendered").arg(i).arg(m_Range.endframe),
                     TaskLog::Level::InfoLog
                 );
             }
@@ -162,25 +168,29 @@ bool ExportMediaFramesTask::Work()
         else if (m_Descriptor.type == WriterType::Movie)
         {
             Log(
-                QString("Starting Movie render. Output will be saved to: %1").arg(m_Descriptor.entry.Fullpath().c_str()),
+                QString("Starting Movie render. Output will be saved to: %1, Range: %2 - %3")
+                    .arg(m_Descriptor.entry.Fullpath().c_str())
+                    .arg(m_Range.startframe)
+                    .arg(m_Range.endframe),
                 TaskLog::Level::InfoLog
             );
             
-            Renderer::MovieRenderer mr(
-                m_Descriptor.entry,
-                media->FirstImage()->Width(),
-                media->FirstImage()->Height(),
-                media->FirstImage()->Channels()
-            );
+            Renderer::MovieRenderer mr(m_Descriptor.entry, m_Spec);
     
-            for (int i = media->FirstFrame(); i <= media->LastFrame(); ++i)
+            for (int i = m_Range.startframe; i <= m_Range.endframe; ++i)
             {
                 // Check for whether the task was cancelled
                 if (Cancelled())
                     return false;
 
+                if (!media->Contains(i))
+                {
+                    Log(QString("Media does not contain frame %1 for render. Skipping.").arg(i), TaskLog::Level::WarningLog);
+                    continue;
+                }
+
                 SharedPixels image = media->Image(i);
-                if (!mr.AddBuffer(image->Pixels(), image->FrameSize(), BufferType::Uint8))
+                if (!mr.AddBuffer(image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Uint8}))
                 {
                     Log(QString("Unable to buffer current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
@@ -189,7 +199,7 @@ bool ExportMediaFramesTask::Work()
                 count++;
                 SetProgress(count);
                 Log(
-                    QString("MovieRenderer: Frame %1 of %2 buffered").arg(i).arg(media->LastFrame()),
+                    QString("MovieRenderer: Frame %1 of %2 buffered").arg(i).arg(m_Range.endframe),
                     TaskLog::Level::InfoLog
                 );
             }
