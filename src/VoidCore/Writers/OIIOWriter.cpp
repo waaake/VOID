@@ -13,8 +13,8 @@
 
 VOID_NAMESPACE_OPEN
 
-OIIOWriter::OIIOWriter(int width, int height, int channels, const WriterType& type)
-    : PixWriter(width, height, channels, type)
+OIIOWriter::OIIOWriter(const EncodeSpec& spec)
+    : PixWriter(spec)
     , m_OutPtr(nullptr)
 {
 }
@@ -28,17 +28,17 @@ bool OIIOWriter::Setup(const std::string& path)
         return false;
     }
 
-    OIIO::ImageSpec spec(m_Width, m_Height, m_Channels, OIIO::TypeDesc::UINT8);
+    OIIO::ImageSpec spec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::UINT8);
     m_OutPtr->open(path, spec);
 
     return true;
 }
 
-bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const BufferType& type)
+bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec& spec)
 {
     if (m_OutPtr)
     {
-        switch (type)
+        switch (spec.type)
         {
             case BufferType::Uint16:
                 m_OutPtr->write_image(OIIO::TypeDesc::UINT16, buffer);

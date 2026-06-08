@@ -16,17 +16,17 @@ namespace Renderer {
 class VOID_API ImageRenderer
 {
 public:
-    ImageRenderer(const MEntry& entry, int width, int height, int channels);
+    ImageRenderer(const MEntry& entry, const EncodeSpec& spec);
     ~ImageRenderer();
 
     bool Valid() const { return (bool)m_Writer; }
 
-    bool AddBuffer(const void* buf, std::size_t size, const BufferType& type);
-    bool AddBuffer(v_frame_t frame, const void* buffer, std::size_t size, const BufferType& type);
+    bool AddBuffer(const void* buf, std::size_t size, const InputSpec& spec);
+    bool AddBuffer(v_frame_t frame, const void* buffer, std::size_t size, const InputSpec& spec);
 
     bool Render();
-    bool Render(const void* buffer, std::size_t size, const BufferType& type);
-    bool Render(v_frame_t frame, const void* buffer, std::size_t size, const BufferType& type);
+    bool Render(const void* buffer, std::size_t size, const InputSpec& spec);
+    bool Render(v_frame_t frame, const void* buffer, std::size_t size, const InputSpec& spec);
 
 private:
     std::unique_ptr<PixWriter> m_Writer;
@@ -36,12 +36,12 @@ private:
 class VOID_API MovieRenderer
 {
 public:
-    MovieRenderer(const MEntry& entry, int width, int height, int channels);
+    MovieRenderer(const MEntry& entry, const EncodeSpec& spec);
     ~MovieRenderer();
 
     bool Valid() const { return (bool)m_Writer; }
 
-    bool AddBuffer(const void* buf, std::size_t size, const BufferType& type);
+    bool AddBuffer(const void* buf, std::size_t size, const InputSpec& spec);
     bool Render();
 
 private:

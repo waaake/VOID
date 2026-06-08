@@ -22,7 +22,7 @@ VOID_NAMESPACE_OPEN
 using PixForge = std::function<std::unique_ptr<VoidPixReader>(const std::string&, v_frame_t)>;
 using MPixForge = std::function<std::unique_ptr<VoidMPixReader>(const std::string&, v_frame_t)>;
 using IOpForge = std::function<std::unique_ptr<ImageOp>()>;
-using PixWriterForge = std::function<std::unique_ptr<PixWriter>(int, int, int, const WriterType&)>;
+using PixWriterForge = std::function<std::unique_ptr<PixWriter>(const EncodeSpec&)>;
 
 /**
  * Registry describing the Plugin
@@ -96,8 +96,8 @@ public:
     std::unique_ptr<VoidPixReader> GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<ImageOp> GetImageOp(const std::string& name) const;
-    std::unique_ptr<PixWriter> GetImageWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const;
-    std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const;
+    std::unique_ptr<PixWriter> GetImageWriter(const std::string& extension, const EncodeSpec& spec) const;
+    std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const;
 
     inline bool IsMovie(const std::string& extension) const { return m_MovieForger.find(extension) != m_MovieForger.end(); }
     inline bool IsImage(const std::string& extension) const { return m_ImageForger.find(extension) != m_ImageForger.end(); }

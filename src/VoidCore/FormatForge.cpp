@@ -140,16 +140,16 @@ std::unique_ptr<ImageOp> Forge::GetImageOp(const std::string& name) const
     return it == m_IOpForger.end() ? nullptr : it->second();
 }
 
-std::unique_ptr<PixWriter> Forge::GetImageWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const
+std::unique_ptr<PixWriter> Forge::GetImageWriter(const std::string& extension, const EncodeSpec& spec) const
 {
     auto it = m_ImageWriters.find(extension);
-    return it == m_ImageWriters.end() ? nullptr : it->second(width, height, channels, type);
+    return it == m_ImageWriters.end() ? nullptr : it->second(spec);
 }
 
-std::unique_ptr<PixWriter> Forge::GetMovieWriter(const std::string& extension, int width, int height, int channels, const WriterType& type) const
+std::unique_ptr<PixWriter> Forge::GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const
 {
     auto it = m_MovieWriters.find(extension);
-    return it == m_MovieWriters.end() ? nullptr : it->second(width, height, channels, type);
+    return it == m_MovieWriters.end() ? nullptr : it->second(spec);
 }
 
 bool Forge::IsRegistered(const std::string& extension) const

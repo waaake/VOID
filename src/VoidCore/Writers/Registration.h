@@ -17,9 +17,9 @@ namespace Internal {
         f.name = "OIIO Writer";
         f.extensions = { "png", "jpg" };
         f.type = WriterType::Image;
-        f.writer = [](int width, int height, int channels, const WriterType& type) -> std::unique_ptr<OIIOWriter>
+        f.writer = [](const EncodeSpec& spec) -> std::unique_ptr<OIIOWriter>
                         {
-                            return std::make_unique<OIIOWriter>(width, height, channels, type);
+                            return std::make_unique<OIIOWriter>(spec);
                         };
 
         return Forge::Instance().Register(f);
@@ -31,9 +31,9 @@ namespace Internal {
         f.name = "FFmpeg Writer";
         f.extensions = { "mov", "mp4" };
         f.type = WriterType::Movie;
-        f.writer = [](int width, int height, int channels, const WriterType& type) -> std::unique_ptr<FFmpegWriter>
+        f.writer = [](const EncodeSpec& spec) -> std::unique_ptr<FFmpegWriter>
                         {
-                            return std::make_unique<FFmpegWriter>(width, height, channels, type);
+                            return std::make_unique<FFmpegWriter>(spec);
                         };
 
         return Forge::Instance().Register(f);
