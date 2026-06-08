@@ -53,11 +53,11 @@ void TaskWidget::Build()
     m_Layout = new QGridLayout(this);
 
     m_TaskLabel = new QLabel;
-    m_ActionButton = new QPushButton;
+    m_ActionButton = new QToolButton;
 
     m_StateLabel = new QLabel;
     m_ProgressBar = new QProgressBar;
-    m_LogButton = new QPushButton;
+    m_LogButton = new QToolButton;
 
     m_Layout->addWidget(m_TaskLabel, 0, 0, 1, 10, Qt::AlignLeft);
     m_Layout->addWidget(m_ActionButton, 0, 10, 1, 1, Qt::AlignRight);
@@ -83,11 +83,11 @@ void TaskWidget::Connect()
         m_ProgressBar->setValue(steps);
     });
 
-    connect(m_ActionButton, &QPushButton::clicked, this, [this]() -> void
+    connect(m_ActionButton, &QToolButton::clicked, this, [this]() -> void
     {
         m_ActionState == ActionState::Cancel ? Cancel() : Restart();
     });
-    connect(m_LogButton, &QPushButton::clicked, this, &TaskWidget::ShowLog);
+    connect(m_LogButton, &QToolButton::clicked, this, &TaskWidget::ShowLog);
 }
 
 void TaskWidget::Setup()
@@ -95,6 +95,9 @@ void TaskWidget::Setup()
     m_TaskLabel->setText(Label());
     m_LogButton->setIcon(IconForge::GetIcon(IconType::icon_assignment, _DARK_COLOR(QPalette::Text, 100)));
     m_ProgressBar->setVisible(false);
+
+    m_ActionButton->setAutoRaise(true);
+    m_LogButton->setAutoRaise(true);
 
     UpdateActionState(ActionState::Cancel);
     UpdateState(m_Task->State());
@@ -153,6 +156,9 @@ QString TaskWidget::Label()
 
 void TaskWidget::Cancel()
 {
+    if (!m_Task || m_Task->Completed())
+        return;
+
     UpdateState(m_Task->Started() ? TaskState::Cancelling : TaskState::Cancelled);
     m_Task->Cancel();
     UpdateActionState(ActionState::Retry);

@@ -8,7 +8,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QProgressBar>
-#include <QPushButton>
+#include <QToolButton>
 #include <QWidget>
 
 /* Internal */
@@ -45,8 +45,8 @@ private: /* Members */
     QGridLayout* m_Layout;
     QLabel* m_TaskLabel;
     QLabel* m_StateLabel;
-    QPushButton* m_LogButton;
-    QPushButton* m_ActionButton;
+    QToolButton* m_LogButton;
+    QToolButton* m_ActionButton;
     QProgressBar* m_ProgressBar;
 
     Task* m_Task;
