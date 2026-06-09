@@ -25,12 +25,6 @@ bool FFmpegWriter::Setup(const std::string& path)
         m_Path = path;
 
         avformat_alloc_output_context2(&m_FormatCtx, nullptr, nullptr, path.c_str());
-
-        VOID_LOG_INFO("Media Rate: {0}", m_Spec.rate);
-
-        // H.264 encode
-        // TODO: Enable multi format selection for Movies
-        // How to best implement that?
         const AVCodec* codec = avcodec_find_encoder(Codec());
         m_CodecCtx = avcodec_alloc_context3(codec);
 
@@ -40,9 +34,9 @@ bool FFmpegWriter::Setup(const std::string& path)
         m_CodecCtx->height = m_Spec.outheight;
         m_CodecCtx->time_base = av_make_q(1, m_Spec.rate);
         m_CodecCtx->framerate = av_make_q(m_Spec.rate, 1);
-        m_CodecCtx->pix_fmt = PixelFormat();
-        // m_CodecCtx->bit_rate = 145000000; // 20000000; //145000000;
-        m_CodecCtx->profile = 3;
+
+        // Configure codec context params based on user specified out codec type
+        ContextSetup();
 
         int ret = avcodec_open2(m_CodecCtx, codec, nullptr);
         if (ret < 0)
@@ -67,20 +61,6 @@ bool FFmpegWriter::Setup(const std::string& path)
             Cleanup();
             return false;
         }
-
-        // m_SwsCtx = sws_getContext(
-        //     m_Spec.width,
-        //     m_Spec.height,
-        //     m_Spec.channels == 3 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_RGBA,
-        //     m_Spec.outwidth,
-        //     m_Spec.outheight,
-        //     PixelFormat(),
-        //     SWS_BILINEAR,
-        //     nullptr,
-        //     nullptr,
-        //     nullptr
-        // );
-
         return true;
     }
 
@@ -132,17 +112,14 @@ bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const InputSp
     {
         char errbuf[256];
         av_strerror(ret, errbuf, sizeof(errbuf));
-
         VOID_LOG_INFO("Unable to send frame: {0}, {1}, {2}", errbuf, ret, ret == AVERROR(EINVAL));
         return false;
     }
 
     AVPacket* packet = av_packet_alloc();
-
-    VOID_LOG_INFO("Frame->pts: {0}, Pkt->dts: {1}, Pkt->dts: {2}, Pkt->duration: {3}", frame->pts, packet->pts, packet->dts, packet->duration);
-
-    if (avcodec_receive_packet(m_CodecCtx, packet) == 0)
+    while (avcodec_receive_packet(m_CodecCtx, packet) == 0)
     {
+        av_packet_rescale_ts(packet, m_CodecCtx->time_base, m_Stream->time_base);
         packet->stream_index = m_Stream->index;
 
         av_interleaved_write_frame(m_FormatCtx, packet);
@@ -151,9 +128,7 @@ bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const InputSp
 
     av_packet_free(&packet);
     av_frame_free(&frame);
-
-    // This ensures that the framerate of the encoded container is the expected
-    m_Pts += av_rescale_q(1, m_CodecCtx->time_base, m_Stream->time_base);
+    m_Pts++;
 
     return true;
 }
@@ -163,8 +138,23 @@ bool FFmpegWriter::Write()
     if (!m_FormatCtx)
         return false;
 
+    avcodec_send_frame(m_CodecCtx, nullptr);
+
+    AVPacket* packet = av_packet_alloc();
+
+    while (avcodec_receive_packet(m_CodecCtx, packet) == 0)
+    {
+        av_packet_rescale_ts(packet, m_CodecCtx->time_base, m_Stream->time_base);
+
+        av_interleaved_write_frame(m_FormatCtx, packet);
+        av_packet_unref(packet);
+    }
+
+    av_packet_free(&packet);
+
     av_write_trailer(m_FormatCtx);
     avio_close(m_FormatCtx->pb);
+
 
     return true;
 }
@@ -207,8 +197,46 @@ AVPixelFormat FFmpegWriter::PixelFormat()
     {
         case MovieCodec::DNXHD: return AV_PIX_FMT_YUV422P;
         case MovieCodec::PRORES: return AV_PIX_FMT_YUV422P10LE;
+        case MovieCodec::MJPEG: return AV_PIX_FMT_YUVJ422P;
+        case MovieCodec::MPEG4:
         case MovieCodec::H264:
         default: return AV_PIX_FMT_YUV420P;
+    }
+}
+
+void FFmpegWriter::ContextSetup()
+{
+    switch (m_Spec.codec)
+    {
+        case MovieCodec::PRORES:
+            m_CodecCtx->pix_fmt = AV_PIX_FMT_YUV422P10LE;
+
+            av_opt_set(m_CodecCtx->priv_data, "profile", "hq", 0);
+            break;
+
+        case MovieCodec::DNXHD:
+            m_CodecCtx->pix_fmt = AV_PIX_FMT_YUV422P;
+            m_CodecCtx->bit_rate = 145000000;
+            break;
+
+        case MovieCodec::MJPEG:
+            m_CodecCtx->pix_fmt = AV_PIX_FMT_YUVJ422P;
+            m_CodecCtx->bit_rate = 50000000;
+            break;
+
+        case MovieCodec::MPEG4:
+            m_CodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+            m_CodecCtx->bit_rate = 10000000;
+            break;
+
+        case MovieCodec::H264:
+        default:
+            m_CodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+            // m_CodecCtx->gop_size = m_Spec.rate * 2;
+            // m_CodecCtx->max_b_frames = 2;
+            
+            // av_opt_set(m_CodecCtx->priv_data, "crf", "18", 0);
+            break;
     }
 }
 
