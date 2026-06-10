@@ -197,7 +197,7 @@ AVPixelFormat FFmpegWriter::PixelFormat()
     {
         case MovieCodec::DNXHD: return AV_PIX_FMT_YUV422P;
         case MovieCodec::PRORES: return AV_PIX_FMT_YUV422P10LE;
-        case MovieCodec::MJPEG: return AV_PIX_FMT_YUVJ422P;
+        case MovieCodec::MJPEG: return AV_PIX_FMT_YUV422P;
         case MovieCodec::MPEG4:
         case MovieCodec::H264:
         default: return AV_PIX_FMT_YUV420P;
@@ -220,8 +220,9 @@ void FFmpegWriter::ContextSetup()
             break;
 
         case MovieCodec::MJPEG:
-            m_CodecCtx->pix_fmt = AV_PIX_FMT_YUVJ422P;
+            m_CodecCtx->pix_fmt = AV_PIX_FMT_YUV422P;
             m_CodecCtx->bit_rate = 50000000;
+            m_CodecCtx->color_range = AVCOL_RANGE_JPEG;
             break;
 
         case MovieCodec::MPEG4:
