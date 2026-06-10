@@ -334,7 +334,6 @@ void FFmpegPixReader::Read()
 const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 {
     std::map<std::string, std::string> m;
-
     AVFormatContext* formatContext = nullptr;
 
     if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
@@ -360,9 +359,7 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
         AVDictionaryEntry* tag = nullptr;
         /* Match the starting component of the key to get the find the tag --> None will match every */
         while((tag = av_dict_get(formatContext->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
-        {
             m[tag->key] = tag->value;
-        }
 
         vidStream = formatContext->streams[streamId];
 
@@ -372,6 +369,13 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
         m["end_frame"] = std::to_string(endframe);
         m["duration"] = std::to_string(endframe - m_Startframe + 1);
         m["framerate"] = std::to_string(framerate);
+
+        const AVCodecDescriptor* desc = avcodec_descriptor_get(vidStream->codecpar->codec_id);
+        m["codec"] = desc->name;
+        m["codec_long_name"] = desc->long_name ? desc->long_name : "N/A";
+
+        const AVCodec* codec = avcodec_find_decoder(vidStream->codecpar->codec_id);
+        m["decoder"] = codec->name;
 
         /* Deallocate internals */
         avformat_close_input(&formatContext);
