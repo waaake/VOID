@@ -153,6 +153,10 @@ bool ExportMediaFramesTask::Work()
                     Log(QString("Unable to render current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
                 }
+                // Don't want to take up additional memory, so clear as we go...
+                // We definitely need a better way to handle this
+                // Other way could be to read through the ViewerBuffer, but that's something will eventually come
+                image->Clear();
 
                 count++;
                 SetProgress(count);
@@ -195,6 +199,10 @@ bool ExportMediaFramesTask::Work()
                     Log(QString("Unable to buffer current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
                 }
+                // Don't want to take up additional memory, so clear as we go...
+                // We definitely need a better way to handle this
+                // Other way could be to read through the ViewerBuffer, but that's something will eventually come
+                image->Clear();
 
                 count++;
                 SetProgress(count);
