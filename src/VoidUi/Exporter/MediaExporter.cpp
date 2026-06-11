@@ -39,8 +39,6 @@ void MediaExporter::Export()
         int outheight = m_Media->FirstImage()->Height() / divisor;
 
         EncodeSpec spec(
-            m_Media->FirstImage()->Width(),
-            m_Media->FirstImage()->Height(),
             outwidth,
             outheight,
             m_Media->FirstImage()->Channels(),

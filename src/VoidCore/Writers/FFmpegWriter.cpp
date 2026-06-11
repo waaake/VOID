@@ -30,8 +30,8 @@ bool FFmpegWriter::Setup(const std::string& path)
 
         m_CodecCtx->codec_id = Codec();
         m_CodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-        m_CodecCtx->width = m_Spec.outwidth;
-        m_CodecCtx->height = m_Spec.outheight;
+        m_CodecCtx->width = m_Spec.width;
+        m_CodecCtx->height = m_Spec.height;
         m_CodecCtx->time_base = av_make_q(1, m_Spec.rate);
         m_CodecCtx->framerate = av_make_q(m_Spec.rate, 1);
 
@@ -78,8 +78,8 @@ bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const InputSp
             spec.width,
             spec.height,
             spec.channels == 3 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_RGBA,
-            m_Spec.outwidth,
-            m_Spec.outheight,
+            m_Spec.width,
+            m_Spec.height,
             PixelFormat(),
             SWS_BILINEAR,
             nullptr,

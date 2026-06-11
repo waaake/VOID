@@ -37,8 +37,8 @@ bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec
             OIIO::ImageSpec inspec(spec.width, spec.height, spec.channels, OIIO::TypeDesc::UINT16);
             OIIO::ImageBuf inbuf(inspec, const_cast<void*>(buffer));
 
-            std::vector<unsigned short> out(m_Spec.outwidth * m_Spec.outheight * m_Spec.channels);
-            OIIO::ImageSpec outspec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::UINT16);
+            std::vector<unsigned short> out(m_Spec.width * m_Spec.height * m_Spec.channels);
+            OIIO::ImageSpec outspec(m_Spec.width, m_Spec.height, m_Spec.channels, OIIO::TypeDesc::UINT16);
             OIIO::ImageBuf outbuf(outspec, out.data());
 
             status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
@@ -56,8 +56,8 @@ bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec
             OIIO::ImageSpec inspec(spec.width, spec.height, spec.channels, OIIO::TypeDesc::FLOAT);
             OIIO::ImageBuf inbuf(inspec, const_cast<void*>(buffer));
 
-            std::vector<float> out(m_Spec.outwidth * m_Spec.outheight * m_Spec.channels);
-            OIIO::ImageSpec outspec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::FLOAT);
+            std::vector<float> out(m_Spec.width * m_Spec.height * m_Spec.channels);
+            OIIO::ImageSpec outspec(m_Spec.width, m_Spec.height, m_Spec.channels, OIIO::TypeDesc::FLOAT);
             OIIO::ImageBuf outbuf(outspec, out.data());
 
             status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
@@ -75,8 +75,8 @@ bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec
             OIIO::ImageSpec inspec(spec.width, spec.height, spec.channels, OIIO::TypeDesc::UINT8);
             OIIO::ImageBuf inbuf(inspec, const_cast<void*>(buffer));
 
-            std::vector<unsigned char> out(m_Spec.outwidth * m_Spec.outheight * m_Spec.channels);
-            OIIO::ImageSpec outspec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::UINT8);
+            std::vector<unsigned char> out(m_Spec.width * m_Spec.height * m_Spec.channels);
+            OIIO::ImageSpec outspec(m_Spec.width, m_Spec.height, m_Spec.channels, OIIO::TypeDesc::UINT8);
             OIIO::ImageBuf outbuf(outspec, out.data());
 
             status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
