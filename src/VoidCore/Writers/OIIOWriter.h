@@ -16,15 +16,15 @@ VOID_NAMESPACE_OPEN
 class VOID_API OIIOWriter : public PixWriter
 {
 public:
-    OIIOWriter(int width, int height, int channels, const WriterType& type);
+    OIIOWriter(const EncodeSpec& spec);
 
     bool Setup(const std::string& path) override;
-    bool AddBuffer(const void* buffer, std::size_t size, const BufferType& type) override;
+    bool AddBuffer(const void* buffer, std::size_t size, const InputSpec& spec) override;
     bool Write() override;
     void Cleanup() override;
 
 private:
-    OIIO::ImageOutput::unique_ptr m_OutPtr;
+    std::string m_Path;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -99,6 +99,7 @@ public:
      * Validates the fullpath to see if this and the other entry are pointing to the exact same path
      */
     inline bool operator==(const MEntry& other) const { return m_Path == other.m_Path; }
+    explicit inline operator bool() const noexcept { return !m_Path.empty(); }
 
 private: /* Members */
     std::string m_Path;

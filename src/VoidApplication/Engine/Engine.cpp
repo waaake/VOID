@@ -50,8 +50,12 @@ int VoidEngine::Exec(int argc, char** argv)
         #endif
     }
 
+    #if _QT6
+    #else
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    #endif
+
     QApplication app(argc, argv);
 
     Setup(app);

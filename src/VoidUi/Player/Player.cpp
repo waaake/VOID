@@ -7,13 +7,14 @@
 
 /* Internal */
 #include "Player.h"
-#include "Exporter.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidCore/Media/Renderer.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/Browser.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Engine/Globals.h"
+#include "VoidUi/Exporter/Exporter.h"
+#include "VoidUi/Exporter/MediaExporter.h"
 #include "VoidUi/QExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
@@ -524,8 +525,8 @@ void Player::RenderCurrentFrame()
         const MediaExportDescriptor descriptor = browser.File();
         const Renderer::RenderData r = m_Renderer->FrameBuffer();
 
-        Renderer::ImageRenderer ir(descriptor.entry, r.width, r.height, r.channels);
-        ir.Render(r.pixels.data(), r.Size(), r.type);
+        Renderer::ImageRenderer ir(descriptor.entry, {r.width, r.height, r.channels, r.type});
+        ir.Render(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type});
 
         InfoMessageBox box("Frame exported.", "Success", this);
         box.exec();
@@ -549,7 +550,7 @@ void Player::RenderAnnotatedFrames()
         if (descriptor.type == WriterType::Image && descriptor.entry.Templated())
         {
             const Renderer::RenderData r = m_Renderer->FrameBuffer();
-            Renderer::ImageRenderer ir(descriptor.entry, r.width, r.height, r.channels);
+            Renderer::ImageRenderer ir(descriptor.entry, {r.width, r.height, r.channels, r.type});
 
             for (auto& [frame, _] : annotations)
             {
@@ -557,7 +558,7 @@ void Player::RenderAnnotatedFrames()
                 {
                     m_Renderer->Render(data.image, data.annotation);
                     const Renderer::RenderData r = m_Renderer->FrameBuffer();
-                    if (!ir.Render(frame, r.pixels.data(), r.Size(), r.type))
+                    if (!ir.Render(frame, r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
                     {
                         ErrorMessageBox box("There was an error in exporting media.", "Error", this);
                         box.exec();
@@ -577,7 +578,7 @@ void Player::RenderAnnotatedFrames()
         else if (descriptor.type == WriterType::Movie)
         {
             const Renderer::RenderData r = m_Renderer->FrameBuffer();
-            Renderer::MovieRenderer mr(descriptor.entry, r.width, r.height, r.channels);
+            Renderer::MovieRenderer mr(descriptor.entry, {r.width, r.height, r.channels, r.type});
 
             for (auto& [frame, _] : annotations)
             {
@@ -585,7 +586,7 @@ void Player::RenderAnnotatedFrames()
                 {
                     m_Renderer->Render(data.image, data.annotation);
                     const Renderer::RenderData r = m_Renderer->FrameBuffer();
-                    if (!mr.AddBuffer(r.pixels.data(), r.Size(), r.type))
+                    if (!mr.AddBuffer(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
                     {
                         ErrorMessageBox box("There was an error in exporting media.", "Error", this);
                         box.exec();
@@ -609,11 +610,16 @@ void Player::RenderAnnotatedFrames()
 
 void Player::TranscodeMedia()
 {
-    MediaExportBrowser browser;
-    if (browser.Save())
+    const SharedMediaClip& media = m_ActiveViewBuffer->GetMediaClip();
+    if (!media->Valid())
     {
-        UIGlobals::QueueTask(new ExportMediaFramesTask(m_ActiveViewBuffer->GetMediaClip(), browser.File()));
+        ErrorMessageBox box("No valid media found in the active viewer to export.", "Error", this);
+        box.exec();
+        return;
     }
+
+    MediaExporter exporter(media);
+    exporter.exec();
 }
 
 void Player::ToggleChannels(int channel)

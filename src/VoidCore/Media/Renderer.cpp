@@ -14,8 +14,8 @@ VOID_NAMESPACE_OPEN
 
 namespace Renderer {
 
-ImageRenderer::ImageRenderer(const MEntry& entry, int width, int height, int channels)
-    : m_Writer(std::move(Forge::Instance().GetImageWriter(entry.Extension(), width, height, channels, WriterType::Image)))
+ImageRenderer::ImageRenderer(const MEntry& entry, const EncodeSpec& spec)
+    : m_Writer(std::move(Forge::Instance().GetImageWriter(entry.Extension(), spec)))
     , m_MediaEntry(entry)
 {
 }
@@ -26,23 +26,23 @@ ImageRenderer::~ImageRenderer()
     //     m_Writer->Cleanup();
 }
 
-bool ImageRenderer::AddBuffer(const void* buffer, std::size_t size, const BufferType& type)
+bool ImageRenderer::AddBuffer(const void* buffer, std::size_t size, const InputSpec& spec)
 {
     if (m_Writer)
     {
         if (m_Writer->Setup(m_MediaEntry.Fullpath()))
-            return m_Writer->AddBuffer(buffer, size, type);
+            return m_Writer->AddBuffer(buffer, size, spec);
     }
 
     return false;
 }
 
-bool ImageRenderer::AddBuffer(v_frame_t frame, const void* buffer, std::size_t size, const BufferType& type)
+bool ImageRenderer::AddBuffer(v_frame_t frame, const void* buffer, std::size_t size, const InputSpec& spec)
 {
     if (m_Writer)
     {
         if (m_Writer->Setup(m_MediaEntry.ResolvedPath(frame)))
-            return m_Writer->AddBuffer(buffer, size, type);
+            return m_Writer->AddBuffer(buffer, size, spec);
     }
 
     return false;
@@ -62,14 +62,14 @@ bool ImageRenderer::Render()
     return false;
 }
 
-bool ImageRenderer::Render(const void* buffer, std::size_t size, const BufferType& type)
+bool ImageRenderer::Render(const void* buffer, std::size_t size, const InputSpec& spec)
 {
     Tools::VoidProfiler<std::chrono::duration<double>> p("ImageRenderer::Render");
     if (m_Writer)
     {
         if (m_Writer->Setup(m_MediaEntry.Fullpath()))
         {
-            bool ret = m_Writer->AddBuffer(buffer, size, type);
+            bool ret = m_Writer->AddBuffer(buffer, size, spec);
             ret = m_Writer->Write();
             m_Writer->Cleanup();
 
@@ -80,14 +80,14 @@ bool ImageRenderer::Render(const void* buffer, std::size_t size, const BufferTyp
     return false;
 }
 
-bool ImageRenderer::Render(v_frame_t frame, const void* buffer, std::size_t size, const BufferType& type)
+bool ImageRenderer::Render(v_frame_t frame, const void* buffer, std::size_t size, const InputSpec& spec)
 {
     Tools::VoidProfiler<std::chrono::duration<double>> p("ImageRenderer::Render");
     if (m_Writer)
     {
         if (m_Writer->Setup(m_MediaEntry.ResolvedPath(frame)))
         {
-            bool ret = m_Writer->AddBuffer(buffer, size, type);
+            bool ret = m_Writer->AddBuffer(buffer, size, spec);
             ret = m_Writer->Write();
             m_Writer->Cleanup();
 
@@ -101,8 +101,8 @@ bool ImageRenderer::Render(v_frame_t frame, const void* buffer, std::size_t size
 
 /// MovieRenderer
 
-MovieRenderer::MovieRenderer(const MEntry& entry, int width, int height, int channels)
-    : m_Writer(std::move(Forge::Instance().GetMovieWriter(entry.Extension(), width, height, channels, WriterType::Movie)))
+MovieRenderer::MovieRenderer(const MEntry& entry, const EncodeSpec& spec)
+    : m_Writer(std::move(Forge::Instance().GetMovieWriter(entry.Extension(), spec)))
     , m_MediaEntry(entry)
 {
     if (m_Writer)
@@ -115,10 +115,10 @@ MovieRenderer::~MovieRenderer()
         m_Writer->Cleanup();
 }
 
-bool MovieRenderer::AddBuffer(const void* buffer, std::size_t size, const BufferType& type)
+bool MovieRenderer::AddBuffer(const void* buffer, std::size_t size, const InputSpec& spec)
 {
     if (m_Writer)
-        return m_Writer->AddBuffer(buffer, size, type);
+        return m_Writer->AddBuffer(buffer, size, spec);
 
     return false;
 }
