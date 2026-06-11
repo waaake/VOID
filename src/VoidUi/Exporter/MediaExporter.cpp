@@ -33,12 +33,16 @@ void MediaExporter::Export()
 {
     if (Validate())
     {
-        //EncodeSpec(int w, int h, int outw, int outh, int ch, float r, const BufferType& ty, const MovieCodec& codec, bool respeed)
+        // Resolution options provide a way for user to select half or quarter
+        const int divisor = ScaleIndex() == 2 ? 4 : ScaleIndex() == 1 ? 2 : 1;
+        int outwidth = m_Media->FirstImage()->Width() / divisor;
+        int outheight = m_Media->FirstImage()->Height() / divisor;
+
         EncodeSpec spec(
             m_Media->FirstImage()->Width(),
             m_Media->FirstImage()->Height(),
-            m_Media->FirstImage()->Width(),
-            m_Media->FirstImage()->Height(),
+            outwidth,
+            outheight,
             m_Media->FirstImage()->Channels(),
             Rate(),
             BufferType::Uint8,

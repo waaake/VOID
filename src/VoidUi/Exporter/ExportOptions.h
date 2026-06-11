@@ -63,6 +63,7 @@ public:
     inline MFrameRange Range() const { return {m_StartEdit->text().toInt(), m_EndEdit->text().toInt()}; }
     inline bool RangeOverridden() const { return m_OverrideRangeCheck->isChecked(); }
     inline MovieCodec Codec() const { return m_MovieOptions->Codec(); }
+    inline int ScaleIndex() const { return m_ResolutionCombo->currentIndex(); }
 
     inline MediaExportDescriptor FileDescriptor() const { return m_Descriptor; }
     inline void ClearLog() { m_LogModel->Clear(); }
