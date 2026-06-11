@@ -6,6 +6,7 @@
 
 /* OpenImageIO */
 #include <OpenImageIO/imageio.h>
+#include <OpenImageIO/imagebufalgo.h>
 
 /* Internal */
 #include "OIIOWriter.h"
@@ -15,58 +16,90 @@ VOID_NAMESPACE_OPEN
 
 OIIOWriter::OIIOWriter(const EncodeSpec& spec)
     : PixWriter(spec)
-    , m_OutPtr(nullptr)
 {
 }
 
 bool OIIOWriter::Setup(const std::string& path)
 {
-    m_OutPtr = OIIO::ImageOutput::create(path);
-    if (!m_OutPtr)
-    {
-        VOID_LOG_WARN("OIIOWriter::Unable to create out file at: {0}", path);
-        return false;
-    }
-
-    OIIO::ImageSpec spec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::UINT8);
-    m_OutPtr->open(path, spec);
-
+    m_Path = path;
     return true;
 }
 
 bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec& spec)
 {
-    if (m_OutPtr)
-    {
-        switch (spec.type)
-        {
-            case BufferType::Uint16:
-                m_OutPtr->write_image(OIIO::TypeDesc::UINT16, buffer);
-                break;
-            case BufferType::Float:
-                m_OutPtr->write_image(OIIO::TypeDesc::FLOAT, buffer);
-                break;
-            case BufferType::Uint8:
-            default:
-                m_OutPtr->write_image(OIIO::TypeDesc::UINT8, buffer);
-        }
+    bool status = false;
+    OIIO::ROI roi(0, m_Spec.width, 0, m_Spec.height, 0, 1, 0, m_Spec.channels);
 
-        VOID_LOG_INFO("Image written to file");
-        return true;
+    switch (spec.type)
+    {
+        case BufferType::Uint16:
+        {
+            OIIO::ImageSpec inspec(spec.width, spec.height, spec.channels, OIIO::TypeDesc::UINT16);
+            OIIO::ImageBuf inbuf(inspec, const_cast<void*>(buffer));
+
+            std::vector<unsigned short> out(m_Spec.outwidth * m_Spec.outheight * m_Spec.channels);
+            OIIO::ImageSpec outspec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::UINT16);
+            OIIO::ImageBuf outbuf(outspec, out.data());
+
+            status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
+            if (!status)
+            {
+                VOID_LOG_ERROR("Unable to resize image: {0}", outbuf.geterror());
+                return false;
+            }
+            
+            return outbuf.write(m_Path);
+        }
+        case BufferType::Float:
+        {
+
+            OIIO::ImageSpec inspec(spec.width, spec.height, spec.channels, OIIO::TypeDesc::FLOAT);
+            OIIO::ImageBuf inbuf(inspec, const_cast<void*>(buffer));
+
+            std::vector<float> out(m_Spec.outwidth * m_Spec.outheight * m_Spec.channels);
+            OIIO::ImageSpec outspec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::FLOAT);
+            OIIO::ImageBuf outbuf(outspec, out.data());
+
+            status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
+            if (!status)
+            {
+                VOID_LOG_ERROR("Unable to resize image: {0}", outbuf.geterror());
+                return false;
+            }
+            
+            return outbuf.write(m_Path);
+        }
+        case BufferType::Uint8:
+        default:
+        {
+            OIIO::ImageSpec inspec(spec.width, spec.height, spec.channels, OIIO::TypeDesc::UINT8);
+            OIIO::ImageBuf inbuf(inspec, const_cast<void*>(buffer));
+
+            std::vector<unsigned char> out(m_Spec.outwidth * m_Spec.outheight * m_Spec.channels);
+            OIIO::ImageSpec outspec(m_Spec.outwidth, m_Spec.outheight, m_Spec.channels, OIIO::TypeDesc::UINT8);
+            OIIO::ImageBuf outbuf(outspec, out.data());
+
+            status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
+            if (!status)
+            {
+                VOID_LOG_ERROR("Unable to resize image: {0}", outbuf.geterror());
+                return false;
+            }
+            
+            return outbuf.write(m_Path);
+        }
     }
 
-    return false;
+    return status;
 }
 
 bool OIIOWriter::Write()
 {
-    return (bool)m_OutPtr;
+    return true;
 }
 
 void OIIOWriter::Cleanup()
 {
-    if (m_OutPtr)
-        m_OutPtr->close();
 }
 
 VOID_NAMESPACE_CLOSE
