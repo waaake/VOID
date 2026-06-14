@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "Exporter.h"
+#include "VoidCore/ColorProcessor.h"
 #include "VoidUi/Player/Player.h"
 #include "VoidCore/Media/Renderer.h"
 
@@ -97,13 +98,25 @@ bool ExportAnnotatedFramesTask::Work()
 
 /// ExportMediaFramesTask
 
-ExportMediaFramesTask::ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor, const EncodeSpec& spec, const MFrameRange& range)
+ExportMediaFramesTask::ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor, const EncodeSpec& spec, const MFrameRange& range, const std::string& colorspace)
     : Task("Transcode Media")
     , m_Media(media)
     , m_Descriptor(descriptor)
     , m_Spec(spec)
     , m_Range(range)
+    , m_Colorspace(colorspace)
 {
+}
+
+void ExportMediaFramesTask::ProcessImage(const void* pixels, int width, int height, int channels, const ColorSpace& incolorspace)
+{
+    const unsigned char* cpixels = static_cast<const unsigned char*>(pixels);
+
+    for (int i = 0; i < (width * height * channels); ++i)
+        m_Pixels[i] = cpixels[i] / 255.0f;
+
+    // Image processing
+    ColorProcessor::Instance().ProcessImage(m_Pixels.data(), width, height, channels, incolorspace, m_Colorspace);
 }
 
 bool ExportMediaFramesTask::Work()
@@ -112,6 +125,9 @@ bool ExportMediaFramesTask::Work()
     {
         int count = 0;
         SetMax(m_Range.duration);
+
+        // All the media frames would have the same size
+        m_Pixels.resize(media->FirstImage()->FrameSize());
 
         if (m_Descriptor.type == WriterType::Image)
         {
@@ -134,7 +150,7 @@ bool ExportMediaFramesTask::Work()
                 );
 
             Renderer::ImageRenderer ir(m_Descriptor.entry, m_Spec);
-    
+
             for (int i = m_Range.startframe; i <= m_Range.endframe; ++i)
             {
                 // Check for whether the task was cancelled
@@ -148,7 +164,10 @@ bool ExportMediaFramesTask::Work()
                 }
 
                 SharedPixels image = media->Image(i);
-                if (!ir.Render(i, image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Uint8}))
+
+                /// Colorspace processor
+                ProcessImage(image->Pixels(), image->Width(), image->Height(), image->Channels(), image->InputColorSpace());
+                if (!ir.Render(i, m_Pixels.data(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
                 {
                     Log(QString("Unable to render current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
@@ -178,9 +197,9 @@ bool ExportMediaFramesTask::Work()
                     .arg(m_Range.endframe),
                 TaskLog::Level::InfoLog
             );
-            
+
             Renderer::MovieRenderer mr(m_Descriptor.entry, m_Spec);
-    
+
             for (int i = m_Range.startframe; i <= m_Range.endframe; ++i)
             {
                 // Check for whether the task was cancelled
@@ -194,7 +213,10 @@ bool ExportMediaFramesTask::Work()
                 }
 
                 SharedPixels image = media->Image(i);
-                if (!mr.AddBuffer(image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Uint8}))
+
+                /// Colorspace processor
+                ProcessImage(image->Pixels(), image->Width(), image->Height(), image->Channels(), image->InputColorSpace());
+                if (!mr.AddBuffer(m_Pixels.data(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
                 {
                     Log(QString("Unable to buffer current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;

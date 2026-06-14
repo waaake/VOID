@@ -4,6 +4,9 @@
 #ifndef _PLAYER_EXPORTER_H
 #define _PLAYER_EXPORTER_H
 
+/* STD */
+#include <vector>
+
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Core/Task.h"
@@ -31,17 +34,22 @@ private:
 class ExportMediaFramesTask : public Task
 {
 public:
-    ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor, const EncodeSpec& spec, const MFrameRange& range);
+    ExportMediaFramesTask(const SharedMediaClip& media, const MediaExportDescriptor& descriptor, const EncodeSpec& spec, const MFrameRange& range, const std::string& colorspace);
     inline std::string Label() const override { return m_Descriptor.entry.TemplatedName(); }
 
 protected:
     bool Work() override;
 
-private:
+private: /* Members */
     std::weak_ptr<MediaClip> m_Media;
     MediaExportDescriptor m_Descriptor;
     EncodeSpec m_Spec;
     MFrameRange m_Range;
+    std::string m_Colorspace;
+    std::vector<float> m_Pixels;
+
+private: /* Methods */
+    void ProcessImage(const void* pixels, int width, int height, int channels, const ColorSpace& incolorspace);
 };
 
 VOID_NAMESPACE_CLOSE
