@@ -75,16 +75,16 @@ std::vector<std::string> ColorProcessor::Views(const std::string& display) const
 
 std::vector<std::string> ColorProcessor::Colorspaces() const
 {
-    std::vector<std::string> colospaces;
+    std::vector<std::string> colorspaces;
 
     /* Number of Colorspaces */
     int num = m_Config->getNumColorSpaces();
-    colospaces.reserve(num);
+    colorspaces.reserve(num);
 
     for (int i = 0; i < num; ++i)
-        colospaces.emplace_back(m_Config->getColorSpaceNameByIndex(i));
+        colorspaces.emplace_back(m_Config->getColorSpaceNameByIndex(i));
 
-    return colospaces;
+    return colorspaces;
 }
 
 void ColorProcessor::Create()
@@ -150,6 +150,46 @@ std::string ColorProcessor::Shader(const std::string& function) const
 
     /* The Fragment Shader Code */
     return shaderDesc->getShaderText();
+}
+
+void ColorProcessor::ProcessImage(float* pixels, int width, int height, int channels, const std::string& display) const
+{
+    const char* view = m_Config->getDefaultView(display.c_str());
+    OCIO::ConstProcessorRcPtr processor = m_Config->getProcessor(OCIO::ROLE_SCENE_LINEAR, display.c_str());
+    OCIO::ConstCPUProcessorRcPtr cpuproc = processor->getDefaultCPUProcessor();
+
+    OCIO::PackedImageDesc imgdesc(pixels, width, height, channels);
+    cpuproc->apply(imgdesc);
+}
+
+void ColorProcessor::ProcessImage(float* pixels, int width, int height, int channels, const std::string& incolorspace, const std::string& outcolorspace) const
+{
+    OCIO::ConstProcessorRcPtr processor = m_Config->getProcessor(incolorspace.c_str(), outcolorspace.c_str());
+    OCIO::ConstCPUProcessorRcPtr cpuproc = processor->getDefaultCPUProcessor();
+
+    OCIO::PackedImageDesc imgdesc(pixels, width, height, channels);
+    cpuproc->apply(imgdesc);
+}
+
+void ColorProcessor::ProcessImage(float* pixels, int width, int height, int channels, const ColorSpace& colorspace, const std::string& outcolorspace) const
+{
+    OCIO::ConstProcessorRcPtr processor = nullptr;
+    switch (colorspace)
+    {
+        case ColorSpace::Linear:
+            processor = m_Config->getProcessor(OCIO::ROLE_SCENE_LINEAR, outcolorspace.c_str());
+            break;
+        case ColorSpace::sRGB:
+            processor = m_Config->getProcessor("None", outcolorspace.c_str());
+            break;
+        default:
+            processor = m_Config->getProcessor(OCIO::ROLE_DEFAULT, outcolorspace.c_str());
+    }
+
+    OCIO::ConstCPUProcessorRcPtr cpuproc = processor->getDefaultCPUProcessor();
+
+    OCIO::PackedImageDesc imgdesc(pixels, width, height, channels);
+    cpuproc->apply(imgdesc);
 }
 
 VOID_NAMESPACE_CLOSE
