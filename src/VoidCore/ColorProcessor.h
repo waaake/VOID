@@ -12,6 +12,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Colorspace.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -68,6 +69,11 @@ public:
      * Returns the Generated shader code from the Constructed GPU Processor
      */
     std::string Shader(const std::string& function) const;
+
+    // CPU processing for the image from the source to destination colorspace
+    void ProcessImage(float* pixels, int width, int height, int channels, const std::string& display) const;
+    void ProcessImage(float* pixels, int width, int height, int channels, const std::string& incolorspace, const std::string& outcolorspace) const;
+    void ProcessImage(float* pixels, int width, int height, int channels, const ColorSpace& colorspace, const std::string& outcolorspace) const;
 
 private:
     OCIO_NAMESPACE::ConstConfigRcPtr m_Config;

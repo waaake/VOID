@@ -1,6 +1,17 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <algorithm>
+#include <cstdint>
+#include <cstring>
+
+/* FFmpeg */
+extern "C" {
+#include <libavutil/opt.h>
+#include <libavutil/imgutils.h>
+}
+
 /* Internal */
 #include "FFmpegWriter.h"
 #include "VoidCore/Logging.h"
@@ -13,8 +24,15 @@ FFmpegWriter::FFmpegWriter(const EncodeSpec& spec)
     , m_CodecCtx(nullptr)
     , m_SwsCtx(nullptr)
     , m_Stream(nullptr)
+    , m_SourceFrame(nullptr)
+    , m_DestinationFrame(nullptr)
     , m_Pts(0)
 {
+}
+
+FFmpegWriter::~FFmpegWriter()
+{
+    Cleanup();
 }
 
 bool FFmpegWriter::Setup(const std::string& path)
@@ -73,46 +91,36 @@ bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const InputSp
         return false;
 
     if (!m_SwsCtx)
+        InitFrameContext(spec);
+
+    switch (spec.type)
     {
-        m_SwsCtx = sws_getContext(
-            spec.width,
-            spec.height,
-            spec.channels == 3 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_RGBA,
-            m_Spec.width,
-            m_Spec.height,
-            PixelFormat(),
-            SWS_BILINEAR,
-            nullptr,
-            nullptr,
-            nullptr
-        );
+        case BufferType::Float:
+            CopyBuffer(static_cast<const float*>(buffer), m_SourceFrame->data[0], size);
+            break;
+        case BufferType::Uint16:
+            CopyBuffer(static_cast<const uint16_t*>(buffer), m_SourceFrame->data[0], size);
+            break;
+        case BufferType::Uint8:
+        default:
+            CopyBuffer(static_cast<const uint8_t*>(buffer), m_SourceFrame->data[0], size);
     }
 
-    AVFrame* frame = av_frame_alloc();
-    frame->format = m_CodecCtx->pix_fmt;
-    frame->width = m_CodecCtx->width;
-    frame->height = m_CodecCtx->height;
+    sws_scale(
+        m_SwsCtx,
+        m_SourceFrame->data, m_SourceFrame->linesize,
+        0, spec.height,
+        m_DestinationFrame->data, m_DestinationFrame->linesize
+    );
 
-    // 32 byte align
-    if (av_frame_get_buffer(frame, 32) < 0)
-        return false;
+    m_DestinationFrame->pts = m_Pts;
 
-    if (av_frame_make_writable(frame) < 0)
-        return false;
-
-    const uint8_t* srcSlice[1] = { static_cast<const uint8_t*>(buffer) };
-    int srcStride[1] = { m_Spec.channels * spec.width };
-
-    sws_scale(m_SwsCtx, srcSlice, srcStride, 0, spec.height, frame->data, frame->linesize);
-    frame->pts = m_Pts;
-
-    // Encode
-    int ret = avcodec_send_frame(m_CodecCtx, frame);
-    if ( ret < 0)
+    int ret = avcodec_send_frame(m_CodecCtx, m_DestinationFrame);
+    if (ret < 0)
     {
-        char errbuf[256];
-        av_strerror(ret, errbuf, sizeof(errbuf));
-        VOID_LOG_INFO("Unable to send frame: {0}, {1}, {2}", errbuf, ret, ret == AVERROR(EINVAL));
+        char err[256];
+        av_strerror(ret, err, sizeof(err));
+        VOID_LOG_ERROR("Unable to send frame: {0}, {1}, {2}", err, ret, ret == AVERROR(EINVAL));
         return false;
     }
 
@@ -127,7 +135,6 @@ bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const InputSp
     }
 
     av_packet_free(&packet);
-    av_frame_free(&frame);
     m_Pts++;
 
     return true;
@@ -139,28 +146,26 @@ bool FFmpegWriter::Write()
         return false;
 
     avcodec_send_frame(m_CodecCtx, nullptr);
-
     AVPacket* packet = av_packet_alloc();
 
     while (avcodec_receive_packet(m_CodecCtx, packet) == 0)
     {
         av_packet_rescale_ts(packet, m_CodecCtx->time_base, m_Stream->time_base);
-
         av_interleaved_write_frame(m_FormatCtx, packet);
         av_packet_unref(packet);
     }
 
     av_packet_free(&packet);
-
     av_write_trailer(m_FormatCtx);
     avio_close(m_FormatCtx->pb);
-
 
     return true;
 }
 
 void FFmpegWriter::Cleanup()
 {
+    if (m_SourceFrame) av_frame_free(&m_SourceFrame);
+    if (m_DestinationFrame) av_frame_free(&m_DestinationFrame);
     #if LIBSWSCALE_VERSION_MAJOR < 9
     if (m_SwsCtx) sws_freeContext(m_SwsCtx);
     m_SwsCtx = nullptr;
@@ -239,6 +244,71 @@ void FFmpegWriter::ContextSetup()
             // av_opt_set(m_CodecCtx->priv_data, "crf", "18", 0);
             break;
     }
+}
+
+void FFmpegWriter::InitFrameContext(const InputSpec& spec)
+{
+    m_SourceFrame = av_frame_alloc();
+    m_SourceFrame->width = spec.width;
+    m_SourceFrame->height = spec.height;
+
+    // At the moment, specifically about the 4 channel inputs, AV_PIX_FMT_RGBAF32 doesn't seem to work
+    // So using standard unsigned char buffers with RGB and RGBA formats and safely casting the data from
+    // float and uint16_t (unsigned short) buffers to unsigned char buffers for writing out
+    m_SourceFrame->format = spec.channels == 3 ? AV_PIX_FMT_RGB24 : AV_PIX_FMT_RGBA;
+
+    av_image_alloc(
+        m_SourceFrame->data,
+        m_SourceFrame->linesize,
+        spec.width,
+        spec.height,
+        (AVPixelFormat)m_SourceFrame->format,
+        32
+    );
+
+    m_DestinationFrame = av_frame_alloc();
+    m_DestinationFrame->width = m_Spec.width;
+    m_DestinationFrame->height = m_Spec.height;
+    m_DestinationFrame->format = m_CodecCtx->pix_fmt;
+
+    av_image_alloc(
+        m_DestinationFrame->data,
+        m_DestinationFrame->linesize,
+        m_Spec.width,
+        m_Spec.height,
+        (AVPixelFormat)m_DestinationFrame->format,
+        32
+    );
+
+    m_SwsCtx = sws_getContext(
+        m_SourceFrame->width,
+        m_SourceFrame->height,
+        (AVPixelFormat)m_SourceFrame->format,
+        m_DestinationFrame->width,
+        m_DestinationFrame->height,
+        (AVPixelFormat)m_DestinationFrame->format,
+        SWS_BICUBIC,
+        nullptr,
+        nullptr,
+        nullptr
+    );
+}
+
+void FFmpegWriter::CopyBuffer(const uint8_t* src, uint8_t* dest, std::size_t size)
+{
+    std::memcpy(dest, src, size);
+}
+
+void FFmpegWriter::CopyBuffer(const uint16_t* src, uint8_t* dest, std::size_t size)
+{
+    for (int i = 0; i < static_cast<int>(size); ++i)
+        dest[i] = static_cast<uint8_t>(src[i] / (UINT16_MAX / UINT8_MAX));
+}
+
+void FFmpegWriter::CopyBuffer(const float* src, uint8_t* dest, std::size_t size)
+{
+    for (int i = 0; i < static_cast<int>(size); ++i)
+        dest[i] = static_cast<uint8_t>(std::clamp(src[i], 0.f, 1.f) * 255.f);
 }
 
 VOID_NAMESPACE_CLOSE

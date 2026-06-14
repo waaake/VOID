@@ -24,6 +24,7 @@ enum class IconType : char16_t
     icon_close              = 0xe5cd,
     icon_computer_cancel    = 0xf2f6,
     icon_delete             = 0xe872,
+    icon_deployed_cube      = 0xf720,
     icon_draw               = 0xe746,
     icon_expand_circle_down = 0xe7cd,
     icon_expand_circle_up   = 0xf5d2,
