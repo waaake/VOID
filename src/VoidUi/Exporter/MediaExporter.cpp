@@ -47,7 +47,7 @@ void MediaExporter::Export()
             Codec(),
             false
         );
-        UIGlobals::QueueTask(new ExportMediaFramesTask(m_Media, m_Descriptor, spec, Range()));
+        UIGlobals::QueueTask(new ExportMediaFramesTask(m_Media, m_Descriptor, spec, Range(), Colorspace().toStdString()));
         close();
     }
 }
