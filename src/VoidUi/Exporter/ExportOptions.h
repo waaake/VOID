@@ -64,6 +64,7 @@ public:
     inline bool RangeOverridden() const { return m_OverrideRangeCheck->isChecked(); }
     inline MovieCodec Codec() const { return m_MovieOptions->Codec(); }
     inline int ScaleIndex() const { return m_ResolutionCombo->currentIndex(); }
+    inline QString Colorspace() const { return m_OutColorspaceCombo->currentText(); }
 
     inline MediaExportDescriptor FileDescriptor() const { return m_Descriptor; }
     inline void ClearLog() { m_LogModel->Clear(); }
@@ -78,6 +79,7 @@ private: /* Members */
     QLineEdit* m_EndEdit;
     QCheckBox* m_OverrideRangeCheck;
     QComboBox* m_ResolutionCombo;
+    QComboBox* m_OutColorspaceCombo;
     QComboBox* m_OutProcessorCombo;
 
     QGroupBox* m_MovieGroup;
