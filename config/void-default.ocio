@@ -73,7 +73,7 @@ displays:
 
 active_displays: [sRGB, Rec.709, Rec.2020, P3-D60, P3-D65, P3-DCI, None]
 active_views: [ACES 1.0 - SDR Video, ACES 1.0 - SDR Video (D60 sim on D65), ACES 1.1 - SDR Video (P3 lim), ACES 1.1 - SDR Video (Rec.709 lim), ACES 1.1 - HDR Video (1000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (2000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (4000 nits & Rec.2020 lim), ACES 1.1 - HDR Video (1000 nits & P3 lim), ACES 1.1 - HDR Video (2000 nits & P3 lim), ACES 1.1 - HDR Video (4000 nits & P3 lim), ACES 1.0 - SDR Cinema, ACES 1.1 - SDR Cinema (D60 sim on D65), ACES 1.1 - SDR Cinema (Rec.709 lim), ACES 1.0 - SDR Cinema (D60 sim on DCI), ACES 1.1 - SDR Cinema (D65 sim on DCI), ACES 1.1 - HDR Cinema (108 nits & P3 lim), Un-tone-mapped, Raw]
-inactive_colorspaces: [CIE-XYZ-D65, sRGB, Rec.709, Rec.2020, sRGB, Rec.709, Rec.2020, Rec.2020, Rec.2100-HLG - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, ST2084-P3-D65, ST2084-P3-D65, ST2084-P3-D65, P3-D60, P3-D65, P3-D65, P3-D65, P3-DCI, P3-DCI, ST2084-P3-D65]
+inactive_colorspaces: [CIE-XYZ-D65, Rec.2100-HLG - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, Rec.2100-PQ - Display, ST2084-P3-D65, ST2084-P3-D65, ST2084-P3-D65, P3-D60, P3-D65, P3-D65, P3-D65, P3-DCI, P3-DCI, ST2084-P3-D65]
 
 looks:
   - !<Look>

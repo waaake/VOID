@@ -41,7 +41,11 @@ bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec
             OIIO::ImageSpec outspec(m_Spec.width, m_Spec.height, m_Spec.channels, OIIO::TypeDesc::UINT16);
             OIIO::ImageBuf outbuf(outspec, out.data());
 
+            #if OIIO_VERSION_MAJOR < 3
             status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
+            #else
+            status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, OIIO::ImageBufAlgo::KWArgs(), roi);
+            #endif
             if (!status)
             {
                 VOID_LOG_ERROR("Unable to resize image: {0}", outbuf.geterror());
@@ -60,7 +64,11 @@ bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec
             OIIO::ImageSpec outspec(m_Spec.width, m_Spec.height, m_Spec.channels, OIIO::TypeDesc::FLOAT);
             OIIO::ImageBuf outbuf(outspec, out.data());
 
+            #if OIIO_VERSION_MAJOR < 3
             status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
+            #else
+            status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, OIIO::ImageBufAlgo::KWArgs(), roi);
+            #endif
             if (!status)
             {
                 VOID_LOG_ERROR("Unable to resize image: {0}", outbuf.geterror());
@@ -79,7 +87,11 @@ bool OIIOWriter::AddBuffer(const void* buffer, std::size_t size, const InputSpec
             OIIO::ImageSpec outspec(m_Spec.width, m_Spec.height, m_Spec.channels, OIIO::TypeDesc::UINT8);
             OIIO::ImageBuf outbuf(outspec, out.data());
 
+            #if OIIO_VERSION_MAJOR < 3
             status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, "", 0.f, roi);
+            #else
+            status = OIIO::ImageBufAlgo::resize(outbuf, inbuf, OIIO::ImageBufAlgo::KWArgs(), roi);
+            #endif
             if (!status)
             {
                 VOID_LOG_ERROR("Unable to resize image: {0}", outbuf.geterror());
