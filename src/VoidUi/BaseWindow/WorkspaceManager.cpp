@@ -27,8 +27,7 @@ WorkspaceManager::~WorkspaceManager()
 void WorkspaceManager::QueueTask(Task* task)
 {
     m_TaskQueue->AddTask(task);
-    if (!m_TaskQueue->isVisible())
-        ShowComponent(Component::TaskQueue);
+    ShowComponent(Component::TaskQueue);
 }
 
 QWidget* WorkspaceManager::Widget(const Component& component) const
@@ -161,11 +160,7 @@ void WorkspaceManager::Clear()
 void WorkspaceManager::InspectMetadata(const SharedMediaClip& media)
 {
     m_MetadataViewer->SetFromMedia(media);
-
-    // Show if it's not already being shown
-    const DockStruct d = DockManager::Instance().Dock(static_cast<int>(Component::MetadataViewer));
-    if (!d.widget->isVisible())
-        ShowComponent(Component::MetadataViewer);
+    ShowComponent(Component::MetadataViewer);
 }
 
 void WorkspaceManager::UpdateMediaQueue(Playlist* playlist)
@@ -181,13 +176,16 @@ void WorkspaceManager::EditEffects(const SharedMediaClip& media)
     for (auto effect : media->Effects())
         m_PropertiesEditor->EditEffect(effect);
 
-    const DockStruct d = DockManager::Instance().Dock(static_cast<int>(Component::Properties));
-    if (!d.widget->isVisible())
-        ShowComponent(Component::Properties);
+    ShowComponent(Component::Properties);
 }
 
 void WorkspaceManager::ShowComponent(const Component& component) const
 {
+    DockStruct d = DockManager::Instance().Dock(static_cast<int>(component));
+
+    if (d.widget->isVisible() || ShowIfDocked(d.name.c_str()))
+        return;
+
     MainWindow* window = new MainWindow;
 	DockSplitter* splitter = new DockSplitter(Qt::Horizontal, window);
 	DockWidget* undocked = new DockWidget(splitter, true);
@@ -195,6 +193,21 @@ void WorkspaceManager::ShowComponent(const Component& component) const
 
 	undocked->AddDockManagerWidget(static_cast<int>(component));
 	window->show();
+}
+
+bool WorkspaceManager::ShowIfDocked(const QString& name) const
+{
+    for (const auto& docker : findChildren<DockWidget*>())
+    {
+        int id = docker->DockTabIndex(name);
+        if (id > -1)
+        {
+            docker->setCurrentIndex(id);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 VOID_NAMESPACE_CLOSE

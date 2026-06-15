@@ -135,7 +135,7 @@ DockWidget::DockWidget(DockSplitter* parent, bool floating)
 	Connect();
 }
 
-void DockWidget::AddDock(QWidget* widget, const std::string& title, bool closable)
+DockPanel* DockWidget::AddDock(QWidget* widget, const std::string& title, bool closable)
 {
 	/* Create a dockable panel for the widget */
 	DockPanel* panel = new DockPanel(widget, this);
@@ -145,6 +145,8 @@ void DockWidget::AddDock(QWidget* widget, const std::string& title, bool closabl
 
 	if (closable)
 		SetTabClosable(index);
+
+	return panel;
 }
 
 void DockWidget::AddDockManagerWidget(int index)
@@ -157,7 +159,20 @@ void DockWidget::AddDockManagerWidget(int index)
 		return;
 
 	/* All Dock Manager Widgets shall be closable */
-	AddDock(d.widget, d.name, true);
+	DockPanel* panel = AddDock(d.widget, d.name, true);
+	panel->setObjectName(d.widget->objectName());
+}
+
+int DockWidget::DockTabIndex(const QString& name) const
+{
+	for (int i = 0; i < count(); ++i)
+	{
+		if (tabText(i) == name)
+			return i;
+	}
+
+	// Not found
+	return -1;
 }
 
 void DockWidget::dragEnterEvent(QDragEnterEvent* event)

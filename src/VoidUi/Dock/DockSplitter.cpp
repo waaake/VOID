@@ -61,8 +61,6 @@ int DockSplitter::AddSplitPane(int idA, int idB, const Qt::Orientation& orientat
 
 void DockSplitter::RemovePane(int index)
 {
-	VOID_LOG_INFO("INDEX: {0}", index);
-
 	QWidget* w = findChild<QWidget*>(QString::number(index));
 
 	/* Set parent of internal children as null as to not delete them when the Pane is deleted/removed */

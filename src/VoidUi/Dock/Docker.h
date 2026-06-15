@@ -68,8 +68,10 @@ class DockWidget : public QTabWidget
 public:
 	DockWidget(DockSplitter* parent = nullptr, bool floating = false);
 
-	void AddDock(QWidget* panel, const std::string& title, bool closable = false);
+	DockPanel* AddDock(QWidget* panel, const std::string& title, bool closable = false);
 	void AddDockManagerWidget(int index);
+
+	int DockTabIndex(const QString& name) const;
 
 protected:
 	void dragEnterEvent(QDragEnterEvent* event) override;
