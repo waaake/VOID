@@ -179,8 +179,9 @@ void MEntry::Parse(const std::string& path)
     }
     else if (ValidTemplate(framestring))
     {
-        m_Templated = true;
+        m_FramePadding = framestring.size();
         m_Name = remaining.substr(0, lastDot);
+        m_Templated = true;
     }
     else /* In case we don't have an image sequence, just a standard image */
     {
@@ -273,14 +274,20 @@ std::string MEntry::ResolvedPath(v_frame_t frame) const
     if (m_Templated)
     {
         std::string path;
-        int padding = frame == 0 ? 1 : static_cast<int>(std::log10(frame)) + 1;
+
+        // The resolved path could still work for something bigger than the padding
+        // for e.g. when the templated path was created, the number of padding (hashes) were specified to be
+        // something like /path/to/output/file.####.ext but the range specified is 9000 - 11000
+        // so the padding till frame 9999 would be 4 but on frame 10000 and above the padding would be 5, which is still valid
+        // in terms of writing, in terms of reading, it might not be detected correctly everywhere
+        int padding = std::max(frame == 0 ? 1 : static_cast<int>(std::log10(frame)) + 1, m_FramePadding);
         path.reserve(m_Basepath.size() + 1 + m_Name.size() + 1 + padding + 1 + m_Extension.size());
 
         path += m_Basepath;
         path += "/";
         path += m_Name;
         path += ".";
-        path += std::to_string(frame);
+        path += PaddedFrame(frame);
         path += ".";
         path += m_Extension;
 
