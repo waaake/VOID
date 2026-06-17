@@ -79,19 +79,19 @@ Frame& Frame::operator=(const Frame& other)
     return *this;
 }
 
-SharedPixels Frame::Image(bool cached)
+SharedPixels Frame::Image(std::size_t downscale, bool cached)
 {
     /*
      * If the frame data has not yet been fetched
      * Read the frame data and return the pointer to the data
      */
     if (cached)
-        Cache();
+        Cache(downscale);
 
     return m_ImageData;
 }
 
-void Frame::Cache()
+void Frame::Cache(std::size_t downscale)
 {
     /**
      * Don't allow mutliple threads to cache the same frame
@@ -107,7 +107,7 @@ void Frame::Cache()
     std::lock_guard<std::mutex> guard(m_Mutex);
     if (m_ImageData->Empty() || m_Dirty)
     {
-        m_ImageData->Read();
+        m_ImageData->Read(downscale);
         m_Channels = m_ImageData->Channels();
     }
 }

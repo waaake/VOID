@@ -172,9 +172,10 @@ void Media::ProcessMovie()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
+    // #pragma omp parallel for
+    for (v_frame_t i = frange.startframe; i <= frange.endframe; ++i)
     {
-        m_Mediaframes[counter] = std::move(MovieFrame(entry, i));
+        m_Mediaframes[i - frange.startframe] = std::move(MovieFrame(entry, i));
         m_Framenumbers.emplace_back(i);
     }
 

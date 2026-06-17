@@ -109,7 +109,7 @@ public:
     inline Frame FirstFrameData() const { return m_Mediaframes.front(); }
     inline Frame LastFrameData() const { return m_Mediaframes.back(); }
 
-    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
+    inline SharedPixels Image(v_frame_t frame, std::size_t downscale = 1, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(downscale, cached); }
     std::size_t FrameSize();
 
     inline SharedPixels FirstImage() { return Image(m_FirstFrame); }

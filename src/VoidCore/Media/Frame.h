@@ -54,7 +54,7 @@ public:
      * cached defines whether the frame needs to be read before returning
      * has no effect if the frame has already been read
      */
-    SharedPixels Image(bool cached = true);
+    SharedPixels Image(std::size_t downscale = 1, bool cached = true);
 
     /**
      * Returns the underlying metadata from the image
@@ -62,7 +62,7 @@ public:
     inline const std::map<std::string, std::string> Metadata() const { return m_ImageData->Metadata(); }
 
     /* Frame Caches */
-    void Cache();
+    void Cache(std::size_t downscale = 1);
     void ClearCache(bool dirty = true);
 
 protected: /* Members */
