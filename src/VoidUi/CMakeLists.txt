@@ -101,6 +101,7 @@ set(SOURCES
     Toolkit/ControlBar.cpp
     Toolkit/ControlScroller.cpp
     Toolkit/GridController.cpp
+    Toolkit/ScaleController.cpp
     Toolkit/ViewerController.cpp
 
     # Tools

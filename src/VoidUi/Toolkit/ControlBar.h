@@ -11,11 +11,12 @@
 #include <QWidget>
 
 /* Internal */
+#include "Definition.h"
 #include "BufferSwitch.h"
 #include "ControlScroller.h"
 #include "ColorController.h"
-#include "Definition.h"
 #include "ViewerController.h"
+#include "ScaleController.h"
 #include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
@@ -67,43 +68,25 @@ signals:
     void blendModeChanged(const int);
     void annotationsToggled(const int);
     void colorDisplayChanged(const std::string&);
+    void scaleChanged(const std::size_t);
 
 private: /* Members */
     /* Base Layout */
     QHBoxLayout* m_Layout;
 
-    /**
-     * Viewer Properties
-     * Exposure
-     * Gamma
-     * Gain
-     */
     QuickSpinner* m_ExposureSpinner;
     QuickSpinner* m_GammaSpinner;
     QuickSpinner* m_GainSpinner;
 
-    /**
-     * Set/Update channels on the viewer
-     */
     ControlCombo* m_ChannelModeController;
-
-    /* Zoom Controls */
     ControlSpinner* m_Zoomer;
-
-    /* The current Dsiplays to be selected for Color */
     ColorController* m_ColorDisplayController;
-
-    /* Annotation Controller */
     HighlightToggleButton* m_AnnotationButton;
-
-    /* Viewer Buffers */
     ViewerBuffer* m_ViewerBufferA;
     ViewerBuffer* m_ViewerBufferB;
-
-    /* Viewer Buffer Switch */
     BufferSwitch* m_BufferSwitch;
-
     ViewerController* m_ViewerController;
+    ScaleController* m_ScaleController;
 
     /**
      * In order to keep the ViewerBuffer selector always in the center,

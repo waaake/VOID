@@ -141,6 +141,7 @@ void ControlBar::Build()
     m_Zoomer->setToolTip(ToolTipString("Zoom Controller", "Adjust viewer image zoom.").c_str());
 
     m_ViewerController = new ViewerController;
+    m_ScaleController = new ScaleController;
 
     /* The Left Side Widget */
     m_LeftControls = new QWidget();
@@ -167,6 +168,7 @@ void ControlBar::Build()
     /* Spacer from the left side */
     m_RightLayout->addWidget(m_ViewerController);
     m_RightLayout->addStretch(1);
+    m_RightLayout->addWidget(m_ScaleController);
     m_RightLayout->addWidget(m_ColorDisplayController);
     m_RightLayout->addWidget(m_Zoomer);
     m_RightLayout->addWidget(m_AnnotationButton);
@@ -257,6 +259,7 @@ void ControlBar::Connect()
 
     /* Color Display */
     connect(m_ColorDisplayController, &ColorController::colorDisplayChanged, this, &ControlBar::colorDisplayChanged);
+    connect(m_ScaleController, &ScaleController::scaleChanged, this, &ControlBar::scaleChanged);
 }
 
 void ControlBar::SetZoom(float zoom)

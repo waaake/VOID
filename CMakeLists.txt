@@ -116,5 +116,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "debug")
     add_definitions(-DVOID_ENABLE_LOGGING)
 endif()
 
+# add_compile_options(/fp:fast)
+
 # Add the VOID Source
 add_subdirectory(src)
