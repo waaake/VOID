@@ -30,6 +30,7 @@ set(SOURCES
     Readers/TurboJpegReader.cpp
 
     # Operators
+    Operators/Brighter.cpp
     Operators/Grader.cpp
     Operators/Flipper.cpp
     Operators/Inverter.cpp
@@ -72,6 +73,7 @@ target_link_libraries(
     Python::Python
     ${TurboJPEG_LIBRARIES}
     OpenMP::OpenMP_CXX
+    TBB::tbb
 )
 
 # Mac for some reason needs this explicitly

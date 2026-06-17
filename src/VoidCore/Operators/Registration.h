@@ -5,6 +5,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Brighter.h"
 #include "FormatForge.h"
 #include "Grader.h"
 
@@ -31,11 +32,21 @@ namespace Internal {
         return Forge::Instance().Register(r);
     }
 
+    bool RegisterBrightenOp()
+    {
+        IOpRegistry r;
+        r.name = "Brighten";
+        r.iop = []() -> std::unique_ptr<ImageOp> { return std::make_unique<BrightenOp>(); };
+
+        return Forge::Instance().Register(r);
+    }
+
 } // namespace Internal
 
 void RegisterOperators()
 {
     Internal::RegisterColorGradeOp();
+    Internal::RegisterBrightenOp();
 }
 
 VOID_NAMESPACE_CLOSE

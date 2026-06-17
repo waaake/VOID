@@ -1,6 +1,10 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* TBB */
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+
 /* Internal */
 #include "ImageProcessor.h"
 #include "VoidCore/Logging.h"
@@ -35,12 +39,23 @@ bool ImageProcessor::Process(Frame* frame, const SharedImageOp& iop)
          */
         SharedPixels image = frame->Image(false);
 
-        #pragma omp parallel for
-        for (int i = 0; i < image->Height(); ++i)
-        {
-            ImageRow row = image->Row(i);
-            iop->Evaluate(row);
-        }
+        tbb::parallel_for(
+            tbb::blocked_range<int>(0, image->Height()),
+            [&](const tbb::blocked_range<int>& range)
+            {
+                for (int i = range.begin(); i < range.end(); ++i)
+                {
+                    ImageRow row = image->Row(i);
+                    iop->Evaluate(row);
+                }
+            }
+        );
+        // #pragma omp parallel for
+        // for (int i = 0; i < image->Height(); ++i)
+        // {
+        //     ImageRow row = image->Row(i);
+        //     iop->Evaluate(row);
+        // }
 
         frame->SetDirty(false);
         status = true;
