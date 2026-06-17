@@ -71,6 +71,9 @@ public:
 
     inline QColor Color() const { return m_Color; }
 
+    void SetDownscaleFactor(std::size_t downscale) { m_Downscale = downscale; }
+    inline std::size_t DownscaleFactor() const { return m_Downscale; }
+
     void CacheFrame(v_frame_t frame);
     void UncacheFrame(v_frame_t frame);
     void ClearCache();
@@ -144,7 +147,8 @@ private: /* Members */
     QColor m_Color;
     QPixmap m_Thumbnail;
     TagModel* m_TagModel;
-    std::atomic_bool m_Working;
+    std::size_t m_Downscale = { 1 };
+    std::atomic_bool m_Working = { false };
 
     /**
      * This struct saves the Annotations for the frames

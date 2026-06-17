@@ -328,7 +328,7 @@ void MediaClip::CacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    m_Mediaframes.at(frame - m_FirstFrame).Cache();
+    m_Mediaframes.at(frame - m_FirstFrame).Cache(m_Downscale);
     // emit frameCached(frame);
 }
 
@@ -555,7 +555,7 @@ void MediaClip::Deserialize(std::istream& in)
 void MediaClip::Evaluate(v_frame_t frame)
 {
     Frame* f = FramePtr(frame);
-    SharedPixels image = f->Image();
+    SharedPixels image = f->Image(m_Downscale);
     if (f->Dirty())
     {
         for (auto effect : m_Effects)

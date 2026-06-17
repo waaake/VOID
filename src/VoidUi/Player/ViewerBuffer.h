@@ -122,6 +122,8 @@ public:
     inline void RestartPlaybackCache() { StartPlaybackCache(m_State); }
     void StopPlaybackCache();
 
+    void SetScaleFactor(const std::size_t scale);
+
     /**
      * Pauses the cache till it is manually resumed or another media set as
      * active on the processor
@@ -299,6 +301,8 @@ private: /* Members */
     std::size_t m_MaxMemory;
     std::size_t m_UsedMemory;
     std::size_t m_FrameSize;
+
+    std::size_t m_ScaleFactor;
 
     v_frame_t m_Startframe, m_Endframe;
     v_frame_t m_LastCached;

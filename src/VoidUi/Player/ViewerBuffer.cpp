@@ -34,6 +34,7 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
     , m_UsedMemory(0)
     , m_FrameSize(0)
+    , m_ScaleFactor(1)
     , m_Startframe(0)
     , m_Endframe(1)
     , m_LastCached(0)
@@ -56,6 +57,7 @@ void ViewerBuffer::Set(const SharedMediaClip& media)
 
     m_Clip = media;
     m_Clip->SetColor(m_Color);
+    m_Clip->SetDownscaleFactor(m_ScaleFactor);
 
     m_PlayingComponent = PlayableComponent::Clip;
     UpdateRange(m_Clip->FirstFrame(), m_Clip->LastFrame());
@@ -490,6 +492,14 @@ void ViewerBuffer::StartPlaybackCache(const PlayState& state)
 void ViewerBuffer::StopPlaybackCache()
 {
     m_CacheTimer.stop();
+}
+
+void ViewerBuffer::SetScaleFactor(std::size_t scale)
+{
+    m_ScaleFactor = scale;
+
+    if (m_PlayingComponent == PlayableComponent::Clip)
+        m_Clip->SetDownscaleFactor(scale);
 }
 
 void ViewerBuffer::PauseCaching()
