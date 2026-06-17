@@ -98,6 +98,7 @@ private: /* Methods */
     void RenderGrid(v_frame_t frame);
 
     void ResetViewBuffer(const PlayerViewBuffer& buffer);
+    void ScaleUpdated(const std::size_t scale);
 
     void Connect();
 

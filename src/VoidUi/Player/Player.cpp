@@ -8,6 +8,7 @@
 /* Internal */
 #include "Player.h"
 #include "VoidCore/Timekeeper.h"
+#include "VoidCore/Logging.h"
 #include "VoidCore/Media/Renderer.h"
 #include "VoidUi/Descriptors.h"
 #include "VoidUi/Media/Browser.h"
@@ -275,6 +276,7 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
+    connect(m_ControlBar, &ControlBar::scaleChanged, this, &Player::ScaleUpdated);
 
     // ViewerBuffer
     connect(&m_ViewBufferA, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);
@@ -664,6 +666,17 @@ void Player::ResetViewBuffer(const PlayerViewBuffer& buffer)
     m_Renderer->Clear();
     Refresh();
     SetRange(m_ActiveViewBuffer->StartFrame(), m_ActiveViewBuffer->EndFrame());
+}
+
+void Player::ScaleUpdated(const std::size_t scale)
+{
+    m_ViewBufferA.SetScaleFactor(scale);
+    m_ViewBufferB.SetScaleFactor(scale);
+
+    // Only recache the active buffer
+    m_ActiveViewBuffer->Recache();
+    m_Renderer->Clear();
+    Refresh();
 }
 
 void Player::dragEnterEvent(QDragEnterEvent* event)
