@@ -119,7 +119,7 @@ void FFmpegDecoder::Close()
     m_StreamID = -1;
 }
 
-bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels)
+bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels, std::size_t downscale)
 {
     /**
      * At the moment, this is not accessible concurrently throught multiple threads
@@ -317,11 +317,11 @@ double FFmpegPixReader::Framerate()
     return m_Framerate;
 }
 
-void FFmpegPixReader::Read()
+void FFmpegPixReader::Read(std::size_t downscale)
 {
     /* Decoder */
     FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
-    if (decoder.Decode(m_Path, m_Framenumber, m_Pixels))
+    if (decoder.Decode(m_Path, m_Framenumber, m_Pixels, downscale))
     {
         /* Read the Frame Dimensions */
         m_Width = decoder.Width();

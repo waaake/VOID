@@ -23,7 +23,7 @@ public:
     /**
      * Reads the provided image file's data into underlying structs
      */
-    virtual void Read() override;
+    virtual void Read(std::size_t downscale = 1) override;
 
     /**
      * Returns the OpenGL data type
@@ -107,6 +107,9 @@ private: /* Members */
 
     /* Internal data store */
     std::vector<unsigned char> m_Pixels;
+
+private:
+    void ScaledRead(std::size_t downscale);
 };
 
 VOID_NAMESPACE_CLOSE

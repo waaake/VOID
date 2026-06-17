@@ -146,7 +146,7 @@ public:
      * Reads the image at the given path
      * updates the underlying struct with the data
      */
-    virtual void Read() = 0;
+    virtual void Read(std::size_t downscale = 1) = 0;
 
     /**
      * Returns the Size of the frame data

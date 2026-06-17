@@ -47,7 +47,7 @@ public:
      * O(n) as the iterator might have to loop over all frames to get to the one we're looking at which also
      * caches the other frames so next frame queries could directly result in direct data transfer
      */
-    bool Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels);
+    bool Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels, std::size_t downscale);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -92,7 +92,7 @@ public:
     /**
      * Reads the provided image file's data into underlying structs
      */
-    virtual void Read() override;
+    virtual void Read(std::size_t downscale = 1) override;
 
     /**
      * Returns the OpenGL data type

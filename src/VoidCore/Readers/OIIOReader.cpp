@@ -3,6 +3,7 @@
 
 /* OpenImageIO */
 #include "OpenImageIO/imageio.h"
+#include "OpenImageIO/imagebufalgo.h"
 
 /* Internal */
 #include "OIIOReader.h"
@@ -33,17 +34,17 @@ void OIIOPixReader::Clear()
 
 ImageRow OIIOPixReader::Row(std::size_t row)
 {
-    return (row >= m_Pixels.size())
+    return (row >= m_Height)
             ? ImageRow()
             : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
 }
 
-void OIIOPixReader::Read()
+void OIIOPixReader::Read(std::size_t downscale)
 {
-    /* As the underlying path is updated -> Invoke the actual Read */
-    /* Open the file path */
-    std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
+    if (downscale > 1)
+        return ScaledRead(downscale);
 
+    std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
     if (!input)
     {
         VOID_LOG_INFO("Unable to load image. Path: {0}", m_Path);
@@ -53,24 +54,15 @@ void OIIOPixReader::Read()
         return;
     }
 
-    /*
-     * As we have the image read
-     * Get the ImageSpecs from it
-     */
     const OIIO::ImageSpec spec = input->spec();
 
-    /* Update the specs */
     m_Width = spec.width;
     m_Height = spec.height;
     m_Channels = spec.nchannels;
 
-    /* Get the colorspace from the image spec {{{ */
     std::string_view colorspace = spec.get_string_attribute("oiio:ColorSpace");
-
-    /* Our default Input ColorSpace points at sRGB, only cases where we want to update that */
     if (colorspace.find("Rec.709") != std::string_view::npos)
         m_InputColorSpace = ColorSpace::Rec709;
-    /* }}} */
 
     // VOID_LOG_INFO("OIIOPixReader ( Width: {0}, Height: {1}, Channels: {2} )", m_Width, m_Height, m_Channels);
 
@@ -80,13 +72,9 @@ void OIIOPixReader::Read()
     /* Channels to read from - to */
     int chbegin = 0, chend = m_Channels;
 
-    /* Resize the Pixels */
     m_Pixels.resize(m_Width * m_Height * m_Channels);
-
-    /* Read the image pixels */
     input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, m_Pixels.data());
 
-    /* Close the image after reading */
     input->close();
 }
 
@@ -122,6 +110,59 @@ const std::map<std::string, std::string> OIIOPixReader::Metadata() const
     }
 
     return m;
+}
+
+void OIIOPixReader::ScaledRead(std::size_t downscale)
+{
+    std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
+    if (!input)
+    {
+        VOID_LOG_INFO("Unable to load image. Path: {0}", m_Path);
+
+        /* Log the original error from OpenImageIO */
+        VOID_LOG_ERROR(OIIO::geterror());
+        return;
+    }
+
+    const OIIO::ImageSpec spec = input->spec();
+
+    m_Width = spec.width / downscale;
+    m_Height = spec.height / downscale;
+    m_Channels = spec.nchannels;
+
+    std::vector<unsigned char> raw(spec.width * spec.height * m_Channels);
+
+    std::string_view colorspace = spec.get_string_attribute("oiio:ColorSpace");
+    if (colorspace.find("Rec.709") != std::string_view::npos)
+        m_InputColorSpace = ColorSpace::Rec709;
+
+    /* Read requisites */
+    int subimage = 0;
+    int miplevel = 0;
+    /* Channels to read from - to */
+    int chbegin = 0, chend = m_Channels;
+
+    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, raw.data());
+    input->close();
+
+    OIIO::ImageSpec src(spec.width, spec.height, m_Channels, OIIO::TypeDesc::UINT8);
+    OIIO::ImageBuf srcbuf(src, raw.data());
+
+    m_Pixels.resize(m_Width * m_Height * m_Channels);
+
+    OIIO::ImageSpec dstspec(m_Width, m_Height, m_Channels, OIIO::TypeDesc::UINT8);
+    OIIO::ImageBuf dstbuf(dstspec, m_Pixels.data());
+
+    OIIO::ROI roi(0, m_Width, 0, m_Height, 0, 1, 0, m_Channels);
+
+    bool resized = OIIO::ImageBufAlgo::resize(dstbuf, srcbuf, "", 0.f, roi);
+    if (!resized)
+    {
+        VOID_LOG_ERROR("Unable to resize image: {}", OIIO::geterror());
+        m_Width = spec.width;
+        m_Height = spec.height;
+        std::swap(raw, m_Pixels);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

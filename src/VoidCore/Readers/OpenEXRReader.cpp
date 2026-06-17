@@ -62,7 +62,7 @@ const unsigned char* OpenEXRReader::ThumbnailPixels()
     return m_Pixels.data();
 }
 
-void OpenEXRReader::Read()
+void OpenEXRReader::Read(std::size_t downscale)
 {
     /* Create an EXR Reader */
     Imf::RgbaInputFile f(m_Path.c_str());

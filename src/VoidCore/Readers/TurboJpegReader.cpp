@@ -41,7 +41,7 @@ ImageRow TurboJpegReader::Row(std::size_t row)
             : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
 }
 
-void TurboJpegReader::Read()
+void TurboJpegReader::Read(std::size_t downscale)
 {
     /* Load JPEG */
     std::ifstream file(m_Path, std::ios::binary);
