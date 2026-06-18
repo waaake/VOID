@@ -295,10 +295,8 @@ BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
     {
         EnsureCached(frame);
 
-        // Image Processing
-        m_Clip->Evaluate(frame);
-
-        d.image = m_Clip->Image(frame);
+        // Process the image before rendering, if any effect has been applied/pending for process
+        d.image = m_Clip->Evaluate(frame);
         d.annotation = m_Clip->Annotation(frame);
         return d;
     }
