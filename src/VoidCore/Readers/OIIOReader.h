@@ -20,6 +20,8 @@ public:
 
     virtual ~OIIOPixReader();
 
+    SharedPixels Copy() const override;
+
     /**
      * Reads the provided image file's data into underlying structs
      */

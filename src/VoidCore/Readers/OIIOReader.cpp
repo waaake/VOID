@@ -24,6 +24,18 @@ OIIOPixReader::~OIIOPixReader()
     Clear();
 }
 
+SharedPixels OIIOPixReader::Copy() const
+{
+    auto copy = std::make_shared<OIIOPixReader>(m_Path, m_Framenumber);
+    copy->m_InputColorSpace = m_InputColorSpace;
+    copy->m_Width = m_Width;
+    copy->m_Height = m_Height;
+    copy->m_Channels = m_Channels;
+    copy->m_Pixels = m_Pixels;
+
+    return copy;
+}
+
 void OIIOPixReader::Clear()
 {
     /* Remove any data from the pixels vector and shrink it back in place */
@@ -33,7 +45,7 @@ void OIIOPixReader::Clear()
 
 ImageRow OIIOPixReader::Row(std::size_t row)
 {
-    return (row >= m_Pixels.size())
+    return (row >= m_Height)
             ? ImageRow()
             : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
 }

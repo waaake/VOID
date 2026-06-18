@@ -19,6 +19,8 @@ public:
     OpenEXRReader(const std::string& path, v_frame_t framenumber = 0);
     virtual ~OpenEXRReader();
 
+    SharedPixels Copy() const override;
+
     /**
      * Reads the provided image file's data into underlying structs
      */

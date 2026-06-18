@@ -255,6 +255,22 @@ FFmpegPixReader::~FFmpegPixReader()
     Clear();
 }
 
+SharedPixels FFmpegPixReader::Copy() const
+{
+    auto copy = std::make_shared<FFmpegPixReader>(m_Path, m_Framenumber);
+    copy->m_AChannels = m_AChannels;
+    copy->m_Channels = m_Channels;
+    copy->m_Endframe = m_Endframe;
+    copy->m_Startframe = m_Startframe; 
+    copy->m_Duration = m_Duration;
+    copy->m_Framerate = m_Framerate;
+    copy->m_Width = m_Width;
+    copy->m_Height = m_Height;
+    copy->m_Pixels = m_Pixels;
+
+    return copy;
+}
+
 void FFmpegPixReader::Clear()
 {
     /* Remove any data from the pixels vector and shrink it back in place */
@@ -264,7 +280,7 @@ void FFmpegPixReader::Clear()
 
 ImageRow FFmpegPixReader::Row(std::size_t row)
 {
-    return (row >= m_Pixels.size())
+    return (row >= m_Height)
             ? ImageRow()
             : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
 }
