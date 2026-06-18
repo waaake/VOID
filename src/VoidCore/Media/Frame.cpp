@@ -21,6 +21,7 @@ Frame::Frame(const MEntry& e)
 Frame::Frame(const MEntry& e, v_frame_t frame)
     : m_MediaEntry(e)
     , m_Framenumber(frame)
+    , m_Writable(nullptr)
 {
     /**
      * Since we have the Media Entry, we can now get the PixReader for the media type
@@ -88,7 +89,15 @@ SharedPixels Frame::Image(bool cached)
     if (cached)
         Cache();
 
-    return m_ImageData;
+    return m_Writable && !m_Writable->Empty() ? m_Writable : m_ImageData;
+}
+
+SharedPixels Frame::Writable()
+{
+    // Ensure we have the image already read, else we can't have a valid writable copy
+    Cache();
+    m_Writable = m_ImageData->Copy();
+    return m_Writable;
 }
 
 void Frame::Cache()
@@ -105,7 +114,7 @@ void Frame::Cache()
      * crashes
      */
     std::lock_guard<std::mutex> guard(m_Mutex);
-    if (m_ImageData->Empty() || m_Dirty)
+    if (m_ImageData->Empty())
     {
         m_ImageData->Read();
         m_Channels = m_ImageData->Channels();
@@ -119,6 +128,12 @@ void Frame::ClearCache(bool dirty)
         // Don't allow concurrent access when clearing the underlying data vector
         std::lock_guard<std::mutex> guard(m_Mutex);
         m_ImageData->Clear();
+    }
+    if (m_Writable && !m_Writable->Empty())
+    {
+        // Don't allow concurrent access when clearing the underlying data vector
+        std::lock_guard<std::mutex> guard(m_Mutex);
+        m_Writable->Clear();
     }
     m_Dirty = dirty;
 }
