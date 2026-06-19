@@ -31,11 +31,21 @@ namespace Internal {
         return Forge::Instance().Register(r);
     }
 
+    bool RegisterGrade2()
+    {
+        IOpRegistry r;
+        r.name = "Grade2";
+        r.iop = []() -> std::unique_ptr<ImageOp> { return std::make_unique<Grade2>(); };
+    
+        return Forge::Instance().Register(r);
+    }
+
 } // namespace Internal
 
 void RegisterOperators()
 {
     Internal::RegisterColorGradeOp();
+    Internal::RegisterGrade2();
 }
 
 VOID_NAMESPACE_CLOSE

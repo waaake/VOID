@@ -22,6 +22,22 @@ private:
     Param* m_BlueGain;
 };
 
+class VOID_API Grade2 : public ImageOp
+{
+public:
+    Grade2();
+    bool Evaluate(ImageRow& row) override;
+
+private:
+    Param* m_Blackpoint;
+    Param* m_Whitepoint;
+    Param* m_Lift;
+    Param* m_Gain;
+    Param* m_Multiply;
+    Param* m_Offset;
+    Param* m_Gamma;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _GRADE_OPERATOR_H
