@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <cstring>
+
 /* Internal */
 #include "Frame.h"
 #include "FormatForge.h"
@@ -23,9 +26,7 @@ Frame::Frame(const MEntry& e, v_frame_t frame)
     , m_Framenumber(frame)
     , m_Writable(nullptr)
 {
-    /**
-     * Since we have the Media Entry, we can now get the PixReader for the media type
-     */
+    // Since we have the Media Entry, we can now get the PixReader for the media type
     m_ImageData = std::move(Forge::Instance().GetImageReader(
         m_MediaEntry.Extension(),
         m_MediaEntry.Fullpath(),
@@ -96,7 +97,18 @@ SharedPixels Frame::Writable()
 {
     // Ensure we have the image already read, else we can't have a valid writable copy
     Cache();
-    m_Writable = m_ImageData->Copy();
+
+    // Coming from the fact that everytime the Image buffer is copied into the m_Writable shared pointer
+    // We're continuously allocating and deallocating huge amounts of data
+    // instead here we allocate only once, the first time when the writable buffer does not exist
+    // next time onwards, just copy the underlying original image data onto the writable buffer
+    // save us from the extra memory alloc-dealloc
+    if (m_Writable && m_Writable->FrameSize() == m_ImageData->FrameSize())
+        std::memcpy(m_Writable->Writable(), m_ImageData->Pixels(), m_ImageData->FrameSize());
+    else
+        m_Writable = m_ImageData->Copy();
+
+    // m_Writable = m_ImageData->Copy();
     return m_Writable;
 }
 
