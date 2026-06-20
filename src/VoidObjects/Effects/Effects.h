@@ -53,7 +53,7 @@ public:
     Param* GetParam(const std::string& name) const { return m_Operator->GetParam(name); }
     ImageOp* ImageOperator() { return m_Operator; }
 
-    const std::map<std::string, Param>& Params() const { return m_Operator->Params(); }
+    const std::vector<Param*>& Params() const { return m_Operator->Params(); }
 
 signals:
     void updated();

@@ -29,6 +29,10 @@ public:
     bool Evaluate(ImageRow& row) override;
 
 private:
+    Param* m_ChannelRed;
+    Param* m_ChannelGreen;
+    Param* m_ChannelBlue;
+
     Param* m_Blackpoint;
     Param* m_Whitepoint;
     Param* m_Lift;

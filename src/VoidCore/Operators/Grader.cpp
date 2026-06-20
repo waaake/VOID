@@ -14,9 +14,9 @@ VOID_NAMESPACE_OPEN
 GradeOp::GradeOp()
 {
     // std::string gain = "r_gain";
-    m_RedGain = AddParam(Param("r_gain", "Red", 1.f, Param::TypeDesc::Float));
-    m_GreenGain = AddParam(Param("g_gain", "Green", 1.f, Param::TypeDesc::Float));
-    m_BlueGain = AddParam(Param("b_gain", "Blue", 1.f, Param::TypeDesc::Float));
+    m_RedGain = AddParam("r_gain", "Red", 1.f, Param::TypeDesc::Float);
+    m_GreenGain = AddParam("g_gain", "Green", 1.f, Param::TypeDesc::Float);
+    m_BlueGain = AddParam("b_gain", "Blue", 1.f, Param::TypeDesc::Float);
     // m_GreenGain = Add
 }
 
@@ -59,17 +59,45 @@ bool GradeOp::Evaluate(ImageRow& row)
 
 Grade2::Grade2()
 {
-    m_Blackpoint = AddParam(Param("blackpoint", "Blackpoint", 0.f, Param::TypeDesc::Float));
-    m_Whitepoint = AddParam(Param("whitepoint", "Whitepoint", 1.f, Param::TypeDesc::Float));
-    m_Lift = AddParam(Param("lift", "Lift", 0.f, Param::TypeDesc::Float));
-    m_Gain = AddParam(Param("gain", "Gain", 1.f, Param::TypeDesc::Float));
-    m_Multiply = AddParam(Param("multiply", "Multiply", 1.f, Param::TypeDesc::Float));
-    m_Offset = AddParam(Param("offset", "Offset", 0.f, Param::TypeDesc::Float));
-    m_Gamma = AddParam(Param("gamma", "Gamma", 1.f, Param::TypeDesc::Float));
+    m_ChannelRed = AddParam("channel_red", "Red", true, Param::TypeDesc::Boolean);
+    m_ChannelGreen = AddParam("channel_green", "Green", true, Param::TypeDesc::Boolean);
+    m_ChannelBlue = AddParam("channel_blue", "Blue", true, Param::TypeDesc::Boolean);
+
+    m_Blackpoint = AddParam(
+        "blackpoint", "Blackpoint", "Defines input values that maps to pure black.",
+        0.f, ParamRange(-1.f, 1.f, 0.01f), Param::TypeDesc::Float
+    );
+    m_Whitepoint = AddParam(
+        "whitepoint", "Whitepoint", "Defines input values that maps to pure white.",
+        1.f, ParamRange(1.f, 4.f, 0.01f), Param::TypeDesc::Float
+    );
+    m_Lift = AddParam(
+        "lift", "Lift", "Adjusts the brightness of shadows.",
+        0.f, ParamRange(-1.f, 1.f, 0.1f), Param::TypeDesc::Float
+    );
+    m_Gain = AddParam(
+        "gain", "Gain", "Scales the intensity of highlights.",
+        1.f, ParamRange(0.f, 4.f, 0.1f), Param::TypeDesc::Float
+    );
+    m_Multiply = AddParam(
+        "multiply", "Multiply", "Scales the image brightness.",
+        1.f, ParamRange(0.f, 4.f, 0.1f), Param::TypeDesc::Float
+    );
+    m_Offset = AddParam(
+        "offset", "Offset", "Shifts brighness up or down across pixels.",
+        0.f, ParamRange(-1.f, 1.f, 0.01f), Param::TypeDesc::Float
+    );
+    m_Gamma = AddParam(
+        "gamma", "Gamma", "Controls midtones contrast with non-linear adjustment.",
+        1.f, ParamRange(0.2f, 5.f, 0.1f), Param::TypeDesc::Float
+    );
 }
 
 bool Grade2::Evaluate(ImageRow& row)
 {
+    if (row.channels < 3)
+        return false;
+
     const float blackpoint = m_Blackpoint->GetFloat();
     const float whitepoint = m_Whitepoint->GetFloat();
     const float lift = m_Lift->GetFloat();
@@ -78,25 +106,46 @@ bool Grade2::Evaluate(ImageRow& row)
     const float offset = m_Offset->GetFloat();
     const float gamma = m_Gamma->GetFloat();
 
+    const bool redchan = m_ChannelRed->GetBool();
+    const bool greenchan = m_ChannelGreen->GetBool();
+    const bool bluechan = m_ChannelBlue->GetBool();
+
     // Based on formula from https://www.chrisbturner.com/blog/nukes-grade-node-demystified
-    // pow((((value - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma))
+    // pow((((x - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma))
     for (std::size_t i = 0; i < row.width; ++i)
     {
         unsigned char* pixel = row.Pixel<unsigned char>(i);
-        for (std::size_t channel = 0; channel < row.channels; ++channel)
+
+        // Red
+        if (redchan)
         {
-            float value = pixel[channel] / 255.f;
+            float red = pixel[0] / 255.f;
+            red = std::pow((((red - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[0] = static_cast<unsigned char>(std::clamp<float>(red, 0.f, 1.f) * 255.f);
+        }
 
-            // value = (value - blackpoint) / (whitepoint - blackpoint);
-            // value = (value + lift) * gain;
-            // value = value * multiply + offset;
-            // value = std::pow(value, gamma);
-            value = std::pow((((value - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+        // Green
+        if (greenchan)
+        {
+            float green = pixel[1] / 255.f;
+            green = std::pow((((green - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[1] = static_cast<unsigned char>(std::clamp<float>(green, 0.f, 1.f) * 255.f);
+        }
 
-            // pixel[channel] = static_cast<unsigned char>(std::clamp<int>())
-            // value = std::max(0.f, )
-            // value = std::clamp<float>(value, 0.f, 1.f);
-            pixel[channel] = static_cast<unsigned char>(std::clamp<float>(value, 0.f, 1.f) * 255.f);
+        // Blue
+        if (bluechan)
+        {
+            float blue = pixel[2] / 255.f;
+            blue = std::pow((((blue - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[2] = static_cast<unsigned char>(std::clamp<float>(blue, 0.f, 1.f) * 255.f);
+        }
+
+        // Alpha
+        if (row.channels > 3)
+        {
+            float alpha = pixel[3] / 255.f;
+            alpha = std::pow((((alpha - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[3] = static_cast<unsigned char>(std::clamp<float>(alpha, 0.f, 1.f) * 255.f);
         }
     }
 
