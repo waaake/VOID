@@ -13,11 +13,9 @@ VOID_NAMESPACE_OPEN
 
 GradeOp::GradeOp()
 {
-    // std::string gain = "r_gain";
     m_RedGain = AddParam("r_gain", "Red", 1.f, Param::TypeDesc::Float);
     m_GreenGain = AddParam("g_gain", "Green", 1.f, Param::TypeDesc::Float);
     m_BlueGain = AddParam("b_gain", "Blue", 1.f, Param::TypeDesc::Float);
-    // m_GreenGain = Add
 }
 
 bool GradeOp::Evaluate(ImageRow& row)
@@ -29,8 +27,6 @@ bool GradeOp::Evaluate(ImageRow& row)
     const float r = m_RedGain->GetFloat();
     const float g = m_GreenGain->GetFloat();
     const float b = m_BlueGain->GetFloat();
-
-    // VOID_LOG_INFO("R: {0}, G: {1}, B: {2}", r, g, b);
 
     // const float r = 1.0;
     // const float g = 1.0;

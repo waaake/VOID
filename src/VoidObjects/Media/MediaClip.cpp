@@ -555,13 +555,12 @@ void MediaClip::Deserialize(std::istream& in)
 SharedPixels MediaClip::Evaluate(v_frame_t frame)
 {
     Frame* f = FramePtr(frame);
-    // SharedPixels ;
 
     if (f->Dirty())
     {
         // Generates a new copy everytime :(
         SharedPixels image = f->Writable();
-        // VOID_LOG_INFO("Image is Unique: {0}", image.unique());
+
         for (auto effect : m_Effects)
         {
             // Only process the effects that are enabled
