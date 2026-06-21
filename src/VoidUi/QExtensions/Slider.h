@@ -41,6 +41,15 @@ private: /* Methods */
     void Build();
 };
 
+class SimpleSlider : public QSlider
+{
+public:
+    SimpleSlider(Qt::Orientation orientation, QWidget* parent = nullptr);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+};
+
 class QuickDoubleSlider : public QWidget
 {
     Q_OBJECT
@@ -62,7 +71,7 @@ signals:
 private: /* Members */
     QHBoxLayout* m_Layout;
     QLineEdit* m_Editor;
-    QSlider* m_Slider;
+    SimpleSlider* m_Slider;
 
     int m_Min;
     int m_Max;

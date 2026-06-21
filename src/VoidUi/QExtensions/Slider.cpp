@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QPainter>
 #include <QDoubleValidator>
 
 /* Internal */
@@ -34,6 +35,41 @@ void FramelessSlider::Build()
     m_Slider = new QSlider(Qt::Horizontal, this);
 
     m_Layout->addWidget(m_Slider);
+}
+
+/// Simple Slider
+
+SimpleSlider::SimpleSlider(Qt::Orientation orientation, QWidget* parent)
+    : QSlider(orientation, parent)
+{
+}
+
+void SimpleSlider::paintEvent(QPaintEvent* event)
+{
+    QPainter painter(this);
+
+    // Groove
+    painter.setPen(Qt::black);
+    painter.setBrush(palette().color(QPalette::Base));
+    painter.drawRect(0, height() * 0.25, width(), 4);
+
+    if (tickInterval())
+    {
+        for (int i = minimum(); i <= maximum(); i+= tickInterval())
+        {
+            painter.setPen(QPen(Qt::black, 1));
+            int pos = width() * (i - minimum()) / (maximum() - minimum());
+    
+            painter.drawLine(pos, height() * 0.5 + 4, pos, height());
+        }
+    }
+
+    // Handle
+    int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
+    painter.setPen(Qt::black);
+
+    painter.setBrush(isSliderDown() ? palette().color(QPalette::Highlight) : QColor(210, 210, 210));
+    painter.drawRect(hpos - 2, height() * 0.15 , 4, height() - (height() * 0.5));
 }
 
 /// QuickDoubleSlider
@@ -94,7 +130,7 @@ void QuickDoubleSlider::Build()
     m_Layout = new QHBoxLayout(this);
 
     m_Editor = new QLineEdit;
-    m_Slider = new QSlider(Qt::Horizontal);
+    m_Slider = new SimpleSlider(Qt::Horizontal);
 
     m_Layout->addWidget(m_Editor);
     m_Layout->addWidget(m_Slider);
@@ -106,6 +142,9 @@ void QuickDoubleSlider::Setup()
     QDoubleValidator* validator = new QDoubleValidator;
     m_Editor->setMaximumWidth(80);
     m_Editor->setValidator(validator);
+
+    m_Slider->setTickPosition(QSlider::TicksBelow);
+    m_Slider->setTickInterval(m_Slider->singleStep() * m_Factor);
 
     // Default
     m_Editor->setText(QString::number(static_cast<double>(m_Slider->value()) / m_Factor));
