@@ -45,6 +45,7 @@ private: /* Methods */
 
     // Param Setup
     void SetupIntParam(QGridLayout* layout, int row, const Param* param);
+    void SetupFloatRangedParam(QGridLayout* layout, int row, const Param* param);
     void SetupFloatParam(QGridLayout* layout, int row, const Param* param);
     void SetupBoolParam(QGridLayout* layout, int row, const Param* param);
     void SetupStringParam(QGridLayout* layout, int row, const Param* param);

@@ -9,8 +9,10 @@
 
 /* Internal */
 #include "Effects.h"
+// #include "RangedParamEditor.h"
 #include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Engine/IconForge.h"
+#include "VoidUi/QExtensions/Slider.h"
 #include "VoidUi/QExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
@@ -83,7 +85,7 @@ void EffectEditor::Build()
                 SetupBoolParam(grid, ++row, param);
                 break;
             case Param::TypeDesc::Float:
-                SetupFloatParam(grid, ++row, param);
+                param->range ? SetupFloatRangedParam(grid, ++row, param) : SetupFloatParam(grid, ++row, param);
                 break;
             case Param::TypeDesc::Int:
                 SetupIntParam(grid, ++row, param);
@@ -168,21 +170,36 @@ void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
     }, Qt::DirectConnection);
 }
 
+void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param* param)
+{
+    QLabel* label = new QLabel(param->label.c_str());
+    label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+
+    QuickDoubleSlider* editor = new QuickDoubleSlider;
+
+    editor->SetRange(param->range.lower, param->range.upper);
+    editor->SetSingleStep(param->range.step);
+
+    editor->SetValue(param->GetFloat());
+    editor->setToolTip(ToolTipString(param->name, param->description).c_str());
+
+    grid->addWidget(label, row, 0, Qt::AlignRight);
+    grid->addWidget(editor, row, 1);
+
+    connect(editor, &QuickDoubleSlider::valueChanged, this, [=](double d) -> void
+    {
+        m_Effect->SetValue(param->name, static_cast<float>(d));
+        _PlayerBridge.Refresh();
+    }, Qt::DirectConnection);
+}
+
 void EffectEditor::SetupFloatParam(QGridLayout* grid, int row, const Param* param)
 {
     QLabel* label = new QLabel(param->label.c_str());
     label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
     QDoubleSpinBox* editor = new QDoubleSpinBox;
-    if (param->range)
-    {
-        editor->setRange(param->range.lower, param->range.upper);
-        editor->setSingleStep(param->range.step);
-    }
-    else
-    {
-        editor->setSingleStep(0.1);
-    }
+    editor->setSingleStep(0.1);
     editor->setValue(param->GetFloat());
     editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 

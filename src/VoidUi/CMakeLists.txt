@@ -23,8 +23,10 @@ set(SOURCES
     Dock/DockSplitter.cpp
 
     # Editors
-    Editor/Properties.cpp
     Editor/Effects.cpp
+    Editor/ParamEditor.cpp
+    Editor/Properties.cpp
+    Editor/RangedParamEditor.cpp
     
     # Core Engine Globals
     Engine/Bridge.cpp
