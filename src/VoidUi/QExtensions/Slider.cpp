@@ -62,21 +62,15 @@ void QuickDoubleSlider::SetValue(double value)
 
 void QuickDoubleSlider::SetMinimum(double min)
 {
+    // Ensure that we are working within the integer bounds i.e. not in decimal
+    CalculateFactor(min);
+
     if (min == 0)
-    {
-        // m_Factor = 100;
         m_Slider->setMinimum(0);
-    }
     else if (min < 0)
-    {
-        // m_Factor = std::abs(1 / min);
         m_Slider->setMinimum(min * m_Factor);
-    }
     else
-    {
-        // m_Factor = 1 / min;
         m_Slider->setMinimum(1);
-    }
 }
 
 void QuickDoubleSlider::SetMaximum(double max)
@@ -125,6 +119,27 @@ void QuickDoubleSlider::Setup()
 
         emit valueChanged(static_cast<double>(value) / m_Factor);
     });
+    connect(m_Editor, &QLineEdit::returnPressed, this, &QuickDoubleSlider::EditorUpdated);
+    connect(m_Editor, &QLineEdit::editingFinished, this, &QuickDoubleSlider::EditorUpdated);
+}
+
+void QuickDoubleSlider::EditorUpdated()
+{
+    QString text = m_Editor->text();
+    // User decided to leave this empty, in that case we want to restore the last value from the slider
+    if (text.isEmpty())
+    {
+        m_Editor->setText(QString::number(static_cast<double>(m_Slider->value()) / m_Factor));
+        return;
+    }
+
+    m_Slider->setValue(text.toDouble() * m_Factor);
+}
+
+void QuickDoubleSlider::CalculateFactor(double minimum)
+{
+    if (minimum != 0 && std::abs(minimum * m_Factor) < 1)
+        m_Factor = 1 / minimum;
 }
 
 VOID_NAMESPACE_CLOSE

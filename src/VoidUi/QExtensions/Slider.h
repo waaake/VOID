@@ -71,6 +71,8 @@ private: /* Members */
 private: /* Methods */
     void Build();
     void Setup();
+    void EditorUpdated();
+    void CalculateFactor(double minimum);
 };
 
 VOID_NAMESPACE_CLOSE
