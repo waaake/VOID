@@ -2,11 +2,14 @@
 // Licensed under the MIT License
 
 /* Qt */
-#include <QPainter>
 #include <QDoubleValidator>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QStyle>
 
 /* Internal */
 #include "Slider.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -49,27 +52,46 @@ void SimpleSlider::paintEvent(QPaintEvent* event)
     QPainter painter(this);
 
     // Groove
+    int gleft = 2;
+    int gright = width() - 2;
+    int gwidth = gright - gleft;
+
     painter.setPen(Qt::black);
-    painter.setBrush(palette().color(QPalette::Base));
-    painter.drawRect(0, height() * 0.25, width(), 4);
+    painter.setBrush(Qt::transparent);
+    painter.drawRect(0, height() * 0.25, gwidth, 4);
 
     if (tickInterval())
     {
-        for (int i = minimum(); i <= maximum(); i+= tickInterval())
+        for (int i = minimum(); i < maximum(); i+= tickInterval())
         {
             painter.setPen(QPen(Qt::black, 1));
-            int pos = width() * (i - minimum()) / (maximum() - minimum());
+            int pos = gwidth * (i - minimum()) / (maximum() - minimum());
     
             painter.drawLine(pos, height() * 0.5 + 4, pos, height());
         }
+
+        painter.drawLine(gwidth, height() * 0.5 + 4, gwidth, height());
     }
 
     // Handle
-    int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
+    int hpos = gwidth * (value() - minimum()) / std::max((maximum() - minimum()), 1);
     painter.setPen(Qt::black);
 
     painter.setBrush(isSliderDown() ? palette().color(QPalette::Highlight) : QColor(210, 210, 210));
     painter.drawRect(hpos - 2, height() * 0.15 , 4, height() - (height() * 0.5));
+}
+
+void SimpleSlider::mouseMoveEvent(QMouseEvent* event)
+{
+	setValue(QStyle::sliderValueFromPosition(
+                minimum(),
+                maximum(),
+                event->pos().x(),
+                width(),
+                orientation() == Qt::Vertical
+            ));
+
+	SimpleSlider::mousePressEvent(event);
 }
 
 /// QuickDoubleSlider
@@ -144,7 +166,7 @@ void QuickDoubleSlider::Setup()
     m_Editor->setValidator(validator);
 
     m_Slider->setTickPosition(QSlider::TicksBelow);
-    m_Slider->setTickInterval(m_Slider->singleStep() * m_Factor);
+    m_Slider->setTickInterval(m_Slider->singleStep() * m_Factor / 4);
 
     // Default
     m_Editor->setText(QString::number(static_cast<double>(m_Slider->value()) / m_Factor));
