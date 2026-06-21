@@ -6,6 +6,7 @@
 
 /* Qt */
 #include <QWidget>
+#include <QLineEdit>
 #include <QSlider>
 #include <QLayout>
 
@@ -38,7 +39,50 @@ private: /* Members */
 
 private: /* Methods */
     void Build();
+};
 
+class SimpleSlider : public QSlider
+{
+public:
+    SimpleSlider(Qt::Orientation orientation, QWidget* parent = nullptr);
+
+protected:
+    void paintEvent(QPaintEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+};
+
+class QuickDoubleSlider : public QWidget
+{
+    Q_OBJECT
+public:
+    QuickDoubleSlider(QWidget* parent = nullptr);
+    ~QuickDoubleSlider();
+
+    void SetValue(double value);
+    void SetMinimum(double min);
+    void SetMaximum(double max);
+    void SetRange(double min, double max);
+    void SetSingleStep(double step);
+
+    double Value() const { return m_Editor->text().toDouble(); }
+
+signals:
+    void valueChanged(double);
+
+private: /* Members */
+    QHBoxLayout* m_Layout;
+    QLineEdit* m_Editor;
+    SimpleSlider* m_Slider;
+
+    int m_Min;
+    int m_Max;
+    unsigned int m_Factor;
+
+private: /* Methods */
+    void Build();
+    void Setup();
+    void EditorUpdated();
+    void CalculateFactor(double minimum);
 };
 
 VOID_NAMESPACE_CLOSE

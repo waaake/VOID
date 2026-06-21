@@ -52,6 +52,38 @@ private:
     ValueType data;
 };
 
+/**
+ * @brief Defines the working range of the parameter
+ * Applicable only for the int and float types, this defines the upper and lower
+ * bounds on the param editor allowing users to play with the values
+ * 
+ */
+struct VOID_API ParamRange
+{
+    float lower;
+    float upper;
+    float step;
+
+    ParamRange() : ParamRange(0, 0, 0.1f) {}
+    /**
+     * @brief Construct a new Param Range
+     * 
+     * @param lower lower bound.
+     * @param upper upper bound.
+     */
+    ParamRange(float lower, float upper) : ParamRange(lower, upper, 0.1f) {}
+    /**
+     * @brief Construct a new Param Range.
+     * 
+     * @param lower lower bound.
+     * @param upper upper bound.
+     * @param step defines how much should change with each delta (increment/decrement).
+     */
+    ParamRange(float lower, float upper, float step) : lower(lower), upper(upper), step(step) {}
+
+    inline explicit operator bool() const noexcept { return lower != upper; }
+};
+
 struct VOID_API Param
 {
     enum class TypeDesc { Int, Float, Boolean, String };
@@ -62,6 +94,7 @@ struct VOID_API Param
     TypeDesc type;
     ParamValue value;
     ParamValue preset;
+    ParamRange range;
 
     Param()
         : name(""), label(""), description(""), type(TypeDesc::Int), value(0), preset(0) {}
@@ -70,9 +103,17 @@ struct VOID_API Param
         : name(std::move(name)), label(std::move(label)), description("")
         , type(type), value(value), preset(std::move(value)) {}
 
+    Param(std::string name, std::string label, ParamValue value, ParamRange range, const TypeDesc& type)
+        : name(std::move(name)), label(std::move(label)), description("")
+        , type(type), value(value), preset(std::move(value)), range(std::move(range)) {}
+
     Param(std::string name, std::string label, std::string description, ParamValue value, const TypeDesc& type)
         : name(std::move(name)), label(std::move(label)), description(std::move(description))
         , type(type), value(value), preset(std::move(value)) {}
+
+    Param(std::string name, std::string label, std::string description, ParamValue value, ParamRange range, const TypeDesc& type)
+        : name(std::move(name)), label(std::move(label)), description(std::move(description))
+        , type(type), value(value), preset(std::move(value)), range(std::move(range)) {}
 
     template <typename _Ty>
     void SetValue(_Ty v) { value.Set(v); }

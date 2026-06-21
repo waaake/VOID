@@ -552,12 +552,15 @@ void MediaClip::Deserialize(std::istream& in)
     }
 }
 
-void MediaClip::Evaluate(v_frame_t frame)
+SharedPixels MediaClip::Evaluate(v_frame_t frame)
 {
     Frame* f = FramePtr(frame);
-    SharedPixels image = f->Image();
+
     if (f->Dirty())
     {
+        // Generates a new copy everytime :(
+        SharedPixels image = f->Writable();
+
         for (auto effect : m_Effects)
         {
             // Only process the effects that are enabled
@@ -566,10 +569,13 @@ void MediaClip::Evaluate(v_frame_t frame)
                 VOID_LOG_INFO("Processing {}", effect->Name());
                 ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
             }
-
-            f->SetDirty(false);
         }
+
+        f->SetDirty(false);
+        return image;
     }
+
+    return f->Image();
 }
 
 VOID_NAMESPACE_CLOSE

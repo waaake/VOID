@@ -55,6 +55,7 @@ public:
      * has no effect if the frame has already been read
      */
     SharedPixels Image(bool cached = true);
+    SharedPixels Writable();
 
     /**
      * Returns the underlying metadata from the image
@@ -68,6 +69,7 @@ public:
 protected: /* Members */
     MEntry m_MediaEntry;
     SharedPixels m_ImageData;
+    SharedPixels m_Writable;
     v_frame_t m_Framenumber;
     int m_Channels = {0};
     bool m_Dirty = {false};

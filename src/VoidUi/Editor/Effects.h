@@ -5,10 +5,10 @@
 #define _EFFECTS_EDITOR_H
 
 /* Qt */
-#include <QWidget>
 #include <QLayout>
 #include <QLineEdit>
 #include <QToolButton>
+#include <QWidget>
 
 /* Internal */
 #include "Definition.h"
@@ -42,6 +42,13 @@ private: /* Methods */
     void Build();
     void Setup();
     void Connect();
+
+    // Param Setup
+    void SetupIntParam(QGridLayout* layout, int row, const Param* param);
+    void SetupFloatRangedParam(QGridLayout* layout, int row, const Param* param);
+    void SetupFloatParam(QGridLayout* layout, int row, const Param* param);
+    void SetupBoolParam(QGridLayout* layout, int row, const Param* param);
+    void SetupStringParam(QGridLayout* layout, int row, const Param* param);
 };
 
 VOID_NAMESPACE_CLOSE

@@ -71,7 +71,9 @@ class VoidPixReader
 {
 public:
     VoidPixReader(const std::string& path, v_frame_t framenumber = 0) : m_Path(path), m_Framenumber(framenumber) {}
-    virtual ~VoidPixReader() {}
+    virtual ~VoidPixReader() = default;
+
+    virtual SharedPixels Copy() const = 0;
 
     /**
      * Returns the OpenGL texture type

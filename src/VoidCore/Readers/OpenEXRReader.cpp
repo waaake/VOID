@@ -43,6 +43,17 @@ OpenEXRReader::~OpenEXRReader()
     Clear();
 }
 
+SharedPixels OpenEXRReader::Copy() const
+{
+    auto copy = std::make_shared<OpenEXRReader>(m_Path, m_Framenumber);
+    copy->m_Channels = m_Channels;
+    copy->m_Width = m_Width;
+    copy->m_Height = m_Height;
+    copy->m_Pixels = m_Pixels;
+
+    return copy;
+}
+
 void OpenEXRReader::Clear()
 {
     /* Remove any data from the pixels vector and shrink it back in place */
@@ -52,7 +63,7 @@ void OpenEXRReader::Clear()
 
 ImageRow OpenEXRReader::Row(std::size_t row)
 {
-    return (row >= m_Pixels.size())
+    return (row >= m_Height)
             ? ImageRow()
             : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
 }
