@@ -65,12 +65,28 @@ ImageRow OpenEXRReader::Row(std::size_t row)
 {
     return (row >= m_Height)
             ? ImageRow()
-            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
 }
 
 const unsigned char* OpenEXRReader::ThumbnailPixels()
 {
-    return m_Pixels.data();
+    if (m_TPixels.empty())
+    {
+        m_TPixels.resize(m_Pixels.size());
+        unsigned char* pixels = m_TPixels.data();
+
+        for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
+        {
+            int index = i * m_Channels;
+
+            pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
+            pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
+            pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
+            pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
+        }
+    }
+
+    return m_TPixels.data();
 }
 
 void OpenEXRReader::Read()
@@ -113,34 +129,21 @@ void OpenEXRReader::Read()
      * TODO: Check if we can use this data onto Renderer directly without casting this ?
      */
     /* Convert floating point exr pixels to 8-bit RGB/RGBA format */
-    std::vector<float> ipixels(m_Width * m_Height * m_Channels);
     m_Pixels.resize(m_Width * m_Height * m_Channels);
 
     for (int y = 0; y < m_Height; y++)
     {
         for (int x = 0; x < m_Width; x++)
         {
-            /* The pixel from the buffer */
             const Imf::Rgba& pixel = pixels[y][x];
-            /* Find the index at which we will be writing to on the pixel buffer */
+            // Find the index at which we will be writing to on the pixel buffer
             int index = (y * m_Width + x) * m_Channels;
 
-            ipixels[index] = pixel.r;
-            ipixels[index + 1] = pixel.g;
-            ipixels[index + 2] = pixel.b;
-            ipixels[index + 3] = pixel.a;
+            m_Pixels[index] = pixel.r;
+            m_Pixels[index + 1] = pixel.g;
+            m_Pixels[index + 2] = pixel.b;
+            m_Pixels[index + 3] = pixel.a;
         }
-    }
-
-    unsigned char* dest = m_Pixels.data();
-
-    for (size_t i = 0; i < (m_Width * m_Height); ++i)
-    {
-        int index = i * 4;
-        dest[index + 0] = static_cast<unsigned char>(std::clamp(ipixels[index + 0], 0.f, 1.f) * 255.f);
-        dest[index + 1] = static_cast<unsigned char>(std::clamp(ipixels[index + 1], 0.f, 1.f) * 255.f);
-        dest[index + 2] = static_cast<unsigned char>(std::clamp(ipixels[index + 2], 0.f, 1.f) * 255.f);
-        dest[index + 3] = static_cast<unsigned char>(std::clamp(ipixels[index + 3], 0.f, 1.f) * 255.f);
     }
 }
 

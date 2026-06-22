@@ -1,8 +1,12 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <algorithm>
+
 /* OpenImageIO */
-#include "OpenImageIO/imageio.h"
+#include <OpenImageIO/imageio.h>
+#include <OpenImageIO/imagebufalgo.h>
 
 /* Internal */
 #include "OIIOReader.h"
@@ -22,6 +26,29 @@ OIIOPixReader::OIIOPixReader(const std::string& path, v_frame_t framenumber)
 OIIOPixReader::~OIIOPixReader()
 {
     Clear();
+}
+
+const unsigned char* OIIOPixReader::ThumbnailPixels()
+{
+    if (m_TPixels.empty())
+    {
+        m_TPixels.resize(m_Pixels.size());
+        unsigned char* pixels = m_TPixels.data();
+
+        for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
+        {
+            int index = i * m_Channels;
+
+            pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
+            pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
+            pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
+
+            if (m_Channels == 4)
+                pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
+        }
+    }
+
+    return m_TPixels.data();
 }
 
 SharedPixels OIIOPixReader::Copy() const
@@ -47,7 +74,7 @@ ImageRow OIIOPixReader::Row(std::size_t row)
 {
     return (row >= m_Height)
             ? ImageRow()
-            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
 }
 
 void OIIOPixReader::Read()
@@ -89,17 +116,18 @@ void OIIOPixReader::Read()
     /* Read requisites */
     int subimage = 0;
     int miplevel = 0;
-    /* Channels to read from - to */
     int chbegin = 0, chend = m_Channels;
 
-    /* Resize the Pixels */
+    std::vector<unsigned char> original(m_Width * m_Height * m_Channels);
     m_Pixels.resize(m_Width * m_Height * m_Channels);
 
-    /* Read the image pixels */
-    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, m_Pixels.data());
-
-    /* Close the image after reading */
+    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, original.data());
     input->close();
+
+    OIIO::ImageBuf src(spec, original.data());
+    OIIO::ImageBuf linear;
+    OIIO::ImageBufAlgo::colorconvert(linear, src, "sRGB", "Linear");
+    linear.get_pixels(OIIO::ROI::All(), OIIO::TypeDesc::FLOAT, m_Pixels.data());
 }
 
 const std::map<std::string, std::string> OIIOPixReader::Metadata() const

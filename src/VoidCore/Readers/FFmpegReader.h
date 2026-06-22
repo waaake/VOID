@@ -25,6 +25,24 @@ extern "C"
 
 VOID_NAMESPACE_OPEN
 
+template <typename _Ty>
+struct Buffer
+{
+    std::vector<_Ty> _buf;
+    _Ty* Data() noexcept { return _buf.data(); }
+    std::size_t Size() const noexcept { return _buf.size(); }
+
+    auto operator[](std::size_t _index) { return _buf[_index]; }
+    void Resize(std::size_t size)
+    {
+        _buf.resize(size);
+
+        // The buffer was shrunk down, no need to hold the extra memory
+        if (_buf.capacity() > _buf.size())
+            _buf.shrink_to_fit();
+    }
+};
+
 class FFmpegDecoder
 {
 public:
@@ -47,7 +65,7 @@ public:
      * O(n) as the iterator might have to loop over all frames to get to the one we're looking at which also
      * caches the other frames so next frame queries could directly result in direct data transfer
      */
-    bool Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels);
+    bool Decode(const std::string& path, const int framenumber, std::vector<float>& pixels);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -69,6 +87,8 @@ private: /* Members */
     AVStream* m_Stream;
     int m_StreamID;
 
+    Buffer<unsigned char> m_Buffer;
+
     std::mutex m_Mutex;
 
 private: /* Methods */
@@ -80,6 +100,8 @@ private: /* Methods */
      * returns back the frame number (converted from av time base to signed long)
      */
     v_frame_t DecodeNextFrame(bool save = true);
+    void FillBuffer(std::vector<float>& out);
+    inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 };
 
 class VOID_API FFmpegPixReader : public VoidMPixReader
@@ -100,7 +122,7 @@ public:
      * Returns the OpenGL data type
      * e.g. GL_UNSIGNED_BYTE, GL_FLOAT
      */
-    inline virtual unsigned int GLType() const override { return VOID_GL_UNSIGNED_BYTE; }
+    inline virtual unsigned int GLType() const override { return VOID_GL_FLOAT; }
 
     /**
      * Specifies the number of color components in the texture
@@ -129,7 +151,7 @@ public:
      * Not all frames will be used so this function can create a vector on the fly if unsigned char
      * is not the base datatype of the class
      */
-    inline virtual const unsigned char* ThumbnailPixels() override { return m_Pixels.data(); }
+    virtual const unsigned char* ThumbnailPixels() override;
 
     /**
      * Image Specifications
@@ -163,12 +185,12 @@ public:
     /**
      * Retrieve the input colorspace of the media file
      */
-    inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::sRGB; }
+    inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::Linear; }
 
     /**
      * Returns the Size of the frame data
      */
-    virtual size_t FrameSize() const override { return sizeof(unsigned char) * m_Pixels.size(); }
+    virtual size_t FrameSize() const override { return sizeof(float) * m_Pixels.size(); }
 
     /**
      * Read the metadata from the underlying image/frame
@@ -197,7 +219,8 @@ private: /* Members */
     double m_Framerate;
 
     /* Internal data store */
-    std::vector<unsigned char> m_Pixels;
+    std::vector<float> m_Pixels;
+    std::vector<unsigned char> m_TPixels;
 
 private: /* Methods */
     /**
