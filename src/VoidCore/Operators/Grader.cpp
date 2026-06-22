@@ -114,38 +114,19 @@ bool Grade2::Evaluate(ImageRow& row)
 
         // Red
         if (redchan)
-        {
-            // float red = pixel[0] / 255.f;
-            // red = std::pow((((red - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
             pixel[0] = pow((((pixel[0] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
-        }
 
         // Green
         if (greenchan)
-        {
-            // float green = pixel[1] / 255.f;
-            // green = std::pow((((green - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
-            // pixel[1] = static_cast<unsigned char>(std::clamp<float>(green, 0.f, 1.f) * 255.f);
             pixel[1] = pow((((pixel[1] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
-        }
 
         // Blue
         if (bluechan)
-        {
-            // float blue = pixel[2] / 255.f;
-            // blue = std::pow((((blue - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
-            // pixel[2] = static_cast<unsigned char>(std::clamp<float>(blue, 0.f, 1.f) * 255.f);
             pixel[2] = pow((((pixel[2] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
-        }
 
         // Alpha
         if (row.channels > 3)
-        {
-            // float alpha = pixel[3] / 255.f;
-            // alpha = std::pow((((alpha - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
-            // pixel[3] = static_cast<unsigned char>(std::clamp<float>(alpha, 0.f, 1.f) * 255.f);
             pixel[3] = pow((((pixel[3] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
-        }
     }
 
     return true;
