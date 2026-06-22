@@ -152,19 +152,9 @@ std::string ColorProcessor::Shader(const std::string& function) const
     return shaderDesc->getShaderText();
 }
 
-void ColorProcessor::ProcessImage(float* pixels, int width, int height, int channels, const std::string& display) const
+void ColorProcessor::ProcessImage(float* pixels, int width, int height, int channels, const std::string& outcolorspace) const
 {
-    const char* view = m_Config->getDefaultView(display.c_str());
-    OCIO::ConstProcessorRcPtr processor = m_Config->getProcessor(OCIO::ROLE_SCENE_LINEAR, display.c_str());
-    OCIO::ConstCPUProcessorRcPtr cpuproc = processor->getDefaultCPUProcessor();
-
-    OCIO::PackedImageDesc imgdesc(pixels, width, height, channels);
-    cpuproc->apply(imgdesc);
-}
-
-void ColorProcessor::ProcessImage(float* pixels, int width, int height, int channels, const std::string& incolorspace, const std::string& outcolorspace) const
-{
-    OCIO::ConstProcessorRcPtr processor = m_Config->getProcessor(incolorspace.c_str(), outcolorspace.c_str());
+    OCIO::ConstProcessorRcPtr processor = processor = m_Config->getProcessor(OCIO::ROLE_SCENE_LINEAR, outcolorspace.c_str());
     OCIO::ConstCPUProcessorRcPtr cpuproc = processor->getDefaultCPUProcessor();
 
     OCIO::PackedImageDesc imgdesc(pixels, width, height, channels);

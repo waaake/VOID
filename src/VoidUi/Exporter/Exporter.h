@@ -47,9 +47,6 @@ private: /* Members */
     MFrameRange m_Range;
     std::string m_Colorspace;
     std::vector<float> m_Pixels;
-
-private: /* Methods */
-    void ProcessImage(const void* pixels, int width, int height, int channels, const ColorSpace& incolorspace);
 };
 
 VOID_NAMESPACE_CLOSE

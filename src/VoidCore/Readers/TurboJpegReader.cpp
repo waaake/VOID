@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* STD */
+#include <algorithm>
 #include <fstream>
 
 /* TurboJPEG */
@@ -27,6 +28,27 @@ TurboJpegReader::~TurboJpegReader()
     Clear();
 }
 
+const unsigned char* TurboJpegReader::ThumbnailPixels()
+{
+    if (m_TPixels.empty())
+    {
+        m_TPixels.resize(m_Pixels.size());
+        unsigned char* pixels = m_TPixels.data();
+
+        for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
+        {
+            int index = i * m_Channels;
+
+            pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
+            pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
+            pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
+            pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
+        }
+    }
+
+    return m_TPixels.data();
+}
+
 SharedPixels TurboJpegReader::Copy() const
 {
     auto copy = std::make_shared<TurboJpegReader>(m_Path, m_Framenumber);
@@ -50,7 +72,7 @@ ImageRow TurboJpegReader::Row(std::size_t row)
 {
     return (row >= m_Height)
             ? ImageRow()
-            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
 }
 
 void TurboJpegReader::Read()
@@ -100,8 +122,9 @@ void TurboJpegReader::Read()
     VOID_LOG_INFO("TurboJPEG Reader: Height {0}, Width {1}, Channels: {2}", m_Width, m_Height, m_Channels);
 
     m_Pixels.resize(pitch * m_Height);
+    std::vector<unsigned char> out(pitch * m_Height);
 
-    if (tjDecompress2(handle, jpegBuffer.data(), jpegSize, m_Pixels.data(), m_Width, pitch, m_Height, TJPF_RGBA, TJFLAG_FASTDCT) != 0)
+    if (tjDecompress2(handle, jpegBuffer.data(), jpegSize, out.data(), m_Width, pitch, m_Height, TJPF_RGBA, TJFLAG_FASTDCT) != 0)
     {
         VOID_LOG_ERROR("Failed to decompress JPEG: {0}", tjGetErrorStr());
 
@@ -110,6 +133,15 @@ void TurboJpegReader::Read()
     }
 
     tjDestroy(handle);
+
+    for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
+    {
+        int index = i * m_Channels;
+        m_Pixels[index] = Linear(static_cast<float>(out[index]) / 255.f);
+        m_Pixels[index + 1] = Linear(static_cast<float>(out[index + 1]) / 255.f);
+        m_Pixels[index + 2] = Linear(static_cast<float>(out[index + 2]) / 255.f);
+        m_Pixels[index + 3] = Linear(static_cast<float>(out[index + 3]) / 255.f);
+    }
 }
 
 const std::map<std::string, std::string> TurboJpegReader::Metadata() const

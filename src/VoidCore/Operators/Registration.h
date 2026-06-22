@@ -7,6 +7,7 @@
 #include "Definition.h"
 #include "FormatForge.h"
 #include "Grader.h"
+#include "Inverter.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -14,7 +15,11 @@ namespace Internal {
 
     bool RegisterInvertOp()
     {
-        return false;
+        IOpRegistry r;
+        r.name = "Invert";
+        r.iop = []() -> std::unique_ptr<ImageOp> { return std::make_unique<InvertOp>(); };
+
+        return Forge::Instance().Register(r);
     }
     
     bool RegisterFlipOp()
@@ -44,6 +49,7 @@ namespace Internal {
 
 void RegisterOperators()
 {
+    Internal::RegisterInvertOp();
     Internal::RegisterColorGradeOp();
     Internal::RegisterGrade2();
 }

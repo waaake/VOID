@@ -3,6 +3,7 @@
 
 /* STD */
 #include <memory>
+#include <algorithm>
 
 /* Internal */
 #include "FFmpegReader.h"
@@ -88,8 +89,8 @@ void FFmpegDecoder::Open()
     const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
     m_CodecContext = avcodec_alloc_context3(codec);
 
-    if (m_CodecContext->pix_fmt == AV_PIX_FMT_RGBA)
-        m_Channels = 4;
+    // if (m_CodecContext->pix_fmt == AV_PIX_FMT_RGBA)
+    //     m_Channels = 4;
 
     /* Update the codec context based on the values from the codec params */
     avcodec_parameters_to_context(m_CodecContext, codecParams);
@@ -119,7 +120,7 @@ void FFmpegDecoder::Close()
     m_StreamID = -1;
 }
 
-bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels)
+bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<float>& pixels)
 {
     /**
      * At the moment, this is not accessible concurrently throught multiple threads
@@ -137,15 +138,11 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
         Open();
     }
 
-    pixels.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+    m_Buffer.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+    pixels.resize(m_Buffer.Size());
 
-    /* Setup data pointers */
-    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, m_Buffer.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
 
-    /**
-     * Allocate the sws context
-     * not scaling the image, have set the destination width and height to be the same as the source for now
-     */
     m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
     /* Now we start */
@@ -188,8 +185,9 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
         }
         else if (ret == framenumber)
         {
-            /* We found the frame */
+            // Frame found, fillup the float input buffer
             found = true;
+            FillBuffer(pixels);
             break;
         }
         else if (distance > 20 && !seeked)
@@ -231,6 +229,17 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
 
     /* The decoded frame number*/
     return m_CurrentFrame;
+}
+
+void FFmpegDecoder::FillBuffer(std::vector<float>& out)
+{
+    for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
+    {
+        int index = i * 3;
+        out[index] = Linear(m_Buffer[index] / 255.f);
+        out[index + 1] = Linear(m_Buffer[index + 1] / 255.f);
+        out[index + 2] = Linear(m_Buffer[index + 2] / 255.f);
+    }
 }
 
 /* }}} */
@@ -278,11 +287,34 @@ void FFmpegPixReader::Clear()
     m_Pixels.shrink_to_fit();
 }
 
+const unsigned char* FFmpegPixReader::ThumbnailPixels()
+{
+    if (m_TPixels.empty())
+    {
+        m_TPixels.resize(m_Pixels.size());
+        unsigned char* pixels = m_TPixels.data();
+
+        for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
+        {
+            int index = i * m_Channels;
+
+            pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
+            pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
+            pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
+
+            // if (m_Channels == 4)
+            pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
+        }
+    }
+
+    return m_TPixels.data();
+}
+
 ImageRow FFmpegPixReader::Row(std::size_t row)
 {
     return (row >= m_Height)
             ? ImageRow()
-            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(unsigned char));
+            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
 }
 
 void FFmpegPixReader::ProcessInformation()
@@ -335,7 +367,6 @@ double FFmpegPixReader::Framerate()
 
 void FFmpegPixReader::Read()
 {
-    /* Decoder */
     FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
     if (decoder.Decode(m_Path, m_Framenumber, m_Pixels))
     {

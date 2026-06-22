@@ -31,7 +31,7 @@ public:
      * Returns the OpenGL data type
      * e.g. GL_UNSIGNED_BYTE, GL_FLOAT
      */
-    inline virtual unsigned int GLType() const override { return VOID_GL_UNSIGNED_BYTE; }
+    inline virtual unsigned int GLType() const override { return VOID_GL_FLOAT; }
 
     /**
      * Specifies the number of color components in the texture
@@ -60,7 +60,7 @@ public:
      * Not all frames will be used so this function can create a vector on the fly if unsigned char
      * is not the base datatype of the class
      */
-    inline virtual const unsigned char* ThumbnailPixels() override { return m_Pixels.data(); }
+    inline virtual const unsigned char* ThumbnailPixels() override;
 
     /**
      * Image Specifications
@@ -84,12 +84,12 @@ public:
     /**
      * Retrieve the input colorspace of the media file
      */
-    inline virtual ColorSpace InputColorSpace() const override { return m_InputColorSpace; }
+    inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::Linear; }
 
     /**
      * Returns the Size of the frame data
      */
-    virtual size_t FrameSize() const override { return sizeof(unsigned char) * m_Pixels.size(); }
+    virtual size_t FrameSize() const override { return sizeof(float) * m_Pixels.size(); }
 
     /**
      * Read the metadata from the underlying image/frame
@@ -108,7 +108,8 @@ private: /* Members */
     ColorSpace m_InputColorSpace;
 
     /* Internal data store */
-    std::vector<unsigned char> m_Pixels;
+    std::vector<unsigned char> m_TPixels;
+    std::vector<float> m_Pixels;
 };
 
 VOID_NAMESPACE_CLOSE

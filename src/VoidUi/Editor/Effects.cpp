@@ -142,7 +142,7 @@ void EffectEditor::Connect()
     {
         m_Effect->SetEnabled(checked);
         _PlayerBridge.Refresh();
-    }, Qt::DirectConnection);
+    });
 }
 
 void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
@@ -166,7 +166,7 @@ void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
     {
         m_Effect->SetValue(param->name, i);
         _PlayerBridge.Refresh();
-    }, Qt::DirectConnection);
+    });
 }
 
 void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param* param)
@@ -189,7 +189,7 @@ void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
         _PlayerBridge.Refresh();
-    }, Qt::DirectConnection);
+    });
 }
 
 void EffectEditor::SetupFloatParam(QGridLayout* grid, int row, const Param* param)
@@ -209,7 +209,7 @@ void EffectEditor::SetupFloatParam(QGridLayout* grid, int row, const Param* para
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
         _PlayerBridge.Refresh();
-    }, Qt::DirectConnection);
+    });
 }
 
 void EffectEditor::SetupBoolParam(QGridLayout* grid, int row, const Param* param)
@@ -228,7 +228,7 @@ void EffectEditor::SetupBoolParam(QGridLayout* grid, int row, const Param* param
     {
         m_Effect->SetValue(param->name, b);
         _PlayerBridge.Refresh();
-    }, Qt::DirectConnection);
+    });
 }
 
 void EffectEditor::SetupStringParam(QGridLayout* grid, int row, const Param* param)
@@ -247,7 +247,7 @@ void EffectEditor::SetupStringParam(QGridLayout* grid, int row, const Param* par
     {
         m_Effect->SetValue(param->name, editor->text().toStdString());
         _PlayerBridge.Refresh();
-    }, Qt::DirectConnection);
+    });
 }
 
 VOID_NAMESPACE_CLOSE
