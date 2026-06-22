@@ -108,17 +108,6 @@ ExportMediaFramesTask::ExportMediaFramesTask(const SharedMediaClip& media, const
 {
 }
 
-void ExportMediaFramesTask::ProcessImage(const void* pixels, int width, int height, int channels, const ColorSpace& incolorspace)
-{
-    const unsigned char* cpixels = static_cast<const unsigned char*>(pixels);
-
-    for (int i = 0; i < (width * height * channels); ++i)
-        m_Pixels[i] = cpixels[i] / 255.0f;
-
-    // Image processing
-    ColorProcessor::Instance().ProcessImage(m_Pixels.data(), width, height, channels, incolorspace, m_Colorspace);
-}
-
 bool ExportMediaFramesTask::Work()
 {
     if (SharedMediaClip media = m_Media.lock())
@@ -166,8 +155,8 @@ bool ExportMediaFramesTask::Work()
                 SharedPixels image = media->Image(i);
 
                 /// Colorspace processor
-                ProcessImage(image->Pixels(), image->Width(), image->Height(), image->Channels(), image->InputColorSpace());
-                if (!ir.Render(i, m_Pixels.data(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
+                ColorProcessor::Instance().ProcessImage(static_cast<float*>(image->Writable()), image->Width(), image->Height(), image->Channels(), m_Colorspace);
+                if (!ir.Render(i, image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
                 {
                     Log(QString("Unable to render current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
@@ -215,8 +204,8 @@ bool ExportMediaFramesTask::Work()
                 SharedPixels image = media->Image(i);
 
                 /// Colorspace processor
-                ProcessImage(image->Pixels(), image->Width(), image->Height(), image->Channels(), image->InputColorSpace());
-                if (!mr.AddBuffer(m_Pixels.data(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
+                ColorProcessor::Instance().ProcessImage(static_cast<float*>(image->Writable()), image->Width(), image->Height(), image->Channels(), m_Colorspace);
+                if (!mr.AddBuffer(image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
                 {
                     Log(QString("Unable to buffer current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
