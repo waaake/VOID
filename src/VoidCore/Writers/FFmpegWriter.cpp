@@ -96,14 +96,14 @@ bool FFmpegWriter::AddBuffer(const void* buffer, std::size_t size, const InputSp
     switch (spec.type)
     {
         case BufferType::Float:
-            CopyBuffer(static_cast<const float*>(buffer), m_SourceFrame->data[0], size);
+            CopyBuffer(static_cast<const float*>(buffer), m_SourceFrame->data[0], spec.width * spec.height * spec.channels);
             break;
         case BufferType::Uint16:
-            CopyBuffer(static_cast<const uint16_t*>(buffer), m_SourceFrame->data[0], size);
+            CopyBuffer(static_cast<const uint16_t*>(buffer), m_SourceFrame->data[0], spec.width * spec.height * spec.channels);
             break;
         case BufferType::Uint8:
         default:
-            CopyBuffer(static_cast<const uint8_t*>(buffer), m_SourceFrame->data[0], size);
+            CopyBuffer(static_cast<const uint8_t*>(buffer), m_SourceFrame->data[0], spec.width * spec.height * spec.channels);
     }
 
     sws_scale(
