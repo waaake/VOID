@@ -112,6 +112,9 @@ public:
     inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
     std::size_t FrameSize();
 
+    void Image(v_frame_t frame, FloatImage& image);
+    void Thumbnail(UInt8Image& image);
+
     inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
     inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
@@ -146,6 +149,7 @@ protected: /* Members */
     std::size_t m_Framesize = {0};
 
     Type m_Type;
+    SharedPixels m_ImageData;
     std::vector<Frame> m_Mediaframes;
     std::vector<v_frame_t> m_Framenumbers;
 

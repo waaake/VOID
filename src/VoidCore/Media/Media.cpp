@@ -128,6 +128,12 @@ void Media::ProcessSequence()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
+    m_ImageData = std::move(Forge::Instance().GetImageReader(
+        m_MediaStruct.Extension(),
+        m_MediaStruct.FirstPath(),
+        m_FirstFrame
+    ));
+
     m_Framenumbers.reserve(frange.duration);
     m_Mediaframes.resize(frange.duration);
 
@@ -172,6 +178,8 @@ void Media::ProcessMovie()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
+    m_ImageData = std::move(r);
+
     for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
     {
         m_Mediaframes[counter] = std::move(MovieFrame(entry, i));
@@ -179,6 +187,20 @@ void Media::ProcessMovie()
     }
 
     m_Type = Media::Type::MOVIE;
+}
+
+void Media::Image(v_frame_t frame, FloatImage& image)
+{
+    // At the moment, the first path and framepath are copy of the string
+    // check if we can directly work with references from the underlying MEntry
+    m_Type == Media::Type::MOVIE
+        ? m_ImageData->Read(m_MediaStruct.FirstPath(), frame, image)
+        : m_ImageData->Read(m_MediaStruct.Framepath(frame), frame, image);
+}
+
+void Media::Thumbnail(UInt8Image& image)
+{
+    m_ImageData->ReadThumbnail(m_MediaStruct.FirstPath(), m_FirstFrame, image);
 }
 
 std::size_t Media::FrameSize()

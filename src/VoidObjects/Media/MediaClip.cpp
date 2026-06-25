@@ -117,14 +117,25 @@ void MediaClip::ReadThumbnail()
     if (!Valid())
         return;
 
+    // UInt8Image image = std::make_shared<struct Image<unsigned char>>();
+    UInt8Image image = VOID_NAMESPACE::Image<unsigned char>::Create();
+
     /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-    SharedPixels im = Media::FirstImage();
+    // SharedPixels im = Media::FirstImage();
+    Media::Thumbnail(image);
+
     QPixmap frame;
+    // frame = std::move(QPixmap::fromImage(QImage(
+    //     im->ThumbnailPixels(),
+    //     im->Width(),
+    //     im->Height(),
+    //     (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
+    // )));
     frame = std::move(QPixmap::fromImage(QImage(
-        im->ThumbnailPixels(),
-        im->Width(),
-        im->Height(),
-        (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
+        image->buffer.Data(),
+        image->width,
+        image->height,
+        (image->channels == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
     )));
 
     // Fallback to default thumbnail if we can't read the frame from the Media
@@ -136,7 +147,7 @@ void MediaClip::ReadThumbnail()
 
     m_Thumbnail = std::move(frame.scaledToWidth(400, Qt::SmoothTransformation));
     // Clear the data for when required
-    im->Clear();
+    // im->Clear();
 
     m_Working.store(false);
     emit updated();
