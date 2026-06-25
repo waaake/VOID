@@ -89,6 +89,54 @@ const unsigned char* OpenEXRReader::ThumbnailPixels()
     return m_TPixels.data();
 }
 
+void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
+{
+    Imf::RgbaInputFile f(path.c_str());
+    // Image Specs
+    Imath::Box2i dw = f.dataWindow();
+    image->width = (dw.max.x - dw.min.x) + 1;
+    image->height = (dw.max.y - dw.min.y) + 1;
+
+    /* To Get the channels -> Read through the header */
+    // const Imf::Header& header = f.header();
+    // const Imf::ChannelList& channels = header.channels();
+
+    // /*
+    //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
+    //  * Update the channel count by reading the channels
+    //  */
+    // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+    //     m_Channels++;
+
+    // Force 4 Channels
+    image->channels = 4;
+
+    // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
+
+    Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);
+
+    // Read the Pixel data onto the buffer
+    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * image->width, 1, image->width);
+    f.readPixels(dw.min.y, dw.max.y);
+
+    image->buffer.Resize(image->width * image->height * image->channels);
+
+    for (int y = 0; y < image->height; y++)
+    {
+        for (int x = 0; x < image->width; x++)
+        {
+            const Imf::Rgba& pixel = pixels[y][x];
+            int index = (y * image->width + x) * image->channels;
+
+            image->buffer[index] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
+            image->buffer[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
+            image->buffer[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
+            image->buffer[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
+        }
+    }
+}
+
+
 void OpenEXRReader::Read()
 {
     /* Create an EXR Reader */
@@ -143,6 +191,56 @@ void OpenEXRReader::Read()
             m_Pixels[index + 1] = pixel.g;
             m_Pixels[index + 2] = pixel.b;
             m_Pixels[index + 3] = pixel.a;
+        }
+    }
+}
+
+void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
+{
+    Imf::RgbaInputFile f(path.c_str());
+
+    // Image Specs
+    Imath::Box2i dw = f.dataWindow();
+    image->width = (dw.max.x - dw.min.x) + 1;
+    image->height = (dw.max.y - dw.min.y) + 1;
+
+    /* To Get the channels -> Read through the header */
+    // const Imf::Header& header = f.header();
+    // const Imf::ChannelList& channels = header.channels();
+
+    // /*
+    //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
+    //  * Update the channel count by reading the channels
+    //  */
+    // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+    //     m_Channels++;
+
+    // Force 4 Channels
+    image->channels = 4;
+    image->format = VOID_GL_RGBA;
+    image->type = VOID_GL_FLOAT;
+
+    // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
+
+    Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);
+
+    // Read the Pixel data onto the buffer
+    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * image->width, 1, image->width);
+    f.readPixels(dw.min.y, dw.max.y);
+
+    image->buffer.Resize(image->width * image->height * image->channels);
+
+    for (int y = 0; y < image->height; y++)
+    {
+        for (int x = 0; x < image->width; x++)
+        {
+            const Imf::Rgba& pixel = pixels[y][x];
+            int index = (y * image->width + x) * image->channels;
+
+            image->buffer[index] = pixel.r;
+            image->buffer[index + 1] = pixel.g;
+            image->buffer[index + 2] = pixel.b;
+            image->buffer[index + 3] = pixel.a;
         }
     }
 }

@@ -26,6 +26,7 @@ public:
      * Reads the provided image file's data into underlying structs
      */
     virtual void Read() override;
+    void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
 
     /**
      * Returns the OpenGL data type
@@ -61,6 +62,7 @@ public:
      * is not the base datatype of the class
      */
     inline virtual const unsigned char* ThumbnailPixels() override;
+    void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
 
     /**
      * Image Specifications

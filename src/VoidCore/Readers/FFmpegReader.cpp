@@ -208,6 +208,91 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
     return found;
 }
 
+bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels)
+{
+    /**
+     * At the moment, this is not accessible concurrently throught multiple threads
+     * Rather than handling this specifically at the cache level, using a guard here
+     * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
+     * still this shouldn't cause any issues...
+     */
+    std::lock_guard<std::mutex> guard(m_Mutex);
+
+    /* A new movie is being read */
+    if (path != m_Path)
+    {
+        Close();
+        m_Path = path;
+        Open();
+    }
+
+    pixels.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+
+    m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+
+    /* Now we start */
+    bool found = false;
+    int retryCount = 0;
+
+    int distance = 0;
+    bool seeked = false;
+
+    /* Retry seeking for 3 times before giving up */
+    while (!found && retryCount < 3)
+    {
+        /**
+         * Calculate the distance between the requested and the last frame which was read
+         * this helps us determine whether or not to save any data and also if we need to seek forwards in order
+         * to reach the frame quickly
+         * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
+         * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
+         */
+        distance = framenumber - m_CurrentFrame;
+        /* Decode the next frame and it returns back either a negative value or the decoded frame */
+        v_frame_t ret = DecodeNextFrame((distance < 10));
+
+        /**
+         * Then we check if the return value was greater than the requested frame
+         * if so, we might need to seek back and try again (max 3 times)
+         *
+         * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
+         */
+        if (ret > framenumber || ret == -1)
+        {
+            /* Seek */
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            /* Seek the closest keyframe before the framenumber */
+            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
+            avcodec_flush_buffers(m_CodecContext);
+
+            /* Increment the retry count */
+            retryCount++;
+        }
+        else if (ret == framenumber)
+        {
+            // Frame found, fillup the float input buffer
+            found = true;
+            break;
+        }
+        else if (distance > 20 && !seeked)
+        {
+            /* Seek */
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            /**
+             * Seek the framenumber
+             * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
+             */
+            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
+            avcodec_flush_buffers(m_CodecContext);
+
+            seeked = true;
+        }
+    }
+
+    return found;
+}
+
 v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
 {
     /* Read the next frame from the packet */
@@ -310,6 +395,19 @@ const unsigned char* FFmpegPixReader::ThumbnailPixels()
     return m_TPixels.data();
 }
 
+void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
+{
+    FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
+    if (decoder.Decode(path, frame, image->buffer._buf))
+    {
+        image->width = decoder.Width();
+        image->height = decoder.Height();
+        image->channels = decoder.Channels();
+
+        image->format = VOID_GL_RGB;
+    }
+}
+
 ImageRow FFmpegPixReader::Row(std::size_t row)
 {
     return (row >= m_Height)
@@ -375,6 +473,20 @@ void FFmpegPixReader::Read()
         m_Height = decoder.Height();
 
         m_Channels = decoder.Channels();
+    }
+}
+
+void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
+{
+    FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
+    if (decoder.Decode(path, frame, image->buffer._buf))
+    {
+        image->width = decoder.Width();
+        image->height = decoder.Height();
+        image->channels = decoder.Channels();
+
+        image->format = VOID_GL_RGB;
+        image->type = VOID_GL_FLOAT;
     }
 }
 

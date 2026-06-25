@@ -25,24 +25,6 @@ extern "C"
 
 VOID_NAMESPACE_OPEN
 
-template <typename _Ty>
-struct Buffer
-{
-    std::vector<_Ty> _buf;
-    _Ty* Data() noexcept { return _buf.data(); }
-    std::size_t Size() const noexcept { return _buf.size(); }
-
-    auto operator[](std::size_t _index) { return _buf[_index]; }
-    void Resize(std::size_t size)
-    {
-        _buf.resize(size);
-
-        // The buffer was shrunk down, no need to hold the extra memory
-        if (_buf.capacity() > _buf.size())
-            _buf.shrink_to_fit();
-    }
-};
-
 class FFmpegDecoder
 {
 public:
@@ -66,6 +48,7 @@ public:
      * caches the other frames so next frame queries could directly result in direct data transfer
      */
     bool Decode(const std::string& path, const int framenumber, std::vector<float>& pixels);
+    bool Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -117,6 +100,7 @@ public:
      * Reads the provided image file's data into underlying structs
      */
     virtual void Read() override;
+    void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
 
     /**
      * Returns the OpenGL data type
@@ -152,6 +136,7 @@ public:
      * is not the base datatype of the class
      */
     virtual const unsigned char* ThumbnailPixels() override;
+    void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
 
     /**
      * Image Specifications
