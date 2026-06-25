@@ -110,7 +110,7 @@ public:
     inline Frame LastFrameData() const { return m_Mediaframes.back(); }
 
     inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
-    std::size_t FrameSize();
+    // std::size_t FrameSize() const { return m_Reader->FrameSize(); } /// Check if we really really need this???
 
     void Image(v_frame_t frame, FloatImage& image);
     void Thumbnail(UInt8Image& image);
@@ -118,16 +118,16 @@ public:
     inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
     inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
-    inline int Channels() const { return m_Mediaframes.front().Channels(); }
-    inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.front().Metadata(); }
+    inline int Channels() const { return m_Channels; }
+    inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
 
     inline double Framerate() const { return m_Framerate; }
-    inline bool Empty() const { return m_Mediaframes.empty(); }
+    inline bool Empty() const { return m_MediaStruct.Empty(); }
     /**
      * A Media can be considered invalid if it is empty
      * Any valid media will have atleast one frame
      */
-    inline bool Valid() const { return !Empty(); }
+    inline bool Valid() const { return m_Type != Media::Type::UNDEFINED; }
     void Clear();
     void SetDirty(bool dirty = true);
 
@@ -147,9 +147,10 @@ protected: /* Members */
     int m_Samplerate;
     double m_Framerate;
     std::size_t m_Framesize = {0};
+    int m_Channels = {0};
 
     Type m_Type;
-    SharedPixels m_ImageData;
+    SharedPixels m_Reader;
     std::vector<Frame> m_Mediaframes;
     std::vector<v_frame_t> m_Framenumbers;
 

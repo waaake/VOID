@@ -27,7 +27,7 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     , m_Playlist(nullptr)
     , m_CachedTrackItem(nullptr)
     , m_PlayingComponent(PlayableComponent::Clip)
-    , m_State(PlayState::Forwards)
+    , m_State(PlayState::Disabled)
     , m_Name("Viewer")
     , m_Color(130, 110, 190)    // Purple
     , m_Player(nullptr)
@@ -40,6 +40,8 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     , m_BackBuffer(3)
     , m_Active(false)
 {
+    // Temp
+    m_Image = VOID_NAMESPACE::Image<float>::Create();
     m_ThreadPool.setMaxThreadCount(VoidPreferences::Instance().GetCacheThreads());
 
     connect(&m_CacheTimer, &QTimer::timeout, this, &ViewerBuffer::Update, Qt::DirectConnection);
@@ -220,24 +222,24 @@ void ViewerBuffer::ClearCache()
         m_Clip->ClearCache();
 }
 
-SharedPixels ViewerBuffer::Image(const v_frame_t frame)
+FloatImage ViewerBuffer::Image(const v_frame_t frame)
 {
-    /* The active element is a clip */
     if (m_PlayingComponent == PlayableComponent::Clip)
     {
         if (m_Clip->Empty() || !m_Clip->InRange(frame))
             return nullptr;
 
-        return m_Clip->Image(frame);
+        m_Clip->Image(frame, m_Image);
+        return m_Image;
     }
 
     SharedTrackItem item = ItemFromTrack(frame);
-
     if (!item)
         return nullptr;
 
-    /* The pixels from the track item */
-    return item->Image(frame);
+    // The pixels from the track item
+    item->Image(frame, m_Image);
+    return m_Image; // Need to Add this
 }
 
 BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
@@ -250,19 +252,24 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
     }
 }
 
-std::vector<SharedPixels> ViewerBuffer::GridFrame(const v_frame_t frame)
+std::vector<FloatImage> ViewerBuffer::GridFrame(const v_frame_t frame)
 {
-    std::vector<SharedPixels> grid;
+    std::vector<FloatImage> grid;
     grid.reserve(m_Playlist->Size());
 
     if (m_PlayingComponent == PlayableComponent::Grid)
     {
         for (auto& media : m_Playlist->AllMedia())
         {
-            if (media->Contains(frame))
-                grid.push_back(media->Image(frame));
-            else
-                grid.push_back(media->Image(media->NearestFrame(frame)));
+            FloatImage image = VOID_NAMESPACE::Image<float>::Create();
+            // if (media->Contains(frame))
+            //     media->Image(frame);
+            // else
+            //     media->Image(media->NearestFrame(frame)));
+            // media->Contains(frame) ? media->Image(frame, Image) : media->Image
+
+            media->Image(media->Contains(frame) ? frame : media->NearestFrame(frame), image);
+            grid.push_back(image);
         }
     }
 
@@ -295,9 +302,10 @@ BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
     {
         EnsureCached(frame);
 
-        // Process the image before rendering, if any effect has been applied/pending for process
-        d.image = m_Clip->Evaluate(frame);
-        d.annotation = m_Clip->Annotation(frame);
+        // // Process the image before rendering, if any effect has been applied/pending for process
+        // d.image = m_Clip->Evaluate(frame);
+        // d.annotation = m_Clip->Annotation(frame);
+        d.image = m_Image;
         return d;
     }
 
@@ -307,13 +315,13 @@ BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
 BufferData ViewerBuffer::TrackData(const v_frame_t frame, bool nearest)
 {
     BufferData d;
-    SharedTrackItem item = ItemFromTrack(frame);
-    if (item && item ->InRange(frame))
-    {
-        EnsureCached(frame);
-        d.image = item->Image(frame);
-        return d;
-    }
+    // SharedTrackItem item = ItemFromTrack(frame);
+    // if (item && item ->InRange(frame))
+    // {
+    //     EnsureCached(frame);
+    //     d.image = item->Image(frame);
+    //     return d;
+    // }
 
     return d;
 }
@@ -321,13 +329,13 @@ BufferData ViewerBuffer::TrackData(const v_frame_t frame, bool nearest)
 BufferData ViewerBuffer::SequenceData(const v_frame_t frame, bool nearest)
 {
     BufferData d;
-    SharedTrackItem item = ItemFromSequence(frame);
-    if (item && item->InRange(frame))
-    {
-        EnsureCached(frame);
-        d.image = item->Image(frame);
-        return d;
-    }
+    // SharedTrackItem item = ItemFromSequence(frame);
+    // if (item && item->InRange(frame))
+    // {
+    //     EnsureCached(frame);
+    //     d.image = item->Image(frame);
+    //     return d;
+    // }
 
     return d;
 }
@@ -607,39 +615,50 @@ bool ViewerBuffer::Request(v_frame_t frame, bool evict)
 
 void ViewerBuffer::Cache(v_frame_t frame)
 {
-    if (m_PlayingComponent == PlayableComponent::Track)
-    {
-        SharedTrackItem item = ItemFromTrack(frame);
-        if (item)
-        {
-            item->CacheFrame(frame);
-            m_FrameSize = item->FrameSize();
+    // if (m_PlayingComponent == PlayableComponent::Track)
+    // {
+    //     SharedTrackItem item = ItemFromTrack(frame);
+    //     if (item)
+    //     {
+    //         item->CacheFrame(frame);
+    //         m_FrameSize = item->FrameSize();
 
-            Store(frame);
-        }
+    //         Store(frame);
+    //     }
 
-        return;
-    }
+    //     return;
+    // }
 
-    if (m_PlayingComponent == PlayableComponent::Sequence)
-    {
-        if (SharedTrackItem item = ItemFromSequence(frame))
-        {
-            item->CacheFrame(frame);
-            m_FrameSize = item->FrameSize();
+    // if (m_PlayingComponent == PlayableComponent::Sequence)
+    // {
+    //     if (SharedTrackItem item = ItemFromSequence(frame))
+    //     {
+    //         item->CacheFrame(frame);
+    //         m_FrameSize = item->FrameSize();
 
-            Store(frame);
-        }
+    //         Store(frame);
+    //     }
 
-        return;
-    }
+    //     return;
+    // }
+
+    // if (m_Clip->Valid() && m_Clip->Contains(frame))
+    // {
+    //     m_Clip->CacheFrame(frame);
+    //     m_FrameSize = m_Clip->FrameSize();
+
+    //     Store(frame);
+    // }
 
     if (m_Clip->Valid() && m_Clip->Contains(frame))
     {
-        m_Clip->CacheFrame(frame);
-        m_FrameSize = m_Clip->FrameSize();
+        // m_Clip->CacheFrame(frame);
+        // m_FrameSize = m_Clip->FrameSize();
+        m_Clip->Image(frame, m_Image);
+        m_FrameSize = m_Image->Size();
 
-        Store(frame);
+        // Disabling as for temp purposes, we need to continue reading image
+        // Store(frame);
     }
 }
 
@@ -714,7 +733,7 @@ void ViewerBuffer::EnsureCached(v_frame_t frame)
             m_LastCached = frame;
         }
 
-        Request(frame, true);
+        // Request(frame, true);
         Cache(frame);
     }
 }

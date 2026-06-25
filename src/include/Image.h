@@ -99,6 +99,7 @@ struct Image
     bool Valid() const noexcept { return !buffer.Empty(); }
     bool Empty() const noexcept { return buffer.Empty(); }
     const _Ty* Pixels() const noexcept { return buffer.Data(); }
+    _Ty* Writable() noexcept { return buffer.Data(); }
     void Resize() { buffer.Resize(width * height * channels); }
     void Resize(std::size_t size) { buffer.Resize(size); }
     ImageRow Row(std::size_t row)
@@ -107,11 +108,11 @@ struct Image
     }
 
     Image() {}
-    // ~Image()
-    // {
-    //     // Check destruction -------
-    //     std::cout << "Destroyed Image" << "\n";
-    // }
+    ~Image()
+    {
+        // Check destruction -------
+        std::cout << "Destroyed Image" << "\n";
+    }
 
     static std::shared_ptr<Image<_Ty>> Create()
     {

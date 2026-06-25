@@ -117,22 +117,12 @@ void MediaClip::ReadThumbnail()
     if (!Valid())
         return;
 
-    // UInt8Image image = std::make_shared<struct Image<unsigned char>>();
     UInt8Image image = VOID_NAMESPACE::Image<unsigned char>::Create();
-
-    /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-    // SharedPixels im = Media::FirstImage();
     Media::Thumbnail(image);
 
     QPixmap frame;
-    // frame = std::move(QPixmap::fromImage(QImage(
-    //     im->ThumbnailPixels(),
-    //     im->Width(),
-    //     im->Height(),
-    //     (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
-    // )));
     frame = std::move(QPixmap::fromImage(QImage(
-        image->buffer.Data(),
+        image->Pixels(),
         image->width,
         image->height,
         (image->channels == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
@@ -563,30 +553,46 @@ void MediaClip::Deserialize(std::istream& in)
     }
 }
 
-SharedPixels MediaClip::Evaluate(v_frame_t frame)
+void MediaClip::Evaluate(v_frame_t frame, FloatImage& image)
 {
-    Frame* f = FramePtr(frame);
+    // Frame* f = FramePtr(frame);
 
-    if (f->Dirty())
+    // if (f->Dirty())
+    // {
+    //     // Generates a new copy everytime :(
+    //     SharedPixels image = f->Writable();
+
+    //     for (auto effect : m_Effects)
+    //     {
+    //         // Only process the effects that are enabled
+    //         if (effect->Enabled())
+    //         {
+    //             VOID_LOG_INFO("Processing {}", effect->Name());
+    //             ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+    //         }
+    //     }
+
+    //     f->SetDirty(false);
+    //     return image;
+    // }
+
+    // return f->Image();
+
+    // Update the buffer with the original image
+    // Look at the workflow later --- if we're going to call this directly or only after we have filled the buffer
+    // with the image data already and if we'll send here a copied buffer, to preserve the original data
+    // For now, just doing this, will change later
+    Media::Image(frame, image);
+
+    for (auto effect : m_Effects)
     {
-        // Generates a new copy everytime :(
-        SharedPixels image = f->Writable();
-
-        for (auto effect : m_Effects)
+        // Only enabled effects get procesed
+        if (effect->Enabled())
         {
-            // Only process the effects that are enabled
-            if (effect->Enabled())
-            {
-                VOID_LOG_INFO("Processing {}", effect->Name());
-                ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
-            }
+            VOID_LOG_INFO("Processing: {0}", effect->Name());
+            ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
         }
-
-        f->SetDirty(false);
-        return image;
     }
-
-    return f->Image();
 }
 
 VOID_NAMESPACE_CLOSE

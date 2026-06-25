@@ -288,6 +288,7 @@ public:
 
     std::string Framepath(v_frame_t frame) const;
     MFrameRange Framerange() const;
+    bool Contains(v_frame_t frame) const { return m_Mapping.find(frame) != m_Mapping.end(); }
 
     /**
      * Returns whether the media struct is currently empty

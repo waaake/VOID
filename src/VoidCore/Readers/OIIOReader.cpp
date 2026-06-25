@@ -87,7 +87,7 @@ void OIIOPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt
 
     // std::vector<unsigned char> original(image->width * image->height * image->channels);
     image->buffer.Resize(image->width * image->height * image->channels);
-    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, image->buffer.Data());
+    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, image->Writable());
     input->close();
 }
 
@@ -214,7 +214,7 @@ void OIIOPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& i
     OIIO::ImageBuf src(spec, m_TPixels.data());
     OIIO::ImageBuf linear;
     OIIO::ImageBufAlgo::colorconvert(linear, src, "sRGB", "Linear");
-    linear.get_pixels(OIIO::ROI::All(), OIIO::TypeDesc::FLOAT, image->buffer.Data());
+    linear.get_pixels(OIIO::ROI::All(), OIIO::TypeDesc::FLOAT, image->Writable());
 }
 
 const std::map<std::string, std::string> OIIOPixReader::Metadata() const

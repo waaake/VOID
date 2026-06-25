@@ -67,42 +67,35 @@ void ImageRenderLayer::Initialize()
     glGenTextures(1, &m_Texture);
 }
 
-void ImageRenderLayer::ReinitBuffer(const SharedPixels& image)
+void ImageRenderLayer::ReinitBuffer(const FloatImage& image)
 {
     /* Init the bound tex with null image for Tex*/
-    glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), nullptr);
-    m_InternalFormat = image->GLInternalFormat();
+    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
+    m_InternalFormat = image->format;
 
     /* Re-alloc the pixel buffer as the texture size has changed */
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[0]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->FrameSize(), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[1]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->FrameSize(), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
 }
 
-void ImageRenderLayer::SetImage(const SharedPixels& image)
+void ImageRenderLayer::SetImage(const FloatImage& image)
 {
-    /* Nothing to load */
     if (!image)
         return;
 
-    /* Bind the Generated texture for Render */
     glBindTexture(GL_TEXTURE_2D, m_Texture);
-
-    /**
-     * Load the image data onto the Texture 2D
-     */
-    if (m_InternalFormat != image->GLInternalFormat())
+    if (m_InternalFormat != image->format)
         ReinitBuffer(image);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[m_PBOIndex]);
     m_PBOIndex = (m_PBOIndex + 1) % 2;
 
-    /* Copy new pixels */
     if (void* iptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY))
     {
-        memcpy(iptr, image->Pixels(), image->FrameSize());
+        memcpy(iptr, image->Pixels(), image->Size());
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     }
 
@@ -111,14 +104,16 @@ void ImageRenderLayer::SetImage(const SharedPixels& image)
     // VOID_LOG_INFO("Size: {0}, FrameSize: {1}", size, image->FrameSize());
     // assert(size >= image->FrameSize());
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), 0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->format, image->type, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-    m_InputColorSpace = static_cast<int>(image->InputColorSpace());
+    // m_InputColorSpace = static_cast<int>(image->InputColorSpace());
+    // Temporary --- need to add that to the Image
+    m_InputColorSpace = static_cast<int>(ColorSpace::Linear);
 }
 
 void ImageRenderLayer::Render(const glm::mat4& projection, float, float)

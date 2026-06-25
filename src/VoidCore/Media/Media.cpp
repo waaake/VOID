@@ -85,7 +85,8 @@ bool Media::Contains(v_frame_t frame) const
      * movie still has still information about those, only an image sequence needs to be checked
      * for actual frame being present even if it's still in the range 
      */
-    return m_Type == Media::Type::MOVIE ? InRange(frame) : InRange(frame) && m_Mediaframes.at(frame - m_FirstFrame).Valid();
+    // return m_Type == Media::Type::MOVIE ? InRange(frame) : InRange(frame) && m_Mediaframes.at(frame - m_FirstFrame).Valid();
+    return m_Type == Media::Type::MOVIE ? InRange(frame) : InRange(frame) && m_MediaStruct.Contains(frame);
 }
 
 void Media::Read(const MediaStruct& mstruct)
@@ -128,28 +129,28 @@ void Media::ProcessSequence()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    m_ImageData = std::move(Forge::Instance().GetImageReader(
+    m_Reader = std::move(Forge::Instance().GetImageReader(
         m_MediaStruct.Extension(),
         m_MediaStruct.FirstPath(),
         m_FirstFrame
     ));
 
-    m_Framenumbers.reserve(frange.duration);
-    m_Mediaframes.resize(frange.duration);
+    // m_Framenumbers.reserve(frange.duration);
+    // m_Mediaframes.resize(frange.duration);
 
-    for (const MEntry& e : m_MediaStruct)
-    {
-        /**
-         * Index here is basically the distance between the current frame being processed
-         * and the start frame, this is how we actually want the data to always be layed out
-         * meaning that the frames are always ordered and correspond to the distance between the frames
-         * 
-         * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
-         * will be 1010 - 1001 = 9
-         */
-        m_Mediaframes[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
-        m_Framenumbers.emplace_back(e.Framenumber());
-    }
+    // for (const MEntry& e : m_MediaStruct)
+    // {
+    //     /**
+    //      * Index here is basically the distance between the current frame being processed
+    //      * and the start frame, this is how we actually want the data to always be layed out
+    //      * meaning that the frames are always ordered and correspond to the distance between the frames
+    //      * 
+    //      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+    //      * will be 1010 - 1001 = 9
+    //      */
+    //     m_Mediaframes[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
+    //     m_Framenumbers.emplace_back(e.Framenumber());
+    // }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
 }
@@ -172,19 +173,19 @@ void Media::ProcessMovie()
     m_Framerate = r->Framerate();
     m_Samplerate = r->Samplerate();
 
-    m_Mediaframes.resize(frange.duration);
-    m_Framenumbers.reserve(frange.duration);
+    // m_Mediaframes.resize(frange.duration);
+    // m_Framenumbers.reserve(frange.duration);
 
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    m_ImageData = std::move(r);
+    m_Reader = std::move(r);
 
-    for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
-    {
-        m_Mediaframes[counter] = std::move(MovieFrame(entry, i));
-        m_Framenumbers.emplace_back(i);
-    }
+    // for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
+    // {
+    //     m_Mediaframes[counter] = std::move(MovieFrame(entry, i));
+    //     m_Framenumbers.emplace_back(i);
+    // }
 
     m_Type = Media::Type::MOVIE;
 }
@@ -194,23 +195,25 @@ void Media::Image(v_frame_t frame, FloatImage& image)
     // At the moment, the first path and framepath are copy of the string
     // check if we can directly work with references from the underlying MEntry
     m_Type == Media::Type::MOVIE
-        ? m_ImageData->Read(m_MediaStruct.FirstPath(), frame, image)
-        : m_ImageData->Read(m_MediaStruct.Framepath(frame), frame, image);
+        ? m_Reader->Read(m_MediaStruct.FirstPath(), frame, image)
+        : m_Reader->Read(m_MediaStruct.Framepath(frame), frame, image);
 }
 
 void Media::Thumbnail(UInt8Image& image)
 {
-    m_ImageData->ReadThumbnail(m_MediaStruct.FirstPath(), m_FirstFrame, image);
+    m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), m_FirstFrame, image);
+    m_Channels = image->channels;
 }
 
-std::size_t Media::FrameSize()
-{
-    if (m_Framesize)
-        return m_Framesize;
+// std::size_t Media::FrameSize()
+// {
+//     // if (m_Framesize)
+//     //     return m_Framesize;
 
-    m_Framesize = FirstImage()->FrameSize();
-    return m_Framesize;
-}
+//     // m_Framesize = FirstImage()->FrameSize();
+//     // return m_Framesize;
+//     return m_Reader->FrameSize();
+// }
 
 void Media::ClearCache(bool dirty)
 {
@@ -233,9 +236,9 @@ void Media::ClearCache(bool dirty)
 void Media::Clear()
 {
     /* Clear underlying structs */
-    m_Framenumbers.clear();
-    m_Mediaframes.clear();
-    m_Mediaframes.shrink_to_fit();
+    // m_Framenumbers.clear();
+    // m_Mediaframes.clear();
+    // m_Mediaframes.shrink_to_fit();
 }
 
 void Media::SetDirty(bool dirty)

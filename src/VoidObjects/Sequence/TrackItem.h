@@ -58,7 +58,7 @@ public:
 
     void CacheFrame(v_frame_t frame);
     void UncacheFrame(v_frame_t frame);
-    inline std::size_t FrameSize() { return m_Media->FrameSize(); }
+    // inline std::size_t FrameSize() { return m_Media->FrameSize(); }
 
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
@@ -66,9 +66,12 @@ public:
     inline Frame* FramePtr(const v_frame_t frame) const { return m_Media->FramePtr(frame + m_Offset); }
 
     /**
-     * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
+     * @brief Updates the Image pointer with the data from the underlying media in the Item.
+     * 
+     * @param frame Frame number.
+     * @param image Image Buffer to be updated.
      */
-    SharedPixels Image(const v_frame_t frame);
+    void Image(const v_frame_t frame, FloatImage& image);
 
     inline v_frame_t StartFrame() const { return m_StartFrame; }
     inline v_frame_t EndFrame() const { return m_EndFrame; }

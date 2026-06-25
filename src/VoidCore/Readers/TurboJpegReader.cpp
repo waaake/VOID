@@ -92,7 +92,7 @@ void TurboJpegReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
     VOID_LOG_INFO("Float TurboJPEG Reader: Height {0}, Width {1}, Channels: {2}", image->width, image->height, image->channels);
 
     image->buffer.Resize(pitch * image->height);
-    if (tjDecompress2(handle, jpegBuffer.data(), jpegSize, image->buffer.Data(), image->width, pitch, image->height, TJPF_RGBA, TJFLAG_FASTDCT) != 0)
+    if (tjDecompress2(handle, jpegBuffer.data(), jpegSize, image->Writable(), image->width, pitch, image->height, TJPF_RGBA, TJFLAG_FASTDCT) != 0)
     {
         VOID_LOG_ERROR("Failed to decompress JPEG: {0}", tjGetErrorStr());
 

@@ -121,13 +121,13 @@ public:
     const char* TypeName() const override { return "Media"; }
 
     /**
-     * @brief Evaluates any effects added onto the Media, and returns the modified
-     * image buffer with effect applied on the original image data
+     * @brief Evaluates any effects added onto the Media, and updates the
+     * image buffer with effect applied on the original image data.
      * 
-     * @param frame Frame number.
-     * @return SharedPixels Image Buffer data for reading/rendering.
+     * @param frame 
+     * @param image Image Buffer to be filled/processed and updated.
      */
-    SharedPixels Evaluate(v_frame_t frame);
+    void Evaluate(v_frame_t frame, FloatImage& image);
 
 signals: /* Signals defining any change that has happened */
     /*

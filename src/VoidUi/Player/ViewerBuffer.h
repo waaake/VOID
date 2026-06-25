@@ -45,7 +45,7 @@ enum class VOID_API PlayerViewBuffer
 
 struct BufferData
 {
-    SharedPixels image = nullptr;
+    FloatImage image = nullptr;
     Renderer::SharedAnnotation annotation = nullptr;
 
     bool Valid() const { return (bool)image; }
@@ -157,7 +157,7 @@ public:
     /**
      * Returns the Image Pixels from the active item in the buffer
      */
-    SharedPixels Image(const v_frame_t frame);
+    FloatImage Image(const v_frame_t frame);
 
     /**
      * @brief Returns the active media's buffer data which includes the image data
@@ -173,9 +173,9 @@ public:
      * @brief Returns a set of images that are to be shown in the Grid of Images (Layout/Contact Sheet)
      * 
      * @param frame Frame number.
-     * @return std::vector<SharedPixels>& Set of image data from the Media.
+     * @return std::vector<FloatImage>& Set of image data from the Media.
      */
-    std::vector<SharedPixels> GridFrame(const v_frame_t frame);
+    std::vector<FloatImage> GridFrame(const v_frame_t frame);
 
     /**
      * @brief Returns the Media from the active component.
@@ -271,6 +271,9 @@ private: /* Members */
     SharedPlaybackTrack m_Track;
     SharedPlaybackSequence m_Sequence;
     Playlist* m_Playlist;
+    
+    // Temp
+    FloatImage m_Image;
 
     /**
      * At any point this buffer maintains a cached track item which makes the query to get the track item
