@@ -668,18 +668,18 @@ void ViewerBuffer::EvictFront()
 
     switch (m_PlayingComponent)
     {
-        case PlayableComponent::Track:
-            ItemFromTrack(frame)->UncacheFrame(frame);
-            break;
-        case PlayableComponent::Sequence:
-            ItemFromSequence(frame)->UncacheFrame(frame);
-            break;
-        case PlayableComponent::Clip:
-        case PlayableComponent::Grid:
-        case PlayableComponent::Playlist:
-        default:
-            if (m_Clip->Valid() && m_Clip->Contains(frame))
-                m_Clip->UncacheFrame(frame);
+        // case PlayableComponent::Track:
+        //     ItemFromTrack(frame)->UncacheFrame(frame);
+        //     break;
+        // case PlayableComponent::Sequence:
+        //     ItemFromSequence(frame)->UncacheFrame(frame);
+        //     break;
+        // case PlayableComponent::Clip:
+        // case PlayableComponent::Grid:
+        // case PlayableComponent::Playlist:
+        // default:
+        //     if (m_Clip->Valid() && m_Clip->Contains(frame))
+        //         m_Clip->UncacheFrame(frame);
     }
 
     m_UsedMemory -= m_FrameSize;
@@ -695,18 +695,18 @@ void ViewerBuffer::EvictBack()
 
     switch (m_PlayingComponent)
     {
-        case PlayableComponent::Track:
-            ItemFromTrack(frame)->UncacheFrame(frame);
-            break;
-        case PlayableComponent::Sequence:
-            ItemFromSequence(frame)->UncacheFrame(frame);
-            break;
-        case PlayableComponent::Clip:
-        case PlayableComponent::Grid:
-        case PlayableComponent::Playlist:
-        default:
-            if (m_Clip->Valid() && m_Clip->Contains(frame))
-                m_Clip->UncacheFrame(frame);
+        // case PlayableComponent::Track:
+        //     ItemFromTrack(frame)->UncacheFrame(frame);
+        //     break;
+        // case PlayableComponent::Sequence:
+        //     ItemFromSequence(frame)->UncacheFrame(frame);
+        //     break;
+        // case PlayableComponent::Clip:
+        // case PlayableComponent::Grid:
+        // case PlayableComponent::Playlist:
+        // default:
+        //     if (m_Clip->Valid() && m_Clip->Contains(frame))
+        //         m_Clip->UncacheFrame(frame);
     }
 
     m_UsedMemory -= m_FrameSize;

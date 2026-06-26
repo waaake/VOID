@@ -50,20 +50,20 @@ public:
 
     inline void SetColor(const QColor& color) { m_Media->SetColor(color); }
 
-    /** 
-     * Caches media frames
-     * emits frameCached for each of them emitted
-     */
-    void Cache();
+    // /** 
+    //  * Caches media frames
+    //  * emits frameCached for each of them emitted
+    //  */
+    // void Cache();
 
-    void CacheFrame(v_frame_t frame);
-    void UncacheFrame(v_frame_t frame);
+    // void CacheFrame(v_frame_t frame);
+    // void UncacheFrame(v_frame_t frame);
     // inline std::size_t FrameSize() { return m_Media->FrameSize(); }
 
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
-    inline Frame* FramePtr(const v_frame_t frame) const { return m_Media->FramePtr(frame + m_Offset); }
+    // inline Frame* FramePtr(const v_frame_t frame) const { return m_Media->FramePtr(frame + m_Offset); }
 
     /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.

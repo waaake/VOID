@@ -35,13 +35,13 @@ void MediaExporter::Export()
     {
         // Resolution options provide a way for user to select half or quarter
         const int divisor = ScaleIndex() == 2 ? 4 : ScaleIndex() == 1 ? 2 : 1;
-        int outwidth = m_Media->FirstImage()->Width() / divisor;
-        int outheight = m_Media->FirstImage()->Height() / divisor;
+        int outwidth = m_Media->Width() / divisor;
+        int outheight = m_Media->Height() / divisor;
 
         EncodeSpec spec(
             outwidth,
             outheight,
-            m_Media->FirstImage()->Channels(),
+            m_Media->Channels(),
             Rate(),
             BufferType::Uint8,
             Codec(),

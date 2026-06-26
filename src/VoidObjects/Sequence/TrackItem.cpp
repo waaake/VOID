@@ -50,34 +50,34 @@ void TrackItem::SetRange(v_frame_t start, v_frame_t end)
     m_EndFrame = end;
 }
 
-void TrackItem::Cache()
-{
-    /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
-    for (Frame& frame : *m_Media)
-    {
-        frame.Cache();
-        /* Emit the frame - the offset for the track item */
-        emit frameCached(frame.Framenumber() - m_Offset);
-    }
-}
+// void TrackItem::Cache()
+// {
+//     /* For each frame in Media -> Cache the frame and emit the signal that a frame has been cached */
+//     for (Frame& frame : *m_Media)
+//     {
+//         frame.Cache();
+//         /* Emit the frame - the offset for the track item */
+//         emit frameCached(frame.Framenumber() - m_Offset);
+//     }
+// }
 
-void TrackItem::CacheFrame(v_frame_t frame)
-{
-    /* Update the frame value with the offset so that we match the original media range */
-    const v_frame_t f = frame + m_Offset;
+// void TrackItem::CacheFrame(v_frame_t frame)
+// {
+//     /* Update the frame value with the offset so that we match the original media range */
+//     const v_frame_t f = frame + m_Offset;
 
-    if (m_Media->Contains(f))
-        m_Media->CacheFrame(f);
-}
+//     if (m_Media->Contains(f))
+//         m_Media->CacheFrame(f);
+// }
 
-void TrackItem::UncacheFrame(v_frame_t frame)
-{
-    /* Update the frame value with the offset so that we match the original media range */
-    const v_frame_t f = frame + m_Offset;
+// void TrackItem::UncacheFrame(v_frame_t frame)
+// {
+//     /* Update the frame value with the offset so that we match the original media range */
+//     const v_frame_t f = frame + m_Offset;
 
-    if (m_Media->Contains(f))
-        m_Media->UncacheFrame(f);
-}
+//     if (m_Media->Contains(f))
+//         m_Media->UncacheFrame(f);
+// }
 
 void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 {
@@ -85,7 +85,7 @@ void TrackItem::Image(const v_frame_t frame, FloatImage& image)
     v_frame_t f = frame + m_Offset;
     if (m_Media->Contains(f))
     {
-        emit frameCached(frame);
+        // emit frameCached(frame);
         m_Media->Image(f, image);
     }
 }

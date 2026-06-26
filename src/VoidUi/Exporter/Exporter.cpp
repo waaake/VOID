@@ -116,9 +116,6 @@ bool ExportMediaFramesTask::Work()
         SetMax(m_Range.duration);
         FloatImage image = VOID_NAMESPACE::Image<float>::Create();
 
-        // All the media frames would have the same size
-        m_Pixels.resize(media->FirstImage()->FrameSize());
-
         if (m_Descriptor.type == WriterType::Image)
         {
             if (!m_Descriptor.entry.Templated())
