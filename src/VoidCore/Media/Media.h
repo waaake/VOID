@@ -4,14 +4,15 @@
 #ifndef _VOID_MEDIA_H
 #define _VOID_MEDIA_H
 
-/* STD */
-#include <filesystem>
-#include <unordered_map>
-#include <vector>
+// /* STD */
+// #include <filesystem>
+// #include <unordered_map>
+// #include <vector>
 
 /* Internal */
 #include "Definition.h"
-#include "Frame.h"
+// #include "Frame.h"
+#include "PixReader.h"
 #include "Filesystem.h"
 
 VOID_NAMESPACE_OPEN
@@ -81,7 +82,6 @@ public:
 
     inline v_frame_t FirstFrame() const { return m_FirstFrame; }
     inline v_frame_t LastFrame() const { return m_LastFrame; }
-
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
     /**
@@ -105,30 +105,29 @@ public:
     v_frame_t NearestFrame(v_frame_t frame) const;
 
     // inline Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame - m_FirstFrame); }
-    inline Frame* FramePtr(v_frame_t frame) { return &m_Mediaframes.at(frame - m_FirstFrame); }
-    inline Frame FirstFrameData() const { return m_Mediaframes.front(); }
-    inline Frame LastFrameData() const { return m_Mediaframes.back(); }
+    // inline Frame* FramePtr(v_frame_t frame) { return &m_Mediaframes.at(frame - m_FirstFrame); }
+    // inline Frame FirstFrameData() const { return m_Mediaframes.front(); }
+    // inline Frame LastFrameData() const { return m_Mediaframes.back(); }
 
-    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
+    // inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
     // std::size_t FrameSize() const { return m_Reader->FrameSize(); } /// Check if we really really need this???
 
     void Image(v_frame_t frame, FloatImage& image);
     void Thumbnail(UInt8Image& image);
 
-    inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
-    inline SharedPixels LastImage() { return Image(m_LastFrame); }
+    // inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
+    // inline SharedPixels LastImage() { return Image(m_LastFrame); }
 
-    inline int Channels() const { return m_Channels; }
+    inline int Channels() const { return m_Reader->Channels(); }
+    inline int Width() const { return m_Reader->Width(); }
+    inline int Height() const { return m_Reader->Height(); }
     inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
 
     inline double Framerate() const { return m_Framerate; }
     inline bool Empty() const { return m_MediaStruct.Empty(); }
-    /**
-     * A Media can be considered invalid if it is empty
-     * Any valid media will have atleast one frame
-     */
     inline bool Valid() const { return m_Type != Media::Type::UNDEFINED; }
-    void Clear();
+
+    // void Clear();
     void SetDirty(bool dirty = true);
 
     /**
@@ -136,23 +135,19 @@ public:
      */
     void ClearCache(bool dirty = true);
 
-    /* Allow iterating over the Media frames */
-    inline std::vector<Frame>::iterator begin() { return m_Mediaframes.begin(); }
-    inline std::vector<Frame>::iterator end() { return m_Mediaframes.end(); }
+    // /* Allow iterating over the Media frames */
+    // inline std::vector<Frame>::iterator begin() { return m_Mediaframes.begin(); alignof(m_MediaStruct)}
+    // inline std::vector<Frame>::iterator end() { return m_Mediaframes.end(); }
 
 protected: /* Members */
-    MediaStruct m_MediaStruct;
-
-    v_frame_t m_FirstFrame, m_LastFrame;
-    int m_Samplerate;
-    double m_Framerate;
-    std::size_t m_Framesize = {0};
-    int m_Channels = {0};
-
-    Type m_Type;
     SharedPixels m_Reader;
-    std::vector<Frame> m_Mediaframes;
-    std::vector<v_frame_t> m_Framenumbers;
+    MediaStruct m_MediaStruct;
+    v_frame_t m_FirstFrame, m_LastFrame;
+    std::size_t m_Framesize;
+    double m_Framerate;
+    int m_Channels;
+    int m_Samplerate;
+    Type m_Type;
 
 private: /* Methods */
     void ProcessSequence();

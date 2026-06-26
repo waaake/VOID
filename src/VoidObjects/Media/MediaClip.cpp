@@ -329,7 +329,7 @@ void MediaClip::CacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    m_Mediaframes.at(frame - m_FirstFrame).Cache();
+    // m_Mediaframes.at(frame - m_FirstFrame).Cache();
     // emit frameCached(frame);
 }
 
@@ -342,7 +342,7 @@ void MediaClip::UncacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    m_Mediaframes.at(frame - m_FirstFrame).ClearCache(HasEffects());
+    // m_Mediaframes.at(frame - m_FirstFrame).ClearCache(HasEffects());
     // emit frameUncached(frame);
 }
 
@@ -369,9 +369,9 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
 
     /* Save any missing frames from the media */
     rapidjson::Value missingFrames(rapidjson::kArrayType);
-    for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
+    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
     {
-        if (m_Mediaframes.at(i).Invalid())
+        if (m_MediaStruct.Missing(i))
             missingFrames.PushBack(static_cast<int64_t>(i + 1), allocator);
     }
 
@@ -417,12 +417,11 @@ void MediaClip::Serialize(std::ostream& out) const
     uint32_t count = 0;
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
-    for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
+    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
     {
-        if (m_Mediaframes.at(i).Invalid())
+        if (m_MediaStruct.Missing(i))
         {
-            int frame = i + 1;
-            out.write(reinterpret_cast<const char*>(&frame), sizeof(i));
+            out.write(reinterpret_cast<const char*>(&i), sizeof(i));
             count++;
         }
     }
