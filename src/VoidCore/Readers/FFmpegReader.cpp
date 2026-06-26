@@ -332,9 +332,6 @@ void FFmpegDecoder::FillBuffer(std::vector<float>& out)
 /* FFmpegPixReader {{{ */
 FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
     : VoidMPixReader(path, framenumber)
-    , m_Width(0)
-    , m_Height(0)
-    , m_Channels(0)
     , m_AChannels(0)
     , m_Samplerate(0)
     , m_Startframe(0)
@@ -349,21 +346,21 @@ FFmpegPixReader::~FFmpegPixReader()
     Clear();
 }
 
-SharedPixels FFmpegPixReader::Copy() const
-{
-    auto copy = std::make_shared<FFmpegPixReader>(m_Path, m_Framenumber);
-    copy->m_AChannels = m_AChannels;
-    copy->m_Channels = m_Channels;
-    copy->m_Endframe = m_Endframe;
-    copy->m_Startframe = m_Startframe; 
-    copy->m_Duration = m_Duration;
-    copy->m_Framerate = m_Framerate;
-    copy->m_Width = m_Width;
-    copy->m_Height = m_Height;
-    copy->m_Pixels = m_Pixels;
+// SharedPixels FFmpegPixReader::Copy() const
+// {
+//     auto copy = std::make_shared<FFmpegPixReader>(m_Path, m_Framenumber);
+//     copy->m_AChannels = m_AChannels;
+//     copy->m_Channels = m_Channels;
+//     copy->m_Endframe = m_Endframe;
+//     copy->m_Startframe = m_Startframe; 
+//     copy->m_Duration = m_Duration;
+//     copy->m_Framerate = m_Framerate;
+//     copy->m_Width = m_Width;
+//     copy->m_Height = m_Height;
+//     copy->m_Pixels = m_Pixels;
 
-    return copy;
-}
+//     return copy;
+// }
 
 void FFmpegPixReader::Clear()
 {
@@ -372,28 +369,26 @@ void FFmpegPixReader::Clear()
     m_Pixels.shrink_to_fit();
 }
 
-const unsigned char* FFmpegPixReader::ThumbnailPixels()
-{
-    if (m_TPixels.empty())
-    {
-        m_TPixels.resize(m_Pixels.size());
-        unsigned char* pixels = m_TPixels.data();
+// const unsigned char* FFmpegPixReader::ThumbnailPixels()
+// {
+//     if (m_TPixels.empty())
+//     {
+//         m_TPixels.resize(m_Pixels.size());
+//         unsigned char* pixels = m_TPixels.data();
 
-        for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
-        {
-            int index = i * m_Channels;
+//         for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
+//         {
+//             int index = i * m_Channels;
 
-            pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
-            pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
-            pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
+//             pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
+//             pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
+//             pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
+//             pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
+//         }
+//     }
 
-            // if (m_Channels == 4)
-            pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
-        }
-    }
-
-    return m_TPixels.data();
-}
+//     return m_TPixels.data();
+// }
 
 void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
@@ -405,15 +400,19 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
         image->channels = decoder.Channels();
 
         image->format = VOID_GL_RGB;
+
+        m_Width = image->width;
+        m_Height = image->height;
+        m_Channels = image->channels;
     }
 }
 
-ImageRow FFmpegPixReader::Row(std::size_t row)
-{
-    return (row >= m_Height)
-            ? ImageRow()
-            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
-}
+// ImageRow FFmpegPixReader::Row(std::size_t row)
+// {
+//     return (row >= m_Height)
+//             ? ImageRow()
+//             : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
+// }
 
 void FFmpegPixReader::ProcessInformation()
 {
@@ -448,11 +447,10 @@ void FFmpegPixReader::ProcessInformation()
 
 MFrameRange FFmpegPixReader::Framerange()
 {
-    /* If the duration is 0 that means the information wasn't processed yet */
     if (!m_Duration)
         ProcessInformation();
 
-    return {m_Startframe, m_Endframe, m_Duration};
+    return {m_Startframe, m_Endframe, m_Duration, m_Framerate};
 }
 
 double FFmpegPixReader::Framerate()
@@ -463,18 +461,18 @@ double FFmpegPixReader::Framerate()
     return m_Framerate;
 }
 
-void FFmpegPixReader::Read()
-{
-    FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
-    if (decoder.Decode(m_Path, m_Framenumber, m_Pixels))
-    {
-        /* Read the Frame Dimensions */
-        m_Width = decoder.Width();
-        m_Height = decoder.Height();
+// void FFmpegPixReader::Read()
+// {
+//     FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
+//     if (decoder.Decode(m_Path, m_Framenumber, m_Pixels))
+//     {
+//         /* Read the Frame Dimensions */
+//         m_Width = decoder.Width();
+//         m_Height = decoder.Height();
 
-        m_Channels = decoder.Channels();
-    }
-}
+//         m_Channels = decoder.Channels();
+//     }
+// }
 
 void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
 {

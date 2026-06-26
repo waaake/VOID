@@ -27,69 +27,45 @@ typedef std::shared_ptr<VoidMPixReader> SharedMPixels;
 class VoidPixReader
 {
 public:
-    VoidPixReader(const std::string& path, v_frame_t framenumber = 0) : m_Path(path), m_Framenumber(framenumber) {}
+    VoidPixReader(const std::string& path, v_frame_t framenumber = 0)
+        : m_Path(path), m_Framenumber(framenumber), m_Width(100), m_Height(100), m_Channels(0) {}
     virtual ~VoidPixReader() = default;
-
-    virtual SharedPixels Copy() const = 0;
 
     /**
      * Returns the OpenGL texture type
      * e.g. GL_UNSIGNED_BYTE, GL_FLOAT
      */
-    virtual unsigned int GLType() const = 0;
+    virtual unsigned int GLType() const { return VOID_GL_FLOAT; }
 
     /**
      * Specifies the number of color components in the texture
      * e.g. GL_RGBA32F | GL_RGBA32I | GL_RGBA32UI | GL_RGBA16 | GL_RGBA16F | GL_RGBA16I
      */
-    virtual unsigned int GLInternalFormat() const = 0;
+    virtual unsigned int GLInternalFormat() const { return (m_Channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
 
     /**
      * Specifies the format of the pixel data
      * GL_RGBA | GL_RGB
      */
-    virtual unsigned int GLFormat() const = 0;
+    virtual unsigned int GLFormat() const { return (m_Channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
 
     /**
-     * Returns the Pointer to the underlying pixel data which will be rendered on the Renderer
-     * This allows the deriving class full control over the data type, as long as the data
-     * is correct to be rendered on GL Viewer, this can be returned from here
-     */
-    virtual const void* Pixels() const = 0;
-
-    /**
-     * @brief Returns a pointer to the underlying buffer which can be written to, this will be used
-     * for additional processing that will be applied on the image data
+     * @brief Called for generating Thumbnail for the media and gets used to create the QImage which needs unsigned char
+     * buffer to fill the QImage
      * 
-     * @return void* Writeable pointer to the buffer.
+     * @param path Path of the image to read.
+     * @param frame Frame number.
+     * @param image Unsigned char based buffer to fill.
      */
-    virtual void* Writable() = 0;
-
-    /**
-     * @brief Returns the width wide buffer for the requested row. This holds the information of pixels * channels
-     * for the full width of the image i.e. one set of pixel rows.
-     * 
-     * @param row Index of the row of pixels required.
-     * @return ImageRow Buffer.
-     */
-    virtual ImageRow Row(std::size_t row) = 0;
-
-    /**
-     * Returns the frame data as unsigned char*
-     * This would be used to create thumbnails for qt
-     * Not all frames will be used so this function can create a vector on the fly if unsigned char
-     * is not the base datatype of the class
-     */
-    virtual const unsigned char* ThumbnailPixels() = 0;
     virtual void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) = 0;
 
     /**
      * Image Specifications
      * Dimensions and Channel information for the Image
      */
-    virtual int Width() const = 0;
-    virtual int Height() const = 0;
-    virtual int Channels() const = 0;
+    virtual int Width() const { return m_Width; }
+    virtual int Height() const { return m_Height; }
+    virtual int Channels() const { return m_Channels; }
 
     /**
      * Clear internal pixel data
@@ -98,26 +74,25 @@ public:
     virtual void Clear() = 0;
 
     /**
-     * Returns if the underlying struct has any pixel data
+     * @brief Reads the image data and fills up the Float image buffer.
+     * 
+     * @param path Path to the image/movie.
+     * @param frame Frame number to read.
+     * @param image Float buffer to write to.
      */
-    virtual bool Empty() const = 0;
-
-    /**
-     * Reads the image at the given path
-     * updates the underlying struct with the data
-     */
-    virtual void Read() = 0;
     virtual void Read(const std::string& path, v_frame_t frame, FloatImage& image) = 0;
 
-    /**
-     * Returns the Size of the frame data
-     */
-    virtual size_t FrameSize() const = 0;
+    // /**
+    //  * Returns the Size of the frame data
+    //  */
+    // virtual size_t FrameSize() const = 0;
 
     /**
      * Retrieve the input colorspace of the media file
+     * At the moment the reader is expected to output Linear colorspace,
+     * but in case the reader wants a different one, can possibly override this
      */
-    virtual ColorSpace InputColorSpace() const = 0;
+    virtual ColorSpace InputColorSpace() const { return ColorSpace::Linear; }
 
     /**
      * @brief Returns whether the given Image/Frame is a Movie
@@ -161,6 +136,8 @@ public:
 protected:
     std::string m_Path;
     v_frame_t m_Framenumber;
+    int m_Width, m_Height;
+    int m_Channels;
 };
 
 class VoidMPixReader : public VoidPixReader
