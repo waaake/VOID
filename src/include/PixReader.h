@@ -21,8 +21,8 @@ VOID_NAMESPACE_OPEN
 /* Typedefs */
 class VoidPixReader;    // forward decl for the typedef
 class VoidMPixReader;
-typedef std::shared_ptr<VoidPixReader> SharedPixels;
-typedef std::shared_ptr<VoidMPixReader> SharedMPixels;
+typedef std::shared_ptr<VoidPixReader> SharedPixReader;
+typedef std::shared_ptr<VoidMPixReader> SharedMPixReader;
 
 class VoidPixReader
 {
@@ -81,11 +81,6 @@ public:
      * @param image Float buffer to write to.
      */
     virtual void Read(const std::string& path, v_frame_t frame, FloatImage& image) = 0;
-
-    // /**
-    //  * Returns the Size of the frame data
-    //  */
-    // virtual size_t FrameSize() const = 0;
 
     /**
      * Retrieve the input colorspace of the media file
@@ -149,11 +144,6 @@ public:
      * Returns the frame range information of the Movie media
      */
     virtual MFrameRange Framerange() = 0;
-
-    /**
-     * Returns the framerate of the movie media
-     */
-    virtual double Framerate() = 0;
     virtual bool IsMovie() const { return true; }
 };
 
