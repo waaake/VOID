@@ -60,7 +60,7 @@ public:
     /**
      * Returns the underlying metadata from the image
      */
-    inline const std::map<std::string, std::string> Metadata() const { return m_ImageData->Metadata(); }
+    // inline const std::map<std::string, std::string> Metadata() const { return m_ImageData->Metadata(); }
 
     /* Frame Caches */
     void Cache();
