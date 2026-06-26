@@ -148,17 +148,17 @@ signals: /* Signals defining any change that has happened */
     void effectAboutToBeRemoved(const std::string&);
 
 private: /* Members */
-    QColor m_Color;
-    QPixmap m_Thumbnail;
-    TagModel* m_TagModel;
-    std::atomic_bool m_Working;
-
     /**
      * This struct saves the Annotations for the frames
      * Each Shared Annotation Pointer is mapped to a frame (as simple as it can be :D)
      */
     std::unordered_map<v_frame_t, Renderer::SharedAnnotation> m_Annotations;
     std::vector<Effect*> m_Effects;
+
+    QColor m_Color;
+    QPixmap m_Thumbnail;
+    TagModel* m_TagModel;
+    std::atomic_bool m_Working;
 
 private: /* Methods */
     void ReadThumbnail();
