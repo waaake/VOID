@@ -4,16 +4,10 @@
 #ifndef _VOID_MEDIA_H
 #define _VOID_MEDIA_H
 
-// /* STD */
-// #include <filesystem>
-// #include <unordered_map>
-// #include <vector>
-
 /* Internal */
 #include "Definition.h"
-// #include "Frame.h"
-#include "PixReader.h"
 #include "Filesystem.h"
+#include "PixReader.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -104,29 +98,20 @@ public:
      */
     v_frame_t NearestFrame(v_frame_t frame) const;
 
-    // inline Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame - m_FirstFrame); }
-    // inline Frame* FramePtr(v_frame_t frame) { return &m_Mediaframes.at(frame - m_FirstFrame); }
-    // inline Frame FirstFrameData() const { return m_Mediaframes.front(); }
-    // inline Frame LastFrameData() const { return m_Mediaframes.back(); }
-
-    // inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
-    // std::size_t FrameSize() const { return m_Reader->FrameSize(); } /// Check if we really really need this???
-
     void Image(v_frame_t frame, FloatImage& image);
     void Thumbnail(UInt8Image& image);
-
-    // inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
-    // inline SharedPixels LastImage() { return Image(m_LastFrame); }
+    void Thumbnail(v_frame_t frame, UInt8Image& image);
 
     inline int Channels() const { return m_Reader->Channels(); }
     inline int Width() const { return m_Reader->Width(); }
     inline int Height() const { return m_Reader->Height(); }
-    inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
-
     inline double Framerate() const { return m_Framerate; }
+
     inline bool Empty() const { return m_MediaStruct.Empty(); }
     inline bool Valid() const { return m_Type != Media::Type::UNDEFINED; }
-
+    
+    inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
+    
     // void Clear();
     void SetDirty(bool dirty = true);
 
@@ -135,17 +120,12 @@ public:
      */
     void ClearCache(bool dirty = true);
 
-    // /* Allow iterating over the Media frames */
-    // inline std::vector<Frame>::iterator begin() { return m_Mediaframes.begin(); alignof(m_MediaStruct)}
-    // inline std::vector<Frame>::iterator end() { return m_Mediaframes.end(); }
-
 protected: /* Members */
-    SharedPixels m_Reader;
+    SharedPixReader m_Reader;
     MediaStruct m_MediaStruct;
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
     double m_Framerate;
-    int m_Channels;
     int m_Samplerate;
     Type m_Type;
 

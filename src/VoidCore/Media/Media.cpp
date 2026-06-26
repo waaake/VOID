@@ -17,7 +17,6 @@ Media::Media()
     , m_LastFrame(-1)
     , m_Framesize(0)
     , m_Framerate(24.0)
-    , m_Channels(0)
     , m_Samplerate(0.0)
     , m_Type(Type::UNDEFINED)
 {
@@ -172,7 +171,13 @@ void Media::Image(v_frame_t frame, FloatImage& image)
 void Media::Thumbnail(UInt8Image& image)
 {
     m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), m_FirstFrame, image);
-    m_Channels = image->channels;
+}
+
+void Media::Thumbnail(v_frame_t frame, UInt8Image& image)
+{
+    m_Type == Media::Type::MOVIE
+        ? m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), frame, image)
+        : m_Reader->ReadThumbnail(m_MediaStruct.Framepath(frame), frame, image);
 }
 
 void Media::ClearCache(bool dirty)

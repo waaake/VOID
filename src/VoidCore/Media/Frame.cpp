@@ -81,7 +81,7 @@ Frame& Frame::operator=(const Frame& other)
     return *this;
 }
 
-SharedPixels Frame::Image(bool cached)
+SharedPixReader Frame::Image(bool cached)
 {
     // /*
     //  * If the frame data has not yet been fetched
@@ -94,7 +94,7 @@ SharedPixels Frame::Image(bool cached)
     return nullptr;
 }
 
-SharedPixels Frame::Writable()
+SharedPixReader Frame::Writable()
 {
     // // Ensure we have the image already read, else we can't have a valid writable copy
     // Cache();
