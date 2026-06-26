@@ -95,10 +95,9 @@ public:
 
     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
-    void Clear() override;
+    void Clear() override {}
 
     MFrameRange Framerange() override;
-    double Framerate() override;
     const std::map<std::string, std::string> Metadata() const override;
 
     int AudioChannels() const override { return m_AChannels; }
@@ -113,10 +112,6 @@ private: /* Members */
     v_frame_t m_Endframe;
     v_frame_t m_Duration;
     double m_Framerate;
-
-    // Internal data store
-    std::vector<float> m_Pixels;
-    std::vector<unsigned char> m_TPixels;
 
 private: /* Methods */
     /**

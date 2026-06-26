@@ -137,10 +137,6 @@ protected: /* Methods */
     virtual void Draw() override;
 
 private: /* Members */
-    /* Render Image Data */
-    // SharedPixels m_ImageA;
-    // SharedPixels m_ImageB;
-    // FloatImage m_fimage;
     FloatImage m_ImageA;
     FloatImage m_ImageB;
 
