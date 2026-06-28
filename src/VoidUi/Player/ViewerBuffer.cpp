@@ -27,7 +27,7 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     , m_Playlist(nullptr)
     , m_CachedTrackItem(nullptr)
     , m_PlayingComponent(PlayableComponent::Clip)
-    , m_State(PlayState::Disabled)
+    , m_State(PlayState::Forwards)
     , m_Name("Viewer")
     , m_Color(130, 110, 190)    // Purple
     , m_Player(nullptr)
@@ -204,6 +204,7 @@ void ViewerBuffer::Refresh()
     /* Clear any cached item */
     m_CachedTrackItem = nullptr;
     ClearCache();
+    m_Buffer.Reset();
 }
 
 void ViewerBuffer::ClearCache()
@@ -305,7 +306,7 @@ BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
         // // Process the image before rendering, if any effect has been applied/pending for process
         // d.image = m_Clip->Evaluate(frame);
         // d.annotation = m_Clip->Annotation(frame);
-        d.image = m_Image;
+        d.image = m_Buffer.At(frame);
         return d;
     }
 
@@ -529,6 +530,7 @@ void ViewerBuffer::ResumeCaching()
 
 void ViewerBuffer::Update()
 {
+    return;
     /**
      * Ensure that we do not have any other cache process running
      * or a cache process which is to spawn other cache processes
@@ -654,11 +656,26 @@ void ViewerBuffer::Cache(v_frame_t frame)
     {
         // m_Clip->CacheFrame(frame);
         // m_FrameSize = m_Clip->FrameSize();
-        m_Clip->Image(frame, m_Image);
-        m_FrameSize = m_Image->Size();
+        auto& image = m_Buffer.At(frame);
+        m_Clip->Image(frame, image);
+        m_FrameSize = image->Size();
+
+        VOID_LOG_INFO("Cache1::Frame::{0}", frame);
 
         // Disabling as for temp purposes, we need to continue reading image
-        // Store(frame);
+        Store(frame);
+    }
+}
+
+void ViewerBuffer::Cache(v_frame_t frame, FloatImage& image)
+{
+    if (m_Clip->Valid() && m_Clip->Contains(frame))
+    {
+        m_Clip->Image(frame, image);
+        m_FrameSize = image->Size();
+        VOID_LOG_INFO("Cache2::Frame::{0}", frame);
+
+        Store(frame);
     }
 }
 
@@ -725,17 +742,29 @@ void ViewerBuffer::Store(v_frame_t frame)
 
 void ViewerBuffer::EnsureCached(v_frame_t frame)
 {
-    if (m_Buffered.find(frame) == m_Buffered.end())
-    {
-        VOID_LOG_INFO("Force Caching Frame: {0}", frame);
-        {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-            m_LastCached = frame;
-        }
+    // if (m_Buffered.find(frame) == m_Buffered.end())
+    // {
+    //     VOID_LOG_INFO("Force Caching Frame: {0}", frame);
+    //     {
+    //         std::lock_guard<std::mutex> lock(m_Mutex);
+    //         m_LastCached = frame;
+    //     }
 
-        // Request(frame, true);
-        Cache(frame);
+    //     // Request(frame, true);
+    //     Cache(frame);
+    // }
+
+    if (m_Buffer.Buffered(frame))
+        return;
+
+    VOID_LOG_INFO("Force Caching Frame -- : {0}", frame);
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_LastCached = frame;
     }
+
+    if (auto& image = m_Buffer.Request(frame))
+        Cache(frame, image);
 }
 
 void ViewerBuffer::Recache()
@@ -755,28 +784,31 @@ void ViewerBuffer::CacheAvailable()
      */
     if (m_State == PlayState::Backwards)
     {
-        for (v_frame_t frame = m_Endframe; frame >= m_Startframe; --frame)
-        {
-            if (Cached(frame))
-                continue;
+        // for (v_frame_t frame = m_Endframe; frame >= m_Startframe; --frame)
+        // {
+        //     if (Cached(frame))
+        //         continue;
 
-            if (!Request(frame, false))
-                break;
+        //     if (!Request(frame, false))
+        //         break;
 
-            AddTask(new CachePreviousFrameTask(this));
-        }
+        //     AddTask(new CachePreviousFrameTask(this));
+        // }
     }
     else
     {
         for (v_frame_t frame = m_Startframe; frame <= m_Endframe; ++frame)
         {
-            if (Cached(frame))
+            // if (Cached(frame))
+            //     continue;
+
+            // if (!Request(frame, false))
+            //     break;
+            if (m_Buffer.Buffered(frame))
                 continue;
 
-            if (!Request(frame, false))
-                break;
-
-            AddTask(new CacheNextFrameTask(this));
+            if (auto& image = m_Buffer.Request(frame))
+                AddTask(new CacheNextFrameTask2(this, image));
         }
     }
 }
@@ -845,9 +877,19 @@ void ViewerBuffer::CacheNextFrame()
     Cache(GetNextFrame());
 }
 
+void ViewerBuffer::CacheNextFrame(FloatImage& image)
+{
+    Cache(GetNextFrame(), image);
+}
+
 void ViewerBuffer::CachePreviousFrame()
 {
     Cache(GetPreviousFrame());
+}
+
+void ViewerBuffer::CachePreviousFrame(FloatImage& image)
+{
+    Cache(GetPreviousFrame(), image);
 }
 
 void ViewerBuffer::CacheNext()

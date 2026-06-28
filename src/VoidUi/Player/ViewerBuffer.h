@@ -23,6 +23,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Playlist/Playlist.h"
+#include "VoidObjects/Buffer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -66,6 +67,17 @@ class VOID_API ViewerBuffer : public QObject
         ViewerBuffer* m_Parent;
     };
 
+    class CacheNextFrameTask2 : public QRunnable
+    {
+    public:
+        CacheNextFrameTask2(ViewerBuffer* parent, FloatImage& image) : m_Parent(parent), m_Image(image) {}
+        inline void run() override { m_Parent->CacheNextFrame(m_Image); }
+
+    private:
+        ViewerBuffer* m_Parent;
+        FloatImage& m_Image;
+    };
+
     class CachePreviousFrameTask : public QRunnable
     {
     public:
@@ -74,6 +86,17 @@ class VOID_API ViewerBuffer : public QObject
 
     private:
         ViewerBuffer* m_Parent;
+    };
+
+    class CachePreviousFrameTask2 : public QRunnable
+    {
+    public:
+        CachePreviousFrameTask2(ViewerBuffer* parent, FloatImage& image) : m_Parent(parent), m_Image(image) {}
+        inline void run() override { m_Parent->CachePreviousFrame(m_Image); }
+
+    private:
+        ViewerBuffer* m_Parent;
+        FloatImage& m_Image;
     };
 
 public: /* Enums */
@@ -263,6 +286,8 @@ signals:
     void playlistUpdated(Playlist*);
 
 private: /* Members */
+    MBuffer m_Buffer;
+
     /**
      * Playable Entities
      * Obviously one will get played at a time but can be governed what gets played
@@ -374,12 +399,15 @@ private: /* Methods */
      * of memory usage
      */
     void Cache(v_frame_t frame);
+    void Cache(v_frame_t frame, FloatImage& image);
     void Store(v_frame_t frame);
 
     v_frame_t GetNextFrame();
     v_frame_t GetPreviousFrame();
     void CacheNextFrame();
+    void CacheNextFrame(FloatImage& image);
     void CachePreviousFrame();
+    void CachePreviousFrame(FloatImage& image);
     void CacheNext();
     void CachePrevious();
 
