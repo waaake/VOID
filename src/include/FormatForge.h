@@ -94,7 +94,9 @@ public:
      * Else returns a null pointer instead
      */
     std::unique_ptr<VoidPixReader> GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
+    std::unique_ptr<VoidPixReader> ImageReaderAt(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
+    std::unique_ptr<VoidMPixReader> MovieReaderAt(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<ImageOp> GetImageOp(const std::string& name) const;
     std::unique_ptr<PixWriter> GetImageWriter(const std::string& extension, const EncodeSpec& spec) const;
     std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const;
