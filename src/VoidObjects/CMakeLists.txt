@@ -25,6 +25,8 @@ set(SOURCES
     Sequence/Track.cpp
     Sequence/TrackItem.cpp
     Sequence/TrackView.cpp
+
+    Buffer.cpp
 )
 
 add_library(
