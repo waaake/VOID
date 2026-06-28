@@ -12,8 +12,7 @@
 VOID_NAMESPACE_OPEN
 
 Media::Media()
-    : m_Reader(nullptr)
-    , m_FirstFrame(-1)
+    : m_FirstFrame(-1)
     , m_LastFrame(-1)
     , m_Framesize(0)
     , m_Framerate(24.0)
@@ -75,9 +74,8 @@ v_frame_t Media::NearestFrame(const v_frame_t frame) const
      * find a frame just next to given frame which exists in the set of frames that the media has
      * if it exists, return that else we return that else the first frame from the media frames
      */
-    // auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
-    // return (it == m_Framenumbers.begin()) ? m_FirstFrame : *(--it);
-    return frame;
+    auto it = std::lower_bound(m_Numbers.begin(), m_Numbers.end(), frame);
+    return (it == m_Numbers.begin()) ? m_FirstFrame : *(--it);
 }
 
 bool Media::Contains(v_frame_t frame) const
@@ -130,11 +128,22 @@ void Media::ProcessSequence()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    m_Reader = std::move(Forge::Instance().GetImageReader(
-        m_MediaStruct.Extension(),
-        m_MediaStruct.FirstPath(),
-        m_FirstFrame
-    ));
+    m_Numbers.reserve(frange.duration);
+    m_Frames.resize(frange.duration);
+
+    for (const MEntry& e : m_MediaStruct)
+    {
+        /**
+         * Index here is basically the distance between the current frame being processed
+         * and the start frame, this is how we actually want the data to always be layed out
+         * meaning that the frames are always ordered and correspond to the distance between the frames
+         * 
+         * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+         * will be 1010 - 1001 = 9
+         */
+        m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
+        m_Numbers.emplace_back(e.Framenumber());
+    }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
 }
@@ -146,38 +155,50 @@ void Media::ProcessMovie()
         return;
 
     std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_MediaStruct.Extension(), entry.Fullpath());
-
     MFrameRange frange = r->Framerange();
     m_Framerate = frange.framerate;
     m_Samplerate = r->Samplerate();
     VOID_LOG_INFO("Movie Media Range: {0}-{1}--{2} @ {3}", frange.startframe, frange.endframe, frange.duration, frange.framerate);
 
+    m_Frames.resize(frange.duration);
+    m_Numbers.reserve(frange.duration);
+
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    m_Reader = std::move(r);
+    for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
+    {
+        m_Frames[counter] = std::move(MovieFrame(entry, i));
+        m_Numbers.emplace_back(i);
+    }
+
+    // m_Reader = std::move(r);
     m_Type = Media::Type::MOVIE;
 }
 
 void Media::Image(v_frame_t frame, FloatImage& image)
 {
-    // At the moment, the first path and framepath are copy of the string
-    // check if we can directly work with references from the underlying MEntry
-    m_Type == Media::Type::MOVIE
-        ? m_Reader->Read(m_MediaStruct.FirstPath(), frame, image)
-        : m_Reader->Read(m_MediaStruct.Framepath(frame), frame, image);
+    // // At the moment, the first path and framepath are copy of the string
+    // // check if we can directly work with references from the underlying MEntry
+    // m_Type == Media::Type::MOVIE
+    //     ? m_Reader->Read(m_MediaStruct.FirstPath(), frame, image)
+    //     : m_Reader->Read(m_MediaStruct.Framepath(frame), frame, image);
+    m_Frames[frame - m_FirstFrame].Image(image);
+
 }
 
 void Media::Thumbnail(UInt8Image& image)
 {
-    m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), m_FirstFrame, image);
+    m_Frames[0].Thumbnail(image);
+    // m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), m_FirstFrame, image);
 }
 
 void Media::Thumbnail(v_frame_t frame, UInt8Image& image)
 {
-    m_Type == Media::Type::MOVIE
-        ? m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), frame, image)
-        : m_Reader->ReadThumbnail(m_MediaStruct.Framepath(frame), frame, image);
+    m_Frames[frame - m_FirstFrame].Thumbnail(image);
+    // m_Type == Media::Type::MOVIE
+    //     ? m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), frame, image)
+    //     : m_Reader->ReadThumbnail(m_MediaStruct.Framepath(frame), frame, image);
 }
 
 void Media::ClearCache(bool dirty)

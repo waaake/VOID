@@ -7,7 +7,8 @@
 /* Internal */
 #include "Definition.h"
 #include "Filesystem.h"
-#include "PixReader.h"
+// #include "PixReader.h"
+#include "Frame.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -61,7 +62,7 @@ public:
     void Read(const MediaStruct& mstruct);
     void Read(MediaStruct&& mstruct);
 
-    /* Getters */
+    // Entry Attributes
     inline std::string Fullpath() const { return m_MediaStruct.FirstPath(); }
     inline std::string TemplatedPath() const { return m_MediaStruct.TemplatedPath(); }
     inline std::string TemplatedName() const { return m_MediaStruct.TemplatedName(); }
@@ -102,15 +103,16 @@ public:
     void Thumbnail(UInt8Image& image);
     void Thumbnail(v_frame_t frame, UInt8Image& image);
 
-    inline int Channels() const { return m_Reader->Channels(); }
-    inline int Width() const { return m_Reader->Width(); }
-    inline int Height() const { return m_Reader->Height(); }
+    // Media Attribs
+    inline int Channels() const { return m_Frames[0].Channels(); }
+    inline int Width() const { return m_Frames[0].Width(); }
+    inline int Height() const { return m_Frames[0].Height(); }
     inline double Framerate() const { return m_Framerate; }
 
     inline bool Empty() const { return m_MediaStruct.Empty(); }
     inline bool Valid() const { return m_Type != Media::Type::UNDEFINED; }
     
-    inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
+    inline const std::map<std::string, std::string> Metadata() const { return m_Frames[0].Metadata(); }
     
     // void Clear();
     void SetDirty(bool dirty = true);
@@ -121,8 +123,10 @@ public:
     void ClearCache(bool dirty = true);
 
 protected: /* Members */
-    SharedPixReader m_Reader;
+    // SharedPixReader m_Reader;
     MediaStruct m_MediaStruct;
+    std::vector<Frame> m_Frames;
+    std::vector<v_frame_t> m_Numbers;
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
     double m_Framerate;
