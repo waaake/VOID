@@ -139,7 +139,6 @@ public:
     bool Buffered(v_frame_t frame) const { return m_Buffered.find(frame) != m_Buffered.end(); }
     bool Maxxed() const { return m_Numbers.size() >= m_Capacity; }
     bool Request(v_frame_t frame, bool evict = false);
-    // FloatImage& BufferAt(v_frame_t frame);
     void StartPlaybackCache(const PlayState& state = PlayState::Forwards);
     inline void RestartPlaybackCache() { StartPlaybackCache(m_State); }
     void StopPlaybackCache();
@@ -187,47 +186,35 @@ private: /* Members */
     std::deque<v_frame_t> m_Numbers;
     std::unordered_set<v_frame_t> m_Buffered;
 
-    // std::unordered_map<v_frame_t, int> m_Indexer;
-    // std::vector<FloatImage> m_Buffers;
-
-    // unsigned int m_Head, m_Tail;
-
-    std::atomic<unsigned int> m_Capacity;
-    std::atomic<std::size_t> m_Framesize;
-    std::size_t m_MaxMemory;
+    // Attribs
+    std::string m_Name;
+    QTimer m_CacheTimer;
+    QColor m_Color;
+    Player* m_Player;
 
     // Media
     SharedMediaClip m_Clip;
     SharedPlaybackTrack m_Track;
     SharedPlaybackSequence m_Sequence;
     Playlist* m_Playlist;
-    // SharedTrackItem m_CachedTrackItem;
+
+    std::size_t m_MaxMemory;
+    std::atomic<std::size_t> m_Framesize;
+    std::atomic<unsigned int> m_Capacity;
+    v_frame_t m_Startframe, m_Endframe;
+    v_frame_t m_LastCached;
 
     // Enums
     PlayableComponent m_PlayingComponent;
     PlayState m_State;
 
-    // Attribs
-    std::string m_Name;
-    QColor m_Color;
-    Player* m_Player;
     QThreadPool m_ThreadPool;
-    v_frame_t m_Startframe, m_Endframe;
-    v_frame_t m_LastCached;
+
     int m_BackBuffer;
     bool m_Active;
-    QTimer m_CacheTimer;
     std::mutex m_Mutex;
 
 private: /* Methods */
-    // // Internal Components
-    // SharedTrackItem ItemFromTrack(const v_frame_t frame);
-    // SharedTrackItem ItemFromSequence(const v_frame_t frame);
-
-    // // Internal Component Data
-    // BufferData ClipData(const v_frame_t frame, bool nearest = false);
-    // BufferData TrackData(const v_frame_t frame, bool nearest = false);
-    // BufferData SequenceData(const v_frame_t frame, bool nearest = false);
 
     // Attrib
     v_frame_t InternalStartframe() const;

@@ -24,25 +24,21 @@ static const std::size_t s_MaxBuffers = 1000;
 
 ViewerBuffer::ViewerBuffer(QObject* parent)
     : QObject(parent)
-    , m_Capacity(10)
-    , m_Framesize(1)
-    // , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
-    , m_MaxMemory(1ULL * 1024 * 1024 * 1024) // 1 GB by default
+    , m_Name("Viewer")
+    , m_Color(130, 110, 190)    // Purple
+    , m_Player(nullptr)
     , m_Clip(std::make_shared<MediaClip>())
     , m_Track(std::make_shared<PlaybackTrack>())
     , m_Sequence(std::make_shared<PlaybackSequence>())
     , m_Playlist(nullptr)
-    // , m_CachedTrackItem(nullptr)
-    , m_PlayingComponent(PlayableComponent::Clip)
-    , m_State(PlayState::Forwards)
-    , m_Name("Viewer")
-    , m_Color(130, 110, 190)    // Purple
-    , m_Player(nullptr)
-    // , m_UsedMemory(0)
-    // , m_FrameSize(0)
+    , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
+    , m_Framesize(1)
+    , m_Capacity(10)
     , m_Startframe(0)
     , m_Endframe(1)
     , m_LastCached(0)
+    , m_PlayingComponent(PlayableComponent::Clip)
+    , m_State(PlayState::Forwards)
     , m_BackBuffer(3)
     , m_Active(false)
 {
@@ -204,10 +200,7 @@ SharedPlaybackTrack ViewerBuffer::ActiveTrack() const
 
 void ViewerBuffer::Refresh()
 {
-    /* Clear any cached item */
-    // m_CachedTrackItem = nullptr;
     ClearCache();
-    // m_Buffer.Reset();
 }
 
 void ViewerBuffer::ClearCache()
@@ -216,35 +209,17 @@ void ViewerBuffer::ClearCache()
 
     m_Numbers.clear();
     m_Buffered.clear();
-    
-    m_Clip->Clear();
 
-    // m_Indexer.clear();
-    // m_Head = m_Tail = 0;
+    if (m_PlayingComponent == PlayableComponent::Track)
+        m_Track->ClearCache();
+    else if (m_PlayingComponent == PlayableComponent::Sequence)
+        m_Sequence->ClearCache();
+    else
+        m_Clip->Clear();
 }
 
 const FloatImage ViewerBuffer::Image(const v_frame_t frame)
 {
-    // // if (m_PlayingComponent == PlayableComponent::Clip)
-    // // {
-    // //     if (m_Clip->Empty() || !m_Clip->InRange(frame))
-    // //         return nullptr;
-
-    // //     m_Clip->Image(frame, m_Image);
-    // //     return m_Image;
-    // // }
-
-    // // SharedTrackItem item = ItemFromTrack(frame);
-    // // if (!item)
-    // //     return nullptr;
-
-    // // // The pixels from the track item
-    // // item->Image(frame, m_Image);
-    // // return m_Image; // Need to Add this
-    // EnsureCached(frame);
-    // // return m_Clip->Image();
-    // return m_Clip->Image(frame);
-
     EnsureCached(frame);
     if (SharedMediaClip media = Media(frame))
         return media->Image(frame);
@@ -257,9 +232,6 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
     BufferData d;
     switch (m_PlayingComponent)
     {
-        // case PlayableComponent::Track: return TrackData(frame, nearest);
-        // case PlayableComponent::Sequence: return SequenceData(frame, nearest);
-        // default: return ClipData(frame, nearest);
         case PlayableComponent::Track:
             d.image = m_Track->Image(frame);
             break;
@@ -294,21 +266,6 @@ std::vector<FloatImage> ViewerBuffer::GridFrame(const v_frame_t frame)
 
 SharedMediaClip ViewerBuffer::Media(const v_frame_t frame)
 {
-    // if (m_PlayingComponent == PlayableComponent::Track)
-    // {
-    //     if (SharedTrackItem item = ItemFromTrack(frame))
-    //         return item->GetMedia();
-    //     return nullptr;
-    // }
-
-    // if (m_PlayingComponent == PlayableComponent::Sequence)
-    // {
-    //     if (SharedTrackItem item = ItemFromSequence(frame))
-    //         return item->GetMedia();
-    //     return nullptr;
-    // }
-
-    // return m_Clip;
     switch (m_PlayingComponent)
     {
         case PlayableComponent::Sequence: return m_Sequence->Media(frame);
@@ -319,78 +276,6 @@ SharedMediaClip ViewerBuffer::Media(const v_frame_t frame)
         default: return m_Clip;
     }
 }
-
-// BufferData ViewerBuffer::ClipData(const v_frame_t frame, bool nearest)
-// {
-//     BufferData d;
-//     if (m_Clip->InRange(frame) && m_Clip->Contains(frame))
-//     {
-//         EnsureCached(frame);
-
-//         // // Process the image before rendering, if any effect has been applied/pending for process
-//         // d.image = m_Clip->Evaluate(frame);
-//         // d.image = BufferAt(frame);
-//         d.image = m_Clip->Image(frame);
-//         d.annotation = m_Clip->Annotation(frame);
-//         return d;
-//     }
-
-//     return (nearest) ? ClipData(m_Clip->NearestFrame(frame), false) : d;
-// }
-
-// BufferData ViewerBuffer::TrackData(const v_frame_t frame, bool nearest)
-// {
-//     BufferData d;
-//     // SharedTrackItem item = ItemFromTrack(frame);
-//     // if (item && item ->InRange(frame))
-//     // {
-//     //     EnsureCached(frame);
-//     //     d.image = item->Image(frame);
-//     //     return d;
-//     // }
-
-//     return d;
-// }
-
-// BufferData ViewerBuffer::SequenceData(const v_frame_t frame, bool nearest)
-// {
-//     BufferData d;
-//     // SharedTrackItem item = ItemFromSequence(frame);
-//     // if (item && item->InRange(frame))
-//     // {
-//     //     EnsureCached(frame);
-//     //     d.image = item->Image(frame);
-//     //     return d;
-//     // }
-
-//     return d;
-// }
-
-// SharedTrackItem ViewerBuffer::ItemFromSequence(const v_frame_t frame)
-// {
-//     /**
-//      * Check if we have a cached track item present -> return that
-//      * if the cached track item is not preset or if the item does not have the requested frame
-//      * request for a track item from the track at the frame, cache it and return back
-//      */
-//     if (!m_CachedTrackItem || !m_CachedTrackItem->InRange(frame))
-//         m_CachedTrackItem = m_Sequence->GetTrackItem(frame);
-
-//     return m_CachedTrackItem;
-// }
-
-// SharedTrackItem ViewerBuffer::ItemFromTrack(const v_frame_t frame)
-// {
-//     /**
-//      * Check if we have a cached track item present -> return that
-//      * if the cached track item is not preset or if the item does not have the requested frame
-//      * request for a track item from the track at the frame, cache it and return back
-//      */
-//     if (!m_CachedTrackItem || !m_CachedTrackItem->InRange(frame))
-//         m_CachedTrackItem = m_Track->GetTrackItem(frame);
-
-//     return m_CachedTrackItem;
-// }
 
 SharedTrackItem ViewerBuffer::TrackItem(const v_frame_t frame)
 {
@@ -571,22 +456,6 @@ void ViewerBuffer::UpdateRange(v_frame_t start, v_frame_t end)
 
 bool ViewerBuffer::Request(v_frame_t frame, bool evict)
 {
-    // /**
-    //  * Size isn't yet set so we can definitely go for caching the first frame
-    //  * well, unless the first frame itself is more than the max available memory
-    //  * (highly unlikely unless we're on 256 MB allocation)
-    //  */
-    // if (!)
-    // {
-    //     m_State == PlayState::Backwards ? m_Numbers.push_front(frame) : m_Numbers.push_back(frame);
-    //     return true;
-    // }
-
-    /**
-     * Check if we've cached all of our frames
-     * if so, then there is no need to cache any further
-     */
-    // if (evict && Completed())
     if (Completed())
     {
         m_CacheTimer.stop();
@@ -608,7 +477,6 @@ bool ViewerBuffer::Request(v_frame_t frame, bool evict)
                 m_Numbers.push_back(frame);
             }
 
-            // m_UsedMemory += m_FrameSize;
             return true;
         }
 
@@ -616,7 +484,6 @@ bool ViewerBuffer::Request(v_frame_t frame, bool evict)
         return false;
     }
 
-    // m_UsedMemory += m_FrameSize;
     m_State == PlayState::Backwards ? m_Numbers.push_front(frame) : m_Numbers.push_back(frame);
     return true;
 }
@@ -626,16 +493,8 @@ void ViewerBuffer::SetFramesize(std::size_t size)
     if (size == m_Framesize)
         return;
 
-    // std::lock_guard<std::mutex> lock(m_Mutex);
     m_Framesize = size;
     m_Capacity = std::min(m_MaxMemory / m_Framesize, s_MaxBuffers);
-
-    // m_Capacity = m_MaxMemory / (m_Framesize * 2);
-    // m_Buffers.resize(m_Capacity);
-
-    // m_Head = std::min(m_Head, m_Capacity - 1);
-    // m_Tail = std::min(m_Tail, m_Capacity - 1);
-
     VOID_LOG_INFO("Setting New Frame size: {0}, Updated Capacity: {1}", m_Framesize, m_Capacity);
 }
 
@@ -643,123 +502,11 @@ void ViewerBuffer::SetMaxMemory(std::size_t gigabytes)
 {
     m_MaxMemory = gigabytes * 1024 * 1024 * 1024;
     m_Capacity = std::min(m_MaxMemory / m_Framesize, s_MaxBuffers);
-
-    // std::lock_guard<std::mutex> lock(m_Mutex);
-    // m_Buffers.resize(m_Capacity);
-
-    // m_Head = std::min(m_Head, m_Capacity - 1);
-    // m_Tail = std::min(m_Tail, m_Capacity - 1);
-
     VOID_LOG_INFO("Setting New Frame size: {0}, Updated Capacity: {1}", m_Framesize, m_Capacity);
 }
 
-// bool ViewerBuffer::Request(v_frame_t frame, bool evict)
-// {
-//     if ((m_Head == m_Capacity - 1))
-//     {
-//         if (!evict)
-//             return s_NullBuffer;
-//         VOID_LOG_INFO("Not proceeding...");
-//     }
-
-//     auto& image = m_Buffers[m_Head];
-//     if (!image)
-//     {
-//         image = VOID_NAMESPACE::Image<float>::Create();
-//         // VOID_LOG_INFO("Creating Image...");
-//     }
-
-//     m_Indexer[frame] = m_Head;
-//     VOID_LOG_INFO("Assigning index: {0} to frame: {1}", m_Head, frame);
-
-//     m_Head = (m_Head + 1) % m_Capacity;
-//     m_Numbers.push_back(frame);
-
-
-//     if (m_Head == m_Tail)
-//     {
-//         v_frame_t frame = m_Numbers.front();
-//         m_Indexer.erase(frame);
-//         m_Numbers.pop_front();
-
-//         m_Player->RemoveCachedFrame(frame);
-
-//         VOID_LOG_INFO("Cleared front");
-//         m_Tail = (m_Tail + 1) % m_Capacity;
-//     }
-
-//     // VOID_LOG_INFO("Updated Head: {0}", m_Head);
-//     return m_Buffers[m_Indexer[frame]];
-
-
-//     // int index = static_cast<int>(m_Numbers.size());
-
-//     // // We have maxed our capacity and cannot cache more, unless evicting the front frames is possible
-//     // if (index >= m_MaxCount && !evict)
-//     //     return s_NullBuffer;
-
-//     // m_Numbers.push_back(frame);
-
-//     // if (index > static_cast<int>(m_Buffers.size()) - 1)
-//     // {
-//     //     VOID_LOG_INFO("Creating index");
-//     //     std::lock_guard<std::mutex> lock(m_Mutex);
-
-//     //     m_Buffers.push_back(Image<float>::Create());
-//     //     m_Indexer[frame] = static_cast<int>(m_Buffers.size() - 1);
-//     //     return m_Buffers.back();
-//     // }
-
-//     // VOID_LOG_INFO("Using Existing");
-//     // m_Indexer[frame] = index;
-//     // return m_Buffers[m_Indexer[frame]];
-// }
-
-// FloatImage& ViewerBuffer::BufferAt(v_frame_t frame)
-// {
-//     // std::lock_guard<std::mutex> lock(m_Mutex);
-//     // return m_Buffers.at(frame);
-//     VOID_LOG_INFO("Fetching Buffer from Index: {0}", m_Indexer[frame]);
-//     return m_Buffers[m_Indexer[frame]];
-// }
-
 void ViewerBuffer::Cache(v_frame_t frame)
 {
-    // if (m_PlayingComponent == PlayableComponent::Track)
-    // {
-    //     SharedTrackItem item = ItemFromTrack(frame);
-    //     if (item)
-    //     {
-    //         item->CacheFrame(frame);
-    //         m_FrameSize = item->FrameSize();
-
-    //         Store(frame);
-    //     }
-
-    //     return;
-    // }
-
-    // if (m_PlayingComponent == PlayableComponent::Sequence)
-    // {
-    //     if (SharedTrackItem item = ItemFromSequence(frame))
-    //     {
-    //         item->CacheFrame(frame);
-    //         m_FrameSize = item->FrameSize();
-
-    //         Store(frame);
-    //     }
-
-    //     return;
-    // }
-
-    // if (m_Clip->Valid() && m_Clip->Contains(frame))
-    // {
-    //     m_Clip->CacheFrame(frame);
-    //     m_FrameSize = m_Clip->FrameSize();
-
-    //     Store(frame);
-    // }
-
     if (m_PlayingComponent == PlayableComponent::Sequence)
     {
         const FloatImage& image = m_Sequence->Image(frame);
@@ -782,19 +529,6 @@ void ViewerBuffer::Cache(v_frame_t frame)
         Store(frame);
     }
 }
-
-// void ViewerBuffer::Cache(v_frame_t frame, FloatImage& image)
-// {
-//     if (m_Clip->Valid() && m_Clip->Contains(frame))
-//     {
-//         m_Clip->Image(frame, image);
-//         // m_FrameSize = image->Size();
-//         SetFramesize(image->Size());
-//         VOID_LOG_INFO("Cache2::Frame::{0}", frame);
-
-//         Store(frame);
-//     }
-// }
 
 void ViewerBuffer::EvictFront()
 {
@@ -900,11 +634,6 @@ void ViewerBuffer::CacheAvailable()
     {
         for (v_frame_t frame = m_Startframe; frame <= m_Endframe; ++frame)
         {
-            // if (Cached(frame))
-            //     continue;
-
-            // if (!Request(frame, false))
-            //     break;
             if (Buffered(frame))
                 continue;
 
@@ -978,20 +707,10 @@ void ViewerBuffer::CacheNextFrame()
     Cache(GetNextFrame());
 }
 
-// void ViewerBuffer::CacheNextFrame(FloatImage& image)
-// {
-//     Cache(GetNextFrame(), image);
-// }
-
 void ViewerBuffer::CachePreviousFrame()
 {
     Cache(GetPreviousFrame());
 }
-
-// void ViewerBuffer::CachePreviousFrame(FloatImage& image)
-// {
-//     Cache(GetPreviousFrame(), image);
-// }
 
 void ViewerBuffer::CacheNext()
 {
@@ -1005,26 +724,6 @@ void ViewerBuffer::CacheNext()
         // if (Completed())
         //     break;
 
-        // VOID_LOG_INFO(
-        //     "P Frame: {0}, Backbuffer: {1}, First Exp: {2}, Front: {3}, Second Exp: {4}",
-        //     m_Player->Frame(),
-        //     m_BackBuffer,
-        //     m_Player->Frame() - m_BackBuffer < m_Numbers.front(),
-        //     m_Numbers.front(),
-        //     m_Numbers.front() <= m_Player->Frame()
-        // );
-        // VOID_LOG_INFO(
-        //     "UU P Frame: {0}, Backbuffer: {1}, First Exp: {2}, Front: {3}, Second Exp: {4}",
-        //     m_Player->Frame(),
-        //     m_BackBuffer,
-        //     m_Player->Frame() - m_BackBuffer <= m_Numbers.front(),
-        //     m_Numbers.front(),
-        //     m_Numbers.front() <= m_Player->Frame()
-        // );
-        // VOID_LOG_INFO(
-        //     "Exp: {0}",
-        //     m_Player->Frame() - m_BackBuffer <= m_Numbers.front() && m_Numbers.front() <= m_Player->Frame()
-        // );
         // Ensure the cached frame is just between the current frame and the back buffer
         if (m_Player->Frame() - m_BackBuffer <= m_Numbers.front() && m_Numbers.front() <= m_Player->Frame())
             break;
