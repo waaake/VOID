@@ -71,9 +71,9 @@ public:
 
     inline QColor Color() const { return m_Color; }
 
-    void CacheFrame(v_frame_t frame);
-    void UncacheFrame(v_frame_t frame);
-    void ClearCache();
+    void Cache(v_frame_t frame);
+    void Clear(v_frame_t frame);
+    void Clear();
 
     /* Add Annotation for a Frame */
     void SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation);
@@ -124,10 +124,9 @@ public:
      * @brief Evaluates any effects added onto the Media, and updates the
      * image buffer with effect applied on the original image data.
      * 
-     * @param frame 
-     * @param image Image Buffer to be filled/processed and updated.
+     * @param frame Frame number.
      */
-    void Evaluate(v_frame_t frame, FloatImage& image);
+    const FloatImage& Evaluate(v_frame_t frame);
 
 signals: /* Signals defining any change that has happened */
     /*

@@ -320,7 +320,7 @@ std::vector<int> MediaClip::AnnotatedFrames() const
     return frames;
 }
 
-void MediaClip::CacheFrame(v_frame_t frame)
+void MediaClip::Cache(v_frame_t frame)
 {
     /**
      * Same logic as mentioned before, the frames in the underlying vector are always sorted
@@ -329,11 +329,11 @@ void MediaClip::CacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    // m_Mediaframes.at(frame - m_FirstFrame).Cache();
+    m_Frames.at(frame - m_FirstFrame).Cache();
     // emit frameCached(frame);
 }
 
-void MediaClip::UncacheFrame(v_frame_t frame)
+void MediaClip::Clear(v_frame_t frame)
 {
     /**
      * Same logic as mentioned before, the frames in the underlying vector are always sorted
@@ -342,11 +342,11 @@ void MediaClip::UncacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    // m_Mediaframes.at(frame - m_FirstFrame).ClearCache(HasEffects());
+    m_Frames.at(frame - m_FirstFrame).Clear(HasEffects());
     // emit frameUncached(frame);
 }
 
-void MediaClip::ClearCache()
+void MediaClip::Clear()
 {
     // Mark the underlying frames as dirty only if this has effects added to it
     // This obviously is temporary till we have the actual workflow where effects are applied
@@ -552,7 +552,7 @@ void MediaClip::Deserialize(std::istream& in)
     }
 }
 
-void MediaClip::Evaluate(v_frame_t frame, FloatImage& image)
+const FloatImage& MediaClip::Evaluate(v_frame_t frame)
 {
     // Frame* f = FramePtr(frame);
 
@@ -575,23 +575,23 @@ void MediaClip::Evaluate(v_frame_t frame, FloatImage& image)
     //     return image;
     // }
 
-    // return f->Image();
+    return Media::Image(frame);
 
-    // Update the buffer with the original image
-    // Look at the workflow later --- if we're going to call this directly or only after we have filled the buffer
-    // with the image data already and if we'll send here a copied buffer, to preserve the original data
-    // For now, just doing this, will change later
-    Media::Image(frame, image);
+    // // Update the buffer with the original image
+    // // Look at the workflow later --- if we're going to call this directly or only after we have filled the buffer
+    // // with the image data already and if we'll send here a copied buffer, to preserve the original data
+    // // For now, just doing this, will change later
+    // Media::Image(frame, image);
 
-    for (auto effect : m_Effects)
-    {
-        // Only enabled effects get procesed
-        if (effect->Enabled())
-        {
-            VOID_LOG_INFO("Processing: {0}", effect->Name());
-            ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
-        }
-    }
+    // for (auto effect : m_Effects)
+    // {
+    //     // Only enabled effects get procesed
+    //     if (effect->Enabled())
+    //     {
+    //         VOID_LOG_INFO("Processing: {0}", effect->Name());
+    //         ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+    //     }
+    // }
 }
 
 VOID_NAMESPACE_CLOSE
