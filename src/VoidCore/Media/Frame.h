@@ -58,6 +58,7 @@ public:
     // // SharedPixReader Writable();
     void Thumbnail(UInt8Image& image);
     void Image(FloatImage& image);
+    const FloatImage& Image();
 
     // Image Properties
     [[nodiscard]] inline int Width() const { return m_Reader->Width(); }
@@ -67,14 +68,12 @@ public:
 
     /* Frame Caches */
     void Cache();
-    void ClearCache(bool dirty = true);
+    void Clear(bool dirty = true);
 
 protected: /* Members */
     MEntry m_Entry;
     SharedPixReader m_Reader;
-    // SharedPixReader m_Writable;
     v_frame_t m_Framenumber;
-    // int m_Channels = {0};
     bool m_Dirty = {false};
 
 private: /* Members*/

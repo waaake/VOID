@@ -99,9 +99,10 @@ public:
      */
     v_frame_t NearestFrame(v_frame_t frame) const;
 
-    void Image(v_frame_t frame, FloatImage& image);
     void Thumbnail(UInt8Image& image);
     void Thumbnail(v_frame_t frame, UInt8Image& image);
+    void Image(v_frame_t frame, FloatImage& image);
+    const FloatImage& Image(v_frame_t frame) { return m_Frames[frame - m_FirstFrame].Image(); }
 
     // Media Attribs
     inline int Channels() const { return m_Frames[0].Channels(); }
