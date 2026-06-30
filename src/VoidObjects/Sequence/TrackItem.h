@@ -59,6 +59,9 @@ public:
      * @param image Image Buffer to be updated.
      */
     void Image(const v_frame_t frame, FloatImage& image);
+    const FloatImage Image(v_frame_t frame);
+
+    void ClearCache(v_frame_t frame);
 
     inline v_frame_t StartFrame() const { return m_StartFrame; }
     inline v_frame_t EndFrame() const { return m_EndFrame; }

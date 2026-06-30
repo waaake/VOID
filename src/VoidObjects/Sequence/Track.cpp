@@ -87,6 +87,7 @@ SharedTrackItem TrackMap::At(const int frame) const
 
 PlaybackTrack::PlaybackTrack(QObject* parent)
     : VoidObject(parent)
+    , m_Recent(nullptr)
     , m_StartFrame(0)
     , m_EndFrame(0)
     , m_Duration(0)
@@ -105,11 +106,7 @@ void PlaybackTrack::SetMedia(const SharedMediaClip& media)
 {
     /* Block any signals till the operation has been completed */
     bool b = blockSignals(true);
-
-    /* Clear any Media present */
     Clear();
-
-    /* Unblock signals */
     blockSignals(b);
 
     /**
@@ -163,6 +160,14 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
     emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
+SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
+{
+    if (const auto& item = GetTrackItem(frame))
+        return item->GetMedia();
+    
+    return nullptr;
+}
+
 void PlaybackTrack::Clear()
 {
     /**
@@ -204,6 +209,26 @@ void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
     emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
+void PlaybackTrack::Cache(v_frame_t frame)
+{
+    if (auto item = GetTrackItem(frame))
+        item->GetMedia()->Cache(frame);
+}
+
+void PlaybackTrack::Image(v_frame_t frame, FloatImage& image)
+{
+    if (auto item = GetTrackItem(frame))
+        item->Image(frame, image);
+}
+
+const FloatImage PlaybackTrack::Image(v_frame_t frame)
+{
+    if (auto item = GetTrackItem(frame))
+        return item->Image(frame);
+    
+    return nullptr;
+}
+
 void PlaybackTrack::ClearCache()
 {
     /* Clear cache for each items' media */
@@ -215,6 +240,21 @@ void PlaybackTrack::ClearCache()
 
     /* Once all media has been rid of cache -> emit the cacheCleared signal */
     emit cacheCleared();
+}
+
+void PlaybackTrack::ClearCache(v_frame_t frame)
+{
+    if (auto item = GetTrackItem(frame))
+        item->ClearCache(frame);
+}
+
+SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
+{
+    if (m_Recent && m_Recent->InRange(frame))
+        return m_Recent;
+    
+    m_Recent = m_Items.At(frame);
+    return m_Recent;
 }
 
 VOID_NAMESPACE_CLOSE

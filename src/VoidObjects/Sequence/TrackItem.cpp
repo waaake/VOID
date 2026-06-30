@@ -61,4 +61,20 @@ void TrackItem::Image(const v_frame_t frame, FloatImage& image)
     }
 }
 
+const FloatImage TrackItem::Image(v_frame_t frame)
+{
+    v_frame_t f = frame + m_Offset;
+    if (m_Media->Contains(f))
+        return m_Media->Image(f);
+    
+    return nullptr;
+}
+
+void TrackItem::ClearCache(v_frame_t frame)
+{
+    v_frame_t f = frame + m_Offset;
+    if (m_Media->Contains(f))
+        m_Media->Clear(f);
+}
+
 VOID_NAMESPACE_CLOSE

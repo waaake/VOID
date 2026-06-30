@@ -159,11 +159,46 @@ SharedTrackItem PlaybackSequence::GetTrackItem(const int frame) const
      * Meaning bottom of (last added to) the underlying video tracks
      */
     if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-    {
         return m_VideoTracks.back()->GetTrackItem(frame);
-    }
 
     /* There is nothing in the sequence */
+    return nullptr;
+}
+
+SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
+{
+    /**
+     * When the Sequence is asked for an image for a given frame
+     * The sequence always returns back the data from the track which is at the top of the stack
+     * Meaning bottom of (last added to) the underlying video tracks
+     */
+    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
+        return m_VideoTracks.back()->Media(frame);
+    
+    return nullptr;
+}
+
+void PlaybackSequence::Image(v_frame_t frame, FloatImage& image)
+{
+    /**
+     * When the Sequence is asked for an image for a given frame
+     * The sequence always returns back the data from the track which is at the top of the stack
+     * Meaning bottom of (last added to) the underlying video tracks
+     */
+    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
+        m_VideoTracks.back()->Image(frame, image);
+}
+
+const FloatImage PlaybackSequence::Image(v_frame_t frame)
+{
+    /**
+     * When the Sequence is asked for an image for a given frame
+     * The sequence always returns back the data from the track which is at the top of the stack
+     * Meaning bottom of (last added to) the underlying video tracks
+     */
+    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
+        return m_VideoTracks.back()->Image(frame);
+
     return nullptr;
 }
 
@@ -171,6 +206,17 @@ void PlaybackSequence::ClearCache()
 {
     for (SharedPlaybackTrack& track : m_VideoTracks)
         track->ClearCache();
+}
+
+void PlaybackSequence::ClearCache(v_frame_t frame)
+{
+    /**
+     * When the Sequence is asked for an image for a given frame
+     * The sequence always returns back the data from the track which is at the top of the stack
+     * Meaning bottom of (last added to) the underlying video tracks
+     */
+    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
+        return m_VideoTracks.back()->ClearCache(frame);
 }
 
 VOID_NAMESPACE_CLOSE
