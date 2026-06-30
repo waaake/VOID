@@ -71,7 +71,7 @@ void ImageRenderLayer::ReinitBuffer(const FloatImage& image)
 {
     /* Init the bound tex with null image for Tex*/
     glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
-    m_InternalFormat = image->format;
+    m_InternalFormat = image->InternalFormat();
 
     /* Re-alloc the pixel buffer as the texture size has changed */
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[0]);
@@ -87,7 +87,7 @@ void ImageRenderLayer::SetImage(const FloatImage& image)
         return;
 
     glBindTexture(GL_TEXTURE_2D, m_Texture);
-    if (m_InternalFormat != image->format)
+    if (m_InternalFormat != image->InternalFormat())
         ReinitBuffer(image);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs[m_PBOIndex]);

@@ -90,7 +90,7 @@ void ImageComparisonRenderLayer::Initialize()
 void ImageComparisonRenderLayer::InitTextureA(const FloatImage& image)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
-    m_InternalFormatA = image->format;
+    m_InternalFormatA = image->InternalFormat();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[0]);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
@@ -102,7 +102,7 @@ void ImageComparisonRenderLayer::InitTextureA(const FloatImage& image)
 void ImageComparisonRenderLayer::InitTextureB(const FloatImage& image)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
-    m_InternalFormatB = image->format;
+    m_InternalFormatB = image->InternalFormat();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[0]);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
@@ -118,7 +118,7 @@ void ImageComparisonRenderLayer::SetImageA(const FloatImage& image)
 
     // Bind the Generated texture for Render
     glBindTexture(GL_TEXTURE_2D, m_TextureA);
-    if (m_InternalFormatA != image->format)
+    if (m_InternalFormatA != image->InternalFormat())
         InitTextureA(image);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[m_PBOIndexA]);
@@ -147,7 +147,7 @@ void ImageComparisonRenderLayer::SetImageB(const FloatImage& image)
 
     // Bind the Generated texture for Render
     glBindTexture(GL_TEXTURE_2D, m_TextureB);
-    if (m_InternalFormatB != image->format)
+    if (m_InternalFormatB != image->InternalFormat())
         InitTextureB(image);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[m_PBOIndexB]);
