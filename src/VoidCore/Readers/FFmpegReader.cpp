@@ -356,10 +356,6 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
         image->channels = decoder.Channels();
 
         image->format = VOID_GL_RGB;
-
-        m_Width = image->width;
-        m_Height = image->height;
-        m_Channels = image->channels;
     }
 }
 
@@ -415,6 +411,20 @@ void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage&
     }
 }
 
+void FFmpegPixReader::Read()
+{
+    FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
+    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer._buf))
+    {
+        m_Image->width = decoder.Width();
+        m_Image->height = decoder.Height();
+        m_Image->channels = decoder.Channels();
+
+        m_Image->format = VOID_GL_RGB;
+        m_Image->type = VOID_GL_FLOAT;
+    }
+}
+
 const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 {
     std::map<std::string, std::string> m;
@@ -467,9 +477,9 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
     /* Basic Metadata */
     m["filepath"] = m_Path;
-    m["width"] = std::to_string(m_Height);
-    m["height"] = std::to_string(m_Width);
-    m["channels"] = std::to_string(m_Channels);
+    m["width"] = std::to_string(m_Image->width);
+    m["height"] = std::to_string(m_Image->height);
+    m["channels"] = std::to_string(m_Image->channels);
     m["start_frame"] = std::to_string(m_Startframe);
 
     return m;

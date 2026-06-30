@@ -28,7 +28,7 @@ class VoidPixReader
 {
 public:
     VoidPixReader(const std::string& path, v_frame_t framenumber = 0)
-        : m_Path(path), m_Framenumber(framenumber), m_Width(100), m_Height(100), m_Channels(0) {}
+        : m_Path(path), m_Framenumber(framenumber), m_Image(Image<float>::Create()) {}
     virtual ~VoidPixReader() = default;
 
     /**
@@ -41,13 +41,13 @@ public:
      * Specifies the number of color components in the texture
      * e.g. GL_RGBA32F | GL_RGBA32I | GL_RGBA32UI | GL_RGBA16 | GL_RGBA16F | GL_RGBA16I
      */
-    virtual unsigned int GLInternalFormat() const { return (m_Channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
+    virtual unsigned int GLInternalFormat() const { return (m_Image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
 
     /**
      * Specifies the format of the pixel data
      * GL_RGBA | GL_RGB
      */
-    virtual unsigned int GLFormat() const { return (m_Channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
+    virtual unsigned int GLFormat() const { return (m_Image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
 
     /**
      * @brief Called for generating Thumbnail for the media and gets used to create the QImage which needs unsigned char
@@ -63,15 +63,19 @@ public:
      * Image Specifications
      * Dimensions and Channel information for the Image
      */
-    virtual int Width() const { return m_Width; }
-    virtual int Height() const { return m_Height; }
-    virtual int Channels() const { return m_Channels; }
+    virtual int Width() const { return m_Image->width; }
+    virtual int Height() const { return m_Image->height; }
+    virtual int Channels() const { return m_Image->channels; }
+    
+    virtual const FloatImage& FrameImage() const { return m_Image; }
 
     /**
      * Clear internal pixel data
      * This is here to allow memory to be freed when needed
      */
     virtual void Clear() = 0;
+    bool Empty() const { return m_Image->Empty(); }
+    bool HasData() const { return m_Image->Valid(); }
 
     /**
      * @brief Reads the image data and fills up the Float image buffer.
@@ -81,6 +85,7 @@ public:
      * @param image Float buffer to write to.
      */
     virtual void Read(const std::string& path, v_frame_t frame, FloatImage& image) = 0;
+    virtual void Read() = 0;
 
     /**
      * Retrieve the input colorspace of the media file
@@ -131,8 +136,7 @@ public:
 protected:
     std::string m_Path;
     v_frame_t m_Framenumber;
-    int m_Width, m_Height;
-    int m_Channels;
+    FloatImage m_Image;
 };
 
 class VoidMPixReader : public VoidPixReader

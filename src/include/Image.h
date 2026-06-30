@@ -72,6 +72,8 @@ struct Buffer
     }
     void Clear()
     {
+        if (_buf.empty()) return;
+
         _buf.clear();
         _buf.shrink_to_fit();
     }
@@ -95,9 +97,11 @@ struct Image
 
     Buffer<_Ty> buffer;
 
+    unsigned int InternalFormat() const { return buffer.Size() * format; }
     std::size_t Size() const noexcept { return buffer.Size() * sizeof(_Ty); }
     bool Valid() const noexcept { return !buffer.Empty(); }
     bool Empty() const noexcept { return buffer.Empty(); }
+    void Clear() { buffer.Clear(); }
     const _Ty* Pixels() const noexcept { return buffer.Data(); }
     _Ty* Writable() noexcept { return buffer.Data(); }
     void Resize() { buffer.Resize(width * height * channels); }
@@ -114,10 +118,7 @@ struct Image
         std::cout << "Destroyed Image" << "\n";
     }
 
-    static std::shared_ptr<Image<_Ty>> Create()
-    {
-        return std::make_shared<Image<_Ty>>();
-    }
+    static std::shared_ptr<Image<_Ty>> Create() { return std::make_shared<Image<_Ty>>(); }
 };
 
 typedef std::shared_ptr<Image<float>> FloatImage;

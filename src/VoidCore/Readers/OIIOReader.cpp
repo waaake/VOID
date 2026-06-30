@@ -85,17 +85,11 @@ void OIIOPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt
     image->buffer.Resize(image->width * image->height * image->channels);
     input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, image->Writable());
     input->close();
-
-    m_Width = image->width;
-    m_Height = image->height;
-    m_Channels = image->channels;
 }
 
 void OIIOPixReader::Clear()
 {
-    /* Remove any data from the pixels vector and shrink it back in place */
-    m_Pixels.clear();
-    m_Pixels.shrink_to_fit();
+    m_Image->Clear();
 }
 
 void OIIOPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
@@ -132,16 +126,66 @@ void OIIOPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& i
     int miplevel = 0;
     int chbegin = 0, chend = image->channels;
 
-    m_Pixels.resize(image->width * image->height * image->channels);
+    std::vector<unsigned char> pixels;
+    pixels.resize(image->width * image->height * image->channels);
     image->buffer.Resize(image->width * image->height * image->channels);
 
-    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, m_Pixels.data());
+    // VOID_LOG_INFO("OIIIIIO: {0} --- {1}", frame, image->Size());
+
+    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, pixels.data());
     input->close();
 
-    OIIO::ImageBuf src(spec, m_Pixels.data());
+    OIIO::ImageBuf src(spec, pixels.data());
     OIIO::ImageBuf linear;
     OIIO::ImageBufAlgo::colorconvert(linear, src, "sRGB", "Linear");
     linear.get_pixels(OIIO::ROI::All(), OIIO::TypeDesc::FLOAT, image->Writable());
+}
+
+void OIIOPixReader::Read()
+{
+    std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
+    if (!input)
+    {
+        VOID_LOG_INFO("Unable to load image. Path: {0}", m_Path);
+        // Fetch the error from OpenImageIO
+        VOID_LOG_ERROR(OIIO::geterror());
+        return;
+    }
+
+    // Read image spec
+    const OIIO::ImageSpec spec = input->spec();
+    m_Image->width = spec.width;
+    m_Image->height = spec.height;
+    m_Image->channels = spec.nchannels;
+    m_Image->format = (m_Image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA;
+    m_Image->type = VOID_GL_FLOAT;
+
+    // /* Get the colorspace from the image spec {{{ */
+    // std::string_view colorspace = spec.get_string_attribute("oiio:ColorSpace");
+
+    // /* Our default Input ColorSpace points at sRGB, only cases where we want to update that */
+    // if (colorspace.find("Rec.709") != std::string_view::npos)
+    //     m_InputColorSpace = ColorSpace::Rec709;
+    // /* }}} */
+
+    // VOID_LOG_INFO("OIIOPixReader ( Width: {0}, Height: {1}, Channels: {2} )", m_Width, m_Height, m_Channels);
+
+    /* Read requisites */
+    int subimage = 0;
+    int miplevel = 0;
+    int chbegin = 0, chend = m_Image->channels;
+
+    std::vector<unsigned char> pixels;
+    pixels.resize(m_Image->width * m_Image->height * m_Image->channels);
+    m_Image->buffer.Resize(m_Image->width * m_Image->height * m_Image->channels);
+
+    input->read_image(subimage, miplevel, chbegin, chend, OIIO::TypeDesc::UINT8, pixels.data());
+    input->close();
+
+    OIIO::ImageBuf src(spec, pixels.data());
+    OIIO::ImageBuf linear;
+    OIIO::ImageBufAlgo::colorconvert(linear, src, "sRGB", "Linear");
+    linear.get_pixels(OIIO::ROI::All(), OIIO::TypeDesc::FLOAT, m_Image->Writable());
 }
 
 const std::map<std::string, std::string> OIIOPixReader::Metadata() const

@@ -20,14 +20,12 @@ public:
     ~OIIOPixReader();
 
     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
+    void Read() override;
+
     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
 
     void Clear() override;
     const std::map<std::string, std::string> Metadata() const override;
-
-private:
-    // std::vector<unsigned char> m_TPixels;
-    std::vector<unsigned char> m_Pixels;
 };
 
 VOID_NAMESPACE_CLOSE

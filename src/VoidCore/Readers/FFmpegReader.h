@@ -94,8 +94,9 @@ public:
     ~FFmpegPixReader();
 
     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
+    void Read() override;
     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
-    void Clear() override {}
+    void Clear() override { m_Image->Clear(); }
 
     MFrameRange Framerange() override;
     const std::map<std::string, std::string> Metadata() const override;
