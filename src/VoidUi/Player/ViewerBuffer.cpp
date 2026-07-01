@@ -72,6 +72,8 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
 
 ViewerBuffer::~ViewerBuffer()
 {
+    m_ThreadPool.clear();
+    m_ThreadPool.waitForDone();
 }
 
 void ViewerBuffer::SetColor(const QColor& color)
