@@ -5,12 +5,12 @@
 #define _IMAGE_H
 
 /* STD */
-#include <iostream> // Temporary
 #include <memory>
 #include <vector>
 
 /* Internal */
 #include "Definition.h"
+#include "Allocator.h"
 #include "Row.h"
 
 VOID_NAMESPACE_OPEN
@@ -57,7 +57,7 @@ VOID_NAMESPACE_OPEN
 template <typename _Ty>
 struct Buffer
 {
-    std::vector<_Ty> _buf;
+    std::vector<_Ty, ImageBufferAllocator<_Ty>> _buf;
     const _Ty* Data() const noexcept { return _buf.data(); }
     _Ty* Data() noexcept { return _buf.data(); }
     std::size_t Size() const noexcept { return _buf.size(); }
@@ -112,12 +112,6 @@ struct Image
     }
 
     Image() {}
-    ~Image()
-    {
-        // Check destruction -------
-        std::cout << "Destroyed Image" << "\n";
-    }
-
     static std::shared_ptr<Image<_Ty>> Create() { return std::make_shared<Image<_Ty>>(); }
 };
 
