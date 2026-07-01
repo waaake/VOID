@@ -23,14 +23,14 @@ public:
     using value_type = _Ty;
 
     ImageBufferAllocator() = default;
-    // ~ImageBufferAllocator()
-    // {
-    //     for (auto& [_, freelist] : s_buckets)
-    //     {
-    //         for (void* _pointer : freelist)
-    //             ::operator delete(_pointer);
-    //     }
-    // }
+    ~ImageBufferAllocator()
+    {
+        for (auto& [_, freelist] : s_buckets)
+        {
+            for (void* _pointer : freelist)
+                ::operator delete(_pointer);
+        }
+    }
 
     _Ty* allocate(std::size_t _size)
     {
@@ -54,18 +54,48 @@ public:
         s_buckets[bucketSize].push_back(_pointer);
     }
 
-    static void FreeMem()
+    // static void FreeMem()
+    // {
+    //     for (auto& [_, freelist] : s_buckets)
+    //     {
+    //         for (void* _pointer : freelist)
+    //             ::operator delete(_pointer);
+    //     }
+    // }
+
+    ImageBufferAllocator(const ImageBufferAllocator& other)
     {
-        for (auto& [_, freelist] : s_buckets)
-        {
-            for (void* _pointer : freelist)
-                ::operator delete(_pointer);
-        }
+        s_buckets = other.s_buckets;
+    }
+    ImageBufferAllocator(ImageBufferAllocator&& other)
+    {
+        std::swap(s_buckets, other.s_buckets);
     }
 
+    ImageBufferAllocator& operator=(const ImageBufferAllocator& other)
+    {
+        if (this == &other)
+            return *this;
+        
+        s_buckets = other.s_buckets;
+        return *this;
+    }
+
+    ImageBufferAllocator& operator=(ImageBufferAllocator&& other)
+    {
+        if (this == &other)
+            return *this;
+        
+        std::swap(s_buckets, other.s_buckets);
+        return *this;
+    }
+
+    bool operator==(const ImageBufferAllocator& other) { return true; }
+    bool operator!=(const ImageBufferAllocator& other) { return false; }
+
 private: 
-    static inline std::unordered_map<std::size_t, std::list<void*>> s_buckets;
-    static inline std::mutex s_allocMutex;
+    std::unordered_map<std::size_t, std::list<void*>> s_buckets;
+    std::mutex s_allocMutex;
 
 private:
     static std::size_t Round(std::size_t _size)

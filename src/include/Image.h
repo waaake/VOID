@@ -10,7 +10,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "Allocator.h"
+// #include "Allocator.h"
 #include "Row.h"
 
 VOID_NAMESPACE_OPEN
@@ -57,7 +57,10 @@ VOID_NAMESPACE_OPEN
 template <typename _Ty>
 struct Buffer
 {
-    std::vector<_Ty, ImageBufferAllocator<_Ty>> _buf;
+    // Adds additional time for memory management when clearing underlying vector data
+    // Needs rework on the approach, possibly lock-free mechanism and using std::vector over std::unordered_map
+    // std::vector<_Ty, ImageBufferAllocator<_Ty>> _buf;
+    std::vector<_Ty> _buf;
     const _Ty* Data() const noexcept { return _buf.data(); }
     _Ty* Data() noexcept { return _buf.data(); }
     std::size_t Size() const noexcept { return _buf.size(); }
@@ -78,11 +81,6 @@ struct Buffer
         _buf.shrink_to_fit();
     }
 };
-
-// class Image
-// {
-
-// };
 
 template <typename _Ty>
 struct Image
