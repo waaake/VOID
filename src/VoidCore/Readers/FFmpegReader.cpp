@@ -121,7 +121,7 @@ void FFmpegDecoder::Close()
     m_StreamID = -1;
 }
 
-bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<float>& pixels)
+bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<float>& pixels)
 {
     /**
      * At the moment, this is not accessible concurrently throught multiple threads
@@ -140,7 +140,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
     }
 
     m_Buffer.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
-    pixels.resize(m_Buffer.Size());
+    pixels.Resize(m_Buffer.Size());
 
     av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, m_Buffer.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
 
@@ -209,7 +209,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
     return found;
 }
 
-bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels)
+bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<unsigned char>& pixels)
 {
     /**
      * At the moment, this is not accessible concurrently throught multiple threads
@@ -227,8 +227,8 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
         Open();
     }
 
-    pixels.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
-    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+    pixels.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
 
     m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
@@ -317,7 +317,7 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
     return m_CurrentFrame;
 }
 
-void FFmpegDecoder::FillBuffer(std::vector<float>& out)
+void FFmpegDecoder::FillBuffer(Buffer<float>& out)
 {
     for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
     {
@@ -349,7 +349,7 @@ FFmpegPixReader::~FFmpegPixReader()
 void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
     FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
-    if (decoder.Decode(path, frame, image->buffer._buf))
+    if (decoder.Decode(path, frame, image->buffer))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -400,7 +400,7 @@ MFrameRange FFmpegPixReader::Framerange()
 void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
 {
     FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
-    if (decoder.Decode(path, frame, image->buffer._buf))
+    if (decoder.Decode(path, frame, image->buffer))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -414,7 +414,7 @@ void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage&
 void FFmpegPixReader::Read()
 {
     FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
-    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer._buf))
+    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer))
     {
         m_Image->width = decoder.Width();
         m_Image->height = decoder.Height();

@@ -47,8 +47,8 @@ public:
      * O(n) as the iterator might have to loop over all frames to get to the one we're looking at which also
      * caches the other frames so next frame queries could directly result in direct data transfer
      */
-    bool Decode(const std::string& path, const int framenumber, std::vector<float>& pixels);
-    bool Decode(const std::string& path, const int framenumber, std::vector<unsigned char>& pixels);
+    bool Decode(const std::string& path, const int framenumber, Buffer<float>& pixels);
+    bool Decode(const std::string& path, const int framenumber, Buffer<unsigned char>& pixels);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -83,7 +83,7 @@ private: /* Methods */
      * returns back the frame number (converted from av time base to signed long)
      */
     v_frame_t DecodeNextFrame(bool save = true);
-    void FillBuffer(std::vector<float>& out);
+    void FillBuffer(Buffer<float>& out);
     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 };
 
