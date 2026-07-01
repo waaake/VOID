@@ -32,9 +32,6 @@ VOID_NAMESPACE_OPEN
 
 OpenEXRReader::OpenEXRReader(const std::string& path, v_frame_t framenumber)
     : VoidPixReader(path, framenumber)
-    , m_Width(0)
-    , m_Height(0)
-    , m_Channels(0)
 {
 }
 
@@ -43,65 +40,22 @@ OpenEXRReader::~OpenEXRReader()
     Clear();
 }
 
-SharedPixels OpenEXRReader::Copy() const
-{
-    auto copy = std::make_shared<OpenEXRReader>(m_Path, m_Framenumber);
-    copy->m_Channels = m_Channels;
-    copy->m_Width = m_Width;
-    copy->m_Height = m_Height;
-    copy->m_Pixels = m_Pixels;
-
-    return copy;
-}
-
 void OpenEXRReader::Clear()
 {
-    /* Remove any data from the pixels vector and shrink it back in place */
-    m_Pixels.clear();
-    m_Pixels.shrink_to_fit();
+    m_Image->Clear();
 }
 
-ImageRow OpenEXRReader::Row(std::size_t row)
+void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
-    return (row >= m_Height)
-            ? ImageRow()
-            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
-}
-
-const unsigned char* OpenEXRReader::ThumbnailPixels()
-{
-    if (m_TPixels.empty())
-    {
-        m_TPixels.resize(m_Pixels.size());
-        unsigned char* pixels = m_TPixels.data();
-
-        for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
-        {
-            int index = i * m_Channels;
-
-            pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
-            pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
-            pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
-            pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
-        }
-    }
-
-    return m_TPixels.data();
-}
-
-void OpenEXRReader::Read()
-{
-    /* Create an EXR Reader */
-    Imf::RgbaInputFile f(m_Path.c_str());
-
-    /* Get Image Specifications */
+    Imf::RgbaInputFile f(path.c_str());
+    // Image Specs
     Imath::Box2i dw = f.dataWindow();
-    m_Width = (dw.max.x - dw.min.x) + 1;
-    m_Height = (dw.max.y - dw.min.y) + 1;
+    image->width = (dw.max.x - dw.min.x) + 1;
+    image->height = (dw.max.y - dw.min.y) + 1;
 
     /* To Get the channels -> Read through the header */
-    const Imf::Header& header = f.header();
-    const Imf::ChannelList& channels = header.channels();
+    // const Imf::Header& header = f.header();
+    // const Imf::ChannelList& channels = header.channels();
 
     // /*
     //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
@@ -110,39 +64,130 @@ void OpenEXRReader::Read()
     // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
     //     m_Channels++;
 
-    /* Force 4 Channels */
-    m_Channels = 4;
+    // Force 4 Channels
+    image->channels = 4;
 
-    VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", m_Width, m_Height, m_Channels);
+    // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
 
-    /* Allocate the Pixel buffer for the EXR Image */
-    Imf::Array2D<Imf::Rgba> pixels(m_Height, m_Width);
+    Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);
 
-    /* Read the Pixel data onto the buffer */
-    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * m_Width, 1, m_Width);
-    /* Read the scanlines */
+    // Read the Pixel data onto the buffer
+    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * image->width, 1, image->width);
     f.readPixels(dw.min.y, dw.max.y);
 
-    /*
-     * Once we have the pixel data from the EXR
-     * Cast this data into unsigned char buffer
-     * TODO: Check if we can use this data onto Renderer directly without casting this ?
-     */
-    /* Convert floating point exr pixels to 8-bit RGB/RGBA format */
-    m_Pixels.resize(m_Width * m_Height * m_Channels);
+    image->buffer.Resize(image->width * image->height * image->channels);
 
-    for (int y = 0; y < m_Height; y++)
+    for (int y = 0; y < image->height; y++)
     {
-        for (int x = 0; x < m_Width; x++)
+        for (int x = 0; x < image->width; x++)
         {
             const Imf::Rgba& pixel = pixels[y][x];
-            // Find the index at which we will be writing to on the pixel buffer
-            int index = (y * m_Width + x) * m_Channels;
+            int index = (y * image->width + x) * image->channels;
 
-            m_Pixels[index] = pixel.r;
-            m_Pixels[index + 1] = pixel.g;
-            m_Pixels[index + 2] = pixel.b;
-            m_Pixels[index + 3] = pixel.a;
+            image->buffer[index] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
+            image->buffer[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
+            image->buffer[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
+            image->buffer[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
+        }
+    }
+}
+
+void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
+{
+    Imf::RgbaInputFile f(path.c_str());
+
+    // Image Specs
+    Imath::Box2i dw = f.dataWindow();
+    image->width = (dw.max.x - dw.min.x) + 1;
+    image->height = (dw.max.y - dw.min.y) + 1;
+
+    /* To Get the channels -> Read through the header */
+    // const Imf::Header& header = f.header();
+    // const Imf::ChannelList& channels = header.channels();
+
+    // /*
+    //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
+    //  * Update the channel count by reading the channels
+    //  */
+    // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+    //     m_Channels++;
+
+    // Force 4 Channels
+    image->channels = 4;
+    image->format = VOID_GL_RGBA;
+    image->type = VOID_GL_FLOAT;
+
+    // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
+
+    Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);
+
+    // Read the Pixel data onto the buffer
+    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * image->width, 1, image->width);
+    f.readPixels(dw.min.y, dw.max.y);
+
+    image->buffer.Resize(image->width * image->height * image->channels);
+
+    for (int y = 0; y < image->height; y++)
+    {
+        for (int x = 0; x < image->width; x++)
+        {
+            const Imf::Rgba& pixel = pixels[y][x];
+            int index = (y * image->width + x) * image->channels;
+
+            image->buffer[index] = pixel.r;
+            image->buffer[index + 1] = pixel.g;
+            image->buffer[index + 2] = pixel.b;
+            image->buffer[index + 3] = pixel.a;
+        }
+    }
+}
+
+void OpenEXRReader::Read()
+{
+    Imf::RgbaInputFile f(m_Path.c_str());
+
+    // Image Specs
+    Imath::Box2i dw = f.dataWindow();
+    m_Image->width = (dw.max.x - dw.min.x) + 1;
+    m_Image->height = (dw.max.y - dw.min.y) + 1;
+
+    /* To Get the channels -> Read through the header */
+    // const Imf::Header& header = f.header();
+    // const Imf::ChannelList& channels = header.channels();
+
+    // /*
+    //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
+    //  * Update the channel count by reading the channels
+    //  */
+    // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+    //     m_Channels++;
+
+    // Force 4 Channels
+    m_Image->channels = 4;
+    m_Image->format = VOID_GL_RGBA;
+    m_Image->type = VOID_GL_FLOAT;
+
+    // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", m_Image->width, m_Image->height, m_Image->channels);
+
+    Imf::Array2D<Imf::Rgba> pixels(m_Image->height, m_Image->width);
+
+    // Read the Pixel data onto the buffer
+    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * m_Image->width, 1, m_Image->width);
+    f.readPixels(dw.min.y, dw.max.y);
+
+    m_Image->buffer.Resize(m_Image->width * m_Image->height * m_Image->channels);
+
+    for (int y = 0; y < m_Image->height; y++)
+    {
+        for (int x = 0; x < m_Image->width; x++)
+        {
+            const Imf::Rgba& pixel = pixels[y][x];
+            int index = (y * m_Image->width + x) * m_Image->channels;
+
+            m_Image->buffer[index] = pixel.r;
+            m_Image->buffer[index + 1] = pixel.g;
+            m_Image->buffer[index + 2] = pixel.b;
+            m_Image->buffer[index + 3] = pixel.a;
         }
     }
 }

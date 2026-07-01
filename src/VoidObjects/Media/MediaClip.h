@@ -71,9 +71,9 @@ public:
 
     inline QColor Color() const { return m_Color; }
 
-    void CacheFrame(v_frame_t frame);
-    void UncacheFrame(v_frame_t frame);
-    void ClearCache();
+    void Cache(v_frame_t frame);
+    void Clear(v_frame_t frame);
+    void Clear();
 
     /* Add Annotation for a Frame */
     void SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation);
@@ -121,13 +121,12 @@ public:
     const char* TypeName() const override { return "Media"; }
 
     /**
-     * @brief Evaluates any effects added onto the Media, and returns the modified
-     * image buffer with effect applied on the original image data
+     * @brief Evaluates any effects added onto the Media, and updates the
+     * image buffer with effect applied on the original image data.
      * 
      * @param frame Frame number.
-     * @return SharedPixels Image Buffer data for reading/rendering.
      */
-    SharedPixels Evaluate(v_frame_t frame);
+    const FloatImage& Evaluate(v_frame_t frame);
 
 signals: /* Signals defining any change that has happened */
     /*
@@ -148,17 +147,17 @@ signals: /* Signals defining any change that has happened */
     void effectAboutToBeRemoved(const std::string&);
 
 private: /* Members */
-    QColor m_Color;
-    QPixmap m_Thumbnail;
-    TagModel* m_TagModel;
-    std::atomic_bool m_Working;
-
     /**
      * This struct saves the Annotations for the frames
      * Each Shared Annotation Pointer is mapped to a frame (as simple as it can be :D)
      */
     std::unordered_map<v_frame_t, Renderer::SharedAnnotation> m_Annotations;
     std::vector<Effect*> m_Effects;
+
+    QColor m_Color;
+    QPixmap m_Thumbnail;
+    TagModel* m_TagModel;
+    std::atomic_bool m_Working;
 
 private: /* Methods */
     void ReadThumbnail();

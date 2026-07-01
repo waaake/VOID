@@ -8,15 +8,15 @@
 #include "FormatForge.h"
 #include "Media.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
 Media::Media()
     : m_FirstFrame(-1)
     , m_LastFrame(-1)
-    , m_Samplerate(0.0)
+    , m_Framesize(0)
     , m_Framerate(24.0)
+    , m_Samplerate(0.0)
     , m_Type(Type::UNDEFINED)
 {
 }
@@ -31,10 +31,6 @@ Media::Media(MediaStruct& mstruct)
     : Media()
 {
     Read(std::move(mstruct));
-}
-
-Media::~Media()
-{
 }
 
 Media::Media(const std::string& basepath, const std::string& name, const std::string& extension)
@@ -68,14 +64,18 @@ Media::Media(const std::string& basepath,
     Read(MediaStruct(basepath, name, extension, start, end, padding, missing));
 }
 
+Media::~Media()
+{
+}
+
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
 {
     /**
      * find a frame just next to given frame which exists in the set of frames that the media has
      * if it exists, return that else we return that else the first frame from the media frames
      */
-    auto it = std::lower_bound(m_Framenumbers.begin(), m_Framenumbers.end(), frame);
-    return (it == m_Framenumbers.begin()) ? m_FirstFrame : *(--it);
+    auto it = std::lower_bound(m_Numbers.begin(), m_Numbers.end(), frame);
+    return (it == m_Numbers.begin()) ? m_FirstFrame : *(--it);
 }
 
 bool Media::Contains(v_frame_t frame) const
@@ -85,7 +85,7 @@ bool Media::Contains(v_frame_t frame) const
      * movie still has still information about those, only an image sequence needs to be checked
      * for actual frame being present even if it's still in the range 
      */
-    return m_Type == Media::Type::MOVIE ? InRange(frame) : InRange(frame) && m_Mediaframes.at(frame - m_FirstFrame).Valid();
+    return m_Type == Media::Type::MOVIE ? InRange(frame) : InRange(frame) && m_Frames.at(frame - m_FirstFrame).Valid();
 }
 
 void Media::Read(const MediaStruct& mstruct)
@@ -128,8 +128,8 @@ void Media::ProcessSequence()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    m_Framenumbers.reserve(frange.duration);
-    m_Mediaframes.resize(frange.duration);
+    m_Numbers.reserve(frange.duration);
+    m_Frames.resize(frange.duration);
 
     for (const MEntry& e : m_MediaStruct)
     {
@@ -141,8 +141,8 @@ void Media::ProcessSequence()
          * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
          * will be 1010 - 1001 = 9
          */
-        m_Mediaframes[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
-        m_Framenumbers.emplace_back(e.Framenumber());
+        m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
+        m_Numbers.emplace_back(e.Framenumber());
     }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
@@ -150,50 +150,50 @@ void Media::ProcessSequence()
 
 void Media::ProcessMovie()
 {
-    /* Get the First entry since it is a Single File Movie */
     MEntry entry = m_MediaStruct.First();
-
     if (!entry.Valid())
         return;
 
-    /* Media Reader */
     std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_MediaStruct.Extension(), entry.Fullpath());
-
     MFrameRange frange = r->Framerange();
-    VOID_LOG_INFO("Movie Media Range: {0}-{1}--{2}", frange.startframe, frange.endframe, frange.duration);
-
-    /* Update internal framerate */
-    m_Framerate = r->Framerate();
+    m_Framerate = frange.framerate;
     m_Samplerate = r->Samplerate();
+    VOID_LOG_INFO("Movie Media Range: {0}-{1}--{2} @ {3}", frange.startframe, frange.endframe, frange.duration, frange.framerate);
 
-    m_Mediaframes.resize(frange.duration);
-    m_Framenumbers.reserve(frange.duration);
+    m_Frames.resize(frange.duration);
+    m_Numbers.reserve(frange.duration);
 
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
     for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
     {
-        m_Mediaframes[counter] = std::move(MovieFrame(entry, i));
-        m_Framenumbers.emplace_back(i);
+        m_Frames[counter] = std::move(MovieFrame(entry, i));
+        m_Numbers.emplace_back(i);
     }
 
     m_Type = Media::Type::MOVIE;
 }
 
-std::size_t Media::FrameSize()
+void Media::Image(v_frame_t frame, FloatImage& image)
 {
-    if (m_Framesize)
-        return m_Framesize;
+    m_Frames[frame - m_FirstFrame].Image(image);
+}
 
-    m_Framesize = FirstImage()->FrameSize();
-    return m_Framesize;
+void Media::Thumbnail(UInt8Image& image)
+{
+    m_Frames[0].Thumbnail(image);
+}
+
+void Media::Thumbnail(v_frame_t frame, UInt8Image& image)
+{
+    m_Frames[frame - m_FirstFrame].Thumbnail(image);
 }
 
 void Media::ClearCache(bool dirty)
 {
-    for (Frame& f : m_Mediaframes)
-        f.ClearCache(dirty);
+    for (Frame& f : m_Frames)
+        f.Clear(dirty);
 }
 
 // Frame Media::GetFrame(v_frame_t frame) const
@@ -208,18 +208,18 @@ void Media::ClearCache(bool dirty)
 //     return m_Mediaframes.at(frame - m_FirstFrame);
 // }
 
-void Media::Clear()
-{
-    /* Clear underlying structs */
-    m_Framenumbers.clear();
-    m_Mediaframes.clear();
-    m_Mediaframes.shrink_to_fit();
-}
+// void Media::Clear()
+// {
+//     /* Clear underlying structs */
+//     // m_Framenumbers.clear();
+//     // m_Mediaframes.clear();
+//     // m_Mediaframes.shrink_to_fit();
+// }
 
 void Media::SetDirty(bool dirty)
 {
-    for (auto& frame : m_Mediaframes)
-        frame.SetDirty(dirty);
+    // for (auto& frame : m_Mediaframes)
+    //     frame.SetDirty(dirty);
 }
 
 VOID_NAMESPACE_CLOSE

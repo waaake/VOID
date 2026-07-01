@@ -87,42 +87,38 @@ void ImageComparisonRenderLayer::Initialize()
     glGenTextures(1, &m_TextureB);
 }
 
-void ImageComparisonRenderLayer::InitTextureA(const SharedPixels& image)
+void ImageComparisonRenderLayer::InitTextureA(const FloatImage& image)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), nullptr);
-    m_InternalFormatA = image->GLInternalFormat();
+    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
+    m_InternalFormatA = image->InternalFormat();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[0]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->FrameSize(), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[1]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->FrameSize(), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
 }
 
-void ImageComparisonRenderLayer::InitTextureB(const SharedPixels& image)
+void ImageComparisonRenderLayer::InitTextureB(const FloatImage& image)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, image->GLInternalFormat(), image->Width(), image->Height(), 0, image->GLFormat(), image->GLType(), nullptr);
-    m_InternalFormatB = image->GLInternalFormat();
+    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
+    m_InternalFormatB = image->InternalFormat();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[0]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->FrameSize(), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[1]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->FrameSize(), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, image->Size(), nullptr, GL_STREAM_DRAW);
 }
 
-void ImageComparisonRenderLayer::SetImageA(const SharedPixels& image)
+void ImageComparisonRenderLayer::SetImageA(const FloatImage& image)
 {
-    /* Nothing to load */
     if (!image)
         return;
 
-    /* Bind the Generated texture for Render */
+    // Bind the Generated texture for Render
     glBindTexture(GL_TEXTURE_2D, m_TextureA);
-    /**
-     * Load the image data onto the Texture 2D
-     */
-    if (m_InternalFormatA != image->GLInternalFormat())
+    if (m_InternalFormatA != image->InternalFormat())
         InitTextureA(image);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[m_PBOIndexA]);
@@ -130,32 +126,28 @@ void ImageComparisonRenderLayer::SetImageA(const SharedPixels& image)
 
     if (void* iptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY))
     {
-        memcpy(iptr, image->Pixels(), image->FrameSize());
+        memcpy(iptr, image->Pixels(), image->Size());
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     }
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), 0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->format, image->type, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-    /* Update the colorspace on the Image Data */
-    m_InputColorSpaceA = static_cast<int>(image->InputColorSpace());
+    // Update the colorspace on the Image Data
+    m_InputColorSpaceA = static_cast<int>(ColorSpace::Linear); // TODO: Check this to use Colorspace from the image
 }
 
-void ImageComparisonRenderLayer::SetImageB(const SharedPixels& image)
+void ImageComparisonRenderLayer::SetImageB(const FloatImage& image)
 {
-    /* Nothing to load */
     if (!image)
         return;
 
-    /* Bind the Generated texture for Render */
+    // Bind the Generated texture for Render
     glBindTexture(GL_TEXTURE_2D, m_TextureB);
-    /**
-     * Load the image data onto the Texture 2D
-     */
-    if (m_InternalFormatB != image->GLInternalFormat())
+    if (m_InternalFormatB != image->InternalFormat())
         InitTextureB(image);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[m_PBOIndexB]);
@@ -163,23 +155,22 @@ void ImageComparisonRenderLayer::SetImageB(const SharedPixels& image)
 
     if (void* iptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY))
     {
-        memcpy(iptr, image->Pixels(), image->FrameSize());
+        memcpy(iptr, image->Pixels(), image->Size());
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     }
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->Width(), image->Height(), image->GLFormat(), image->GLType(), 0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->format, image->type, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-    /* Update the colorspace on the Image Data */
-    m_InputColorSpaceB = static_cast<int>(image->InputColorSpace());
+    // Update the colorspace on the Image Data
+    m_InputColorSpaceB = static_cast<int>(ColorSpace::Linear); // TODO: Check this to use Colorspace from the image
 }
 
 void ImageComparisonRenderLayer::Render(const glm::mat4& projection, float, float)
 {
-    /* Update the Data for Render */
     m_Projection = projection;
 
     if (PreDraw())

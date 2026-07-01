@@ -42,14 +42,11 @@ public:
     virtual ~VoidRenderer();
 
     /* Render the Image */
-    void Render(SharedPixels data);
-    /* Render Image along with Annotations */
-    void Render(const SharedPixels& data, const SharedAnnotation& annotation);
-    /* Compare 2 Images */
-    void Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend);
-    /* Render Media in a Grid Representation (Layout/Contact Sheet) */
-    void RenderGrid(const std::vector<SharedPixels>& grid);
-    /* Clears current Frame and rids of any textures that were loaded */
+    void Render(const FloatImage& image);
+    void Render(const FloatImage& image, const SharedAnnotation& annotation);
+    void Compare(const FloatImage& a, const FloatImage& b, const ComparisonMode& comparison, const BlendMode& blend);
+    void RenderGrid(const std::vector<FloatImage>& grid);
+    // Clears current Frame and rids of any textures that were loaded
     void Clear();
 
     Renderer::RenderData<unsigned char> FrameBuffer();
@@ -64,7 +61,7 @@ public:
     void ZoomToFit();
     float MinZoom() const;
     float MaxZoom() const;
-    inline float Zoom() const { return m_ImageA ? (float)width() / m_ImageA->Width() * m_ZoomFactor * 100 : 0.f; }
+    inline float Zoom() const { return m_ImageA ? (float)width() / m_ImageA->width * m_ZoomFactor * 100 : 0.f; }
 
     // Grid //
     void SetRows(int rows);
@@ -140,9 +137,8 @@ protected: /* Methods */
     virtual void Draw() override;
 
 private: /* Members */
-    /* Render Image Data */
-    SharedPixels m_ImageA;
-    SharedPixels m_ImageB;
+    FloatImage m_ImageA;
+    FloatImage m_ImageB;
 
     /**
      * Render Layers

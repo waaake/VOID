@@ -270,22 +270,16 @@ bool MBridge::AddMedia(MediaStruct&& mstruct)
 
     /* Create the Media Clip */
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
-
-    /* Check if the clip is valid, there could be cases we don't have a specific media reader */
-    if (clip->Empty())
+    if (clip->Valid())
     {
-        VOID_LOG_INFO("Invalid Media.");
-        return false;
+        m_Project->AddMedia(clip);
+        emit mediaAdded(clip);
+        // Success
+        return true;    
     }
 
-    /* Add to the underlying struct */
-    m_Project->AddMedia(clip);
-
-    /* Emit that we have added a new media clip now */
-    emit mediaAdded(clip);
-
-    /* Added successfully */
-    return true;    
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
 }
 
 bool MBridge::AddMedia(const MediaStruct& mstruct)
@@ -305,22 +299,16 @@ bool MBridge::AddMedia(const MediaStruct& mstruct)
 
     /* Create the Media Clip */
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
-
-    /* Check if the clip is valid, there could be cases we don't have a specific media reader */
-    if (clip->Empty())
+    if (clip->Valid())
     {
-        VOID_LOG_INFO("Invalid Media.");
-        return false;
+        m_Project->AddMedia(clip);
+        emit mediaAdded(clip);
+        // Success
+        return true;
     }
 
-    /* Add to the underlying struct */
-    m_Project->AddMedia(clip);
-
-    /* Emit that we have added a new media clip now */
-    emit mediaAdded(clip);
-
-    /* Added successfully */
-    return true;
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
 }
 
 bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
@@ -340,44 +328,32 @@ bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
 
      /* Create the Media Clip */
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
-
-    /* Check if the clip is valid, there could be cases we don't have a specific media reader */
-    if (clip->Empty())
+    if (clip->Valid())
     {
-        VOID_LOG_INFO("Invalid Media.");
-        return false;
+        m_Project->InsertMedia(clip, index);
+        emit mediaAdded(clip);
+        // Success
+        return true;
     }
 
-    /* Add to the underlying struct */
-    m_Project->InsertMedia(clip, index);
-
-    /* Emit that we have added a new media clip now */
-    emit mediaAdded(clip);
-
-    /* Added successfully */
-    return true;
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
 }
 
 bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
 {
     /* Create the Media Clip */
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
-
-    /* Check if the clip is valid, there could be cases we don't have a specific media reader */
-    if (clip->Empty())
+    if (clip->Valid())
     {
-        VOID_LOG_INFO("Invalid Media.");
-        return false;
+        m_Project->InsertMedia(clip, index);
+        emit mediaAdded(clip);
+        // Success
+        return true;
     }
 
-    /* Add to the underlying struct */
-    m_Project->InsertMedia(clip, index);
-
-    /* Emit that we have added a new media clip now */
-    emit mediaAdded(clip);
-
-    /* Added successfully */
-    return true;
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
 }
 
 void MBridge::AddTag(const QModelIndex& index, const std::string& tag)

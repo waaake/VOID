@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "FFmpegReader.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -120,7 +121,7 @@ void FFmpegDecoder::Close()
     m_StreamID = -1;
 }
 
-bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::vector<float>& pixels)
+bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<float>& pixels)
 {
     /**
      * At the moment, this is not accessible concurrently throught multiple threads
@@ -139,7 +140,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
     }
 
     m_Buffer.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
-    pixels.resize(m_Buffer.Size());
+    pixels.Resize(m_Buffer.Size());
 
     av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, m_Buffer.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
 
@@ -208,6 +209,91 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, std::
     return found;
 }
 
+bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<unsigned char>& pixels)
+{
+    /**
+     * At the moment, this is not accessible concurrently throught multiple threads
+     * Rather than handling this specifically at the cache level, using a guard here
+     * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
+     * still this shouldn't cause any issues...
+     */
+    std::lock_guard<std::mutex> guard(m_Mutex);
+
+    /* A new movie is being read */
+    if (path != m_Path)
+    {
+        Close();
+        m_Path = path;
+        Open();
+    }
+
+    pixels.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+
+    m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+
+    /* Now we start */
+    bool found = false;
+    int retryCount = 0;
+
+    int distance = 0;
+    bool seeked = false;
+
+    /* Retry seeking for 3 times before giving up */
+    while (!found && retryCount < 3)
+    {
+        /**
+         * Calculate the distance between the requested and the last frame which was read
+         * this helps us determine whether or not to save any data and also if we need to seek forwards in order
+         * to reach the frame quickly
+         * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
+         * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
+         */
+        distance = framenumber - m_CurrentFrame;
+        /* Decode the next frame and it returns back either a negative value or the decoded frame */
+        v_frame_t ret = DecodeNextFrame((distance < 10));
+
+        /**
+         * Then we check if the return value was greater than the requested frame
+         * if so, we might need to seek back and try again (max 3 times)
+         *
+         * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
+         */
+        if (ret > framenumber || ret == -1)
+        {
+            /* Seek */
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            /* Seek the closest keyframe before the framenumber */
+            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
+            avcodec_flush_buffers(m_CodecContext);
+
+            /* Increment the retry count */
+            retryCount++;
+        }
+        else if (ret == framenumber)
+        {
+            // Frame found, fillup the float input buffer
+            found = true;
+            break;
+        }
+        else if (distance > 20 && !seeked)
+        {
+            /* Seek */
+            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+            /**
+             * Seek the framenumber
+             * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
+             */
+            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
+            avcodec_flush_buffers(m_CodecContext);
+
+            seeked = true;
+        }
+    }
+
+    return found;
+}
+
 v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
 {
     /* Read the next frame from the packet */
@@ -231,7 +317,7 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
     return m_CurrentFrame;
 }
 
-void FFmpegDecoder::FillBuffer(std::vector<float>& out)
+void FFmpegDecoder::FillBuffer(Buffer<float>& out)
 {
     for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
     {
@@ -247,9 +333,6 @@ void FFmpegDecoder::FillBuffer(std::vector<float>& out)
 /* FFmpegPixReader {{{ */
 FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
     : VoidMPixReader(path, framenumber)
-    , m_Width(0)
-    , m_Height(0)
-    , m_Channels(0)
     , m_AChannels(0)
     , m_Samplerate(0)
     , m_Startframe(0)
@@ -261,65 +344,23 @@ FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
 
 FFmpegPixReader::~FFmpegPixReader()
 {
-    Clear();
 }
 
-SharedPixels FFmpegPixReader::Copy() const
+void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
-    auto copy = std::make_shared<FFmpegPixReader>(m_Path, m_Framenumber);
-    copy->m_AChannels = m_AChannels;
-    copy->m_Channels = m_Channels;
-    copy->m_Endframe = m_Endframe;
-    copy->m_Startframe = m_Startframe; 
-    copy->m_Duration = m_Duration;
-    copy->m_Framerate = m_Framerate;
-    copy->m_Width = m_Width;
-    copy->m_Height = m_Height;
-    copy->m_Pixels = m_Pixels;
-
-    return copy;
-}
-
-void FFmpegPixReader::Clear()
-{
-    /* Remove any data from the pixels vector and shrink it back in place */
-    m_Pixels.clear();
-    m_Pixels.shrink_to_fit();
-}
-
-const unsigned char* FFmpegPixReader::ThumbnailPixels()
-{
-    if (m_TPixels.empty())
+    FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
+    if (decoder.Decode(path, frame, image->buffer))
     {
-        m_TPixels.resize(m_Pixels.size());
-        unsigned char* pixels = m_TPixels.data();
+        image->width = decoder.Width();
+        image->height = decoder.Height();
+        image->channels = decoder.Channels();
 
-        for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
-        {
-            int index = i * m_Channels;
-
-            pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
-            pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
-            pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
-
-            // if (m_Channels == 4)
-            pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
-        }
+        image->format = VOID_GL_RGB;
     }
-
-    return m_TPixels.data();
-}
-
-ImageRow FFmpegPixReader::Row(std::size_t row)
-{
-    return (row >= m_Height)
-            ? ImageRow()
-            : ImageRow(m_Pixels.data(), row, m_Width, m_Channels, sizeof(float));
 }
 
 void FFmpegPixReader::ProcessInformation()
 {
-    /* Isn't anything to process */
     if (m_Path.empty())
         return;
 
@@ -350,31 +391,37 @@ void FFmpegPixReader::ProcessInformation()
 
 MFrameRange FFmpegPixReader::Framerange()
 {
-    /* If the duration is 0 that means the information wasn't processed yet */
     if (!m_Duration)
         ProcessInformation();
 
-    return {m_Startframe, m_Endframe, m_Duration};
+    return {m_Startframe, m_Endframe, m_Duration, m_Framerate};
 }
 
-double FFmpegPixReader::Framerate()
+void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
 {
-    if (!m_Framerate)
-        ProcessInformation();
+    FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
+    if (decoder.Decode(path, frame, image->buffer))
+    {
+        image->width = decoder.Width();
+        image->height = decoder.Height();
+        image->channels = decoder.Channels();
 
-    return m_Framerate;
+        image->format = VOID_GL_RGB;
+        image->type = VOID_GL_FLOAT;
+    }
 }
 
 void FFmpegPixReader::Read()
 {
     FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
-    if (decoder.Decode(m_Path, m_Framenumber, m_Pixels))
+    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer))
     {
-        /* Read the Frame Dimensions */
-        m_Width = decoder.Width();
-        m_Height = decoder.Height();
+        m_Image->width = decoder.Width();
+        m_Image->height = decoder.Height();
+        m_Image->channels = decoder.Channels();
 
-        m_Channels = decoder.Channels();
+        m_Image->format = VOID_GL_RGB;
+        m_Image->type = VOID_GL_FLOAT;
     }
 }
 
@@ -430,9 +477,9 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
     /* Basic Metadata */
     m["filepath"] = m_Path;
-    m["width"] = std::to_string(m_Height);
-    m["height"] = std::to_string(m_Width);
-    m["channels"] = std::to_string(m_Channels);
+    m["width"] = std::to_string(m_Image->width);
+    m["height"] = std::to_string(m_Image->height);
+    m["channels"] = std::to_string(m_Image->channels);
     m["start_frame"] = std::to_string(m_Startframe);
 
     return m;

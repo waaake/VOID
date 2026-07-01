@@ -286,7 +286,10 @@ public:
 
     unsigned int Framepadding() const { return m_Entries.empty() ? 0 : m_Entries[0].Framepadding(); }
 
+    std::string Framepath(v_frame_t frame) const;
     MFrameRange Framerange() const;
+    bool Contains(v_frame_t frame) const { return m_Mapping.find(frame) != m_Mapping.end(); }
+    bool Missing(v_frame_t frame) const { return m_Mapping.find(frame) == m_Mapping.end(); }
 
     /**
      * Returns whether the media struct is currently empty
@@ -307,7 +310,6 @@ public:
      * struct needs to be ordered map
      */
     inline MEntry First() const { return m_Entries.empty() ? MEntry() : m_Entries[0]; }
-
     inline MediaType Type() const { return m_MediaType; }
 
     /**
@@ -319,6 +321,7 @@ public:
 private: /* Members */
     std::vector<v_frame_t> m_Frames;
     std::vector<MEntry> m_Entries;
+    std::unordered_map<v_frame_t, int> m_Mapping;
 
     /* The kind of media */
     MediaType m_MediaType;

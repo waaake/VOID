@@ -45,30 +45,23 @@ public:
      * Offset: 1000
      */
     void SetMedia(const SharedMediaClip& media, v_frame_t offset = 0);
-
     void SetRange(v_frame_t start, v_frame_t end);
-
     inline void SetColor(const QColor& color) { m_Media->SetColor(color); }
-
-    /** 
-     * Caches media frames
-     * emits frameCached for each of them emitted
-     */
-    void Cache();
-
-    void CacheFrame(v_frame_t frame);
-    void UncacheFrame(v_frame_t frame);
-    inline std::size_t FrameSize() { return m_Media->FrameSize(); }
 
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
-    inline Frame* FramePtr(const v_frame_t frame) const { return m_Media->FramePtr(frame + m_Offset); }
 
     /**
-     * Retrieves the image pointer from the media for a frame which has to be offsetted by the current offset
+     * @brief Updates the Image pointer with the data from the underlying media in the Item.
+     * 
+     * @param frame Frame number.
+     * @param image Image Buffer to be updated.
      */
-    SharedPixels Image(const v_frame_t frame);
+    void Image(const v_frame_t frame, FloatImage& image);
+    const FloatImage Image(v_frame_t frame);
+
+    void ClearCache(v_frame_t frame);
 
     inline v_frame_t StartFrame() const { return m_StartFrame; }
     inline v_frame_t EndFrame() const { return m_EndFrame; }

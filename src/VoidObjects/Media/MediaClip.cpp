@@ -117,14 +117,15 @@ void MediaClip::ReadThumbnail()
     if (!Valid())
         return;
 
-    /* Grab the pointer to the image data for the first frame to be used as a thumbnail */
-    SharedPixels im = Media::FirstImage();
+    UInt8Image image = VOID_NAMESPACE::Image<unsigned char>::Create();
+    Media::Thumbnail(image);
+
     QPixmap frame;
     frame = std::move(QPixmap::fromImage(QImage(
-        im->ThumbnailPixels(),
-        im->Width(),
-        im->Height(),
-        (im->Channels() == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
+        image->Pixels(),
+        image->width,
+        image->height,
+        (image->channels == 3) ? QImage::Format_RGB888 : QImage::Format_RGBA8888
     )));
 
     // Fallback to default thumbnail if we can't read the frame from the Media
@@ -136,7 +137,7 @@ void MediaClip::ReadThumbnail()
 
     m_Thumbnail = std::move(frame.scaledToWidth(400, Qt::SmoothTransformation));
     // Clear the data for when required
-    im->Clear();
+    // im->Clear();
 
     m_Working.store(false);
     emit updated();
@@ -319,7 +320,7 @@ std::vector<int> MediaClip::AnnotatedFrames() const
     return frames;
 }
 
-void MediaClip::CacheFrame(v_frame_t frame)
+void MediaClip::Cache(v_frame_t frame)
 {
     /**
      * Same logic as mentioned before, the frames in the underlying vector are always sorted
@@ -328,11 +329,11 @@ void MediaClip::CacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    m_Mediaframes.at(frame - m_FirstFrame).Cache();
+    m_Frames.at(frame - m_FirstFrame).Cache();
     // emit frameCached(frame);
 }
 
-void MediaClip::UncacheFrame(v_frame_t frame)
+void MediaClip::Clear(v_frame_t frame)
 {
     /**
      * Same logic as mentioned before, the frames in the underlying vector are always sorted
@@ -341,11 +342,11 @@ void MediaClip::UncacheFrame(v_frame_t frame)
      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
      * will be 1010 - 1001 = 9
      */
-    m_Mediaframes.at(frame - m_FirstFrame).ClearCache(HasEffects());
+    m_Frames.at(frame - m_FirstFrame).Clear(HasEffects());
     // emit frameUncached(frame);
 }
 
-void MediaClip::ClearCache()
+void MediaClip::Clear()
 {
     // Mark the underlying frames as dirty only if this has effects added to it
     // This obviously is temporary till we have the actual workflow where effects are applied
@@ -366,11 +367,11 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("singlefile", static_cast<int>(m_MediaStruct.SingleFile()), allocator);
     out.AddMember("framePadding", static_cast<unsigned int>(m_MediaStruct.Framepadding()), allocator);
 
-    /* Save any missing frames from the media */
+    // Save any missing frames from the media
     rapidjson::Value missingFrames(rapidjson::kArrayType);
     for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
     {
-        if (m_Mediaframes.at(i).Invalid())
+        if (m_Frames.at(i).Invalid())
             missingFrames.PushBack(static_cast<int64_t>(i + 1), allocator);
     }
 
@@ -418,7 +419,7 @@ void MediaClip::Serialize(std::ostream& out) const
 
     for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
     {
-        if (m_Mediaframes.at(i).Invalid())
+        if (m_Frames.at(i).Invalid())
         {
             int frame = i + 1;
             out.write(reinterpret_cast<const char*>(&frame), sizeof(i));
@@ -552,30 +553,46 @@ void MediaClip::Deserialize(std::istream& in)
     }
 }
 
-SharedPixels MediaClip::Evaluate(v_frame_t frame)
+const FloatImage& MediaClip::Evaluate(v_frame_t frame)
 {
-    Frame* f = FramePtr(frame);
+    // Frame* f = FramePtr(frame);
 
-    if (f->Dirty())
-    {
-        // Generates a new copy everytime :(
-        SharedPixels image = f->Writable();
+    // if (f->Dirty())
+    // {
+    //     // Generates a new copy everytime :(
+    //     SharedPixels image = f->Writable();
 
-        for (auto effect : m_Effects)
-        {
-            // Only process the effects that are enabled
-            if (effect->Enabled())
-            {
-                VOID_LOG_INFO("Processing {}", effect->Name());
-                ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
-            }
-        }
+    //     for (auto effect : m_Effects)
+    //     {
+    //         // Only process the effects that are enabled
+    //         if (effect->Enabled())
+    //         {
+    //             VOID_LOG_INFO("Processing {}", effect->Name());
+    //             ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+    //         }
+    //     }
 
-        f->SetDirty(false);
-        return image;
-    }
+    //     f->SetDirty(false);
+    //     return image;
+    // }
 
-    return f->Image();
+    return Media::Image(frame);
+
+    // // Update the buffer with the original image
+    // // Look at the workflow later --- if we're going to call this directly or only after we have filled the buffer
+    // // with the image data already and if we'll send here a copied buffer, to preserve the original data
+    // // For now, just doing this, will change later
+    // Media::Image(frame, image);
+
+    // for (auto effect : m_Effects)
+    // {
+    //     // Only enabled effects get procesed
+    //     if (effect->Enabled())
+    //     {
+    //         VOID_LOG_INFO("Processing: {0}", effect->Name());
+    //         ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+    //     }
+    // }
 }
 
 VOID_NAMESPACE_CLOSE

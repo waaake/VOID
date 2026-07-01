@@ -22,7 +22,7 @@ public:
     void Initialize();
 
     void Reset();
-    void SetImage(const SharedPixels& image);
+    void SetImage(const FloatImage& image);
 
     /* Set Attributes for Render */
     inline void SetExposure(const float exposure) { m_Exposure = exposure; }
@@ -87,7 +87,7 @@ private: /* Methods */
      * 
      * @param image The image data to be loaded.
      */
-    void ReinitBuffer(const SharedPixels& image);
+    void ReinitBuffer(const FloatImage& image);
 
     /**
      * @brief Setup Array Buffers

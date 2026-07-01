@@ -85,7 +85,7 @@ void GridRenderLayer::SetColumns(int columns)
     m_CellHeight = 2.f / m_Rows;
 }
 
-void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
+void GridRenderLayer::SetImages(const std::vector<FloatImage>& images)
 {
     if (m_Textures.size() != images.size())
     {
@@ -106,12 +106,12 @@ void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
         glTexImage2D(
             GL_TEXTURE_2D,
             0,
-            images[i]->GLInternalFormat(),
-            images[i]->Width(),
-            images[i]->Height(),
+            images[i]->format,
+            images[i]->width,
+            images[i]->height,
             0,
-            images[i]->GLFormat(),
-            images[i]->GLType(),
+            images[i]->format,
+            images[i]->type,
             images[i]->Pixels()
         );
 
@@ -124,9 +124,9 @@ void GridRenderLayer::SetImages(const std::vector<SharedPixels>& images)
         glBindTexture(GL_TEXTURE_2D, 0);
 
         m_TexData[i] = std::move(ImageData(
-            images[i]->Width(),
-            images[i]->Height(),
-            static_cast<int>(images[i]->InputColorSpace())
+            images[i]->width,
+            images[i]->height,
+            static_cast<int>(ColorSpace::Linear) // TODO: Fix this
         ));
     }
 }

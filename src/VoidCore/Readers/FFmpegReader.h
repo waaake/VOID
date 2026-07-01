@@ -25,24 +25,6 @@ extern "C"
 
 VOID_NAMESPACE_OPEN
 
-template <typename _Ty>
-struct Buffer
-{
-    std::vector<_Ty> _buf;
-    _Ty* Data() noexcept { return _buf.data(); }
-    std::size_t Size() const noexcept { return _buf.size(); }
-
-    auto operator[](std::size_t _index) { return _buf[_index]; }
-    void Resize(std::size_t size)
-    {
-        _buf.resize(size);
-
-        // The buffer was shrunk down, no need to hold the extra memory
-        if (_buf.capacity() > _buf.size())
-            _buf.shrink_to_fit();
-    }
-};
-
 class FFmpegDecoder
 {
 public:
@@ -65,7 +47,8 @@ public:
      * O(n) as the iterator might have to loop over all frames to get to the one we're looking at which also
      * caches the other frames so next frame queries could directly result in direct data transfer
      */
-    bool Decode(const std::string& path, const int framenumber, std::vector<float>& pixels);
+    bool Decode(const std::string& path, const int framenumber, Buffer<float>& pixels);
+    bool Decode(const std::string& path, const int framenumber, Buffer<unsigned char>& pixels);
 
     [[nodiscard]] int Width() const { return m_Width; }
     [[nodiscard]] int Height() const { return m_Height; }
@@ -100,7 +83,7 @@ private: /* Methods */
      * returns back the frame number (converted from av time base to signed long)
      */
     v_frame_t DecodeNextFrame(bool save = true);
-    void FillBuffer(std::vector<float>& out);
+    void FillBuffer(Buffer<float>& out);
     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 };
 
@@ -108,119 +91,28 @@ class VOID_API FFmpegPixReader : public VoidMPixReader
 {
 public:
     FFmpegPixReader(const std::string& path, v_frame_t framenumber = 0);
+    ~FFmpegPixReader();
 
-    virtual ~FFmpegPixReader();
+    void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
+    void Read() override;
+    void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
+    void Clear() override { m_Image->Clear(); }
 
-    SharedPixels Copy() const override;
+    MFrameRange Framerange() override;
+    const std::map<std::string, std::string> Metadata() const override;
 
-    /**
-     * Reads the provided image file's data into underlying structs
-     */
-    virtual void Read() override;
-
-    /**
-     * Returns the OpenGL data type
-     * e.g. GL_UNSIGNED_BYTE, GL_FLOAT
-     */
-    inline virtual unsigned int GLType() const override { return VOID_GL_FLOAT; }
-
-    /**
-     * Specifies the number of color components in the texture
-     * e.g. GL_RGBA32F | GL_RGBA32I | GL_RGBA32UI | GL_RGBA16 | GL_RGBA16F | GL_RGBA16I
-     */
-    inline virtual unsigned int GLInternalFormat() const override { return GLFormat(); }
-
-    /**
-     * Returns OpenGL format of pixel data
-     * GL_RGBA | GL_RGB
-     */
-    inline virtual unsigned int GLFormat() const override { return (m_Channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA; }
-
-    /**
-     * Returns the Pointer to the underlying pixel data which will be rendered on the Renderer
-     * This allows the deriving class full control over the data type, as long as the data
-     * is correct to be rendered on GL Viewer, this can be returned from here
-     */
-    inline virtual const void* Pixels() const override { return m_Pixels.data(); }
-    inline void* Writable() override { return m_Pixels.data(); }
-    ImageRow Row(std::size_t row) override;
-
-    /**
-     * Returns the frame data as unsigned char*
-     * This would be used to create thumbnails for qt
-     * Not all frames will be used so this function can create a vector on the fly if unsigned char
-     * is not the base datatype of the class
-     */
-    virtual const unsigned char* ThumbnailPixels() override;
-
-    /**
-     * Image Specifications
-     * Dimensions and Channel information for the Image
-     */
-    inline virtual int Width() const override { return m_Width; }
-    inline virtual int Height() const override { return m_Height; }
-    inline virtual int Channels() const override { return m_Channels; }
-
-    /**
-     * Clear internal pixel data
-     * This is here to allow memory to be freed when needed
-     */
-    virtual void Clear() override;
-
-    /**
-     * Returns if the underlying struct has any pixel data
-     */
-    inline virtual bool Empty() const override { return m_Pixels.empty(); }
-
-    /**
-     * Returns the frame range information of the Movie media
-     */
-    virtual MFrameRange Framerange() override;
-
-    /**
-     * Returns the framerate of the movie media
-     */
-    virtual double Framerate() override;
-
-    /**
-     * Retrieve the input colorspace of the media file
-     */
-    inline virtual ColorSpace InputColorSpace() const override { return ColorSpace::Linear; }
-
-    /**
-     * Returns the Size of the frame data
-     */
-    virtual size_t FrameSize() const override { return sizeof(float) * m_Pixels.size(); }
-
-    /**
-     * Read the metadata from the underlying image/frame
-     * Returns with all the keys that can be read from the metadata
-     * so keys might not be same/static
-     */
-    virtual const std::map<std::string, std::string> Metadata() const override;
-
-    virtual int AudioChannels() const override { return m_AChannels; }
-    virtual int Samplerate() const override { return m_Samplerate; }
+    int AudioChannels() const override { return m_AChannels; }
+    int Samplerate() const override { return m_Samplerate; }
 
 private: /* Members */
-    /* Image specifications */
-    int m_Width, m_Height;
-    /* Number of channels in the image */
-    int m_Channels;
     int m_AChannels;
     int m_Samplerate;
 
-    /**
-     * Media timeline information
-     */
+    // Media timeline information
     v_frame_t m_Startframe;
     v_frame_t m_Endframe;
     v_frame_t m_Duration;
     double m_Framerate;
-
-    /* Internal data store */
-    std::vector<float> m_Pixels;
-    std::vector<unsigned char> m_TPixels;
 
 private: /* Methods */
     /**

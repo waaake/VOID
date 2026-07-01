@@ -4,15 +4,11 @@
 #ifndef _VOID_MEDIA_H
 #define _VOID_MEDIA_H
 
-/* STD */
-#include <filesystem>
-#include <unordered_map>
-#include <vector>
-
 /* Internal */
 #include "Definition.h"
-#include "Frame.h"
 #include "Filesystem.h"
+// #include "PixReader.h"
+#include "Frame.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -66,7 +62,7 @@ public:
     void Read(const MediaStruct& mstruct);
     void Read(MediaStruct&& mstruct);
 
-    /* Getters */
+    // Entry Attributes
     inline std::string Fullpath() const { return m_MediaStruct.FirstPath(); }
     inline std::string TemplatedPath() const { return m_MediaStruct.TemplatedPath(); }
     inline std::string TemplatedName() const { return m_MediaStruct.TemplatedName(); }
@@ -81,7 +77,6 @@ public:
 
     inline v_frame_t FirstFrame() const { return m_FirstFrame; }
     inline v_frame_t LastFrame() const { return m_LastFrame; }
-
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
     /**
@@ -104,28 +99,23 @@ public:
      */
     v_frame_t NearestFrame(v_frame_t frame) const;
 
-    // inline Frame GetFrame(v_frame_t frame) const { return m_Mediaframes.at(frame - m_FirstFrame); }
-    inline Frame* FramePtr(v_frame_t frame) { return &m_Mediaframes.at(frame - m_FirstFrame); }
-    inline Frame FirstFrameData() const { return m_Mediaframes.front(); }
-    inline Frame LastFrameData() const { return m_Mediaframes.back(); }
+    void Thumbnail(UInt8Image& image);
+    void Thumbnail(v_frame_t frame, UInt8Image& image);
+    void Image(v_frame_t frame, FloatImage& image);
+    const FloatImage& Image(v_frame_t frame) { return m_Frames[frame - m_FirstFrame].Image(); }
 
-    inline SharedPixels Image(v_frame_t frame, bool cached = true) { return m_Mediaframes.at(frame - m_FirstFrame).Image(cached); }
-    std::size_t FrameSize();
-
-    inline SharedPixels FirstImage() { return Image(m_FirstFrame); }
-    inline SharedPixels LastImage() { return Image(m_LastFrame); }
-
-    inline int Channels() const { return m_Mediaframes.front().Channels(); }
-    inline const std::map<std::string, std::string> Metadata() const { return m_Mediaframes.front().Metadata(); }
-
+    // Media Attribs
+    inline int Channels() const { return m_Frames[0].Channels(); }
+    inline int Width() const { return m_Frames[0].Width(); }
+    inline int Height() const { return m_Frames[0].Height(); }
     inline double Framerate() const { return m_Framerate; }
-    inline bool Empty() const { return m_Mediaframes.empty(); }
-    /**
-     * A Media can be considered invalid if it is empty
-     * Any valid media will have atleast one frame
-     */
-    inline bool Valid() const { return !Empty(); }
-    void Clear();
+
+    inline bool Empty() const { return m_MediaStruct.Empty(); }
+    inline bool Valid() const { return m_Type != Media::Type::UNDEFINED; }
+    
+    inline const std::map<std::string, std::string> Metadata() const { return m_Frames[0].Metadata(); }
+    
+    // void Clear();
     void SetDirty(bool dirty = true);
 
     /**
@@ -133,21 +123,16 @@ public:
      */
     void ClearCache(bool dirty = true);
 
-    /* Allow iterating over the Media frames */
-    inline std::vector<Frame>::iterator begin() { return m_Mediaframes.begin(); }
-    inline std::vector<Frame>::iterator end() { return m_Mediaframes.end(); }
-
 protected: /* Members */
+    // SharedPixReader m_Reader;
     MediaStruct m_MediaStruct;
-
+    std::vector<Frame> m_Frames;
+    std::vector<v_frame_t> m_Numbers;
     v_frame_t m_FirstFrame, m_LastFrame;
-    int m_Samplerate;
+    std::size_t m_Framesize;
     double m_Framerate;
-    std::size_t m_Framesize = {0};
-
+    int m_Samplerate;
     Type m_Type;
-    std::vector<Frame> m_Mediaframes;
-    std::vector<v_frame_t> m_Framenumbers;
 
 private: /* Methods */
     void ProcessSequence();

@@ -24,8 +24,8 @@ public:
 
     void Reset();
 
-    void SetImageA(const SharedPixels& image);
-    void SetImageB(const SharedPixels& image);
+    void SetImageA(const FloatImage& image);
+    void SetImageB(const FloatImage& image);
 
     /* Set Attributes for Render */
     inline void SetExposure(const float exposure) { m_Exposure = exposure; }
@@ -111,8 +111,8 @@ private: /* Members */
     unsigned int m_InternalFormatB;
 
 private: /* Members */
-    void InitTextureA(const SharedPixels& image);
-    void InitTextureB(const SharedPixels& image);
+    void InitTextureA(const FloatImage& image);
+    void InitTextureB(const FloatImage& image);
 
     /**
      * @brief Setup Array Buffers
