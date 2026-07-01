@@ -367,11 +367,11 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("singlefile", static_cast<int>(m_MediaStruct.SingleFile()), allocator);
     out.AddMember("framePadding", static_cast<unsigned int>(m_MediaStruct.Framepadding()), allocator);
 
-    /* Save any missing frames from the media */
+    // Save any missing frames from the media
     rapidjson::Value missingFrames(rapidjson::kArrayType);
-    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
     {
-        if (m_MediaStruct.Missing(i))
+        if (m_Frames.at(i).Invalid())
             missingFrames.PushBack(static_cast<int64_t>(i + 1), allocator);
     }
 
@@ -417,11 +417,12 @@ void MediaClip::Serialize(std::ostream& out) const
     uint32_t count = 0;
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
-    for (v_frame_t i = m_FirstFrame; i < m_LastFrame; ++i)
+    for (v_frame_t i = 0; i < m_LastFrame - m_FirstFrame; ++i)
     {
-        if (m_MediaStruct.Missing(i))
+        if (m_Frames.at(i).Invalid())
         {
-            out.write(reinterpret_cast<const char*>(&i), sizeof(i));
+            int frame = i + 1;
+            out.write(reinterpret_cast<const char*>(&frame), sizeof(i));
             count++;
         }
     }

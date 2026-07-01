@@ -17,7 +17,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class PlayerBuffer : public QObject
+class VOID_API PlayerBuffer : public QObject
 {
     Q_OBJECT
 public:

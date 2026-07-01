@@ -172,39 +172,28 @@ void Media::ProcessMovie()
         m_Numbers.emplace_back(i);
     }
 
-    // m_Reader = std::move(r);
     m_Type = Media::Type::MOVIE;
 }
 
 void Media::Image(v_frame_t frame, FloatImage& image)
 {
-    // // At the moment, the first path and framepath are copy of the string
-    // // check if we can directly work with references from the underlying MEntry
-    // m_Type == Media::Type::MOVIE
-    //     ? m_Reader->Read(m_MediaStruct.FirstPath(), frame, image)
-    //     : m_Reader->Read(m_MediaStruct.Framepath(frame), frame, image);
     m_Frames[frame - m_FirstFrame].Image(image);
-
 }
 
 void Media::Thumbnail(UInt8Image& image)
 {
     m_Frames[0].Thumbnail(image);
-    // m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), m_FirstFrame, image);
 }
 
 void Media::Thumbnail(v_frame_t frame, UInt8Image& image)
 {
     m_Frames[frame - m_FirstFrame].Thumbnail(image);
-    // m_Type == Media::Type::MOVIE
-    //     ? m_Reader->ReadThumbnail(m_MediaStruct.FirstPath(), frame, image)
-    //     : m_Reader->ReadThumbnail(m_MediaStruct.Framepath(frame), frame, image);
 }
 
 void Media::ClearCache(bool dirty)
 {
-    // for (Frame& f : m_Mediaframes)
-    //     f.ClearCache(dirty);
+    for (Frame& f : m_Frames)
+        f.Clear(dirty);
 }
 
 // Frame Media::GetFrame(v_frame_t frame) const
