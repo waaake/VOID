@@ -113,7 +113,7 @@ void ImageRenderLayer::SetImage(const FloatImage& image)
 
     // m_InputColorSpace = static_cast<int>(image->InputColorSpace());
     // Temporary --- need to add that to the Image
-    m_InputColorSpace = static_cast<int>(ColorSpace::Linear);
+    m_InputColorSpace = static_cast<int>(image->colorspace);
 }
 
 void ImageRenderLayer::Render(const glm::mat4& projection, float, float)

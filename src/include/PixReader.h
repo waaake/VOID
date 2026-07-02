@@ -10,11 +10,9 @@
 #include <string>
 
 /* Internal */
-#include "Colorspace.h"
 #include "Definition.h"
 #include "FrameRange.h"
 #include "Image.h"
-#include "Row.h"
 
 VOID_NAMESPACE_OPEN
 

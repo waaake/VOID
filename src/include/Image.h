@@ -11,6 +11,7 @@
 /* Internal */
 #include "Definition.h"
 // #include "Allocator.h"
+#include "Colorspace.h"
 #include "Row.h"
 
 VOID_NAMESPACE_OPEN
@@ -92,6 +93,7 @@ struct Image
     // Format
     unsigned int type;
     unsigned int format;
+    ColorSpace colorspace = { ColorSpace::Linear };
 
     Buffer<_Ty> buffer;
 

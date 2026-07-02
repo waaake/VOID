@@ -126,7 +126,7 @@ void GridRenderLayer::SetImages(const std::vector<FloatImage>& images)
         m_TexData[i] = std::move(ImageData(
             images[i]->width,
             images[i]->height,
-            static_cast<int>(ColorSpace::Linear) // TODO: Fix this
+            static_cast<int>(images[i]->colorspace)
         ));
     }
 }
