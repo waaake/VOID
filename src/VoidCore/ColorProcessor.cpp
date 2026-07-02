@@ -154,7 +154,7 @@ std::string ColorProcessor::Shader(const std::string& function) const
 
 void ColorProcessor::ProcessImage(float* pixels, int width, int height, int channels, const std::string& outcolorspace) const
 {
-    OCIO::ConstProcessorRcPtr processor = processor = m_Config->getProcessor(OCIO::ROLE_SCENE_LINEAR, outcolorspace.c_str());
+    OCIO::ConstProcessorRcPtr processor = m_Config->getProcessor(OCIO::ROLE_SCENE_LINEAR, outcolorspace.c_str());
     OCIO::ConstCPUProcessorRcPtr cpuproc = processor->getDefaultCPUProcessor();
 
     OCIO::PackedImageDesc imgdesc(pixels, width, height, channels);

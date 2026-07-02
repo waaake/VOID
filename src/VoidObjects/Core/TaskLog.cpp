@@ -72,6 +72,8 @@ void TaskLogModel::AddLog(const QString& text, const TaskLog::Level& level)
 
 void TaskLogModel::Clear()
 {
+    if (m_Logs.empty()) return;
+
     beginRemoveRows(QModelIndex(), 0, static_cast<int>(m_Logs.size()) - 1);
     m_Logs.clear();
     endRemoveRows(); 
