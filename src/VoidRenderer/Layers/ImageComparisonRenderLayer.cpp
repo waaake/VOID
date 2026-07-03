@@ -166,7 +166,7 @@ void ImageComparisonRenderLayer::SetImageB(const FloatImage& image)
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
     // Update the colorspace on the Image Data
-    m_InputColorSpaceB = static_cast<int>(image->colorspace); // TODO: Check this to use Colorspace from the image
+    m_InputColorSpaceB = static_cast<int>(image->colorspace);
 }
 
 void ImageComparisonRenderLayer::Render(const glm::mat4& projection, float, float)

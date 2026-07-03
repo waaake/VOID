@@ -86,7 +86,6 @@ void PlayerBuffer::SetGrid(Playlist* playlist)
 
 void PlayerBuffer::SetPlaylist(Playlist* playlist)
 {
-    // Refresh();
     emit mediaAboutToBeUpdated();
     if (m_Playlist)
         disconnect(m_Playlist, &Playlist::updated, this, &PlayerBuffer::updated);
@@ -246,7 +245,6 @@ bool PlayerBuffer::PreviousMedia()
 {
     if (m_PlayingComponent == PlayableComponent::Playlist)
     {
-        // Refresh();
         emit mediaAboutToBeUpdated();
         m_Clip = m_Playlist->PreviousMedia();
 
@@ -268,7 +266,6 @@ bool PlayerBuffer::ResetPlaylistMedia()
      */
     if (m_PlayingComponent == PlayableComponent::Playlist)
     {
-        // Refresh();
         emit mediaAboutToBeUpdated();
         m_Clip = m_Playlist->CurrentMedia();
 

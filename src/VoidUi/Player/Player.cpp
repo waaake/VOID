@@ -555,7 +555,7 @@ void Player::RenderAnnotatedFrames()
             {
                 if (auto data = m_ActiveViewBuffer->MData(frame))
                 {
-                    // m_Renderer->Render(data.image, data.annotation);
+                    m_Renderer->Render(data.image, data.annotation);
                     const Renderer::RenderData r = m_Renderer->FrameBuffer();
                     if (!ir.Render(frame, r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
                     {
@@ -583,7 +583,7 @@ void Player::RenderAnnotatedFrames()
             {
                 if (auto data = m_ActiveViewBuffer->MData(frame))
                 {
-                    // m_Renderer->Render(data.image, data.annotation);
+                    m_Renderer->Render(data.image, data.annotation);
                     const Renderer::RenderData r = m_Renderer->FrameBuffer();
                     if (!mr.AddBuffer(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
                     {

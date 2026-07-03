@@ -195,14 +195,14 @@ void ViewerBuffer::SetFramesize(std::size_t size)
 
     m_Framesize = size;
     m_Capacity = std::min(m_MaxMemory / m_Framesize, s_MaxBuffers);
-    VOID_LOG_INFO("Setting New Frame size: {0}, Updated Capacity: {1}", m_Framesize, m_Capacity);
+    // VOID_LOG_INFO("Setting New Frame size: {0}, Updated Capacity: {1}", m_Framesize, m_Capacity);
 }
 
 void ViewerBuffer::SetMaxMemory(std::size_t gigabytes)
 {
     m_MaxMemory = gigabytes * 1024 * 1024 * 1024;
     m_Capacity = std::min(m_MaxMemory / m_Framesize, s_MaxBuffers);
-    VOID_LOG_INFO("Setting New Frame size: {0}, Updated Capacity: {1}", m_Framesize, m_Capacity);
+    // VOID_LOG_INFO("Setting New Frame size: {0}, Updated Capacity: {1}", m_Framesize, m_Capacity);
 }
 
 void ViewerBuffer::Cache(v_frame_t frame)
@@ -366,9 +366,6 @@ void ViewerBuffer::CacheAvailable()
         {
             if (Buffered(frame))
                 continue;
-
-            // if (!Request(frame, false))
-            //     break;
 
             if (Request(frame))
                 AddTask(new CachePreviousFrameTask(this));

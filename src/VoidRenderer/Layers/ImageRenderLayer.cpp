@@ -111,8 +111,6 @@ void ImageRenderLayer::SetImage(const FloatImage& image)
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-    // m_InputColorSpace = static_cast<int>(image->InputColorSpace());
-    // Temporary --- need to add that to the Image
     m_InputColorSpace = static_cast<int>(image->colorspace);
 }
 
