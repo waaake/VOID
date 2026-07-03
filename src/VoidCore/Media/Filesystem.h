@@ -285,11 +285,7 @@ public:
     [[nodiscard]] bool SingleFile() const { return m_Entries.empty() ? false : m_Entries[0].SingleFile(); }
 
     unsigned int Framepadding() const { return m_Entries.empty() ? 0 : m_Entries[0].Framepadding(); }
-
-    std::string Framepath(v_frame_t frame) const;
     MFrameRange Framerange() const;
-    bool Contains(v_frame_t frame) const { return m_Mapping.find(frame) != m_Mapping.end(); }
-    bool Missing(v_frame_t frame) const { return m_Mapping.find(frame) == m_Mapping.end(); }
 
     /**
      * Returns whether the media struct is currently empty
@@ -321,9 +317,6 @@ public:
 private: /* Members */
     std::vector<v_frame_t> m_Frames;
     std::vector<MEntry> m_Entries;
-    std::unordered_map<v_frame_t, int> m_Mapping;
-
-    /* The kind of media */
     MediaType m_MediaType;
 
 private: /* Methods */

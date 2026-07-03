@@ -336,7 +336,6 @@ MediaStruct::MediaStruct(const std::string& basepath,
     {
         m_Entries.emplace_back(basepath, name, extension, frame, padding, false);
         m_Frames.emplace_back(frame);
-        m_Mapping[frame] = m_Entries.size() - 1;
     }
 
     /* Update the media type */
@@ -368,7 +367,6 @@ MediaStruct::MediaStruct(const std::string& basepath,
 
         m_Entries.emplace_back(basepath, name, extension, frame, padding, false);
         m_Frames.emplace_back(frame);
-        m_Mapping[frame] = m_Entries.size() - 1;
     }
 
     /* Update the media type */
@@ -388,7 +386,6 @@ MediaStruct::MediaStruct(const MediaStruct& other)
         m_Frames.emplace_back(frame);
 
     m_Entries = other.m_Entries;
-    m_Mapping = other.m_Mapping;
 }
 
 MediaStruct::MediaStruct(MediaStruct&& other) noexcept
@@ -396,7 +393,6 @@ MediaStruct::MediaStruct(MediaStruct&& other) noexcept
 {
     std::swap(m_Frames, other.m_Frames);
     std::swap(m_Entries, other.m_Entries);
-    std::swap(m_Mapping, other.m_Mapping);
 }
 
 MediaStruct MediaStruct::operator=(const MediaStruct& other)
@@ -414,7 +410,6 @@ MediaStruct MediaStruct::operator=(const MediaStruct& other)
         m_Frames.emplace_back(frame);
 
     m_Entries = other.m_Entries;
-    m_Mapping = other.m_Mapping;
 
     return *this;
 }
@@ -432,15 +427,8 @@ MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
     /* Swap the contents of the provided Struct with ours */
     std::swap(m_Frames, other.m_Frames);
     std::swap(m_Entries, other.m_Entries);
-    std::swap(m_Mapping, other.m_Mapping);
 
     return *this;
-}
-
-std::string MediaStruct::Framepath(v_frame_t frame) const
-{
-    auto it = m_Mapping.find(frame);
-    return it == m_Mapping.end() ? "" : m_Entries[it->second].Fullpath();
 }
 
 MFrameRange MediaStruct::Framerange() const
@@ -454,7 +442,6 @@ void MediaStruct::Add(const MEntry& entry)
     /* Add the provided entry */
     m_Entries.push_back(entry);
     m_Frames.push_back(entry.Framenumber());
-    m_Mapping[entry.Framenumber()] = m_Entries.size() - 1;
 }
 
 bool MediaStruct::Validate(const MEntry& entry)
@@ -525,7 +512,6 @@ void MediaStruct::Reset(const MEntry& entry, const MediaType& type)
     /* Add the first Entry */
     m_Entries.push_back(entry);
     m_Frames.push_back(entry.Framenumber());
-    m_Mapping[entry.Framenumber()] = m_Entries.size() - 1;
 
     /* Update the media type */
     m_MediaType = type;
@@ -535,7 +521,6 @@ void MediaStruct::Clear()
 {
     m_Entries.clear();
     m_Frames.clear();
-    m_Mapping.clear();
 
     m_MediaType = MediaType::NonMedia;
 }
