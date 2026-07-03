@@ -24,29 +24,6 @@ OIIOPixReader::~OIIOPixReader()
     Clear();
 }
 
-// const unsigned char* OIIOPixReader::ThumbnailPixels()
-// {
-//     if (m_TPixels.empty())
-//     {
-//         m_TPixels.resize(m_Pixels.size());
-//         unsigned char* pixels = m_TPixels.data();
-
-//         for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
-//         {
-//             int index = i * m_Channels;
-
-//             pixels[index] = static_cast<unsigned char>(std::clamp(m_Pixels[index], 0.f, 1.f) * 255.f);
-//             pixels[index + 1] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 1], 0.f, 1.f) * 255.f);
-//             pixels[index + 2] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 2], 0.f, 1.f) * 255.f);
-
-//             if (m_Channels == 4)
-//                 pixels[index + 3] = static_cast<unsigned char>(std::clamp(m_Pixels[index + 3], 0.f, 1.f) * 255.f);
-//         }
-//     }
-
-//     return m_TPixels.data();
-// }
-
 void OIIOPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
     std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(path);
@@ -64,6 +41,14 @@ void OIIOPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt
     image->height = spec.height;
     image->channels = spec.nchannels;
     image->format = (image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA;
+
+    /// Underlying image specs
+    m_Image->width = spec.width;
+    m_Image->height = spec.height;
+    m_Image->channels = spec.nchannels;
+    m_Image->format = (m_Image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA;
+    m_Image->type = VOID_GL_FLOAT;
+
     // image->type = VOID_GL_FLOAT;
 
     // /* Get the colorspace from the image spec {{{ */

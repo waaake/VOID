@@ -67,6 +67,11 @@ void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt
     // Force 4 Channels
     image->channels = 4;
 
+    // Image Specs
+    m_Image->width = image->width;
+    m_Image->height = image->height;
+    m_Image->channels = image->channels;
+
     // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
 
     Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);

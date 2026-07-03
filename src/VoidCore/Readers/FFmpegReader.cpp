@@ -356,6 +356,12 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
         image->channels = decoder.Channels();
 
         image->format = VOID_GL_RGB;
+
+        // Underlying image specifications
+        m_Image->width = image->width;
+        m_Image->height = image->height;
+        m_Image->channels = image->channels;
+        m_Image->format = VOID_GL_RGB;
     }
 }
 

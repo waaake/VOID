@@ -64,6 +64,10 @@ void TurboJpegReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
     image->channels = tjPixelSize[TJPF_RGBA];
     int pitch = image->width * image->channels;
 
+    m_Image->width = image->width;
+    m_Image->height = image->height;
+    m_Image->channels = image->channels;
+
     VOID_LOG_INFO("Float TurboJPEG Reader: Height {0}, Width {1}, Channels: {2}", image->width, image->height, image->channels);
 
     image->buffer.Resize(pitch * image->height);
