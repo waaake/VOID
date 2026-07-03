@@ -196,30 +196,10 @@ void Media::ClearCache(bool dirty)
         f.Clear(dirty);
 }
 
-// Frame Media::GetFrame(v_frame_t frame) const
-// {
-//     /**
-//      * Same logic as mentioned before, the frames in the underlying vector are always sorted
-//      * and point to the index same as the distance between the frames
-//      * 
-//      * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
-//      * will be 1010 - 1001 = 9
-//      */
-//     return m_Mediaframes.at(frame - m_FirstFrame);
-// }
-
-// void Media::Clear()
-// {
-//     /* Clear underlying structs */
-//     // m_Framenumbers.clear();
-//     // m_Mediaframes.clear();
-//     // m_Mediaframes.shrink_to_fit();
-// }
-
 void Media::SetDirty(bool dirty)
 {
-    // for (auto& frame : m_Mediaframes)
-    //     frame.SetDirty(dirty);
+    for (auto& frame : m_Frames)
+        frame.SetDirty(dirty);
 }
 
 VOID_NAMESPACE_CLOSE

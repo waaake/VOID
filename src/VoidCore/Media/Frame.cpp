@@ -30,11 +30,6 @@ Frame::Frame(const MEntry& e, v_frame_t frame)
 
 Frame::~Frame()
 {
-    // if (m_Reader)
-    // {
-    //     delete m_Reader;
-    //     m_Reader = nullptr;
-    // }
 }
 
 Frame::Frame(Frame&& other) noexcept
@@ -113,39 +108,6 @@ void Frame::Thumbnail(UInt8Image& image)
     m_Reader->ReadThumbnail(m_Entry.Fullpath(), m_Framenumber, image);
 }
 
-// SharedPixReader Frame::Image(bool cached)
-// {
-//     // /*
-//     //  * If the frame data has not yet been fetched
-//     //  * Read the frame data and return the pointer to the data
-//     //  */
-//     // if (cached)
-//     //     Cache();
-
-//     // return m_Writable && !m_Writable->Empty() ? m_Writable : m_Reader;
-//     return nullptr;
-// }
-
-// SharedPixReader Frame::Writable()
-// {
-//     // // Ensure we have the image already read, else we can't have a valid writable copy
-//     // Cache();
-
-//     // // Coming from the fact that everytime the Image buffer is copied into the m_Writable shared pointer
-//     // // We're continuously allocating and deallocating huge amounts of data
-//     // // instead here we allocate only once, the first time when the writable buffer does not exist
-//     // // next time onwards, just copy the underlying original image data onto the writable buffer
-//     // // save us from the extra memory alloc-dealloc
-//     // if (m_Writable && m_Writable->FrameSize() == m_Reader->FrameSize())
-//     //     std::memcpy(m_Writable->Writable(), m_Reader->Pixels(), m_Reader->FrameSize());
-//     // else
-//     //     m_Writable = m_Reader->Copy();
-
-//     // // m_Writable = m_Reader->Copy();
-//     // return m_Writable;
-//     return nullptr;
-// }
-
 void Frame::Cache()
 {
     /**
@@ -172,12 +134,6 @@ void Frame::Clear(bool dirty)
         std::lock_guard<std::mutex> guard(m_Mutex);
         m_Reader->Clear();
     }
-    // if (m_Writable && !m_Writable->Empty())
-    // {
-    //     // Don't allow concurrent access when clearing the underlying data vector
-    //     std::lock_guard<std::mutex> guard(m_Mutex);
-    //     m_Writable->Clear();
-    // }
     m_Dirty = dirty;
 }
 
@@ -187,22 +143,6 @@ MovieFrame::MovieFrame(const MEntry& e, const v_frame_t frame)
     m_Framenumber = frame;
 
     m_Reader = std::move(Forge::Instance().MovieReaderAt(m_Entry.Extension(), m_Entry.Fullpath(), m_Framenumber));
-
-    // /* Update the entry */
-    // m_Entry = e;
-    // /* The frame */
-    // m_Framenumber = frame;
-
-    // /**
-    //  * And get the Reader
-    //  * As of today there isn't a usecase to hold the movie reader in the Movie frame
-    //  * as a SharedMPixReader as all the bits about reading are same
-    //  */
-    // m_Reader = std::move(Forge::Instance().GetMovieReader(
-    //     m_Entry.Extension(),
-    //     m_Entry.Fullpath(),
-    //     m_Framenumber
-    // ));
 }
 
 VOID_NAMESPACE_CLOSE

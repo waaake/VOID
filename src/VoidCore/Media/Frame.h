@@ -49,13 +49,7 @@ public:
     [[nodiscard]] inline bool Invalid() const { return !m_Reader; }
     [[nodiscard]] inline bool Valid() const { return bool(m_Reader); }
 
-    // /**
-    //  * Returns Shared Pointer to the ImageData
-    //  * cached defines whether the frame needs to be read before returning
-    //  * has no effect if the frame has already been read
-    //  */
-    // SharedPixReader Image(bool cached = true);
-    // // SharedPixReader Writable();
+    // Image
     void Thumbnail(UInt8Image& image);
     void Image(FloatImage& image);
     const FloatImage& Image();

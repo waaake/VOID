@@ -114,8 +114,6 @@ public:
     inline bool Valid() const { return m_Type != Media::Type::UNDEFINED; }
     
     inline const std::map<std::string, std::string> Metadata() const { return m_Frames[0].Metadata(); }
-    
-    // void Clear();
     void SetDirty(bool dirty = true);
 
     /**
@@ -124,7 +122,6 @@ public:
     void ClearCache(bool dirty = true);
 
 protected: /* Members */
-    // SharedPixReader m_Reader;
     MediaStruct m_MediaStruct;
     std::vector<Frame> m_Frames;
     std::vector<v_frame_t> m_Numbers;
