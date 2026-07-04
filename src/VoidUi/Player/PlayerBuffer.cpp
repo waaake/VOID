@@ -137,46 +137,6 @@ SharedPlaybackTrack PlayerBuffer::ActiveTrack() const
     return nullptr;
 }
 
-BufferData PlayerBuffer::MData(const v_frame_t frame, bool nearest)
-{
-    BufferData d;
-    switch (m_PlayingComponent)
-    {
-        case PlayableComponent::Track:
-            d.image = m_Track->Image(frame);
-            break;
-        case PlayableComponent::Sequence:
-            d.image = m_Sequence->Image(frame);
-            break;
-        default:
-            if (m_Clip->Contains(frame))
-            {
-                d.image = m_Clip->Image(frame);
-                d.annotation = m_Clip->Annotation(frame);
-            }
-    }
-
-    return d;
-}
-
-std::vector<FloatImage> PlayerBuffer::GridFrame(const v_frame_t frame)
-{
-    std::vector<FloatImage> grid;
-    grid.reserve(m_Playlist->Size());
-
-    if (m_PlayingComponent == PlayableComponent::Grid)
-    {
-        for (auto& media : m_Playlist->AllMedia())
-        {
-            FloatImage image = VOID_NAMESPACE::Image<float>::Create();
-            media->Image(media->Contains(frame) ? frame : media->NearestFrame(frame), image);
-            grid.push_back(image);
-        }
-    }
-
-    return grid;
-}
-
 SharedMediaClip PlayerBuffer::Media(const v_frame_t frame)
 {
     switch (m_PlayingComponent)

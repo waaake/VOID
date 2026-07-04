@@ -205,6 +205,44 @@ void ViewerBuffer::SetMaxMemory(std::size_t gigabytes)
     // VOID_LOG_INFO("Setting New Frame size: {0}, Updated Capacity: {1}", m_Framesize, m_Capacity);
 }
 
+BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
+{
+    EnsureCached(frame);
+    BufferData d;
+    switch (m_PlayingComponent)
+    {
+        case PlayableComponent::Track:
+            d.image = m_Track->Image(frame);
+            break;
+        case PlayableComponent::Sequence:
+            d.image = m_Sequence->Image(frame);
+            break;
+        default:
+            if (m_Clip->Contains(frame))
+            {
+                d.image = m_Clip->Evaluate(frame);
+                d.annotation = m_Clip->Annotation(frame);
+            }
+    }
+
+    return d;
+}
+
+std::vector<FloatImage> ViewerBuffer::GridFrame(const v_frame_t frame)
+{
+    std::vector<FloatImage> grid;
+    grid.reserve(m_Playlist->Size());
+
+    if (m_PlayingComponent == PlayableComponent::Grid)
+    {
+        for (auto& media : m_Playlist->AllMedia())
+            grid.push_back(media->Image(media->Contains(frame) ? frame : media->NearestFrame(frame)));
+    }
+
+    return grid;
+}
+
+
 void ViewerBuffer::Cache(v_frame_t frame)
 {
     if (m_PlayingComponent == PlayableComponent::Sequence)
@@ -216,10 +254,12 @@ void ViewerBuffer::Cache(v_frame_t frame)
     }
     else if (m_PlayingComponent == PlayableComponent::Track)
     {
-        const FloatImage& image = m_Track->Image(frame);
-        SetFramesize(image->Size());
+        if (const FloatImage& image = m_Track->Image(frame))
+        {
+            SetFramesize(image->Size());
+            Store(frame);
+        }
 
-        Store(frame);
     }
     else if (m_Clip->Valid() && m_Clip->Contains(frame))
     {

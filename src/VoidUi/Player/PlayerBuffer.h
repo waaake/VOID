@@ -55,11 +55,6 @@ public:
     inline SharedPlaybackTrack GetTrack() const { return m_Track; }
     inline SharedPlaybackSequence GetSequence() const { return m_Sequence; }
 
-    /// ImageData
-
-    BufferData MData(const v_frame_t frame, bool nearest = false);
-    std::vector<FloatImage> GridFrame(const v_frame_t frame);
-
     bool Playing(const SharedMediaClip& media) const;
 
     /// Media

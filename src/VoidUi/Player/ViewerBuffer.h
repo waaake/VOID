@@ -47,6 +47,11 @@ public:
     explicit ViewerBuffer(QObject* parent = nullptr);
     ~ViewerBuffer();
 
+    /// ImageData
+
+    BufferData MData(const v_frame_t frame, bool nearest = false);
+    std::vector<FloatImage> GridFrame(const v_frame_t frame);
+
     /// Attribs
 
     [[nodiscard]] inline bool Active() const { return m_Active; }
