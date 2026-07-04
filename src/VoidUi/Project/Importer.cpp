@@ -62,8 +62,8 @@ void DirectoryImporter::Process()
         emit progressUpdated(++count);
         emit mediaFound(QString::fromStdString(m.FirstPath()));
 
-        /* Add delay to make it look like the media is imported as is being shown */
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // Add delay to allow user cancellations/interactions with the ui
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     emit finishedImporting();
