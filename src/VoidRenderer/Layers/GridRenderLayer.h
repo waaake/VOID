@@ -34,7 +34,7 @@ public:
     void Initialize();
     void Reset();
 
-    void SetImages(const std::vector<SharedPixels>& images);
+    void SetImages(const std::vector<FloatImage>& images);
 
     inline void SetExposure(const float exposure) { m_Exposure = exposure; }
     inline void SetGamma(const float gamma) { m_Gamma = gamma; }

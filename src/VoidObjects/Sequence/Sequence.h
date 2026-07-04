@@ -36,6 +36,7 @@ public:
     void Clear();
     /* Clears the underlying Tracks' cached data */
     void ClearCache();
+    void ClearCache(v_frame_t frame);
 
     void AddVideoTrack(const SharedPlaybackTrack& track);
     void AddAudioTrack(const SharedPlaybackTrack& track);
@@ -56,8 +57,10 @@ public:
      * Returns the last track that is active
      */
     SharedPlaybackTrack ActiveVideoTrack() const;
-
     SharedTrackItem GetTrackItem(const int frame) const;
+    SharedMediaClip Media(v_frame_t frame);
+    void Image(v_frame_t frame, FloatImage& image);
+    const FloatImage Image(v_frame_t frame);
 
 signals: /* Signals denoting actions in the seqeuence */
     void trackAdded();
@@ -73,8 +76,6 @@ signals: /* Signals denoting actions in the seqeuence */
     void rangeChanged(int start, int end);
 
 protected: /* Members */
-    
-    /* Holds the tracks that have been added to the seqeuence */
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
 

@@ -42,7 +42,6 @@ public:
      * Removes the track item from the mapping.
      */
     void Remove(const SharedTrackItem& item);
-
     void Clear();
 
     /**
@@ -50,7 +49,6 @@ public:
      * else a null pointer is returned.
      */
     SharedTrackItem At(const int frame) const;
-
     inline bool Empty() const { return m_Frames.empty(); }
 
 private: /* Members */
@@ -122,7 +120,6 @@ class VOID_API PlaybackTrack : public VoidObject
 
 public:
     PlaybackTrack(QObject* parent = nullptr);
-
     virtual ~PlaybackTrack();
 
     /*
@@ -144,6 +141,7 @@ public:
      * Which will get played in order
      */
     void AddMedia(const SharedMediaClip& media);
+    SharedMediaClip Media(v_frame_t frame);
 
     /* Clears the Playback Track */
     void Clear();
@@ -152,10 +150,13 @@ public:
      * Caches all frames of any media on the track
      * emits frameCached for every frame that has been cached
      */
-    void Cache();
+    void Cache(v_frame_t frame);
+    void Image(v_frame_t frame, FloatImage& image);
+    const FloatImage Image(v_frame_t frame);
 
     /* Clears all cache from internal media and emits cacheCleared */
     void ClearCache();
+    void ClearCache(v_frame_t frame);
 
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
@@ -178,7 +179,7 @@ public:
      * From the track, return the track item which is present at a given frame in the timeline
      * Returns nullptr if there is no trackitem at the given timeframe
      */
-    inline SharedTrackItem GetTrackItem(const int frame) const { return m_Items.At(frame); }
+    SharedTrackItem GetTrackItem(v_frame_t frame);
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
     inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
@@ -214,18 +215,12 @@ signals: /* Signals Denoting actions in the Track */
     /* Emitted when the cache of all items' media has been cleared internally */
     void cacheCleared();
 protected: /* Members */
-    /* Holds the Media which have been added to the Track */
     TrackMap m_Items;
-
+    SharedTrackItem m_Recent;
     int m_StartFrame, m_EndFrame;
     int m_Duration;
-
-    /* State whether the track is visible */
     bool m_Visible;
-    /* State whether the track is enabled */
     bool m_Enabled;
-
-    /* The color associated with the track */
     QColor m_Color;
 
 protected: /* Methods */

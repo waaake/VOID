@@ -320,7 +320,6 @@ void Player::ClearCache()
 void Player::Render(int frame)
 {
     BufferData data = m_ActiveViewBuffer->MData(frame);
-
     if (data)
         m_Renderer->Render(data.image, data.annotation);
 }

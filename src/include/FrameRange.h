@@ -22,10 +22,13 @@ public: /* Members */
     v_frame_t startframe;
     v_frame_t endframe;
     v_frame_t duration;
+    double framerate;
 
 public: /* Methods */
-    MFrameRange(v_frame_t start, v_frame_t end) : MFrameRange(start, end, (end - start) + 1) {}
-    MFrameRange(v_frame_t start, v_frame_t end, v_frame_t duration) : startframe(start), endframe(end), duration(duration) {}
+    MFrameRange(v_frame_t start, v_frame_t end, double framerate = 24.0)
+        : MFrameRange(start, end, (end - start) + 1, framerate) {}
+    MFrameRange(v_frame_t start, v_frame_t end, v_frame_t duration, double framerate = 24.0)
+        : startframe(start), endframe(end), duration(duration), framerate(framerate) {}
 };
 
 VOID_NAMESPACE_CLOSE

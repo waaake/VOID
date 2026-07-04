@@ -3,6 +3,7 @@
 
 /* STD */
 #include <chrono>
+#include <iostream>
 #include <type_traits>
 
 /* Internal */
@@ -28,6 +29,7 @@ namespace Tools
             DurationType delta = std::chrono::duration_cast<DurationType>(std::chrono::high_resolution_clock::now() - m_Start);
 
             VOID_LOG_INFO("Profiler::{0}::Time::{1} {2}", name, delta.count(), Unit());
+            std::cout << "Profiler::" << name << "::Time::" << delta.count() << " " << Unit() << "\n";
         }
 
     private:

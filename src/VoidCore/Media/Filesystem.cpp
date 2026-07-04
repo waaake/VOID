@@ -382,11 +382,9 @@ MediaStruct::MediaStruct(const MediaStruct& other)
     m_Frames.clear();
     m_Frames.reserve(other.m_Frames.size());
 
-    /* Add back the frame */
     for (v_frame_t frame: other.m_Frames)
         m_Frames.emplace_back(frame);
 
-    /* Copy the MEntries */
     m_Entries = other.m_Entries;
 }
 
@@ -405,18 +403,12 @@ MediaStruct MediaStruct::operator=(const MediaStruct& other)
 
     /* Update the Media Type */
     m_MediaType = other.m_MediaType;
-
-    /* Clear Existing Frames */
     m_Frames.clear();
 
-    /* Copy the contents of the internal vector */
     m_Frames.reserve(other.m_Frames.size());
-
-    /* Add back the frame */
     for (v_frame_t frame: other.m_Frames)
         m_Frames.emplace_back(frame);
 
-    /* Copy the MEntries */
     m_Entries = other.m_Entries;
 
     return *this;
@@ -454,14 +446,7 @@ void MediaStruct::Add(const MEntry& entry)
 
 bool MediaStruct::Validate(const MEntry& entry)
 {
-    /* If the underlying struct is empty this still returns false */
-    if (m_Entries.empty())
-        return false;
-
-    MEntry& e = m_Entries[0];
-
-    /* Return if the provided entry is similar to the current entry */
-    return e.Similar(entry);
+    return m_Entries.empty() ? false : m_Entries[0].Similar(entry);
 }
 
 MediaStruct MediaStruct::FromFile(const std::string& filepath)

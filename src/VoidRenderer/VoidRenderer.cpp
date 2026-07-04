@@ -89,7 +89,7 @@ void VoidRenderer::Draw()
             {
                 /* Render the stokes with the projection */
                 m_StrokeRenderer.Render(m_VProjection, width(), height());
-                m_TextRenderer.Render(m_VProjection, m_ImageA->Width(), m_ImageA->Height());
+                m_TextRenderer.Render(m_VProjection, m_ImageA->width, m_ImageA->height);
             }
         }
         else
@@ -364,134 +364,84 @@ bool VoidRenderer::eventFilter(QObject* object, QEvent* event)
     return BasicRenderer::eventFilter(object, event);
 }
 
-void VoidRenderer::Render(SharedPixels data)
+void VoidRenderer::Render(const FloatImage& image)
 {
-    /* Update the image data */
-    m_ImageA = data;
-    /* Hide the Error Label */
-    SetMessage("");
-
-    /* We're no longer comparing */
-    m_CompareMode = ComparisonMode::NONE;
-
-    /* Clear Secondary Image Data*/
+    m_ImageA = image;
     m_ImageB = nullptr;
 
-    /**
-     * Update the render resolution
-     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
-     * So constantly redrawing this is just too ineffecient
-     */
+    m_CompareMode = ComparisonMode::NONE;
+
     if (m_ImageA)
-        m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
-
+        m_RenderStatus->SetRenderResolution(m_ImageA->width, m_ImageA->height);
+    
     RemoveAnnotation();
-
-    /* Load the Textures to be rendered */
     m_ImageRenderer.SetImage(m_ImageA);
-
-    /* Trigger a Re-paint */
     update();
 }
 
-void VoidRenderer::Render(const SharedPixels& data, const SharedAnnotation& annotation)
+void VoidRenderer::Render(const FloatImage& image, const SharedAnnotation& annotation)
 {
-    /* Update the image data */
-    m_ImageA = data;
-    /* Hide the Error Label */
-    SetMessage("");
+    m_ImageA = image;
+    m_ImageB = nullptr;
+    // SetMessage("");
 
-    /* We're no longer comparing */
     m_CompareMode = ComparisonMode::NONE;
     m_ImageComparisonRenderer.SetComparisonMode(m_CompareMode);
 
-    /* Clear Secondary Image Data*/
-    m_ImageB = nullptr;
-
-    /**
-     * Update the render resolution
-     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
-     * So constantly redrawing this is just too ineffecient
-     */
     if (m_ImageA)
-        m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+        m_RenderStatus->SetRenderResolution(m_ImageA->width, m_ImageA->height);
 
-    /* When we Receive the data to be renderer, we also get the Annotation data pointer to be rendered */
     SetAnnotation(annotation);
-
-    /* Load the Textures to be rendered */
     m_ImageRenderer.SetImage(m_ImageA);
 
-    /* Trigger a Re-paint */
     update();
 }
 
-void VoidRenderer::Compare(SharedPixels first, SharedPixels second, ComparisonMode comparison, BlendMode blend)
+void VoidRenderer::Compare(const FloatImage& a, const FloatImage& b, const ComparisonMode& comparison, const BlendMode& blend)
 {
-    /* Update the image data */
-    m_ImageA = first;
-    m_ImageB = second;
+    m_ImageA = a;
+    m_ImageB = b;
 
-    /* Update the Comparison Mode */
     m_CompareMode = comparison;
-    /* Update the Blend Mode */
     m_BlendMode = blend;
 
     m_ImageComparisonRenderer.SetComparisonMode(m_CompareMode);
     m_ImageComparisonRenderer.SetBlendMode(blend);
 
-    /* Hide the Error Label */
-    SetMessage("");
-
-    /**
-     * Update the render resolution
-     * The resolution of the texture is not going to change in the draw (unless we apply a reformat to it)
-     * So constantly redrawing this is just too ineffecient
-     */
+    // SetMessage("");
     if (m_ImageA)
-        m_RenderStatus->SetRenderResolution(m_ImageA->Width(), m_ImageA->Height());
+        m_RenderStatus->SetRenderResolution(m_ImageA->width, m_ImageA->height);
 
-    /* Load the Textures to be rendered */
     m_ImageComparisonRenderer.SetImageA(m_ImageA);
     m_ImageComparisonRenderer.SetImageB(m_ImageB);
 
-    /* Trigger a Re-paint */
     update();
 }
 
-void VoidRenderer::RenderGrid(const std::vector<SharedPixels>& grid)
+void VoidRenderer::RenderGrid(const std::vector<FloatImage>& grid)
 {
     m_GridRenderer.SetImages(grid);
-
     // Hide the Error Label
-    SetMessage("");
+    // SetMessage("");
 
     m_CompareMode = ComparisonMode::GRID;
     m_ImageComparisonRenderer.SetComparisonMode(ComparisonMode::NONE);
 
     m_RenderStatus->SetRenderResolution(width(), height());
-
-    // Re-paint
     update();
 }
 
 void VoidRenderer::Clear()
 {
-    /* Delete the reference to the Image Data */
     m_ImageA = nullptr;
-    /* Clear the frame */
-    ClearFrame();
-    /* Hide the Error Label */
-    SetMessage("");
+    m_ImageB = nullptr;
 
-    /* Reset Buffers */
+    ClearFrame();
+    // SetMessage("");
+
     m_ImageRenderer.Reset();
     m_ImageComparisonRenderer.Reset();
 
-    /*
-     * Trigger a Re-paint
-     * This will draw nothing but just clears COLOR and DEPTH
-     */
     update();
 }
 
@@ -515,7 +465,7 @@ Renderer::RenderData<unsigned char> VoidRenderer::FrameBuffer()
 
 void VoidRenderer::SetZoom(float zoom)
 {
-    m_ZoomFactor = float(m_ImageA->Width()) * zoom / (width() * 100);
+    m_ZoomFactor = float(m_ImageA->width) * zoom / (width() * 100);
     update();
 }
 
@@ -539,12 +489,12 @@ void VoidRenderer::ZoomToFit()
 
 float VoidRenderer::MinZoom() const
 {
-    return m_ImageA ? (float)width() / m_ImageA->Width() * MIN_ZOOM * 100 : 0.f;
+    return m_ImageA ? (float)width() / m_ImageA->width * MIN_ZOOM * 100 : 0.f;
 }
 
 float VoidRenderer::MaxZoom() const
 {
-    return m_ImageA ? (float)width() / m_ImageA->Width() * MAX_ZOOM * 100 : 0.f;
+    return m_ImageA ? (float)width() / m_ImageA->width * MAX_ZOOM * 100 : 0.f;
 }
 
 void VoidRenderer::SetRows(int rows)
@@ -619,9 +569,6 @@ void VoidRenderer::SetColorDisplay(const std::string& display)
 
 void VoidRenderer::CalculateModelViewProjection()
 {
-    /**
-     * No Image Data to Proceed
-     */
     if (!m_ImageA || m_ImageA->Empty())
         return;
 
@@ -631,49 +578,30 @@ void VoidRenderer::CalculateModelViewProjection()
      * And the aspect of the image being rendered
      */
     float viewAspect = (width() * WidthDivisor()) / (height() * HeightDivisor());
-    float imageAspect = float(m_ImageA->Width()) / float((m_ImageA->Height() ? m_ImageA->Height() : 1));
+    float imageAspect = float(m_ImageA->width) / float((m_ImageA->height ? m_ImageA->height : 1));
 
-    /* Find the overall scale of the image */
     glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
-
-    /**
-     * Get the Model matrix,
-     * This is how our image/model looks like as a 4x4 matrix
-     */
     glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
 
-    /* Update the model with the aspect and the zoom scale */
     model = glm::scale(model, glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
-
-    /**
-     * And the projection matrix of how it's supposed to be projected on the viewport
-     * Holds the scaling and aspect
-     */
     glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
 
-    /**
-     * Calculate the model view prohection matrix
-     * For any 2D Texture/image the transform from the camera is unity
-     */
     m_VProjection = model * projection; // * unity view i.e. glm::mat4(1.f)
-
-    /* Calculate the inverse projection as well */
     m_InverseProjection = glm::inverse(m_VProjection);
 }
 
 void VoidRenderer::ReloadTextures()
 {
-    /* Based on the Image Data available -> Load the Textures */
     if (m_CompareMode != ComparisonMode::NONE)
     {
-        /* Set The Image Buffer with the Images */
+        // Set The Image Buffer with the Images
         m_ImageComparisonRenderer.SetImageA(m_ImageA);
         m_ImageComparisonRenderer.SetImageB(m_ImageB);
         m_GridRenderer.Reset();
     }
     else
     {
-        /* Update Image Render Buffer */
+        // Update Image Render Buffer
         m_ImageRenderer.SetImage(m_ImageA);
     }
 }

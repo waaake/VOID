@@ -8,6 +8,7 @@
 /* Internal */
 #include "Project.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 #include "VoidUi/Commands/MediaCommands.h"
 
 VOID_NAMESPACE_OPEN
@@ -48,6 +49,7 @@ void Project::ImportDirectoryP(const std::string& directory)
 
 void Project::ImportDirectory_(const std::string& path)
 {
+    Tools::VoidProfiler<std::chrono::duration<double>> p("Project::Import Directory");
     std::vector<MediaStruct> vec;
 
     try

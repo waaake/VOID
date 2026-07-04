@@ -46,9 +46,13 @@ PlayerWidget::~PlayerWidget()
 {
     m_ActiveViewBuffer = nullptr;
 
-    m_Timeline->deleteLater();
-    delete m_Timeline;
-    m_Timeline = nullptr;
+    // Timeline was getting deleted earlier than the player, causing seg faults when closing the player
+    // in case there's playback happening, this should get deleted automatically as it's a part of the player
+    // when Qt calls deleteLater(), but in case this is flagged by any sanitizer for mem leaks, we could try and move
+    // the deletion to a different place or check for states in the player
+    // m_Timeline->deleteLater();
+    // delete m_Timeline;
+    // m_Timeline = nullptr;
 }
 
 void PlayerWidget::Connect()

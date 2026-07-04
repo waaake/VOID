@@ -128,10 +128,20 @@ std::unique_ptr<VoidPixReader> Forge::GetImageReader(const std::string& extensio
     return it == m_ImageForger.end() ? nullptr : it->second(path, framenumber);
 }
 
+std::unique_ptr<VoidPixReader> Forge::ImageReaderAt(const std::string& extension, const std::string& path, v_frame_t framenumber) const
+{
+    return m_ImageForger.at(extension)(path, framenumber);
+}
+
 std::unique_ptr<VoidMPixReader> Forge::GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber) const
 {
     std::unordered_map<std::string, MPixForge>::const_iterator it = m_MovieForger.find(extension);
     return it == m_MovieForger.end() ? nullptr : it->second(path, framenumber);
+}
+
+std::unique_ptr<VoidMPixReader> Forge::MovieReaderAt(const std::string& extension, const std::string& path, v_frame_t framenumber) const
+{
+    return m_MovieForger.at(extension)(path, framenumber);
 }
 
 std::unique_ptr<ImageOp> Forge::GetImageOp(const std::string& name) const

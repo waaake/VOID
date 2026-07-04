@@ -114,9 +114,7 @@ bool ExportMediaFramesTask::Work()
     {
         int count = 0;
         SetMax(m_Range.duration);
-
-        // All the media frames would have the same size
-        m_Pixels.resize(media->FirstImage()->FrameSize());
+        FloatImage image = VOID_NAMESPACE::Image<float>::Create();
 
         if (m_Descriptor.type == WriterType::Image)
         {
@@ -152,19 +150,15 @@ bool ExportMediaFramesTask::Work()
                     continue;
                 }
 
-                SharedPixels image = media->Image(i);
+                media->Image(i, image);
 
                 /// Colorspace processor
-                ColorProcessor::Instance().ProcessImage(static_cast<float*>(image->Writable()), image->Width(), image->Height(), image->Channels(), m_Colorspace);
-                if (!ir.Render(i, image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
+                ColorProcessor::Instance().ProcessImage(image->Writable(), image->width, image->height, image->channels, m_Colorspace);
+                if (!ir.Render(i, image->Pixels(), image->Size(), {image->width, image->height, image->channels, BufferType::Float}))
                 {
                     Log(QString("Unable to render current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
                 }
-                // Don't want to take up additional memory, so clear as we go...
-                // We definitely need a better way to handle this
-                // Other way could be to read through the ViewerBuffer, but that's something will eventually come
-                image->Clear();
 
                 count++;
                 SetProgress(count);
@@ -201,19 +195,15 @@ bool ExportMediaFramesTask::Work()
                     continue;
                 }
 
-                SharedPixels image = media->Image(i);
+                media->Image(i, image);
 
                 /// Colorspace processor
-                ColorProcessor::Instance().ProcessImage(static_cast<float*>(image->Writable()), image->Width(), image->Height(), image->Channels(), m_Colorspace);
-                if (!mr.AddBuffer(image->Pixels(), image->FrameSize(), {image->Width(), image->Height(), image->Channels(), BufferType::Float}))
+                ColorProcessor::Instance().ProcessImage(image->Writable(), image->width, image->height, image->channels, m_Colorspace);
+                if (!mr.AddBuffer(image->Pixels(), image->Size(), {image->width, image->height, image->channels, BufferType::Float}))
                 {
                     Log(QString("Unable to buffer current frame: %1").arg(i), TaskLog::Level::ErrorLog);
                     return false;
                 }
-                // Don't want to take up additional memory, so clear as we go...
-                // We definitely need a better way to handle this
-                // Other way could be to read through the ViewerBuffer, but that's something will eventually come
-                image->Clear();
 
                 count++;
                 SetProgress(count);

@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _IMAGE_ROW_H
+#define _IMAGE_ROW_H
+
 /* Internal */
 #include "Definition.h"
 
@@ -68,3 +71,5 @@ struct ImageRow
 };
 
 VOID_NAMESPACE_CLOSE
+
+#endif // _IMAGE_ROW_H
