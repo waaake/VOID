@@ -126,7 +126,7 @@ public:
      * 
      * @param frame Frame number.
      */
-    const FloatImage& Evaluate(v_frame_t frame);
+    const FloatImage Evaluate(v_frame_t frame);
 
 signals: /* Signals defining any change that has happened */
     /*

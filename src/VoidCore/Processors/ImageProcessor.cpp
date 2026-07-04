@@ -34,7 +34,7 @@ bool ImageProcessor::Process(FloatImage& image, ImageOp* iop)
     #pragma omp parallel for
     for (int i = 0; i < image->height; ++i)
     {
-        ImageRow row = image->Row(i);
+        ImageRow row = image->EditableRow(i);
         status = iop->Evaluate(row);
     }
 

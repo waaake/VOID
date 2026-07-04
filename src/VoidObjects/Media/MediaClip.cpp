@@ -553,46 +553,30 @@ void MediaClip::Deserialize(std::istream& in)
     }
 }
 
-const FloatImage& MediaClip::Evaluate(v_frame_t frame)
+const FloatImage MediaClip::Evaluate(v_frame_t frame)
 {
-    // Frame* f = FramePtr(frame);
+    Frame& f = m_Frames[frame - m_FirstFrame];
+    if (f.Dirty())
+    {
+        FloatImage image = f.Image();
+        // Copy the buffer into the editable buffer which will then be output
+        image->CreateEditable();
 
-    // if (f->Dirty())
-    // {
-    //     // Generates a new copy everytime :(
-    //     SharedPixels image = f->Writable();
+        for (auto& effect : m_Effects)
+        {
+            // Only process the effects that are enabled
+            if (effect->Enabled())
+            {
+                VOID_LOG_INFO("Processing {}", effect->Name());
+                ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+            }
+        }
 
-    //     for (auto effect : m_Effects)
-    //     {
-    //         // Only process the effects that are enabled
-    //         if (effect->Enabled())
-    //         {
-    //             VOID_LOG_INFO("Processing {}", effect->Name());
-    //             ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
-    //         }
-    //     }
+        f.SetDirty(false);
+        return image;
+    }
 
-    //     f->SetDirty(false);
-    //     return image;
-    // }
-
-    return Media::Image(frame);
-
-    // // Update the buffer with the original image
-    // // Look at the workflow later --- if we're going to call this directly or only after we have filled the buffer
-    // // with the image data already and if we'll send here a copied buffer, to preserve the original data
-    // // For now, just doing this, will change later
-    // Media::Image(frame, image);
-
-    // for (auto effect : m_Effects)
-    // {
-    //     // Only enabled effects get procesed
-    //     if (effect->Enabled())
-    //     {
-    //         VOID_LOG_INFO("Processing: {0}", effect->Name());
-    //         ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
-    //     }
-    // }
+    return f.Image();
 }
 
 VOID_NAMESPACE_CLOSE
