@@ -11,23 +11,23 @@ The player is cross-platform and currently supports **Linux**, **Windows**, and 
 
 ---
 
-## Dive into the [full overview](docs/Overview.md) to see features and more!
+## Look at the [full overview](docs/Overview.md) to see features and more!
 
 ## See what's new in the [changelog](CHANGELOG.md).
 
 A peek at the highlights of the latest release:
 
-**0.3.0-alpha**
-- Added support for Audio playback.
-- Added support for switching between pre-defined workspaces.
-- Improved color schemes for the player.
-- Added startup window to for quick access/selection of recent projects.
+**0.4.0-alpha**
+- Added support for Annotation export/media transcode.
+- Added support for Image processing through pre-defined/custom pluggable Image Operators.
+- Added support for Custom tags.
+- Added support for Grid view/Contact sheet view through the Media Queue.
 
 ## What's coming next?
 
 Exciting features planned for upcoming development:
 
-- Support for Annotation export.
 - Stereoscopic playback support with anaglyph mode.
 - Movie timeline in a Timeline sequence UI.
 - Quick Grading and Transformation tools.
+- Export Processors.

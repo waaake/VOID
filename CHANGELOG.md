@@ -7,6 +7,36 @@ and VOID player adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ---
 
+## [0.4.0-alpha] - 2026-07-04
+### Added
+- Added support for Grid/Contact Sheet view of images, which can also be used for QC in a layout.
+- Initial version of image processing, with processing done through ImageOperators that can be extended externally to VOID. Example to follow soon.
+- Image Operator properties is presented to the UI through the Properties panel on the Effect Editor.
+- Added Custom Tags, allowing media to be tagged with them and some metadata.
+- Tag metadata is also shown in the Metadata Viewer under the key Tags/${tagname}/${keyname}
+- Added application argument to allow setting the default framerate when the application launches.
+- Added support for scaling the UI, and can be done with the --scale n argument for the application.
+- Added Media Exporter which transcodes the current media into the specified outformat.
+- Added support for exporting current and Annotated frames as .png media, separate options to select outformat is coming in the next release.
+- Media export is handled in a separate thread and is managed by the Task Queue.
+
+### Fixed
+- Fixed an issue where player was crashing when switching from Image media to Movie Media and vice-versa.
+- Fixed an issue where the Image metadata was not being displayed for the correct media when dragging and dropping, this was causing crash when the first item was dropped.
+
+### Misc
+- Allow toggling media channels on the viewer with 'r', 'g', 'b' and 'a' keyboard keys for shortcut.
+- Extended Undo and Redo functionality for Custom Tags and Effects applied on the Media.
+- Optimise FFmpeg decoder to directly give the next frame and not flood the memory with additional frames.
+- FFmpegDecoder supports 16 parallel decoded instances to support comparing and Grid/Layout buffers.
+- PixReader now forces child readers to use float* buffer and output Linear data, this ensures that all operations performed on the data are identical across media types.
+- Improved threaded media importer to use std::async instead of QThread based worker which was causing crashes some times due to improper exit.
+- Added a View to edit/control the items in the Queue/Grid.
+- Blend modes in the viewer can now be cycled through the menu options and also keyboard shortcuts.
+- Media list now shows the channels of the media (basic implementation only).
+- Thumbnail view in the media list now supports scaling the size of the Thumbnail/delegate.
+
+
 ## [0.3.0-alpha] - 2026-03-12
 ### Added
 - Support for dragging and dropping docked panels.

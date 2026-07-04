@@ -7,7 +7,6 @@
 /* Internal */
 #include "Definition.h"
 #include "Filesystem.h"
-// #include "PixReader.h"
 #include "Frame.h"
 
 VOID_NAMESPACE_OPEN
