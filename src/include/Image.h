@@ -5,6 +5,7 @@
 #define _IMAGE_H
 
 /* STD */
+#include <cstring>
 #include <memory>
 #include <vector>
 
@@ -101,18 +102,34 @@ struct Image
     std::size_t Size() const noexcept { return buffer.Size() * sizeof(_Ty); }
     bool Valid() const noexcept { return !buffer.Empty(); }
     bool Empty() const noexcept { return buffer.Empty(); }
-    void Clear() { buffer.Clear(); }
-    const _Ty* Pixels() const noexcept { return buffer.Data(); }
+    void Clear()
+    {
+        buffer.Clear();
+        editable.Clear();
+    }
+    const _Ty* Pixels() const noexcept { return editable.Empty() ? buffer.Data() : editable.Data(); }
     _Ty* Writable() noexcept { return buffer.Data(); }
+    void CreateEditable()
+    {
+        if (editable.Size() != buffer.Size())
+            editable.Resize(buffer.Size());
+        std::memcpy(editable.Data(), buffer.Data(), buffer.Size() * sizeof(_Ty));
+    }
     void Resize() { buffer.Resize(width * height * channels); }
     void Resize(std::size_t size) { buffer.Resize(size); }
     ImageRow Row(std::size_t row)
     {
         return (row >= height) ? ImageRow() : ImageRow(buffer.Data(), row, width, channels, sizeof(_Ty));
     }
+    ImageRow EditableRow(std::size_t row)
+    {
+        return (row >= height) ? ImageRow() : ImageRow(editable.Data(), row, width, channels, sizeof(_Ty));
+    }
 
     Image() {}
     static std::shared_ptr<Image<_Ty>> Create() { return std::make_shared<Image<_Ty>>(); }
+private:
+    Buffer<_Ty> editable;
 };
 
 typedef std::shared_ptr<Image<float>> FloatImage;
