@@ -17,10 +17,11 @@ DirectoryImporter::DirectoryImporter(QObject* parent)
 
 DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel, QObject* parent)
     : QObject(parent)
-    , m_Directory(directory)
     , m_MaxLevel(maxLevel)
     , m_Cancelled(false)
 {
+    if (!directory.empty())
+        m_Directories.push_back(directory);
 }
 
 DirectoryImporter::~DirectoryImporter()
@@ -32,16 +33,27 @@ DirectoryImporter::~DirectoryImporter()
 
 void DirectoryImporter::Import(const std::string& directory, int maxlevel)
 {
-    m_Directory = directory;
     m_MaxLevel = maxlevel;
     m_Cancelled.store(false);
+    m_Directories.push_back(directory);
+
+    m_Worker = std::async(std::launch::async, &DirectoryImporter::Process, this);
+}
+
+void DirectoryImporter::Import(const std::vector<std::string>& directories, int maxlevel)
+{
+    m_MaxLevel = maxlevel;
+    m_Cancelled.store(false);
+    m_Directories = directories;
 
     m_Worker = std::async(std::launch::async, &DirectoryImporter::Process, this);
 }
 
 void DirectoryImporter::Process()
 {
-    const std::vector<MediaStruct> media = std::move(GetMedia(m_Directory));
+    std::vector<MediaStruct> media;
+    for (auto& directory : m_Directories)
+        GetMedia(directory, media);
 
     if (media.empty() || m_Cancelled.load())
     {
@@ -70,27 +82,20 @@ void DirectoryImporter::Process()
     emit finished();
 }
 
-std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& directory, int level) const
+void DirectoryImporter::GetMedia(const std::string& directory, std::vector<MediaStruct>& media, int level) const
 {
-    std::vector<MediaStruct> vec;
-
     try
     {
         for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator(directory))
         {
 
             if (m_Cancelled.load())
-                return vec;
+                return;
 
             /* Recurse through the directory if the level allows */
             if (entry.is_directory() && level <= m_MaxLevel)
             {
-                /* Get all media inside the directory */
-                std::vector<MediaStruct> out = std::move(GetMedia(entry.path().string(), level + 1));
-
-                vec.reserve(vec.size() + out.size());
-                vec.insert(vec.end(), std::make_move_iterator(out.begin()), std::make_move_iterator(out.end()));
-
+                GetMedia(entry.path().string(), media, level + 1);
                 continue;
             }
 
@@ -108,7 +113,7 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
              * i.e. the media structs to see if this entry belongs to any one of them
              * if so, this gets added there, else we create a new media struct from it
              */
-            for (MediaStruct& m : vec)
+            for (MediaStruct& m : media)
             {
                 /**
                  * The entry belongs to this Media Struct don't have to add it again
@@ -125,7 +130,7 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
             /* Check if no entry in the MediaStruct adopted our newly created Media entry */
             if (new_entry)
             {
-                vec.push_back(MediaStruct(e, type));
+                media.push_back(MediaStruct(e, type));
             }
         }
     }
@@ -133,8 +138,6 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
     {
         VOID_LOG_ERROR(e.what());
     }
-
-    return vec;
 }
 
 VOID_NAMESPACE_CLOSE
