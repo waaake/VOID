@@ -95,20 +95,18 @@ void VoidMediaLister::dropEvent(QDropEvent* event)
 {
     /* Fetch all the urls which have been dropped */
     QList<QUrl> urls = event->mimeData()->urls();
+    std::vector<std::string> directories;
+    directories.reserve(urls.size());
 
     for (const QUrl& url : urls)
     {
         std::string path = url.toLocalFile().toStdString();
-
-        /* Check if the path is a directory and emit the signal with the path if it is */
         if (std::filesystem::is_directory(path))
-        {
-            VOID_LOG_INFO("Dropped Media Directory: {0}", path);
-
-            /* Emit the media dropped signal */
-            _MediaBridge.ImportDirectory(path, true);
-        }
+            directories.push_back(path);
     }
+
+    if (!directories.empty())
+        _MediaBridge.ImportDirectory(directories, true);
 }
 
 void VoidMediaLister::Build()
