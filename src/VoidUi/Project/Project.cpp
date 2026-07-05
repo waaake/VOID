@@ -40,6 +40,19 @@ void Project::ImportDirectory(const std::string& directory, bool progressive)
     progressive ? ImportDirectoryP(directory) : ImportDirectory_(directory);
 }
 
+void Project::ImportDirectory(const std::vector<std::string>& directories, bool progressive)
+{
+    if (progressive)
+    {
+        SetupProgressTask();
+        m_DirectoryImporter->Import(directories, 5);
+        return;
+    }
+
+    for (auto& directory : directories)
+        ImportDirectory_(directory);
+}
+
 void Project::ImportDirectoryP(const std::string& directory)
 {
     SetupProgressTask();
