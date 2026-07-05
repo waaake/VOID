@@ -27,6 +27,7 @@ public:
     DirectoryImporter(const std::string& directory, int maxLevel = 5, QObject* parent = nullptr);
     ~DirectoryImporter();
     void Import(const std::string& directory, int maxlevel = 5);
+    void Import(const std::vector<std::string>& directories, int maxlevel = 5);
     inline void Cancel() { m_Cancelled.store(true); }
 
 signals:
@@ -40,14 +41,14 @@ signals:
     void finished();
 
 private: /* Members */
-    std::string m_Directory;
+    std::vector<std::string> m_Directories;
     int m_MaxLevel;
     std::atomic<bool> m_Cancelled;
     std::future<void> m_Worker;
 
 private: /* Methods */
     void Process();
-    std::vector<MediaStruct> GetMedia(const std::string& directory, int level = 0) const;
+    void GetMedia(const std::string& directory, std::vector<MediaStruct>& media, int level = 0) const;
 };
 
 VOID_NAMESPACE_CLOSE

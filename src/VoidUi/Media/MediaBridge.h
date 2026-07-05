@@ -72,6 +72,7 @@ public:
     void RemoveFromPlaylist(const QModelIndex& index, Playlist* playlist);
     void RemoveFromPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist);
     void ImportDirectory(const std::string& directory, bool progressive = true) { m_Project->ImportDirectory(directory, progressive); }
+    void ImportDirectory(const std::vector<std::string>& directories, bool progressive = true) { m_Project->ImportDirectory(directories, progressive); }
 
     /**
      * Projects
