@@ -19,6 +19,7 @@
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
 #include "VoidUi/QExtensions/Window.h"
 #include "VoidUi/Media/MediaQueue.h"
+#include "VoidUi/Sequencer/Sequencer.h"
 #include "VoidUi/Tools/TaskView.h"
 
 VOID_NAMESPACE_OPEN
@@ -49,6 +50,7 @@ enum class Component
     Properties,
     MediaQueue,
     TaskQueue,
+    Sequencer,
 };
 
 class WorkspaceManager : public MainWindow
@@ -79,6 +81,7 @@ private: /* Members */
     PropertiesPanel* m_PropertiesEditor;
     MediaQueue* m_MediaQueue;
     TaskView* m_TaskQueue;
+    SequencerTimeline* m_Sequencer;
 
     Workspace m_Current;
 

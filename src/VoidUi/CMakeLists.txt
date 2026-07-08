@@ -92,6 +92,18 @@ set(SOURCES
     ScriptEditor/ScriptEditor.cpp
     ScriptEditor/SyntaxHighlighter.cpp
 
+    # Sequencer
+    Sequencer/Graphics/STrack.cpp
+    Sequencer/Graphics/STrackItem.cpp
+    Sequencer/STimelineScene.cpp
+    Sequencer/STimelineView.cpp
+    Sequencer/STimelineGeometry.cpp
+    Sequencer/Models/SSelectionModel.cpp
+    Sequencer/Widgets/SRulerWidget.cpp
+    Sequencer/Widgets/STrackHeaderWidget.cpp
+    Sequencer/Widgets/SToolbar.cpp
+    Sequencer/Sequencer.cpp
+
     # Timeline
     Timeline/Timeline.cpp
     Timeline/TimelineElements.cpp

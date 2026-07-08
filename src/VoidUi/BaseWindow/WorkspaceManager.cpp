@@ -22,6 +22,7 @@ WorkspaceManager::~WorkspaceManager()
     m_PropertiesEditor->deleteLater();
     m_MediaQueue->deleteLater();
     m_TaskQueue->deleteLater();
+    m_Sequencer->deleteLater();
 }
 
 void WorkspaceManager::QueueTask(Task* task)
@@ -59,6 +60,9 @@ void WorkspaceManager::Init()
     // Task View
     m_TaskQueue = new TaskView;
 
+    // Sequencer
+    m_Sequencer = new SequencerTimeline;
+
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
@@ -67,10 +71,14 @@ void WorkspaceManager::Init()
     manager.RegisterDock(m_PropertiesEditor, "Properties");
     manager.RegisterDock(m_MediaQueue, "Media Queue");
     manager.RegisterDock(m_TaskQueue, "Task Queue");
+    manager.RegisterDock(m_Sequencer, "Sequencer");
 
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
     setCentralWidget(m_Splitter);
+
+    // Temporary
+    m_Sequencer->SetSequence(_PlayerBridge.ActivePlayer()->ActiveViewer()->GetSequence());
 }
 
 void WorkspaceManager::Connect()
