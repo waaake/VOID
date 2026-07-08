@@ -16,6 +16,7 @@ PlayerBuffer::PlayerBuffer(QObject* parent)
     , m_Endframe(1)
     , m_PlayingComponent(PlayableComponent::Clip)
 {
+    m_Sequence->AddVideoTrack(m_Track);
 }
 
 void PlayerBuffer::Set(const SharedMediaClip& media)
