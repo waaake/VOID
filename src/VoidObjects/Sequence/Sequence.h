@@ -48,6 +48,15 @@ public:
     inline bool IsEmpty() const { return m_VideoTracks.empty() && m_AudioTracks.empty(); }
     inline SharedPlaybackTrack FirstVideoTrack() const { return m_VideoTracks.front(); }
 
+    int NumVideoTracks() const { return static_cast<int>(m_VideoTracks.size()); }
+    int NumAudioTracks() const { return static_cast<int>(m_AudioTracks.size()); }
+
+    const SharedPlaybackTrack& VideoTrackAt(std::size_t index) const { return m_VideoTracks.at(index); }
+    const SharedPlaybackTrack& AudioTrackAt(std::size_t index) const { return m_AudioTracks.at(index); }
+
+    // const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
+    // const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
+
     bool HasMedia() const;
 
     /* Update the range of the Sequence */

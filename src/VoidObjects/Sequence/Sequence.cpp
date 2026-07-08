@@ -47,11 +47,18 @@ void PlaybackSequence::SetRange(int start, int end)
 
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
-    /* Update the Video tracks with the provided new track */
     m_VideoTracks.push_back(track);
-
-    /* Connect the signal from the underlying pointer to the Track to updating the range of the sequence */
     connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Video Track ");
+        name.append(std::to_string(m_VideoTracks.size()));
+
+        track->SetName(name);
+    }
 
     /**
      * Inorder to update the range on the sequence, we need to see
@@ -68,8 +75,16 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
-    /* Update the Audio tracks with the provided new track */
     m_AudioTracks.push_back(track);
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Audio Track ");
+        name.append(std::to_string(m_AudioTracks.size()));
+
+        track->SetName(name);
+    }
 
     /**
      * Inorder to update the range on the sequence, we need to see
