@@ -10,8 +10,8 @@ VOID_NAMESPACE_OPEN
 TrackItem::TrackItem(QObject* parent)
     : VoidObject(parent)
     , m_Offset(0)
-    , m_StartFrame(0)
-    , m_EndFrame(0)
+    , m_Start(0)
+    , m_End(0)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
@@ -20,8 +20,8 @@ TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t en
     : VoidObject(parent)
     , m_Media(media)
     , m_Offset(offset)
-    , m_StartFrame(start)
-    , m_EndFrame(end)
+    , m_Start(start)
+    , m_End(end)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
@@ -46,8 +46,8 @@ void TrackItem::SetRange(v_frame_t start, v_frame_t end)
      * Update the range of the track item
      * This points to where the track item starts and end in a given Track
      */
-    m_StartFrame = start;
-    m_EndFrame = end;
+    m_Start = start;
+    m_End = end;
 }
 
 void TrackItem::Image(const v_frame_t frame, FloatImage& image)
