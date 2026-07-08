@@ -46,6 +46,12 @@ void TrackMap::Clear()
     m_Items.clear();
 }
 
+SharedTrackItem TrackMap::AtIndex(std::size_t index) const
+{
+    int frame = m_Frames.at(index);
+    return m_Items.at(frame);
+}
+
 SharedTrackItem TrackMap::At(const int frame) const
 {
     /**
@@ -88,12 +94,13 @@ SharedTrackItem TrackMap::At(const int frame) const
 PlaybackTrack::PlaybackTrack(QObject* parent)
     : VoidObject(parent)
     , m_Recent(nullptr)
+    , m_Name("")
     , m_StartFrame(0)
     , m_EndFrame(0)
     , m_Duration(0)
     , m_Visible(true)
     , m_Enabled(true)
-    , m_Color(130, 110, 190)    /* Default Purple */
+    // , m_Color(130, 110, 190)    /* Default Purple */
 {
     VOID_LOG_INFO("Track Created: {0}", Vuid());
 }
@@ -140,11 +147,11 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
                                         this
                                     );
 
-    /* Set a Color on the underlying media Clip that it has been associated with this track */
-    trackItem->SetColor(m_Color);
+    // /* Set a Color on the underlying media Clip that it has been associated with this track */
+    // trackItem->SetColor(m_Color);
     
-    /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
-    connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
+    // /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
+    // connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
 
     /**
      * When the media gets added, it always gets added towards the right side which means the start frame

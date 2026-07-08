@@ -44,6 +44,9 @@ public:
     void Remove(const SharedTrackItem& item);
     void Clear();
 
+    std::size_t Size() const { return m_Items.size(); }
+    SharedTrackItem AtIndex(std::size_t index) const;
+
     /**
      * Returns a Track Item present at a given frame, if it exists
      * else a null pointer is returned.
@@ -122,19 +125,26 @@ public:
     PlaybackTrack(QObject* parent = nullptr);
     virtual ~PlaybackTrack();
 
+    void SetName(const std::string& name) { m_Name = name; }
+    void SetName(std::string&& name) { m_Name = std::move(name); }
+    const std::string& Name() const { return m_Name; }
+
     /*
      * Clears anything in the track and sets the provided media as first
      */
     void SetMedia(const SharedMediaClip& media);
 
-    /* Set a color for the Track */
-    inline void SetColor(const QColor& color)
-    {
-        /* Update the color for the track */
-        m_Color = color;
-        /* Emit a changed signal */
-        emit updated();
-    }
+    // /* Set a color for the Track */
+    // inline void SetColor(const QColor& color)
+    // {
+    //     /* Update the color for the track */
+    //     m_Color = color;
+    //     /* Emit a changed signal */
+    //     emit updated();
+    // }
+
+    std::size_t ItemCount() const { return m_Items.Size(); }
+    SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
 
     /*
      * Appends the Media to the already existing track of Medis files
@@ -164,8 +174,8 @@ public:
 
     inline bool IsEmpty() const { return m_Items.Empty(); }
 
-    /* Returns the Color associated with the Track */
-    inline QColor Color() const { return m_Color; }
+    // /* Returns the Color associated with the Track */
+    // inline QColor Color() const { return m_Color; }
 
     /**
      * Describes whether a track is active for playback or taking in elements with menu options
@@ -217,11 +227,12 @@ signals: /* Signals Denoting actions in the Track */
 protected: /* Members */
     TrackMap m_Items;
     SharedTrackItem m_Recent;
+    std::string m_Name;
     int m_StartFrame, m_EndFrame;
     int m_Duration;
     bool m_Visible;
     bool m_Enabled;
-    QColor m_Color;
+    // QColor m_Color;
 
 protected: /* Methods */
     void SetRange(int start, int end, const bool inclusive = true);
