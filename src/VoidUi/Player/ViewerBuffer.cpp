@@ -80,10 +80,6 @@ void ViewerBuffer::SetColor(const QColor& color)
 {
     /* Update the Buffer Color */
     m_Color = color;
-
-    /* Update entities with the color change */
-    m_Clip->SetColor(color);
-    m_Track->SetColor(color);
 }
 
 void ViewerBuffer::Refresh()
