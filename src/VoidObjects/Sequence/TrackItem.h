@@ -75,6 +75,9 @@ public:
     v_frame_t SourceIn() const { return m_Media->FirstFrame(); }
     v_frame_t SourceOut() const { return m_Media->LastFrame(); }
 
+    // Moves the item to the given frame
+    void Move(v_frame_t frame);
+
     /**
      * Returns whether the given frame is in range of the underlying media
      * Applies the offset of the track item's range back to check against the media

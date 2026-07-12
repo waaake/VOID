@@ -77,4 +77,14 @@ void TrackItem::ClearCache(v_frame_t frame)
         m_Media->Clear(f);
 }
 
+void TrackItem::Move(v_frame_t frame)
+{
+    m_Offset = m_Media->FirstFrame() - frame;
+    m_Start = frame;
+    m_End = m_Media->LastFrame() - m_Offset;
+
+    emit rangeChanged(m_Start, m_End);
+    emit updated();
+}
+
 VOID_NAMESPACE_CLOSE
