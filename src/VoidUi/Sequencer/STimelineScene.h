@@ -4,31 +4,45 @@
 #ifndef _SEQUENCER_TIMELINE_SCENE_H
 #define _SEQUENCER_TIMELINE_SCENE_H
 
+/* STD */
+#include <vector>
+
 /* Qt */
 #include <QGraphicsScene>
 
 /* Internal */
 #include "Definition.h"
+#include "SContext.h"
 #include "SDescriptors.h"
-#include "STimelineGeometry.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
+
+class SPlayheadItem;
+class STrack;
 
 class STimelineScene : public QGraphicsScene
 {
     Q_OBJECT
 public:
-    STimelineScene(STimelineGeometry* geometry, QObject* parent = nullptr);
+    STimelineScene(SequencerContext* context, QObject* parent = nullptr);
 
     void SetSequence(const SharedPlaybackSequence& sequence);
-    void Clear() { clear(); }
+    void Clear();
+
+    void AddPlayhead();
+    void UpdatePlayhead();
+    STrack* TrackAt(int index) const;
+    STrack*& TrackAt(int index);
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
 private:
-    STimelineGeometry* m_Geometry;
+    std::vector<STrack*> m_Tracks;
+    SequencerContext* m_Context;
+    SPlayheadItem* m_Playhead;
 };
 
 VOID_NAMESPACE_CLOSE

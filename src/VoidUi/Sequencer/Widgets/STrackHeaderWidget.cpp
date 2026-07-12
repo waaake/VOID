@@ -7,12 +7,13 @@
 /* Internal */
 #include "STrackHeaderWidget.h"
 #include "VoidUi/Sequencer/SDescriptors.h"
-#include "VoidUi/Sequencer/STimelineGeometry.h"
+#include "VoidUi/Sequencer/SContext.h"
 
 VOID_NAMESPACE_OPEN
 
-STrackHeaderWidget::STrackHeaderWidget(STimelineGeometry* geometry, QWidget* parent)
+STrackHeaderWidget::STrackHeaderWidget(SequencerContext* context, QWidget* parent)
     : QWidget(parent)
+    , m_Context(context)
 {
     setFixedWidth(Sequencer::TrackHeaderWidth);
 }
@@ -38,11 +39,11 @@ void STrackHeaderWidget::paintEvent(QPaintEvent* event)
 
     for (int i = 0; i < m_Sequence->NumVideoTracks(); ++i)
     {
-        painter.fillRect(m_Geometry->TrackHeaderRect(i), palette().color(QPalette::Dark));
+        painter.fillRect(m_Context->Geometry()->TrackHeaderRect(i), palette().color(QPalette::Dark));
 
         painter.setPen(palette().color(QPalette::Text));
         painter.drawText(
-            m_Geometry->TrackHeaderRect(i).adjusted(8, 0, -8, 0),
+            m_Context->Geometry()->TrackHeaderRect(i).adjusted(8, 0, -8, 0),
             Qt::AlignVCenter, m_Sequence->VideoTrackAt(i)->Name().c_str()
         );
     }

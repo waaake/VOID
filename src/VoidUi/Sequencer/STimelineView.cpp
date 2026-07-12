@@ -5,15 +5,16 @@
 #include <QPainter>
 
 /* Internal */
+#include "SContext.h"
 #include "STimelineView.h"
 #include "STimelineScene.h"
-#include "STimelineGeometry.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
-STimelineView::STimelineView(STimelineGeometry* geometry, QWidget* parent)
+STimelineView::STimelineView(SequencerContext* context, QWidget* parent)
     : QGraphicsView(parent)
-    , m_Geometry(geometry)
+    , m_Context(context)
 {
     Build();
     Setup();
@@ -22,6 +23,7 @@ STimelineView::STimelineView(STimelineGeometry* geometry, QWidget* parent)
 void STimelineView::SetSequence(const SharedPlaybackSequence& sequence)
 {
     m_Scene->SetSequence(sequence);
+    m_Scene->AddPlayhead();
 }
 
 void STimelineView::Clear()
@@ -31,8 +33,10 @@ void STimelineView::Clear()
 
 void STimelineView::Build()
 {
-    m_Scene = new STimelineScene(m_Geometry, this);
+    m_Scene = new STimelineScene(m_Context, this);
     setScene(m_Scene);
+
+    m_Scene->AddPlayhead();
 }
 
 void STimelineView::Setup()

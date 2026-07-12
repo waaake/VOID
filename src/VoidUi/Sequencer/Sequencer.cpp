@@ -35,8 +35,8 @@ void SequencerTimeline::Build()
 
     m_Toolbar = new SToolbar;
     m_Ruler = new SRulerWidget;
-    m_TrackHeader = new STrackHeaderWidget(&m_Geometry);
-    m_View = new STimelineView(&m_Geometry);
+    m_TrackHeader = new STrackHeaderWidget(&m_Context);
+    m_View = new STimelineView(&m_Context);
 
     m_Layout->setSpacing(0);
     m_Layout->setContentsMargins(0, 0, 0, 0);

@@ -14,18 +14,18 @@
 VOID_NAMESPACE_OPEN
 
 class STimelineScene;
-class STimelineGeometry;
+class SequencerContext;
 
 class STimelineView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    STimelineView(STimelineGeometry* geometry, QWidget* parent = nullptr);
+    STimelineView(SequencerContext* m_Context, QWidget* parent = nullptr);
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Clear();
 
 private:
-    STimelineGeometry* m_Geometry;
+    SequencerContext* m_Context;
     STimelineScene* m_Scene;
 
 private: /* Methods */

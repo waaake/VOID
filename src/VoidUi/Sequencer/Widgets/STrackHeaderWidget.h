@@ -13,13 +13,13 @@
 
 VOID_NAMESPACE_OPEN
 
-class STimelineGeometry;
+class SequencerContext;
 
 class STrackHeaderWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit STrackHeaderWidget(STimelineGeometry* geometry, QWidget* parent = nullptr);
+    explicit STrackHeaderWidget(SequencerContext* context, QWidget* parent = nullptr);
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Clear();
 
@@ -27,7 +27,7 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-    STimelineGeometry* m_Geometry;
+    SequencerContext* m_Context;
     SharedPlaybackSequence m_Sequence;
 };
 

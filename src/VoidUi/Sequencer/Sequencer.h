@@ -14,6 +14,7 @@
 #include "SDescriptors.h"
 #include "STimelineGeometry.h"
 #include "STimelineView.h"
+#include "SContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidUi/Sequencer/Widgets/SRulerWidget.h"
 #include "VoidUi/Sequencer/Widgets/STrackHeaderWidget.h"
@@ -26,6 +27,8 @@ class SequencerTimeline : public QWidget
     Q_OBJECT
 public:
     explicit SequencerTimeline(QWidget* parent = nullptr);
+    virtual inline QSize sizeHint() const override { return QSize(640, 300); }
+
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Refresh();
 
@@ -37,7 +40,8 @@ private:
     STimelineView* m_View;
 
     SharedPlaybackSequence m_Sequence;
-    STimelineGeometry m_Geometry;
+    // STimelineGeometry m_Geometry;
+    SequencerContext m_Context;
 
 private: /* Methods */
     void Build();
