@@ -148,10 +148,18 @@ void WorkspaceManager::Switch(const Workspace& workspace)
             );
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
             break;
+        // case Workspace::EDITING:
+        //     m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
+        //     m_Splitter->AddPane(static_cast<int>(Component::Viewer));
+        //     m_Splitter->AddPane(static_cast<int>(Component::Properties));
+        //     break;
         case Workspace::EDITING:
             m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
-            m_Splitter->AddPane(static_cast<int>(Component::Viewer));
-            m_Splitter->AddPane(static_cast<int>(Component::Properties));
+            m_Splitter->AddSplitPane(
+                static_cast<int>(Component::Viewer),
+                static_cast<int>(Component::Sequencer),
+                Qt::Vertical
+            );
             break;
         case Workspace::PLAYBACK:
         default:
