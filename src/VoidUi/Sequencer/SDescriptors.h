@@ -20,6 +20,15 @@ inline constexpr int SceneHeight = 4000;
 
 inline constexpr double PixelsPerFrame = 2.0;
 
+inline constexpr int ZBackground = 0;
+inline constexpr int ZTrack = 100;
+inline constexpr int ZTrackItem = 200;
+inline constexpr int ZEffectItem = 250;
+inline constexpr int ZTransition = 300;
+inline constexpr int ZMarker = 400;
+inline constexpr int ZSelectionBox = 500;
+inline constexpr int ZPlayheadItem = 10000;
+
 }; // namespace Sequencer
 
 VOID_NAMESPACE_CLOSE
