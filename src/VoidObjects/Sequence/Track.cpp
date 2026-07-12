@@ -20,21 +20,28 @@ void TrackMap::Add(const SharedTrackItem& item)
      * There cannot be a scenario where one track can have multiple track items
      * at the same frame
      */
-    m_Items[item->StartFrame()] = item;
+    m_Items[item->TimelineIn()] = item;
 
     /* Add the same frame to the vector */
-    m_Frames.push_back(item->StartFrame());
+    m_Frames.push_back(item->TimelineIn());
+}
+
+bool TrackMap::Add(const SharedTrackItem& item, v_frame_t frame)
+{
+    if (At(frame))
+        return false;
+
+    Add(item);
+    return true;
 }
 
 void TrackMap::Remove(const SharedTrackItem& item)
 {
     /* Remove the item from the underlying structs */
-    m_Items.erase(item->StartFrame());
+    m_Items.erase(item->TimelineIn());
 
     /* Remove item from the vector */
-    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), item->StartFrame());
-
-    /* If the frame exists -> remove it */
+    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), item->TimelineIn());
     if (it != m_Frames.end())
         m_Frames.erase(it);
 }
@@ -89,6 +96,21 @@ SharedTrackItem TrackMap::At(const int frame) const
     return nullptr;
 }
 
+bool TrackMap::Move(SharedTrackItem& item, int frame)
+{
+    // Check that we don't already have an item at the new location for the item
+    SharedTrackItem existing = At(frame);
+    if (existing && existing.get() != item.get())
+        return false;
+
+    // Remove before we add it again to the new location
+    Remove(item);
+    item->Move(frame);
+    Add(item);
+
+    return true;
+}
+
 /* }}} */
 
 PlaybackTrack::PlaybackTrack(QObject* parent)
@@ -103,6 +125,7 @@ PlaybackTrack::PlaybackTrack(QObject* parent)
     // , m_Color(130, 110, 190)    /* Default Purple */
 {
     VOID_LOG_INFO("Track Created: {0}", Vuid());
+    connect(this, &PlaybackTrack::updated, this, [this]() -> void { m_Recent.reset(); });
 }
 
 PlaybackTrack::~PlaybackTrack()
@@ -262,6 +285,31 @@ SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
     
     m_Recent = m_Items.At(frame);
     return m_Recent;
+}
+
+bool PlaybackTrack::MoveItem(SharedTrackItem& item, v_frame_t frame)
+{
+    return m_Items.Move(item, frame);
+}
+
+bool PlaybackTrack::AddItem(SharedTrackItem& item, v_frame_t frame)
+{
+    if (m_Items.Add(item, frame))
+    {
+        item->setParent(this);
+        // Set the timeline range based on the provided frame
+        item->Move(frame);
+        emit updated();
+
+        return true;
+    }
+    return false;
+}
+
+void PlaybackTrack::RemoveItem(SharedTrackItem& item)
+{
+    m_Items.Remove(item);
+    emit updated();
 }
 
 VOID_NAMESPACE_CLOSE

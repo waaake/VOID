@@ -37,6 +37,7 @@ public:
      * Adds track item to the mapping.
      */
     void Add(const SharedTrackItem& item);
+    bool Add(const SharedTrackItem& item, v_frame_t frame);
 
     /**
      * Removes the track item from the mapping.
@@ -53,6 +54,8 @@ public:
      */
     SharedTrackItem At(const int frame) const;
     inline bool Empty() const { return m_Frames.empty(); }
+
+    bool Move(SharedTrackItem& item, int frame);
 
 private: /* Members */
     /**
@@ -195,6 +198,10 @@ public:
     inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
 
     /* Setters */
+
+    bool MoveItem(SharedTrackItem& item, v_frame_t frame);
+    bool AddItem(SharedTrackItem& item, v_frame_t frame);
+    void RemoveItem(SharedTrackItem& item);
 
     /**
      * The track's range is always defined by the track items in it
