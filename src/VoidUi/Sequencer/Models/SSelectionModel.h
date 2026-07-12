@@ -7,20 +7,28 @@
 /* STD */
 #include <unordered_set>
 
+/* Qt */
+#include <QObject>
+
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 
 VOID_NAMESPACE_OPEN
 
-class SSelectionModel
+class SSelectionModel : public QObject
 {
+    Q_OBJECT
 public:
     void Clear();
     void Select(const SharedTrackItem& item);
     void Deselect(const SharedTrackItem& item);
+    void Toggle(const SharedTrackItem& item);
 
     bool IsSelected(const SharedTrackItem& item);
+
+signals:
+    void selectionChanged();
 
 private:
     std::unordered_set<SharedTrackItem> m_Selection;
