@@ -8,40 +8,42 @@
 #include <unordered_map>
 #include <vector>
 
-/* Qt */
-#include <QGraphicsItem>
-
 /* Internal */
 #include "Definition.h"
+#include "STimelineItem.h"
 #include "VoidObjects/Sequence/Track.h"
 
 VOID_NAMESPACE_OPEN
 
-class STimelineGeometry;
 class STrackItem;
 
-class STrack : public QGraphicsItem
+class STrack : public STimelineItem
 {
 public:
-    STrack(const SharedPlaybackTrack& track, int index, STimelineGeometry* geometry, QGraphicsItem* parent = nullptr);
+    STrack(const SharedPlaybackTrack& track, int index, SequencerContext* context, QGraphicsItem* parent = nullptr);
     ~STrack();
 
-    QRectF boundingRect() const override;
+    SharedPlaybackTrack& Track() { return m_Track; }
+    const SharedPlaybackTrack& Track() const { return m_Track; }
+    int Index() const { return m_Index; }
+    // int ItemCount() const { return m_Track->ItemCount(); }
+    // STrackItem* BuildItem(int index);
+
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
-    void Update();
+    void Update() override;
     void Clear();
 
     void AddItem(const SharedTrackItem& item);
     void RemoveItem(const SharedTrackItem& item);
     void UpdateItem(const SharedTrackItem& item);
+    STrackItem* ItemAt(int index) const;
+    STrackItem* ItemAt(int index);
+    STrackItem* Item(const SharedTrackItem& item);
 
 private:
     std::unordered_map<TrackItem*, STrackItem*> m_Items;
-    QRectF m_BoundingRect;
-    // std::vector<STrackItem*> m_Items;
     SharedPlaybackTrack m_Track;
-    STimelineGeometry* m_Geometry;
 
     int m_Index;
 
