@@ -1,0 +1,57 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* Internal */
+#include "Definition.h"
+#include "VoidCommand.h"
+#include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidUi/Sequencer/SController.h"
+
+VOID_NAMESPACE_OPEN
+
+class MoveTrackItemCommand : public VoidUndoCommand
+{
+public:
+    MoveTrackItemCommand(SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::weak_ptr<TrackItem> m_Item;
+    v_frame_t m_Requested, m_Previous;
+};
+
+class MoveItemToTrackCommand : public VoidUndoCommand
+{
+public:
+    MoveItemToTrackCommand(SequencerController* controller,
+        SharedTrackItem& item,
+        int currentTrackIndex,
+        int trackIndex,
+        v_frame_t frame,
+        QUndoCommand* parent = nullptr
+    );
+    void undo() override;
+    bool Redo() override;
+
+private:
+    SequencerController* m_Controller;
+    std::weak_ptr<TrackItem> m_Item;
+    int m_CurrentTrackIndex;
+    int m_TrackIndex;
+    v_frame_t m_Requested, m_Previous;
+};
+
+// class MoveItemToTrackCommand : public VoidUndoCommand
+// {
+// public:
+//     MoveItemToTrackCommand(SharedPlaybackTrack& track, SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent = nullptr);
+//     void undo() override;
+//     bool Redo() override;
+
+// private:
+//     std::weak_ptr<PlaybackTrack> m_Track;
+//     std::weak_ptr<TrackItem
+// };
+
+VOID_NAMESPACE_CLOSE
