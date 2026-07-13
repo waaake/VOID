@@ -31,7 +31,8 @@ bool TrackMap::Add(const SharedTrackItem& item, v_frame_t frame)
     if (At(frame))
         return false;
 
-    Add(item);
+    m_Items[frame] = item;
+    m_Frames.push_back(frame);
     return true;
 }
 
@@ -42,6 +43,14 @@ void TrackMap::Remove(const SharedTrackItem& item)
 
     /* Remove item from the vector */
     std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), item->TimelineIn());
+    if (it != m_Frames.end())
+        m_Frames.erase(it);
+}
+
+void TrackMap::Remove(v_frame_t frame)
+{
+    m_Items.erase(frame);
+    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), frame);
     if (it != m_Frames.end())
         m_Frames.erase(it);
 }
@@ -304,6 +313,12 @@ bool PlaybackTrack::AddItem(SharedTrackItem& item, v_frame_t frame)
         return true;
     }
     return false;
+}
+
+void PlaybackTrack::RemoveItem(v_frame_t frame)
+{
+    m_Items.Remove(frame);
+    emit updated();
 }
 
 void PlaybackTrack::RemoveItem(SharedTrackItem& item)

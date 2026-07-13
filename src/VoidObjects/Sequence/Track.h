@@ -43,6 +43,7 @@ public:
      * Removes the track item from the mapping.
      */
     void Remove(const SharedTrackItem& item);
+    void Remove(v_frame_t frame);
     void Clear();
 
     std::size_t Size() const { return m_Items.size(); }
@@ -201,6 +202,8 @@ public:
 
     bool MoveItem(SharedTrackItem& item, v_frame_t frame);
     bool AddItem(SharedTrackItem& item, v_frame_t frame);
+    // Removes the Track Item at the given frame
+    void RemoveItem(v_frame_t frame);
     void RemoveItem(SharedTrackItem& item);
 
     /**
