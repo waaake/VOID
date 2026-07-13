@@ -71,8 +71,9 @@ void MoveItemToTrackCommand::undo()
         // Try move back, should have no issues though
         if (previous->Track()->AddItem(item, m_Previous))
         {
-            item->Track()->RemoveItem(item);
+            current->Track()->RemoveItem(m_Requested);
 
+            // Visual changes
             previous->AddItem(item);
             current->RemoveItem(item);
         }
@@ -85,15 +86,13 @@ bool MoveItemToTrackCommand::Redo()
     {
         STrack* current = m_Controller->TrackAt(m_CurrentTrackIndex);
         STrack* requested = m_Controller->TrackAt(m_TrackIndex);
-    
-        // STrackItem* trackitem = current->Item(m_Item);
 
         // Try move
         if (requested->Track()->AddItem(item, m_Requested))
         {
-            VOID_LOG_INFO("Requested has Accepted change...");
-            item->Track()->RemoveItem(item);
+            current->Track()->RemoveItem(m_Previous);
 
+            // Visual updates
             requested->AddItem(item);
             current->RemoveItem(item);
 
