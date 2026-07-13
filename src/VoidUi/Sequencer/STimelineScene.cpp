@@ -45,12 +45,12 @@ void STimelineScene::SetSequence(const SharedPlaybackSequence& sequence)
 
     m_Playhead = new SPlayheadItem(m_Context);
 
-    m_Tracks.reserve(sequence->NumVideoTracks());
+    m_Tracks.resize(sequence->NumVideoTracks());
     for (int i = 0; i < sequence->NumVideoTracks(); ++i)
     {
         STrack* track = new STrack(sequence->VideoTrackAt(i), i, m_Context);
+        m_Tracks[i] = track;
         addItem(track);
-        m_Tracks.push_back(track);
     }
 }
 
