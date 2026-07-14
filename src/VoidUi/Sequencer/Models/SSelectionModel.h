@@ -26,6 +26,7 @@ public:
     void Toggle(const SharedTrackItem& item);
 
     bool IsSelected(const SharedTrackItem& item);
+    const std::unordered_set<SharedTrackItem>& Current() const { return m_Selection; }
 
 signals:
     void selectionChanged();
