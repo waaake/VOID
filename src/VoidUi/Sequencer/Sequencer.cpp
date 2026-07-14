@@ -11,7 +11,7 @@ SequencerTimeline::SequencerTimeline(QWidget* parent)
     : QWidget(parent)
 {
     Build();
-    Connect();    
+    Connect();
 }
 
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
@@ -31,6 +31,8 @@ void SequencerTimeline::Refresh()
 
 void SequencerTimeline::Build()
 {
+    m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
+
     m_Layout = new QGridLayout(this);
 
     m_Toolbar = new SToolbar;
@@ -63,6 +65,7 @@ void SequencerTimeline::Connect()
     //     m_TrackHeader->Clear();
     // });
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
+    connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
 }
 
 VOID_NAMESPACE_CLOSE

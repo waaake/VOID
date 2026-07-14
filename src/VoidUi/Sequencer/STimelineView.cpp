@@ -31,6 +31,12 @@ void STimelineView::Clear()
     m_Scene->Clear();
 }
 
+void STimelineView::Focus()
+{
+    const auto& selected = m_Scene->selectedItems();
+    selected.empty() ? centerOn(0, 0) : centerOn(selected[0]);
+}
+
 void STimelineView::Build()
 {
     m_Scene = new STimelineScene(m_Context, this);

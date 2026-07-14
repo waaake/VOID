@@ -23,6 +23,7 @@ public:
     STimelineView(SequencerContext* m_Context, QWidget* parent = nullptr);
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Clear();
+    void Focus();
 
 private:
     SequencerContext* m_Context;

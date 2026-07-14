@@ -5,9 +5,9 @@
 #define _SEQUENCER_H
 
 /* Qt */
-// #include <QFrame>
 #include <QLayout>
 #include <QWidget>
+#include <QShortcut>
 
 /* Internal */
 #include "Definition.h"
@@ -38,9 +38,9 @@ private:
     SRulerWidget* m_Ruler;
     STrackHeaderWidget* m_TrackHeader;
     STimelineView* m_View;
+    QShortcut* m_FitShortcut;
 
     SharedPlaybackSequence m_Sequence;
-    // STimelineGeometry m_Geometry;
     SequencerContext m_Context;
 
 private: /* Methods */
