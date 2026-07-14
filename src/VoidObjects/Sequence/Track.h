@@ -175,6 +175,7 @@ public:
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }
+    v_frame_t GetSnapFrame(v_frame_t frame, const SharedTrackItem& trackitem, int threshold = 5) const;
 
     inline bool IsEmpty() const { return m_Items.Empty(); }
 

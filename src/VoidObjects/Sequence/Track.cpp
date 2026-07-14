@@ -4,6 +4,7 @@
 /* STD */
 #include <cstring> /* For using std::memcpy */
 #include <algorithm> /* For std::find and std::lower_bound */
+#include <cmath> /* std::abs */
 
 /* Internal */
 #include "Track.h"
@@ -77,7 +78,7 @@ SharedTrackItem TrackMap::At(const int frame) const
      */
     if (m_Items.find(frame) != m_Items.end())
         return m_Items.at(frame);
-    
+
     /**
      * If we were not able to find the item directly at the given frame
      * then find the nearest lower frame which is available in the underlying struct
@@ -89,10 +90,10 @@ SharedTrackItem TrackMap::At(const int frame) const
     /* if we're at the first index, this means that there is no frame lower than the asked frame in the struct */
     if (it == m_Frames.begin())
         return nullptr;
-    
+
     /**
      * Now that we have a lower bound frame available, that means we have a track item available
-     * But to see if the track item is the correct one, it depends on whether the requested frame is available 
+     * But to see if the track item is the correct one, it depends on whether the requested frame is available
      * within the track item's frame bounds
      */
     SharedTrackItem item = m_Items.at(*(--it));
@@ -163,7 +164,7 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
 
     /* Update the duration of the track */
     m_Duration = m_Duration + media->Duration();
-    
+
     /* Update the last frame of the Track */
     m_EndFrame = m_Duration - 1;
 
@@ -181,7 +182,7 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
 
     // /* Set a Color on the underlying media Clip that it has been associated with this track */
     // trackItem->SetColor(m_Color);
-    
+
     // /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
     // connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
 
@@ -203,7 +204,7 @@ SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
 {
     if (const auto& item = GetTrackItem(frame))
         return item->GetMedia();
-    
+
     return nullptr;
 }
 
@@ -234,10 +235,10 @@ void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
 
     /**
      * If inclusive is true we include the last frame in duration calculation
-     * 
+     *
      * so if my start frame is 1001
      * and my end frame is 1010
-     * if we're not inclusive my duration is 
+     * if we're not inclusive my duration is
      * 1010 - 1001 = 9 frames
      * but if we're inclusive of the last frame then the duration becomes
      * (1010 - 1001) + 1 = 10 frames
@@ -264,7 +265,7 @@ const FloatImage PlaybackTrack::Image(v_frame_t frame)
 {
     if (auto item = GetTrackItem(frame))
         return item->Image(frame);
-    
+
     return nullptr;
 }
 
@@ -287,11 +288,31 @@ void PlaybackTrack::ClearCache(v_frame_t frame)
         item->ClearCache(frame);
 }
 
+v_frame_t PlaybackTrack::GetSnapFrame(v_frame_t frame, const SharedTrackItem& trackitem, int threshold) const
+{
+    for (int i = 0; i < static_cast<int>(m_Items.Size()); ++i)
+    {
+        const SharedTrackItem& item = m_Items.AtIndex(i);
+
+        if (item.get() == trackitem.get())
+            continue;
+
+        // No valid frame to snap to
+        if (item->TimelineIn() > frame)
+            return -1;
+
+        if (std::abs(frame - item->TimelineOut()) < threshold)
+            return item->TimelineOut() + 1;
+    }
+
+    return -1;
+}
+
 SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
 {
     if (m_Recent && m_Recent->InRange(frame))
         return m_Recent;
-    
+
     m_Recent = m_Items.At(frame);
     return m_Recent;
 }
