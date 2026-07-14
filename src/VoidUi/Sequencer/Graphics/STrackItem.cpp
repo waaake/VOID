@@ -116,8 +116,6 @@ void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
     }
 
     event->accept();
-    // update();
-
     STimelineItem::mousePressEvent(event);
 }
 
@@ -135,9 +133,18 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
     if (m_Drag.active)
     {
-        // QPointF delta = event->scenePos() - m_Drag.clickpos;
-        // delta.setY(0);
-        setPos(event->scenePos());
+        QPointF pos = event->scenePos() + m_Drag.clickpos;
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+            if (STrack* track = m_Context->Controller()->TrackAt(scenePos()))
+            {
+                auto snap = track->Track()->GetSnapFrame(m_Context->Geometry()->SceneXToFrame(scenePos().x()), m_Item);
+                if (snap > 0)
+                    pos.setX(m_Context->Geometry()->FrameToSceneX(snap));
+            }
+        }
+
+        setPos(pos);
     }
 
     STimelineItem::mouseMoveEvent(event);
@@ -156,43 +163,13 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         // Move the track item to the new track
         if (track && track != current)
         {
-            // m_Context->Controller()->MoveItem(track->Track(), m_Item, frame);
-            // track->AddItem(m_Item);
-            // current->RemoveItem(m_Item);
-            VOID_LOG_INFO("Here");
             m_Context->Controller()->MoveItem(m_Item, current->Index(), track->Index(), frame);
-            VOID_LOG_INFO("Completed...");
         }
         else
         {
             m_Context->Controller()->MoveItem(m_Item, frame);
             Update();
         }
-
-
-        // // VOID_LOG_INFO("Track is nullptr: {0}", track == nullptr);
-        // if (track)
-        // {
-        //     if (track != Track())
-        //     {
-        //         VOID_LOG_INFO("Track is different than the current... {0}", track->Index());
-
-        //         m_Context->Controller()->MoveItem(track->Track(), m_Item, frame);
-        //         track->AddItem(m_Item);
-        //         Track()->RemoveItem(m_Item);
-
-        //         // Update();
-        //         return;
-        //     }
-        //     // VOID_LOG_INFO("Dragged on Track: {0}", track->Index());
-        //     // VOID_LOG_INFO("Is Valid: {0}", track->Valid());
-        //     // VOID_LOG_INFO("Dragged track name: {0}", track->Track()->Name().c_str());
-        //     // VOID_LOG_INFO("Current Track Index: {0}", qgraphicsitem_cast<STrack*>(parentItem())->Index());
-        // }
-
-        // // VOID_LOG_INFO("Moved Frame: {0}", frame);
-        // m_Context->Controller()->MoveItem(m_Item, frame);
-        // Update();
     }
 
     STimelineItem::mouseMoveEvent(event);
@@ -202,7 +179,6 @@ void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
     m_Context->HoverModel()->Set(m_Item);
     update();
-    // VOID_LOG_INFO("STrackItem::hoverEnterEvent");
 
     STimelineItem::hoverEnterEvent(event);
 }
