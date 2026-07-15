@@ -6,6 +6,7 @@
 
 /* Qt */
 #include <QPointF>
+#include <QRect>
 
 /* Internal */
 #include "Definition.h"
@@ -19,6 +20,14 @@ struct SDragContext
     QPointF clickpos;
     QPointF scenepos;
     QPointF offset;
+};
+
+struct SMarqueeContext
+{
+    bool pressed = false;
+    bool active = false;
+    QPoint clickpos;
+    QRect rect;
 };
 
 VOID_NAMESPACE_CLOSE
