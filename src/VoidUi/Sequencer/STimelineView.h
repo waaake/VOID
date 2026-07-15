@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "SDragContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
@@ -25,9 +26,16 @@ public:
     void Clear();
     void Focus();
 
+protected:
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void drawForeground(QPainter* painter, const QRectF& rect) override;
+
 private:
     SequencerContext* m_Context;
     STimelineScene* m_Scene;
+    SMarqueeContext m_Marquee;
 
 private: /* Methods */
     void Build();

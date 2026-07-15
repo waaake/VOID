@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QPainter>
+#include <QMouseEvent>
 
 /* Internal */
 #include "SContext.h"
@@ -37,6 +38,71 @@ void STimelineView::Focus()
     selected.empty() ? centerOn(0, 0) : centerOn(selected[0]);
 }
 
+void STimelineView::mousePressEvent(QMouseEvent* event)
+{
+    if (!m_Scene->itemAt(event->pos(), QTransform()))
+    {
+        m_Marquee.pressed = true;
+        m_Marquee.clickpos = event->pos();
+    }
+
+    QGraphicsView::mousePressEvent(event);
+}
+
+void STimelineView::mouseMoveEvent(QMouseEvent* event)
+{
+    if (m_Marquee.pressed)
+    {
+        QPoint delta = m_Marquee.clickpos - event->pos();
+        if (delta.manhattanLength() > 10)
+        {
+            m_Marquee.pressed = false;
+            m_Marquee.active = true;
+        }
+    }
+
+    if (m_Marquee.active)
+    {
+        m_Marquee.rect = QRect(m_Marquee.clickpos, event->pos()).normalized();
+        QPolygonF marquee = mapToScene(m_Marquee.rect);
+        m_Scene->SelectTrackItems(marquee.boundingRect());
+
+        viewport()->update();
+    }
+
+    QGraphicsView::mouseMoveEvent(event);
+}
+
+void STimelineView::mouseReleaseEvent(QMouseEvent* event)
+{
+    m_Marquee.pressed = false;
+    if (m_Marquee.active)
+    {
+        m_Marquee.active = false;
+        m_Marquee.rect = QRect();
+
+        viewport()->update();
+    }
+
+    QGraphicsView::mouseReleaseEvent(event);
+}
+
+void STimelineView::drawForeground(QPainter* painter, const QRectF& rect)
+{
+    QGraphicsView::drawForeground(painter, rect);
+
+    if (m_Marquee.active)
+    {
+        QColor color = palette().color(QPalette::Highlight);
+        painter->setPen(color);
+
+        color.setAlpha(40);
+        painter->setBrush(color);
+
+        painter->drawRect(mapToScene(m_Marquee.rect).boundingRect());
+    }
+}
+
 void STimelineView::Build()
 {
     m_Scene = new STimelineScene(m_Context, this);
@@ -56,11 +122,7 @@ void STimelineView::Setup()
     setDragMode(QGraphicsView::NoDrag);
     setFrameShape(QFrame::NoFrame);
 
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
-
     setCacheMode(QGraphicsView::CacheBackground);
 }
 
