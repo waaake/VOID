@@ -24,7 +24,7 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     setAcceptHoverEvents(true);
 
     CalculateBoundingRect();
-    setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 4);
+    setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 2);
 
     // connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, static_cast<void (STrackItem::*)(const QRectF&)>(&STrackItem::update));
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
@@ -44,41 +44,26 @@ STrack* STrackItem::Track() const
 void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     painter->setRenderHint(QPainter::Antialiasing);
-    // const QColor color = isSelected() ? option->palette.color(QPalette::Highlight).darker(180) : m_Item->Color();
-    // const QColor color = m_Context->SelectionModel()->IsSelected(m_Item) ? option->palette.color(QPalette::Highlight).darker(180) : m_Item->Color();
+
     const QColor color = m_Context->SelectionModel()->IsSelected(m_Item)
                         ? option->palette.color(QPalette::Highlight).darker(180)
                         : m_Context->HoverModel()->IsHovered(m_Item)
                             ? option->palette.color(QPalette::Base).darker(140)
                             : option->palette.color(QPalette::Base).darker(110);
 
-    painter->setPen(QPen(m_Item->Color(), 2));
+    painter->setPen(QPen(m_Item->Color(), 1));
     painter->setBrush(color);
-    // painter->fillRect(boundingRect(), m_Item->Color());
     painter->drawRect(boundingRect());
 
-    painter->setPen(option->palette.color(QPalette::Text));
-    painter->drawText(boundingRect().adjusted(2, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
-    // SDrawContext context(
-    //     painter,
-    //     option,
-    //     boundingRect(),
-    //     this,
-    //     m_Context,
-    //     m_Item->Color(),
-    //     m_Item->Color().darker(200),
-    //     option->palette.color(QPalette::Highlight).darker(180),
-    //     m_Item->Color().darker(150),
-    //     option->palette.color(QPalette::Text)
-    // );
+    painter->fillRect(2, 2, 6, Sequencer::TrackHeight - 8, m_Item->Color());
 
-    // double lod = option->levelOfDetailFromTransform(painter->worldTransform());
-    // VOID_LOG_INFO("LOD: {0}", lod);
+    painter->setPen(option->palette.color(QPalette::Text));
+    painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
 
     if (SharedMediaClip media = m_Item->GetMedia())
     {
         QPixmap thumbnail = media->Thumbnail();
-        QRectF thumbRect(4, 16, std::min(72, option->rect.width() - 8), 36);
+        QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
 
         QSizeF size = thumbnail.size();
         size.scale(thumbRect.size(), Qt::KeepAspectRatio);
@@ -95,7 +80,7 @@ void STrackItem::Update()
 {
     prepareGeometryChange();
     CalculateBoundingRect();
-    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 4);
+    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 0);
 
     update();
 }
@@ -133,7 +118,7 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
     if (m_Drag.active)
     {
-        QPointF pos = event->scenePos() + m_Drag.clickpos;
+        QPointF pos = event->scenePos() - m_Drag.offset;
         if (event->modifiers() & Qt::ControlModifier)
         {
             if (STrack* track = m_Context->Controller()->TrackAt(scenePos()))
@@ -187,7 +172,6 @@ void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
     m_Context->HoverModel()->Reset();
     update();
-    // VOID_LOG_INFO("STrackItem::hoverLeaveEvent");
 
     STimelineItem::hoverLeaveEvent(event);
 }
@@ -195,7 +179,7 @@ void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 void STrackItem::CalculateBoundingRect()
 {
     const double width = m_Context->Geometry()->FrameToSceneX(m_Item->Duration()) - m_Context->Geometry()->FrameToSceneX(0);
-    m_BoundingRect = QRectF(0, 0, width, 52);
+    m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackHeight - 4);
 }
 
 VOID_NAMESPACE_CLOSE

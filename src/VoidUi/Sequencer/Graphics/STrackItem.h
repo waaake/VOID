@@ -27,7 +27,7 @@ public:
     // v_frame_t TimelineIn() const { return m_Item->TimelineIn(); }
     // v_frame_t TimelineOut() const { return m_Item->TimelineOut(); }
 
-    // SharedTrackItem TrackItem() const { m_Item; }
+    SharedTrackItem TrackItem() const { return m_Item; }
 
     STrack* Track() const;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
@@ -42,14 +42,10 @@ protected:
 
 private:
     SharedTrackItem m_Item;
-    // SequencerContext* m_Context;
-    // QRectF m_BoundingRect;
 
 private: /* Methods */
     void CalculateBoundingRect();
 };
-
-// class TrackItemRenderer
 
 VOID_NAMESPACE_CLOSE
 
