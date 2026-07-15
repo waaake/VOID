@@ -6,6 +6,7 @@
 
 /* STD */
 #include <unordered_set>
+#include <vector>
 
 /* Qt */
 #include <QObject>
@@ -22,6 +23,7 @@ class SSelectionModel : public QObject
 public:
     void Clear();
     void Select(const SharedTrackItem& item);
+    void Select(const std::vector<SharedTrackItem>& items);
     void Deselect(const SharedTrackItem& item);
     void Toggle(const SharedTrackItem& item);
 

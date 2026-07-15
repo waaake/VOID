@@ -18,6 +18,16 @@ void SSelectionModel::Select(const SharedTrackItem& item)
     emit selectionChanged();
 }
 
+void SSelectionModel::Select(const std::vector<SharedTrackItem>& items)
+{
+    m_Selection.clear();
+    m_Selection.reserve(items.size());
+    for (auto& item : items)
+        m_Selection.insert(item);
+
+    emit selectionChanged();
+}
+
 void SSelectionModel::Deselect(const SharedTrackItem& item)
 {
     m_Selection.erase(item);
