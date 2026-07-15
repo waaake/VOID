@@ -32,8 +32,11 @@ public:
 
     void AddPlayhead();
     void UpdatePlayhead();
+    void Update();
     STrack* TrackAt(int index) const;
     STrack*& TrackAt(int index);
+
+    void SelectTrackItems(const QRectF& rect);
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -43,6 +46,9 @@ private:
     std::vector<STrack*> m_Tracks;
     SequencerContext* m_Context;
     SPlayheadItem* m_Playhead;
+
+private:
+    int SceneHeight() const;
 };
 
 VOID_NAMESPACE_CLOSE

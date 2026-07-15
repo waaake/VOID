@@ -9,6 +9,7 @@
 /* Internal */
 #include "STimelineScene.h"
 #include "Graphics/STrack.h"
+#include "Graphics/STrackItem.h"
 #include "Graphics/SPlayheadItem.h"
 #include "VoidCore/Logging.h"
 
@@ -30,7 +31,7 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
 {
     // Can now be accessed directly by any other sub-component within the sequencer
     m_Context->Controller()->SetScene(this);
-    setSceneRect(0, 0, Sequencer::SceneWidth, Sequencer::SceneHeight);
+    setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
     // m_Playhead = new SPlayheadItem(m_Context);
 }
 
@@ -52,6 +53,8 @@ void STimelineScene::SetSequence(const SharedPlaybackSequence& sequence)
         m_Tracks[i] = track;
         addItem(track);
     }
+
+    Update();
 }
 
 void STimelineScene::Clear()
@@ -80,6 +83,11 @@ void STimelineScene::UpdatePlayhead()
     m_Playhead->Update();
 }
 
+void STimelineScene::Update()
+{
+    setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
+}
+
 STrack* STimelineScene::TrackAt(int index) const
 {
     return m_Tracks.at(index);
@@ -88,6 +96,20 @@ STrack* STimelineScene::TrackAt(int index) const
 STrack*& STimelineScene::TrackAt(int index)
 {
     return m_Tracks.at(index);
+}
+
+void STimelineScene::SelectTrackItems(const QRectF& rect)
+{
+    const QList<QGraphicsItem*> hits = items(rect, Qt::IntersectsItemShape);
+    std::vector<SharedTrackItem> trackitems;
+    trackitems.reserve(hits.size());
+    for (auto& item : hits)
+    {
+        if (const auto& trackitem = dynamic_cast<STrackItem*>(item))
+            trackitems.emplace_back(trackitem->TrackItem());
+    }
+
+    m_Context->SelectionModel()->Select(trackitems);
 }
 
 void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
@@ -101,6 +123,11 @@ void STimelineScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
         m_Context->SelectionModel()->Clear();
 
     QGraphicsScene::mousePressEvent(event);
+}
+
+int STimelineScene::SceneHeight() const
+{
+    return Sequencer::RulerHeight + m_Tracks.size() * (Sequencer::TrackHeight + Sequencer::TrackSpacing);
 }
 
 VOID_NAMESPACE_CLOSE
