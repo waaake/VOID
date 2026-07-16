@@ -78,6 +78,7 @@ signals:
      */
     void metadataInspected(const SharedMediaClip&);
     void playlistUpdated(Playlist*);
+    void frameChanged(v_frame_t);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
