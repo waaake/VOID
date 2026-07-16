@@ -3,14 +3,8 @@
 
 /* Internal */
 #include "STimelineGeometry.h"
-#include "STimelineScale.h"
 
 VOID_NAMESPACE_OPEN
-
-// STimelineGeometry::STimelineGeometry(STimelineScale* scale)
-//     : m_Scale(scale)
-// {
-// }
 
 QRectF STimelineGeometry::RulerRect() const
 {

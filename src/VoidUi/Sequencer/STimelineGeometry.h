@@ -13,13 +13,9 @@
 
 VOID_NAMESPACE_OPEN
 
-// class STimelineScale;
-
 class STimelineGeometry
 {
 public:
-    // explicit STimelineGeometry(STimelineScale* scale);
-
     QRectF RulerRect() const;
     QRectF HeaderRect() const;
     QRectF TrackRect(int index) const;
@@ -37,7 +33,6 @@ public:
     v_frame_t SceneXToFrame(double x) const;
 
 private:
-    // STimelineScale* m_Scale;
     double m_PixelsPerFrame = 2.0;
 };
 

@@ -6,7 +6,6 @@
 
 /* STD */
 #include <unordered_map>
-#include <vector>
 
 /* Internal */
 #include "Definition.h"

@@ -29,6 +29,7 @@ STrack::STrack(const SharedPlaybackTrack& track, int index, SequencerContext* co
 STrack::~STrack()
 {
     Clear();
+    VOID_LOG_INFO("STrack::Destructor");
 }
 
 // STrackItem* STrack::BuildItem(int index)

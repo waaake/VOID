@@ -99,7 +99,6 @@ set(SOURCES
     Sequencer/Graphics/STrack.cpp
     Sequencer/Graphics/STrackItem.cpp
 
-    Sequencer/SContext.h    # Needed to generate signals' staticMetaObject
     Sequencer/Sequencer.cpp
     Sequencer/SController.cpp
     Sequencer/STimelineScene.cpp
