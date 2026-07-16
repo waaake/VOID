@@ -87,6 +87,7 @@ void WorkspaceManager::Connect()
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
+    connect(_PlayerBridge.ActivePlayer(), &Player::frameChanged, m_Sequencer, &SequencerTimeline::SetFrame, Qt::DirectConnection);
 }
 
 void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
