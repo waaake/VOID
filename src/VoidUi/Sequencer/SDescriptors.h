@@ -20,6 +20,11 @@ inline constexpr int SceneHeight = 4000;
 
 inline constexpr double PixelsPerFrame = 2.0;
 
+inline constexpr int RulerMajorTickInterval = 25;
+inline constexpr int RulerMinorTickInterval = 5;
+inline constexpr int PlayheadTriangleWidth = 12;
+inline constexpr int PlayheadTriangleHeight = 8;
+
 inline constexpr int ZBackground = 0;
 inline constexpr int ZTrack = 100;
 inline constexpr int ZTrackItem = 200;

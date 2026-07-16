@@ -38,6 +38,18 @@ void STimelineView::Focus()
     selected.empty() ? centerOn(0, 0) : centerOn(selected[0]);
 }
 
+MFrameRange STimelineView::VisibleRange() const
+{
+    QRect viewrect = viewport()->rect();
+    QPointF left = mapToScene(viewrect.topLeft());
+    QPointF right = mapToScene(viewrect.topRight());
+
+    return MFrameRange(
+        m_Context->Geometry()->SceneXToFrame(left.x()),
+        m_Context->Geometry()->SceneXToFrame(right.x())
+    );
+}
+
 void STimelineView::mousePressEvent(QMouseEvent* event)
 {
     if (!m_Scene->itemAt(event->pos(), QTransform()))

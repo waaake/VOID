@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "FrameRange.h"
 #include "SDragContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
@@ -25,6 +26,13 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Clear();
     void Focus();
+
+    /**
+     * @brief The range which is currently visible in the View.
+     * 
+     * @return MFrameRange Visible frame range.
+     */
+    MFrameRange VisibleRange() const;
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
