@@ -33,7 +33,7 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
     m_Context->Controller()->SetScene(this);
 
     setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
-    connect(m_Context, &SequencerContext::frameChanged, this, &STimelineScene::UpdatePlayhead, Qt::DirectConnection);
+    connect(m_Context->Controller(), &SequencerController::frameChanged, this, &STimelineScene::UpdatePlayhead, Qt::DirectConnection);
 }
 
 void STimelineScene::SetSequence(const SharedPlaybackSequence& sequence)

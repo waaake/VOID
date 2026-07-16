@@ -85,4 +85,19 @@ STrack* SequencerController::TrackAt(int index)
     return nullptr;
 }
 
+void SequencerController::SetCurrentFrame(v_frame_t frame)
+{
+    if (m_Frame == frame)
+        return;
+
+    m_Frame = frame;
+    emit frameChanged(frame);
+}
+
+void SequencerController::RequestFrameChange(v_frame_t frame)
+{
+    emit frameChangeRequested(frame);
+    SetCurrentFrame(frame);
+}
+
 VOID_NAMESPACE_CLOSE

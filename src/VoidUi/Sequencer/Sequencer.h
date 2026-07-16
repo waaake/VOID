@@ -33,6 +33,9 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Refresh();
 
+signals:
+    void frameChangeRequested(v_frame_t);
+
 private:
     QGridLayout* m_Layout;
     SToolbar* m_Toolbar;

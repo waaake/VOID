@@ -4,9 +4,6 @@
 #ifndef _SEQUENCER_CONTEXT_H
 #define _SEQUENCER_CONTEXT_H
 
-/* Qt */
-#include <QObject>
-
 /* Internal */
 #include "Definition.h"
 #include "SController.h"
@@ -17,24 +14,13 @@
 
 VOID_NAMESPACE_OPEN
 
-class SequencerContext : public QObject
+class SequencerContext
 {
-    Q_OBJECT
 public:
     SSelectionModel* SelectionModel() { return &m_Selection; }
     SHoverModel* HoverModel() { return &m_Hover; }
     STimelineGeometry* Geometry() { return &m_Geometry; }
     SequencerController* Controller() { return &m_Controller; }
-
-    v_frame_t CurrentFrame() const { return m_CurrentFrame; }
-    void SetCurrentFrame(v_frame_t frame)
-    {
-        m_CurrentFrame = frame;
-        emit frameChanged(frame);
-    }
-
-signals:
-    void frameChanged(v_frame_t);
 
 private:
     SSelectionModel m_Selection;

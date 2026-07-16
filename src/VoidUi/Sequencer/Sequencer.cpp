@@ -16,7 +16,7 @@ SequencerTimeline::SequencerTimeline(QWidget* parent)
 
 void SequencerTimeline::SetFrame(v_frame_t frame)
 {
-    m_Context.SetCurrentFrame(frame);
+    m_Context.Controller()->SetCurrentFrame(frame);
     VOID_LOG_INFO("SequencerTimeline::SetFrame::{0}", frame);
 }
 
@@ -73,6 +73,7 @@ void SequencerTimeline::Connect()
     // });
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
+    connect(m_Context.Controller(), &SequencerController::frameChangeRequested, this, &SequencerTimeline::frameChangeRequested);
 }
 
 VOID_NAMESPACE_CLOSE

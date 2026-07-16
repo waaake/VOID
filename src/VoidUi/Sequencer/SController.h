@@ -5,6 +5,7 @@
 #define _SEQUENCER_CONTROLLER_H
 
 /* Qt */
+#include <QObject>
 #include <QGraphicsScene>
 
 /* Internal */
@@ -16,8 +17,9 @@ VOID_NAMESPACE_OPEN
 
 class STrack;
 
-class SequencerController
+class SequencerController : public QObject
 {
+    Q_OBJECT
 public:
     // void BeginDrag(SharedTrackItem* item)
     void SetScene(QGraphicsScene* scene);
@@ -28,8 +30,17 @@ public:
     STrack* TrackAt(int index) const;
     STrack* TrackAt(int index);
 
+    v_frame_t CurrentFrame() const { return m_Frame; }
+    void SetCurrentFrame(v_frame_t frame);
+    void RequestFrameChange(v_frame_t frame);
+
+signals:
+    void frameChanged(v_frame_t);
+    void frameChangeRequested(v_frame_t);
+
 private:
     QGraphicsScene* m_Scene = { nullptr };
+    v_frame_t m_Frame;
 };
 
 VOID_NAMESPACE_CLOSE

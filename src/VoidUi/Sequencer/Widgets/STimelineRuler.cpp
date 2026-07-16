@@ -22,7 +22,7 @@ STimelineRuler::STimelineRuler(STimelineView* view, SequencerContext* context, Q
 {
     setFixedHeight(Sequencer::RulerHeight);
     connect(m_View->horizontalScrollBar(), &QScrollBar::valueChanged, this, static_cast<void (STimelineRuler::*)(void)>(&STimelineRuler::update), Qt::DirectConnection);
-    connect(m_Context, &SequencerContext::frameChanged, this, static_cast<void (STimelineRuler::*)(void)>(&STimelineRuler::update), Qt::DirectConnection);
+    connect(m_Context->Controller(), &SequencerController::frameChanged, this, static_cast<void (STimelineRuler::*)(void)>(&STimelineRuler::update), Qt::DirectConnection);
 }
 
 void STimelineRuler::paintEvent(QPaintEvent* event)
@@ -50,11 +50,11 @@ void STimelineRuler::paintEvent(QPaintEvent* event)
     }
 
     // Current Frame
-    if (visible.Contains(m_Context->CurrentFrame()))
+    if (visible.Contains(m_Context->Controller()->CurrentFrame()))
     {
         painter.setPen(palette().color(QPalette::Highlight));
 
-        float x = (m_Context->CurrentFrame() - visible.startframe) * uwidth;
+        float x = (m_Context->Controller()->CurrentFrame() - visible.startframe) * uwidth;
         painter.drawLine(x, 0, x, height());
 
         QPolygonF triangle;
@@ -65,6 +65,34 @@ void STimelineRuler::paintEvent(QPaintEvent* event)
         painter.setBrush(palette().color(QPalette::Highlight));
         painter.drawPolygon(triangle);
     }
+}
+
+void STimelineRuler::mousePressEvent(QMouseEvent* event)
+{
+    QWidget::mousePressEvent(event);
+    int x = event->pos().x();
+
+    MFrameRange visible = m_View->VisibleRange();
+    m_Pressed = true;
+    m_Context->Controller()->RequestFrameChange(visible.startframe + m_Context->Geometry()->SceneXToFrame(x));
+}
+
+void STimelineRuler::mouseMoveEvent(QMouseEvent* event)
+{
+    QWidget::mouseMoveEvent(event);
+    if (m_Pressed)
+    {
+        MFrameRange visible = m_View->VisibleRange();
+        int x = event->pos().x();
+
+        m_Context->Controller()->RequestFrameChange(visible.startframe + m_Context->Geometry()->SceneXToFrame(x));
+    }
+}
+
+void STimelineRuler::mouseReleaseEvent(QMouseEvent* event)
+{
+    QWidget::mouseReleaseEvent(event);
+    m_Pressed = false;
 }
 
 VOID_NAMESPACE_CLOSE

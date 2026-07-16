@@ -17,16 +17,19 @@ class SequencerContext;
 
 class STimelineRuler : public QWidget
 {
-    Q_OBJECT
 public:
     STimelineRuler(STimelineView* view, SequencerContext* context, QWidget* parent = nullptr);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
     STimelineView* m_View;
     SequencerContext* m_Context;
+    bool m_Pressed;
 };
 
 VOID_NAMESPACE_CLOSE

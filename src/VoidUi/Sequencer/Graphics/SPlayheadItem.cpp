@@ -22,7 +22,7 @@ SPlayheadItem::SPlayheadItem(SequencerContext* context, QGraphicsItem* item)
 void SPlayheadItem::Update()
 {
     prepareGeometryChange();
-    setPos(m_Context->Geometry()->FrameToSceneX(m_Context->CurrentFrame()), 0.0);
+    setPos(m_Context->Geometry()->FrameToSceneX(m_Context->Controller()->CurrentFrame()), 0.0);
     update();
 }
 
