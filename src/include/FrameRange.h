@@ -18,17 +18,17 @@ VOID_NAMESPACE_OPEN
  */
 struct MFrameRange
 {
-public: /* Members */
     v_frame_t startframe;
     v_frame_t endframe;
     v_frame_t duration;
     double framerate;
 
-public: /* Methods */
     MFrameRange(v_frame_t start, v_frame_t end, double framerate = 24.0)
         : MFrameRange(start, end, (end - start) + 1, framerate) {}
     MFrameRange(v_frame_t start, v_frame_t end, v_frame_t duration, double framerate = 24.0)
         : startframe(start), endframe(end), duration(duration), framerate(framerate) {}
+
+    bool Contains(v_frame_t frame) { return frame >= startframe && frame <= endframe; }
 };
 
 VOID_NAMESPACE_CLOSE
