@@ -9,6 +9,7 @@ VOID_NAMESPACE_OPEN
 
 TrackItem::TrackItem(QObject* parent)
     : VoidObject(parent)
+    , m_Color(90, 110, 60)
     , m_Offset(0)
     , m_Start(0)
     , m_End(0)
@@ -19,6 +20,7 @@ TrackItem::TrackItem(QObject* parent)
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
     : VoidObject(parent)
     , m_Media(media)
+    , m_Color(media->Color())
     , m_Offset(offset)
     , m_Start(start)
     , m_End(end)
@@ -84,6 +86,12 @@ void TrackItem::Move(v_frame_t frame)
     m_End = m_Media->LastFrame() - m_Offset;
 
     emit rangeChanged(m_Start, m_End);
+    emit updated();
+}
+
+void TrackItem::SetColor(const QColor& color)
+{
+    m_Color = color;
     emit updated();
 }
 

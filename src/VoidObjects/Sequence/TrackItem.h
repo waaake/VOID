@@ -64,9 +64,6 @@ public:
 
     void ClearCache(v_frame_t frame);
 
-    inline v_frame_t StartFrame() const { return m_Start; }
-    inline v_frame_t EndFrame() const { return m_End; }
-
     v_frame_t TimelineIn() const { return m_Start; }
     v_frame_t TimelineOut() const { return m_End; }
     int Duration() const { return m_End - m_Start + 1; }
@@ -104,8 +101,8 @@ public:
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
     inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
 
-    inline QColor Color() const { return m_Media->Color(); }
-    void SetColor(const QColor& color) { m_Media->SetColor(color); }
+    inline QColor Color() const { return m_Color; }
+    void SetColor(const QColor& color);
 
 signals:
     void mediaChanged();
@@ -121,6 +118,7 @@ signals:
 
 protected:
     SharedMediaClip m_Media;
+    QColor m_Color;
     v_frame_t m_Offset;
     v_frame_t m_Start;
     v_frame_t m_End;
