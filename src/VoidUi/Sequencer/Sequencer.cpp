@@ -14,6 +14,12 @@ SequencerTimeline::SequencerTimeline(QWidget* parent)
     Connect();
 }
 
+void SequencerTimeline::SetFrame(v_frame_t frame)
+{
+    m_Context.SetCurrentFrame(frame);
+    VOID_LOG_INFO("SequencerTimeline::SetFrame::{0}", frame);
+}
+
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
     m_Sequence = sequence;
@@ -36,9 +42,10 @@ void SequencerTimeline::Build()
     m_Layout = new QGridLayout(this);
 
     m_Toolbar = new SToolbar;
-    m_Ruler = new SRulerWidget;
     m_TrackHeader = new STrackHeaderWidget(&m_Context);
     m_View = new STimelineView(&m_Context);
+
+    m_Ruler = new STimelineRuler(m_View, &m_Context);
 
     m_Layout->setSpacing(0);
     m_Layout->setContentsMargins(0, 0, 0, 0);

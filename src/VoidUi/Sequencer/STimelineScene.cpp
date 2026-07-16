@@ -31,8 +31,9 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
 {
     // Can now be accessed directly by any other sub-component within the sequencer
     m_Context->Controller()->SetScene(this);
+
     setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
-    // m_Playhead = new SPlayheadItem(m_Context);
+    connect(m_Context, &SequencerContext::frameChanged, this, &STimelineScene::UpdatePlayhead, Qt::DirectConnection);
 }
 
 void STimelineScene::SetSequence(const SharedPlaybackSequence& sequence)

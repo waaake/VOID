@@ -16,7 +16,7 @@
 #include "STimelineView.h"
 #include "SContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
-#include "VoidUi/Sequencer/Widgets/SRulerWidget.h"
+#include "VoidUi/Sequencer/Widgets/STimelineRuler.h"
 #include "VoidUi/Sequencer/Widgets/STrackHeaderWidget.h"
 #include "VoidUi/Sequencer/Widgets/SToolbar.h"
 
@@ -29,13 +29,14 @@ public:
     explicit SequencerTimeline(QWidget* parent = nullptr);
     virtual inline QSize sizeHint() const override { return QSize(640, 300); }
 
+    void SetFrame(v_frame_t frame);
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Refresh();
 
 private:
     QGridLayout* m_Layout;
     SToolbar* m_Toolbar;
-    SRulerWidget* m_Ruler;
+    STimelineRuler* m_Ruler;
     STrackHeaderWidget* m_TrackHeader;
     STimelineView* m_View;
     QShortcut* m_FitShortcut;

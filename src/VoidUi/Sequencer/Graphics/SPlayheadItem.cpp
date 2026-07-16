@@ -28,9 +28,8 @@ void SPlayheadItem::Update()
 
 void SPlayheadItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    painter->setPen(QPen(option->palette.color(QPalette::Highlight), 2));
+    painter->setPen(QPen(option->palette.color(QPalette::Highlight), 1));
     painter->drawLine(QPoint(0, 0), QPoint(0, boundingRect().height()));
-    // VOID_LOG_INFO("Height: {0}", boundingRect().height());
 }
 
 VOID_NAMESPACE_CLOSE

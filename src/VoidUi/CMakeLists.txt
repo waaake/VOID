@@ -99,6 +99,7 @@ set(SOURCES
     Sequencer/Graphics/STrack.cpp
     Sequencer/Graphics/STrackItem.cpp
 
+    Sequencer/SContext.h    # Needed to generate signals' staticMetaObject
     Sequencer/Sequencer.cpp
     Sequencer/SController.cpp
     Sequencer/STimelineScene.cpp
@@ -108,7 +109,7 @@ set(SOURCES
     Sequencer/Models/SSelectionModel.cpp
     Sequencer/Models/SHoverModel.cpp
 
-    Sequencer/Widgets/SRulerWidget.cpp
+    Sequencer/Widgets/STimelineRuler.cpp
     Sequencer/Widgets/STrackHeaderWidget.cpp
     Sequencer/Widgets/SToolbar.cpp
 
