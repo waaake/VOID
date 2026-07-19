@@ -68,6 +68,7 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     {
         m_BackBuffer = std::min(10, std::max(3, static_cast<int>(((m_Endframe - m_Startframe) + 1) * 0.02)));
     }, Qt::DirectConnection);
+    connect(m_Sequence.get(), &PlaybackSequence::updated, this, &ViewerBuffer::Recache);
 }
 
 ViewerBuffer::~ViewerBuffer()
@@ -243,10 +244,11 @@ void ViewerBuffer::Cache(v_frame_t frame)
 {
     if (m_PlayingComponent == PlayableComponent::Sequence)
     {
-        const FloatImage& image = m_Sequence->Image(frame);
-        SetFramesize(image->Size());
-
-        Store(frame);
+        if (const FloatImage& image = m_Sequence->Image(frame))
+        {
+            SetFramesize(image->Size());
+            Store(frame);
+        }
     }
     else if (m_PlayingComponent == PlayableComponent::Track)
     {
