@@ -28,6 +28,7 @@ VOID_NAMESPACE_OPEN
 STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
     : QGraphicsScene(parent)
     , m_Context(context)
+    , m_Playhead(nullptr)
 {
     // Can now be accessed directly by any other sub-component within the sequencer
     m_Context->Controller()->SetScene(this);
@@ -36,24 +37,11 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
     connect(m_Context->Controller(), &SequencerController::frameChanged, this, &STimelineScene::UpdatePlayhead, Qt::DirectConnection);
 }
 
-void STimelineScene::SetSequence(const SharedPlaybackSequence& sequence)
+void STimelineScene::AddTrack(const SharedPlaybackTrack& track, int index)
 {
-    clear();
-    if (sequence->IsEmpty())
-    {
-        VOID_LOG_INFO("Sequence is Empty");
-        return;
-    }
-
-    m_Playhead = new SPlayheadItem(m_Context);
-
-    m_Tracks.resize(sequence->NumVideoTracks());
-    for (int i = 0; i < sequence->NumVideoTracks(); ++i)
-    {
-        STrack* track = new STrack(sequence->VideoTrackAt(i), i, m_Context);
-        m_Tracks[i] = track;
-        addItem(track);
-    }
+    STrack* strack = new STrack(track, index, m_Context);
+    m_Tracks.push_back(strack);
+    addItem(strack);
 
     Update();
 }
@@ -67,10 +55,15 @@ void STimelineScene::Clear()
         track = nullptr;
     }
     m_Tracks.clear();
-    clear();
 
-    m_Playhead->deleteLater();
-    delete m_Playhead;
+    if (m_Playhead)
+    {
+        m_Playhead->deleteLater();
+        delete m_Playhead;
+        m_Playhead = nullptr;
+    }
+
+    clear();
 }
 
 void STimelineScene::AddPlayhead()
@@ -120,7 +113,7 @@ void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
 
 void STimelineScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-    if (!(event->modifiers() & Qt::ControlModifier))
+    if ((event->button() == Qt::LeftButton) && !(event->modifiers() & Qt::ControlModifier))
         m_Context->SelectionModel()->Clear();
 
     QGraphicsScene::mousePressEvent(event);

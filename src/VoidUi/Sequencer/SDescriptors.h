@@ -14,7 +14,7 @@ namespace Sequencer {
 inline constexpr int RulerHeight = 30;
 inline constexpr int TrackHeight = 60;
 inline constexpr int TrackSpacing = 2;
-inline constexpr int TrackHeaderWidth = 120;
+inline constexpr int TrackHeaderWidth = 180;
 inline constexpr int SceneWidth = 20000;
 inline constexpr int SceneHeight = 4000;
 
