@@ -11,10 +11,11 @@
 
 /* Internal */
 #include "Definition.h"
+#include "SContext.h"
 #include "SDescriptors.h"
+#include "SMenu.h"
 #include "STimelineGeometry.h"
 #include "STimelineView.h"
-#include "SContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidUi/Sequencer/Widgets/STimelineRuler.h"
 #include "VoidUi/Sequencer/Widgets/STrackHeaderWidget.h"
@@ -37,12 +38,13 @@ signals:
     void frameChangeRequested(v_frame_t);
 
 private:
-    QGridLayout* m_Layout;
+    QHBoxLayout* m_Layout;
     SToolbar* m_Toolbar;
     STimelineRuler* m_Ruler;
     STrackHeaderWidget* m_TrackHeader;
     STimelineView* m_View;
     QShortcut* m_FitShortcut;
+    SequencerContextMenu* m_Menu;
 
     SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
