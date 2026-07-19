@@ -11,7 +11,6 @@
 #include "STrack.h"
 #include "VoidUi/Sequencer/SContext.h"
 #include "VoidCore/Logging.h"
-// #include "SDrawContext.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -26,15 +25,9 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     CalculateBoundingRect();
     setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 2);
 
-    // connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, static_cast<void (STrackItem::*)(const QRectF&)>(&STrackItem::update));
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
 }
-
-// QRectF STrackItem::boundingRect() const
-// {
-//     return m_BoundingRect;
-// }
 
 STrack* STrackItem::Track() const
 {
@@ -44,18 +37,13 @@ STrack* STrackItem::Track() const
 void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     painter->setRenderHint(QPainter::Antialiasing);
+    const QColor itemcol = Track()->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
 
-    const QColor color = m_Context->SelectionModel()->IsSelected(m_Item)
-                        ? option->palette.color(QPalette::Highlight).darker(180)
-                        : m_Context->HoverModel()->IsHovered(m_Item)
-                            ? option->palette.color(QPalette::Base).darker(140)
-                            : option->palette.color(QPalette::Base).darker(110);
-
-    painter->setPen(QPen(m_Item->Color(), 1));
-    painter->setBrush(color);
+    painter->setPen(QPen(itemcol, 1));
+    painter->setBrush(Background(option));
     painter->drawRect(boundingRect());
 
-    painter->fillRect(2, 2, 6, Sequencer::TrackHeight - 8, m_Item->Color());
+    painter->fillRect(2, 2, 6, Sequencer::TrackHeight - 8, itemcol);
 
     painter->setPen(option->palette.color(QPalette::Text));
     painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
@@ -80,20 +68,20 @@ void STrackItem::Update()
 {
     prepareGeometryChange();
     CalculateBoundingRect();
-    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 0);
+    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 2);
 
     update();
 }
 
 void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-    if (event->modifiers() & Qt::ControlModifier)
-        m_Context->SelectionModel()->Toggle(m_Item);
-    else
-        m_Context->SelectionModel()->Select(m_Item);
-
-    if (event->button() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton && !Track()->Locked())
     {
+        if (event->modifiers() & Qt::ControlModifier)
+            m_Context->SelectionModel()->Toggle(m_Item);
+        else
+            m_Context->SelectionModel()->Select(m_Item);
+
         m_Drag.pressed = true;
         m_Drag.clickpos = event->scenePos();
         m_Drag.scenepos = scenePos();
@@ -118,7 +106,7 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
     if (m_Drag.active)
     {
-        QPointF pos = event->scenePos() - m_Drag.offset;
+        QPointF pos = mapToParent(event->pos() - m_Drag.offset);
         if (event->modifiers() & Qt::ControlModifier)
         {
             if (STrack* track = m_Context->Controller()->TrackAt(scenePos()))
@@ -137,6 +125,8 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
+    STimelineItem::mouseReleaseEvent(event);
+
     if (m_Drag.active)
     {
         m_Drag.active = false;
@@ -144,6 +134,12 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         v_frame_t frame = m_Context->Geometry()->SceneXToFrame(scenePos().x());
         STrack* track = m_Context->Controller()->TrackAt(scenePos());
         STrack* current = Track();
+
+        if (track && track->Locked())
+        {
+            Update();
+            return;
+        }
 
         // Move the track item to the new track
         if (track && track != current)
@@ -156,8 +152,6 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
             Update();
         }
     }
-
-    STimelineItem::mouseMoveEvent(event);
 }
 
 void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
@@ -180,6 +174,24 @@ void STrackItem::CalculateBoundingRect()
 {
     const double width = m_Context->Geometry()->FrameToSceneX(m_Item->Duration()) - m_Context->Geometry()->FrameToSceneX(0);
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackHeight - 4);
+}
+
+QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
+{
+    if (Track()->Locked()) return option->palette.color(QPalette::Base).darker(150);
+
+    if (Track()->Enabled())
+    {
+        return m_Context->SelectionModel()->IsSelected(m_Item)
+            ? option->palette.color(QPalette::Highlight).darker(180)
+            : m_Context->HoverModel()->IsHovered(m_Item)
+                ? option->palette.color(QPalette::Base).darker(140)
+                : option->palette.color(QPalette::Base).darker(110);
+    }
+
+    return m_Context->SelectionModel()->IsSelected(m_Item)
+            ? option->palette.color(QPalette::Highlight).darker(180)
+            : option->palette.color(QPalette::Base).darker(180);
 }
 
 VOID_NAMESPACE_CLOSE

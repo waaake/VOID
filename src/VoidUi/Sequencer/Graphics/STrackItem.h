@@ -19,13 +19,8 @@ class STrack;
 
 class STrackItem : public STimelineItem
 {
-    // Q_OBJECT
 public:
     STrackItem(const SharedTrackItem& item, SequencerContext* context, QGraphicsItem* parent = nullptr);
-
-    // QRectF boundingRect() const override;
-    // v_frame_t TimelineIn() const { return m_Item->TimelineIn(); }
-    // v_frame_t TimelineOut() const { return m_Item->TimelineOut(); }
 
     SharedTrackItem TrackItem() const { return m_Item; }
 
@@ -45,6 +40,7 @@ private:
 
 private: /* Methods */
     void CalculateBoundingRect();
+    QColor Background(const QStyleOptionGraphicsItem* option) const;
 };
 
 VOID_NAMESPACE_CLOSE
