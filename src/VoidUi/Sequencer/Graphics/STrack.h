@@ -25,6 +25,8 @@ public:
     SharedPlaybackTrack& Track() { return m_Track; }
     const SharedPlaybackTrack& Track() const { return m_Track; }
     int Index() const { return m_Index; }
+    bool Locked() const { return m_Track->Locked(); }
+    bool Enabled() const { return m_Track->Enabled(); }
     // int ItemCount() const { return m_Track->ItemCount(); }
     // STrackItem* BuildItem(int index);
 
@@ -36,6 +38,8 @@ public:
     void AddItem(const SharedTrackItem& item);
     void RemoveItem(const SharedTrackItem& item);
     void UpdateItem(const SharedTrackItem& item);
+    void UpdateItems();
+
     STrackItem* ItemAt(int index) const;
     STrackItem* ItemAt(int index);
     STrackItem* Item(const SharedTrackItem& item);

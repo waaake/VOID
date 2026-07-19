@@ -18,8 +18,8 @@ STrack::STrack(const SharedPlaybackTrack& track, int index, SequencerContext* co
     , m_Track(track)
     , m_Index(index)
 {
-    VOID_LOG_INFO("Current Index::::::::{0}", index);
     setZValue(Sequencer::ZTrack);
+    connect(m_Track.get(), &PlaybackTrack::updated, this, &STrack::UpdateItems);
 
     m_BoundingRect = QRectF(0, 0, Sequencer::SceneWidth, Sequencer::TrackHeight);
     setPos(0, context->Geometry()->TrackRect(index).top());
@@ -92,6 +92,12 @@ void STrack::UpdateItem(const SharedTrackItem& item)
         return;
 
     m_Items[item.get()]->Update();
+}
+
+void STrack::UpdateItems()
+{
+    for (auto& [_, trackitem] : m_Items)
+        trackitem->Update();
 }
 
 STrackItem* STrack::ItemAt(int index) const
