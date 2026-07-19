@@ -40,12 +40,12 @@ void STimelineRuler::paintEvent(QPaintEvent* event)
         if (frame % Sequencer::RulerMajorTickInterval == 0)
         {
             float x = (frame - visible.startframe) * uwidth;
-            painter.drawLine(x, height() - 10, x, height());
+            painter.drawLine(x, height() - 10, x, height() - 2);
         }
         else if (frame % Sequencer::RulerMinorTickInterval == 0)
         {
             float x = (frame - visible.startframe) * uwidth;
-            painter.drawLine(x, height() - 6, x, height());
+            painter.drawLine(x, height() - 6, x, height() - 2);
         }
     }
 

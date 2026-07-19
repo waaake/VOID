@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "SToolbar.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -20,11 +21,11 @@ void SToolbar::Build()
     m_Layout = new QVBoxLayout(this);
 
     m_ResetButton = new QToolButton();
-    m_ResetButton->setText("R");
-    // m_ResetButton->setF
+    m_ResetButton->setIcon(IconForge::GetIcon(IconType::icon_sync_alt, _DARK_COLOR(QPalette::Text, 100)));
     m_ResetButton->setAutoRaise(true);
 
     m_Layout->addWidget(m_ResetButton);
+    m_Layout->setAlignment(Qt::AlignTop);
 }
 
 void SToolbar::Connect()
