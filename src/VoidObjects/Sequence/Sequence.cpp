@@ -14,6 +14,7 @@ PlaybackSequence::PlaybackSequence(QObject* parent)
     : VoidObject(parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
+    , m_Recent(nullptr)
 {
     VOID_LOG_INFO("Sequence Created: {0}", Vuid());
 }
@@ -49,6 +50,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
     m_VideoTracks.push_back(track);
     connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
 
     if (track->Name().empty())
     {
@@ -166,53 +168,72 @@ SharedPlaybackTrack PlaybackSequence::ActiveVideoTrack() const
     return nullptr;
 }
 
-SharedTrackItem PlaybackSequence::GetTrackItem(const int frame) const
+SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->GetTrackItem(frame);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // return m_Recent;
 
-    /* There is nothing in the sequence */
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            return m_Recent;
+    }
+
     return nullptr;
 }
 
 SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->Media(frame);
-    
+    // if (m_Recent && m_Recent->InRange(frame))
+        // return m_Recent->GetMedia();
+
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            return m_Recent->GetMedia();
+    }
+
     return nullptr;
 }
 
 void PlaybackSequence::Image(v_frame_t frame, FloatImage& image)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        m_VideoTracks.back()->Image(frame, image);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // m_Recent->Image(frame, image);
+
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            m_Recent->Image(frame, image);
+    }
 }
 
 const FloatImage PlaybackSequence::Image(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->Image(frame);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // return m_Recent->Image(frame);
+
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            return m_Recent->Image(frame);
+    }
 
     return nullptr;
 }

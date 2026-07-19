@@ -66,27 +66,22 @@ public:
      * Returns the last track that is active
      */
     SharedPlaybackTrack ActiveVideoTrack() const;
-    SharedTrackItem GetTrackItem(const int frame) const;
+    SharedTrackItem GetTrackItem(const int frame);
     SharedMediaClip Media(v_frame_t frame);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
 
 signals: /* Signals denoting actions in the seqeuence */
     void trackAdded();
+    void trackRemoved();
     void cleared();
-
-    /* This signal denotes that something in the sequence was changed/modified i.e. updated */
     void updated();
-
-    /**
-     * Emitted when the time range of the sequence has changed
-     * includes the start and end frame of the sequence
-     */
     void rangeChanged(int start, int end);
 
 protected: /* Members */
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
+    SharedTrackItem m_Recent;
 
     /* Timerange of the sequence */
     int m_StartFrame, m_EndFrame;
