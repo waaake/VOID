@@ -8,45 +8,74 @@ VOID_NAMESPACE_OPEN
 
 void SSelectionModel::Clear()
 {
-    m_Selection.clear();
+    m_Items.clear();
+    m_Tracks.clear();
     emit selectionChanged();
+    emit trackSelectionChanged();
 }
 
 void SSelectionModel::Select(const SharedTrackItem& item)
 {
-    m_Selection.insert(item);
+    m_Items.insert(item);
     emit selectionChanged();
 }
 
 void SSelectionModel::Select(const std::vector<SharedTrackItem>& items)
 {
-    m_Selection.clear();
-    m_Selection.reserve(items.size());
+    m_Items.clear();
+    m_Items.reserve(items.size());
     for (auto& item : items)
-        m_Selection.insert(item);
+        m_Items.insert(item);
 
     emit selectionChanged();
+}
+
+void SSelectionModel::Select(const SharedPlaybackTrack& track)
+{
+    m_Tracks.insert(track);
+    emit trackSelectionChanged();
 }
 
 void SSelectionModel::Deselect(const SharedTrackItem& item)
 {
-    m_Selection.erase(item);
+    m_Items.erase(item);
     emit selectionChanged();
+}
+
+void SSelectionModel::Deselect(const SharedPlaybackTrack& track)
+{
+    m_Tracks.erase(track);
+    emit trackSelectionChanged();
 }
 
 void SSelectionModel::Toggle(const SharedTrackItem& item)
 {
-    if (m_Selection.find(item) == m_Selection.end())
-        m_Selection.insert(item);
+    if (m_Items.find(item) == m_Items.end())
+        m_Items.insert(item);
     else
-        m_Selection.erase(item);
+        m_Items.erase(item);
 
     emit selectionChanged();
 }
 
+void SSelectionModel::Toggle(const SharedPlaybackTrack& track)
+{
+    if (m_Tracks.find(track) == m_Tracks.end())
+        m_Tracks.insert(track);
+    else
+        m_Tracks.erase(track);
+
+    emit trackSelectionChanged();
+}
+
 bool SSelectionModel::IsSelected(const SharedTrackItem& item)
 {
-    return m_Selection.find(item) != m_Selection.end();
+    return m_Items.find(item) != m_Items.end();
+}
+
+bool SSelectionModel::IsSelected(const SharedPlaybackTrack& track)
+{
+    return m_Tracks.find(track) != m_Tracks.end();
 }
 
 VOID_NAMESPACE_CLOSE
