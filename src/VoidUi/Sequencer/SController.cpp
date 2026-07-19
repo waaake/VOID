@@ -100,4 +100,36 @@ void SequencerController::RequestFrameChange(v_frame_t frame)
     SetCurrentFrame(frame);
 }
 
+void SequencerController::SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items, const QColor& color)
+{
+    Project* project = _MediaBridge.ActiveProject();
+    QUndoStack* stack = project->UndoStack();
+
+    stack->beginMacro("Set Trackitem(s) color");
+    for (auto& item : items)
+        stack->push(new SetTrackItemColorCommand(item, color));
+    stack->endMacro();
+}
+
+void SequencerController::SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items)
+{
+    Project* project = _MediaBridge.ActiveProject();
+    QUndoStack* stack = project->UndoStack();
+
+    stack->beginMacro("Reset Trackitem(s) color");
+    for (auto& item : items)
+        stack->push(new SetTrackItemColorCommand(item));
+    stack->endMacro();
+}
+
+void SequencerController::ToggleTrackLock(const SharedPlaybackTrack& track)
+{
+    _MediaBridge.PushCommand(new ToggleLockTrackCommand(track));
+}
+
+void SequencerController::ToggleTrackState(const SharedPlaybackTrack& track)
+{
+    _MediaBridge.PushCommand(new ToggleTrackStateCommand(track));
+}
+
 VOID_NAMESPACE_CLOSE

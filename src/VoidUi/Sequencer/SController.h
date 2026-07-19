@@ -4,6 +4,9 @@
 #ifndef _SEQUENCER_CONTROLLER_H
 #define _SEQUENCER_CONTROLLER_H
 
+/* STD */
+#include <unordered_set>
+
 /* Qt */
 #include <QObject>
 #include <QGraphicsScene>
@@ -33,6 +36,10 @@ public:
     v_frame_t CurrentFrame() const { return m_Frame; }
     void SetCurrentFrame(v_frame_t frame);
     void RequestFrameChange(v_frame_t frame);
+    void SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items, const QColor& color);
+    void SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items);
+    void ToggleTrackLock(const SharedPlaybackTrack& track);
+    void ToggleTrackState(const SharedPlaybackTrack& track);
 
 signals:
     void frameChanged(v_frame_t);
