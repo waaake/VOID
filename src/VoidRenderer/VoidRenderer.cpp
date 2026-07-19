@@ -465,7 +465,7 @@ Renderer::RenderData<unsigned char> VoidRenderer::FrameBuffer()
 
 void VoidRenderer::SetZoom(float zoom)
 {
-    m_ZoomFactor = float(m_ImageA->width) * zoom / (width() * 100);
+    m_ZoomFactor = float(m_ImageA ? m_ImageA->width : 100) * zoom / (width() * 100);
     update();
 }
 
