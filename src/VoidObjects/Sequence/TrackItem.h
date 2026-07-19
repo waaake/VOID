@@ -102,6 +102,7 @@ public:
     inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
 
     inline QColor Color() const { return m_Color; }
+    void ResetColor() { SetColor(m_Media->Color()); }
     void SetColor(const QColor& color);
 
 signals:
