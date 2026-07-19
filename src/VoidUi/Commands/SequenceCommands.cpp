@@ -105,4 +105,94 @@ bool MoveItemToTrackCommand::Redo()
     return false;
 }
 
+/// SetTrackItemColorCommand
+
+SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, const QColor& color, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Item(item)
+    , m_Color(color)
+    , m_Previous(item->Color())
+    , m_Reset(false)
+{
+    setText("Set Trackitem Color");
+}
+
+SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Item(item)
+    , m_Color(QColor(0, 0, 0))
+    , m_Previous(item->Color())
+    , m_Reset(true)
+{
+    setText("Reset Trackitem Color");
+}
+
+void SetTrackItemColorCommand::undo()
+{
+    if (SharedTrackItem item = m_Item.lock()) item->SetColor(m_Previous);
+}
+
+bool SetTrackItemColorCommand::Redo()
+{
+    if (SharedTrackItem item = m_Item.lock())
+    {
+        m_Reset ? item->ResetColor() : item->SetColor(m_Color);
+        return true;
+    }
+
+    return false;
+}
+
+/// LockTrackCommand
+
+ToggleLockTrackCommand::ToggleLockTrackCommand(const SharedPlaybackTrack& track, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Track(track)
+    , m_Previous(track->Locked())
+{
+    setText(m_Previous ? "Unlock Track" : "Lock Track");
+}
+
+void ToggleLockTrackCommand::undo()
+{
+    if (SharedPlaybackTrack track = m_Track.lock()) track->Lock(m_Previous);
+}
+
+bool ToggleLockTrackCommand::Redo()
+{
+    if (SharedPlaybackTrack track = m_Track.lock())
+    {
+        track->Lock(!m_Previous);
+        return true;
+    }
+
+    return false;
+}
+
+/// ToggleTrackStateCommand
+
+ToggleTrackStateCommand::ToggleTrackStateCommand(const SharedPlaybackTrack& track, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Track(track)
+    , m_Previous(track->Enabled())
+{
+    setText(m_Previous ? "Disable Track" : "Enable Track");
+}
+
+void ToggleTrackStateCommand::undo()
+{
+    if (SharedPlaybackTrack track = m_Track.lock()) track->SetEnabled(m_Previous);
+}
+
+bool ToggleTrackStateCommand::Redo()
+{
+    if (SharedPlaybackTrack track = m_Track.lock())
+    {
+        track->SetEnabled(!m_Previous);
+        return true;
+    }
+
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE

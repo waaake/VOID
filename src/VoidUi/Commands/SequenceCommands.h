@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QColor>
+
 /* Internal */
 #include "Definition.h"
 #include "VoidCommand.h"
@@ -42,16 +45,43 @@ private:
     v_frame_t m_Requested, m_Previous;
 };
 
-// class MoveItemToTrackCommand : public VoidUndoCommand
-// {
-// public:
-//     MoveItemToTrackCommand(SharedPlaybackTrack& track, SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent = nullptr);
-//     void undo() override;
-//     bool Redo() override;
+class SetTrackItemColorCommand : public VoidUndoCommand
+{
+public:
+    SetTrackItemColorCommand(const SharedTrackItem& item, const QColor& color, QUndoCommand* parent = nullptr);
+    SetTrackItemColorCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
 
-// private:
-//     std::weak_ptr<PlaybackTrack> m_Track;
-//     std::weak_ptr<TrackItem
-// };
+private:
+    std::weak_ptr<TrackItem> m_Item;
+    QColor m_Color;
+    QColor m_Previous;
+    bool m_Reset;
+};
+
+class ToggleLockTrackCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleLockTrackCommand(const SharedPlaybackTrack& track, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::weak_ptr<PlaybackTrack> m_Track;
+    bool m_Previous;
+};
+
+class ToggleTrackStateCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleTrackStateCommand(const SharedPlaybackTrack& track, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::weak_ptr<PlaybackTrack> m_Track;
+    bool m_Previous;
+};
 
 VOID_NAMESPACE_CLOSE
