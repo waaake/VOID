@@ -2,13 +2,15 @@
 // Licensed under the MIT License
 
 /* Qt */
-#include <QPainter>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QStyle>
 
 /* Internal */
 #include "SContext.h"
 #include "STimelineView.h"
 #include "STimelineScene.h"
+#include "Graphics/STrackItem.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -21,10 +23,14 @@ STimelineView::STimelineView(SequencerContext* context, QWidget* parent)
     Setup();
 }
 
-void STimelineView::SetSequence(const SharedPlaybackSequence& sequence)
+void STimelineView::AddPlayhead()
 {
-    m_Scene->SetSequence(sequence);
     m_Scene->AddPlayhead();
+}
+
+void STimelineView::AddTrack(const SharedPlaybackTrack& track, int index)
+{
+    m_Scene->AddTrack(track, index);
 }
 
 void STimelineView::Clear()
@@ -41,18 +47,16 @@ void STimelineView::Focus()
 MFrameRange STimelineView::VisibleRange() const
 {
     QRect viewrect = viewport()->rect();
-    QPointF left = mapToScene(viewrect.topLeft());
-    QPointF right = mapToScene(viewrect.topRight());
 
     return MFrameRange(
-        m_Context->Geometry()->SceneXToFrame(left.x()),
-        m_Context->Geometry()->SceneXToFrame(right.x())
+        m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topLeft()).x()),
+        m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topRight()).x() + style()->pixelMetric(QStyle::PM_ScrollBarExtent))
     );
 }
 
 void STimelineView::mousePressEvent(QMouseEvent* event)
 {
-    if (!m_Scene->itemAt(event->pos(), QTransform()))
+    if (!dynamic_cast<STrackItem*>(m_Scene->itemAt(event->pos(), QTransform())))
     {
         m_Marquee.pressed = true;
         m_Marquee.clickpos = event->pos();
@@ -136,6 +140,9 @@ void STimelineView::Setup()
 
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
     setCacheMode(QGraphicsView::CacheBackground);
+
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 }
 
 VOID_NAMESPACE_CLOSE
