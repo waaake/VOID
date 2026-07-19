@@ -132,6 +132,7 @@ PlaybackTrack::PlaybackTrack(QObject* parent)
     , m_Duration(0)
     , m_Visible(true)
     , m_Enabled(true)
+    , m_Locked(false)
     // , m_Color(130, 110, 190)    /* Default Purple */
 {
     VOID_LOG_INFO("Track Created: {0}", Vuid());
@@ -271,15 +272,8 @@ const FloatImage PlaybackTrack::Image(v_frame_t frame)
 
 void PlaybackTrack::ClearCache()
 {
-    /* Clear cache for each items' media */
     for (SharedTrackItem& item: m_Items)
-    {
-        /* Clear Cache */
         item->GetMedia()->ClearCache();
-    }
-
-    /* Once all media has been rid of cache -> emit the cacheCleared signal */
-    emit cacheCleared();
 }
 
 void PlaybackTrack::ClearCache(v_frame_t frame)
@@ -339,12 +333,14 @@ bool PlaybackTrack::AddItem(SharedTrackItem& item, v_frame_t frame)
 void PlaybackTrack::RemoveItem(v_frame_t frame)
 {
     m_Items.Remove(frame);
+    emit mediaRemoved();
     emit updated();
 }
 
 void PlaybackTrack::RemoveItem(SharedTrackItem& item)
 {
     m_Items.Remove(item);
+    emit mediaRemoved();
     emit updated();
 }
 

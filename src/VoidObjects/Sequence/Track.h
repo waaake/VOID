@@ -188,6 +188,11 @@ public:
     [[nodiscard]] inline bool Active() const { return m_Visible && m_Enabled; }
 
     inline bool Visible() const { return m_Visible; }
+    
+    bool Locked() const { return m_Locked; }
+    void Lock(bool lock) { m_Locked = lock; emit updated(); }
+
+    void SetEnabled(bool enable) { m_Enabled = enable; emit updated(); }
     inline bool Enabled() const { return m_Enabled; }
 
     /**
@@ -214,27 +219,12 @@ public:
     inline void SetStartFrame(int start) { SetRange(start, start + m_EndFrame); }
 
 signals: /* Signals Denoting actions in the Track */
-    void mediaAdded();
     void cleared();
-
-    /* This signal denotes that something in the track was changed/modified i.e. updated */
+    void mediaAdded();
+    void mediaRemoved();
     void updated();
-
-    /**
-     * Emitted when the time range of the track has changed
-     * includes the start and end frame of the track
-     */
     void rangeChanged(int start, int end);
 
-    /**
-     * Emitted when a frame is cached
-     * The cache could happen when the media cache operation is run continuously on a thread
-     * Or if the frame is queried by the viewport
-     */
-    void frameCached(int frame);
-
-    /* Emitted when the cache of all items' media has been cleared internally */
-    void cacheCleared();
 protected: /* Members */
     TrackMap m_Items;
     SharedTrackItem m_Recent;
@@ -243,7 +233,7 @@ protected: /* Members */
     int m_Duration;
     bool m_Visible;
     bool m_Enabled;
-    // QColor m_Color;
+    bool m_Locked;
 
 protected: /* Methods */
     void SetRange(int start, int end, const bool inclusive = true);
