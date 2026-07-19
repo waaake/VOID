@@ -3,11 +3,16 @@
 
 /* Qt */
 #include <QPainter>
+#include <QScrollBar>
+#include <QStyle>
 
 /* Internal */
 #include "STrackHeaderWidget.h"
+#include "STrackHeader.h"
 #include "VoidUi/Sequencer/SDescriptors.h"
 #include "VoidUi/Sequencer/SContext.h"
+#include "VoidUi/QExtensions/Frame.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -16,37 +21,70 @@ STrackHeaderWidget::STrackHeaderWidget(SequencerContext* context, QWidget* paren
     , m_Context(context)
 {
     setFixedWidth(Sequencer::TrackHeaderWidth);
+    Build();
 }
 
-void STrackHeaderWidget::SetSequence(const SharedPlaybackSequence& sequence)
+void STrackHeaderWidget::AddTrack(const SharedPlaybackTrack& track)
 {
-    m_Sequence = sequence;
-    update();
+    STrackHeader* header = new STrackHeader(track, m_Context, this);
+    header->setObjectName(track->Vuid().c_str());
+    m_ScrollLayout->addWidget(header);
+}
+
+void STrackHeaderWidget::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    if (auto header = findChild<STrackHeader*>(track->Vuid().c_str()))
+    {
+        header->setParent(nullptr);
+        header->setVisible(false);
+        header->deleteLater();
+        delete header;
+        header = nullptr;
+    }
 }
 
 void STrackHeaderWidget::Clear()
 {
-    m_Sequence = nullptr;
-    update();
+    for (auto& header : findChildren<STrackHeader*>())
+    {
+        header->setParent(nullptr);
+        header->setVisible(false);
+        header->deleteLater();
+        delete header;
+        header = nullptr;
+    }
 }
 
-void STrackHeaderWidget::paintEvent(QPaintEvent* event)
+void STrackHeaderWidget::SetScroll(int value)
 {
-    QPainter painter(this);
+    m_ScrollArea->verticalScrollBar()->setValue(value);
+}
 
-    if (!m_Sequence)
-        return;
+void STrackHeaderWidget::Build()
+{
+    m_Layout = new QVBoxLayout(this);
 
-    for (int i = 0; i < m_Sequence->NumVideoTracks(); ++i)
-    {
-        painter.fillRect(m_Context->Geometry()->TrackHeaderRect(i), palette().color(QPalette::Dark));
+    BaseWidget* content = new BaseWidget;
+    content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
-        painter.setPen(palette().color(QPalette::Text));
-        painter.drawText(
-            m_Context->Geometry()->TrackHeaderRect(i).adjusted(8, 0, -8, 0),
-            Qt::AlignVCenter, m_Sequence->VideoTrackAt(i)->Name().c_str()
-        );
-    }
+    m_ScrollLayout = new QVBoxLayout(content);
+    m_ScrollLayout->setAlignment(Qt::AlignTop);
+    m_ScrollLayout->setContentsMargins(0, 0, 0, 0);
+    m_ScrollLayout->setSpacing(Sequencer::TrackSpacing);
+
+    m_ScrollLayout->addItem(new QSpacerItem(0, Sequencer::RulerHeight, QSizePolicy::Expanding, QSizePolicy::Fixed));
+
+    m_ScrollArea = new QScrollArea;
+    m_ScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_ScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    m_ScrollArea->setWidgetResizable(true);
+    m_ScrollArea->setWidget(content);
+    m_ScrollArea->setFrameShape(QFrame::NoFrame);
+
+    m_Layout->addWidget(m_ScrollArea);
+    m_Layout->addItem(new QSpacerItem(0, style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2, QSizePolicy::Expanding, QSizePolicy::Fixed));
+    m_Layout->setContentsMargins(0, 0, 0, 0);
 }
 
 VOID_NAMESPACE_CLOSE

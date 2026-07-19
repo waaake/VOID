@@ -101,6 +101,7 @@ set(SOURCES
 
     Sequencer/Sequencer.cpp
     Sequencer/SController.cpp
+    Sequencer/SMenu.cpp
     Sequencer/STimelineScene.cpp
     Sequencer/STimelineView.cpp
     Sequencer/STimelineGeometry.cpp
@@ -109,9 +110,9 @@ set(SOURCES
     Sequencer/Models/SHoverModel.cpp
 
     Sequencer/Widgets/STimelineRuler.cpp
+    Sequencer/Widgets/STrackHeader.cpp
     Sequencer/Widgets/STrackHeaderWidget.cpp
     Sequencer/Widgets/SToolbar.cpp
-
 
     # Timeline
     Timeline/Timeline.cpp

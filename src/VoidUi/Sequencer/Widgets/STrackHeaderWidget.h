@@ -5,6 +5,8 @@
 #define _SEQUENCER_TRACK_HEADER_WIDGET_H
 
 /* Qt */
+#include <QLayout>
+#include <QScrollArea>
 #include <QWidget>
 
 /* Internal */
@@ -20,15 +22,21 @@ class STrackHeaderWidget : public QWidget
     Q_OBJECT
 public:
     explicit STrackHeaderWidget(SequencerContext* context, QWidget* parent = nullptr);
-    void SetSequence(const SharedPlaybackSequence& sequence);
+
+    void AddTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
 
-protected:
-    void paintEvent(QPaintEvent* event) override;
+    void SetScroll(int value);
 
 private:
+    QVBoxLayout* m_Layout;
+    QVBoxLayout* m_ScrollLayout;
+    QScrollArea* m_ScrollArea;
     SequencerContext* m_Context;
-    SharedPlaybackSequence m_Sequence;
+
+private: /* Methods */
+    void Build();
 };
 
 VOID_NAMESPACE_CLOSE
