@@ -128,4 +128,12 @@ void VLine::paintEvent(QPaintEvent* event)
 
 /* }}} */
 
+/// BaseWidget
+
+void BaseWidget::paintEvent(QPaintEvent* event)
+{
+    QPainter painter(this);
+    painter.fillRect(rect(), palette().color(QPalette::Base));
+}
+
 VOID_NAMESPACE_CLOSE

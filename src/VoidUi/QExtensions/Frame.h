@@ -83,6 +83,14 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 };
 
+
+/// Widget painted with base palette
+class BaseWidget : public QWidget
+{
+protected:
+    void paintEvent(QPaintEvent* event) override;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_Q_EXT_FRAME_H
