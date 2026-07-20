@@ -124,6 +124,20 @@ void PlaybackSequence::UpdateRange(int start, int end)
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
 }
 
+int PlaybackSequence::VideoTrackIndex(const PlaybackTrack* track) const
+{
+    auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
+    auto it = std::find_if(m_VideoTracks.begin(), m_VideoTracks.end(), _f);
+    return std::distance(m_VideoTracks.begin(), it);
+}
+
+int PlaybackSequence::AudioTrackIndex(const PlaybackTrack* track) const
+{
+    auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
+    auto it = std::find_if(m_AudioTracks.begin(), m_AudioTracks.end(), _f);
+    return std::distance(m_AudioTracks.begin(), it);
+}
+
 bool PlaybackSequence::HasMedia() const
 {
     /**
