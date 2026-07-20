@@ -16,6 +16,7 @@
 /* Internal */
 #include "Definition.h"
 #include "TrackItem.h"
+#include "Descriptors.h"
 #include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
@@ -126,8 +127,10 @@ class VOID_API PlaybackTrack : public VoidObject
     Q_OBJECT
 
 public:
-    PlaybackTrack(QObject* parent = nullptr);
+    explicit PlaybackTrack(const Sequence::TrackType& type, QObject* parent = nullptr);
     virtual ~PlaybackTrack();
+
+    const Sequence::TrackType& Type() const { return m_Type; }
 
     void SetName(const std::string& name) { m_Name = name; }
     void SetName(std::string&& name) { m_Name = std::move(name); }
@@ -203,6 +206,7 @@ public:
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
     inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
+    int TrackIndex() const;
 
     /* Setters */
 
@@ -234,6 +238,7 @@ protected: /* Members */
     bool m_Visible;
     bool m_Enabled;
     bool m_Locked;
+    Sequence::TrackType m_Type;
 
 protected: /* Methods */
     void SetRange(int start, int end, const bool inclusive = true);

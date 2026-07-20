@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "Track.h"
+#include "Sequence.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -123,7 +124,7 @@ bool TrackMap::Move(SharedTrackItem& item, int frame)
 
 /* }}} */
 
-PlaybackTrack::PlaybackTrack(QObject* parent)
+PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
     : VoidObject(parent)
     , m_Recent(nullptr)
     , m_Name("")
@@ -133,6 +134,7 @@ PlaybackTrack::PlaybackTrack(QObject* parent)
     , m_Visible(true)
     , m_Enabled(true)
     , m_Locked(false)
+    , m_Type(type)
     // , m_Color(130, 110, 190)    /* Default Purple */
 {
     VOID_LOG_INFO("Track Created: {0}", Vuid());
@@ -309,6 +311,13 @@ SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
 
     m_Recent = m_Items.At(frame);
     return m_Recent;
+}
+
+int PlaybackTrack::TrackIndex() const
+{
+    if (const auto& sequence = Sequence())
+        return m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(this) : sequence->AudioTrackIndex(this);
+    return -1;
 }
 
 bool PlaybackTrack::MoveItem(SharedTrackItem& item, v_frame_t frame)
