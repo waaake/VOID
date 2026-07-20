@@ -37,9 +37,9 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
     connect(m_Context->Controller(), &SequencerController::frameChanged, this, &STimelineScene::UpdatePlayhead, Qt::DirectConnection);
 }
 
-void STimelineScene::AddTrack(const SharedPlaybackTrack& track, int index)
+void STimelineScene::AddTrack(const SharedPlaybackTrack& track)
 {
-    STrack* strack = new STrack(track, index, m_Context);
+    STrack* strack = new STrack(track, m_Context);
     m_Tracks.push_back(strack);
     addItem(strack);
 

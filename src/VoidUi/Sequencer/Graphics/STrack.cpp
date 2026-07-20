@@ -13,16 +13,15 @@
 
 VOID_NAMESPACE_OPEN
 
-STrack::STrack(const SharedPlaybackTrack& track, int index, SequencerContext* context, QGraphicsItem* parent)
+STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGraphicsItem* parent)
     : STimelineItem(context, parent)
     , m_Track(track)
-    , m_Index(index)
 {
     setZValue(Sequencer::ZTrack);
     connect(m_Track.get(), &PlaybackTrack::updated, this, &STrack::UpdateItems);
 
     m_BoundingRect = QRectF(0, 0, Sequencer::SceneWidth, Sequencer::TrackHeight);
-    setPos(0, context->Geometry()->TrackRect(index).top());
+    setPos(0, context->Geometry()->TrackRect(track->TrackIndex()).top());
     BuildItems();
 }
 
@@ -51,7 +50,7 @@ void STrack::Update()
 {
     prepareGeometryChange();
     // m_BoundingRect = QRectF(0, 0, Sequencer::SceneWidth, Sequencer::TrackHeight);
-    setPos(0, m_Context->Geometry()->TrackRect(m_Index).top());
+    setPos(0, m_Context->Geometry()->TrackRect(m_Track->TrackIndex()).top());
 
     update();
 }

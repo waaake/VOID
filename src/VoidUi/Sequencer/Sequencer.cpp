@@ -45,7 +45,7 @@ void SequencerTimeline::Refresh()
     for (int i = 0; i < m_Sequence->NumVideoTracks(); ++i)
     {
         const SharedPlaybackTrack& track = m_Sequence->VideoTrackAt(i);
-        m_View->AddTrack(track, i);
+        m_View->AddTrack(track);
         m_TrackHeader->AddTrack(track);
     }
 }

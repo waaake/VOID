@@ -19,12 +19,12 @@ class STrackItem;
 class STrack : public STimelineItem
 {
 public:
-    STrack(const SharedPlaybackTrack& track, int index, SequencerContext* context, QGraphicsItem* parent = nullptr);
+    STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGraphicsItem* parent = nullptr);
     ~STrack();
 
     SharedPlaybackTrack& Track() { return m_Track; }
     const SharedPlaybackTrack& Track() const { return m_Track; }
-    int Index() const { return m_Index; }
+    int Index() const { return m_Track->TrackIndex(); }
     bool Locked() const { return m_Track->Locked(); }
     bool Enabled() const { return m_Track->Enabled(); }
     // int ItemCount() const { return m_Track->ItemCount(); }
@@ -47,8 +47,6 @@ public:
 private:
     std::unordered_map<TrackItem*, STrackItem*> m_Items;
     SharedPlaybackTrack m_Track;
-
-    int m_Index;
 
 private: /* Methods */
     void BuildItems();

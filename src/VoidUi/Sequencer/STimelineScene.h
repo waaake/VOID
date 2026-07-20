@@ -27,7 +27,7 @@ class STimelineScene : public QGraphicsScene
 public:
     STimelineScene(SequencerContext* context, QObject* parent = nullptr);
 
-    void AddTrack(const SharedPlaybackTrack& track, int index);
+    void AddTrack(const SharedPlaybackTrack& track);
     void Clear();
 
     void AddPlayhead();
