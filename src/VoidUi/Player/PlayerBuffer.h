@@ -86,9 +86,9 @@ signals:
     void playlistUpdated(Playlist*);
 
 protected: /* Members */
-    SharedMediaClip m_Clip;
-    SharedPlaybackTrack m_Track;
     SharedPlaybackSequence m_Sequence;
+    SharedPlaybackTrack m_Track;
+    SharedMediaClip m_Clip;
     Playlist* m_Playlist;
     v_frame_t m_Startframe, m_Endframe;
     PlayableComponent m_PlayingComponent;

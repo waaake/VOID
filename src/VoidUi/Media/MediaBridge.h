@@ -143,8 +143,8 @@ public:
     std::vector<SharedMediaClip> UnpackProjectMedia(QByteArray& data) const;
     /* Unpacks incoming ByteArray stream to fetch media based on the indexes from the current active playlist */
     std::vector<SharedMediaClip> UnpackPlaylistMedia(QByteArray& data) const;
-    /* Creates a track with the provided set of media */
-    SharedPlaybackTrack AsTrack(const std::vector<SharedMediaClip>& media) const;
+    // /* Creates a track with the provided set of media */
+    // SharedPlaybackTrack AsTrack(const std::vector<SharedMediaClip>& media) const;
 
     /* Push an Undo Command on to the stack */
     void PushCommand(QUndoCommand* command);
