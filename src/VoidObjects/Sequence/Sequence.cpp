@@ -46,6 +46,22 @@ void PlaybackSequence::SetRange(int start, int end)
     emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    return track;
+}
+
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::TrackType& type)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    track->SetName(name);
+
+    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    return track;
+}
+
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
     m_VideoTracks.push_back(track);
@@ -70,9 +86,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
-
-    /* Emit that a track has been added */
-    emit trackAdded();
+    emit trackAdded(track);
 }
 
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
@@ -96,9 +110,37 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
+    emit trackAdded(track);
+}
 
-    /* Emit that a track has been added */
-    emit trackAdded();
+void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    emit trackAboutToBeRemoved(track);
+    auto _pred = [track] (const SharedPlaybackTrack& t) -> bool { return track.get() == t.get(); };
+    if (track->Type() == Sequence::TrackType::VIDEO)
+        m_VideoTracks.erase(std::remove_if(m_VideoTracks.begin(), m_VideoTracks.end(), _pred), m_VideoTracks.end());
+    else
+        m_AudioTracks.erase(std::remove_if(m_AudioTracks.begin(), m_AudioTracks.end(), _pred), m_AudioTracks.end());
+    
+    emit trackRemoved();
+}
+
+void PlaybackSequence::RemoveTrack(int index, const Sequence::TrackType& type)
+{
+    if (type == Sequence::TrackType::VIDEO)
+    {
+        const SharedPlaybackTrack& track = m_VideoTracks[index];
+        emit trackAboutToBeRemoved(track);
+        m_VideoTracks.erase(m_VideoTracks.begin() + index);
+    }
+    else
+    {
+        const SharedPlaybackTrack& track = m_AudioTracks[index];
+        emit trackAboutToBeRemoved(track);
+        m_AudioTracks.erase(m_AudioTracks.begin() + index);
+    }
+
+    emit trackRemoved();
 }
 
 void PlaybackSequence::UpdateRange(int start, int end)

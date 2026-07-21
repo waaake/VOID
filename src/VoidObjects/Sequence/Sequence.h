@@ -38,8 +38,12 @@ public:
     void ClearCache();
     void ClearCache(v_frame_t frame);
 
+    SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type);
+    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type);
     void AddVideoTrack(const SharedPlaybackTrack& track);
     void AddAudioTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(int index, const Sequence::TrackType& type);
 
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
@@ -75,7 +79,8 @@ public:
     const FloatImage Image(v_frame_t frame);
 
 signals: /* Signals denoting actions in the seqeuence */
-    void trackAdded();
+    void trackAdded(const SharedPlaybackTrack& track);
+    void trackAboutToBeRemoved(const SharedPlaybackTrack& track);
     void trackRemoved();
     void cleared();
     void updated();
