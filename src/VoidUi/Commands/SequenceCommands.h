@@ -84,4 +84,17 @@ private:
     bool m_Previous;
 };
 
+class CreateTrackCommand : public VoidUndoCommand
+{
+public:
+    explicit CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::weak_ptr<PlaybackSequence> m_Sequence;
+    Sequence::TrackType m_Type;
+    int m_Index;
+};
+
 VOID_NAMESPACE_CLOSE

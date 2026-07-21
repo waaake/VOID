@@ -195,4 +195,30 @@ bool ToggleTrackStateCommand::Redo()
     return false;
 }
 
+/// CreateTrackCommand
+
+CreateTrackCommand::CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
+    , m_Type(type)
+    , m_Index(type == Sequence::TrackType::VIDEO ? sequence->NumVideoTracks() : sequence->NumAudioTracks())
+{
+    setText(type == Sequence::TrackType::VIDEO ? "Create Video Track" : "Create Audio Track");
+}
+
+void CreateTrackCommand::undo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock()) sequence->RemoveTrack(m_Index, m_Type);
+}
+
+bool CreateTrackCommand::Redo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock())
+    {
+        sequence->CreateTrack(m_Type);
+        return true;
+    }
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE
