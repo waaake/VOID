@@ -13,6 +13,7 @@ VOID_NAMESPACE_OPEN
 
 SequencerTimeline::SequencerTimeline(QWidget* parent)
     : QWidget(parent)
+    , m_Sequence(nullptr)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -28,7 +29,15 @@ void SequencerTimeline::SetFrame(v_frame_t frame)
 
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
+    if (m_Sequence)
+    {
+        disconnect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
+        disconnect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
+    }
+
     m_Sequence = sequence;
+    connect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
+    connect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
 
     // m_View->SetSequence(sequence);
     // m_TrackHeader->SetSequence(sequence);
@@ -43,11 +52,19 @@ void SequencerTimeline::Refresh()
     m_View->AddPlayhead();
 
     for (int i = 0; i < m_Sequence->NumVideoTracks(); ++i)
-    {
-        const SharedPlaybackTrack& track = m_Sequence->VideoTrackAt(i);
-        m_View->AddTrack(track);
-        m_TrackHeader->AddTrack(track);
-    }
+        AddTrack(m_Sequence->VideoTrackAt(i));
+}
+
+void SequencerTimeline::AddTrack(const SharedPlaybackTrack& track)
+{
+    m_View->AddTrack(track);
+    m_TrackHeader->AddTrack(track);
+}
+
+void SequencerTimeline::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    m_TrackHeader->RemoveTrack(track);
+    m_View->RemoveTrack(track);
 }
 
 void SequencerTimeline::Build()
@@ -97,6 +114,10 @@ void SequencerTimeline::Connect()
     });
     connect(m_View->verticalScrollBar(), &QScrollBar::valueChanged, m_TrackHeader, &STrackHeaderWidget::SetScroll);
 
+    connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
+    {
+        m_Context.Controller()->CreateVideoTrack(m_Sequence);
+    });
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {
         if (reset)
