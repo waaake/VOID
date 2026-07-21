@@ -23,10 +23,12 @@ public:
     void Show(const QPoint& position);
 
 signals:
+    void createTrackRequested();
     void colorChangeRequested(bool reset = false);
 
 private:
     SequencerContext* m_Context;
+    QAction* m_AddVideoTrackAction;
 
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;

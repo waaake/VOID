@@ -28,6 +28,8 @@ void SequencerContextMenu::Show(const QPoint& position)
 
 void SequencerContextMenu::Build()
 {
+    m_AddVideoTrackAction = new QAction("Add Video Track", this);
+
     m_ColorMenu = new QMenu("Color", this);
 
     m_ColorItemAction = new QAction("Set Trackitem Color...", m_ColorMenu);
@@ -35,11 +37,13 @@ void SequencerContextMenu::Build()
     m_ColorMenu->addAction(m_ColorItemAction);
     m_ColorMenu->addAction(m_ResetItemColorAction);
 
+    addAction(m_AddVideoTrackAction);
     addMenu(m_ColorMenu);
 }
 
 void SequencerContextMenu::Connect()
 {
+    connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
     connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
     connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
 }
