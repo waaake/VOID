@@ -34,6 +34,9 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence);
     void Refresh();
 
+    void AddTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
+
 signals:
     void frameChangeRequested(v_frame_t);
 
