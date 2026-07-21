@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 
@@ -24,11 +25,12 @@ class SequencerController : public QObject
 {
     Q_OBJECT
 public:
-    // void BeginDrag(SharedTrackItem* item)
     void SetScene(QGraphicsScene* scene);
     void MoveItem(SharedTrackItem& item, v_frame_t frame);
-    // void MoveItem(SharedPlaybackTrack& track, SharedTrackItem& item, v_frame_t frame);
     void MoveItem(SharedTrackItem& item, int currentTrackIndex, int trackIndex, v_frame_t frame);
+    void CreateVideoTrack(const SharedPlaybackSequence& sequence);
+    void CreateAudioTrack(const SharedPlaybackSequence& seqeunce);
+
     STrack* TrackAt(const QPointF& position) const;
     STrack* TrackAt(int index) const;
     STrack* TrackAt(int index);
