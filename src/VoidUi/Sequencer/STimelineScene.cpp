@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <algorithm>
+
 /* Qt */
 #include <QPainter>
 #include <QPalette>
@@ -44,6 +47,24 @@ void STimelineScene::AddTrack(const SharedPlaybackTrack& track)
     addItem(strack);
 
     Update();
+}
+
+void STimelineScene::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    auto _pred = [track](const STrack* t) -> bool { return track.get() == t->Track().get(); };
+    auto it = std::find_if(m_Tracks.begin(), m_Tracks.end(), _pred);
+
+    if (it == m_Tracks.end())
+        return;
+
+    STrack*& strack = *it;
+    removeItem(strack);
+
+    strack->deleteLater();
+    delete strack;
+    strack = nullptr;
+
+    m_Tracks.erase(it);
 }
 
 void STimelineScene::Clear()

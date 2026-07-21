@@ -25,6 +25,7 @@ public:
     STimelineView(SequencerContext* m_Context, QWidget* parent = nullptr);
     void AddPlayhead();
     void AddTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
     void Focus();
 

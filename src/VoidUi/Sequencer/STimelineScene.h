@@ -28,6 +28,7 @@ public:
     STimelineScene(SequencerContext* context, QObject* parent = nullptr);
 
     void AddTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
 
     void AddPlayhead();
