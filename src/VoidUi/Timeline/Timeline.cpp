@@ -253,6 +253,8 @@ void Timeline::SetFrame(const int frame)
 {
 	m_TimeDisplay->setText(std::to_string(frame).c_str());
 	m_Timeslider->setValue(frame);
+
+	Timekeeper::Instance().SetFrame(frame);
 }
 
 void Timeline::TimeUpdated(const int time)

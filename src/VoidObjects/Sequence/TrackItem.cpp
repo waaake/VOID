@@ -9,9 +9,10 @@ VOID_NAMESPACE_OPEN
 
 TrackItem::TrackItem(QObject* parent)
     : VoidObject(parent)
+    , m_Color(90, 110, 60)
     , m_Offset(0)
-    , m_StartFrame(0)
-    , m_EndFrame(0)
+    , m_Start(0)
+    , m_End(0)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
@@ -19,9 +20,10 @@ TrackItem::TrackItem(QObject* parent)
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
     : VoidObject(parent)
     , m_Media(media)
+    , m_Color(media->Color())
     , m_Offset(offset)
-    , m_StartFrame(start)
-    , m_EndFrame(end)
+    , m_Start(start)
+    , m_End(end)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
@@ -46,8 +48,8 @@ void TrackItem::SetRange(v_frame_t start, v_frame_t end)
      * Update the range of the track item
      * This points to where the track item starts and end in a given Track
      */
-    m_StartFrame = start;
-    m_EndFrame = end;
+    m_Start = start;
+    m_End = end;
 }
 
 void TrackItem::Image(const v_frame_t frame, FloatImage& image)
@@ -75,6 +77,22 @@ void TrackItem::ClearCache(v_frame_t frame)
     v_frame_t f = frame + m_Offset;
     if (m_Media->Contains(f))
         m_Media->Clear(f);
+}
+
+void TrackItem::Move(v_frame_t frame)
+{
+    m_Offset = m_Media->FirstFrame() - frame;
+    m_Start = frame;
+    m_End = m_Media->LastFrame() - m_Offset;
+
+    emit rangeChanged(m_Start, m_End);
+    emit updated();
+}
+
+void TrackItem::SetColor(const QColor& color)
+{
+    m_Color = color;
+    emit updated();
 }
 
 VOID_NAMESPACE_CLOSE

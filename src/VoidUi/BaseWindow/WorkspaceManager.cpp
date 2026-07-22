@@ -22,6 +22,7 @@ WorkspaceManager::~WorkspaceManager()
     m_PropertiesEditor->deleteLater();
     m_MediaQueue->deleteLater();
     m_TaskQueue->deleteLater();
+    m_Sequencer->deleteLater();
 }
 
 void WorkspaceManager::QueueTask(Task* task)
@@ -59,6 +60,9 @@ void WorkspaceManager::Init()
     // Task View
     m_TaskQueue = new TaskView;
 
+    // Sequencer
+    m_Sequencer = new SequencerTimeline;
+
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
     manager.RegisterDock(m_ScriptEditor, "Script Editor");
@@ -67,10 +71,14 @@ void WorkspaceManager::Init()
     manager.RegisterDock(m_PropertiesEditor, "Properties");
     manager.RegisterDock(m_MediaQueue, "Media Queue");
     manager.RegisterDock(m_TaskQueue, "Task Queue");
+    manager.RegisterDock(m_Sequencer, "Sequencer");
 
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
     setCentralWidget(m_Splitter);
+
+    // Temporary
+    m_Sequencer->SetSequence(_PlayerBridge.ActivePlayer()->ActiveViewer()->GetSequence());
 }
 
 void WorkspaceManager::Connect()
@@ -79,6 +87,11 @@ void WorkspaceManager::Connect()
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
+    connect(_PlayerBridge.ActivePlayer(), &Player::frameChanged, m_Sequencer, &SequencerTimeline::SetFrame, Qt::DirectConnection);
+    connect(m_Sequencer, &SequencerTimeline::frameChangeRequested, this, [this](v_frame_t frame) -> void
+    {
+        _PlayerBridge.SetTimelineFrame(frame);
+    });
 }
 
 void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
@@ -140,10 +153,18 @@ void WorkspaceManager::Switch(const Workspace& workspace)
             );
             m_Splitter->AddPane(static_cast<int>(Component::Viewer));
             break;
+        // case Workspace::EDITING:
+        //     m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
+        //     m_Splitter->AddPane(static_cast<int>(Component::Viewer));
+        //     m_Splitter->AddPane(static_cast<int>(Component::Properties));
+        //     break;
         case Workspace::EDITING:
             m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
-            m_Splitter->AddPane(static_cast<int>(Component::Viewer));
-            m_Splitter->AddPane(static_cast<int>(Component::Properties));
+            m_Splitter->AddSplitPane(
+                static_cast<int>(Component::Viewer),
+                static_cast<int>(Component::Sequencer),
+                Qt::Vertical
+            );
             break;
         case Workspace::PLAYBACK:
         default:

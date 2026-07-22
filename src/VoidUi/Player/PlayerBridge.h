@@ -79,6 +79,7 @@ public:
     inline void ResetOutFrame() { m_Player->ResetOutFrame(); }
     inline void ResetRange() { m_Player->ResetRange(); }
     inline void EditFramerate() { m_Player->EditFramerate(); }
+    inline void SetTimelineFrame(v_frame_t frame) { m_Player->SetTimelineFrame(frame); }
 
     inline void InspectCurrentMetadata() { m_Player->InspectCurrentMetadata(); }
     inline void ToggleChannels(int channel) { m_Player->ToggleChannels(channel); }

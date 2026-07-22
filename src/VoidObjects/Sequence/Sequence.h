@@ -38,8 +38,12 @@ public:
     void ClearCache();
     void ClearCache(v_frame_t frame);
 
+    SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type);
+    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type);
     void AddVideoTrack(const SharedPlaybackTrack& track);
     void AddAudioTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(int index, const Sequence::TrackType& type);
 
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
@@ -47,6 +51,18 @@ public:
 
     inline bool IsEmpty() const { return m_VideoTracks.empty() && m_AudioTracks.empty(); }
     inline SharedPlaybackTrack FirstVideoTrack() const { return m_VideoTracks.front(); }
+
+    int NumVideoTracks() const { return static_cast<int>(m_VideoTracks.size()); }
+    int NumAudioTracks() const { return static_cast<int>(m_AudioTracks.size()); }
+
+    const SharedPlaybackTrack& VideoTrackAt(std::size_t index) const { return m_VideoTracks.at(index); }
+    const SharedPlaybackTrack& AudioTrackAt(std::size_t index) const { return m_AudioTracks.at(index); }
+
+    int VideoTrackIndex(const PlaybackTrack* track) const;
+    int AudioTrackIndex(const PlaybackTrack* track) const;
+
+    // const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
+    // const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
 
     bool HasMedia() const;
 
@@ -57,27 +73,23 @@ public:
      * Returns the last track that is active
      */
     SharedPlaybackTrack ActiveVideoTrack() const;
-    SharedTrackItem GetTrackItem(const int frame) const;
+    SharedTrackItem GetTrackItem(const int frame);
     SharedMediaClip Media(v_frame_t frame);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
 
 signals: /* Signals denoting actions in the seqeuence */
-    void trackAdded();
+    void trackAdded(const SharedPlaybackTrack& track);
+    void trackAboutToBeRemoved(const SharedPlaybackTrack& track);
+    void trackRemoved();
     void cleared();
-
-    /* This signal denotes that something in the sequence was changed/modified i.e. updated */
     void updated();
-
-    /**
-     * Emitted when the time range of the sequence has changed
-     * includes the start and end frame of the sequence
-     */
     void rangeChanged(int start, int end);
 
 protected: /* Members */
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
+    SharedTrackItem m_Recent;
 
     /* Timerange of the sequence */
     int m_StartFrame, m_EndFrame;

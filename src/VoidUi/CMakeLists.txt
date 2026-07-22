@@ -15,6 +15,7 @@ set(SOURCES
     Commands/PlaylistCommands.cpp
     Commands/TagCommands.cpp
     Commands/EffectCommands.cpp
+    Commands/SequenceCommands.cpp
     
     # Dock
     Dock/Docker.cpp
@@ -91,6 +92,27 @@ set(SOURCES
     ScriptEditor/ScriptConsole.cpp
     ScriptEditor/ScriptEditor.cpp
     ScriptEditor/SyntaxHighlighter.cpp
+
+    # Sequencer
+    Sequencer/Graphics/SPlayheadItem.cpp
+    Sequencer/Graphics/STimelineItem.cpp
+    Sequencer/Graphics/STrack.cpp
+    Sequencer/Graphics/STrackItem.cpp
+
+    Sequencer/Sequencer.cpp
+    Sequencer/SController.cpp
+    Sequencer/SMenu.cpp
+    Sequencer/STimelineScene.cpp
+    Sequencer/STimelineView.cpp
+    Sequencer/STimelineGeometry.cpp
+
+    Sequencer/Models/SSelectionModel.cpp
+    Sequencer/Models/SHoverModel.cpp
+
+    Sequencer/Widgets/STimelineRuler.cpp
+    Sequencer/Widgets/STrackHeader.cpp
+    Sequencer/Widgets/STrackHeaderWidget.cpp
+    Sequencer/Widgets/SToolbar.cpp
 
     # Timeline
     Timeline/Timeline.cpp

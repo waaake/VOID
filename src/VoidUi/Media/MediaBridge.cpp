@@ -570,15 +570,15 @@ std::vector<SharedMediaClip> MBridge::UnpackPlaylistMedia(QByteArray& data) cons
     return clips;
 }
 
-SharedPlaybackTrack MBridge::AsTrack(const std::vector<SharedMediaClip>& media) const
-{
-    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>();
+// SharedPlaybackTrack MBridge::AsTrack(const std::vector<SharedMediaClip>& media) const
+// {
+//     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO);
 
-    for (const SharedMediaClip& clip : media)
-        track->AddMedia(clip);
+//     for (const SharedMediaClip& clip : media)
+//         track->AddMedia(clip);
 
-    return track;
-}
+//     return track;
+// }
 
 void MBridge::Load(const std::string& path)
 {

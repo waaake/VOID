@@ -16,6 +16,7 @@
 /* Internal */
 #include "Definition.h"
 #include "TrackItem.h"
+#include "Descriptors.h"
 #include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
@@ -37,12 +38,17 @@ public:
      * Adds track item to the mapping.
      */
     void Add(const SharedTrackItem& item);
+    bool Add(const SharedTrackItem& item, v_frame_t frame);
 
     /**
      * Removes the track item from the mapping.
      */
     void Remove(const SharedTrackItem& item);
+    void Remove(v_frame_t frame);
     void Clear();
+
+    std::size_t Size() const { return m_Items.size(); }
+    SharedTrackItem AtIndex(std::size_t index) const;
 
     /**
      * Returns a Track Item present at a given frame, if it exists
@@ -50,6 +56,8 @@ public:
      */
     SharedTrackItem At(const int frame) const;
     inline bool Empty() const { return m_Frames.empty(); }
+
+    bool Move(SharedTrackItem& item, int frame);
 
 private: /* Members */
     /**
@@ -119,22 +127,31 @@ class VOID_API PlaybackTrack : public VoidObject
     Q_OBJECT
 
 public:
-    PlaybackTrack(QObject* parent = nullptr);
+    explicit PlaybackTrack(const Sequence::TrackType& type, QObject* parent = nullptr);
     virtual ~PlaybackTrack();
+
+    const Sequence::TrackType& Type() const { return m_Type; }
+
+    void SetName(const std::string& name) { m_Name = name; }
+    void SetName(std::string&& name) { m_Name = std::move(name); }
+    const std::string& Name() const { return m_Name; }
 
     /*
      * Clears anything in the track and sets the provided media as first
      */
     void SetMedia(const SharedMediaClip& media);
 
-    /* Set a color for the Track */
-    inline void SetColor(const QColor& color)
-    {
-        /* Update the color for the track */
-        m_Color = color;
-        /* Emit a changed signal */
-        emit updated();
-    }
+    // /* Set a color for the Track */
+    // inline void SetColor(const QColor& color)
+    // {
+    //     /* Update the color for the track */
+    //     m_Color = color;
+    //     /* Emit a changed signal */
+    //     emit updated();
+    // }
+
+    std::size_t ItemCount() const { return m_Items.Size(); }
+    SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
 
     /*
      * Appends the Media to the already existing track of Medis files
@@ -161,11 +178,12 @@ public:
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }
+    v_frame_t GetSnapFrame(v_frame_t frame, const SharedTrackItem& trackitem, int threshold = 5) const;
 
     inline bool IsEmpty() const { return m_Items.Empty(); }
 
-    /* Returns the Color associated with the Track */
-    inline QColor Color() const { return m_Color; }
+    // /* Returns the Color associated with the Track */
+    // inline QColor Color() const { return m_Color; }
 
     /**
      * Describes whether a track is active for playback or taking in elements with menu options
@@ -173,6 +191,11 @@ public:
     [[nodiscard]] inline bool Active() const { return m_Visible && m_Enabled; }
 
     inline bool Visible() const { return m_Visible; }
+    
+    bool Locked() const { return m_Locked; }
+    void Lock(bool lock) { m_Locked = lock; emit updated(); }
+
+    void SetEnabled(bool enable) { m_Enabled = enable; emit updated(); }
     inline bool Enabled() const { return m_Enabled; }
 
     /**
@@ -183,8 +206,15 @@ public:
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
     inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
+    int TrackIndex() const;
 
     /* Setters */
+
+    bool MoveItem(SharedTrackItem& item, v_frame_t frame);
+    bool AddItem(SharedTrackItem& item, v_frame_t frame);
+    // Removes the Track Item at the given frame
+    void RemoveItem(v_frame_t frame);
+    void RemoveItem(SharedTrackItem& item);
 
     /**
      * The track's range is always defined by the track items in it
@@ -193,35 +223,22 @@ public:
     inline void SetStartFrame(int start) { SetRange(start, start + m_EndFrame); }
 
 signals: /* Signals Denoting actions in the Track */
-    void mediaAdded();
     void cleared();
-
-    /* This signal denotes that something in the track was changed/modified i.e. updated */
+    void mediaAdded();
+    void mediaRemoved();
     void updated();
-
-    /**
-     * Emitted when the time range of the track has changed
-     * includes the start and end frame of the track
-     */
     void rangeChanged(int start, int end);
 
-    /**
-     * Emitted when a frame is cached
-     * The cache could happen when the media cache operation is run continuously on a thread
-     * Or if the frame is queried by the viewport
-     */
-    void frameCached(int frame);
-
-    /* Emitted when the cache of all items' media has been cleared internally */
-    void cacheCleared();
 protected: /* Members */
     TrackMap m_Items;
     SharedTrackItem m_Recent;
+    std::string m_Name;
     int m_StartFrame, m_EndFrame;
     int m_Duration;
     bool m_Visible;
     bool m_Enabled;
-    QColor m_Color;
+    bool m_Locked;
+    Sequence::TrackType m_Type;
 
 protected: /* Methods */
     void SetRange(int start, int end, const bool inclusive = true);

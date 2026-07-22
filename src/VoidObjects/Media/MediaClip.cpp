@@ -17,6 +17,7 @@ VOID_NAMESPACE_OPEN
 MediaClip::MediaClip(QObject* parent)
     : VoidObject(parent)
     , Media()
+    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -27,6 +28,7 @@ MediaClip::MediaClip(QObject* parent)
 MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     : VoidObject(parent)
     , Media(mstruct)
+    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -37,6 +39,7 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
 MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
     : VoidObject(parent)
     , Media(mstruct)
+    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -51,6 +54,7 @@ MediaClip::MediaClip(const std::string& basepath,
     )
     : VoidObject(parent)
     , Media(basepath, name, extension)
+    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -68,6 +72,7 @@ MediaClip::MediaClip(const std::string& basepath,
     )
     : VoidObject(parent)
     , Media(basepath, name, extension, start, end, padding)
+    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -86,6 +91,7 @@ MediaClip::MediaClip(const std::string& basepath,
     )
     : VoidObject(parent)
     , Media(basepath, name, extension, start, end, padding, missing)
+    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {

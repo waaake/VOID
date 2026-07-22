@@ -4,9 +4,11 @@
 /* STD */
 #include <cstring> /* For using std::memcpy */
 #include <algorithm> /* For std::find and std::lower_bound */
+#include <cmath> /* std::abs */
 
 /* Internal */
 #include "Track.h"
+#include "Sequence.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -20,21 +22,37 @@ void TrackMap::Add(const SharedTrackItem& item)
      * There cannot be a scenario where one track can have multiple track items
      * at the same frame
      */
-    m_Items[item->StartFrame()] = item;
+    m_Items[item->TimelineIn()] = item;
 
     /* Add the same frame to the vector */
-    m_Frames.push_back(item->StartFrame());
+    m_Frames.push_back(item->TimelineIn());
+}
+
+bool TrackMap::Add(const SharedTrackItem& item, v_frame_t frame)
+{
+    if (At(frame))
+        return false;
+
+    m_Items[frame] = item;
+    m_Frames.push_back(frame);
+    return true;
 }
 
 void TrackMap::Remove(const SharedTrackItem& item)
 {
     /* Remove the item from the underlying structs */
-    m_Items.erase(item->StartFrame());
+    m_Items.erase(item->TimelineIn());
 
     /* Remove item from the vector */
-    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), item->StartFrame());
+    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), item->TimelineIn());
+    if (it != m_Frames.end())
+        m_Frames.erase(it);
+}
 
-    /* If the frame exists -> remove it */
+void TrackMap::Remove(v_frame_t frame)
+{
+    m_Items.erase(frame);
+    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), frame);
     if (it != m_Frames.end())
         m_Frames.erase(it);
 }
@@ -46,6 +64,12 @@ void TrackMap::Clear()
     m_Items.clear();
 }
 
+SharedTrackItem TrackMap::AtIndex(std::size_t index) const
+{
+    int frame = m_Frames.at(index);
+    return m_Items.at(frame);
+}
+
 SharedTrackItem TrackMap::At(const int frame) const
 {
     /**
@@ -55,7 +79,7 @@ SharedTrackItem TrackMap::At(const int frame) const
      */
     if (m_Items.find(frame) != m_Items.end())
         return m_Items.at(frame);
-    
+
     /**
      * If we were not able to find the item directly at the given frame
      * then find the nearest lower frame which is available in the underlying struct
@@ -67,10 +91,10 @@ SharedTrackItem TrackMap::At(const int frame) const
     /* if we're at the first index, this means that there is no frame lower than the asked frame in the struct */
     if (it == m_Frames.begin())
         return nullptr;
-    
+
     /**
      * Now that we have a lower bound frame available, that means we have a track item available
-     * But to see if the track item is the correct one, it depends on whether the requested frame is available 
+     * But to see if the track item is the correct one, it depends on whether the requested frame is available
      * within the track item's frame bounds
      */
     SharedTrackItem item = m_Items.at(*(--it));
@@ -83,19 +107,38 @@ SharedTrackItem TrackMap::At(const int frame) const
     return nullptr;
 }
 
+bool TrackMap::Move(SharedTrackItem& item, int frame)
+{
+    // Check that we don't already have an item at the new location for the item
+    SharedTrackItem existing = At(frame);
+    if (existing && existing.get() != item.get())
+        return false;
+
+    // Remove before we add it again to the new location
+    Remove(item);
+    item->Move(frame);
+    Add(item);
+
+    return true;
+}
+
 /* }}} */
 
-PlaybackTrack::PlaybackTrack(QObject* parent)
+PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
     : VoidObject(parent)
     , m_Recent(nullptr)
+    , m_Name("")
     , m_StartFrame(0)
     , m_EndFrame(0)
     , m_Duration(0)
     , m_Visible(true)
     , m_Enabled(true)
-    , m_Color(130, 110, 190)    /* Default Purple */
+    , m_Locked(false)
+    , m_Type(type)
+    // , m_Color(130, 110, 190)    /* Default Purple */
 {
     VOID_LOG_INFO("Track Created: {0}", Vuid());
+    connect(this, &PlaybackTrack::updated, this, [this]() -> void { m_Recent.reset(); });
 }
 
 PlaybackTrack::~PlaybackTrack()
@@ -124,7 +167,7 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
 
     /* Update the duration of the track */
     m_Duration = m_Duration + media->Duration();
-    
+
     /* Update the last frame of the Track */
     m_EndFrame = m_Duration - 1;
 
@@ -140,11 +183,11 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
                                         this
                                     );
 
-    /* Set a Color on the underlying media Clip that it has been associated with this track */
-    trackItem->SetColor(m_Color);
-    
-    /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
-    connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
+    // /* Set a Color on the underlying media Clip that it has been associated with this track */
+    // trackItem->SetColor(m_Color);
+
+    // /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
+    // connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
 
     /**
      * When the media gets added, it always gets added towards the right side which means the start frame
@@ -164,7 +207,7 @@ SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
 {
     if (const auto& item = GetTrackItem(frame))
         return item->GetMedia();
-    
+
     return nullptr;
 }
 
@@ -195,10 +238,10 @@ void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
 
     /**
      * If inclusive is true we include the last frame in duration calculation
-     * 
+     *
      * so if my start frame is 1001
      * and my end frame is 1010
-     * if we're not inclusive my duration is 
+     * if we're not inclusive my duration is
      * 1010 - 1001 = 9 frames
      * but if we're inclusive of the last frame then the duration becomes
      * (1010 - 1001) + 1 = 10 frames
@@ -225,21 +268,14 @@ const FloatImage PlaybackTrack::Image(v_frame_t frame)
 {
     if (auto item = GetTrackItem(frame))
         return item->Image(frame);
-    
+
     return nullptr;
 }
 
 void PlaybackTrack::ClearCache()
 {
-    /* Clear cache for each items' media */
     for (SharedTrackItem& item: m_Items)
-    {
-        /* Clear Cache */
         item->GetMedia()->ClearCache();
-    }
-
-    /* Once all media has been rid of cache -> emit the cacheCleared signal */
-    emit cacheCleared();
 }
 
 void PlaybackTrack::ClearCache(v_frame_t frame)
@@ -248,13 +284,73 @@ void PlaybackTrack::ClearCache(v_frame_t frame)
         item->ClearCache(frame);
 }
 
+v_frame_t PlaybackTrack::GetSnapFrame(v_frame_t frame, const SharedTrackItem& trackitem, int threshold) const
+{
+    for (int i = 0; i < static_cast<int>(m_Items.Size()); ++i)
+    {
+        const SharedTrackItem& item = m_Items.AtIndex(i);
+
+        if (item.get() == trackitem.get())
+            continue;
+
+        // No valid frame to snap to
+        if (item->TimelineIn() > frame)
+            return -1;
+
+        if (std::abs(frame - item->TimelineOut()) < threshold)
+            return item->TimelineOut() + 1;
+    }
+
+    return -1;
+}
+
 SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
 {
     if (m_Recent && m_Recent->InRange(frame))
         return m_Recent;
-    
+
     m_Recent = m_Items.At(frame);
     return m_Recent;
+}
+
+int PlaybackTrack::TrackIndex() const
+{
+    if (const auto& sequence = Sequence())
+        return m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(this) : sequence->AudioTrackIndex(this);
+    return -1;
+}
+
+bool PlaybackTrack::MoveItem(SharedTrackItem& item, v_frame_t frame)
+{
+    return m_Items.Move(item, frame);
+}
+
+bool PlaybackTrack::AddItem(SharedTrackItem& item, v_frame_t frame)
+{
+    if (m_Items.Add(item, frame))
+    {
+        item->setParent(this);
+        // Set the timeline range based on the provided frame
+        item->Move(frame);
+        emit updated();
+
+        return true;
+    }
+    return false;
+}
+
+void PlaybackTrack::RemoveItem(v_frame_t frame)
+{
+    m_Items.Remove(frame);
+    emit mediaRemoved();
+    emit updated();
+}
+
+void PlaybackTrack::RemoveItem(SharedTrackItem& item)
+{
+    m_Items.Remove(item);
+    emit mediaRemoved();
+    emit updated();
 }
 
 VOID_NAMESPACE_CLOSE

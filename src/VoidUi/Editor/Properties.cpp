@@ -9,22 +9,9 @@
 /* Internal */
 #include "Properties.h"
 #include "VoidUi/Engine/IconForge.h"
+#include "VoidUi/QExtensions/Frame.h"
 
 VOID_NAMESPACE_OPEN
-
-/* Scroll Area {{{ */
-
-class BaseWidget : public QWidget
-{
-protected:
-    void paintEvent(QPaintEvent* event) override
-    {
-        QPainter painter(this);
-        painter.fillRect(rect(), palette().color(QPalette::Base));
-    }
-};
-
-/* }}} */
 
 PropertiesPanel::PropertiesPanel(QWidget* parent)
     : QWidget(parent)

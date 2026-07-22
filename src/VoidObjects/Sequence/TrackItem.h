@@ -46,11 +46,12 @@ public:
      */
     void SetMedia(const SharedMediaClip& media, v_frame_t offset = 0);
     void SetRange(v_frame_t start, v_frame_t end);
-    inline void SetColor(const QColor& color) { m_Media->SetColor(color); }
 
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
+
+    std::string Name() const { return m_Media->Name(); }
 
     /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.
@@ -63,8 +64,16 @@ public:
 
     void ClearCache(v_frame_t frame);
 
-    inline v_frame_t StartFrame() const { return m_StartFrame; }
-    inline v_frame_t EndFrame() const { return m_EndFrame; }
+    v_frame_t TimelineIn() const { return m_Start; }
+    v_frame_t TimelineOut() const { return m_End; }
+    int Duration() const { return m_End - m_Start + 1; }
+
+    // This will change when we have handles implemented
+    v_frame_t SourceIn() const { return m_Media->FirstFrame(); }
+    v_frame_t SourceOut() const { return m_Media->LastFrame(); }
+
+    // Moves the item to the given frame
+    void Move(v_frame_t frame);
 
     /**
      * Returns whether the given frame is in range of the underlying media
@@ -85,40 +94,35 @@ public:
      */
     inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media->NearestFrame(frame + m_Offset) - m_Offset; }
 
-    /* TODO: Cache the First frame and last frame for Media in that class */
-    inline v_frame_t MediaFirstFrame() const { return m_Media->FirstFrame(); }
-    inline v_frame_t MediaLastFrame() const { return m_Media->LastFrame(); }
+    // /* TODO: Cache the First frame and last frame for Media in that class */
+    // inline v_frame_t MediaFirstFrame() const { return m_Media->FirstFrame(); }
+    // inline v_frame_t MediaLastFrame() const { return m_Media->LastFrame(); }
 
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
     inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
 
-    inline QColor Color() const { return m_Media->Color(); }
+    inline QColor Color() const { return m_Color; }
+    void ResetColor() { SetColor(m_Media->Color()); }
+    void SetColor(const QColor& color);
 
-signals: /* Signals denoting Actions in the TrackItem */
+signals:
     void mediaChanged();
-
-    /* This signal denotes that something in the track item was changed/modified i.e. updated */
     void updated();
-
-    /**
-     * Emitted when the time range of the track item has changed
-     * includes the start and end frame of the track item
-     */
     void rangeChanged(v_frame_t start, v_frame_t end);
 
-    /**
-     * Emitted when a frame is cached
-     * The cache could happen when the media cache operation is run continuously on a thread
-     * Or if the frame is queried by the viewport
-     */
-    void frameCached(v_frame_t frame);
+    // /**
+    //  * Emitted when a frame is cached
+    //  * The cache could happen when the media cache operation is run continuously on a thread
+    //  * Or if the frame is queried by the viewport
+    //  */
+    // void frameCached(v_frame_t frame);
 
-protected: /* Members */
+protected:
     SharedMediaClip m_Media;
+    QColor m_Color;
     v_frame_t m_Offset;
-
-    v_frame_t m_StartFrame;
-    v_frame_t m_EndFrame;
+    v_frame_t m_Start;
+    v_frame_t m_End;
 };
 
 VOID_NAMESPACE_CLOSE

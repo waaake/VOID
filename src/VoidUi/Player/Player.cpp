@@ -201,6 +201,8 @@ void Player::SetGrid(Playlist* playlist)
 
 void Player::SetFrame(int frame)
 {
+    emit frameChanged(frame);
+
     if (ActiveGrid())
         return RenderGrid(frame);
 

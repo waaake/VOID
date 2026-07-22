@@ -10,8 +10,9 @@
 /* Internal */
 #include "Task.h"
 #include "TaskView.h"
-#include "VoidObjects/Core/Threads.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Core/Threads.h"
+#include "VoidUi/QExtensions/Frame.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -45,18 +46,6 @@ VOID_NAMESPACE_OPEN
 //     }
 // };
 
-
-/// Base Widget
-
-class BaseWidget : public QWidget
-{
-protected:
-    void paintEvent(QPaintEvent* event) override
-    {
-        QPainter painter(this);
-        painter.fillRect(rect(), palette().color(QPalette::Base));
-    }
-};
 
 
 /// Task View

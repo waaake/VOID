@@ -14,6 +14,7 @@ PlaybackSequence::PlaybackSequence(QObject* parent)
     : VoidObject(parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
+    , m_Recent(nullptr)
 {
     VOID_LOG_INFO("Sequence Created: {0}", Vuid());
 }
@@ -45,13 +46,37 @@ void PlaybackSequence::SetRange(int start, int end)
     emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    return track;
+}
+
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::TrackType& type)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    track->SetName(name);
+
+    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    return track;
+}
+
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
-    /* Update the Video tracks with the provided new track */
     m_VideoTracks.push_back(track);
-
-    /* Connect the signal from the underlying pointer to the Track to updating the range of the sequence */
     connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Video Track ");
+        name.append(std::to_string(m_VideoTracks.size()));
+
+        track->SetName(name);
+    }
 
     /**
      * Inorder to update the range on the sequence, we need to see
@@ -61,15 +86,21 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
-
-    /* Emit that a track has been added */
-    emit trackAdded();
+    emit trackAdded(track);
 }
 
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
-    /* Update the Audio tracks with the provided new track */
     m_AudioTracks.push_back(track);
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Audio Track ");
+        name.append(std::to_string(m_AudioTracks.size()));
+
+        track->SetName(name);
+    }
 
     /**
      * Inorder to update the range on the sequence, we need to see
@@ -79,9 +110,37 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
+    emit trackAdded(track);
+}
 
-    /* Emit that a track has been added */
-    emit trackAdded();
+void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    emit trackAboutToBeRemoved(track);
+    auto _pred = [track] (const SharedPlaybackTrack& t) -> bool { return track.get() == t.get(); };
+    if (track->Type() == Sequence::TrackType::VIDEO)
+        m_VideoTracks.erase(std::remove_if(m_VideoTracks.begin(), m_VideoTracks.end(), _pred), m_VideoTracks.end());
+    else
+        m_AudioTracks.erase(std::remove_if(m_AudioTracks.begin(), m_AudioTracks.end(), _pred), m_AudioTracks.end());
+    
+    emit trackRemoved();
+}
+
+void PlaybackSequence::RemoveTrack(int index, const Sequence::TrackType& type)
+{
+    if (type == Sequence::TrackType::VIDEO)
+    {
+        const SharedPlaybackTrack& track = m_VideoTracks[index];
+        emit trackAboutToBeRemoved(track);
+        m_VideoTracks.erase(m_VideoTracks.begin() + index);
+    }
+    else
+    {
+        const SharedPlaybackTrack& track = m_AudioTracks[index];
+        emit trackAboutToBeRemoved(track);
+        m_AudioTracks.erase(m_AudioTracks.begin() + index);
+    }
+
+    emit trackRemoved();
 }
 
 void PlaybackSequence::UpdateRange(int start, int end)
@@ -105,6 +164,20 @@ void PlaybackSequence::UpdateRange(int start, int end)
     }
 
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
+}
+
+int PlaybackSequence::VideoTrackIndex(const PlaybackTrack* track) const
+{
+    auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
+    auto it = std::find_if(m_VideoTracks.begin(), m_VideoTracks.end(), _f);
+    return std::distance(m_VideoTracks.begin(), it);
+}
+
+int PlaybackSequence::AudioTrackIndex(const PlaybackTrack* track) const
+{
+    auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
+    auto it = std::find_if(m_AudioTracks.begin(), m_AudioTracks.end(), _f);
+    return std::distance(m_AudioTracks.begin(), it);
 }
 
 bool PlaybackSequence::HasMedia() const
@@ -151,53 +224,72 @@ SharedPlaybackTrack PlaybackSequence::ActiveVideoTrack() const
     return nullptr;
 }
 
-SharedTrackItem PlaybackSequence::GetTrackItem(const int frame) const
+SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->GetTrackItem(frame);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // return m_Recent;
 
-    /* There is nothing in the sequence */
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            return m_Recent;
+    }
+
     return nullptr;
 }
 
 SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->Media(frame);
-    
+    // if (m_Recent && m_Recent->InRange(frame))
+        // return m_Recent->GetMedia();
+
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            return m_Recent->GetMedia();
+    }
+
     return nullptr;
 }
 
 void PlaybackSequence::Image(v_frame_t frame, FloatImage& image)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        m_VideoTracks.back()->Image(frame, image);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // m_Recent->Image(frame, image);
+
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            m_Recent->Image(frame, image);
+    }
 }
 
 const FloatImage PlaybackSequence::Image(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->Image(frame);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // return m_Recent->Image(frame);
+
+    for (auto& track : m_VideoTracks)
+    {
+        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (m_Recent = track->GetTrackItem(frame))
+            return m_Recent->Image(frame);
+    }
 
     return nullptr;
 }

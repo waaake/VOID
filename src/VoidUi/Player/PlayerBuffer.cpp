@@ -8,14 +8,15 @@ VOID_NAMESPACE_OPEN
 
 PlayerBuffer::PlayerBuffer(QObject* parent)
     : QObject(parent)
-    , m_Clip(std::make_shared<MediaClip>())
-    , m_Track(std::make_shared<PlaybackTrack>())
     , m_Sequence(std::make_shared<PlaybackSequence>())
+    , m_Track(std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO, m_Sequence.get()))
+    , m_Clip(std::make_shared<MediaClip>())
     , m_Playlist(nullptr)
     , m_Startframe(0)
     , m_Endframe(1)
     , m_PlayingComponent(PlayableComponent::Clip)
 {
+    m_Sequence->AddVideoTrack(m_Track);
 }
 
 void PlayerBuffer::Set(const SharedMediaClip& media)
@@ -60,7 +61,7 @@ void PlayerBuffer::Set(const std::vector<SharedMediaClip>& media)
     for (const SharedMediaClip& media : media)
         m_Track->AddMedia(media);
 
-    m_PlayingComponent = PlayableComponent::Track;
+    m_PlayingComponent = PlayableComponent::Sequence;
     UpdateRange(m_Track->StartFrame(), m_Track->EndFrame());
 
     emit mediaUpdated();
