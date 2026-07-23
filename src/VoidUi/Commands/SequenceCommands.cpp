@@ -71,7 +71,7 @@ void MoveItemToTrackCommand::undo()
         // Try move back, should have no issues though
         if (previous->Track()->AddItem(item, m_Previous))
         {
-            current->Track()->RemoveItem(m_Requested);
+            current->Track()->RemoveItem(item);
 
             // Visual changes
             previous->AddItem(item);
@@ -90,7 +90,7 @@ bool MoveItemToTrackCommand::Redo()
         // Try move
         if (requested->Track()->AddItem(item, m_Requested))
         {
-            current->Track()->RemoveItem(m_Previous);
+            current->Track()->RemoveItem(item);
 
             // Visual updates
             requested->AddItem(item);

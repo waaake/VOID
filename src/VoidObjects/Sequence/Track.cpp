@@ -168,8 +168,6 @@ void PlaybackTrack::ClearCache()
 
 void PlaybackTrack::ClearCache(v_frame_t frame)
 {
-    // if (auto item = GetTrackItem(frame))
-    //     item->ClearCache(frame);
     if (SharedTrackItem item = m_Items.At(frame))
         item->ClearCache(frame);
 }

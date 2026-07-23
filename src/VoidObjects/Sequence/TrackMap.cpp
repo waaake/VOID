@@ -53,7 +53,7 @@ bool TrackMap::Add(const SharedTrackItem& item, v_frame_t frame)
 void TrackMap::Remove(const SharedTrackItem& item)
 {
     m_Items.erase(
-        std::find_if(
+        std::remove_if(
             m_Items.begin(),
             m_Items.end(),
             [item](const SharedTrackItem& _i)
@@ -68,7 +68,7 @@ void TrackMap::Remove(const SharedTrackItem& item)
 void TrackMap::Remove(v_frame_t frame)
 {
     m_Items.erase(
-        std::find_if(
+        std::remove_if(
             m_Items.begin(),
             m_Items.end(),
             [frame](const SharedTrackItem& _i)
