@@ -4,123 +4,20 @@
 #ifndef _VOID_TRACK_H
 #define _VOID_TRACK_H
 
-/* STD */
-#include <memory>
-#include <map>
-#include <vector>
-
 /* Qt */
 #include <QObject>
 #include <QColor>
 
 /* Internal */
 #include "Definition.h"
+#include "TrackMap.h"
 #include "TrackItem.h"
 #include "Descriptors.h"
 #include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
 
-/* Forward Declaration of the Sequence which holds the Track */
 class PlaybackSequence;
-class PlaybackTrack;
-
-/*
- * Let the Tracks be auto managed by reference count whether they survive
- * in the world or die or even get killed
- */
-typedef std::shared_ptr<PlaybackTrack> SharedPlaybackTrack;
-
-class VOID_API TrackMap
-{
-public:
-    /**
-     * Adds track item to the mapping.
-     */
-    void Add(const SharedTrackItem& item);
-    bool Add(const SharedTrackItem& item, v_frame_t frame);
-
-    /**
-     * Removes the track item from the mapping.
-     */
-    void Remove(const SharedTrackItem& item);
-    void Remove(v_frame_t frame);
-    void Clear();
-
-    std::size_t Size() const { return m_Items.size(); }
-    SharedTrackItem AtIndex(std::size_t index) const;
-
-    /**
-     * Returns a Track Item present at a given frame, if it exists
-     * else a null pointer is returned.
-     */
-    SharedTrackItem At(const int frame) const;
-    inline bool Empty() const { return m_Frames.empty(); }
-
-    bool Move(SharedTrackItem& item, int frame);
-
-private: /* Members */
-    /**
-     * This mapping holds the first frame of Track Item mapped to the Shared track item
-     * The intent is to be able to get a lower frame from any provided frame to get an item which may be present
-     * at the given frame
-     *
-     * e.g. If we have a track holding items like
-     *  __________  ________        _______  ___________
-     * |__________||________|------|_______||___________|
-     * 1        20 21     30       50    60  61        80
-     *
-     * and our internal map would look like 
-     * {
-     *      1  -> TrackItem1
-     *      21 -> TrackItem2
-     *      50 -> TrackItem3
-     *      61 -> TrackItem4
-     * }
-     * 
-     * Then if we were to pass in frame 10, this logic is going to find the nearest lower bound frame to 10
-     * which will result in 1 and we take a look at the track item at frame 1 and check if frame 10 (with the offset ofcourse)
-     * belongs to it, if yes we return the track item
-     *
-     * For another case, if some one is to pass a frame 35, the avaialable lower bound frame in the vector or map is 21
-     * we get the item at frame 21 and check if frame 35 (with offset) is in it's range, it won't be so we return nullptr back
-     * indicating that nothing exists at that point.
-     */
-    std::map<int, SharedTrackItem> m_Items;
-    std::vector<int> m_Frames;
-
-    /**
-     * Inner iterator to expose the TrackItems' iterator directly from this class
-     * this allows having only one Structure being used at the Track level to hold track items
-     */
-    class Iterator
-    {
-        /* Members */
-        using Iter = std::map<int, SharedTrackItem>::iterator;
-
-        /* Internal iterator */
-        Iter it;
-
-    public:
-        explicit Iterator(Iter it)
-            : it(it) {}
-
-        /* Dereference operator */
-        SharedTrackItem& operator*() { return it->second; }
-        /**
-         * Increment operator
-         * Increment internal iterator and return the instance reference
-         */
-        Iterator& operator++() { ++it; return *this; }
-
-        /* Not equals */
-        bool operator!=(const Iterator& other) { return it != other.it; }
-    };
-
-public: /* Iterator */
-    Iterator begin() { return Iterator(m_Items.begin()); }
-    Iterator end() { return Iterator(m_Items.end()); }
-};
 
 class VOID_API PlaybackTrack : public VoidObject
 {
@@ -152,12 +49,13 @@ public:
 
     std::size_t ItemCount() const { return m_Items.Size(); }
     SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
+    const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
 
     /*
      * Appends the Media to the already existing track of Medis files
      * Which will get played in order
      */
-    void AddMedia(const SharedMediaClip& media);
+    SharedTrackItem AddMedia(const SharedMediaClip& media);
     SharedMediaClip Media(v_frame_t frame);
 
     /* Clears the Playback Track */

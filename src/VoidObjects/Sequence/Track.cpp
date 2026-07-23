@@ -2,9 +2,7 @@
 // Licensed under the MIT License
 
 /* STD */
-#include <cstring> /* For using std::memcpy */
-#include <algorithm> /* For std::find and std::lower_bound */
-#include <cmath> /* std::abs */
+#include <cmath> // std::abs
 
 /* Internal */
 #include "Track.h"
@@ -12,117 +10,6 @@
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
-
-/* Track Map {[{ */
-
-void TrackMap::Add(const SharedTrackItem& item)
-{
-    /**
-     * The mapping is saved based on the first frame
-     * There cannot be a scenario where one track can have multiple track items
-     * at the same frame
-     */
-    m_Items[item->TimelineIn()] = item;
-
-    /* Add the same frame to the vector */
-    m_Frames.push_back(item->TimelineIn());
-}
-
-bool TrackMap::Add(const SharedTrackItem& item, v_frame_t frame)
-{
-    if (At(frame))
-        return false;
-
-    m_Items[frame] = item;
-    m_Frames.push_back(frame);
-    return true;
-}
-
-void TrackMap::Remove(const SharedTrackItem& item)
-{
-    /* Remove the item from the underlying structs */
-    m_Items.erase(item->TimelineIn());
-
-    /* Remove item from the vector */
-    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), item->TimelineIn());
-    if (it != m_Frames.end())
-        m_Frames.erase(it);
-}
-
-void TrackMap::Remove(v_frame_t frame)
-{
-    m_Items.erase(frame);
-    std::vector<int>::iterator it = std::find(m_Frames.begin(), m_Frames.end(), frame);
-    if (it != m_Frames.end())
-        m_Frames.erase(it);
-}
-
-void TrackMap::Clear()
-{
-    /* Clears the underlying structures */
-    m_Frames.clear();
-    m_Items.clear();
-}
-
-SharedTrackItem TrackMap::AtIndex(std::size_t index) const
-{
-    int frame = m_Frames.at(index);
-    return m_Items.at(frame);
-}
-
-SharedTrackItem TrackMap::At(const int frame) const
-{
-    /**
-     * To get the item at any given frame
-     * We first check if we're already in a best case scenario and there is a track item already
-     * which starts at this frame
-     */
-    if (m_Items.find(frame) != m_Items.end())
-        return m_Items.at(frame);
-
-    /**
-     * If we were not able to find the item directly at the given frame
-     * then find the nearest lower frame which is available in the underlying struct
-     * This would allow us to get a track item which starts at a frame which is just lower than the current
-     * provided frame
-     */
-    auto it = std::lower_bound(m_Frames.begin(), m_Frames.end(), frame);
-
-    /* if we're at the first index, this means that there is no frame lower than the asked frame in the struct */
-    if (it == m_Frames.begin())
-        return nullptr;
-
-    /**
-     * Now that we have a lower bound frame available, that means we have a track item available
-     * But to see if the track item is the correct one, it depends on whether the requested frame is available
-     * within the track item's frame bounds
-     */
-    SharedTrackItem item = m_Items.at(*(--it));
-
-    /* The frame (with the offset applied back to match the media range) is in range of the item's media */
-    if (item->InRange(frame))
-        return item;
-
-    /* There wasn't any track item at the requested frame */
-    return nullptr;
-}
-
-bool TrackMap::Move(SharedTrackItem& item, int frame)
-{
-    // Check that we don't already have an item at the new location for the item
-    SharedTrackItem existing = At(frame);
-    if (existing && existing.get() != item.get())
-        return false;
-
-    // Remove before we add it again to the new location
-    Remove(item);
-    item->Move(frame);
-    Add(item);
-
-    return true;
-}
-
-/* }}} */
 
 PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
     : VoidObject(parent)
@@ -160,7 +47,7 @@ void PlaybackTrack::SetMedia(const SharedMediaClip& media)
     AddMedia(media);
 }
 
-void PlaybackTrack::AddMedia(const SharedMediaClip& media)
+SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
 {
     /* Calculate the offset for reaching the first frame of media in the given timeline */
     int offset = media->FirstFrame() - m_Duration;
@@ -175,7 +62,7 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
     /*
      * The current track is being passed as the parent indicating this track is the parent of the track item
      */
-    SharedTrackItem trackItem = std::make_shared<TrackItem>(
+    SharedTrackItem item = std::make_shared<TrackItem>(
                                         media,
                                         media->FirstFrame() - offset,
                                         media->LastFrame() - offset,
@@ -194,13 +81,14 @@ void PlaybackTrack::AddMedia(const SharedMediaClip& media)
      * would never change in this case and only would result in a change in the last frame
      * which gets calculated based on previous last frame
      */
-    m_Items.Add(trackItem);
+    m_Items.Add(item);
 
     /**
      * Since the media is getting added to the start frame should just remain the same,
      * while the updated end frame along with the original start should get emitted to notify others
      */
     emit rangeChanged(m_StartFrame, m_EndFrame);
+    return item;
 }
 
 SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
@@ -280,7 +168,9 @@ void PlaybackTrack::ClearCache()
 
 void PlaybackTrack::ClearCache(v_frame_t frame)
 {
-    if (auto item = GetTrackItem(frame))
+    // if (auto item = GetTrackItem(frame))
+    //     item->ClearCache(frame);
+    if (SharedTrackItem item = m_Items.At(frame))
         item->ClearCache(frame);
 }
 
