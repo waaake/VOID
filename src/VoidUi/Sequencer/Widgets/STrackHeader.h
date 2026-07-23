@@ -20,7 +20,7 @@ class STrackHeader : public QWidget
 public:
     STrackHeader(const SharedPlaybackTrack& track, SequencerContext* context, QWidget* parent = nullptr);
 
-    QSize sizeHint() const { return QSize(Sequencer::TrackHeaderWidth, Sequencer::TrackHeight); }
+    QSize sizeHint() const override { return QSize(Sequencer::TrackHeaderWidth, Sequencer::TrackHeight); }
     SharedPlaybackTrack Track() const { return m_Track; }
 
 signals:

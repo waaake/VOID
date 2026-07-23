@@ -23,15 +23,17 @@
 
 VOID_NAMESPACE_OPEN
 
-class SequencerTimeline : public QWidget
+class VOID_API SequencerTimeline : public QWidget
 {
     Q_OBJECT
 public:
     explicit SequencerTimeline(QWidget* parent = nullptr);
     virtual inline QSize sizeHint() const override { return QSize(640, 300); }
 
-    void SetFrame(v_frame_t frame);
     void SetSequence(const SharedPlaybackSequence& sequence);
+    SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
+
+    void SetFrame(v_frame_t frame);
     void Refresh();
 
     void AddTrack(const SharedPlaybackTrack& track);
