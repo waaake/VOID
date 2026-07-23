@@ -15,6 +15,7 @@
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Media/MetadataViewer.h"
+#include "VoidUi/Sequencer/Sequencer.h"
 #include "VoidUi/Project/Project.h"
 #include "VoidUi/Engine/Globals.h"
 
@@ -32,6 +33,7 @@ void BindUi(py::module_& m)
     m.def("active_project", []() { return _MediaBridge.ActiveProject(); }, py::return_value_policy::reference);
     m.def("load_project", [](const std::string& path) { _MediaBridge.Load(path); }, py::arg("path"));
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
+    m.def("sequencer", &UIGlobals::GetSequencer, py::return_value_policy::reference);
     m.def("menu_system", &UIGlobals::InternalMenuSystem, py::return_value_policy::reference);
     m.def("player_controller", &PlayerBridge::Instance, py::return_value_policy::reference);
     m.def("create_effect", [](const SharedMediaClip& media, const std::string& type) -> void
@@ -122,6 +124,10 @@ void BindUi(py::module_& m)
     py::class_<MetadataViewer>(m, "MetadataViewer")
         .def("set_from_media", &MetadataViewer::SetFromMedia)
         .def("set_metadata", &MetadataViewer::SetMetadata);
+
+    py::class_<SequencerTimeline>(m, "Sequencer")
+        .def("active_sequence", &SequencerTimeline::ActiveSequence, py::return_value_policy::reference)
+        .def("set_sequence", &SequencerTimeline::SetSequence, py::arg("sequence"));
     
     /* Menu System */
     py::class_<MenuSystem>(m, "MenuSystem")
