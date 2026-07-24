@@ -19,6 +19,8 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
 {
     setZValue(Sequencer::ZTrack);
     connect(m_Track.get(), &PlaybackTrack::updated, this, &STrack::UpdateItems);
+    connect(m_Track.get(), &PlaybackTrack::itemAdded, this, &STrack::AddItem);
+    connect(m_Track.get(), &PlaybackTrack::cleared, this, &STrack::Clear);
 
     m_BoundingRect = QRectF(0, 0, Sequencer::SceneWidth, Sequencer::TrackHeight);
     setPos(0, context->Geometry()->TrackRect(track->TrackIndex()).top());
