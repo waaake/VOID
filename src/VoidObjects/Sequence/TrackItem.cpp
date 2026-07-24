@@ -4,6 +4,7 @@
 /* Internal */
 #include "TrackItem.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/VoidContext.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -93,6 +94,34 @@ void TrackItem::SetColor(const QColor& color)
 {
     m_Color = color;
     emit updated();
+}
+
+void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
+{
+    out.SetObject();
+
+    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+    out.AddMember("media_index", _VoidContext.ActiveProject()->MediaRow(m_Media), allocator);
+    out.AddMember("timeline_in", static_cast<int64_t>(m_Start), allocator);
+    out.AddMember("timeline_out", static_cast<int64_t>(m_End), allocator);
+    out.AddMember("offset", static_cast<int64_t>(m_Offset), allocator);
+    out.AddMember("r", static_cast<int>(m_Color.red()), allocator);
+    out.AddMember("g", static_cast<int>(m_Color.green()), allocator);
+    out.AddMember("b", static_cast<int>(m_Color.blue()), allocator);
+
+    // TODO: Pending work with handles (head and tail) & effects added on the track item;
+}
+
+void TrackItem::Deserialize(const rapidjson::Value& in)
+{
+    m_Media = _VoidContext.ActiveProject()->MediaAt(in["media_index"].GetInt(), 0);
+    m_Start = in["timeline_in"].GetInt64();
+    m_End = in["timeline_out"].GetInt64();
+    m_Offset = in["offset"].GetInt64();
+    // m_Color = std::move(QColor(in["r"].GetInt(), in["g"].GetInt(), in["b"].GetInt()));
+    m_Color.setRed(in["r"].GetInt());
+    m_Color.setGreen(in["g"].GetInt());
+    m_Color.setBlue(in["b"].GetInt());
 }
 
 VOID_NAMESPACE_CLOSE

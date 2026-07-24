@@ -105,6 +105,11 @@ public:
     void ResetColor() { SetColor(m_Media->Color()); }
     void SetColor(const QColor& color);
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+
+    const char* TypeName() const override { return "TrackItem"; }
+
 signals:
     void mediaChanged();
     void updated();
