@@ -48,6 +48,7 @@ public:
     // }
 
     std::size_t ItemCount() const { return m_Items.Size(); }
+    std::size_t ItemIndex(const SharedTrackItem& item) const { return m_Items.ItemIndex(item); }
     SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
     const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
 
@@ -108,11 +109,12 @@ public:
 
     /* Setters */
 
-    bool MoveItem(SharedTrackItem& item, v_frame_t frame);
-    bool AddItem(SharedTrackItem& item, v_frame_t frame);
+    bool MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    bool AddItem(const SharedTrackItem& item);
+    bool AddItem(const SharedTrackItem& item, v_frame_t frame);
     // Removes the Track Item at the given frame
     void RemoveItem(v_frame_t frame);
-    void RemoveItem(SharedTrackItem& item);
+    void RemoveItem(const SharedTrackItem& item);
 
     /**
      * The track's range is always defined by the track items in it
@@ -120,10 +122,16 @@ public:
      */
     inline void SetStartFrame(int start) { SetRange(start, start + m_EndFrame); }
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+
+    const char* TypeName() const override { return "PlaybackTrack"; }
+
 signals: /* Signals Denoting actions in the Track */
     void cleared();
-    void mediaAdded();
-    void mediaRemoved();
+    void itemAdded(const SharedTrackItem& item);
+    void itemAboutToBeRemoved(const SharedTrackItem& item);
+    void itemRemoved();
     void updated();
     void rangeChanged(int start, int end);
 

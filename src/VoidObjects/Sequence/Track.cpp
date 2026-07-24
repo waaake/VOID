@@ -88,6 +88,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
      * while the updated end frame along with the original start should get emitted to notify others
      */
     emit rangeChanged(m_StartFrame, m_EndFrame);
+    emit itemAdded(item);
     return item;
 }
 
@@ -101,20 +102,8 @@ SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
 
 void PlaybackTrack::Clear()
 {
-    /**
-     * Clearing a Track means we are getting rid of all the media that has
-     * been added to the track first, once the media is cleared from the store
-     * the range of the track needs to be reset to the default range of 0 - 0
-     *
-     * After both of the operations are performed we emit rangeChanged and updated signal
-     * to any listeners
-     */
     m_Items.Clear();
-
-    /* This emits the rangeChanged signal */
     SetRange(0, 0, false);
-
-    /* Emit the cleared signal to denote that the track has been cleared of any medias */
     emit cleared();
 }
 
@@ -208,19 +197,30 @@ int PlaybackTrack::TrackIndex() const
     return -1;
 }
 
-bool PlaybackTrack::MoveItem(SharedTrackItem& item, v_frame_t frame)
+bool PlaybackTrack::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     return m_Items.Move(item, frame);
 }
 
-bool PlaybackTrack::AddItem(SharedTrackItem& item, v_frame_t frame)
+bool PlaybackTrack::AddItem(const SharedTrackItem& item)
+{
+    if (m_Items.Add(item, item->TimelineIn()))
+    {
+        emit itemAdded(item);
+        return true;
+    }
+    return false;
+}
+
+bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 {
     if (m_Items.Add(item, frame))
     {
         item->setParent(this);
         // Set the timeline range based on the provided frame
         item->Move(frame);
-        emit updated();
+        // emit updated();
+        emit itemAdded(item);
 
         return true;
     }
@@ -230,15 +230,71 @@ bool PlaybackTrack::AddItem(SharedTrackItem& item, v_frame_t frame)
 void PlaybackTrack::RemoveItem(v_frame_t frame)
 {
     m_Items.Remove(frame);
-    emit mediaRemoved();
+    emit itemRemoved();
     emit updated();
 }
 
-void PlaybackTrack::RemoveItem(SharedTrackItem& item)
+void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 {
+    emit itemAboutToBeRemoved(item);
     m_Items.Remove(item);
-    emit mediaRemoved();
+    emit itemRemoved();
     emit updated();
+}
+
+void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
+{
+    out.SetObject();
+
+    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+    out.AddMember("name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
+    out.AddMember("start_frame", static_cast<int64_t>(m_StartFrame), allocator);
+    out.AddMember("end_frame", static_cast<int64_t>(m_EndFrame), allocator);
+    out.AddMember("duration", static_cast<int64_t>(m_Duration), allocator);
+    out.AddMember("visible", static_cast<int>(m_Visible), allocator);
+    out.AddMember("enabled", static_cast<int>(m_Enabled), allocator);
+    out.AddMember("locked", static_cast<int>(m_Locked), allocator);
+    out.AddMember("track_type", static_cast<int>(m_Type), allocator);
+    
+    out.AddMember("item_count", static_cast<int64_t>(m_Items.Size()), allocator);
+
+    rapidjson::Value trackitems(rapidjson::kArrayType);
+    for (const SharedTrackItem& item: m_Items)
+    {
+        rapidjson::Value itemObject;
+        item->Serialize(itemObject, allocator);
+
+        trackitems.PushBack(itemObject, allocator);
+    }
+
+    out.AddMember("TrackItems", trackitems, allocator);
+}
+
+void PlaybackTrack::Deserialize(const rapidjson::Value& in)
+{
+    m_Name = in["name"].GetString();
+    m_StartFrame = in["start_frame"].GetInt64();
+    m_EndFrame = in["end_frame"].GetInt64();
+    m_Duration = in["duration"].GetInt64();
+
+    m_Visible = in["visible"].GetInt();
+    m_Enabled = in["enabled"].GetInt();
+    m_Locked = in["locked"].GetInt();
+    m_Type = static_cast<Sequence::TrackType>(in["track_type"].GetInt());
+
+    const rapidjson::Value::ConstArray trackitems = in["TrackItems"].GetArray();
+    m_Items.Reserve(trackitems.Size());
+
+    for (int i = 0; i < trackitems.Size(); ++i)
+    {
+        SharedTrackItem item = std::make_shared<TrackItem>(this);
+        item->Deserialize(trackitems[i]);
+
+        // m_Items.Add(item);
+        // emit itemAdded(item);
+        AddItem(item);
+        VOID_LOG_INFO("Added item -- {0} -- TimelineIn: {1}", item->Name(), item->TimelineIn());
+    }
 }
 
 VOID_NAMESPACE_CLOSE
