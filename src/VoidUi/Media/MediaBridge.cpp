@@ -11,6 +11,7 @@
 /* Internal */
 #include "MediaBridge.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/VoidContext.h"
 #include "VoidUi/Preferences/Preferences.h"
 
 /* Commands */
@@ -113,8 +114,8 @@ void MBridge::SetActiveProject(Project* project)
     m_UndoGroup->addStack(m_Project->UndoStack());
     m_UndoGroup->setActiveStack(m_Project->UndoStack());
 
-    /* Force Update on the Model */
     m_Projects->Refresh();
+    _VoidContext.SetActiveProject(m_Project);
 }
 
 void MBridge::AddMedia(const std::string& filepath)
