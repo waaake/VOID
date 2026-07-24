@@ -40,8 +40,12 @@ public:
 
     SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type);
     SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type);
+    SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type, int index);
+    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type, int index);
     void AddVideoTrack(const SharedPlaybackTrack& track);
     void AddAudioTrack(const SharedPlaybackTrack& track);
+    void AddVideoTrack(const SharedPlaybackTrack& track, int index);
+    void AddAudioTrack(const SharedPlaybackTrack& track, int index);
     void RemoveTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(int index, const Sequence::TrackType& type);
 

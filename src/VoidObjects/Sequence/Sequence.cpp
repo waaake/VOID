@@ -62,6 +62,22 @@ SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const
     return track;
 }
 
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type, int index)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
+    return track;
+}
+
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::TrackType& type, int index)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    track->SetName(name);
+
+    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
+    return track;
+}
+
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
     m_VideoTracks.push_back(track);
@@ -92,6 +108,57 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
     m_AudioTracks.push_back(track);
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Audio Track ");
+        name.append(std::to_string(m_AudioTracks.size()));
+
+        track->SetName(name);
+    }
+
+    /**
+     * Inorder to update the range on the sequence, we need to see
+     * the minimum frame (existing or the provided track) gets set as the start frame
+     * and the maximum frame (existing or the provided track) gets set as the end frame
+     * 
+     * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
+     */
+    SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
+    emit trackAdded(track);
+}
+
+void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index)
+{
+    m_VideoTracks.insert(m_VideoTracks.begin() + index, track);
+    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Video Track ");
+        name.append(std::to_string(m_VideoTracks.size()));
+
+        track->SetName(name);
+    }
+
+    /**
+     * Inorder to update the range on the sequence, we need to see
+     * the minimum frame (existing or the provided track) gets set as the start frame
+     * and the maximum frame (existing or the provided track) gets set as the end frame
+     * 
+     * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
+     */
+    SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
+    emit trackAdded(track);
+}
+
+void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index)
+{
+    m_AudioTracks.insert(m_AudioTracks.begin() + index, track);
     if (track->Name().empty())
     {
         std::string name;
