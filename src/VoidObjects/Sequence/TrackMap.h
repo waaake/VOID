@@ -6,7 +6,6 @@
 
 /* STD */
 #include <memory>
-#include <map>
 #include <vector>
 
 /* Internal */
@@ -48,9 +47,11 @@ public:
     void Remove(const SharedTrackItem& item);
     void Remove(v_frame_t frame);
     void Clear() { m_Items.clear(); }
+    void Reserve(std::size_t reserve) { m_Items.reserve(reserve); }
 
     std::size_t Size() const { return m_Items.size(); }
     SharedTrackItem AtIndex(std::size_t index) const { return m_Items.at(index); }
+    std::size_t ItemIndex(const SharedTrackItem& item) const;
 
     /**
      * Returns a Track Item present at a given frame, if it exists
@@ -59,13 +60,13 @@ public:
     SharedTrackItem At(const int frame) const;
     inline bool Empty() const { return m_Items.empty(); }
 
-    bool Move(SharedTrackItem& item, int frame);
+    bool Move(const SharedTrackItem& item, int frame);
     const std::vector<SharedTrackItem>& Items() const { return m_Items; }
 
     std::vector<SharedTrackItem>::iterator begin() noexcept { return m_Items.begin(); }
     std::vector<SharedTrackItem>::iterator end() noexcept { return m_Items.end(); }
-    std::vector<SharedTrackItem>::const_iterator cbegin() const noexcept { return m_Items.cbegin(); }
-    std::vector<SharedTrackItem>::const_iterator cend() const noexcept { return m_Items.cend(); }
+    const std::vector<SharedTrackItem>::const_iterator begin() const noexcept { return m_Items.cbegin(); }
+    const std::vector<SharedTrackItem>::const_iterator end() const noexcept { return m_Items.cend(); }
 
 private:
     std::vector<SharedTrackItem> m_Items;

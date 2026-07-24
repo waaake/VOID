@@ -80,6 +80,12 @@ void TrackMap::Remove(v_frame_t frame)
     );
 }
 
+std::size_t TrackMap::ItemIndex(const SharedTrackItem& item) const
+{
+    auto it = std::find_if(m_Items.begin(), m_Items.end(), [item](const SharedTrackItem& _i) { return item.get() == _i.get(); });
+    return (it == m_Items.end()) ? std::string::npos : static_cast<std::size_t>(it - m_Items.begin());
+}
+
 SharedTrackItem TrackMap::At(const int frame) const
 {
     // Returns the iter to the first item whose timeline in is higher than the requested O(log n)
@@ -100,7 +106,7 @@ SharedTrackItem TrackMap::At(const int frame) const
     return (item->InRange(frame)) ? item : nullptr;
 }
 
-bool TrackMap::Move(SharedTrackItem& item, int frame)
+bool TrackMap::Move(const SharedTrackItem& item, int frame)
 {
     auto it = std::lower_bound(
         m_Items.begin(),
