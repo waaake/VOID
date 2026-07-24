@@ -48,8 +48,10 @@ private:
     STimelineRuler* m_Ruler;
     STrackHeaderWidget* m_TrackHeader;
     STimelineView* m_View;
-    QShortcut* m_FitShortcut;
     SequencerContextMenu* m_Menu;
+
+    QShortcut* m_FitShortcut;
+    QShortcut* m_DeleteShortcut;
 
     SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
@@ -57,6 +59,7 @@ private:
 private: /* Methods */
     void Build();
     void Connect();
+    void DeleteSelected();
 };
 
 VOID_NAMESPACE_CLOSE

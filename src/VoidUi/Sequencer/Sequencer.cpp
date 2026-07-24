@@ -70,6 +70,7 @@ void SequencerTimeline::RemoveTrack(const SharedPlaybackTrack& track)
 void SequencerTimeline::Build()
 {
     m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
     m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);
@@ -106,7 +107,10 @@ void SequencerTimeline::Build()
 void SequencerTimeline::Connect()
 {
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
+
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
+    connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
+
     connect(m_Context.Controller(), &SequencerController::frameChangeRequested, this, &SequencerTimeline::frameChangeRequested);
     connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& position) -> void 
     {
@@ -118,18 +122,29 @@ void SequencerTimeline::Connect()
     {
         m_Context.Controller()->CreateVideoTrack(m_Sequence);
     });
+    connect(m_Menu, &SequencerContextMenu::removeTracksRequested, this, &SequencerTimeline::DeleteSelected);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {
         if (reset)
         {
-            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->Current());
+            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems());
         }
         else
         {
             QColor color = QColorDialog::getColor(QColor(255, 255, 255), this, "Select Trackitem Color");
-            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->Current(), color);    
+            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems(), color);    
         }
     });
+}
+
+void SequencerTimeline::DeleteSelected()
+{
+    if (m_Context.SelectionModel()->HasTrackSelection())
+        m_Context.Controller()->RemoveTracks(m_Sequence, m_Context.SelectionModel()->SelectedTracks());
+    else if (m_Context.SelectionModel()->HasTrackSelection())
+        m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
+    
+    m_Context.SelectionModel()->Clear();
 }
 
 VOID_NAMESPACE_CLOSE
