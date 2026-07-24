@@ -84,29 +84,29 @@ void VoidBase::drawControl(ControlElement element, const QStyleOption* option, Q
 {
     switch (element)
     {
-        case CE_MenuItem:
-        {
-            const QStyleOptionMenuItem* item = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+        // case CE_MenuItem:
+        // {
+        //     const QStyleOptionMenuItem* item = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
 
-            if (!item)
-                break;
+        //     if (!item)
+        //         break;
 
-            // Get the sub element rect for the icon
-            QRect textRect = item->rect;
-            // Consider the icon width
-            textRect.setLeft(textRect.left() + item->maxIconWidth + 6); // Add the spacing across icon sides
+        //     // Get the sub element rect for the icon
+        //     QRect textRect = item->rect;
+        //     // Consider the icon width
+        //     textRect.setLeft(textRect.left() + item->maxIconWidth + 6); // Add the spacing across icon sides
 
-            if (item->state & QStyle::State_Enabled)
-            {
-                /* Default */
-                QProxyStyle::drawControl(element, option, painter, widget);
-                break;
-            }
+        //     if (item->state & QStyle::State_Enabled)
+        //     {
+        //         /* Default */
+        //         QProxyStyle::drawControl(element, option, painter, widget);
+        //         break;
+        //     }
 
-            painter->setPen(option->palette.color(QPalette::Disabled, QPalette::Text));
-            painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, item->text);
-            break;
-        }
+        //     painter->setPen(option->palette.color(QPalette::Disabled, QPalette::Text));
+        //     painter->drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, item->text);
+        //     break;
+        // }
         case CE_MenuBarItem:
         {
             const QStyleOptionMenuItem* item = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
