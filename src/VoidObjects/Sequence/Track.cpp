@@ -219,7 +219,6 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
         item->setParent(this);
         // Set the timeline range based on the provided frame
         item->Move(frame);
-        // emit updated();
         emit itemAdded(item);
 
         return true;

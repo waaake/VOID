@@ -10,6 +10,8 @@ VOID_NAMESPACE_OPEN
 
 TrackItem::TrackItem(QObject* parent)
     : VoidObject(parent)
+    , m_Media(nullptr)
+    , m_Name("")
     , m_Color(90, 110, 60)
     , m_Offset(0)
     , m_Start(0)
@@ -21,6 +23,7 @@ TrackItem::TrackItem(QObject* parent)
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
     : VoidObject(parent)
     , m_Media(media)
+    , m_Name(media->Name())
     , m_Color(media->Color())
     , m_Offset(offset)
     , m_Start(start)
@@ -53,11 +56,17 @@ void TrackItem::SetRange(v_frame_t start, v_frame_t end)
     m_End = end;
 }
 
+void TrackItem::Unlink()
+{
+    m_Media.reset();
+    emit updated();
+}
+
 void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 {
     // Update the frame value with the offset so that we match the original media range
     v_frame_t f = frame + m_Offset;
-    if (m_Media->Contains(f))
+    if (m_Media && m_Media->Contains(f))
     {
         // emit frameCached(frame);
         m_Media->Image(f, image);
@@ -67,7 +76,7 @@ void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 const FloatImage TrackItem::Image(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
-    if (m_Media->Contains(f))
+    if (m_Media && m_Media->Contains(f))
         return m_Media->Image(f);
     
     return nullptr;
@@ -76,15 +85,23 @@ const FloatImage TrackItem::Image(v_frame_t frame)
 void TrackItem::ClearCache(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
-    if (m_Media->Contains(f))
+    if (m_Media && m_Media->Contains(f))
         m_Media->Clear(f);
 }
 
 void TrackItem::Move(v_frame_t frame)
 {
-    m_Offset = m_Media->FirstFrame() - frame;
-    m_Start = frame;
-    m_End = m_Media->LastFrame() - m_Offset;
+    if (m_Media)
+    {
+        m_Offset = m_Media->FirstFrame() - frame;
+        m_Start = frame;
+        m_End = m_Media->LastFrame() - m_Offset;
+    }
+    else
+    {
+        m_End = frame + Duration();
+        m_Start = frame;
+    }
 
     emit rangeChanged(m_Start, m_End);
     emit updated();
@@ -101,20 +118,26 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.SetObject();
 
     out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
-    out.AddMember("media_index", _VoidContext.ActiveProject()->MediaRow(m_Media), allocator);
+    // All Unlinked media gets -1 index
+    out.AddMember("media_index", m_Media ? _VoidContext.ActiveProject()->MediaRow(m_Media) : -1, allocator);
+    out.AddMember("name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
     out.AddMember("timeline_in", static_cast<int64_t>(m_Start), allocator);
     out.AddMember("timeline_out", static_cast<int64_t>(m_End), allocator);
     out.AddMember("offset", static_cast<int64_t>(m_Offset), allocator);
-    out.AddMember("r", static_cast<int>(m_Color.red()), allocator);
-    out.AddMember("g", static_cast<int>(m_Color.green()), allocator);
-    out.AddMember("b", static_cast<int>(m_Color.blue()), allocator);
+    out.AddMember("r", m_Color.red(), allocator);
+    out.AddMember("g", m_Color.green(), allocator);
+    out.AddMember("b", m_Color.blue(), allocator);
 
     // TODO: Pending work with handles (head and tail) & effects added on the track item;
 }
 
 void TrackItem::Deserialize(const rapidjson::Value& in)
 {
-    m_Media = _VoidContext.ActiveProject()->MediaAt(in["media_index"].GetInt(), 0);
+    // Media could be unlinked from the item
+    int index = in["media_index"].GetInt();
+    m_Media = index > -1 ? _VoidContext.ActiveProject()->MediaAt(index, 0) : nullptr;
+
+    m_Name = in["name"].GetString();
     m_Start = in["timeline_in"].GetInt64();
     m_End = in["timeline_out"].GetInt64();
     m_Offset = in["offset"].GetInt64();

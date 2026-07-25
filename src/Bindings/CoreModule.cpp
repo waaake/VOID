@@ -205,7 +205,8 @@ void BindCore(py::module_& m)
         .def("timeline_out", &TrackItem::TimelineOut)
         .def("source_in", &TrackItem::SourceIn)
         .def("source_out", &TrackItem::SourceOut)
-        .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference);
+        .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference)
+        .def("unlink", &TrackItem::Unlink);
 }
 
 } // namespace bindings
