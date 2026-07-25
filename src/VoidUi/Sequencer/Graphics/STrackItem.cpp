@@ -37,31 +37,54 @@ STrack* STrackItem::Track() const
 void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     painter->setRenderHint(QPainter::Antialiasing);
-    const QColor itemcol = Track()->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
-
-    painter->setPen(QPen(itemcol, 1));
-    painter->setBrush(Background(option));
-    painter->drawRect(boundingRect());
-
-    painter->fillRect(2, 2, 6, Sequencer::TrackHeight - 8, itemcol);
-
-    painter->setPen(option->palette.color(QPalette::Text));
-    painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
-
-    if (SharedMediaClip media = m_Item->GetMedia())
+    const int width = boundingRect().width();
+    if (m_Item->Linked())
     {
-        QPixmap thumbnail = media->Thumbnail();
-        QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
+        const QColor itemcol = Track()->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
 
-        QSizeF size = thumbnail.size();
-        size.scale(thumbRect.size(), Qt::KeepAspectRatio);
+        painter->setPen(QPen(itemcol, 1));
+        painter->setBrush(Background(option));
+        painter->drawRect(boundingRect());
 
-        QRectF drawRect(thumbRect.x(), thumbRect.y(), size.width(), size.height());
-        drawRect.moveCenter(thumbRect.center());
+        painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
 
-        painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
+        painter->setPen(option->palette.color(QPalette::Text));
+        painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+
+        if (width < 40)
+            return;
+
+        if (SharedMediaClip media = m_Item->GetMedia())
+        {
+            QPixmap thumbnail = media->Thumbnail();
+            QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
+
+            QSizeF size = thumbnail.size();
+            size.scale(thumbRect.size(), Qt::KeepAspectRatio);
+
+            QRectF drawRect(thumbRect.x(), thumbRect.y(), size.width(), size.height());
+            drawRect.moveCenter(thumbRect.center());
+
+            painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
+        }
     }
+    else
+    {
+        QColor itemcol(160, 70, 50);
+        painter->setPen(QPen(itemcol.darker(200), 1));
+        painter->setBrush(m_Context->SelectionModel()->IsSelected(m_Item) ? option->palette.color(QPalette::Highlight).darker(180) : itemcol);
+        painter->drawRect(boundingRect());
 
+        const QRect trect(6, Sequencer::TrackItemHeight - 30, 40, 20);
+        if (width > trect.right())
+        {
+            painter->fillRect(trect, itemcol.darker(180));
+    
+            painter->setPen(option->palette.color(QPalette::Text));
+            painter->drawText(trect, Qt::AlignCenter, "OFF");
+            painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+        }
+    }
 }
 
 void STrackItem::Update()
@@ -173,7 +196,7 @@ void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 void STrackItem::CalculateBoundingRect()
 {
     const double width = m_Context->Geometry()->FrameToSceneX(m_Item->Duration()) - m_Context->Geometry()->FrameToSceneX(0);
-    m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackHeight - 4);
+    m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
 }
 
 QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const

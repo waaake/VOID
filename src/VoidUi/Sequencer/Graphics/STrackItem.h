@@ -23,6 +23,7 @@ public:
     STrackItem(const SharedTrackItem& item, SequencerContext* context, QGraphicsItem* parent = nullptr);
 
     SharedTrackItem TrackItem() const { return m_Item; }
+    bool Selected() const { return m_Context->SelectionModel()->IsSelected(m_Item); }
 
     STrack* Track() const;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
