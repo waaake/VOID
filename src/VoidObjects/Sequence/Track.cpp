@@ -216,7 +216,7 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 {
     if (m_Items.Add(item, frame))
     {
-        item->setParent(this);
+        item->SetTrack(this);
         // Set the timeline range based on the provided frame
         item->Move(frame);
         emit itemAdded(item);

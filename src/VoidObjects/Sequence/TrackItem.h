@@ -103,7 +103,8 @@ public:
     // inline v_frame_t MediaLastFrame() const { return m_Media->LastFrame(); }
 
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
-    inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
+    inline PlaybackTrack* Track() const { return m_Track; }
+    void SetTrack(PlaybackTrack* track) { m_Track = track; } 
 
     inline QColor Color() const { return m_Color; }
     void ResetColor() { if (m_Media) SetColor(m_Media->Color()); }
@@ -128,6 +129,7 @@ signals:
 
 protected:
     SharedMediaClip m_Media;
+    PlaybackTrack* m_Track;
     std::string m_Name;
     QColor m_Color;
     v_frame_t m_Offset;
