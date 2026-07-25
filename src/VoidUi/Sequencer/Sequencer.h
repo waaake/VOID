@@ -6,8 +6,9 @@
 
 /* Qt */
 #include <QLayout>
-#include <QWidget>
 #include <QShortcut>
+#include <QSlider>
+#include <QWidget>
 
 /* Internal */
 #include "Definition.h"
@@ -39,11 +40,14 @@ public:
     void AddTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);
 
+    void SetHorizontalZoom(float factor);
+
 signals:
     void frameChangeRequested(v_frame_t);
 
 private:
     QHBoxLayout* m_Layout;
+    QSlider* m_HZoomSlider;
     SToolbar* m_Toolbar;
     STimelineRuler* m_Ruler;
     STrackHeaderWidget* m_TrackHeader;
