@@ -103,6 +103,18 @@ void STimelineScene::Update()
     setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
 }
 
+void STimelineScene::UpdateItems()
+{
+    setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
+    m_Playhead->Update();
+
+    for (STrack* track : m_Tracks)
+    {
+        track->Update();
+        track->UpdateItems();
+    }
+}
+
 STrack* STimelineScene::TrackAt(int index) const
 {
     return m_Tracks.at(index);

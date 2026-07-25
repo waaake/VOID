@@ -34,6 +34,7 @@ public:
     void AddPlayhead();
     void UpdatePlayhead();
     void Update();
+    void UpdateItems();
     STrack* TrackAt(int index) const;
     STrack*& TrackAt(int index);
 

@@ -38,6 +38,11 @@ void STimelineView::RemoveTrack(const SharedPlaybackTrack& track)
     m_Scene->RemoveTrack(track);
 }
 
+void STimelineView::Refresh()
+{
+    m_Scene->UpdateItems();
+}
+
 void STimelineView::Clear()
 {
     m_Scene->Clear();
