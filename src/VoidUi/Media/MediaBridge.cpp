@@ -269,8 +269,7 @@ bool MBridge::AddMedia(MediaStruct&& mstruct)
         return false;
     }
 
-    /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
         m_Project->AddMedia(clip);
@@ -299,7 +298,7 @@ bool MBridge::AddMedia(const MediaStruct& mstruct)
     }
 
     /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
         m_Project->AddMedia(clip);
@@ -328,7 +327,7 @@ bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
     }
 
      /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
         m_Project->InsertMedia(clip, index);
@@ -344,7 +343,7 @@ bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
 bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
 {
     /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
         m_Project->InsertMedia(clip, index);

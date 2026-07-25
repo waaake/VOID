@@ -141,7 +141,7 @@ void Project::Deserialize(const rapidjson::Value& in)
 
     for (int i = 0; i < clips.Size(); ++i)
     {
-        SharedMediaClip clip = std::make_shared<MediaClip>();
+        SharedMediaClip clip = std::make_shared<MediaClip>(this);
         clip->Deserialize(clips[i]);
 
         /* Add the Deserialized clip back */
@@ -173,7 +173,7 @@ void Project::Deserialize(std::istream& in)
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        SharedMediaClip clip = std::make_shared<MediaClip>();
+        SharedMediaClip clip = std::make_shared<MediaClip>(this);
         clip->Deserialize(in);
 
         /* Add the Deserialized clip back */
