@@ -7,7 +7,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidContext
+class VOID_API VoidContext
 {
     VoidContext() = default;
 public:

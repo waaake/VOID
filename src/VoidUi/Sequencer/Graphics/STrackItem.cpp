@@ -10,7 +10,6 @@
 #include "STrackItem.h"
 #include "STrack.h"
 #include "VoidUi/Sequencer/SContext.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
