@@ -183,7 +183,7 @@ v_frame_t PlaybackTrack::GetSnapFrame(v_frame_t frame, const SharedTrackItem& tr
 
 SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
 {
-    if (m_Recent && m_Recent->InRange(frame))
+    if (m_Recent && m_Recent->InTimelineRange(frame))
         return m_Recent;
 
     m_Recent = m_Items.At(frame);

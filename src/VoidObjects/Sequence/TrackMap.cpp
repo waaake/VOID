@@ -103,7 +103,7 @@ SharedTrackItem TrackMap::At(const int frame) const
         return nullptr;
 
     SharedTrackItem item = *(--it);
-    return (item->InRange(frame)) ? item : nullptr;
+    return (item->InTimelineRange(frame)) ? item : nullptr;
 }
 
 bool TrackMap::Move(const SharedTrackItem& item, int frame)
@@ -119,7 +119,7 @@ bool TrackMap::Move(const SharedTrackItem& item, int frame)
     );
 
     SharedTrackItem existing = (it == m_Items.begin()) ? *(it) : *(--it);
-    if (existing->InRange(frame))
+    if (existing->InTimelineRange(frame))
     {
         // This is some other item, we're dealing with
         if (existing.get() != item.get())
