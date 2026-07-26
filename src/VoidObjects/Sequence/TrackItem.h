@@ -67,13 +67,34 @@ public:
 
     void ClearCache(v_frame_t frame);
 
-    v_frame_t TimelineIn() const { return m_Start; }
-    v_frame_t TimelineOut() const { return m_End; }
-    int Duration() const { return m_End - m_Start + 1; }
+    /**
+     *      Timeline In         Timeline Out
+     *             v              v
+     *  |' ' ' ' ' """""""""""""""" ' ' ' ' ' ' ' '|
+     *  |          |              |                |
+     *  |          | <-Duration-> |                |
+     *  | <--Head->|              | <---Tail------>|
+     *  |_ _ _ _ _ |______________| _ _ _ _ _ _ _ _|
+     *  ^                                          ^
+     * Source in                              Source Out
+     */
 
-    // This will change when we have handles implemented
-    v_frame_t SourceIn() const { return m_Media ? m_Media->FirstFrame() : 0; }
-    v_frame_t SourceOut() const { return m_Media ? m_Media->LastFrame() : 0; }
+    v_frame_t TimelineIn() const { return m_TimelineIn; }
+    v_frame_t TimelineOut() const { return m_TimelineOut; }
+
+    void SetTimelineIn(v_frame_t frame);
+    void SetTimelineOut(v_frame_t frame);
+
+    int Duration() const { return m_TimelineOut - m_TimelineIn + 1; }
+
+    v_frame_t SourceIn() const { return m_SourceIn; }
+    v_frame_t SourceOut() const { return m_SourceOut; }
+
+    void SetSourceIn(v_frame_t frame);
+    void SetSourceOut(v_frame_t frame);
+
+    v_frame_t HeadHandle() const { return m_SourceIn - m_Media->FirstFrame(); }
+    v_frame_t TailHandle() const { return m_Media->LastFrame() - (m_SourceIn + (m_TimelineOut - m_TimelineIn)); }
 
     // Moves the item to the given frame
     void Move(v_frame_t frame);
@@ -85,7 +106,7 @@ public:
      * TODO: Consider handle frames when they are implemented.
      */
     inline bool InRange(const v_frame_t frame) const { return m_Media ? m_Media->InRange(frame + m_Offset) : false; }
-    bool InTimelineRange(const v_frame_t frame) const { return frame >= m_Start && frame <= m_End; }
+    bool InTimelineRange(const v_frame_t frame) const { return frame >= m_TimelineIn && frame <= m_TimelineOut; }
 
     /**
      * Returns the nearest frame of a given frame from the media in TrackItem space
@@ -132,9 +153,14 @@ protected:
     PlaybackTrack* m_Track;
     std::string m_Name;
     QColor m_Color;
+
     v_frame_t m_Offset;
-    v_frame_t m_Start;
-    v_frame_t m_End;
+
+    v_frame_t m_TimelineIn;
+    v_frame_t m_TimelineOut;
+
+    v_frame_t m_SourceIn;
+    v_frame_t m_SourceOut;
 };
 
 VOID_NAMESPACE_CLOSE

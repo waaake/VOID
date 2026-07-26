@@ -302,7 +302,7 @@ SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
         if (track->IsEmpty() || !track->Enabled())
             continue;
 
-        if (m_Recent = track->GetTrackItem(frame))
+        if ((m_Recent = track->GetTrackItem(frame)))
             return m_Recent;
     }
 
@@ -320,7 +320,7 @@ SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
         if (track->IsEmpty() || !track->Enabled())
             continue;
 
-        if (m_Recent = track->GetTrackItem(frame))
+        if ((m_Recent = track->GetTrackItem(frame)))
             return m_Recent->GetMedia();
     }
 
@@ -338,7 +338,7 @@ void PlaybackSequence::Image(v_frame_t frame, FloatImage& image)
         if (track->IsEmpty() || !track->Enabled())
             continue;
 
-        if (m_Recent = track->GetTrackItem(frame))
+        if ((m_Recent = track->GetTrackItem(frame)))
             m_Recent->Image(frame, image);
     }
 }
@@ -354,7 +354,7 @@ const FloatImage PlaybackSequence::Image(v_frame_t frame)
         if (track->IsEmpty() || !track->Enabled())
             continue;
 
-        if (m_Recent = track->GetTrackItem(frame))
+        if ((m_Recent = track->GetTrackItem(frame)))
             return m_Recent->Image(frame);
     }
 
