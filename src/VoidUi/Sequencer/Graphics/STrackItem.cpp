@@ -21,11 +21,18 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptHoverEvents(true);
 
+    m_HeadHandle = new SHandleItem(m_Item, HandleType::HEAD, context, this);
+    m_TailHandle = new SHandleItem(m_Item, HandleType::TAIL, context, this);
+    ToggleHandles(false);
+
     CalculateBoundingRect();
     setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 2);
+    // m_HeadHandle->setPos(0, 2);
+    // m_TailHandle->setPos(boundingRect().width(), 2);
 
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
+    connect(m_Item.get(), &TrackItem::rangeChanged, this, &STrackItem::Update);
 }
 
 STrack* STrackItem::Track() const
@@ -179,6 +186,7 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
     m_Context->HoverModel()->Set(m_Item);
+    ToggleHandles(true);
     update();
 
     STimelineItem::hoverEnterEvent(event);
@@ -187,6 +195,7 @@ void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
     m_Context->HoverModel()->Reset();
+    ToggleHandles(false);
     update();
 
     STimelineItem::hoverLeaveEvent(event);
@@ -214,6 +223,19 @@ QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
     return m_Context->SelectionModel()->IsSelected(m_Item)
             ? option->palette.color(QPalette::Highlight).darker(180)
             : option->palette.color(QPalette::Base).darker(180);
+}
+
+void STrackItem::ToggleHandles(bool visible)
+{
+    m_HeadHandle->setVisible(visible);
+    m_TailHandle->setVisible(visible);
+    if (visible)
+    {
+        m_HeadHandle->setPos(0, 2);
+        m_TailHandle->setPos(boundingRect().width(), 2);
+        m_HeadHandle->Update();
+        m_TailHandle->Update();
+    }
 }
 
 VOID_NAMESPACE_CLOSE

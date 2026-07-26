@@ -10,6 +10,7 @@
 /* Internal */
 #include "Definition.h"
 #include "STimelineItem.h"
+#include "SHandleItem.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 
 VOID_NAMESPACE_OPEN
@@ -38,9 +39,11 @@ protected:
 
 private:
     SharedTrackItem m_Item;
+    SHandleItem *m_HeadHandle, *m_TailHandle;
 
 private: /* Methods */
     void CalculateBoundingRect();
+    void ToggleHandles(bool visible);
     QColor Background(const QStyleOptionGraphicsItem* option) const;
 };
 
