@@ -82,7 +82,7 @@ void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 const FloatImage TrackItem::Image(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
-    VOID_LOG_INFO("Timeline frame: {0} -- Media Frame: {1} -- Offset: {2}", frame, f, m_Offset);
+    // VOID_LOG_INFO("Timeline frame: {0} -- Media Frame: {1} -- Offset: {2}", frame, f, m_Offset);
     if (m_Media && m_Media->Contains(f))
         return m_Media->Image(f);
     
@@ -100,52 +100,43 @@ void TrackItem::SetTimelineIn(v_frame_t frame)
 {
     m_TimelineIn = frame;
     m_Offset = m_SourceIn - m_TimelineIn;
+    m_SourceOut = frame + (m_TimelineOut - m_TimelineIn);
 
     emit rangeChanged(m_TimelineIn, m_TimelineOut);
-    // VOID_LOG_INFO("Ranges: Ti: {0} -- Si: {1} <-- Du: {2} --> So: {3} -- To: {4} || Offset: {5}", m_TimelineIn, m_SourceIn, Duration(), m_SourceOut, m_TimelineOut, m_Offset);
 }
 
 void TrackItem::SetTimelineOut(v_frame_t frame)
 {
     m_TimelineOut = frame;
+    m_SourceOut = m_SourceIn + (m_TimelineOut - m_TimelineIn);
+
     emit rangeChanged(m_TimelineIn, m_TimelineOut);
-    // VOID_LOG_INFO("Ranges: Ti: {0} -- Si: {1} <-- Du: {2} --> So: {3} -- To: {4} || Offset: {5}", m_TimelineIn, m_SourceIn, Duration(), m_SourceOut, m_TimelineOut, m_Offset);
 }
 
 void TrackItem::SetSourceIn(v_frame_t frame)
 {
     int offset = m_Media->FirstFrame() - frame;
     m_SourceIn = frame;
-    m_SourceOut = frame + (m_TimelineOut - m_TimelineIn);
+    m_SourceOut = m_SourceIn + (m_TimelineOut - m_TimelineIn);
 
     m_Offset = m_SourceIn - m_TimelineIn;
-    // VOID_LOG_INFO("Ranges: Ti: {0} -- Si: {1} <-- Du: {2} --> So: {3} -- To: {4} || Offset: {5}", m_TimelineIn, m_SourceIn, Duration(), m_SourceOut, m_TimelineOut, m_Offset);
+
+    emit rangeChanged(m_TimelineIn, m_TimelineOut);
 }
 
 void TrackItem::SetSourceOut(v_frame_t frame)
 {
     m_SourceOut = frame;
-    // VOID_LOG_INFO("Ranges: Ti: {0} -- Si: {1} <-- Du: {2} --> So: {3} -- To: {4} || Offset: {5}", m_TimelineIn, m_SourceIn, Duration(), m_SourceOut, m_TimelineOut, m_Offset);
 }
 
 void TrackItem::Move(v_frame_t frame)
 {
-    if (m_Media)
-    {
-        m_Offset = m_Media->FirstFrame() - frame;
-        m_TimelineIn = frame;
-        m_TimelineOut = m_Media->LastFrame() - m_Offset;
-    }
-    else
-    {
-        m_TimelineOut = frame + Duration();
-        m_TimelineIn = frame;
-    }
+    m_Offset = m_Media ? m_SourceIn - frame : 0;
+    m_TimelineOut = frame + (m_TimelineOut - m_TimelineIn);
+    m_TimelineIn = frame;
 
     emit rangeChanged(m_TimelineIn, m_TimelineOut);
     emit updated();
-
-    VOID_LOG_INFO("Ranges: Ti: {0} -- Si: {1} <-- Du: {2} --> So: {3} -- To: {4} || Offset: {5}", m_TimelineIn, m_SourceIn, Duration(), m_SourceOut, m_TimelineOut, m_Offset);
 }
 
 void TrackItem::SetColor(const QColor& color)
@@ -161,9 +152,11 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
     // All Unlinked media gets -1 index
     out.AddMember("media_index", m_Media ? _VoidContext.ActiveProject()->MediaRow(m_Media) : -1, allocator);
-    out.AddMember("name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
+    out.AddMember("source_name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
     out.AddMember("timeline_in", static_cast<int64_t>(m_TimelineIn), allocator);
     out.AddMember("timeline_out", static_cast<int64_t>(m_TimelineOut), allocator);
+    out.AddMember("source_in", static_cast<int64_t>(m_SourceIn), allocator);
+    out.AddMember("source_out", static_cast<int64_t>(m_SourceOut), allocator);
     out.AddMember("offset", static_cast<int64_t>(m_Offset), allocator);
     out.AddMember("r", m_Color.red(), allocator);
     out.AddMember("g", m_Color.green(), allocator);
@@ -178,11 +171,13 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
     int index = in["media_index"].GetInt();
     m_Media = index > -1 ? _VoidContext.ActiveProject()->MediaAt(index, 0) : nullptr;
 
-    m_Name = in["name"].GetString();
+    m_Name = in["source_name"].GetString();
     m_TimelineIn = in["timeline_in"].GetInt64();
     m_TimelineOut = in["timeline_out"].GetInt64();
+    m_SourceIn = in["source_in"].GetInt64();
+    m_SourceOut = in["source_out"].GetInt64();
     m_Offset = in["offset"].GetInt64();
-    // m_Color = std::move(QColor(in["r"].GetInt(), in["g"].GetInt(), in["b"].GetInt()));
+
     m_Color.setRed(in["r"].GetInt());
     m_Color.setGreen(in["g"].GetInt());
     m_Color.setBlue(in["b"].GetInt());
