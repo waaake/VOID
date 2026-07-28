@@ -30,6 +30,7 @@ public:
 
     inline Player* ActivePlayer() const { return _PlayerBridge.ActivePlayer(); }
     MetadataViewer* GetMetadataViewer() const { return dynamic_cast<MetadataViewer*>(m_WorkspaceManager->Widget(Component::MetadataViewer)); }
+    SequencerTimeline* GetSequencer() const { return dynamic_cast<SequencerTimeline*>(m_WorkspaceManager->Widget(Component::Sequencer)); }
     void QueueTask(Task* task) { m_WorkspaceManager->QueueTask(task); }
     QMenuBar* MenuBar() const;
     void SwitchWorkspace(const Workspace& workspace = Workspace::PLAYBACK);

@@ -27,8 +27,11 @@ VOID_NAMESPACE_OPEN
 /* Forward Declaration for typedef */
 class MediaClip;
 typedef std::shared_ptr<MediaClip> SharedMediaClip;
-
 class Effect;
+
+namespace Core {
+class Project;
+} // namespace Core
 
 class VOID_API MediaClip : public VoidObject, public Media
 {
@@ -111,6 +114,7 @@ public:
     const std::unordered_map<v_frame_t, Renderer::SharedAnnotation>& Annotations() const { return m_Annotations; }
 
     QPixmap Thumbnail();
+    Core::Project* Project() const;
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;

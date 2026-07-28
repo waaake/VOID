@@ -24,11 +24,13 @@ public:
 
 signals:
     void createTrackRequested();
+    void removeTracksRequested();
     void colorChangeRequested(bool reset = false);
 
 private:
     SequencerContext* m_Context;
     QAction* m_AddVideoTrackAction;
+    QAction* m_RemoveTrackAction;
 
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;

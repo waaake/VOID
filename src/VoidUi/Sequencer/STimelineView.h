@@ -26,6 +26,7 @@ public:
     void AddPlayhead();
     void AddTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);
+    void Refresh();
     void Clear();
     void Focus();
 

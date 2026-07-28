@@ -10,6 +10,7 @@
 /* Internal */
 #include "Definition.h"
 #include "STimelineItem.h"
+#include "SHandleItem.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 
 VOID_NAMESPACE_OPEN
@@ -23,6 +24,7 @@ public:
     STrackItem(const SharedTrackItem& item, SequencerContext* context, QGraphicsItem* parent = nullptr);
 
     SharedTrackItem TrackItem() const { return m_Item; }
+    bool Selected() const { return m_Context->SelectionModel()->IsSelected(m_Item); }
 
     STrack* Track() const;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
@@ -37,9 +39,11 @@ protected:
 
 private:
     SharedTrackItem m_Item;
+    SHandleItem *m_HeadHandle, *m_TailHandle;
 
 private: /* Methods */
     void CalculateBoundingRect();
+    void ToggleHandles(bool visible);
     QColor Background(const QStyleOptionGraphicsItem* option) const;
 };
 

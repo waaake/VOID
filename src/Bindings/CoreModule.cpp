@@ -15,6 +15,9 @@
 #include "VoidCore/VoidTools.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Effects/Effects.h"
+#include "VoidObjects/Sequence/Sequence.h"
+#include "VoidObjects/Sequence/Track.h"
+#include "VoidObjects/Sequence/TrackItem.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -150,6 +153,69 @@ void BindCore(py::module_& m)
         .def("set_enabled", &Effect::SetEnabled, py::arg("enable"))
         .def("get_value", &Effect::Value, py::return_value_policy::reference)
         .def("set_value", &Effect::SetValue, py::arg("param"), py::arg("value"));
+
+    py::class_<PlaybackSequence, SharedPlaybackSequence>(m, "PlaybackSequence")
+        .def(py::init())
+        .def("start_frame", &PlaybackSequence::StartFrame)
+        .def("end_frame", &PlaybackSequence::EndFrame)
+        .def("set_range", &PlaybackSequence::SetRange, py::arg("start"), py::arg("end"))
+        .def("has_media", &PlaybackSequence::HasMedia)
+        .def("create_track", static_cast<SharedPlaybackTrack (PlaybackSequence::*)(const Sequence::TrackType&)>(&PlaybackSequence::CreateTrack), py::arg("type"), py::return_value_policy::reference)
+        .def("remove_track", static_cast<void (PlaybackSequence::*)(const SharedPlaybackTrack&)>(&PlaybackSequence::RemoveTrack), py::arg("track"))
+        .def("remove_track", static_cast<void (PlaybackSequence::*)(int, const Sequence::TrackType&)>(&PlaybackSequence::RemoveTrack), py::arg("index"), py::arg("type"))
+        .def("video_track", &PlaybackSequence::VideoTrackAt, py::arg("index"), py::return_value_policy::reference)
+        .def("audio_track", &PlaybackSequence::AudioTrackAt, py::arg("index"), py::return_value_policy::reference)
+        .def("video_tracks", &PlaybackSequence::VideoTracks, py::return_value_policy::reference)
+        .def("audio_tracks", &PlaybackSequence::AudioTracks, py::return_value_policy::reference);
+
+    py::enum_<Sequence::TrackType>(m, "TrackType")
+        .value("VIDEO", Sequence::TrackType::VIDEO)
+        .value("AUDIO", Sequence::TrackType::AUDIO)
+        .export_values();
+
+    py::class_<PlaybackTrack, SharedPlaybackTrack>(m, "PlaybackTrack")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const PlaybackTrack& t = h.cast<PlaybackTrack&>();
+            std::stringstream ss;
+            ss << "PlaybackTrack <" << t.Name() << " at 0x " << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+        .def("set_name", static_cast<void (PlaybackTrack::*)(std::string&&)>(&PlaybackTrack::SetName), py::arg("name"))
+        .def("name", &PlaybackTrack::Name)
+        .def("start_frame", &PlaybackTrack::StartFrame)
+        .def("end_frame", &PlaybackTrack::EndFrame)
+        .def("set_enabled", &PlaybackTrack::SetEnabled, py::arg("enabled"))
+        .def("enabled", &PlaybackTrack::Enabled)
+        .def("add_item", &PlaybackTrack::AddMedia, py::arg("media"), py::return_value_policy::reference)
+        .def("razor_at", &PlaybackTrack::RazorAt, py::arg("frame"))
+        .def("merge_cut", &PlaybackTrack::MergeCut, py::arg("frame"))
+        .def("move_item", &PlaybackTrack::MoveItem, py::arg("track_item"), py::arg("frame"))
+        .def("item_at", &PlaybackTrack::ItemAt, py::arg("index"), py::return_value_policy::reference)
+        .def("items", &PlaybackTrack::Items, py::return_value_policy::reference);
+
+    py::class_<TrackItem, SharedTrackItem>(m, "TrackItem")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const TrackItem& t = h.cast<TrackItem&>();
+            std::stringstream ss;
+            ss << "TrackItem <" << t.Name() << " at 0x " << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+        .def("name", &TrackItem::Name)
+        .def("timeline_in", &TrackItem::TimelineIn)
+        .def("timeline_out", &TrackItem::TimelineOut)
+        .def("timeline_duration", &TrackItem::Duration)
+        .def("set_timeline_in", &TrackItem::SetTimelineIn, py::arg("frame"))
+        .def("set_timeline_out", &TrackItem::SetTimelineOut, py::arg("frame"))
+        .def("source_in", &TrackItem::SourceIn)
+        .def("source_out", &TrackItem::SourceOut)
+        .def("set_source_in", &TrackItem::SetSourceIn, py::arg("frame"))
+        .def("set_source_out", &TrackItem::SetSourceOut, py::arg("frame"))
+        .def("head_handle", &TrackItem::HeadHandle)
+        .def("tail_handle", &TrackItem::TailHandle)
+        .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference)
+        .def("unlink", &TrackItem::Unlink);
 }
 
 } // namespace bindings

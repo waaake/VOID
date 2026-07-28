@@ -4,7 +4,6 @@
 /* Qt */
 #include <QPainter>
 #include <QScrollBar>
-#include <QStyle>
 
 /* Internal */
 #include "STrackHeaderWidget.h"
@@ -83,7 +82,6 @@ void STrackHeaderWidget::Build()
     m_ScrollArea->setFrameShape(QFrame::NoFrame);
 
     m_Layout->addWidget(m_ScrollArea);
-    m_Layout->addItem(new QSpacerItem(0, style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2, QSizePolicy::Expanding, QSizePolicy::Fixed));
     m_Layout->setContentsMargins(0, 0, 0, 0);
 }
 

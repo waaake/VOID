@@ -40,8 +40,12 @@ public:
 
     SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type);
     SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type);
+    SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type, int index);
+    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type, int index);
     void AddVideoTrack(const SharedPlaybackTrack& track);
     void AddAudioTrack(const SharedPlaybackTrack& track);
+    void AddVideoTrack(const SharedPlaybackTrack& track, int index);
+    void AddAudioTrack(const SharedPlaybackTrack& track, int index);
     void RemoveTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(int index, const Sequence::TrackType& type);
 
@@ -57,6 +61,8 @@ public:
 
     const SharedPlaybackTrack& VideoTrackAt(std::size_t index) const { return m_VideoTracks.at(index); }
     const SharedPlaybackTrack& AudioTrackAt(std::size_t index) const { return m_AudioTracks.at(index); }
+    const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
+    const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
 
     int VideoTrackIndex(const PlaybackTrack* track) const;
     int AudioTrackIndex(const PlaybackTrack* track) const;

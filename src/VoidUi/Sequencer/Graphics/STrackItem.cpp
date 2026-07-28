@@ -10,7 +10,6 @@
 #include "STrackItem.h"
 #include "STrack.h"
 #include "VoidUi/Sequencer/SContext.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -22,11 +21,16 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptHoverEvents(true);
 
+    m_HeadHandle = new SHandleItem(m_Item, HandleType::HEAD, context, this);
+    m_TailHandle = new SHandleItem(m_Item, HandleType::TAIL, context, this);
+    ToggleHandles(false);
+
     CalculateBoundingRect();
     setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 2);
 
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
+    connect(m_Item.get(), &TrackItem::rangeChanged, this, &STrackItem::Update);
 }
 
 STrack* STrackItem::Track() const
@@ -37,31 +41,60 @@ STrack* STrackItem::Track() const
 void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     painter->setRenderHint(QPainter::Antialiasing);
-    const QColor itemcol = Track()->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
-
-    painter->setPen(QPen(itemcol, 1));
-    painter->setBrush(Background(option));
-    painter->drawRect(boundingRect());
-
-    painter->fillRect(2, 2, 6, Sequencer::TrackHeight - 8, itemcol);
-
-    painter->setPen(option->palette.color(QPalette::Text));
-    painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
-
-    if (SharedMediaClip media = m_Item->GetMedia())
+    const int width = boundingRect().width();
+    if (m_Item->Linked())
     {
-        QPixmap thumbnail = media->Thumbnail();
-        QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
+        const QColor itemcol = Track()->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
 
-        QSizeF size = thumbnail.size();
-        size.scale(thumbRect.size(), Qt::KeepAspectRatio);
+        painter->setPen(QPen(itemcol, 1));
+        painter->setBrush(Background(option));
+        painter->drawRect(boundingRect());
 
-        QRectF drawRect(thumbRect.x(), thumbRect.y(), size.width(), size.height());
-        drawRect.moveCenter(thumbRect.center());
+        painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
 
-        painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
+        painter->setPen(option->palette.color(QPalette::Text));
+        painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+
+        if (width < 40)
+            return;
+
+        if (SharedMediaClip media = m_Item->GetMedia())
+        {
+            QPixmap thumbnail = media->Thumbnail();
+            QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
+
+            QSizeF size = thumbnail.size();
+            size.scale(thumbRect.size(), Qt::KeepAspectRatio);
+
+            QRectF drawRect(thumbRect.x(), thumbRect.y(), size.width(), size.height());
+            drawRect.moveCenter(thumbRect.center());
+
+            painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
+        }
+    }
+    else
+    {
+        QColor itemcol(160, 70, 50);
+        painter->setPen(QPen(itemcol.darker(200), 1));
+        painter->setBrush(m_Context->SelectionModel()->IsSelected(m_Item) ? option->palette.color(QPalette::Highlight).darker(180) : itemcol);
+        painter->drawRect(boundingRect());
+
+        const QRect trect(6, Sequencer::TrackItemHeight - 30, 40, 20);
+        if (width > trect.right())
+        {
+            painter->fillRect(trect, itemcol.darker(180));
+    
+            painter->setPen(option->palette.color(QPalette::Text));
+            painter->drawText(trect, Qt::AlignCenter, "OFF");
+            painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+        }
     }
 
+    painter->setPen(QPen(option->palette.color(QPalette::Highlight), 2));
+    if (Track()->IsRazored(m_Item->TimelineIn()))
+        painter->drawLine(boundingRect().left() + 4, 4, boundingRect().left() + 4, boundingRect().bottom() - 4);
+    if (Track()->IsRazored(m_Item->TimelineOut()))
+        painter->drawLine(boundingRect().right() - 4, 4, boundingRect().right() - 4, boundingRect().bottom() - 4);
 }
 
 void STrackItem::Update()
@@ -157,6 +190,7 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
     m_Context->HoverModel()->Set(m_Item);
+    ToggleHandles(true);
     update();
 
     STimelineItem::hoverEnterEvent(event);
@@ -165,6 +199,7 @@ void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
     m_Context->HoverModel()->Reset();
+    ToggleHandles(false);
     update();
 
     STimelineItem::hoverLeaveEvent(event);
@@ -173,7 +208,7 @@ void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 void STrackItem::CalculateBoundingRect()
 {
     const double width = m_Context->Geometry()->FrameToSceneX(m_Item->Duration()) - m_Context->Geometry()->FrameToSceneX(0);
-    m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackHeight - 4);
+    m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
 }
 
 QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
@@ -192,6 +227,19 @@ QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
     return m_Context->SelectionModel()->IsSelected(m_Item)
             ? option->palette.color(QPalette::Highlight).darker(180)
             : option->palette.color(QPalette::Base).darker(180);
+}
+
+void STrackItem::ToggleHandles(bool visible)
+{
+    m_HeadHandle->setVisible(visible);
+    m_TailHandle->setVisible(visible);
+    if (visible)
+    {
+        m_HeadHandle->setPos(0, 2);
+        m_TailHandle->setPos(boundingRect().width(), 2);
+        m_HeadHandle->Update();
+        m_TailHandle->Update();
+    }
 }
 
 VOID_NAMESPACE_CLOSE

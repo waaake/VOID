@@ -71,7 +71,7 @@ void MoveItemToTrackCommand::undo()
         // Try move back, should have no issues though
         if (previous->Track()->AddItem(item, m_Previous))
         {
-            current->Track()->RemoveItem(m_Requested);
+            current->Track()->RemoveItem(item);
 
             // Visual changes
             previous->AddItem(item);
@@ -90,7 +90,7 @@ bool MoveItemToTrackCommand::Redo()
         // Try move
         if (requested->Track()->AddItem(item, m_Requested))
         {
-            current->Track()->RemoveItem(m_Previous);
+            current->Track()->RemoveItem(item);
 
             // Visual updates
             requested->AddItem(item);
@@ -217,6 +217,91 @@ bool CreateTrackCommand::Redo()
     {
         sequence->CreateTrack(m_Type);
         return true;
+    }
+    return false;
+}
+
+/// DeleteTrackCommand
+
+DeleteTrackCommand::DeleteTrackCommand(const SharedPlaybackSequence& sequence, int index, const Sequence::TrackType& type, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
+    , m_Type(type)
+    , m_TrackIndex(index)
+{
+    setText("Delete Track");
+}
+
+void DeleteTrackCommand::undo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock())
+    {
+        SharedPlaybackTrack track = sequence->CreateTrack(m_Type, m_TrackIndex);
+        track->Deserialize(m_TrackData);
+    }
+}
+
+bool DeleteTrackCommand::Redo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock())
+    {
+        rapidjson::Document doc;
+        doc.SetObject();
+
+        rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator = doc.GetAllocator();
+        if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
+        {
+            track->Serialize(m_TrackData, allocator);
+            track->Clear();
+            sequence->RemoveTrack(track);
+            return true;
+        }
+
+        return false;
+    }
+
+    return false;
+}
+
+/// DeleteTrackItemCommand
+
+DeleteTrackItemCommand::DeleteTrackItemCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, int trackindex, int index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Type(type)
+    , m_TrackIndex(trackindex)
+    , m_ItemIndex(index)
+{
+    setText("Delete TrackItem");
+}
+
+void DeleteTrackItemCommand::undo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock())
+    {
+        if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
+        {
+            SharedTrackItem item = std::make_shared<TrackItem>(track.get());
+            track->AddItem(item);
+        }
+    }
+}
+
+bool DeleteTrackItemCommand::Redo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock())
+    {
+        rapidjson::Document doc;
+        doc.SetObject();
+
+        rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator = doc.GetAllocator();
+        if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
+        {
+            const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+            item->Serialize(m_ItemData, allocator);
+            track->RemoveItem(item);
+            return true;
+        }
+        return false;
     }
     return false;
 }

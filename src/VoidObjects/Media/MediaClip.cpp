@@ -10,7 +10,7 @@
 #include "VoidCore/Processors/ImageProcessor.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidObjects/Effects/Bridge.h"
-#include "VoidCore/Profiler.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -358,6 +358,11 @@ void MediaClip::Clear()
     // This obviously is temporary till we have the actual workflow where effects are applied
     // only on the track item and not on the media
     Media::ClearCache(HasEffects());
+}
+
+Core::Project* MediaClip::Project() const
+{
+    return reinterpret_cast<Core::Project*>(parent());
 }
 
 void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const

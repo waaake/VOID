@@ -87,7 +87,7 @@ private:
 class CreateTrackCommand : public VoidUndoCommand
 {
 public:
-    explicit CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent = nullptr);
+    CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
@@ -95,6 +95,35 @@ private:
     std::weak_ptr<PlaybackSequence> m_Sequence;
     Sequence::TrackType m_Type;
     int m_Index;
+};
+
+class DeleteTrackCommand : public VoidUndoCommand
+{
+public:
+    DeleteTrackCommand(const SharedPlaybackSequence& sequence, int index, const Sequence::TrackType& type, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::weak_ptr<PlaybackSequence> m_Sequence;
+    Sequence::TrackType m_Type;
+    int m_TrackIndex;
+    rapidjson::Value m_TrackData;
+};
+
+class DeleteTrackItemCommand : public VoidUndoCommand
+{
+public:
+    DeleteTrackItemCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, int trackindex, int index, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::weak_ptr<PlaybackSequence> m_Sequence;
+    Sequence::TrackType m_Type;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    rapidjson::Value m_ItemData;
 };
 
 VOID_NAMESPACE_CLOSE

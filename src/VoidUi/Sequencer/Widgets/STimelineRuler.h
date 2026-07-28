@@ -19,6 +19,7 @@ class STimelineRuler : public QWidget
 {
 public:
     STimelineRuler(STimelineView* view, SequencerContext* context, QWidget* parent = nullptr);
+    void Update() { update(); }
 
 protected:
     void paintEvent(QPaintEvent* event) override;

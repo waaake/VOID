@@ -4,6 +4,7 @@
 /* Qt */
 #include <QColorDialog>
 #include <QScrollBar>
+#include <QStyle>
 
 /* Internal */
 #include "Sequencer.h"
@@ -67,9 +68,17 @@ void SequencerTimeline::RemoveTrack(const SharedPlaybackTrack& track)
     m_View->RemoveTrack(track);
 }
 
+void SequencerTimeline::SetHorizontalZoom(float factor)
+{
+    m_Context.Geometry()->SetPixelsPerFrame(factor);
+    m_View->Refresh();
+    m_Ruler->Update();
+}
+
 void SequencerTimeline::Build()
 {
     m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
     m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);
@@ -81,6 +90,13 @@ void SequencerTimeline::Build()
     m_Toolbar = new SToolbar;
 
     m_TrackHeader = new STrackHeaderWidget(&m_Context);
+
+    m_HZoomSlider = new QSlider(Qt::Horizontal, this);
+    m_HZoomSlider->setFixedHeight(style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2);
+    m_HZoomSlider->setMinimum(1);
+    m_HZoomSlider->setMaximum(200);
+    m_HZoomSlider->setValue(m_Context.Geometry()->PixelsPerFrame() * 10);
+
     m_View = new STimelineView(&m_Context);
 
     m_Ruler = new STimelineRuler(m_View, &m_Context);
@@ -88,7 +104,8 @@ void SequencerTimeline::Build()
     grid->addWidget(m_Ruler, 0, 1);
 
     grid->addWidget(m_TrackHeader, 1, 0);
-    grid->addWidget(m_View, 1, 1);
+    grid->addWidget(m_HZoomSlider, 2, 0);
+    grid->addWidget(m_View, 1, 1, 2, 1);
 
     grid->setColumnMinimumWidth(0, Sequencer::TrackHeaderWidth);
     grid->setRowMinimumHeight(0, Sequencer::RulerHeight);
@@ -106,7 +123,15 @@ void SequencerTimeline::Build()
 void SequencerTimeline::Connect()
 {
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
+
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
+    connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
+
+    connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
+    {
+        SetHorizontalZoom((float)value / 10);
+    });
+
     connect(m_Context.Controller(), &SequencerController::frameChangeRequested, this, &SequencerTimeline::frameChangeRequested);
     connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& position) -> void 
     {
@@ -118,18 +143,29 @@ void SequencerTimeline::Connect()
     {
         m_Context.Controller()->CreateVideoTrack(m_Sequence);
     });
+    connect(m_Menu, &SequencerContextMenu::removeTracksRequested, this, &SequencerTimeline::DeleteSelected);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {
         if (reset)
         {
-            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->Current());
+            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems());
         }
         else
         {
             QColor color = QColorDialog::getColor(QColor(255, 255, 255), this, "Select Trackitem Color");
-            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->Current(), color);    
+            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems(), color);    
         }
     });
+}
+
+void SequencerTimeline::DeleteSelected()
+{
+    if (m_Context.SelectionModel()->HasTrackSelection())
+        m_Context.Controller()->RemoveTracks(m_Sequence, m_Context.SelectionModel()->SelectedTracks());
+    else if (m_Context.SelectionModel()->HasTrackSelection())
+        m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
+    
+    m_Context.SelectionModel()->Clear();
 }
 
 VOID_NAMESPACE_CLOSE

@@ -60,6 +60,7 @@ public:
     { 
         return m_Media->index(m_Media->MediaRow(clip), column); 
     }
+    int MediaRow(const SharedMediaClip& clip) const { return m_Media->MediaRow(clip); }
 
     inline Playlist* ActivePlaylist() const { return m_Playlist; }
     inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Playlists->PlaylistAt(index); }

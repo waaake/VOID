@@ -12,6 +12,7 @@
 #include "VoidObjects/Core/Task.h"
 #include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/BaseWindow/MenuSystem.h"
+#include "VoidUi/Sequencer/Sequencer.h"
 #include "VoidUi/BaseWindow/PlayerWindow.h"
 
 VOID_NAMESPACE_OPEN
@@ -26,6 +27,7 @@ namespace UIGlobals {
     VOID_API MenuSystem* InternalMenuSystem();
     VOID_API Player* GetActivePlayer();
     VOID_API MetadataViewer* GetMetadataViewer();
+    VOID_API SequencerTimeline* GetSequencer();
     VOID_API void ToggleAudio(bool enable);
     VOID_API bool AudioEnabled();
     VOID_API void SetFramerate(float rate);

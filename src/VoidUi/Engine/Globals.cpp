@@ -30,18 +30,17 @@ MenuSystem* InternalMenuSystem()
 
 Player* GetActivePlayer()
 {
-    if (g_VoidMainWindow)
-        return g_VoidMainWindow->ActivePlayer();
-
-    return nullptr;
+    return g_VoidMainWindow ? g_VoidMainWindow->ActivePlayer() : nullptr;
 }
 
 MetadataViewer* GetMetadataViewer()
 {
-    if (g_VoidMainWindow)
-        return g_VoidMainWindow->GetMetadataViewer();
+    return g_VoidMainWindow ? g_VoidMainWindow->GetMetadataViewer() : nullptr;
+}
 
-    return nullptr;
+SequencerTimeline* GetSequencer()
+{
+    return g_VoidMainWindow ? g_VoidMainWindow->GetSequencer() : nullptr;
 }
 
 void ToggleAudio(bool enable)

@@ -47,11 +47,14 @@ public:
     void SetMedia(const SharedMediaClip& media, v_frame_t offset = 0);
     void SetRange(v_frame_t start, v_frame_t end);
 
+    bool Linked() const { return (bool)m_Media; }
+    void Unlink();
+
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
 
-    std::string Name() const { return m_Media->Name(); }
+    std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
 
     /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.
@@ -64,13 +67,34 @@ public:
 
     void ClearCache(v_frame_t frame);
 
-    v_frame_t TimelineIn() const { return m_Start; }
-    v_frame_t TimelineOut() const { return m_End; }
-    int Duration() const { return m_End - m_Start + 1; }
+    /**
+     *      Timeline In         Timeline Out
+     *             v              v
+     *  |' ' ' ' ' """""""""""""""" ' ' ' ' ' ' ' '|
+     *  |          |              |                |
+     *  |          | <-Duration-> |                |
+     *  | <--Head->|              | <---Tail------>|
+     *  |_ _ _ _ _ |______________| _ _ _ _ _ _ _ _|
+     *  ^                                          ^
+     * Source in                              Source Out
+     */
 
-    // This will change when we have handles implemented
-    v_frame_t SourceIn() const { return m_Media->FirstFrame(); }
-    v_frame_t SourceOut() const { return m_Media->LastFrame(); }
+    v_frame_t TimelineIn() const { return m_TimelineIn; }
+    v_frame_t TimelineOut() const { return m_TimelineOut; }
+
+    void SetTimelineIn(v_frame_t frame);
+    void SetTimelineOut(v_frame_t frame);
+
+    int Duration() const { return m_TimelineOut - m_TimelineIn + 1; }
+
+    v_frame_t SourceIn() const { return m_SourceIn; }
+    v_frame_t SourceOut() const { return m_SourceOut; }
+
+    void SetSourceIn(v_frame_t frame);
+    void SetSourceOut(v_frame_t frame);
+
+    v_frame_t HeadHandle() const { return m_SourceIn - m_Media->FirstFrame(); }
+    v_frame_t TailHandle() const { return m_Media->LastFrame() - (m_SourceIn + (m_TimelineOut - m_TimelineIn)); }
 
     // Moves the item to the given frame
     void Move(v_frame_t frame);
@@ -81,7 +105,8 @@ public:
      * 
      * TODO: Consider handle frames when they are implemented.
      */
-    inline bool InRange(const v_frame_t frame) const { return m_Media->InRange(frame + m_Offset); }
+    inline bool InRange(const v_frame_t frame) const { return m_Media ? m_Media->InRange(frame + m_Offset) : false; }
+    bool InTimelineRange(const v_frame_t frame) const { return frame >= m_TimelineIn && frame <= m_TimelineOut; }
 
     /**
      * Returns the nearest frame of a given frame from the media in TrackItem space
@@ -92,18 +117,24 @@ public:
      * 
      * TODO: See if we can improve our logic to get a frame value or Image Data directly?
      */
-    inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media->NearestFrame(frame + m_Offset) - m_Offset; }
+    inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media ? m_Media->NearestFrame(frame + m_Offset) - m_Offset : frame; }
 
     // /* TODO: Cache the First frame and last frame for Media in that class */
     // inline v_frame_t MediaFirstFrame() const { return m_Media->FirstFrame(); }
     // inline v_frame_t MediaLastFrame() const { return m_Media->LastFrame(); }
 
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
-    inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
+    inline PlaybackTrack* Track() const { return m_Track; }
+    void SetTrack(PlaybackTrack* track) { m_Track = track; } 
 
     inline QColor Color() const { return m_Color; }
-    void ResetColor() { SetColor(m_Media->Color()); }
+    void ResetColor() { if (m_Media) SetColor(m_Media->Color()); }
     void SetColor(const QColor& color);
+
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+
+    const char* TypeName() const override { return "TrackItem"; }
 
 signals:
     void mediaChanged();
@@ -119,10 +150,17 @@ signals:
 
 protected:
     SharedMediaClip m_Media;
+    PlaybackTrack* m_Track;
+    std::string m_Name;
     QColor m_Color;
+
     v_frame_t m_Offset;
-    v_frame_t m_Start;
-    v_frame_t m_End;
+
+    v_frame_t m_TimelineIn;
+    v_frame_t m_TimelineOut;
+
+    v_frame_t m_SourceIn;
+    v_frame_t m_SourceOut;
 };
 
 VOID_NAMESPACE_CLOSE

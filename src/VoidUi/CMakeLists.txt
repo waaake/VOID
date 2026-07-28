@@ -94,6 +94,7 @@ set(SOURCES
     ScriptEditor/SyntaxHighlighter.cpp
 
     # Sequencer
+    Sequencer/Graphics/SHandleItem.cpp
     Sequencer/Graphics/SPlayheadItem.cpp
     Sequencer/Graphics/STimelineItem.cpp
     Sequencer/Graphics/STrack.cpp

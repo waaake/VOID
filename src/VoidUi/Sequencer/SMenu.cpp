@@ -29,6 +29,7 @@ void SequencerContextMenu::Show(const QPoint& position)
 void SequencerContextMenu::Build()
 {
     m_AddVideoTrackAction = new QAction("Add Video Track", this);
+    m_RemoveTrackAction = new QAction("Remove Selected Track(s)", this);
 
     m_ColorMenu = new QMenu("Color", this);
 
@@ -38,18 +39,24 @@ void SequencerContextMenu::Build()
     m_ColorMenu->addAction(m_ResetItemColorAction);
 
     addAction(m_AddVideoTrackAction);
+    addAction(m_RemoveTrackAction);
+
+    addSeparator();
+
     addMenu(m_ColorMenu);
 }
 
 void SequencerContextMenu::Connect()
 {
     connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
+    connect(m_RemoveTrackAction, &QAction::triggered, this, &SequencerContextMenu::removeTracksRequested);
     connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
     connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
 }
 
 void SequencerContextMenu::Validate()
 {
+    m_RemoveTrackAction->setEnabled(m_Context->SelectionModel()->HasTrackSelection());
     m_ColorItemAction->setEnabled(m_Context->SelectionModel()->HasSelection());
     m_ResetItemColorAction->setEnabled(m_Context->SelectionModel()->HasSelection());
 }

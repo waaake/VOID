@@ -23,8 +23,11 @@ set(SOURCES
     Sequence/Sequence.cpp
     Sequence/SequenceView.cpp
     Sequence/Track.cpp
+    Sequence/TrackMap.cpp
     Sequence/TrackItem.cpp
     Sequence/TrackView.cpp
+
+    VoidContext.cpp
 )
 
 add_library(
