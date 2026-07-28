@@ -4,6 +4,9 @@
 #ifndef _VOID_TRACK_H
 #define _VOID_TRACK_H
 
+/* STD */
+#include <unordered_set>
+
 /* Qt */
 #include <QObject>
 #include <QColor>
@@ -109,6 +112,10 @@ public:
 
     /* Setters */
 
+    bool RazorAt(v_frame_t frame);
+    bool MergeCut(v_frame_t frame);
+    bool IsRazored(v_frame_t frame) const { return m_Razored.find(frame) != m_Razored.end(); }
+
     bool MoveItem(const SharedTrackItem& item, v_frame_t frame);
     bool AddItem(const SharedTrackItem& item);
     bool AddItem(const SharedTrackItem& item, v_frame_t frame);
@@ -137,6 +144,8 @@ signals: /* Signals Denoting actions in the Track */
 
 protected: /* Members */
     TrackMap m_Items;
+    std::unordered_set<v_frame_t> m_Razored;
+
     SharedTrackItem m_Recent;
     std::string m_Name;
     int m_StartFrame, m_EndFrame;

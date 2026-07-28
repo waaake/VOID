@@ -197,6 +197,53 @@ int PlaybackTrack::TrackIndex() const
     return -1;
 }
 
+bool PlaybackTrack::RazorAt(v_frame_t frame)
+{
+    if (SharedTrackItem item = m_Items.At(frame))
+    {
+        // Can't cut on the start and end frames
+        if (frame == item->TimelineIn() || frame == item->TimelineOut())
+            return false;
+
+        v_frame_t out = item->TimelineOut();
+        item->SetTimelineOut(frame);
+
+        SharedMediaClip media = item->GetMedia();
+        int offset = item->SourceOut() - frame + 1;
+
+        SharedTrackItem nitem = std::make_shared<TrackItem>(media, frame + 1, out, offset, this);
+        nitem->SetSourceIn(item->SourceOut() + 1);
+
+        // The requested and the frame where the other item starts
+        m_Razored.insert(frame);
+        m_Razored.insert(frame + 1);
+
+        m_Items.Add(nitem);
+        emit itemAdded(nitem);
+
+        return true;
+    }
+    return false;
+}
+
+bool PlaybackTrack::MergeCut(v_frame_t frame)
+{
+    if (IsRazored(frame) && IsRazored(frame + 1))
+    {
+        SharedTrackItem first = m_Items.At(frame);
+        SharedTrackItem second = m_Items.At(frame + 1);
+
+        first->SetTimelineOut(second->TimelineOut());
+        RemoveItem(second);
+
+        m_Razored.erase(frame);
+        m_Razored.erase(frame + 1);
+        return true;
+    }
+
+    return false;
+}
+
 bool PlaybackTrack::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     return m_Items.Move(item, frame);
