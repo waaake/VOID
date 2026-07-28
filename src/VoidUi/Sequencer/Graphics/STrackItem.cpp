@@ -27,8 +27,6 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
 
     CalculateBoundingRect();
     setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 2);
-    // m_HeadHandle->setPos(0, 2);
-    // m_TailHandle->setPos(boundingRect().width(), 2);
 
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
@@ -91,6 +89,12 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
             painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
         }
     }
+
+    painter->setPen(QPen(option->palette.color(QPalette::Highlight), 2));
+    if (Track()->IsRazored(m_Item->TimelineIn()))
+        painter->drawLine(boundingRect().left() + 4, 4, boundingRect().left() + 4, boundingRect().bottom() - 4);
+    if (Track()->IsRazored(m_Item->TimelineOut()))
+        painter->drawLine(boundingRect().right() - 4, 4, boundingRect().right() - 4, boundingRect().bottom() - 4);
 }
 
 void STrackItem::Update()

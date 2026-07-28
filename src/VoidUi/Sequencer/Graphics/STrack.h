@@ -27,8 +27,7 @@ public:
     int Index() const { return m_Track->TrackIndex(); }
     bool Locked() const { return m_Track->Locked(); }
     bool Enabled() const { return m_Track->Enabled(); }
-    // int ItemCount() const { return m_Track->ItemCount(); }
-    // STrackItem* BuildItem(int index);
+    bool IsRazored(v_frame_t frame) const { return m_Track->IsRazored(frame); }
 
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
