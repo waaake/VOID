@@ -188,6 +188,8 @@ void BindCore(py::module_& m)
         .def("set_enabled", &PlaybackTrack::SetEnabled, py::arg("enabled"))
         .def("enabled", &PlaybackTrack::Enabled)
         .def("add_item", &PlaybackTrack::AddMedia, py::arg("media"), py::return_value_policy::reference)
+        .def("razor_at", &PlaybackTrack::RazorAt, py::arg("frame"))
+        .def("merge_cut", &PlaybackTrack::MergeCut, py::arg("frame"))
         .def("move_item", &PlaybackTrack::MoveItem, py::arg("track_item"), py::arg("frame"))
         .def("item_at", &PlaybackTrack::ItemAt, py::arg("index"), py::return_value_policy::reference)
         .def("items", &PlaybackTrack::Items, py::return_value_policy::reference);
