@@ -146,7 +146,7 @@ void SequencerController::ToggleTrackState(const SharedPlaybackTrack& track)
 
 void SequencerController::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
 {
-
+    _MediaBridge.PushCommand(new RazorSequenceCommand(sequence, frame));
 }
 
 void SequencerController::RazorAt(const SharedPlaybackTrack& track, v_frame_t frame)
