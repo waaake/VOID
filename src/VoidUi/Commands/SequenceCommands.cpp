@@ -306,4 +306,92 @@ bool DeleteTrackItemCommand::Redo()
     return false;
 }
 
+/// RazorTrackCommand
+
+RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->TrackIndex())
+    , m_Type(track->Type())
+    , m_Frame(frame)
+{
+    setText("Razor Item");
+}
+
+void RazorTrackCommand::undo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    track->MergeCut(m_Frame);
+}
+
+bool RazorTrackCommand::Redo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    return track ? track->RazorAt(m_Frame) : false;
+}
+
+/// MergeCutCommand
+
+MergeCutCommand::MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->TrackIndex())
+    , m_Type(track->Type())
+    , m_Frame(frame)
+{
+    setText("Merge Items");
+}
+
+void MergeCutCommand::undo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    track->RazorAt(m_Frame);
+}
+
+bool MergeCutCommand::Redo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    return track ? track->MergeCut(m_Frame) : false;
+}
+
+/// OffsetItemSourceCommand
+
+OffsetItemSourceCommand::OffsetItemSourceCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Offset(offset)
+    , m_Previous(item->SourceIn())
+{
+    setText("Slip Item Source");
+}
+
+void OffsetItemSourceCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetSourceIn(m_Previous);
+    }
+}
+
+bool OffsetItemSourceCommand::Redo()
+{
+    if (m_Offset == 0)
+        return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetSourceIn(item->SourceIn() + m_Offset);
+        return true;
+    }
+
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE

@@ -126,4 +126,48 @@ private:
     rapidjson::Value m_ItemData;
 };
 
+class RazorTrackCommand : public VoidUndoCommand
+{
+public:
+    RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_Type;
+    int m_TrackIndex;
+    v_frame_t m_Frame;
+};
+
+class MergeCutCommand : public VoidUndoCommand
+{
+public:
+    MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_Type;
+    int m_TrackIndex;
+    v_frame_t m_Frame;
+};
+
+class OffsetItemSourceCommand : public VoidUndoCommand
+{
+public:
+    OffsetItemSourceCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_TrackType;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_Offset;
+    int m_Previous;
+};
+
 VOID_NAMESPACE_CLOSE
