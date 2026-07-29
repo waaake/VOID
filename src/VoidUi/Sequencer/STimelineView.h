@@ -42,6 +42,8 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void drawForeground(QPainter* painter, const QRectF& rect) override;
+    void enterEvent(QEvent* event) override;
+    void leaveEvent(QEvent* event) override;
 
 private:
     SequencerContext* m_Context;

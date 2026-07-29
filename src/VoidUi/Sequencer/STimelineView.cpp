@@ -12,6 +12,7 @@
 #include "STimelineScene.h"
 #include "Graphics/STrackItem.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -111,6 +112,31 @@ void STimelineView::mouseReleaseEvent(QMouseEvent* event)
     }
 
     QGraphicsView::mouseReleaseEvent(event);
+}
+
+void STimelineView::enterEvent(QEvent* event)
+{
+    QGraphicsView::enterEvent(event);
+
+    switch (m_Context->Action())
+    {
+        case SequencerAction::SLIP_CLIP:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_arrow_range, _DARK_COLOR(QPalette::Text, 100))));
+            break;
+        case SequencerAction::RAZOR:
+        case SequencerAction::RAZOR_ALL:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_bolt, _DARK_COLOR(QPalette::Text, 100))));
+            break;
+        case SequencerAction::MERGE:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_cell_merge, _DARK_COLOR(QPalette::Text, 100))));
+            break;
+    }
+}
+
+void STimelineView::leaveEvent(QEvent* event)
+{
+    QGraphicsView::leaveEvent(event);
+    unsetCursor();
 }
 
 void STimelineView::drawForeground(QPainter* painter, const QRectF& rect)

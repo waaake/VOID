@@ -123,6 +123,7 @@ void SequencerTimeline::Build()
 void SequencerTimeline::Connect()
 {
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
+    connect(m_Toolbar, &SToolbar::actionSwitched, this, [this](const SequencerAction& action) -> void { m_Context.SetAction(action); });
 
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
     connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
