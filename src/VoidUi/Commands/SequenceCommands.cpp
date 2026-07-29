@@ -330,6 +330,38 @@ bool RazorTrackCommand::Redo()
     return track ? track->RazorAt(m_Frame) : false;
 }
 
+/// RazorSequenceCommand
+
+RazorSequenceCommand::RazorSequenceCommand(const SharedPlaybackSequence& sequence, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
+    , m_Frame(frame)
+{
+    setText("Razor Items");
+}
+
+void RazorSequenceCommand::undo()
+{
+    for (auto& track : m_Sequence->VideoTracks())
+        track->MergeCut(m_Frame);
+
+    for (auto& track : m_Sequence->AudioTracks())
+        track->MergeCut(m_Frame);
+}
+
+bool RazorSequenceCommand::Redo()
+{
+    bool status = false;
+
+    for (auto& track : m_Sequence->VideoTracks())
+        status |= track->RazorAt(m_Frame);
+
+    for (auto& track : m_Sequence->AudioTracks())
+        status |= track->RazorAt(m_Frame);
+
+    return status;
+}
+
 /// MergeCutCommand
 
 MergeCutCommand::MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)

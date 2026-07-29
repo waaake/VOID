@@ -140,6 +140,18 @@ private:
     v_frame_t m_Frame;
 };
 
+class RazorSequenceCommand : public VoidUndoCommand
+{
+public:
+    RazorSequenceCommand(const SharedPlaybackSequence& sequence, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    SharedPlaybackSequence m_Sequence;
+    v_frame_t m_Frame;
+};
+
 class MergeCutCommand : public VoidUndoCommand
 {
 public:
