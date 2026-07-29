@@ -144,4 +144,24 @@ void SequencerController::ToggleTrackState(const SharedPlaybackTrack& track)
     _MediaBridge.PushCommand(new ToggleTrackStateCommand(track));
 }
 
+void SequencerController::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
+{
+
+}
+
+void SequencerController::RazorAt(const SharedPlaybackTrack& track, v_frame_t frame)
+{
+    _MediaBridge.PushCommand(new RazorTrackCommand(track, frame));
+}
+
+void SequencerController::MergeCut(const SharedPlaybackTrack& track, v_frame_t frame)
+{
+    _MediaBridge.PushCommand(new MergeCutCommand(track, frame));
+}
+
+void SequencerController::OffsetItemSource(const SharedTrackItem& item, int offset)
+{
+    _MediaBridge.PushCommand(new OffsetItemSourceCommand(item, offset));
+}
+
 VOID_NAMESPACE_CLOSE
