@@ -37,6 +37,9 @@ public:
      */
     MFrameRange VisibleRange() const;
 
+signals:
+    void sequenceCutRequested(v_frame_t);
+
 protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
