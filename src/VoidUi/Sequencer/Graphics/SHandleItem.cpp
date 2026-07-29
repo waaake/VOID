@@ -15,6 +15,7 @@ SHandleItem::SHandleItem(const SharedTrackItem& item, const HandleType& type, Se
     , m_Item(item)
     , m_Type(type)
 {
+    setZValue(Sequencer::ZMarker);
     CalculateBoundingRect();
 }
 

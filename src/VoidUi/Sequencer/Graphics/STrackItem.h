@@ -35,9 +35,11 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
     void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
 private:
+    SSlipClipContext m_SlipContext;
     SharedTrackItem m_Item;
     SHandleItem *m_HeadHandle, *m_TailHandle;
 

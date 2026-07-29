@@ -10,6 +10,7 @@
 #include "STrackItem.h"
 #include "STrack.h"
 #include "VoidUi/Sequencer/SContext.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -71,6 +72,16 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
             painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
         }
+
+        if (m_SlipContext.active)
+        {
+            painter->setPen(option->palette.color(QPalette::Highlight));
+            painter->drawText(
+                boundingRect(),
+                Qt::AlignCenter,
+                m_SlipContext.offset > 0 ? QString("+%1").arg(m_SlipContext.offset) : (QString::number(m_SlipContext.offset))
+            );
+        }
     }
     else
     {
@@ -83,7 +94,7 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
         if (width > trect.right())
         {
             painter->fillRect(trect, itemcol.darker(180));
-    
+
             painter->setPen(option->palette.color(QPalette::Text));
             painter->drawText(trect, Qt::AlignCenter, "OFF");
             painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
@@ -110,18 +121,32 @@ void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton && !Track()->Locked())
     {
-        if (event->modifiers() & Qt::ControlModifier)
-            m_Context->SelectionModel()->Toggle(m_Item);
-        else
-            m_Context->SelectionModel()->Select(m_Item);
+        if (m_Context->Action() == SequencerAction::NONE)
+        {
+            if (event->modifiers() & Qt::ControlModifier)
+                m_Context->SelectionModel()->Toggle(m_Item);
+            else
+                m_Context->SelectionModel()->Select(m_Item);
 
-        m_Drag.pressed = true;
-        m_Drag.clickpos = event->scenePos();
-        m_Drag.scenepos = scenePos();
-        m_Drag.offset = event->pos();
+            m_Drag.pressed = true;
+            m_Drag.clickpos = event->scenePos();
+            m_Drag.scenepos = scenePos();
+            m_Drag.offset = event->pos();
+        }
+        else if (m_Context->Action() == SequencerAction::SLIP_CLIP)
+        {
+            m_SlipContext.pressed = true;
+            m_SlipContext.sourcepos = event->scenePos();
+        }
+
+        event->accept();
     }
 
-    event->accept();
+    if (m_Context->Action() == SequencerAction::RAZOR)
+        m_Context->Controller()->RazorAt(Track()->Track(), m_Context->Geometry()->SceneXToFrame(event->scenePos().x()));
+    else if (m_Context->Action() == SequencerAction::MERGE)
+        m_Context->Controller()->MergeCut(Track()->Track(), m_Context->Geometry()->SceneXToFrame(event->scenePos().x()));
+
     STimelineItem::mousePressEvent(event);
 }
 
@@ -134,6 +159,16 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         {
             m_Drag.pressed = false;
             m_Drag.active = true;
+        }
+    }
+
+    if (m_SlipContext.pressed)
+    {
+        QPointF delta = event->scenePos() - m_SlipContext.sourcepos;
+        if (delta.manhattanLength() > 10)
+        {
+            m_SlipContext.pressed = false;
+            m_SlipContext.active = true;
         }
     }
 
@@ -151,6 +186,14 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         }
 
         setPos(pos);
+    }
+
+    if (m_SlipContext.active)
+    {
+        v_frame_t frame = m_Context->Geometry()->SceneXToFrame(event->scenePos().x() - m_SlipContext.sourcepos.x());
+        m_SlipContext.offset = frame < 0 ? std::max(frame, -m_Item->HeadHandle()) : std::min(frame, m_Item->TailHandle());
+
+        update();
     }
 
     STimelineItem::mouseMoveEvent(event);
@@ -185,22 +228,45 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
             Update();
         }
     }
+
+    if (m_SlipContext.active)
+    {
+        m_Context->Controller()->OffsetItemSource(m_Item, m_SlipContext.offset);
+
+        m_SlipContext.active = false;
+        m_SlipContext.offset = 0;
+        ToggleHandles(true);
+    }
 }
 
 void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
-    m_Context->HoverModel()->Set(m_Item);
-    ToggleHandles(true);
-    update();
+    if (m_Context->Action() == SequencerAction::NONE || m_Context->Action() == SequencerAction::SLIP_CLIP)
+    {
+        m_Context->HoverModel()->Set(m_Item);
+        ToggleHandles(true);
+        update();
+    }
 
     STimelineItem::hoverEnterEvent(event);
 }
 
+void STrackItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
+{
+    if (m_Context->Action() == SequencerAction::RAZOR)
+        Track()->hoverMoveEvent(event);
+
+    STimelineItem::hoverMoveEvent(event);
+}
+
 void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
-    m_Context->HoverModel()->Reset();
-    ToggleHandles(false);
-    update();
+    if (m_Context->Action() == SequencerAction::NONE || m_Context->Action() == SequencerAction::SLIP_CLIP)
+    {
+        m_Context->HoverModel()->Reset();
+        ToggleHandles(false);
+        update();
+    }
 
     STimelineItem::hoverLeaveEvent(event);
 }
