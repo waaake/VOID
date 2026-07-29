@@ -233,6 +233,10 @@ bool PlaybackTrack::MergeCut(v_frame_t frame)
         SharedTrackItem first = m_Items.At(frame);
         SharedTrackItem second = m_Items.At(frame + 1);
 
+        // Media does not match and hence we can't merge
+        if (first->GetMedia().get() != second->GetMedia().get())
+            return false;
+
         first->SetTimelineOut(second->TimelineOut());
         RemoveItem(second);
 
