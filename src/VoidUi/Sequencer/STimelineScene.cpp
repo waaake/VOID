@@ -11,9 +11,10 @@
 
 /* Internal */
 #include "STimelineScene.h"
+#include "Graphics/SPlayheadItem.h"
+#include "Graphics/SRazorItem.h"
 #include "Graphics/STrack.h"
 #include "Graphics/STrackItem.h"
-#include "Graphics/SPlayheadItem.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -32,6 +33,7 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
     : QGraphicsScene(parent)
     , m_Context(context)
     , m_Playhead(nullptr)
+    , m_Razorhead(nullptr)
 {
     // Can now be accessed directly by any other sub-component within the sequencer
     m_Context->Controller()->SetScene(this);
@@ -84,7 +86,31 @@ void STimelineScene::Clear()
         m_Playhead = nullptr;
     }
 
+    if (m_Razorhead)
+    {
+        m_Razorhead->deleteLater();
+        delete m_Razorhead;
+        m_Razorhead = nullptr;
+    }
+
     clear();
+}
+
+void STimelineScene::AddRazorhead()
+{
+    m_Razorhead = new SRazorItem(m_Context);
+    addItem(m_Razorhead);
+}
+
+void STimelineScene::SetRazorX(int x)
+{
+    m_Razorhead->SetX(x);
+}
+
+void STimelineScene::ToggleRazorhead(bool visible)
+{
+    if (!m_Razorhead) AddRazorhead();
+    m_Razorhead->setVisible(visible);
 }
 
 void STimelineScene::AddPlayhead()
