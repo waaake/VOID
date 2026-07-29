@@ -96,6 +96,7 @@ set(SOURCES
     # Sequencer
     Sequencer/Graphics/SHandleItem.cpp
     Sequencer/Graphics/SPlayheadItem.cpp
+    Sequencer/Graphics/SRazorItem.cpp
     Sequencer/Graphics/STimelineItem.cpp
     Sequencer/Graphics/STrack.cpp
     Sequencer/Graphics/STrackItem.cpp
