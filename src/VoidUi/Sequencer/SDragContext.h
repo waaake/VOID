@@ -15,19 +15,27 @@ VOID_NAMESPACE_OPEN
 
 struct SDragContext
 {
-    bool pressed = false;
-    bool active = false;
     QPointF clickpos;
     QPointF scenepos;
     QPointF offset;
+    bool pressed = false;
+    bool active = false;
 };
 
 struct SMarqueeContext
 {
-    bool pressed = false;
-    bool active = false;
     QPoint clickpos;
     QRect rect;
+    bool pressed = false;
+    bool active = false;
+};
+
+struct SSlipClipContext
+{
+    QPointF sourcepos;
+    int offset = 0;
+    bool pressed = false;
+    bool active = false;
 };
 
 VOID_NAMESPACE_CLOSE

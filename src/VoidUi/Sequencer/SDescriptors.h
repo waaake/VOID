@@ -12,6 +12,7 @@ VOID_NAMESPACE_OPEN
 namespace Sequencer {
 
 inline constexpr int RulerHeight = 30;
+inline constexpr int ToolbarWidth = 40;
 inline constexpr int TrackHeight = 60;
 inline constexpr int TrackItemHeight = 60;
 inline constexpr int TrackSpacing = 2;
