@@ -15,7 +15,7 @@ VOID_NAMESPACE_OPEN
 class MoveTrackItemCommand : public VoidUndoCommand
 {
 public:
-    MoveTrackItemCommand(SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent = nullptr);
+    MoveTrackItemCommand(const SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
@@ -27,22 +27,16 @@ private:
 class MoveItemToTrackCommand : public VoidUndoCommand
 {
 public:
-    MoveItemToTrackCommand(SequencerController* controller,
-        SharedTrackItem& item,
-        int currentTrackIndex,
-        int trackIndex,
-        v_frame_t frame,
-        QUndoCommand* parent = nullptr
-    );
+    MoveItemToTrackCommand(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
 private:
-    SequencerController* m_Controller;
-    std::weak_ptr<TrackItem> m_Item;
-    int m_CurrentTrackIndex;
-    int m_TrackIndex;
-    v_frame_t m_Requested, m_Previous;
+    PlaybackSequence* m_Sequence;
+    v_frame_t m_PreviousFrame, m_RequestedFrame;
+    int m_PreviousTrackIndex, m_RequestedTrackIndex;
+    int m_PreviousItemIndex, m_MovedItemIndex;
+    Sequence::TrackType m_Type;
 };
 
 class SetTrackItemColorCommand : public VoidUndoCommand
@@ -124,6 +118,62 @@ private:
     int m_TrackIndex;
     int m_ItemIndex;
     rapidjson::Value m_ItemData;
+};
+
+class RazorTrackCommand : public VoidUndoCommand
+{
+public:
+    RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_Type;
+    int m_TrackIndex;
+    v_frame_t m_Frame;
+};
+
+class RazorSequenceCommand : public VoidUndoCommand
+{
+public:
+    RazorSequenceCommand(const SharedPlaybackSequence& sequence, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    SharedPlaybackSequence m_Sequence;
+    v_frame_t m_Frame;
+};
+
+class MergeCutCommand : public VoidUndoCommand
+{
+public:
+    MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_Type;
+    int m_TrackIndex;
+    v_frame_t m_Frame;
+};
+
+class OffsetItemSourceCommand : public VoidUndoCommand
+{
+public:
+    OffsetItemSourceCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_TrackType;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_Offset;
+    int m_Previous;
 };
 
 VOID_NAMESPACE_CLOSE

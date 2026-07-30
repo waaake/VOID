@@ -19,6 +19,7 @@
 VOID_NAMESPACE_OPEN
 
 class SPlayheadItem;
+class SRazorItem;
 class STrack;
 
 class STimelineScene : public QGraphicsScene
@@ -31,6 +32,9 @@ public:
     void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
 
+    void AddRazorhead();
+    void SetRazorX(int x);
+    void ToggleRazorhead(bool visible);
     void AddPlayhead();
     void UpdatePlayhead();
     void Update();
@@ -48,6 +52,7 @@ private:
     std::vector<STrack*> m_Tracks;
     SequencerContext* m_Context;
     SPlayheadItem* m_Playhead;
+    SRazorItem* m_Razorhead;
 
 private:
     int SceneHeight() const;

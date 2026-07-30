@@ -10,7 +10,7 @@
 
 VOID_NAMESPACE_OPEN
 
-MoveTrackItemCommand::MoveTrackItemCommand(SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent)
+MoveTrackItemCommand::MoveTrackItemCommand(const SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Item(item)
     , m_Requested(frame)
@@ -40,68 +40,50 @@ bool MoveTrackItemCommand::Redo()
     return false;
 }
 
-/// Move Item to Track
+/// MoveItemToTrackCommand
 
-MoveItemToTrackCommand::MoveItemToTrackCommand(
-    SequencerController* controller,
-    SharedTrackItem& item,
-    int currentTrackIndex,
-    int trackIndex,
-    v_frame_t frame,
-    QUndoCommand* parent
-)
+MoveItemToTrackCommand::MoveItemToTrackCommand(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame, QUndoCommand* parent)
     : VoidUndoCommand(parent)
-    , m_Controller(controller)
-    , m_Item(item)
-    , m_CurrentTrackIndex(currentTrackIndex)
-    , m_TrackIndex(trackIndex)
-    , m_Requested(frame)
-    , m_Previous(item->TimelineIn())
+    , m_Sequence(track->Sequence())
+    , m_PreviousFrame(item->TimelineIn())
+    , m_RequestedFrame(frame)
+    , m_PreviousTrackIndex(track->TrackIndex())
+    , m_RequestedTrackIndex(trackIndex)
+    , m_PreviousItemIndex(track->ItemIndex(item))
+    , m_Type(track->Type())
 {
     setText("Move TrackItem");
 }
 
 void MoveItemToTrackCommand::undo()
 {
-    if (SharedTrackItem item = m_Item.lock())
+    SharedPlaybackTrack previous = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_PreviousTrackIndex) : m_Sequence->AudioTrackAt(m_PreviousTrackIndex);
+    SharedPlaybackTrack requested = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_RequestedTrackIndex) : m_Sequence->AudioTrackAt(m_RequestedTrackIndex);
+
+    if (previous && requested)
     {
-        STrack* previous = m_Controller->TrackAt(m_CurrentTrackIndex);
-        STrack* current = m_Controller->TrackAt(m_TrackIndex);
-
+        SharedTrackItem item = requested->ItemAt(m_MovedItemIndex);
         // Try move back, should have no issues though
-        if (previous->Track()->AddItem(item, m_Previous))
-        {
-            current->Track()->RemoveItem(item);
-
-            // Visual changes
-            previous->AddItem(item);
-            current->RemoveItem(item);
-        }
+        if (previous->AddItem(item, m_PreviousFrame))
+            requested->RemoveItem(item);
     }
 }
 
 bool MoveItemToTrackCommand::Redo()
 {
-    if (SharedTrackItem item = m_Item.lock())
+    SharedPlaybackTrack previous = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_PreviousTrackIndex) : m_Sequence->AudioTrackAt(m_PreviousTrackIndex);
+    SharedPlaybackTrack requested = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_RequestedTrackIndex) : m_Sequence->AudioTrackAt(m_RequestedTrackIndex);
+
+    if (previous && requested)
     {
-        STrack* current = m_Controller->TrackAt(m_CurrentTrackIndex);
-        STrack* requested = m_Controller->TrackAt(m_TrackIndex);
-
-        // Try move
-        if (requested->Track()->AddItem(item, m_Requested))
+        SharedTrackItem item = previous->ItemAt(m_PreviousItemIndex);
+        if (requested->AddItem(item, m_RequestedFrame))
         {
-            current->Track()->RemoveItem(item);
-
-            // Visual updates
-            requested->AddItem(item);
-            current->RemoveItem(item);
-
+            m_MovedItemIndex = requested->ItemIndex(item);
+            previous->RemoveItem(item);
             return true;
         }
-
-        return false;
     }
-
     return false;
 }
 
@@ -303,6 +285,126 @@ bool DeleteTrackItemCommand::Redo()
         }
         return false;
     }
+    return false;
+}
+
+/// RazorTrackCommand
+
+RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->TrackIndex())
+    , m_Type(track->Type())
+    , m_Frame(frame)
+{
+    setText("Razor Item");
+}
+
+void RazorTrackCommand::undo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    track->MergeCut(m_Frame);
+}
+
+bool RazorTrackCommand::Redo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    return track ? track->RazorAt(m_Frame) : false;
+}
+
+/// RazorSequenceCommand
+
+RazorSequenceCommand::RazorSequenceCommand(const SharedPlaybackSequence& sequence, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
+    , m_Frame(frame)
+{
+    setText("Razor Items");
+}
+
+void RazorSequenceCommand::undo()
+{
+    for (auto& track : m_Sequence->VideoTracks())
+        track->MergeCut(m_Frame);
+
+    for (auto& track : m_Sequence->AudioTracks())
+        track->MergeCut(m_Frame);
+}
+
+bool RazorSequenceCommand::Redo()
+{
+    bool status = false;
+
+    for (auto& track : m_Sequence->VideoTracks())
+        status |= track->RazorAt(m_Frame);
+
+    for (auto& track : m_Sequence->AudioTracks())
+        status |= track->RazorAt(m_Frame);
+
+    return status;
+}
+
+/// MergeCutCommand
+
+MergeCutCommand::MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->TrackIndex())
+    , m_Type(track->Type())
+    , m_Frame(frame)
+{
+    setText("Merge Items");
+}
+
+void MergeCutCommand::undo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    track->RazorAt(m_Frame);
+}
+
+bool MergeCutCommand::Redo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    return track ? track->MergeCut(m_Frame) : false;
+}
+
+/// OffsetItemSourceCommand
+
+OffsetItemSourceCommand::OffsetItemSourceCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Offset(offset)
+    , m_Previous(item->SourceIn())
+{
+    setText("Slip Item Source");
+}
+
+void OffsetItemSourceCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetSourceIn(m_Previous);
+    }
+}
+
+bool OffsetItemSourceCommand::Redo()
+{
+    if (m_Offset == 0)
+        return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetSourceIn(item->SourceIn() + m_Offset);
+        return true;
+    }
+
     return false;
 }
 

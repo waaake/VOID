@@ -12,6 +12,7 @@
 #include "STimelineScene.h"
 #include "Graphics/STrackItem.h"
 #include "VoidCore/Logging.h"
+#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -66,7 +67,10 @@ MFrameRange STimelineView::VisibleRange() const
 
 void STimelineView::mousePressEvent(QMouseEvent* event)
 {
-    if (!dynamic_cast<STrackItem*>(m_Scene->itemAt(event->pos(), QTransform())))
+    if (m_Context->Action() == SequencerAction::RAZOR_ALL)
+        emit sequenceCutRequested(m_Context->Geometry()->SceneXToFrame(mapToScene(event->pos()).x()));
+
+    if (!dynamic_cast<STrackItem*>(m_Scene->itemAt(event->pos(), transform())))
     {
         m_Marquee.pressed = true;
         m_Marquee.clickpos = event->pos();
@@ -96,6 +100,9 @@ void STimelineView::mouseMoveEvent(QMouseEvent* event)
         viewport()->update();
     }
 
+    if (m_Context->Action() == SequencerAction::RAZOR_ALL)
+        m_Scene->SetRazorX(mapToScene(event->pos()).x());
+
     QGraphicsView::mouseMoveEvent(event);
 }
 
@@ -111,6 +118,37 @@ void STimelineView::mouseReleaseEvent(QMouseEvent* event)
     }
 
     QGraphicsView::mouseReleaseEvent(event);
+}
+
+void STimelineView::enterEvent(QEvent* event)
+{
+    QGraphicsView::enterEvent(event);
+
+    switch (m_Context->Action())
+    {
+        case SequencerAction::SLIP_CLIP:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_arrow_range, _DARK_COLOR(QPalette::Text, 100))));
+            break;
+        case SequencerAction::RAZOR:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_bolt, _DARK_COLOR(QPalette::Text, 100))));
+            break;
+        case SequencerAction::RAZOR_ALL:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_bolt, _DARK_COLOR(QPalette::Text, 100))));
+            m_Scene->ToggleRazorhead(true);
+            break;
+        case SequencerAction::MERGE:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_cell_merge, _DARK_COLOR(QPalette::Text, 100))));
+            break;
+    }
+}
+
+void STimelineView::leaveEvent(QEvent* event)
+{
+    QGraphicsView::leaveEvent(event);
+    unsetCursor();
+
+    if (m_Context->Action() == SequencerAction::RAZOR_ALL)
+        m_Scene->ToggleRazorhead(false);
 }
 
 void STimelineView::drawForeground(QPainter* painter, const QRectF& rect)

@@ -26,8 +26,8 @@ class SequencerController : public QObject
     Q_OBJECT
 public:
     void SetScene(QGraphicsScene* scene);
-    void MoveItem(SharedTrackItem& item, v_frame_t frame);
-    void MoveItem(SharedTrackItem& item, int currentTrackIndex, int trackIndex, v_frame_t frame);
+    void MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
     void CreateAudioTrack(const SharedPlaybackSequence& seqeunce);
     void RemoveTracks(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedPlaybackTrack>& tracks);
@@ -44,6 +44,11 @@ public:
     void SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items);
     void ToggleTrackLock(const SharedPlaybackTrack& track);
     void ToggleTrackState(const SharedPlaybackTrack& track);
+
+    void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);
+    void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
+    void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
+    void OffsetItemSource(const SharedTrackItem& item, int offset);
 
 signals:
     void frameChanged(v_frame_t);

@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _SEQUENCER_PLAYHEAD_ITEM_H
+#define _SEQUENCER_PLAYHEAD_ITEM_H
+
 /* Internal */
 #include "STimelineItem.h"
 
@@ -16,3 +19,5 @@ public:
 };
 
 VOID_NAMESPACE_CLOSE
+
+#endif // _SEQUENCER_PLAYHEAD_ITEM_H

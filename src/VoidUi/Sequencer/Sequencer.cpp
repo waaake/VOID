@@ -22,12 +22,6 @@ SequencerTimeline::SequencerTimeline(QWidget* parent)
     Connect();
 }
 
-void SequencerTimeline::SetFrame(v_frame_t frame)
-{
-    m_Context.Controller()->SetCurrentFrame(frame);
-    VOID_LOG_INFO("SequencerTimeline::SetFrame::{0}", frame);
-}
-
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
     if (m_Sequence)
@@ -45,17 +39,6 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
     Refresh();
 }
 
-void SequencerTimeline::Refresh()
-{
-    m_TrackHeader->Clear();
-    m_View->Clear();
-
-    m_View->AddPlayhead();
-
-    for (int i = 0; i < m_Sequence->NumVideoTracks(); ++i)
-        AddTrack(m_Sequence->VideoTrackAt(i));
-}
-
 void SequencerTimeline::AddTrack(const SharedPlaybackTrack& track)
 {
     m_View->AddTrack(track);
@@ -68,7 +51,43 @@ void SequencerTimeline::RemoveTrack(const SharedPlaybackTrack& track)
     m_View->RemoveTrack(track);
 }
 
-void SequencerTimeline::SetHorizontalZoom(float factor)
+void SequencerTimeline::RazorAt(v_frame_t frame)
+{
+    if (m_Sequence) m_Context.Controller()->RazorAt(m_Sequence, frame);
+}
+
+void SequencerTimeline::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
+{
+    m_Context.Controller()->RazorAt(sequence, frame);
+}
+
+void SequencerTimeline::RazorAt(const SharedPlaybackTrack& track, v_frame_t frame)
+{
+    m_Context.Controller()->RazorAt(track, frame);
+}
+
+void SequencerTimeline::MergeCut(const SharedPlaybackTrack& track, v_frame_t frame)
+{
+    m_Context.Controller()->MergeCut(track, frame);
+}
+
+void SequencerTimeline::SetFrame(v_frame_t frame)
+{
+    m_Context.Controller()->SetCurrentFrame(frame);
+}
+
+void SequencerTimeline::Refresh()
+{
+    m_TrackHeader->Clear();
+    m_View->Clear();
+
+    m_View->AddPlayhead();
+
+    for (int i = 0; i < m_Sequence->NumVideoTracks(); ++i)
+        AddTrack(m_Sequence->VideoTrackAt(i));
+}
+
+void SequencerTimeline::SetHorizontalScale(float factor)
 {
     m_Context.Geometry()->SetPixelsPerFrame(factor);
     m_View->Refresh();
@@ -123,13 +142,14 @@ void SequencerTimeline::Build()
 void SequencerTimeline::Connect()
 {
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
+    connect(m_Toolbar, &SToolbar::actionSwitched, this, [this](const SequencerAction& action) -> void { m_Context.SetAction(action); });
 
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
     connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
 
     connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
     {
-        SetHorizontalZoom((float)value / 10);
+        SetHorizontalScale((float)value / 10);
     });
 
     connect(m_Context.Controller(), &SequencerController::frameChangeRequested, this, &SequencerTimeline::frameChangeRequested);
@@ -138,6 +158,7 @@ void SequencerTimeline::Connect()
         m_Menu->Show(mapToGlobal(position));
     });
     connect(m_View->verticalScrollBar(), &QScrollBar::valueChanged, m_TrackHeader, &STrackHeaderWidget::SetScroll);
+    connect(m_View, &STimelineView::sequenceCutRequested, this, static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt));
 
     connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
     {

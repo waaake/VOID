@@ -34,13 +34,17 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence);
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
 
+    void AddTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
+    void RazorAt(v_frame_t frame);
+    void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);
+    void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
+    void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
+
     void SetFrame(v_frame_t frame);
     void Refresh();
 
-    void AddTrack(const SharedPlaybackTrack& track);
-    void RemoveTrack(const SharedPlaybackTrack& track);
-
-    void SetHorizontalZoom(float factor);
+    void SetHorizontalScale(float factor);
 
 signals:
     void frameChangeRequested(v_frame_t);

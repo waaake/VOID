@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QPainter>
+#include <QGraphicsSceneMouseEvent>
 #include <QStyleOptionGraphicsItem>
 
 /* Internal */
@@ -17,6 +18,8 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
     : STimelineItem(context, parent)
     , m_Track(track)
 {
+    setAcceptHoverEvents(true);
+
     setZValue(Sequencer::ZTrack);
     connect(m_Track.get(), &PlaybackTrack::updated, this, &STrack::UpdateItems);
     connect(m_Track.get(), &PlaybackTrack::itemAdded, this, &STrack::AddItem);
@@ -26,6 +29,9 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
     m_BoundingRect = QRectF(0, 0, Sequencer::SceneWidth, Sequencer::TrackHeight);
     setPos(0, context->Geometry()->TrackRect(track->TrackIndex()).top());
     BuildItems();
+
+    m_RazorMarker = new STrackRazorItem(context, this);
+    m_RazorMarker->setVisible(false);
 }
 
 STrack::~STrack()
@@ -61,6 +67,7 @@ void STrack::Clear()
 {
     for (auto& [_, item] : m_Items)
     {
+        item->deleteLater();
         delete item;
         item = nullptr;
     }
@@ -135,6 +142,30 @@ STrackItem* STrack::Item(const SharedTrackItem& item)
         return nullptr;
 
     return m_Items.at(item.get());
+}
+
+void STrack::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
+{
+    STimelineItem::hoverEnterEvent(event);
+
+    if (m_Context->Action() == SequencerAction::RAZOR)
+        m_RazorMarker->setVisible(true);
+}
+
+void STrack::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
+{
+    if (m_Context->Action() == SequencerAction::RAZOR)
+        m_RazorMarker->SetX(event->scenePos().x());
+
+    STimelineItem::hoverMoveEvent(event);
+}
+
+void STrack::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
+{
+    STimelineItem::hoverLeaveEvent(event);
+
+    if (m_Context->Action() == SequencerAction::RAZOR)
+        m_RazorMarker->setVisible(false);
 }
 
 void STrack::BuildItems()

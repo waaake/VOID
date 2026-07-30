@@ -9,7 +9,7 @@
 VOID_NAMESPACE_OPEN
 
 TrackItem::TrackItem(QObject* parent)
-    : VoidObject(parent)
+    : VoidObject()
     , m_Media(nullptr)
     , m_Track(reinterpret_cast<PlaybackTrack*>(parent))
     , m_Name("")
@@ -24,7 +24,7 @@ TrackItem::TrackItem(QObject* parent)
 }
 
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
-    : VoidObject(parent)
+    : VoidObject()
     , m_Media(media)
     , m_Track(reinterpret_cast<PlaybackTrack*>(parent))
     , m_Name(media->Name())

@@ -10,6 +10,7 @@
 /* Internal */
 #include "Definition.h"
 #include "STimelineItem.h"
+#include "SRazorItem.h"
 #include "VoidObjects/Sequence/Track.h"
 
 VOID_NAMESPACE_OPEN
@@ -43,12 +44,20 @@ public:
     STrackItem* ItemAt(int index);
     STrackItem* Item(const SharedTrackItem& item);
 
+protected:
+    void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+
 private:
     std::unordered_map<TrackItem*, STrackItem*> m_Items;
+    STrackRazorItem* m_RazorMarker;
     SharedPlaybackTrack m_Track;
 
 private: /* Methods */
     void BuildItems();
+
+    friend class STrackItem;
 };
 
 VOID_NAMESPACE_CLOSE

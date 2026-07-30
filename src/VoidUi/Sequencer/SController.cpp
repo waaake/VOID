@@ -17,7 +17,7 @@ void SequencerController::SetScene(QGraphicsScene* scene)
     m_Scene = scene;
 }
 
-void SequencerController::MoveItem(SharedTrackItem& item, v_frame_t frame)
+void SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     // Item was dragged and returned back to the same position
     if (item->TimelineIn() == frame)
@@ -26,9 +26,9 @@ void SequencerController::MoveItem(SharedTrackItem& item, v_frame_t frame)
     _MediaBridge.PushCommand(new MoveTrackItemCommand(item, frame));
 }
 
-void SequencerController::MoveItem(SharedTrackItem& item, int currentTrackIndex, int trackIndex, v_frame_t frame)
+void SequencerController::MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
 {
-    _MediaBridge.PushCommand(new MoveItemToTrackCommand(this, item, currentTrackIndex, trackIndex, frame));
+    _MediaBridge.PushCommand(new MoveItemToTrackCommand(track, item, trackIndex, frame));
 }
 
 STrack* SequencerController::TrackAt(const QPointF& position) const
@@ -142,6 +142,26 @@ void SequencerController::ToggleTrackLock(const SharedPlaybackTrack& track)
 void SequencerController::ToggleTrackState(const SharedPlaybackTrack& track)
 {
     _MediaBridge.PushCommand(new ToggleTrackStateCommand(track));
+}
+
+void SequencerController::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
+{
+    _MediaBridge.PushCommand(new RazorSequenceCommand(sequence, frame));
+}
+
+void SequencerController::RazorAt(const SharedPlaybackTrack& track, v_frame_t frame)
+{
+    _MediaBridge.PushCommand(new RazorTrackCommand(track, frame));
+}
+
+void SequencerController::MergeCut(const SharedPlaybackTrack& track, v_frame_t frame)
+{
+    _MediaBridge.PushCommand(new MergeCutCommand(track, frame));
+}
+
+void SequencerController::OffsetItemSource(const SharedTrackItem& item, int offset)
+{
+    _MediaBridge.PushCommand(new OffsetItemSourceCommand(item, offset));
 }
 
 VOID_NAMESPACE_CLOSE
