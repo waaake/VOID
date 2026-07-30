@@ -17,7 +17,7 @@ void SequencerController::SetScene(QGraphicsScene* scene)
     m_Scene = scene;
 }
 
-void SequencerController::MoveItem(SharedTrackItem& item, v_frame_t frame)
+void SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     // Item was dragged and returned back to the same position
     if (item->TimelineIn() == frame)
@@ -26,9 +26,10 @@ void SequencerController::MoveItem(SharedTrackItem& item, v_frame_t frame)
     _MediaBridge.PushCommand(new MoveTrackItemCommand(item, frame));
 }
 
-void SequencerController::MoveItem(SharedTrackItem& item, int currentTrackIndex, int trackIndex, v_frame_t frame)
+void SequencerController::MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
 {
-    _MediaBridge.PushCommand(new MoveItemToTrackCommand(this, item, currentTrackIndex, trackIndex, frame));
+    // _MediaBridge.PushCommand(new MoveItemToTrackCommand(this, item, currentTrackIndex, trackIndex, frame));
+    _MediaBridge.PushCommand(new MoveItemToTrackCommand(track, item, trackIndex, frame));
 }
 
 STrack* SequencerController::TrackAt(const QPointF& position) const

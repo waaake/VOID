@@ -220,7 +220,7 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         // Move the track item to the new track
         if (track && track != current)
         {
-            m_Context->Controller()->MoveItem(m_Item, current->Index(), track->Index(), frame);
+            m_Context->Controller()->MoveItem(current->Track(), m_Item, track->Index(), frame);
         }
         else
         {

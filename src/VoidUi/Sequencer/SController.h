@@ -26,8 +26,8 @@ class SequencerController : public QObject
     Q_OBJECT
 public:
     void SetScene(QGraphicsScene* scene);
-    void MoveItem(SharedTrackItem& item, v_frame_t frame);
-    void MoveItem(SharedTrackItem& item, int currentTrackIndex, int trackIndex, v_frame_t frame);
+    void MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
     void CreateAudioTrack(const SharedPlaybackSequence& seqeunce);
     void RemoveTracks(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedPlaybackTrack>& tracks);

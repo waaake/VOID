@@ -67,6 +67,7 @@ void STrack::Clear()
 {
     for (auto& [_, item] : m_Items)
     {
+        item->deleteLater();
         delete item;
         item = nullptr;
     }
