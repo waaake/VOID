@@ -36,6 +36,9 @@ inline constexpr int ZMarker = 400;
 inline constexpr int ZSelectionBox = 500;
 inline constexpr int ZPlayheadItem = 10000;
 
+inline constexpr int DragTravelDistance = 10;
+inline constexpr int SlipTravelDistance = 4;
+
 }; // namespace Sequencer
 
 VOID_NAMESPACE_CLOSE

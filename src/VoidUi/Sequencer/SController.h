@@ -9,6 +9,7 @@
 
 /* Qt */
 #include <QObject>
+#include <QGraphicsItem>
 #include <QGraphicsScene>
 
 /* Internal */
@@ -26,6 +27,8 @@ class SequencerController : public QObject
     Q_OBJECT
 public:
     void SetScene(QGraphicsScene* scene);
+    QGraphicsScene* Scene() const { return m_Scene; }
+    void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
     void MoveItem(const SharedTrackItem& item, v_frame_t frame);
     void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
