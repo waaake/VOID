@@ -14,7 +14,6 @@ class SRazorItem : public STimelineItem
 public:
     explicit SRazorItem(SequencerContext* context, QGraphicsItem* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
-
     void SetX(int x);
 };
 
@@ -22,9 +21,6 @@ class STrackRazorItem : public SRazorItem
 {
 public:
     explicit STrackRazorItem(SequencerContext* context, QGraphicsItem* parent = nullptr);
-    // void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
-
-    // void SetX(int x);
 };
 
 VOID_NAMESPACE_CLOSE

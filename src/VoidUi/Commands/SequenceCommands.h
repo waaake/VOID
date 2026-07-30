@@ -37,10 +37,6 @@ private:
     int m_PreviousTrackIndex, m_RequestedTrackIndex;
     int m_PreviousItemIndex, m_MovedItemIndex;
     Sequence::TrackType m_Type;
-    // SequencerController* m_Controller;
-    // std::weak_ptr<TrackItem> m_Item;
-    // int m_CurrentTrackIndex;
-    // int m_TrackIndex;
 };
 
 class SetTrackItemColorCommand : public VoidUndoCommand

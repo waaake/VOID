@@ -28,7 +28,6 @@ void SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 
 void SequencerController::MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
 {
-    // _MediaBridge.PushCommand(new MoveItemToTrackCommand(this, item, currentTrackIndex, trackIndex, frame));
     _MediaBridge.PushCommand(new MoveItemToTrackCommand(track, item, trackIndex, frame));
 }
 
