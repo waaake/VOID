@@ -43,7 +43,7 @@ bool TrackMap::Add(const SharedTrackItem& item, v_frame_t frame)
     }
 
     SharedTrackItem existing = *(it - 1);
-    if (existing->InRange(frame))
+    if (existing->InTimelineRange(frame))
         return false;
 
     m_Items.insert(it, item);
