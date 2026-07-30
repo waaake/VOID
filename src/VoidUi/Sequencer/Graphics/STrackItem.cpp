@@ -22,8 +22,11 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptHoverEvents(true);
 
-    m_HeadHandle = new SHandleItem(m_Item, HandleType::HEAD, context, this);
-    m_TailHandle = new SHandleItem(m_Item, HandleType::TAIL, context, this);
+    m_HeadHandle = new SHandleItem(m_Item, HandleType::HEAD, context);
+    m_TailHandle = new SHandleItem(m_Item, HandleType::TAIL, context);
+    m_Context->Controller()->AddToScene(m_HeadHandle);
+    m_Context->Controller()->AddToScene(m_TailHandle);
+
     ToggleHandles(false);
 
     CalculateBoundingRect();
@@ -132,6 +135,9 @@ void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             m_Drag.clickpos = event->scenePos();
             m_Drag.scenepos = scenePos();
             m_Drag.offset = event->pos();
+
+            // Hide handles before we drag
+            ToggleHandles(false);
         }
         else if (m_Context->Action() == SequencerAction::SLIP_CLIP)
         {
@@ -155,7 +161,7 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
     if (m_Drag.pressed)
     {
         QPointF delta = event->scenePos() - m_Drag.clickpos;
-        if (delta.manhattanLength() > 10)
+        if (delta.manhattanLength() > Sequencer::DragTravelDistance)
         {
             m_Drag.pressed = false;
             m_Drag.active = true;
@@ -165,7 +171,7 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
     if (m_SlipContext.pressed)
     {
         QPointF delta = event->scenePos() - m_SlipContext.sourcepos;
-        if (delta.manhattanLength() > 10)
+        if (delta.manhattanLength() > Sequencer::SlipTravelDistance)
         {
             m_SlipContext.pressed = false;
             m_SlipContext.active = true;
@@ -301,8 +307,9 @@ void STrackItem::ToggleHandles(bool visible)
     m_TailHandle->setVisible(visible);
     if (visible)
     {
-        m_HeadHandle->setPos(0, 2);
-        m_TailHandle->setPos(boundingRect().width(), 2);
+        // This results in a matrix mult -- need to see if there is a better way to do this
+        m_HeadHandle->setPos(mapToScene(0, 2));
+        m_TailHandle->setPos(mapToScene(boundingRect().width(), 2));
         m_HeadHandle->Update();
         m_TailHandle->Update();
     }
