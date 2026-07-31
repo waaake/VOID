@@ -17,6 +17,12 @@ void SequencerController::SetScene(QGraphicsScene* scene)
     m_Scene = scene;
 }
 
+void SequencerController::SetTimeController(TimelineController* controller)
+{
+    m_TimelineController = controller;
+    connect(m_TimelineController, &TimelineController::timeChanged, this, &SequencerController::SetCurrentFrame, Qt::DirectConnection);
+}
+
 void SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     // Item was dragged and returned back to the same position
@@ -108,7 +114,7 @@ void SequencerController::SetCurrentFrame(v_frame_t frame)
 
 void SequencerController::RequestFrameChange(v_frame_t frame)
 {
-    emit frameChangeRequested(frame);
+    m_TimelineController->SetFrame(frame);
     SetCurrentFrame(frame);
 }
 
