@@ -61,7 +61,14 @@ public:
 	inline void SetFramerate(const double rate) { m_FramerateBox->SetFramerate(rate); }
 	inline void SetFramerate(const std::string& rate) { m_FramerateBox->SetFramerate(rate); }
 
+	void Play(const PlayState& state = PlayState::FORWARDS);
+	void Stop();
+
 	void SetFrame(const int frame);
+	void NextFrame();
+	void PreviousFrame();
+	inline void MoveToStart() { m_Timeslider->setValue(m_Timeslider->Minimum()); }
+	inline void MoveToEnd() { m_Timeslider->setValue(m_Timeslider->Maximum()); }
 
 	inline void SetMaximum(const int frame) { m_Timeslider->setMaximum(frame); }
 	inline void SetMinimum(const int frame) { m_Timeslider->setMinimum(frame); }
@@ -70,6 +77,13 @@ public:
 	void SetUserEndframe(int frame);
 
 	void SetRange(const int min, const int max);
+	/**
+	 * (Re)sets the In and out framing of the Timeslider
+	 * Calling it once sets the frame as in/out frame (User-In/User-Out)
+	 * Calling it the next time on the same frame Resets the in/out frame (User-In/User-Out)
+	 */
+	void ResetInFrame();
+	void ResetOutFrame();
 	void ResetRange();
 
 	/**
@@ -159,32 +173,16 @@ protected: /* Methods */
 	void PlayForwards();
 	void PlayBackwards();
 
-	void Play(const PlayState& state = PlayState::FORWARDS);
-	void Stop();
 	void Replay();
 
 	void StartPlayback();
 	void PlaybackLoop();
 	void TimerPlaybackLoop();
 
-	void NextFrame();
-	void PreviousFrame();
-
 	void PlayNextFrame();
 	void PlayPreviousFrame();
 
 	int ElapsedFrames();
-
-	inline void MoveToStart() { m_Timeslider->setValue(m_Timeslider->Minimum()); }
-	inline void MoveToEnd() { m_Timeslider->setValue(m_Timeslider->Maximum()); }
-
-	/**
-	 * (Re)sets the In and out framing of the Timeslider
-	 * Calling it once sets the frame as in/out frame (User-In/User-Out)
-	 * Calling it the next time on the same frame Resets the in/out frame (User-In/User-Out)
-	 */
-	void ResetInFrame();
-	void ResetOutFrame();
 
 	/* Friendly classes */
 	friend class PlayerWidget;

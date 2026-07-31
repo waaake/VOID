@@ -118,6 +118,7 @@ set(SOURCES
 
     # Timeline
     Timeline/Timeline.cpp
+    Timeline/TimelineController.cpp
     Timeline/TimelineElements.cpp
     Timeline/Timeslider.cpp
 
