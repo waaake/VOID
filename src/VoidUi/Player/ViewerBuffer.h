@@ -21,11 +21,10 @@
 #include "Definition.h"
 #include "Components.h"
 #include "PlayerBuffer.h"
+#include "VoidUi/Timeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
 
-/* Forward decl for Player as this needs to know the current playback type and frame */
-class Player;
 class CacheNextFrameTask;
 class CachePreviousFrameTask;
 
@@ -44,7 +43,7 @@ public: /* Enums */
     };
 
 public:
-    explicit ViewerBuffer(QObject* parent = nullptr);
+    explicit ViewerBuffer(TimelineController* controller, QObject* parent = nullptr);
     ~ViewerBuffer();
 
     /// ImageData
@@ -67,10 +66,6 @@ public:
     inline void SetActive(const bool active) { m_Active = active; emit updated(); }
     inline void SetName(const std::string& name) { m_Name = name; }
     void SetColor(const QColor& color);
-
-    /// Set Components
-
-    inline void SetActivePlayer(Player* player) { m_Player = player; }
 
     // Cache/Buffer
 
@@ -98,7 +93,7 @@ private: /* Members */
     std::string m_Name;
     QTimer m_CacheTimer;
     QColor m_Color;
-    Player* m_Player;
+    TimelineController* m_TimelineController;
 
     std::size_t m_MaxMemory;
     std::atomic<std::size_t> m_Framesize;
