@@ -11,6 +11,7 @@
 #include "Definition.h"
 #include "Player.h"
 #include "VoidUi/BaseWindow/MenuSystem.h"
+#include "VoidUi/Timeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -28,9 +29,11 @@ public:
 
     static PlayerBridge& Instance();
     inline Player* ActivePlayer() const { return m_Player; }
+    inline ViewerBuffer* ActiveViewer() const { return m_Player->ActiveViewer(); }
+    TimelineController* TimeController() { return m_TimelineController; }
+
     void InitMenu(MenuSystem* menuSystem);
     inline void Clear() { m_Player->Clear(); }
-
     inline void Refresh() { m_Player->Refresh(); }
 
     inline void SetMedia(const SharedMediaClip& media) { m_Player->SetMedia(media); }
@@ -67,19 +70,18 @@ public:
     inline void Recache() { m_Player->Recache(); }
     inline void ClearCache() { m_Player->ClearCache(); }
 
-    inline void PlayForwards() { m_Player->PlayForwards(); }
-    inline void PlayBackwards() { m_Player->PlayBackwards(); }
-    inline void Stop() { m_Player->Stop(); }
+    inline void PlayForwards() { m_TimelineController->PlayForwards(); }
+    inline void PlayBackwards() { m_TimelineController->PlayBackwards(); }
+    inline void Stop() { m_TimelineController->Stop(); }
 
-    inline void NextFrame() { m_Player->NextFrame(); }
-    inline void PreviousFrame() { m_Player->PreviousFrame(); }
-    inline void MoveToStart() { m_Player->MoveToStart(); }
-    inline void MoveToEnd() { m_Player->MoveToEnd(); }
-    inline void ResetInFrame() { m_Player->ResetInFrame(); }
-    inline void ResetOutFrame() { m_Player->ResetOutFrame(); }
-    inline void ResetRange() { m_Player->ResetRange(); }
-    inline void EditFramerate() { m_Player->EditFramerate(); }
-    inline void SetTimelineFrame(v_frame_t frame) { m_Player->SetTimelineFrame(frame); }
+    inline void NextFrame() { m_TimelineController->NextFrame(); }
+    inline void PreviousFrame() { m_TimelineController->PreviousFrame(); }
+    inline void MoveToStart() { m_TimelineController->MoveToStart(); }
+    inline void MoveToEnd() { m_TimelineController->MoveToEnd(); }
+    inline void ResetInFrame() { m_TimelineController->ResetInFrame(); }
+    inline void ResetOutFrame() { m_TimelineController->ResetOutFrame(); }
+    inline void ResetRange() { m_TimelineController->ResetRange(); }
+    inline void EditFramerate() { m_TimelineController->EditFramerate(); }
 
     inline void InspectCurrentMetadata() { m_Player->InspectCurrentMetadata(); }
     inline void ToggleChannels(int channel) { m_Player->ToggleChannels(channel); }
@@ -97,6 +99,7 @@ public:
 private: /* Members */
     Player* m_Player;
     Playlist* m_Playlist;
+    TimelineController* m_TimelineController;
 };
 
 #define _PlayerBridge PlayerBridge::Instance()

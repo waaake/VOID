@@ -16,7 +16,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidRenderer/Core/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
-#include "VoidUi/Timeline/Timeline.h"
+#include "VoidUi/Timeline/TimelineController.h"
 #include "VoidUi/Toolkit/AnnotationController.h"
 #include "VoidUi/Toolkit/ControlBar.h"
 
@@ -39,7 +39,7 @@ public:
     };
 
 public:
-    PlayerWidget(QWidget* parent = nullptr);
+    PlayerWidget(TimelineController* timelineController, QWidget* parent = nullptr);
     virtual ~PlayerWidget();
 
     /* Getters */
@@ -87,54 +87,10 @@ public:
     inline void ZoomOut() { m_ControlBar->ZoomOut(); }
     inline void ZoomToFit() { m_Renderer->ZoomToFit(); }
 
-    /* Mark a frame on the timeline as cached */
-    inline void AddCacheFrame(int frame) { m_Timeline->AddCacheFrame(frame); }
-    inline void RemoveCachedFrame(int frame) { m_Timeline->RemoveCachedFrame(frame); }
-    inline void ClearCachedFrames() { m_Timeline->ClearCachedFrames(); }
-
-    /* Set Range on the timeline */
-    inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }
-
     /**
      * Removes the MediaClip from the player buffer, if found
      */
     void RemoveMedia(const SharedMediaClip& media);
-
-    /**
-     * Timeline Controls:
-     * Below methods expose the functionality from the timeline
-     * These are required to be able to govern the play state or set any frame according
-     * to the current timeline state
-     * These would get invoked from the Menu or via shortcuts
-     * Eventually making their way onto the CPython exposed API for void python API
-     */
-    inline void PlayForwards() { m_Timeline->PlayForwards(); }
-    inline void PlayBackwards() { m_Timeline->PlayBackwards(); }
-
-    inline void Stop() { m_Timeline->Stop(); }
-
-    inline v_frame_t Startframe() const { return m_Timeline->Minimum(); }
-    inline v_frame_t Endframe() const { return m_Timeline->Maximum(); }
-    inline v_frame_t Frame() const { return m_Timeline->Frame(); }
-    inline void NextFrame() { m_Timeline->NextFrame(); }
-    inline void PreviousFrame() { m_Timeline->PreviousFrame(); }
-
-    inline void MoveToStart() { m_Timeline->MoveToStart(); }
-    inline void MoveToEnd() { m_Timeline->MoveToEnd(); }
-
-    inline void SetUserFirstframe(int frame) { m_Timeline->SetUserFirstframe(frame); }
-    inline void SetUserEndframe(int frame) { m_Timeline->SetUserEndframe(frame); }
-
-    inline void EditFramerate() { m_Timeline->EditFramerate(); }
-
-    /**
-     * (Re)sets the In and out framing of the Timeslider
-     * Calling it once sets the frame as in/out frame (User-In/User-Out)
-     * Calling it the next time on the same frame Resets the in/out frame (User-In/User-Out)
-     */
-    inline void ResetInFrame() { m_Timeline->ResetInFrame(); }
-    inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
-    inline void ResetRange() { m_Timeline->ResetRange(); }
 
     void Clear();
 
@@ -154,7 +110,7 @@ protected:  /* Members */
     PlayerOverlay* m_Overlay;
     VoidRenderer* m_Renderer;
     VoidPlaceholderRenderer* m_PlaceholderRenderer;
-    Timeline* m_Timeline;
+    TimelineController* m_TimelineController;
 
     ControlBar* m_ControlBar;
     AnnotationsController* m_AnnotationsController;
@@ -162,8 +118,8 @@ protected:  /* Members */
     Renderer::ComparisonMode m_ComparisonMode;
     Renderer::BlendMode m_BlendMode;
 
-    ViewerBuffer m_ViewBufferA;
-    ViewerBuffer m_ViewBufferB;
+    ViewerBuffer* m_ViewBufferA;
+    ViewerBuffer* m_ViewBufferB;
     ViewerBuffer* m_ActiveViewBuffer;
 
     MissingFrameHandler m_MFrameHandler;

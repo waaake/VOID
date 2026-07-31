@@ -18,7 +18,7 @@ class VOID_API Player : public PlayerWidget
     Q_OBJECT
 
 public:
-    Player(QWidget* parent = nullptr);
+    Player(TimelineController* controller, QWidget* parent = nullptr);
     ~Player();
     
     virtual inline QSize sizeHint() const override { return QSize(640, 480); }
@@ -29,9 +29,7 @@ public:
      * @param frame Framenumber to be set on the Timeline.
      */
     void SetFrame(int frame);
-    void SetTimelineFrame(v_frame_t frame) { m_Timeline->SetFrame(frame); }
-
-    inline void Refresh() { SetFrame(m_Timeline->Frame()); }
+    inline void Refresh() { SetFrame(m_TimelineController->Frame()); }
     inline ViewerBuffer* ActiveViewer() const { return m_ActiveViewBuffer; }
 
     void SetMedia(const SharedMediaClip& media);
@@ -79,7 +77,6 @@ signals:
      */
     void metadataInspected(const SharedMediaClip&);
     void playlistUpdated(Playlist*);
-    void frameChanged(v_frame_t);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
