@@ -11,7 +11,7 @@ TimelineController::TimelineController(QObject* parent)
 {
     m_Timeline = new Timeline();
 
-    connect(m_Timeline, &Timeline::TimeChanged, this, &TimelineController::timeChanged, Qt::DirectConnection);
+    connect(m_Timeline, &Timeline::timeChanged, this, &TimelineController::timeChanged, Qt::DirectConnection);
     connect(m_Timeline, &Timeline::fullscreenRequested, this, &TimelineController::fullscreenRequested, Qt::DirectConnection);
     connect(m_Timeline, &Timeline::playbackStateChanged, this, &TimelineController::playbackStateChanged, Qt::DirectConnection);
     connect(m_Timeline, &Timeline::mediaFinished, this, &TimelineController::mediaFinished, Qt::DirectConnection);

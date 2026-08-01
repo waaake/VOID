@@ -20,35 +20,36 @@ public:
     explicit TimelineController(QObject* parent = nullptr);
     ~TimelineController();
 
+    // Returns the Timeline widget for display and interaction on the player
     Timeline* TimelineWidget() { return m_Timeline; }
 
-    /**
-     * Timeline Controls:
-     * Below methods expose the functionality from the timeline
-     * These are required to be able to govern the play state or set any frame according
-     * to the current timeline state
-     * These would get invoked from the Menu or via shortcuts
-     * Eventually making their way onto the CPython exposed API for void python API
-     */
+    inline int Frame() const { return m_Timeline->Frame(); }
+
+    // Play Controls
+
     inline void PlayForwards() { m_Timeline->Play(Timeline::PlayState::FORWARDS); }
     inline void PlayBackwards() { m_Timeline->Play(Timeline::PlayState::BACKWARDS); }
-
     inline void Stop() { m_Timeline->Stop(); }
 
-    inline void Clear() { m_Timeline->Clear(); }
-
-    inline v_frame_t Startframe() const { return m_Timeline->Minimum(); }
-    inline v_frame_t Endframe() const { return m_Timeline->Maximum(); }
-    inline v_frame_t Frame() const { return m_Timeline->Frame(); }
+    // Move to Frame
 
     inline void NextFrame() { m_Timeline->NextFrame(); }
     inline void PreviousFrame() { m_Timeline->PreviousFrame(); }
-
     inline void MoveToStart() { m_Timeline->MoveToStart(); }
     inline void MoveToEnd() { m_Timeline->MoveToEnd(); }
 
+    // Clear any markings on the timeline and reset the range 0 - 1
+
+    inline void Clear() { m_Timeline->Clear(); }
+
+    // Setters
+
+    inline void SetFrame(v_frame_t frame) { m_Timeline->SetFrame(frame); }
     inline void SetUserFirstframe(int frame) { m_Timeline->SetUserFirstframe(frame); }
     inline void SetUserEndframe(int frame) { m_Timeline->SetUserEndframe(frame); }
+    inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }
+
+    // Framerate
 
     inline double Framerate() const { return m_Timeline->Framerate(); }
     inline void EditFramerate() { m_Timeline->EditFramerate(); }
@@ -62,10 +63,7 @@ public:
     inline void ResetOutFrame() { m_Timeline->ResetOutFrame(); }
     inline void ResetRange() { m_Timeline->ResetRange(); }
 
-    void SetFrame(v_frame_t frame) { m_Timeline->SetFrame(frame); }
-
-    /* Set Range on the timeline */
-    inline void SetRange(int start, int end) { m_Timeline->SetRange(start, end); }
+    // Markings
 
     void MarkAnnotated(int frame) { m_Timeline->AddAnnotatedFrame(frame); }
     void MarkAnnotated(const std::vector<int>& frames) { m_Timeline->SetAnnotatedFrames(frames); }
