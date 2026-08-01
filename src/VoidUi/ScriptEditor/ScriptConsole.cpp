@@ -54,7 +54,6 @@ std::string InputScriptConsole::SelectedText() const
      * handles it correctly
      */
     text.replace(QChar(0x2029), "\n");
-
     return text.toStdString();
 }
 
