@@ -24,6 +24,7 @@ namespace Settings
     constexpr auto DontShowStartup = "startup/dontShowPopup";
     constexpr auto LastBrowsedLocation = "recents/browsed";
     constexpr auto DefaultWorkspace = "ui/workspace";
+    constexpr auto LastPythonScript = "ui/pyscript";
 }
 
 class VOID_API VoidPreferences : public QObject
@@ -61,6 +62,7 @@ public:
     inline bool ShowStartup() const { return !GetSetting(Settings::DontShowStartup).toBool(); }
     inline QString LastBrowsed() const { return GetSetting(Settings::LastBrowsedLocation).toString(); }
     inline int GetDefaultWorkspace() const { return GetSetting(Settings::DefaultWorkspace).toInt(); }
+    inline QString LastScript() const { return GetSetting(Settings::LastPythonScript).toString(); }
 
     void AddRecentProject(const std::string& path);
     std::vector<std::string> RecentProjects();

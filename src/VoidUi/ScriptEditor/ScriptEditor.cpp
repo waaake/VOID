@@ -12,6 +12,7 @@
 #include "VoidCore/Logging.h"
 #include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -35,6 +36,9 @@ PyScriptEditor::PyScriptEditor(QWidget* parent)
 
 PyScriptEditor::~PyScriptEditor()
 {
+    // Store the current code block in the Script editor
+    VoidPreferences::Instance().Set(Settings::LastPythonScript, m_InputConsole->toPlainText(), false);
+
     delete m_Executor;
     m_Executor = nullptr;
 
@@ -93,7 +97,7 @@ void PyScriptEditor::Build()
 
 void PyScriptEditor::Connect()
 {
-    /* Needed when queueing singals from thread to write on the output console */
+    // Needed when queueing singals from thread to write on the output console
     qRegisterMetaType<QTextBlock>("QTextBlock");
     qRegisterMetaType<QTextCursor>("QTextCursor");
 
@@ -118,7 +122,7 @@ void PyScriptEditor::Setup()
     #endif
     m_InputConsole->setFont(scriptf);
 
-    /* Outconsole formatting */
+    // Outconsole formatting
     m_OutputConsole->setFont(scriptf);
     m_OutputConsole->setReadOnly(true);
 
@@ -126,8 +130,11 @@ void PyScriptEditor::Setup()
     p.setColor(QPalette::Text, _DARK_COLOR(QPalette::Text, 100));
     m_OutputConsole->setPalette(p);
 
-    /* Setup syntax highlighting */
+    // Setup syntax highlighting
     m_SyntaxHighlighter = new PySyntaxHighlighter(m_InputConsole->document());
+
+    // Last saved code?
+    m_InputConsole->setPlainText(VoidPreferences::Instance().LastScript());
 }
 
 void PyScriptEditor::ExecuteAll()
@@ -139,7 +146,6 @@ void PyScriptEditor::ExecuteAll()
 void PyScriptEditor::ExecuteSelection()
 {
     m_OutputConsole->appendPlainText(m_InputConsole->textCursor().selectedText());
-
     const std::string& selected = m_InputConsole->SelectedText();
     /**
      * If the code has whitespace or brackets/braces, it surely is a statement and has to be exec'd
