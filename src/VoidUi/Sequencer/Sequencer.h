@@ -28,7 +28,7 @@ class VOID_API SequencerTimeline : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SequencerTimeline(QWidget* parent = nullptr);
+    explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
     virtual inline QSize sizeHint() const override { return QSize(640, 300); }
 
     void SetSequence(const SharedPlaybackSequence& sequence);
@@ -41,13 +41,9 @@ public:
     void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
     void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
 
-    void SetFrame(v_frame_t frame);
     void Refresh();
 
     void SetHorizontalScale(float factor);
-
-signals:
-    void frameChangeRequested(v_frame_t);
 
 private:
     QHBoxLayout* m_Layout;

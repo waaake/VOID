@@ -83,22 +83,8 @@ void BindUi(py::module_& m)
             py::overload_cast<const std::vector<SharedMediaClip>&, const PlayerViewBuffer&>(&PlayerBridge::SetMedia),
             py::arg("media_list"), py::arg("buffer"))
         .def("set_grid_rows", &PlayerBridge::SetGridRows, py::arg("rows"))
-        .def("set_grid_columns", &PlayerBridge::SetGridColumns, py::arg("columns"));
-
-    /* Player */
-    py::class_<Player>(m, "Player")
-        .def("play_forwards", &Player::PlayForwards)
-        .def("play_backwards", &Player::PlayBackwards)
-        .def("play", &Player::PlayForwards)
-        .def("stop", &Player::Stop)
-        .def("next_frame", &Player::NextFrame)
-        .def("previous_frame", &Player::PreviousFrame)
-        .def("move_to_start", &Player::MoveToStart)
-        .def("move_to_end", &Player::MoveToEnd)
-        .def("set_frame", &Player::SetFrame, py::arg("frame"))
-        .def("refresh", &Player::Refresh)
-        .def("set_media", py::overload_cast<const SharedMediaClip&>(&Player::SetMedia), py::arg("media_clip"))
-        .def("active_viewer", &Player::ActiveViewer, py::return_value_policy::reference);
+        .def("set_grid_columns", &PlayerBridge::SetGridColumns, py::arg("columns"))
+        .def("active_viewer", &PlayerBridge::ActiveViewer, py::return_value_policy::reference);
 
     /* Viewer Buffer */
     py::class_<ViewerBuffer>(m, "Viewer")

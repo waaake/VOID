@@ -46,11 +46,11 @@ private:
 
 /// ViewerBuffer
 
-ViewerBuffer::ViewerBuffer(QObject* parent)
+ViewerBuffer::ViewerBuffer(TimelineController* controller, QObject* parent)
     : PlayerBuffer(parent)
     , m_Name("Viewer")
     , m_Color(130, 110, 190)    // Purple
-    , m_Player(nullptr)
+    , m_TimelineController(controller)
     , m_MaxMemory(VoidPreferences::Instance().GetCacheMemory() * 1024 * 1024 * 1024) // 1 GB by default
     , m_Framesize(1)
     , m_Capacity(10)
@@ -68,7 +68,7 @@ ViewerBuffer::ViewerBuffer(QObject* parent)
     {
         m_BackBuffer = std::min(10, std::max(3, static_cast<int>(((m_Endframe - m_Startframe) + 1) * 0.02)));
     }, Qt::DirectConnection);
-    connect(m_Sequence.get(), &PlaybackSequence::updated, this, &ViewerBuffer::Recache);
+    // connect(m_Sequence.get(), &PlaybackSequence::updated, this, &ViewerBuffer::Recache);
 }
 
 ViewerBuffer::~ViewerBuffer()
@@ -152,8 +152,8 @@ void ViewerBuffer::StopCaching()
     m_ThreadPool.clear();
     m_ThreadPool.waitForDone();
 
-    m_Player->ClearCachedFrames();
-    m_LastCached = m_Player->Frame();
+    m_TimelineController->ClearCached();
+    m_LastCached = m_TimelineController->Frame();
 }
 
 void ViewerBuffer::ResumeCaching()
@@ -348,7 +348,7 @@ void ViewerBuffer::EvictFront()
 
     m_Numbers.pop_front();
     m_Buffered.erase(frame);
-    m_Player->RemoveCachedFrame(frame);
+    m_TimelineController->RemoveCached(frame);
 }
 
 void ViewerBuffer::EvictBack()
@@ -372,7 +372,7 @@ void ViewerBuffer::EvictBack()
 
     m_Numbers.pop_back();
     m_Buffered.erase(frame);
-    m_Player->RemoveCachedFrame(frame);
+    m_TimelineController->RemoveCached(frame);
 }
 
 void ViewerBuffer::Store(v_frame_t frame)
@@ -380,7 +380,7 @@ void ViewerBuffer::Store(v_frame_t frame)
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     m_Buffered.insert(frame);
-    m_Player->AddCacheFrame(frame);
+    m_TimelineController->MarkCached(frame);
 }
 
 void ViewerBuffer::Recache()
@@ -474,6 +474,7 @@ void ViewerBuffer::CacheNext()
     v_frame_t frame = m_LastCached;
     // int count = 0;
 
+    v_frame_t current = m_TimelineController->Frame();
     // Remove and Request for new frames
     while (!m_Numbers.empty())
     {
@@ -482,7 +483,7 @@ void ViewerBuffer::CacheNext()
         //     break;
 
         // Ensure the cached frame is just between the current frame and the back buffer
-        if (m_Player->Frame() - m_BackBuffer <= m_Numbers.front() && m_Numbers.front() <= m_Player->Frame())
+        if (current - m_BackBuffer <= m_Numbers.front() && m_Numbers.front() <= current)
             break;
 
         frame++;
@@ -501,12 +502,13 @@ void ViewerBuffer::CacheNext()
 void ViewerBuffer::CachePrevious()
 {
     v_frame_t frame = m_LastCached;
+    v_frame_t current = m_TimelineController->Frame();
 
     // Remove and Request for new frames
     while (!m_Numbers.empty())
     {
         // Ensure the cached frame is just between the current frame and the back buffer
-        if (m_Player->Frame() + m_BackBuffer >= m_Numbers.back() && m_Numbers.back() >= m_Player->Frame())
+        if (current + m_BackBuffer >= m_Numbers.back() && m_Numbers.back() >= current)
             break;
 
         frame--;

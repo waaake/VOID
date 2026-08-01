@@ -8,7 +8,8 @@ VOID_NAMESPACE_OPEN
 
 PlayerBridge::PlayerBridge()
 {
-    m_Player = new Player();
+    m_TimelineController = new TimelineController(this);
+    m_Player = new Player(m_TimelineController);
     m_Playlist = new Playlist();
 }
 
@@ -22,6 +23,10 @@ PlayerBridge::~PlayerBridge()
     // m_Player->deleteLater();
     // delete m_Player;
     // m_Player = nullptr;
+
+    m_TimelineController->deleteLater();
+    delete m_TimelineController;
+    m_TimelineController = nullptr;
 
     m_Playlist->deleteLater();
     delete m_Playlist;

@@ -25,13 +25,9 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Forward Declaration for PlayerWidget class */
-class PlayerWidget;
-
 class Timeline : public QWidget
 {
 	Q_OBJECT
-
 public:
 	enum class PlayState : short
 	{
@@ -61,7 +57,14 @@ public:
 	inline void SetFramerate(const double rate) { m_FramerateBox->SetFramerate(rate); }
 	inline void SetFramerate(const std::string& rate) { m_FramerateBox->SetFramerate(rate); }
 
+	void Play(const PlayState& state = PlayState::FORWARDS);
+	void Stop();
+
 	void SetFrame(const int frame);
+	void NextFrame();
+	void PreviousFrame();
+	inline void MoveToStart() { m_Timeslider->setValue(m_Timeslider->Minimum()); }
+	inline void MoveToEnd() { m_Timeslider->setValue(m_Timeslider->Maximum()); }
 
 	inline void SetMaximum(const int frame) { m_Timeslider->setMaximum(frame); }
 	inline void SetMinimum(const int frame) { m_Timeslider->setMinimum(frame); }
@@ -70,6 +73,13 @@ public:
 	void SetUserEndframe(int frame);
 
 	void SetRange(const int min, const int max);
+	/**
+	 * (Re)sets the In and out framing of the Timeslider
+	 * Calling it once sets the frame as in/out frame (User-In/User-Out)
+	 * Calling it the next time on the same frame Resets the in/out frame (User-In/User-Out)
+	 */
+	void ResetInFrame();
+	void ResetOutFrame();
 	void ResetRange();
 
 	/**
@@ -91,49 +101,31 @@ public:
 	void Clear();
 
 signals:
-	void Played(const PlayState& type = PlayState::FORWARDS);
-	void PlayedForwards();
-	void PlayedBackwards();
-	void TimeChanged(int);
+	void timeChanged(int);
 	void fullscreenRequested();
 	void playbackStateChanged(const PlayState&);
 	void mediaFinished(const PlayState & type = PlayState::FORWARDS);
 	void seeked(v_frame_t);
 
 private: /* Members */
-	/* Main Layout */
 	QVBoxLayout* m_Layout;
-
-	/**
-	 * To Keep the Time Display at the center
-	 * We keep Left layout Holding Left side elements
-	 * Right Layout holding right side elements
-	 */
 	QHBoxLayout* m_LeftLayout;
 	QHBoxLayout* m_RightLayout;
 
 	QPushButton* m_ForwardButton;
 	QPushButton* m_NextFrameButton;
 	QPushButton* m_EndFrameButton;
-
 	QPushButton* m_BackwardButton;
 	QPushButton* m_PrevFrameButton;
 	QPushButton* m_StartFrameButton;
 
-	/* Sets the user defined in and out */
 	ToggleStatePushButton* m_InFrameButton;
 	ToggleStatePushButton* m_OutFrameButton;
-
-	/* Loop State Button - Indicates the current playback loop type */
 	LoopTypeButton* m_LoopTypeButton;
-
 	QPushButton* m_FullscreenButton;
-
 	QPushButton* m_StopButton;
 
-	/* Internal timeslider */
 	Timeslider* m_Timeslider;
-
 	TimeDisplay* m_TimeDisplay;
 	FramerateBox* m_FramerateBox;
 
@@ -141,53 +133,27 @@ private: /* Members */
 	QTimer m_PlayTimer;
 	QElapsedTimer m_ElapsedTimer;
 
-	/* Loop mode for playback */
-	LoopType m_LoopType;
-
 	std::future<void> m_Worker;
 	std::atomic<bool> m_Playing;
 	int m_FrameInterval;
 
+	LoopType m_LoopType;
 	PlayState m_Playstate;
 
 protected: /* Methods */
 	void Build();
 	void Connect();
 	void Setup();
-
 	void TimeUpdated(const int time);
 	void PlayForwards();
 	void PlayBackwards();
-
-	void Play(const PlayState& state = PlayState::FORWARDS);
-	void Stop();
 	void Replay();
-
 	void StartPlayback();
 	void PlaybackLoop();
 	void TimerPlaybackLoop();
-
-	void NextFrame();
-	void PreviousFrame();
-
 	void PlayNextFrame();
 	void PlayPreviousFrame();
-
 	int ElapsedFrames();
-
-	inline void MoveToStart() { m_Timeslider->setValue(m_Timeslider->Minimum()); }
-	inline void MoveToEnd() { m_Timeslider->setValue(m_Timeslider->Maximum()); }
-
-	/**
-	 * (Re)sets the In and out framing of the Timeslider
-	 * Calling it once sets the frame as in/out frame (User-In/User-Out)
-	 * Calling it the next time on the same frame Resets the in/out frame (User-In/User-Out)
-	 */
-	void ResetInFrame();
-	void ResetOutFrame();
-
-	/* Friendly classes */
-	friend class PlayerWidget;
 };
 
 VOID_NAMESPACE_CLOSE

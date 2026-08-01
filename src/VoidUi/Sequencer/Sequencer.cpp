@@ -12,10 +12,11 @@
 
 VOID_NAMESPACE_OPEN
 
-SequencerTimeline::SequencerTimeline(QWidget* parent)
+SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* parent)
     : QWidget(parent)
     , m_Sequence(nullptr)
 {
+    m_Context.Controller()->SetTimeController(controller);
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     Build();
@@ -34,8 +35,6 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
     connect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
     connect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
 
-    // m_View->SetSequence(sequence);
-    // m_TrackHeader->SetSequence(sequence);
     Refresh();
 }
 
@@ -69,11 +68,6 @@ void SequencerTimeline::RazorAt(const SharedPlaybackTrack& track, v_frame_t fram
 void SequencerTimeline::MergeCut(const SharedPlaybackTrack& track, v_frame_t frame)
 {
     m_Context.Controller()->MergeCut(track, frame);
-}
-
-void SequencerTimeline::SetFrame(v_frame_t frame)
-{
-    m_Context.Controller()->SetCurrentFrame(frame);
 }
 
 void SequencerTimeline::Refresh()
@@ -117,7 +111,6 @@ void SequencerTimeline::Build()
     m_HZoomSlider->setValue(m_Context.Geometry()->PixelsPerFrame() * 10);
 
     m_View = new STimelineView(&m_Context);
-
     m_Ruler = new STimelineRuler(m_View, &m_Context);
 
     grid->addWidget(m_Ruler, 0, 1);
@@ -152,7 +145,6 @@ void SequencerTimeline::Connect()
         SetHorizontalScale((float)value / 10);
     });
 
-    connect(m_Context.Controller(), &SequencerController::frameChangeRequested, this, &SequencerTimeline::frameChangeRequested);
     connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& position) -> void 
     {
         m_Menu->Show(mapToGlobal(position));

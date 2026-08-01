@@ -25,8 +25,8 @@ VOID_NAMESPACE_OPEN
 
 Timeline::Timeline(QWidget* parent)
 	: QWidget(parent)
-	, m_LoopType(LoopType::LoopInfinitely)
 	, m_Playing(false)
+	, m_LoopType(LoopType::LoopInfinitely)
 	, m_Playstate(PlayState::STOPPED)
 {
 	Build();
@@ -239,7 +239,7 @@ void Timeline::PlaybackLoop()
 			timer.restart();
 		}
 
-		/* Sleep to yield cpu */
+		// yield cpu
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
@@ -259,8 +259,8 @@ void Timeline::SetFrame(const int frame)
 
 void Timeline::TimeUpdated(const int time)
 {
+	emit timeChanged(time);
 	m_TimeDisplay->setText(std::to_string(time).c_str());
-	emit TimeChanged(time);
 }
 
 void Timeline::SetRange(const int min, const int max)
@@ -271,14 +271,11 @@ void Timeline::SetRange(const int min, const int max)
 	/* Update timeslider range */
 	m_Timeslider->setRange(min, max);
 	m_Timeslider->m_CachedFrames.reserve(max - min + 1);
-
-	/* Update internal range */
 	Timekeeper::Instance().SetRange(min, max);
 }
 
 void Timeline::ResetRange()
 {
-	/* Reset the range for the timeslider */
 	m_Timeslider->ResetRange();
 
 	/**
@@ -334,10 +331,7 @@ void Timeline::SetUserEndframe(int frame)
 
 void Timeline::ResetInFrame()
 {
-	/* Fetch the current frame */
 	int frame = Frame();
-
-	/* Check if it's already our start frame */
 	if (frame == Timekeeper::Instance().StartFrame())
 	{
 		m_Timeslider->ResetStartFrame();
@@ -345,20 +339,15 @@ void Timeline::ResetInFrame()
 	}
 	else
 	{
-		/* Update the Start frame with the current frame */
 		SetUserFirstframe(frame);
 	}
 
-	/* If the User start frame has been set -> Reflect the same on the Toggle Push button */
 	m_InFrameButton->Toggle(static_cast<bool>(m_Timeslider->m_UserStartframe));
 }
 
 void Timeline::ResetOutFrame()
 {
-	/* Fetch the current frame */
 	int frame = Frame();
-
-	/* Check if it's already our end frame */
 	if (frame == Timekeeper::Instance().EndFrame())
 	{
 		m_Timeslider->ResetEndFrame();
@@ -370,7 +359,6 @@ void Timeline::ResetOutFrame()
 		SetUserEndframe(frame);
 	}
 
-	/* If the User end frame has been set -> Reflect the same on the Toggle Push button */
 	m_OutFrameButton->Toggle(static_cast<bool>(m_Timeslider->m_UserEndframe));
 }
 
@@ -478,8 +466,6 @@ void Timeline::Play(const Timeline::PlayState& state)
 		 */
 		m_Timeslider->setValue(Timekeeper::Instance().StartFrame());
 	}
-
-	/* once the playhead is placed correctly -> We can begin playing */
 	state == Timeline::PlayState::FORWARDS ? PlayForwards() : PlayBackwards();
 }
 

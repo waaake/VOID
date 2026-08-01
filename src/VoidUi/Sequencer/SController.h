@@ -17,6 +17,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidUi/Timeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -28,6 +29,10 @@ class SequencerController : public QObject
 public:
     void SetScene(QGraphicsScene* scene);
     QGraphicsScene* Scene() const { return m_Scene; }
+    
+    void SetTimeController(TimelineController* controller);
+    TimelineController* TimeController() { return m_TimelineController; }
+
     void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
     void MoveItem(const SharedTrackItem& item, v_frame_t frame);
     void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
@@ -55,10 +60,10 @@ public:
 
 signals:
     void frameChanged(v_frame_t);
-    void frameChangeRequested(v_frame_t);
 
 private:
     QGraphicsScene* m_Scene = { nullptr };
+    TimelineController* m_TimelineController = { nullptr };
     v_frame_t m_Frame;
 };
 

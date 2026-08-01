@@ -30,6 +30,7 @@ public:
     SHoverModel* HoverModel() { return &m_Hover; }
     STimelineGeometry* Geometry() { return &m_Geometry; }
     SequencerController* Controller() { return &m_Controller; }
+    TimelineController* TimeController() { return m_Controller.TimeController(); }
 
     void SetAction(const SequencerAction& action) { m_Action = action; }
     void ResetAction() { m_Action = SequencerAction::NONE; }

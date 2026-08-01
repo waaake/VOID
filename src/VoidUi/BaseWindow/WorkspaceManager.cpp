@@ -61,7 +61,7 @@ void WorkspaceManager::Init()
     m_TaskQueue = new TaskView;
 
     // Sequencer
-    m_Sequencer = new SequencerTimeline;
+    m_Sequencer = new SequencerTimeline(_PlayerBridge.TimeController());
 
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
@@ -87,11 +87,6 @@ void WorkspaceManager::Connect()
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
-    connect(_PlayerBridge.ActivePlayer(), &Player::frameChanged, m_Sequencer, &SequencerTimeline::SetFrame, Qt::DirectConnection);
-    connect(m_Sequencer, &SequencerTimeline::frameChangeRequested, this, [this](v_frame_t frame) -> void
-    {
-        _PlayerBridge.SetTimelineFrame(frame);
-    });
 }
 
 void WorkspaceManager::InitMenu(MenuSystem* menuSystem)

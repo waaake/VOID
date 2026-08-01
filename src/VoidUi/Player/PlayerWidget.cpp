@@ -13,32 +13,30 @@
 
 VOID_NAMESPACE_OPEN
 
-PlayerWidget::PlayerWidget(QWidget* parent)
+PlayerWidget::PlayerWidget(TimelineController* timelineController, QWidget* parent)
     : QWidget(parent)
+    , m_TimelineController(timelineController)
     , m_ComparisonMode(Renderer::ComparisonMode::NONE)
     , m_BlendMode(Renderer::BlendMode::UNDER)
     , m_MFrameHandler(static_cast<MissingFrameHandler>(VoidPreferences::Instance().GetMissingFrameHandler()))
 {
-    m_ViewBufferA.SetName("A");
-    m_ViewBufferB.SetName("B");
+    m_ViewBufferA = new ViewerBuffer(timelineController);
+    m_ViewBufferB = new ViewerBuffer(timelineController);
 
-    /* Set the Associated Color for Viewer Buffer B */
-    m_ViewBufferB.SetColor(QColor(70, 180, 220));      // Blue
+    m_ViewBufferA->SetName("A");
+    m_ViewBufferB->SetName("B");
 
-    /* The default buffer is Viewer Buffer A */
-    m_ActiveViewBuffer = &m_ViewBufferA;
-    m_ViewBufferA.SetActive(true);
+    m_ViewBufferB->SetColor(QColor(70, 180, 220));      // Blue
 
-    /* Setup the OpenGL Profile before the OpenGL Context is initialised */
+    // The default buffer is Viewer Buffer A
+    m_ActiveViewBuffer = m_ViewBufferA;
+    m_ViewBufferA->SetActive(true);
+
+    // Needs to be always before we initialize Renderer
     VoidRenderer::SetProfile();
 
-    /* Build the layout */
     Build();
-
-    /* Connect Signals */
     Connect();
-
-    /* Accept drops */
     setAcceptDrops(true);
 }
 
@@ -46,63 +44,50 @@ PlayerWidget::~PlayerWidget()
 {
     m_ActiveViewBuffer = nullptr;
 
-    // Timeline was getting deleted earlier than the player, causing seg faults when closing the player
-    // in case there's playback happening, this should get deleted automatically as it's a part of the player
-    // when Qt calls deleteLater(), but in case this is flagged by any sanitizer for mem leaks, we could try and move
-    // the deletion to a different place or check for states in the player
-    // m_Timeline->deleteLater();
-    // delete m_Timeline;
-    // m_Timeline = nullptr;
+    m_ViewBufferA->deleteLater();
+    delete m_ViewBufferA;
+    m_ViewBufferA = nullptr;
+
+    m_ViewBufferB->deleteLater();
+    delete m_ViewBufferB;
+    m_ViewBufferB = nullptr;
 }
 
 void PlayerWidget::Connect()
 {
-    /* Timeline - fullscreenRequested -> Player - SetRendererFullscreen */
-    connect(m_Timeline, &Timeline::fullscreenRequested, this, &PlayerWidget::SetRendererFullscreen);
+    // TimelineController
+    connect(m_TimelineController, &TimelineController::fullscreenRequested, this, &PlayerWidget::SetRendererFullscreen);
 
-    /* ControlBar - ZoomChange -> Renderer - SetZoom */
+    // ControlBar
     connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::SetZoom);
-    /* ControlBar - ExposureChange -> Renderer - SetExposure */
     connect(m_ControlBar, &ControlBar::exposureChanged, m_Renderer, &VoidRenderer::SetExposure);
-    /* ControlBar - GammaChange -> Renderer - SetGamma */
     connect(m_ControlBar, &ControlBar::gammaChanged, m_Renderer, &VoidRenderer::SetGamma);
-    /* ControlBar - GainChange -> Renderer - SetGain */
     connect(m_ControlBar, &ControlBar::gainChanged, m_Renderer, &VoidRenderer::SetGain);
-    /* ControlBar - ChannelModeChanged -> Renderer - SetChannelMode */
     connect(m_ControlBar, &ControlBar::channelModeChanged, m_Renderer, &VoidRenderer::SetChannelMode);
-    /* ControlBar - Annotations Toggled -> AnnotationsController - Set Visible */
     connect(m_ControlBar, &ControlBar::annotationsToggled, this, &PlayerWidget::ToggleAnnotations);
-    /* ControlBar - Color Display Changed -> Renderer - Set Color Display */
     connect(m_ControlBar, &ControlBar::colorDisplayChanged, m_Renderer, &VoidRenderer::SetColorDisplay);
 
-    /* Annotations Controller - Cleared -> Renderer - Clear Annotations */
+    // AnnotationsController
     connect(m_AnnotationsController, &AnnotationsController::cleared, m_Renderer, &VoidRenderer::ClearAnnotations);
-    /* Annotations Controller - Color Changed -> Renderer - Set Annotation Color */
-    connect(m_AnnotationsController, &AnnotationsController::colorChanged, m_Renderer, static_cast<void(VoidRenderer::*)(const QColor&)>(&VoidRenderer::SetAnnotationColor));
-    /* Annotations Controller - Brush Size Changed -> Renderer - Set Annotation Size */
+    connect(m_AnnotationsController, &AnnotationsController::colorChanged, m_Renderer, static_cast<void (VoidRenderer::*)(const QColor&)>(&VoidRenderer::SetAnnotationColor));
     connect(m_AnnotationsController, &AnnotationsController::brushSizeChanged, m_Renderer, &VoidRenderer::SetAnnotationSize);
-    /* Annotations Controller - Control Changed -> Renderer - Set Annotation DrawType */
     connect(m_AnnotationsController, &AnnotationsController::controlChanged, m_Renderer, &VoidRenderer::SetAnnotationDrawType);
 
-    /* Preference - updated -> Player - SetFromPreferences */
+    // VoidPreferences
     connect(&VoidPreferences::Instance(), &VoidPreferences::updated, this, &PlayerWidget::SetFromPreferences);
 
-    /* Renderer - exitFullscreen -> Player - Exitfullscreen */
+    // Renderer
     connect(m_Renderer, &VoidRenderer::exitFullscreen, this, &PlayerWidget::ExitFullscreenRenderer);
-    /* Connect Play Controls from Renderer */
-    connect(m_Renderer, &VoidRenderer::playForwards, this, &PlayerWidget::PlayForwards);
-    connect(m_Renderer, &VoidRenderer::playBackwards, this, &PlayerWidget::PlayBackwards);
-    connect(m_Renderer, &VoidRenderer::stop, this, &PlayerWidget::Stop);
-    connect(m_Renderer, &VoidRenderer::moveForward, this, &PlayerWidget::NextFrame);
-    connect(m_Renderer, &VoidRenderer::moveBackward, this, &PlayerWidget::PreviousFrame);
-
-    /* Renderer - Annotation Created -> ViewerBuffer - SetAnnotation */
+    connect(m_Renderer, &VoidRenderer::playForwards, m_TimelineController, &TimelineController::PlayForwards);
+    connect(m_Renderer, &VoidRenderer::playBackwards, m_TimelineController, &TimelineController::PlayBackwards);
+    connect(m_Renderer, &VoidRenderer::stop, m_TimelineController, &TimelineController::Stop);
+    connect(m_Renderer, &VoidRenderer::moveForward, m_TimelineController, &TimelineController::NextFrame);
+    connect(m_Renderer, &VoidRenderer::moveBackward, m_TimelineController, &TimelineController::PreviousFrame);
     connect(m_Renderer, &VoidRenderer::annotationCreated, this, &PlayerWidget::AddAnnotation);
-    /* Renderer - Annotation Deleted -> ViewerBuffer - RemoveAnnotation */
     connect(m_Renderer, &VoidRenderer::annotationDeleted, this, &PlayerWidget::RemoveAnnotation);
     connect(m_Renderer, &VoidRenderer::zoomChanged, m_ControlBar, &ControlBar::SetZoom);
 
-    /* When a MediaClip is about to be removed from the MediaBride */
+    // Bridge
     connect(&_MediaBridge, &MBridge::mediaAboutToBeRemoved, this, &PlayerWidget::RemoveMedia, Qt::DirectConnection);
 }
 
@@ -140,13 +125,12 @@ void PlayerWidget::Build()
     m_RendererLayout->setContentsMargins(0, 0, 0, 0);
 
     /* Instantiate widgets */
-    m_ControlBar = new ControlBar(&m_ViewBufferA, &m_ViewBufferB, this);
+    m_ControlBar = new ControlBar(m_ViewBufferA, m_ViewBufferB, this);
     m_Renderer = new VoidRenderer(this);
     /* The placeholder renderer for when the actual renderer is fullscreen */
     m_PlaceholderRenderer = new VoidPlaceholderRenderer(this);
     /* Is hidden by default */
     m_PlaceholderRenderer->setVisible(false);
-    m_Timeline = new Timeline(this);
 
     m_Overlay = new PlayerOverlay(m_Renderer);
     m_Overlay->setVisible(false);
@@ -166,8 +150,7 @@ void PlayerWidget::Build()
     horizontalInternal->addWidget(m_AnnotationsController);
 
     layout->addLayout(horizontalInternal);
-
-    layout->addWidget(m_Timeline);
+    layout->addWidget(m_TimelineController->TimelineWidget());
 
     /* Spacing */
     layout->setSpacing(0);
@@ -180,8 +163,7 @@ void PlayerWidget::Clear()
      * Update the time range to be 0-1 ??
      * Clear the data from the player
      */
-    m_Timeline->SetRange(0, 1);
-    m_Timeline->Clear();
+    m_TimelineController->Clear();
     m_Renderer->Clear();
 }
 
@@ -202,14 +184,8 @@ void PlayerWidget::ExitFullscreenRenderer()
 
     /* Reset the parent of the Renderer back to this widget */
     m_Renderer->setParent(this);
-
-    /* Add the renderer back */
     m_RendererLayout->addWidget(m_Renderer);
-
-    /* Hide the Placeholder Renderer */
     m_PlaceholderRenderer->setVisible(false);
-
-    /* We're back normal screened */
     m_Renderer->ExitFullscreen();
 }
 
@@ -235,18 +211,14 @@ void PlayerWidget::ToggleAnnotations(const bool state)
 
 void PlayerWidget::AddAnnotation(const Renderer::SharedAnnotation& annotation)
 {
-    /* Save the Annotation */
-    m_ActiveViewBuffer->SetAnnotation(m_Timeline->Frame(), annotation);
-    /* Also Mark that the frame has been annotated */
-    m_Timeline->AddAnnotatedFrame(m_Timeline->Frame());
+    m_ActiveViewBuffer->SetAnnotation(m_TimelineController->Frame(), annotation);
+    m_TimelineController->MarkAnnotated(m_TimelineController->Frame());
 }
 
 void PlayerWidget::RemoveAnnotation()
 {
-    /* Remove Annotation from the underlying Media */
-    m_ActiveViewBuffer->RemoveAnnotation(m_Timeline->Frame());
-    /* Remove the annotated frame from the Timeline */
-    m_Timeline->RemoveAnnotatedFrame(m_Timeline->Frame());
+    m_ActiveViewBuffer->RemoveAnnotation(m_TimelineController->Frame());
+    m_TimelineController->RemoveAnnotated(m_TimelineController->Frame());
 }
 
 VOID_NAMESPACE_CLOSE
