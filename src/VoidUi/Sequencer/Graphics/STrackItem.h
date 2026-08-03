@@ -40,11 +40,14 @@ protected:
 
 private:
     SSlipClipContext m_SlipContext;
+    SItemTrimContext m_TrimContext;
+    QRectF m_HeadTrimRect, m_TailTrimRect;
     SharedTrackItem m_Item;
     SHandleItem *m_HeadHandle, *m_TailHandle;
 
 private: /* Methods */
     void CalculateBoundingRect();
+    void AdjustTimelineRange(v_frame_t frame);
     void ToggleHandles(bool visible);
     QColor Background(const QStyleOptionGraphicsItem* option) const;
 };

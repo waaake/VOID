@@ -85,6 +85,12 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
                 m_SlipContext.offset > 0 ? QString("+%1").arg(m_SlipContext.offset) : (QString::number(m_SlipContext.offset))
             );
         }
+
+        if (m_Context->Action() == SequencerAction::TRIM && m_Context->HoverModel()->IsHovered(m_Item) && !m_TrimContext.active)
+        {
+            painter->fillRect(m_HeadTrimRect, option->palette.color(QPalette::Highlight));
+            painter->fillRect(m_TailTrimRect, option->palette.color(QPalette::Highlight));
+        }
     }
     else
     {
@@ -144,6 +150,25 @@ void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             m_SlipContext.pressed = true;
             m_SlipContext.sourcepos = event->scenePos();
         }
+        else if (m_Context->Action() == SequencerAction::TRIM)
+        {
+            if (m_HeadTrimRect.contains(event->pos()))
+            {
+                m_TrimContext.sourcepos = event->scenePos();
+                m_TrimContext.type = SItemTrimContext::HEAD;
+                m_TrimContext.pressed = true;
+
+                ToggleHandles(false);
+            }
+            else if (m_TailTrimRect.contains(event->pos()))
+            {
+                m_TrimContext.sourcepos = event->scenePos();
+                m_TrimContext.type = SItemTrimContext::TAIL;
+                m_TrimContext.pressed = true;
+
+                ToggleHandles(false);
+            }
+        }
 
         event->accept();
     }
@@ -178,6 +203,16 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         }
     }
 
+    if (m_TrimContext.pressed)
+    {
+        QPointF delta = event->scenePos() - m_TrimContext.sourcepos;
+        if (delta.manhattanLength() > Sequencer::SlipTravelDistance)
+        {
+            m_TrimContext.pressed = false;
+            m_TrimContext.active = true;
+        }
+    }
+
     if (m_Drag.active)
     {
         QPointF pos = mapToParent(event->pos() - m_Drag.offset);
@@ -200,6 +235,11 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         m_SlipContext.offset = frame < 0 ? std::max(frame, -m_Item->HeadHandle()) : std::min(frame, m_Item->TailHandle());
 
         update();
+    }
+
+    if (m_TrimContext.active)
+    {
+        AdjustTimelineRange(m_Context->Geometry()->SceneXToFrame(event->scenePos().x() - m_SlipContext.sourcepos.x()));
     }
 
     STimelineItem::mouseMoveEvent(event);
@@ -243,11 +283,22 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         m_SlipContext.offset = 0;
         ToggleHandles(true);
     }
+
+    if (m_TrimContext.active)
+    {
+        m_TrimContext.type == SItemTrimContext::HEAD
+            ? m_Context->Controller()->TrimItemHead(m_Item, m_TrimContext.handle)
+            : m_Context->Controller()->TrimItemTail(m_Item, m_TrimContext.handle);
+
+        m_TrimContext.active = false;
+        m_TrimContext.handle = 0;
+        ToggleHandles(true);
+    }
 }
 
 void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
-    if (m_Context->Action() == SequencerAction::NONE || m_Context->Action() == SequencerAction::SLIP_CLIP)
+    if (m_Context->Action() < SequencerAction::RAZOR)
     {
         m_Context->HoverModel()->Set(m_Item);
         ToggleHandles(true);
@@ -267,7 +318,7 @@ void STrackItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 
 void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
-    if (m_Context->Action() == SequencerAction::NONE || m_Context->Action() == SequencerAction::SLIP_CLIP)
+    if (m_Context->Action() < SequencerAction::RAZOR)
     {
         m_Context->HoverModel()->Reset();
         ToggleHandles(false);
@@ -279,8 +330,37 @@ void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 
 void STrackItem::CalculateBoundingRect()
 {
-    const double width = m_Context->Geometry()->FrameToSceneX(m_Item->Duration()) - m_Context->Geometry()->FrameToSceneX(0);
+    const double width = m_Context->Geometry()->FrameToSceneX(m_Item->TimelineOut() + 1) - m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn());
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
+
+    m_HeadTrimRect = QRectF(m_BoundingRect.topLeft(), QPointF(std::min(m_BoundingRect.topLeft().x() + 10, width), m_BoundingRect.height()));
+    m_TailTrimRect = QRectF(QPointF(std::max(m_BoundingRect.topRight().x() - 10, m_BoundingRect.left()), m_BoundingRect.top()), m_BoundingRect.bottomRight());
+}
+
+void STrackItem::AdjustTimelineRange(v_frame_t frame)
+{
+    prepareGeometryChange();
+
+    double width = 0;
+    if (m_TrimContext.type == SItemTrimContext::HEAD)
+    {
+        frame = std::min(std::max(frame, m_Item->TimelineIn() - m_Item->HeadHandle()), m_Item->TimelineOut());
+        width = m_Context->Geometry()->FrameToSceneX(m_Item->TimelineOut() + 1) - m_Context->Geometry()->FrameToSceneX(frame);
+        setPos(m_Context->Geometry()->FrameToSceneX(frame), 2);
+
+        m_TrimContext.handle = frame - m_Item->TimelineIn();
+    }
+    else
+    {
+        frame = std::max(std::min(frame, m_Item->TimelineOut() + m_Item->TailHandle()), m_Item->TimelineIn());
+        width = m_Context->Geometry()->FrameToSceneX(frame + 1) - m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn());
+        setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 2);
+
+        m_TrimContext.handle = m_Item->TimelineOut() - frame;
+    }
+
+    m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
+    update();
 }
 
 QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
