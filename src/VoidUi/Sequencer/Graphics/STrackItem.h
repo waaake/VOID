@@ -22,6 +22,7 @@ class STrackItem : public STimelineItem
 {
 public:
     STrackItem(const SharedTrackItem& item, SequencerContext* context, QGraphicsItem* parent = nullptr);
+    ~STrackItem();
 
     SharedTrackItem TrackItem() const { return m_Item; }
     bool Selected() const { return m_Context->SelectionModel()->IsSelected(m_Item); }
@@ -48,7 +49,7 @@ private:
 private: /* Methods */
     void CalculateBoundingRect();
     void AdjustTimelineRange(v_frame_t frame);
-    void ToggleHandles(bool visible);
+    void ToggleHandles(int head = 0, int tail = 0, bool visible = false);
     QColor Background(const QStyleOptionGraphicsItem* option) const;
 };
 
