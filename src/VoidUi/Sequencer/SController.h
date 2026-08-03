@@ -34,6 +34,7 @@ public:
     TimelineController* TimeController() { return m_TimelineController; }
 
     void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
+    void RemoveFromScene(QGraphicsItem* item) { m_Scene->removeItem(item); }
     void MoveItem(const SharedTrackItem& item, v_frame_t frame);
     void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
