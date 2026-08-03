@@ -10,24 +10,18 @@
 
 VOID_NAMESPACE_OPEN
 
-enum class HandleType
-{
-    HEAD,
-    TAIL
-};
-
 class SHandleItem : public STimelineItem
 {
 public:
-    SHandleItem(const SharedTrackItem& item, const HandleType& type, SequencerContext* context, QGraphicsItem* parent = nullptr);
+    SHandleItem(int handle, SequencerContext* context, QGraphicsItem* parent = nullptr);
     void Update();
+    void Update(int handle);
 
 protected:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
 private:
-    SharedTrackItem m_Item;
-    HandleType m_Type;
+    int m_Handle;
 
 private: /* Methods */
     void CalculateBoundingRect();
