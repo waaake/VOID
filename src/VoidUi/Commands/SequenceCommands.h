@@ -176,4 +176,34 @@ private:
     int m_Previous;
 };
 
+class TrimItemHeadCommand : public VoidUndoCommand
+{
+public:
+    TrimItemHeadCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_TrackType;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_Handle;
+};
+
+class TrimItemTailCommand : public VoidUndoCommand
+{
+public:
+    TrimItemTailCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_TrackType;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_Handle;
+};
+
 VOID_NAMESPACE_CLOSE

@@ -34,7 +34,7 @@ bool MoveTrackItemCommand::Redo()
     {
         if (PlaybackTrack* track = item->Track())
             return track->MoveItem(item, m_Requested);
-        
+
         return false;
     }
     return false;
@@ -402,6 +402,84 @@ bool OffsetItemSourceCommand::Redo()
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->SetSourceIn(item->SourceIn() + m_Offset);
+        return true;
+    }
+
+    return false;
+}
+
+/// TrimItemHeadCommand
+
+TrimItemHeadCommand::TrimItemHeadCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Handle(handle)
+{
+    setText("Trim Item");
+}
+
+void TrimItemHeadCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->TrimHead(-m_Handle);
+    }
+}
+
+bool TrimItemHeadCommand::Redo()
+{
+    if (m_Handle == 0) return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        if (m_Handle > item->Duration()) return false;
+        item->TrimHead(m_Handle);
+        return true;
+    }
+
+    return false;
+}
+
+/// TrimItemTailCommand
+
+TrimItemTailCommand::TrimItemTailCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Handle(handle)
+{
+    setText("Trim Item");
+}
+
+void TrimItemTailCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->TrimTail(-m_Handle);
+    }
+}
+
+bool TrimItemTailCommand::Redo()
+{
+    if (m_Handle == 0) return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        if (m_Handle > item->Duration()) return false;
+        item->TrimTail(m_Handle);
         return true;
     }
 
