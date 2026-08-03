@@ -170,4 +170,14 @@ void SequencerController::OffsetItemSource(const SharedTrackItem& item, int offs
     _MediaBridge.PushCommand(new OffsetItemSourceCommand(item, offset));
 }
 
+void SequencerController::TrimItemHead(const SharedTrackItem& item, int handle)
+{
+    _MediaBridge.PushCommand(new TrimItemHeadCommand(item, handle));
+}
+
+void SequencerController::TrimItemTail(const SharedTrackItem& item, int handle)
+{
+    _MediaBridge.PushCommand(new TrimItemTailCommand(item, handle));
+}
+
 VOID_NAMESPACE_CLOSE

@@ -58,6 +58,9 @@ public:
     void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
     void OffsetItemSource(const SharedTrackItem& item, int offset);
 
+    void TrimItemHead(const SharedTrackItem& item, int handle);
+    void TrimItemTail(const SharedTrackItem& item, int handle);
+
 signals:
     void frameChanged(v_frame_t);
 

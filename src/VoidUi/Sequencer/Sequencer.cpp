@@ -70,6 +70,16 @@ void SequencerTimeline::MergeCut(const SharedPlaybackTrack& track, v_frame_t fra
     m_Context.Controller()->MergeCut(track, frame);
 }
 
+void SequencerTimeline::TrimItemHead(const SharedTrackItem& item, int handle)
+{
+    m_Context.Controller()->TrimItemHead(item, handle);
+}
+
+void SequencerTimeline::TrimItemTail(const SharedTrackItem& item, int handle)
+{
+    m_Context.Controller()->TrimItemTail(item, handle);
+}
+
 void SequencerTimeline::Refresh()
 {
     m_TrackHeader->Clear();
