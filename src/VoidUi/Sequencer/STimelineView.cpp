@@ -129,6 +129,9 @@ void STimelineView::enterEvent(QEvent* event)
         case SequencerAction::SLIP_CLIP:
             setCursor(QCursor(IconForge::GetPixmap(IconType::icon_arrow_range, _DARK_COLOR(QPalette::Text, 100))));
             break;
+        case SequencerAction::TRIM:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_format_overflow, _DARK_COLOR(QPalette::Text, 100))));
+            break;
         case SequencerAction::RAZOR:
             setCursor(QCursor(IconForge::GetPixmap(IconType::icon_bolt, _DARK_COLOR(QPalette::Text, 100))));
             break;
