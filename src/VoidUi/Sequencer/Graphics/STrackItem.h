@@ -44,12 +44,12 @@ private:
     SItemTrimContext m_TrimContext;
     QRectF m_HeadTrimRect, m_TailTrimRect;
     SharedTrackItem m_Item;
-    SHandleItem *m_HeadHandle, *m_TailHandle;
+    SHandleItem *m_HeadHandle, *m_TailHandle, *m_DurationHandle;
 
 private: /* Methods */
     void CalculateBoundingRect();
     void AdjustTimelineRange(v_frame_t frame);
-    void ToggleHandles(int head = 0, int tail = 0, bool visible = false);
+    void ToggleHandles(int head = 0, int tail = 0, int duration = 0, bool visible = false);
     QColor Background(const QStyleOptionGraphicsItem* option) const;
 };
 

@@ -24,8 +24,10 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
 
     m_HeadHandle = new SHandleItem(m_Item->HeadHandle(), context);
     m_TailHandle = new SHandleItem(m_Item->TailHandle(), context);
+    m_DurationHandle = new SHandleItem(m_Item->Duration(), context);
     m_Context->Controller()->AddToScene(m_HeadHandle);
     m_Context->Controller()->AddToScene(m_TailHandle);
+    m_Context->Controller()->AddToScene(m_DurationHandle);
 
     ToggleHandles();
 
@@ -48,6 +50,11 @@ STrackItem::~STrackItem()
     m_TailHandle->deleteLater();
     delete m_TailHandle;
     m_TailHandle = nullptr;
+
+    m_Context->Controller()->RemoveFromScene(m_DurationHandle);
+    m_DurationHandle->deleteLater();
+    delete m_DurationHandle;
+    m_DurationHandle = nullptr;
 }
 
 STrack* STrackItem::Track() const
@@ -248,7 +255,7 @@ void STrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
         m_SlipContext.offset = frame < 0 ? std::max(frame, -m_Item->HeadHandle()) : std::min(frame, m_Item->TailHandle());
 
         // Dynamic handles shifting as we move
-        ToggleHandles(m_Item->HeadHandle() + m_SlipContext.offset, m_Item->TailHandle() - m_SlipContext.offset, true);
+        ToggleHandles(m_Item->HeadHandle() + m_SlipContext.offset, m_Item->TailHandle() - m_SlipContext.offset, 0, true);
         update();
     }
 
@@ -296,7 +303,7 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 
         m_SlipContext.active = false;
         m_SlipContext.offset = 0;
-        ToggleHandles(m_Item->HeadHandle(), m_Item->TailHandle(), true);
+        ToggleHandles(m_Item->HeadHandle(), m_Item->TailHandle(), m_Item->Duration(), true);
     }
 
     if (m_TrimContext.active)
@@ -307,7 +314,7 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 
         m_TrimContext.active = false;
         m_TrimContext.handle = 0;
-        ToggleHandles(m_Item->HeadHandle(), m_Item->TailHandle(), true);
+        ToggleHandles(m_Item->HeadHandle(), m_Item->TailHandle(), m_Item->Duration(), true);
     }
 }
 
@@ -316,7 +323,7 @@ void STrackItem::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
     if (m_Context->Action() < SequencerAction::RAZOR)
     {
         m_Context->HoverModel()->Set(m_Item);
-        ToggleHandles(m_Item->HeadHandle(), m_Item->TailHandle(), true);
+        ToggleHandles(m_Item->HeadHandle(), m_Item->TailHandle(), m_Item->Duration(), true);
         update();
     }
 
@@ -381,7 +388,7 @@ void STrackItem::AdjustTimelineRange(v_frame_t frame)
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
 
     // Dynamic handles shifting as we move
-    ToggleHandles(head, tail, true);
+    ToggleHandles(head, tail, m_Item->Duration() - m_TrimContext.handle, true);
     update();
 }
 
@@ -403,17 +410,20 @@ QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
             : option->palette.color(QPalette::Base).darker(180);
 }
 
-void STrackItem::ToggleHandles(int head, int tail, bool visible)
+void STrackItem::ToggleHandles(int head, int tail, int duration, bool visible)
 {
     m_HeadHandle->setVisible(visible);
     m_TailHandle->setVisible(visible);
+    m_DurationHandle->setVisible(visible);
     if (visible)
     {
         // This results in a matrix mult -- need to see if there is a better way to do this
         m_HeadHandle->setPos(mapToScene(0 - m_Context->Geometry()->FrameToSceneX(head), 2));
         m_TailHandle->setPos(mapToScene(boundingRect().width(), 2));
+        m_DurationHandle->setPos(mapToScene(0, 2));
         m_HeadHandle->Update(head);
         m_TailHandle->Update(tail);
+        m_DurationHandle->Update(duration);
     }
 }
 
