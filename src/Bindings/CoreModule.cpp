@@ -214,6 +214,8 @@ void BindCore(py::module_& m)
         .def("set_source_out", &TrackItem::SetSourceOut, py::arg("frame"))
         .def("head_handle", &TrackItem::HeadHandle)
         .def("tail_handle", &TrackItem::TailHandle)
+        .def("trim_head", &TrackItem::TrimHead, py::arg("handle"))
+        .def("trim_tail", &TrackItem::TrimTail, py::arg("handle"))
         .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference)
         .def("unlink", &TrackItem::Unlink);
 }
