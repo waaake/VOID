@@ -96,6 +96,9 @@ public:
     v_frame_t HeadHandle() const { return m_SourceIn - m_Media->FirstFrame(); }
     v_frame_t TailHandle() const { return m_Media->LastFrame() - (m_SourceIn + (m_TimelineOut - m_TimelineIn)); }
 
+    void TrimHead(int handle);
+    void TrimTail(int handle);
+
     // Moves the item to the given frame
     void Move(v_frame_t frame);
 

@@ -54,7 +54,7 @@ void TrackItem::SetMedia(const SharedMediaClip& media, v_frame_t offset)
 
 void TrackItem::SetRange(v_frame_t start, v_frame_t end)
 {
-    /* 
+    /*
      * Update the range of the track item
      * This points to where the track item starts and end in a given Track
      */
@@ -85,7 +85,7 @@ const FloatImage TrackItem::Image(v_frame_t frame)
     // VOID_LOG_INFO("Timeline frame: {0} -- Media Frame: {1} -- Offset: {2}", frame, f, m_Offset);
     if (m_Media && m_Media->Contains(f))
         return m_Media->Image(f);
-    
+
     return nullptr;
 }
 
@@ -127,6 +127,22 @@ void TrackItem::SetSourceIn(v_frame_t frame)
 void TrackItem::SetSourceOut(v_frame_t frame)
 {
     m_SourceOut = frame;
+}
+
+void TrackItem::TrimHead(int handle)
+{
+    m_SourceIn += handle;
+    m_TimelineIn += handle;
+
+    emit rangeChanged(m_TimelineIn, m_TimelineOut);
+}
+
+void TrackItem::TrimTail(int handle)
+{
+    m_SourceOut -= handle;
+    m_TimelineOut -= handle;
+
+    emit rangeChanged(m_TimelineIn, m_TimelineOut);
 }
 
 void TrackItem::Move(v_frame_t frame)
