@@ -40,6 +40,8 @@ public:
     void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);
     void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
     void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
+    void TrimItemHead(const SharedTrackItem& item, int handle);
+    void TrimItemTail(const SharedTrackItem& item, int handle);
 
     void Refresh();
 
