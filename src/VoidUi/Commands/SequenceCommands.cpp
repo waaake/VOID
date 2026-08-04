@@ -34,7 +34,6 @@ bool MoveTrackItemCommand::Redo()
     {
         if (PlaybackTrack* track = item->Track())
             return track->MoveItem(item, m_Requested);
-
         return false;
     }
     return false;

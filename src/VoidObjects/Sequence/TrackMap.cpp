@@ -124,12 +124,9 @@ bool TrackMap::Move(const SharedTrackItem& item, int frame)
         // This is some other item, we're dealing with
         if (existing.get() != item.get())
             return false;
-
-        // m_Items.erase(it);
     }
 
     item->Move(frame);
-    // Add(item);
     return true;
 }
 

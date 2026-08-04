@@ -42,29 +42,69 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
     Project* project = _MediaBridge.ActiveProject();
     QUndoStack* stack = project->UndoStack();
 
-    stack->beginMacro("Move Item");
+    stack->beginMacro("Move TrackItem");
 
     int offset = frame - item->TimelineIn();
     PlaybackTrack* track = item->Track();
-    // int index = item->Track()->ItemIndex(item);
-
-    // First move the item to where we want
-    stack->push(new MoveTrackItemCommand(item, frame));
     int index = track->ItemIndex(item);
 
-    // Then offset all the remaining items with the same offset as the original move
-    for (int i = track->ItemCount() - 1; i > index; --i)
+    // We're moving forwards (towards right, so start with the right most item here)
+    if (offset > 0)
     {
-        const SharedTrackItem& item = track->ItemAt(i);
-        stack->push(new OffsetItemCommand(item, offset));
+        for (int i = static_cast<int>(track->ItemCount()) - 1; i > index; --i)
+        {
+            const SharedTrackItem& trackitem = track->ItemAt(i);
+            stack->push(new OffsetItemCommand(trackitem, offset));
+        }
+    }
+    else
+    {
+        for (int i = index; i < static_cast<int>(track->ItemCount()); ++i)
+        {
+            const SharedTrackItem& trackitem = track->ItemAt(i);
+            stack->push(new OffsetItemCommand(trackitem, offset));
+        }    
     }
 
+    stack->push(new MoveTrackItemCommand(item, frame));
     stack->endMacro();
 }
 
 void SequencerController::MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
 {
+    if (m_EditMode == EditMode::RIPPLE)
+        return RippleMoveItem(track, item, trackIndex, frame);
+
     _MediaBridge.PushCommand(new MoveItemToTrackCommand(track, item, trackIndex, frame));
+}
+
+void SequencerController::RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
+{
+    Project* project = _MediaBridge.ActiveProject();
+    QUndoStack* stack = project->UndoStack();
+
+    stack->beginMacro("Move TrackItem");
+
+    int index = track->ItemIndex(item);
+    _MediaBridge.PushCommand(new MoveItemToTrackCommand(track, item, trackIndex, frame));
+
+    std::size_t max = track->ItemCount();
+    // Last Item --- Nothing else to offset/move
+    if (index >= max)
+        return stack->endMacro();
+
+    // Since we're moving item to a different track, we need to check the item before this index and it's timelineOut to fill in the gap
+    SharedTrackItem next = track->ItemAt(index);
+    v_frame_t lastFrame = index == 0 ? track->StartFrame() : track->ItemAt(index - 1)->TimelineOut() + 1;
+    int offset = lastFrame - next->TimelineIn();
+
+    for (int i = index; i < static_cast<int>(max); ++i)
+    {
+        const SharedTrackItem& trackitem = track->ItemAt(i);
+        stack->push(new OffsetItemCommand(trackitem, offset));
+    }
+
+    stack->endMacro();
 }
 
 STrack* SequencerController::TrackAt(const QPointF& position) const
@@ -84,13 +124,11 @@ STrack* SequencerController::TrackAt(const QPointF& position) const
 
 void SequencerController::CreateVideoTrack(const SharedPlaybackSequence& sequence)
 {
-    // sequence->CreateTrack(Sequence::TrackType::VIDEO);
     _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::TrackType::VIDEO));
 }
 
 void SequencerController::CreateAudioTrack(const SharedPlaybackSequence& sequence)
 {
-    // sequence->CreateTrack(Sequence::TrackType::AUDIO);
     _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::TrackType::AUDIO));
 }
 
