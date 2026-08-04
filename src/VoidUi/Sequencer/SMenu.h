@@ -7,6 +7,7 @@
 /* Qt */
 #include <QMenu>
 #include <QAction>
+#include <QActionGroup>
 
 /* Internal */
 #include "Definition.h"
@@ -26,6 +27,7 @@ signals:
     void createTrackRequested();
     void removeTracksRequested();
     void colorChangeRequested(bool reset = false);
+    void editModeChangeRequested(const SequencerController::EditMode&);
 
 private:
     SequencerContext* m_Context;
@@ -35,6 +37,12 @@ private:
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;
     QAction* m_ResetItemColorAction;
+
+    QMenu* m_EditModeMenu;
+    QAction* m_NoOverwriteAction;
+    QAction* m_OverwriteAction;
+    QAction* m_RippleAction;
+    QActionGroup* m_EditModeGroup;
 
 private: /* Methods */
     void Build();
