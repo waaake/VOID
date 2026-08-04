@@ -25,11 +25,41 @@ void SequencerController::SetTimeController(TimelineController* controller)
 
 void SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
+    if (m_EditMode == EditMode::RIPPLE)
+        return RippleMoveItem(item, frame);
+
     // Item was dragged and returned back to the same position
     if (item->TimelineIn() == frame)
         return;
 
     _MediaBridge.PushCommand(new MoveTrackItemCommand(item, frame));
+}
+
+void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t frame)
+{
+    if (item->TimelineIn() == frame) return;
+
+    Project* project = _MediaBridge.ActiveProject();
+    QUndoStack* stack = project->UndoStack();
+
+    stack->beginMacro("Move Item");
+
+    int offset = frame - item->TimelineIn();
+    PlaybackTrack* track = item->Track();
+    // int index = item->Track()->ItemIndex(item);
+
+    // First move the item to where we want
+    stack->push(new MoveTrackItemCommand(item, frame));
+    int index = track->ItemIndex(item);
+
+    // Then offset all the remaining items with the same offset as the original move
+    for (int i = track->ItemCount() - 1; i > index; --i)
+    {
+        const SharedTrackItem& item = track->ItemAt(i);
+        stack->push(new OffsetItemCommand(item, offset));
+    }
+
+    stack->endMacro();
 }
 
 void SequencerController::MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)

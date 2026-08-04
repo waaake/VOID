@@ -27,15 +27,24 @@ class SequencerController : public QObject
 {
     Q_OBJECT
 public:
+    enum class EditMode
+    {
+        NO_OVERWRITE,
+        OVERWRITE,
+        RIPPLE
+    };
+
+public:
     void SetScene(QGraphicsScene* scene);
     QGraphicsScene* Scene() const { return m_Scene; }
-    
+
     void SetTimeController(TimelineController* controller);
     TimelineController* TimeController() { return m_TimelineController; }
 
     void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
     void RemoveFromScene(QGraphicsItem* item) { m_Scene->removeItem(item); }
     void MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    void RippleMoveItem(const SharedTrackItem& item, v_frame_t frame);
     void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
     void CreateAudioTrack(const SharedPlaybackSequence& seqeunce);
@@ -62,6 +71,9 @@ public:
     void TrimItemHead(const SharedTrackItem& item, int handle);
     void TrimItemTail(const SharedTrackItem& item, int handle);
 
+    void SetEditMode(const EditMode& mode) { m_EditMode = mode; }
+    const EditMode& GetEditMode() const { return m_EditMode; }
+
 signals:
     void frameChanged(v_frame_t);
 
@@ -69,6 +81,7 @@ private:
     QGraphicsScene* m_Scene = { nullptr };
     TimelineController* m_TimelineController = { nullptr };
     v_frame_t m_Frame;
+    EditMode m_EditMode = { EditMode::NO_OVERWRITE };
 };
 
 VOID_NAMESPACE_CLOSE
