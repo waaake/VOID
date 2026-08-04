@@ -87,6 +87,43 @@ bool MoveItemToTrackCommand::Redo()
     return false;
 }
 
+/// OffsetItemCommand
+
+OffsetItemCommand::OffsetItemCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Offset(offset)
+    , m_TrackType(item->Track()->Type())
+{
+    setText("Offset Item");
+}
+
+void OffsetItemCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        track->OffsetItem(item, -m_Offset);
+    }
+}
+
+bool OffsetItemCommand::Redo()
+{
+    if (m_Offset == 0) return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        return track->OffsetItem(item, m_Offset);
+    }
+
+    return false;
+}
+
 /// SetTrackItemColorCommand
 
 SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, const QColor& color, QUndoCommand* parent)

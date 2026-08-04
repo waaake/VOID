@@ -39,6 +39,20 @@ private:
     Sequence::TrackType m_Type;
 };
 
+class OffsetItemCommand : public VoidUndoCommand
+{
+public:
+    OffsetItemCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex, m_ItemIndex;
+    int m_Offset;
+    Sequence::TrackType m_TrackType;
+};
+
 class SetTrackItemColorCommand : public VoidUndoCommand
 {
 public:
