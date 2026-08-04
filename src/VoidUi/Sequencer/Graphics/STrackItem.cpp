@@ -108,8 +108,9 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
         if (m_Context->Action() == SequencerAction::TRIM && m_Context->HoverModel()->IsHovered(m_Item) && !m_TrimContext.active)
         {
-            painter->fillRect(m_HeadTrimRect, option->palette.color(QPalette::Highlight));
-            painter->fillRect(m_TailTrimRect, option->palette.color(QPalette::Highlight));
+            painter->setPen(QPen(option->palette.color(QPalette::Highlight), 2));
+            painter->drawLine(m_HeadTrimRect.right(), 8, m_HeadTrimRect.right(), m_HeadTrimRect.height() - 8);
+            painter->drawLine(m_TailTrimRect.left(), 8, m_TailTrimRect.left(), m_TailTrimRect.height() - 8);
         }
     }
     else
