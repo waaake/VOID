@@ -253,6 +253,11 @@ bool PlaybackTrack::MoveItem(const SharedTrackItem& item, v_frame_t frame)
     return m_Items.Move(item, frame);
 }
 
+bool PlaybackTrack::OffsetItem(const SharedTrackItem& item, int offset)
+{
+    return m_Items.Offset(item, offset);
+}
+
 bool PlaybackTrack::AddItem(const SharedTrackItem& item)
 {
     if (m_Items.Add(item, item->TimelineIn()))

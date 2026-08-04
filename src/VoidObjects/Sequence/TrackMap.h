@@ -61,6 +61,7 @@ public:
     inline bool Empty() const { return m_Items.empty(); }
 
     bool Move(const SharedTrackItem& item, int frame);
+    bool Offset(const SharedTrackItem& item, int offset);
     const std::vector<SharedTrackItem>& Items() const { return m_Items; }
 
     std::vector<SharedTrackItem>::iterator begin() noexcept { return m_Items.begin(); }

@@ -117,6 +117,7 @@ public:
     bool IsRazored(v_frame_t frame) const { return m_Razored.find(frame) != m_Razored.end(); }
 
     bool MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    bool OffsetItem(const SharedTrackItem& item, int offset);
     bool AddItem(const SharedTrackItem& item);
     bool AddItem(const SharedTrackItem& item, v_frame_t frame);
     // Removes the Track Item at the given frame
