@@ -26,6 +26,7 @@ public:
 signals:
     void createTrackRequested();
     void removeTracksRequested();
+    void removeTrackItemsRequested();
     void colorChangeRequested(bool reset = false);
     void editModeChangeRequested(const SequencerController::EditMode&);
 
@@ -33,6 +34,7 @@ private:
     SequencerContext* m_Context;
     QAction* m_AddVideoTrackAction;
     QAction* m_RemoveTrackAction;
+    QAction* m_RemoveTrackItemsAction;
 
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;

@@ -33,7 +33,7 @@ public:
 
     bool IsSelected(const SharedTrackItem& item);
     bool IsSelected(const SharedPlaybackTrack& track);
-    bool HasSelection() const { return !m_Items.empty(); }
+    bool HasTrackItemSelection() const { return !m_Items.empty(); }
     bool HasTrackSelection() const { return !m_Tracks.empty(); }
     const std::unordered_set<SharedTrackItem>& SelectedItems() const { return m_Items; }
     const std::unordered_set<SharedPlaybackTrack>& SelectedTracks() const { return m_Tracks; }

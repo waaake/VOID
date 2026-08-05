@@ -167,6 +167,7 @@ void SequencerTimeline::Connect()
         m_Context.Controller()->CreateVideoTrack(m_Sequence);
     });
     connect(m_Menu, &SequencerContextMenu::removeTracksRequested, this, &SequencerTimeline::DeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::removeTrackItemsRequested, this, &SequencerTimeline::DeleteSelected);
     connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {
@@ -186,7 +187,7 @@ void SequencerTimeline::DeleteSelected()
 {
     if (m_Context.SelectionModel()->HasTrackSelection())
         m_Context.Controller()->RemoveTracks(m_Sequence, m_Context.SelectionModel()->SelectedTracks());
-    else if (m_Context.SelectionModel()->HasTrackSelection())
+    else if (m_Context.SelectionModel()->HasTrackItemSelection())
         m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
     
     m_Context.SelectionModel()->Clear();

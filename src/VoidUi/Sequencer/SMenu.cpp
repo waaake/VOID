@@ -30,6 +30,7 @@ void SequencerContextMenu::Build()
 {
     m_AddVideoTrackAction = new QAction("Add Video Track", this);
     m_RemoveTrackAction = new QAction("Remove Selected Track(s)", this);
+    m_RemoveTrackItemsAction = new QAction("Remove Selected TrackItems(s)", this);
 
     m_ColorMenu = new QMenu("Color", this);
 
@@ -62,6 +63,7 @@ void SequencerContextMenu::Build()
 
     addAction(m_AddVideoTrackAction);
     addAction(m_RemoveTrackAction);
+    addAction(m_RemoveTrackItemsAction);
 
     addSeparator();
 
@@ -76,6 +78,7 @@ void SequencerContextMenu::Connect()
 {
     connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
     connect(m_RemoveTrackAction, &QAction::triggered, this, &SequencerContextMenu::removeTracksRequested);
+    connect(m_RemoveTrackItemsAction, &QAction::triggered, this, &SequencerContextMenu::removeTrackItemsRequested);
     connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
     connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
     connect(m_EditModeGroup, &QActionGroup::triggered, this, [this](QAction* action) -> void
@@ -87,8 +90,9 @@ void SequencerContextMenu::Connect()
 void SequencerContextMenu::Validate()
 {
     m_RemoveTrackAction->setEnabled(m_Context->SelectionModel()->HasTrackSelection());
-    m_ColorItemAction->setEnabled(m_Context->SelectionModel()->HasSelection());
-    m_ResetItemColorAction->setEnabled(m_Context->SelectionModel()->HasSelection());
+    m_RemoveTrackItemsAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
+    m_ColorItemAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
+    m_ResetItemColorAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
 
     m_NoOverwriteAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
     m_OverwriteAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::OVERWRITE);
