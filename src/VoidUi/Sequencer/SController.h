@@ -51,6 +51,7 @@ public:
     void CreateAudioTrack(const SharedPlaybackSequence& seqeunce);
     void RemoveTracks(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedPlaybackTrack>& tracks);
     void RemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items);
+    void RippleRemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items);
 
     STrack* TrackAt(const QPointF& position) const;
     STrack* TrackAt(int index) const;

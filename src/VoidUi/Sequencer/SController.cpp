@@ -86,7 +86,7 @@ void SequencerController::RippleMoveItem(const SharedPlaybackTrack& track, const
     stack->beginMacro("Move TrackItem");
 
     int index = track->ItemIndex(item);
-    _MediaBridge.PushCommand(new MoveItemToTrackCommand(track, item, trackIndex, frame));
+    stack->push(new MoveItemToTrackCommand(track, item, trackIndex, frame));
 
     std::size_t max = track->ItemCount();
     // Last Item --- Nothing else to offset/move
@@ -145,14 +145,96 @@ void SequencerController::RemoveTracks(const SharedPlaybackSequence& sequence, c
 
 void SequencerController::RemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items)
 {
+    if (m_EditMode == EditMode::RIPPLE)
+        return RippleRemoveTrackItems(sequence, items);
+
     Project* project = _MediaBridge.ActiveProject();
     QUndoStack* stack = project->UndoStack();
+
+    // std::vector<SharedTrackItem> trackitems;
+    // trackitems.reserve(items.size());
+
+    // for (const auto& item : items)
+    //     trackitems.push_back(item);
+
+    // std::sort(trackitems.begin(), trackitems.end(), [&](const SharedTrackItem& _a, const SharedTrackItem& _b) -> bool
+    // {
+    //     PlaybackTrack* _atrack = _a->Track();
+    //     PlaybackTrack* _btrack = _b->Track();
+
+    //     int _atrackidx = _atrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_atrack) : sequence->AudioTrackIndex(_atrack);
+    //     int _btrackidx = _btrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_btrack) : sequence->AudioTrackIndex(_btrack);
+
+    //     // Sort ascending based on the track index -- item _b belongs to a different track than _a
+    //     if (_atrackidx != _btrackidx)
+    //         return _atrackidx < _btrackidx;
+
+    //     // Sort descending based on the track item index
+    //     // we need the items to be reversed such that when deleting them, the index of other items don't change
+    //     // and running undo works as expected
+    //     return _atrack->ItemIndex(_a) > _btrack->ItemIndex(_b);
+    // });
 
     stack->beginMacro("Remove TrackItem(s)");
     for (const auto& item : items)
     {
         const PlaybackTrack* track = item->Track();
         stack->push(new DeleteTrackItemCommand(sequence, track->Type(), track->TrackIndex(), track->ItemIndex(item)));
+    }
+    stack->endMacro();
+}
+
+void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items)
+{
+    Project* project = _MediaBridge.ActiveProject();
+    QUndoStack* stack = project->UndoStack();
+
+    // std::vector<SharedTrackItem> trackitems;
+    // trackitems.reserve(items.size());
+
+    // for (const auto& item : items)
+    //     trackitems.push_back(item);
+
+    // std::sort(trackitems.begin(), trackitems.end(), [&](const SharedTrackItem& _a, const SharedTrackItem& _b) -> bool
+    // {
+    //     PlaybackTrack* _atrack = _a->Track();
+    //     PlaybackTrack* _btrack = _b->Track();
+
+    //     int _atrackidx = _atrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_atrack) : sequence->AudioTrackIndex(_atrack);
+    //     int _btrackidx = _btrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_btrack) : sequence->AudioTrackIndex(_btrack);
+
+    //     // Sort ascending based on the track index -- item _b belongs to a different track than _a
+    //     if (_atrackidx != _btrackidx)
+    //         return _atrackidx < _btrackidx;
+
+    //     // Sort descending based on the track item index
+    //     // we need the items to be reversed such that when deleting them, the index of other items don't change
+    //     // and running undo works as expected
+    //     return _atrack->ItemIndex(_a) > _btrack->ItemIndex(_b);
+    // });
+
+    stack->beginMacro("Remove TrackItem(s)");
+    for (const auto& item : items)
+    {
+        const PlaybackTrack* track = item->Track();
+        int index = track->ItemIndex(item);
+
+        stack->push(new DeleteTrackItemCommand(sequence, track->Type(), track->TrackIndex(), track->ItemIndex(item)));
+
+        std::size_t max = track->ItemCount();
+        // Last Item --- Nothing else to offset/move
+        if (index >= max)
+            continue;
+
+        SharedTrackItem next = track->ItemAt(index);
+        v_frame_t lastFrame = index == 0 ? track->StartFrame() : track->ItemAt(index - 1)->TimelineOut() + 1;
+        int offset = lastFrame - next->TimelineIn();
+
+        for (int i = index; i < static_cast<int>(max); ++i)
+        {
+            const SharedTrackItem& trackitem = track->ItemAt(i);
+            stack->push(new OffsetItemCommand(trackitem, offset));
+        }
     }
     stack->endMacro();
 }
