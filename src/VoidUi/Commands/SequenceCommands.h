@@ -131,7 +131,7 @@ private:
     Sequence::TrackType m_Type;
     int m_TrackIndex;
     int m_ItemIndex;
-    rapidjson::Value m_ItemData;
+    std::string m_ItemData;
 };
 
 class RazorTrackCommand : public VoidUndoCommand

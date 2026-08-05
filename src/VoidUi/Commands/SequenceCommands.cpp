@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <sstream>
+
 /* Internal */
 #include "SequenceCommands.h"
 #include "VoidObjects/Sequence/Track.h"
@@ -285,6 +288,7 @@ bool DeleteTrackCommand::Redo()
 
 DeleteTrackItemCommand::DeleteTrackItemCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, int trackindex, int index, QUndoCommand* parent)
     : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
     , m_Type(type)
     , m_TrackIndex(trackindex)
     , m_ItemIndex(index)
@@ -296,9 +300,12 @@ void DeleteTrackItemCommand::undo()
 {
     if (SharedPlaybackSequence sequence = m_Sequence.lock())
     {
-        if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
+        const SharedPlaybackTrack& track = m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackAt(m_TrackIndex) : sequence->AudioTrackAt(m_TrackIndex);
+        if (track)
         {
+            std::istringstream is(m_ItemData, std::ios::binary);
             SharedTrackItem item = std::make_shared<TrackItem>(track.get());
+            item->Deserialize(is);
             track->AddItem(item);
         }
     }
@@ -308,14 +315,13 @@ bool DeleteTrackItemCommand::Redo()
 {
     if (SharedPlaybackSequence sequence = m_Sequence.lock())
     {
-        rapidjson::Document doc;
-        doc.SetObject();
-
-        rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator = doc.GetAllocator();
-        if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
+        const SharedPlaybackTrack& track = m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackAt(m_TrackIndex) : sequence->AudioTrackAt(m_TrackIndex);
+        if (track)
         {
+            std::ostringstream os(std::ios::binary);
             const SharedTrackItem item = track->ItemAt(m_ItemIndex);
-            item->Serialize(m_ItemData, allocator);
+            item->Serialize(os);
+            m_ItemData = os.str();
             track->RemoveItem(item);
             return true;
         }
