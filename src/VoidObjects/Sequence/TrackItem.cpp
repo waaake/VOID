@@ -181,6 +181,26 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     // TODO: Pending work with handles (head and tail) & effects added on the track item;
 }
 
+void TrackItem::Serialize(std::ostream& out) const
+{
+    WriteString(out, m_Name);
+
+    int index = m_Media ? _VoidContext.ActiveProject()->MediaRow(m_Media) : -1;
+    out.write(reinterpret_cast<const char*>(&index), sizeof(index));
+    out.write(reinterpret_cast<const char*>(&m_TimelineIn), sizeof(m_TimelineIn));
+    out.write(reinterpret_cast<const char*>(&m_TimelineOut), sizeof(m_TimelineOut));
+    out.write(reinterpret_cast<const char*>(&m_SourceIn), sizeof(m_SourceIn));
+    out.write(reinterpret_cast<const char*>(&m_SourceOut), sizeof(m_SourceOut));
+    out.write(reinterpret_cast<const char*>(&m_Offset), sizeof(m_Offset));
+
+    int r = m_Color.red();
+    int g = m_Color.green();
+    int b = m_Color.blue();
+    out.write(reinterpret_cast<const char*>(&r), sizeof(r));
+    out.write(reinterpret_cast<const char*>(&g), sizeof(g));
+    out.write(reinterpret_cast<const char*>(&b), sizeof(b));
+}
+
 void TrackItem::Deserialize(const rapidjson::Value& in)
 {
     // Media could be unlinked from the item
@@ -197,6 +217,30 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
     m_Color.setRed(in["r"].GetInt());
     m_Color.setGreen(in["g"].GetInt());
     m_Color.setBlue(in["b"].GetInt());
+}
+
+void TrackItem::Deserialize(std::istream& in)
+{
+    m_Name = ReadString(in);
+
+    int index;
+    in.read(reinterpret_cast<char*>(&index), sizeof(index));
+    m_Media = index > -1 ? _VoidContext.ActiveProject()->MediaAt(index, 0) : nullptr;
+
+    in.read(reinterpret_cast<char*>(&m_TimelineIn), sizeof(m_TimelineIn));
+    in.read(reinterpret_cast<char*>(&m_TimelineOut), sizeof(m_TimelineOut));
+    in.read(reinterpret_cast<char*>(&m_SourceIn), sizeof(m_SourceIn));
+    in.read(reinterpret_cast<char*>(&m_SourceOut), sizeof(m_SourceOut));
+    in.read(reinterpret_cast<char*>(&m_Offset), sizeof(m_Offset));
+
+    int r, g, b;
+    in.read(reinterpret_cast<char*>(&r), sizeof(r));
+    in.read(reinterpret_cast<char*>(&g), sizeof(g));
+    in.read(reinterpret_cast<char*>(&b), sizeof(b));
+
+    m_Color.setRed(r);
+    m_Color.setGreen(g);
+    m_Color.setBlue(b);
 }
 
 VOID_NAMESPACE_CLOSE
