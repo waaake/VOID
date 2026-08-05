@@ -101,7 +101,8 @@ void SequencerTimeline::SetHorizontalScale(float factor)
 void SequencerTimeline::Build()
 {
     m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+    m_RippleDeleteShortcut = new QShortcut(QKeySequence("Ctrl+Backspace"), this);
     m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);
@@ -149,6 +150,7 @@ void SequencerTimeline::Connect()
 
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
     connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
+    connect(m_RippleDeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::RippleDeleteSelected);
 
     connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
     {
@@ -190,6 +192,14 @@ void SequencerTimeline::DeleteSelected()
     else if (m_Context.SelectionModel()->HasTrackItemSelection())
         m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
     
+    m_Context.SelectionModel()->Clear();
+}
+
+void SequencerTimeline::RippleDeleteSelected()
+{
+    if (m_Context.SelectionModel()->HasTrackItemSelection())
+        m_Context.Controller()->RippleRemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
+
     m_Context.SelectionModel()->Clear();
 }
 

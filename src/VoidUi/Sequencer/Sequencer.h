@@ -58,6 +58,7 @@ private:
 
     QShortcut* m_FitShortcut;
     QShortcut* m_DeleteShortcut;
+    QShortcut* m_RippleDeleteShortcut;
 
     SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
@@ -66,6 +67,7 @@ private: /* Methods */
     void Build();
     void Connect();
     void DeleteSelected();
+    void RippleDeleteSelected();
 };
 
 VOID_NAMESPACE_CLOSE
