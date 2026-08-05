@@ -70,7 +70,7 @@ void STimelineView::mousePressEvent(QMouseEvent* event)
     if (m_Context->Action() == SequencerAction::RAZOR_ALL)
         emit sequenceCutRequested(m_Context->Geometry()->SceneXToFrame(mapToScene(event->pos()).x()));
 
-    if (m_Context->Action() == SequencerAction::NONE && !dynamic_cast<STrackItem*>(m_Scene->itemAt(event->pos(), viewportTransform())))
+    if (event->button() == Qt::LeftButton && m_Context->Action() == SequencerAction::NONE && !m_Scene->itemAt(mapToScene(event->pos()), QTransform()))
     {
         m_Marquee.pressed = true;
         m_Marquee.clickpos = event->pos();
