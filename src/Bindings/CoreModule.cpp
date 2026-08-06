@@ -11,6 +11,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Operator.h"
+#include "FrameRange.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidCore/VoidTools.h"
 #include "VoidObjects/Media/MediaClip.h"
@@ -33,6 +34,21 @@ void BindCore(py::module_& m)
     // {
     //     VOID_LOG_INFO("test");
     // });
+
+    py::class_<MFrameRange>(m, "MFrameRange")
+        .def(py::init<v_frame_t, v_frame_t, double>(), py::arg("start"), py::arg("end"), py::arg("framerate") = 24.0)
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const MFrameRange& r = h.cast<MFrameRange&>();
+            std::stringstream ss;
+            ss << "MFrameRange <" << r.startframe << " - " << r.endframe << ", " << r.duration << " frames>";
+            return ss.str();
+        })
+        .def("contains", &MFrameRange::Contains, py::arg("frame"))
+        .def_readonly("startframe", &MFrameRange::startframe)
+        .def_readonly("endframe", &MFrameRange::endframe)
+        .def_readonly("duration", &MFrameRange::duration)
+        .def_readonly("framerate", &MFrameRange::framerate);
 
     /* Media Type */
     py::enum_<MediaType>(m, "MediaType")
@@ -206,6 +222,7 @@ void BindCore(py::module_& m)
         .def("timeline_in", &TrackItem::TimelineIn)
         .def("timeline_out", &TrackItem::TimelineOut)
         .def("timeline_duration", &TrackItem::Duration)
+        .def("timeline_range", &TrackItem::TimelineRange, py::return_value_policy::reference)
         .def("set_timeline_in", &TrackItem::SetTimelineIn, py::arg("frame"))
         .def("set_timeline_out", &TrackItem::SetTimelineOut, py::arg("frame"))
         .def("source_in", &TrackItem::SourceIn)
