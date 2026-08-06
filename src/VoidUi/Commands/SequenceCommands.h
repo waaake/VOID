@@ -39,6 +39,20 @@ private:
     Sequence::TrackType m_Type;
 };
 
+class OffsetItemCommand : public VoidUndoCommand
+{
+public:
+    OffsetItemCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex, m_ItemIndex;
+    int m_Offset;
+    Sequence::TrackType m_TrackType;
+};
+
 class SetTrackItemColorCommand : public VoidUndoCommand
 {
 public:
@@ -117,7 +131,7 @@ private:
     Sequence::TrackType m_Type;
     int m_TrackIndex;
     int m_ItemIndex;
-    rapidjson::Value m_ItemData;
+    std::string m_ItemData;
 };
 
 class RazorTrackCommand : public VoidUndoCommand
@@ -174,6 +188,36 @@ private:
     int m_ItemIndex;
     int m_Offset;
     int m_Previous;
+};
+
+class TrimItemHeadCommand : public VoidUndoCommand
+{
+public:
+    TrimItemHeadCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_TrackType;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_Handle;
+};
+
+class TrimItemTailCommand : public VoidUndoCommand
+{
+public:
+    TrimItemTailCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    Sequence::TrackType m_TrackType;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_Handle;
 };
 
 VOID_NAMESPACE_CLOSE

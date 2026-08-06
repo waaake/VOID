@@ -18,6 +18,7 @@ enum class SequencerAction
 {
     NONE,
     SLIP_CLIP,
+    TRIM,
     RAZOR,
     RAZOR_ALL,
     MERGE

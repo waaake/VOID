@@ -70,7 +70,7 @@ void STimelineView::mousePressEvent(QMouseEvent* event)
     if (m_Context->Action() == SequencerAction::RAZOR_ALL)
         emit sequenceCutRequested(m_Context->Geometry()->SceneXToFrame(mapToScene(event->pos()).x()));
 
-    if (!dynamic_cast<STrackItem*>(m_Scene->itemAt(event->pos(), transform())))
+    if (event->button() == Qt::LeftButton && m_Context->Action() == SequencerAction::NONE && !m_Scene->itemAt(mapToScene(event->pos()), QTransform()))
     {
         m_Marquee.pressed = true;
         m_Marquee.clickpos = event->pos();
@@ -128,6 +128,9 @@ void STimelineView::enterEvent(QEvent* event)
     {
         case SequencerAction::SLIP_CLIP:
             setCursor(QCursor(IconForge::GetPixmap(IconType::icon_arrow_range, _DARK_COLOR(QPalette::Text, 100))));
+            break;
+        case SequencerAction::TRIM:
+            setCursor(QCursor(IconForge::GetPixmap(IconType::icon_format_overflow, _DARK_COLOR(QPalette::Text, 100))));
             break;
         case SequencerAction::RAZOR:
             setCursor(QCursor(IconForge::GetPixmap(IconType::icon_bolt, _DARK_COLOR(QPalette::Text, 100))));

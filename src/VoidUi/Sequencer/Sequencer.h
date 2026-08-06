@@ -40,6 +40,8 @@ public:
     void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);
     void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
     void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
+    void TrimItemHead(const SharedTrackItem& item, int handle);
+    void TrimItemTail(const SharedTrackItem& item, int handle);
 
     void Refresh();
 
@@ -56,6 +58,7 @@ private:
 
     QShortcut* m_FitShortcut;
     QShortcut* m_DeleteShortcut;
+    QShortcut* m_RippleDeleteShortcut;
 
     SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
@@ -64,6 +67,7 @@ private: /* Methods */
     void Build();
     void Connect();
     void DeleteSelected();
+    void RippleDeleteSelected();
 };
 
 VOID_NAMESPACE_CLOSE

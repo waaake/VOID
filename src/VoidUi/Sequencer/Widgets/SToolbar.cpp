@@ -38,6 +38,11 @@ void SToolbar::Build()
     m_SlipClipButton->setFixedSize({32, 32});
     m_SlipClipButton->setToolTip(ToolTipString("Slip Clip", "Slip media content over the track item range.").c_str());
 
+    m_TrimButton = new HighlightToggleButton(this);
+    m_TrimButton->setIcon(IconForge::GetIcon(IconType::icon_format_overflow, _DARK_COLOR(QPalette::Text, 100), 28));
+    m_TrimButton->setFixedSize({32, 32});
+    m_TrimButton->setToolTip(ToolTipString("Trim", "Trim item ranges (timeline in/out) through head and tail handle markers on track items.").c_str());
+
     m_RazorButton = new HighlightToggleButton(this);
     m_RazorButton->setIcon(IconForge::GetIcon(IconType::icon_bolt, _DARK_COLOR(QPalette::Text, 100), 28));
     m_RazorButton->setFixedSize({32, 32});
@@ -53,15 +58,17 @@ void SToolbar::Build()
     m_MergeButton->setFixedSize({32, 32});
     m_MergeButton->setToolTip(ToolTipString("Merge Cut", "Merge cuts created by the Razor tool.").c_str());
 
-    m_ActionGroup.addButton(m_PointerButton, 0);
-    m_ActionGroup.addButton(m_SlipClipButton, 1);
-    m_ActionGroup.addButton(m_RazorButton, 2);
-    m_ActionGroup.addButton(m_RazorAllButton, 3);
-    m_ActionGroup.addButton(m_MergeButton, 4);
+    m_ActionGroup.addButton(m_PointerButton, static_cast<int>(SequencerAction::NONE));
+    m_ActionGroup.addButton(m_SlipClipButton, static_cast<int>(SequencerAction::SLIP_CLIP));
+    m_ActionGroup.addButton(m_TrimButton, static_cast<int>(SequencerAction::TRIM));
+    m_ActionGroup.addButton(m_RazorButton, static_cast<int>(SequencerAction::RAZOR));
+    m_ActionGroup.addButton(m_RazorAllButton, static_cast<int>(SequencerAction::RAZOR_ALL));
+    m_ActionGroup.addButton(m_MergeButton, static_cast<int>(SequencerAction::MERGE));
 
     m_Layout->addWidget(m_ResetButton);
     m_Layout->addWidget(m_PointerButton);
     m_Layout->addWidget(m_SlipClipButton);
+    m_Layout->addWidget(m_TrimButton);
     m_Layout->addWidget(m_RazorButton);
     m_Layout->addWidget(m_RazorAllButton);
     m_Layout->addWidget(m_MergeButton);

@@ -70,6 +70,16 @@ void SequencerTimeline::MergeCut(const SharedPlaybackTrack& track, v_frame_t fra
     m_Context.Controller()->MergeCut(track, frame);
 }
 
+void SequencerTimeline::TrimItemHead(const SharedTrackItem& item, int handle)
+{
+    m_Context.Controller()->TrimItemHead(item, handle);
+}
+
+void SequencerTimeline::TrimItemTail(const SharedTrackItem& item, int handle)
+{
+    m_Context.Controller()->TrimItemTail(item, handle);
+}
+
 void SequencerTimeline::Refresh()
 {
     m_TrackHeader->Clear();
@@ -91,7 +101,8 @@ void SequencerTimeline::SetHorizontalScale(float factor)
 void SequencerTimeline::Build()
 {
     m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+    m_RippleDeleteShortcut = new QShortcut(QKeySequence("Ctrl+Backspace"), this);
     m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);
@@ -139,6 +150,7 @@ void SequencerTimeline::Connect()
 
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
     connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
+    connect(m_RippleDeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::RippleDeleteSelected);
 
     connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
     {
@@ -157,6 +169,8 @@ void SequencerTimeline::Connect()
         m_Context.Controller()->CreateVideoTrack(m_Sequence);
     });
     connect(m_Menu, &SequencerContextMenu::removeTracksRequested, this, &SequencerTimeline::DeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::removeTrackItemsRequested, this, &SequencerTimeline::DeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {
         if (reset)
@@ -175,9 +189,17 @@ void SequencerTimeline::DeleteSelected()
 {
     if (m_Context.SelectionModel()->HasTrackSelection())
         m_Context.Controller()->RemoveTracks(m_Sequence, m_Context.SelectionModel()->SelectedTracks());
-    else if (m_Context.SelectionModel()->HasTrackSelection())
+    else if (m_Context.SelectionModel()->HasTrackItemSelection())
         m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
     
+    m_Context.SelectionModel()->Clear();
+}
+
+void SequencerTimeline::RippleDeleteSelected()
+{
+    if (m_Context.SelectionModel()->HasTrackItemSelection())
+        m_Context.Controller()->RippleRemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
+
     m_Context.SelectionModel()->Clear();
 }
 

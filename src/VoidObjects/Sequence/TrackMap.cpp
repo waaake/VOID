@@ -124,12 +124,33 @@ bool TrackMap::Move(const SharedTrackItem& item, int frame)
         // This is some other item, we're dealing with
         if (existing.get() != item.get())
             return false;
-
-        m_Items.erase(it);
     }
 
     item->Move(frame);
-    Add(item);
+    return true;
+}
+
+bool TrackMap::Offset(const SharedTrackItem& item, int offset)
+{
+    auto it = std::lower_bound(
+        m_Items.begin(),
+        m_Items.end(),
+        item->TimelineIn() + offset,
+        [](const SharedTrackItem& _i, v_frame_t _f)
+        {
+            return _i->TimelineIn() <= _f;
+        }
+    );
+
+    SharedTrackItem existing = (it == m_Items.begin()) ? *(it) : *(--it);
+    if (existing->InTimelineRange(item->TimelineIn() + offset))
+    {
+        // Some other Item exists
+        if (existing.get() != item.get())
+            return false;
+    }
+
+    item->Offset(offset);
     return true;
 }
 

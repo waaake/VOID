@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <sstream>
+
 /* Internal */
 #include "SequenceCommands.h"
 #include "VoidObjects/Sequence/Track.h"
@@ -34,7 +37,6 @@ bool MoveTrackItemCommand::Redo()
     {
         if (PlaybackTrack* track = item->Track())
             return track->MoveItem(item, m_Requested);
-        
         return false;
     }
     return false;
@@ -84,6 +86,43 @@ bool MoveItemToTrackCommand::Redo()
             return true;
         }
     }
+    return false;
+}
+
+/// OffsetItemCommand
+
+OffsetItemCommand::OffsetItemCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Offset(offset)
+    , m_TrackType(item->Track()->Type())
+{
+    setText("Offset Item");
+}
+
+void OffsetItemCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        track->OffsetItem(item, -m_Offset);
+    }
+}
+
+bool OffsetItemCommand::Redo()
+{
+    if (m_Offset == 0) return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        return track->OffsetItem(item, m_Offset);
+    }
+
     return false;
 }
 
@@ -249,6 +288,7 @@ bool DeleteTrackCommand::Redo()
 
 DeleteTrackItemCommand::DeleteTrackItemCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, int trackindex, int index, QUndoCommand* parent)
     : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
     , m_Type(type)
     , m_TrackIndex(trackindex)
     , m_ItemIndex(index)
@@ -260,9 +300,12 @@ void DeleteTrackItemCommand::undo()
 {
     if (SharedPlaybackSequence sequence = m_Sequence.lock())
     {
-        if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
+        const SharedPlaybackTrack& track = m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackAt(m_TrackIndex) : sequence->AudioTrackAt(m_TrackIndex);
+        if (track)
         {
+            std::istringstream is(m_ItemData, std::ios::binary);
             SharedTrackItem item = std::make_shared<TrackItem>(track.get());
+            item->Deserialize(is);
             track->AddItem(item);
         }
     }
@@ -272,14 +315,13 @@ bool DeleteTrackItemCommand::Redo()
 {
     if (SharedPlaybackSequence sequence = m_Sequence.lock())
     {
-        rapidjson::Document doc;
-        doc.SetObject();
-
-        rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator = doc.GetAllocator();
-        if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
+        const SharedPlaybackTrack& track = m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackAt(m_TrackIndex) : sequence->AudioTrackAt(m_TrackIndex);
+        if (track)
         {
+            std::ostringstream os(std::ios::binary);
             const SharedTrackItem item = track->ItemAt(m_ItemIndex);
-            item->Serialize(m_ItemData, allocator);
+            item->Serialize(os);
+            m_ItemData = os.str();
             track->RemoveItem(item);
             return true;
         }
@@ -402,6 +444,84 @@ bool OffsetItemSourceCommand::Redo()
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->SetSourceIn(item->SourceIn() + m_Offset);
+        return true;
+    }
+
+    return false;
+}
+
+/// TrimItemHeadCommand
+
+TrimItemHeadCommand::TrimItemHeadCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Handle(handle)
+{
+    setText("Trim Item");
+}
+
+void TrimItemHeadCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->TrimHead(-m_Handle);
+    }
+}
+
+bool TrimItemHeadCommand::Redo()
+{
+    if (m_Handle == 0) return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        if (m_Handle > item->Duration()) return false;
+        item->TrimHead(m_Handle);
+        return true;
+    }
+
+    return false;
+}
+
+/// TrimItemTailCommand
+
+TrimItemTailCommand::TrimItemTailCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Handle(handle)
+{
+    setText("Trim Item");
+}
+
+void TrimItemTailCommand::undo()
+{
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->TrimTail(-m_Handle);
+    }
+}
+
+bool TrimItemTailCommand::Redo()
+{
+    if (m_Handle == 0) return false;
+
+    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        if (m_Handle > item->Duration()) return false;
+        item->TrimTail(m_Handle);
         return true;
     }
 

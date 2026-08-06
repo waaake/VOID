@@ -117,7 +117,9 @@ void BindUi(py::module_& m)
         .def("razor_at", static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt), py::arg("frame"))
         .def("razor_at", static_cast<void (SequencerTimeline::*)(const SharedPlaybackSequence&, v_frame_t)>(&SequencerTimeline::RazorAt), py::arg("sequence"), py::arg("frame"))
         .def("razor_at", static_cast<void (SequencerTimeline::*)(const SharedPlaybackTrack&, v_frame_t)>(&SequencerTimeline::RazorAt), py::arg("track"), py::arg("frame"))
-        .def("merge_cut", &SequencerTimeline::MergeCut, py::arg("track"), py::arg("frame"));
+        .def("merge_cut", &SequencerTimeline::MergeCut, py::arg("track"), py::arg("frame"))
+        .def("trim_item_head", &SequencerTimeline::TrimItemHead, py::arg("item"), py::arg("handle"))
+        .def("trim_item_tail", &SequencerTimeline::TrimItemTail, py::arg("item"), py::arg("handle"));
     
     /* Menu System */
     py::class_<MenuSystem>(m, "MenuSystem")

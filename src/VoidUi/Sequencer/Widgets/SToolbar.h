@@ -34,6 +34,7 @@ private:
     QToolButton* m_ResetButton;
     HighlightToggleButton* m_PointerButton;
     HighlightToggleButton* m_SlipClipButton;
+    HighlightToggleButton* m_TrimButton;
     HighlightToggleButton* m_RazorButton;
     HighlightToggleButton* m_RazorAllButton;
     HighlightToggleButton* m_MergeButton;

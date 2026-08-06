@@ -15,9 +15,16 @@ WorkspaceManager::WorkspaceManager(QWidget* parent)
 
 WorkspaceManager::~WorkspaceManager()
 {
+    // This needs to be deleted before anything else
+    // as it may be accessing several shared_ptr(s) causing the deleter on those
+    // to be invoked when this is destroyed, in case this gets deleted later than parented
+    // shared_ptr(s) causing double free/delete
+    m_ScriptEditor->deleteLater();
+    delete m_ScriptEditor;
+    m_ScriptEditor = nullptr;
+
     m_MediaLister->deleteLater();
     m_PlayLister->deleteLater();
-    m_ScriptEditor->deleteLater();
     m_MetadataViewer->deleteLater();
     m_PropertiesEditor->deleteLater();
     m_MediaQueue->deleteLater();

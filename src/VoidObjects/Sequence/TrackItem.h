@@ -81,6 +81,7 @@ public:
 
     v_frame_t TimelineIn() const { return m_TimelineIn; }
     v_frame_t TimelineOut() const { return m_TimelineOut; }
+    MFrameRange TimelineRange() const { return MFrameRange(m_TimelineIn, m_TimelineOut); }
 
     void SetTimelineIn(v_frame_t frame);
     void SetTimelineOut(v_frame_t frame);
@@ -96,8 +97,12 @@ public:
     v_frame_t HeadHandle() const { return m_SourceIn - m_Media->FirstFrame(); }
     v_frame_t TailHandle() const { return m_Media->LastFrame() - (m_SourceIn + (m_TimelineOut - m_TimelineIn)); }
 
+    void TrimHead(int handle);
+    void TrimTail(int handle);
+
     // Moves the item to the given frame
     void Move(v_frame_t frame);
+    void Offset(int offset) { Move(m_TimelineIn + offset); }
 
     /**
      * Returns whether the given frame is in range of the underlying media
@@ -132,7 +137,9 @@ public:
     void SetColor(const QColor& color);
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;    
     void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
 
     const char* TypeName() const override { return "TrackItem"; }
 

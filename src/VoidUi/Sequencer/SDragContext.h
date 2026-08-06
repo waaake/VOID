@@ -38,6 +38,16 @@ struct SSlipClipContext
     bool active = false;
 };
 
+struct SItemTrimContext
+{
+    enum Type { HEAD, TAIL };
+    QPointF sourcepos;
+    int handle = 0;
+    Type type;
+    bool pressed = false;
+    bool active = false;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _SEQUENCER_DRAG_CONTEXT_H

@@ -53,6 +53,7 @@ public:
     std::size_t ItemCount() const { return m_Items.Size(); }
     std::size_t ItemIndex(const SharedTrackItem& item) const { return m_Items.ItemIndex(item); }
     SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
+    MFrameRange ItemRange(std::size_t index) const { return m_Items.AtIndex(index)->TimelineRange(); }
     const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
 
     /*
@@ -117,6 +118,7 @@ public:
     bool IsRazored(v_frame_t frame) const { return m_Razored.find(frame) != m_Razored.end(); }
 
     bool MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    bool OffsetItem(const SharedTrackItem& item, int offset);
     bool AddItem(const SharedTrackItem& item);
     bool AddItem(const SharedTrackItem& item, v_frame_t frame);
     // Removes the Track Item at the given frame
