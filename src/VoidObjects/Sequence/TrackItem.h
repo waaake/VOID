@@ -81,6 +81,7 @@ public:
 
     v_frame_t TimelineIn() const { return m_TimelineIn; }
     v_frame_t TimelineOut() const { return m_TimelineOut; }
+    MFrameRange TimelineRange() const { return MFrameRange(m_TimelineIn, m_TimelineOut); }
 
     void SetTimelineIn(v_frame_t frame);
     void SetTimelineOut(v_frame_t frame);
