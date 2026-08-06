@@ -6,7 +6,6 @@
 #include "STimelineScene.h"
 #include "VoidCore/Logging.h"
 #include "Graphics/STrack.h"
-// #include "VoidObjects/Sequence/Track.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Commands/SequenceCommands.h"
 
@@ -39,8 +38,7 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
 {
     if (item->TimelineIn() == frame) return;
 
-    Project* project = _MediaBridge.ActiveProject();
-    QUndoStack* stack = project->UndoStack();
+    QUndoStack* stack = _MediaBridge.UndoStack();
 
     stack->beginMacro("Move TrackItem");
 
@@ -80,8 +78,7 @@ void SequencerController::MoveItem(const SharedPlaybackTrack& track, const Share
 
 void SequencerController::RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
 {
-    Project* project = _MediaBridge.ActiveProject();
-    QUndoStack* stack = project->UndoStack();
+    QUndoStack* stack = _MediaBridge.UndoStack();
 
     stack->beginMacro("Move TrackItem");
 
@@ -134,8 +131,7 @@ void SequencerController::CreateAudioTrack(const SharedPlaybackSequence& sequenc
 
 void SequencerController::RemoveTracks(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedPlaybackTrack>& tracks)
 {
-    Project* project = _MediaBridge.ActiveProject();
-    QUndoStack* stack = project->UndoStack();
+    QUndoStack* stack = _MediaBridge.UndoStack();
 
     stack->beginMacro("Remove Track(s)");
     for (const auto& track : tracks)
@@ -148,8 +144,7 @@ void SequencerController::RemoveTrackItems(const SharedPlaybackSequence& sequenc
     if (m_EditMode == EditMode::RIPPLE)
         return RippleRemoveTrackItems(sequence, items);
 
-    Project* project = _MediaBridge.ActiveProject();
-    QUndoStack* stack = project->UndoStack();
+    QUndoStack* stack = _MediaBridge.UndoStack();
 
     // std::vector<SharedTrackItem> trackitems;
     // trackitems.reserve(items.size());
@@ -186,8 +181,7 @@ void SequencerController::RemoveTrackItems(const SharedPlaybackSequence& sequenc
 
 void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items)
 {
-    Project* project = _MediaBridge.ActiveProject();
-    QUndoStack* stack = project->UndoStack();
+    QUndoStack* stack = _MediaBridge.UndoStack();
 
     // std::vector<SharedTrackItem> trackitems;
     // trackitems.reserve(items.size());
@@ -270,8 +264,7 @@ void SequencerController::RequestFrameChange(v_frame_t frame)
 
 void SequencerController::SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items, const QColor& color)
 {
-    Project* project = _MediaBridge.ActiveProject();
-    QUndoStack* stack = project->UndoStack();
+    QUndoStack* stack = _MediaBridge.UndoStack();
 
     stack->beginMacro("Set Trackitem(s) color");
     for (auto& item : items)
@@ -281,8 +274,7 @@ void SequencerController::SetTrackItemsColor(const std::unordered_set<SharedTrac
 
 void SequencerController::SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items)
 {
-    Project* project = _MediaBridge.ActiveProject();
-    QUndoStack* stack = project->UndoStack();
+    QUndoStack* stack = _MediaBridge.UndoStack();
 
     stack->beginMacro("Reset Trackitem(s) color");
     for (auto& item : items)
@@ -327,7 +319,36 @@ void SequencerController::TrimItemHead(const SharedTrackItem& item, int handle)
 
 void SequencerController::TrimItemTail(const SharedTrackItem& item, int handle)
 {
+    if (m_EditMode == EditMode::RIPPLE) return RippleTrimItemTail(item, handle);
     _MediaBridge.PushCommand(new TrimItemTailCommand(item, handle));
+}
+
+void SequencerController::RippleTrimItemTail(const SharedTrackItem& item, int handle)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+
+    stack->beginMacro("Trim Item");
+    stack->push(new TrimItemTailCommand(item, handle));
+
+    PlaybackTrack* track = item->Track();
+    int index = track->ItemIndex(item);
+
+    std::size_t max = track->ItemCount();
+    // Last Item --- Nothing else to offset/move
+    if (index + 1 >= max)
+        return stack->endMacro();
+
+    SharedTrackItem next = track->ItemAt(index + 1);
+    v_frame_t lastFrame = item->TimelineOut() + 1;
+    int offset = lastFrame - next->TimelineIn();
+
+    for (int i = index + 1; i < static_cast<int>(max); ++i)
+    {
+        const SharedTrackItem& trackitem = track->ItemAt(i);
+        stack->push(new OffsetItemCommand(trackitem, offset));
+    }
+
+    stack->endMacro();
 }
 
 VOID_NAMESPACE_CLOSE

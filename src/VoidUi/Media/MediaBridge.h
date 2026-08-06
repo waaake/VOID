@@ -154,6 +154,8 @@ public:
     QAction* CreateRedoAction(QObject* parent, const QString& prefix = QString()) const { return m_UndoGroup->createRedoAction(parent, prefix); }
     QMenu* RecentProjectsMenu(QMenu* parent = nullptr);
 
+    QUndoStack* UndoStack() const { return m_Project->UndoStack(); }
+
     /**
      * Project I/O processors
      */
@@ -178,14 +180,9 @@ signals:
     void playlistChanged(const Playlist*);
 
 private: /* Members */
-    /* All the Available Projects */
     ProjectModel* m_Projects;
     QUndoGroup* m_UndoGroup;
-
-    /* Current Active Project */
     Project* m_Project;
-
-    /* Menu Holding the recent projects */
     QMenu* m_RecentProjectsMenu;
 
 private: /* Methods */

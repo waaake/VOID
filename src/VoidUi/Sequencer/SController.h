@@ -72,6 +72,7 @@ public:
 
     void TrimItemHead(const SharedTrackItem& item, int handle);
     void TrimItemTail(const SharedTrackItem& item, int handle);
+    void RippleTrimItemTail(const SharedTrackItem& item, int handle);
 
     void SetEditMode(const EditMode& mode) { m_EditMode = mode; }
     const EditMode& GetEditMode() const { return m_EditMode; }
