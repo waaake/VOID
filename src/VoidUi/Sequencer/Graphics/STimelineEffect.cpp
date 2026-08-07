@@ -20,6 +20,7 @@ STimelineEffect::STimelineEffect(Effect* effect, SequencerContext* context, QGra
     CalculateBoundingBox();
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Context->SelectionModel(), &SSelectionModel::effectSelectionChanged, this, [this]() { update(); });
+    connect(m_Effect, &Effect::updated, this, [this]() { update(); });
 }
 
 void STimelineEffect::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -33,14 +34,21 @@ void STimelineEffect::paint(QPainter* painter, const QStyleOptionGraphicsItem* o
     else
     {
         painter->setPen(QPen(option->palette.color(QPalette::Dark)));
-        painter->setBrush(m_Effect->Color());
+        painter->setBrush(
+            m_Effect->Enabled() ? m_Effect->Color() : m_Effect->Color().darker(350)
+        );
     }
 
     painter->drawRect(boundingRect());
-
-    painter->fillRect(2, 2, std::min(6, static_cast<int>(boundingRect().width()) - 2) , Sequencer::TimelineEffectHeight - 4, m_Effect->Color());
+    painter->fillRect(
+        2,
+        2,
+        std::min(6, static_cast<int>(boundingRect().width()) - 2),
+        Sequencer::TimelineEffectHeight - 4,
+        m_Effect->Enabled() ? m_Effect->Color() : m_Effect->Color().darker(350)
+    );
     painter->setPen(Qt::black);
-    painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Effect->Name().c_str());
+    painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignVCenter, m_Effect->Name().c_str());
 }
 
 void STimelineEffect::Update()
@@ -65,6 +73,12 @@ void STimelineEffect::mousePressEvent(QGraphicsSceneMouseEvent* event)
     }
 
     STimelineItem::mousePressEvent(event);
+}
+
+void STimelineEffect::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
+{
+    m_Context->Controller()->EditEffect(m_Effect);
+    STimelineItem::mouseDoubleClickEvent(event);
 }
 
 void STimelineEffect::CalculateBoundingBox()
