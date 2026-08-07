@@ -62,6 +62,7 @@ class ColorSelectionButton : public QPushButton
 public:
     ColorSelectionButton(QWidget* parent = nullptr);
     ColorSelectionButton(const QColor& color, QWidget* parent = nullptr);
+    void SetColor(const QColor& color);
 
 signals:
     /**
