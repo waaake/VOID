@@ -67,10 +67,12 @@ void EffectEditor::Build()
     m_NameEdit = new QLineEdit;
     m_NameEdit->setText(m_Effect->Name().c_str());
 
+    m_ColorButton = new ColorSelectionButton;
     m_EnableButton = new QToolButton;
     m_CloseButton = new CloseButton;
 
     title->addWidget(m_NameEdit);
+    title->addWidget(m_ColorButton);
     title->addWidget(m_EnableButton);
     title->addWidget(m_CloseButton);
 
@@ -120,9 +122,11 @@ void EffectEditor::Setup()
     m_EnableButton->setAutoRaise(true);
 
     m_EnableButton->setChecked(m_Effect->Enabled());
+    m_ColorButton->SetColor(m_Effect->Color());
 
     m_EnableButton->setFixedSize(16, 16);
     m_CloseButton->setFixedSize(16, 16);
+    m_ColorButton->setFixedSize(16, 16);
 
     // Match the Effect Name, for finding the widget corresponding to the effect
     setObjectName(m_Effect->Name().c_str());
@@ -143,6 +147,7 @@ void EffectEditor::Connect()
         m_Effect->SetEnabled(checked);
         _PlayerBridge.Refresh();
     });
+    connect(m_ColorButton, &ColorSelectionButton::colorChanged, m_Effect, &Effect::SetColor);
 }
 
 void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)

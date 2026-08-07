@@ -33,6 +33,7 @@ protected:
 private: /* Members */
     QVBoxLayout* m_Layout;
     QLineEdit* m_NameEdit;
+    ColorSelectionButton* m_ColorButton;
     QToolButton* m_EnableButton;
     CloseButton* m_CloseButton;
 
