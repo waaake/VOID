@@ -15,6 +15,7 @@ inline constexpr int RulerHeight = 30;
 inline constexpr int ToolbarWidth = 40;
 inline constexpr int TrackHeight = 60;
 inline constexpr int TrackItemHeight = 60;
+inline constexpr int TimelineEffectHeight = 18;
 inline constexpr int TrackSpacing = 2;
 inline constexpr int TrackHeaderWidth = 180;
 inline constexpr int SceneWidth = 20000;

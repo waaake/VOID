@@ -49,7 +49,7 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
     // We're moving forwards (towards right, so start with the right most item here)
     if (offset > 0)
     {
-        for (int i = static_cast<int>(track->ItemCount()) - 1; i > index; --i)
+        for (int i = static_cast<int>(track->NumItems()) - 1; i > index; --i)
         {
             const SharedTrackItem& trackitem = track->ItemAt(i);
             stack->push(new OffsetItemCommand(trackitem, offset));
@@ -57,7 +57,7 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
     }
     else
     {
-        for (int i = index; i < static_cast<int>(track->ItemCount()); ++i)
+        for (int i = index; i < static_cast<int>(track->NumItems()); ++i)
         {
             const SharedTrackItem& trackitem = track->ItemAt(i);
             stack->push(new OffsetItemCommand(trackitem, offset));
@@ -85,7 +85,7 @@ void SequencerController::RippleMoveItem(const SharedPlaybackTrack& track, const
     int index = track->ItemIndex(item);
     stack->push(new MoveItemToTrackCommand(track, item, trackIndex, frame));
 
-    std::size_t max = track->ItemCount();
+    std::size_t max = track->NumItems();
     // Last Item --- Nothing else to offset/move
     if (index >= max)
         return stack->endMacro();
@@ -215,7 +215,7 @@ void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& s
 
         stack->push(new DeleteTrackItemCommand(sequence, track->Type(), track->TrackIndex(), track->ItemIndex(item)));
 
-        std::size_t max = track->ItemCount();
+        std::size_t max = track->NumItems();
         // Last Item --- Nothing else to offset/move
         if (index >= max)
             continue;
@@ -333,7 +333,7 @@ void SequencerController::RippleTrimItemTail(const SharedTrackItem& item, int ha
     PlaybackTrack* track = item->Track();
     int index = track->ItemIndex(item);
 
-    std::size_t max = track->ItemCount();
+    std::size_t max = track->NumItems();
     // Last Item --- Nothing else to offset/move
     if (index + 1 >= max)
         return stack->endMacro();
