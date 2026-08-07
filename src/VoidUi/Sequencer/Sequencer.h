@@ -47,6 +47,9 @@ public:
 
     void SetHorizontalScale(float factor);
 
+signals:
+    void editEffectRequested(Effect*);
+
 private:
     QHBoxLayout* m_Layout;
     QSlider* m_HZoomSlider;

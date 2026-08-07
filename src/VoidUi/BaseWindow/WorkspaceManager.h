@@ -90,6 +90,7 @@ private: /* Members */
     void InspectMetadata(const SharedMediaClip& media);
     void UpdateMediaQueue(Playlist* playlist);
     void EditEffects(const SharedMediaClip& media);
+    void EditEffects(Effect* effect);
     void ShowComponent(const Component& component) const;
     bool ShowIfDocked(const QString& name) const;
 };

@@ -77,8 +77,11 @@ public:
     void SetEditMode(const EditMode& mode) { m_EditMode = mode; }
     const EditMode& GetEditMode() const { return m_EditMode; }
 
+    void EditEffect(Effect* effect) { emit editEffectRequested(effect); }
+
 signals:
     void frameChanged(v_frame_t);
+    void editEffectRequested(Effect*);
 
 private:
     QGraphicsScene* m_Scene = { nullptr };
