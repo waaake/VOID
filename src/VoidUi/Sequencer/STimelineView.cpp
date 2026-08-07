@@ -95,7 +95,7 @@ void STimelineView::mouseMoveEvent(QMouseEvent* event)
     {
         m_Marquee.rect = QRect(m_Marquee.clickpos, event->pos()).normalized();
         QPolygonF marquee = mapToScene(m_Marquee.rect);
-        m_Scene->SelectTrackItems(marquee.boundingRect());
+        m_Scene->SelectItems(marquee.boundingRect());
 
         viewport()->update();
     }
