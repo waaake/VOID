@@ -292,6 +292,28 @@ void SequencerController::ToggleTrackState(const SharedPlaybackTrack& track)
     _MediaBridge.PushCommand(new ToggleTrackStateCommand(track));
 }
 
+void SequencerController::ToggleItemState(const std::unordered_set<SharedTrackItem>& items)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    stack->beginMacro("Toggle TrackItem(s)");
+
+    for (const SharedTrackItem& item : items)
+        stack->push(new ToggleTrackItemStateCommand(item));
+
+    stack->endMacro();
+}
+
+void SequencerController::ToggleItemState(const std::unordered_set<Effect*>& effects)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    stack->beginMacro("Toggle Timeline Effect(s)");
+
+    for (Effect* effect : effects)
+        stack->push(new ToggleTimelineEffectCommand(effect));
+
+    stack->endMacro();
+}
+
 void SequencerController::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
 {
     _MediaBridge.PushCommand(new RazorSequenceCommand(sequence, frame));

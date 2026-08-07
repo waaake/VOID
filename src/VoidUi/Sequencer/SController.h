@@ -64,6 +64,8 @@ public:
     void SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items);
     void ToggleTrackLock(const SharedPlaybackTrack& track);
     void ToggleTrackState(const SharedPlaybackTrack& track);
+    void ToggleItemState(const std::unordered_set<SharedTrackItem>& items);
+    void ToggleItemState(const std::unordered_set<Effect*>& effects);
 
     void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);
     void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
