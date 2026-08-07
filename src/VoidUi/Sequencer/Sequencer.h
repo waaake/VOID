@@ -62,6 +62,7 @@ private:
     QShortcut* m_FitShortcut;
     QShortcut* m_DeleteShortcut;
     QShortcut* m_RippleDeleteShortcut;
+    QShortcut* m_ToggleStateShortcut;
 
     SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
@@ -71,6 +72,7 @@ private: /* Methods */
     void Connect();
     void DeleteSelected();
     void RippleDeleteSelected();
+    void ToggleItemState();
     void UpdateAll();
 };
 
