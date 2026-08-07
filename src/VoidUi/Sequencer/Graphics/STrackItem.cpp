@@ -428,11 +428,12 @@ QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
 
     if (Track()->Enabled())
     {
+        QColor color = m_Item->Color().darker(250);
         return m_Context->SelectionModel()->IsSelected(m_Item)
             ? option->palette.color(QPalette::Highlight).darker(180)
             : m_Context->HoverModel()->IsHovered(m_Item)
-                ? option->palette.color(QPalette::Base).darker(140)
-                : option->palette.color(QPalette::Base).darker(110);
+                ? color.darker(140)
+                : color;
     }
 
     return m_Context->SelectionModel()->IsSelected(m_Item)
@@ -453,9 +454,9 @@ void STrackItem::ToggleHandles(int head, int tail, int duration, bool visible)
     if (visible)
     {
         // This results in a matrix mult -- need to see if there is a better way to do this
-        m_HeadHandle->setPos(mapToScene(0 - m_Context->Geometry()->FrameToSceneX(head), 2));
-        m_TailHandle->setPos(mapToScene(boundingRect().width(), 2));
-        m_DurationHandle->setPos(mapToScene(0, 2));
+        m_HeadHandle->setPos(mapToScene(0 - m_Context->Geometry()->FrameToSceneX(head), 22));
+        m_TailHandle->setPos(mapToScene(boundingRect().width(), 22));
+        m_DurationHandle->setPos(mapToScene(0, 22));
         m_HeadHandle->Update(head);
         m_TailHandle->Update(tail);
         m_DurationHandle->Update(duration);
