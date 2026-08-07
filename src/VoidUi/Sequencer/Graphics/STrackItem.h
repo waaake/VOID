@@ -4,6 +4,9 @@
 #ifndef _SEQUENCER_TRACK_ITEM_H
 #define _SEQUENCER_TRACK_ITEM_H
 
+/* STD */
+#include <unordered_map>
+
 // /* Qt */
 // #include <QGraphicsObject>
 
@@ -17,6 +20,7 @@ VOID_NAMESPACE_OPEN
 
 // class SequencerContext;
 class STrack;
+class STimelineEffect;
 
 class STrackItem : public STimelineItem
 {
@@ -30,6 +34,11 @@ public:
     STrack* Track() const;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     void Update() override;
+    void UpdateItems();
+
+    void AddEffect(Effect* effect);
+    void AddEffect(Effect* effect, int index);
+    void AddEffects();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
@@ -40,6 +49,7 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
 private:
+    std::unordered_map<Effect*, STimelineEffect*> m_Effects;
     SSlipClipContext m_SlipContext;
     SItemTrimContext m_TrimContext;
     QRectF m_HeadTrimRect, m_TailTrimRect;
@@ -49,6 +59,7 @@ private:
 private: /* Methods */
     void CalculateBoundingRect();
     void AdjustTimelineRange(v_frame_t frame);
+    int YPos() const;
     void ToggleHandles(int head = 0, int tail = 0, int duration = 0, bool visible = false);
     QColor Background(const QStyleOptionGraphicsItem* option) const;
 };

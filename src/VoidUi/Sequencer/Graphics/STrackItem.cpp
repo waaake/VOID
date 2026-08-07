@@ -9,6 +9,7 @@
 /* Internal */
 #include "STrackItem.h"
 #include "STrack.h"
+#include "STimelineEffect.h"
 #include "VoidUi/Sequencer/SContext.h"
 #include "VoidCore/Logging.h"
 
@@ -32,11 +33,14 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     ToggleHandles();
 
     CalculateBoundingRect();
-    setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 2);
+    setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), YPos());
 
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
     connect(m_Item.get(), &TrackItem::rangeChanged, this, &STrackItem::Update);
+    connect(m_Item.get(), &TrackItem::effectCreated, this, static_cast<void (STrackItem::*)(Effect*)>(&STrackItem::AddEffect));
+
+    AddEffects();
 }
 
 STrackItem::~STrackItem()
@@ -142,9 +146,34 @@ void STrackItem::Update()
 {
     prepareGeometryChange();
     CalculateBoundingRect();
-    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 2);
+    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), YPos());
 
     update();
+}
+
+void STrackItem::UpdateItems()
+{
+    for (auto& [_, effect] : m_Effects)
+        effect->Update();
+}
+
+void STrackItem::AddEffect(Effect* effect)
+{
+    AddEffect(effect, m_Item->EffectIndex(effect));
+}
+
+void STrackItem::AddEffect(Effect* effect, int index)
+{
+    STimelineEffect* timelineEffect = new STimelineEffect(effect, m_Context, this);
+    timelineEffect->setPos(0, -(Sequencer::TimelineEffectHeight + index * Sequencer::TimelineEffectHeight));
+
+    m_Effects[effect] = timelineEffect;
+}
+
+void STrackItem::AddEffects()
+{
+    for (int i = 0; i < m_Item->NumEffects(); ++i)
+        AddEffect(m_Item->EffectAt(i), i);
 }
 
 void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
@@ -371,7 +400,7 @@ void STrackItem::AdjustTimelineRange(v_frame_t frame)
     {
         frame = std::min(std::max(frame, m_Item->TimelineIn() - m_Item->HeadHandle()), m_Item->TimelineOut());
         width = m_Context->Geometry()->FrameToSceneX(m_Item->TimelineOut() + 1) - m_Context->Geometry()->FrameToSceneX(frame);
-        setPos(m_Context->Geometry()->FrameToSceneX(frame), 2);
+        setPos(m_Context->Geometry()->FrameToSceneX(frame), YPos());
 
         m_TrimContext.handle = frame - m_Item->TimelineIn();
         head += m_TrimContext.handle;
@@ -380,7 +409,7 @@ void STrackItem::AdjustTimelineRange(v_frame_t frame)
     {
         frame = std::max(std::min(frame, m_Item->TimelineOut() + m_Item->TailHandle()), m_Item->TimelineIn());
         width = m_Context->Geometry()->FrameToSceneX(frame + 1) - m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn());
-        setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 2);
+        setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), YPos());
 
         m_TrimContext.handle = m_Item->TimelineOut() - frame;
         tail += m_TrimContext.handle;
@@ -409,6 +438,11 @@ QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
     return m_Context->SelectionModel()->IsSelected(m_Item)
             ? option->palette.color(QPalette::Highlight).darker(180)
             : option->palette.color(QPalette::Base).darker(180);
+}
+
+int STrackItem::YPos() const
+{
+    return Track()->boundingRect().height() - Sequencer::TrackItemHeight + 2;
 }
 
 void STrackItem::ToggleHandles(int head, int tail, int duration, bool visible)
