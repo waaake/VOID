@@ -5,6 +5,7 @@
 #include "TrackItem.h"
 #include "VoidCore/Logging.h"
 #include "VoidObjects/VoidContext.h"
+#include "VoidObjects/Effects/Bridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -66,6 +67,65 @@ void TrackItem::Unlink()
 {
     m_Media.reset();
     emit updated();
+}
+
+Effect* TrackItem::CreateEffect(const std::string& type)
+{
+    if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut))
+    {
+        effect->SetTimelineItem(this);
+        VOID_LOG_INFO("Effect Created -> {}", effect->Name());
+        m_Effects.push_back(effect);
+
+        emit effectCreated(effect);
+
+        // For every effect that gets updated, the media will be set dirty
+        // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
+        // SetDirty(true);
+        return effect;
+    }
+
+    return nullptr;
+}
+
+bool TrackItem::RemoveEffect(const std::string& name)
+{
+    for (int i = static_cast<int>(m_Effects.size()) - 1; i >= 0; --i)
+    {
+        Effect* effect = m_Effects[i];
+        if (effect->Name() == name)
+        {
+            emit effectAboutToBeRemoved(effect);
+
+            effect->deleteLater();
+            delete effect;
+            effect = nullptr;
+
+            m_Effects.erase(m_Effects.begin() + i);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void TrackItem::ClearEffects()
+{
+    for (auto& effect : m_Effects)
+    {
+        emit effectAboutToBeRemoved(effect);
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.clear();
+}
+
+int TrackItem::EffectIndex(const Effect* const effect)
+{
+    auto it = std::find(m_Effects.begin(), m_Effects.end(), effect);
+    return it == m_Effects.end() ? -1 : it - m_Effects.begin();
 }
 
 void TrackItem::Image(const v_frame_t frame, FloatImage& image)

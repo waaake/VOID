@@ -6,6 +6,7 @@
 
 /* STD */
 #include <memory>
+#include <vector>
 
 /* Qt */
 #include <QObject>
@@ -21,6 +22,7 @@ VOID_NAMESPACE_OPEN
 /* Forward Declaration of the Track */
 class PlaybackTrack;
 class TrackItem;
+class Effect;
 
 typedef std::shared_ptr<TrackItem> SharedTrackItem;
 
@@ -55,6 +57,13 @@ public:
     inline SharedMediaClip GetMedia() const { return m_Media; }
 
     std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
+    Effect* CreateEffect(const std::string& type);
+    bool RemoveEffect(const std::string& name);
+    void ClearEffects();
+    bool HasEffects() const { return !m_Effects.empty(); }
+    int NumEffects() const { return static_cast<int>(m_Effects.size()); }
+    int EffectIndex(const Effect* const effect);
+    Effect* EffectAt(int index) const { return m_Effects.at(index); }
 
     /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.
@@ -68,15 +77,15 @@ public:
     void ClearCache(v_frame_t frame);
 
     /**
-     *      Timeline In         Timeline Out
-     *             v              v
-     *  |' ' ' ' ' """""""""""""""" ' ' ' ' ' ' ' '|
-     *  |          |              |                |
-     *  |          | <-Duration-> |                |
-     *  | <--Head->|              | <---Tail------>|
-     *  |_ _ _ _ _ |______________| _ _ _ _ _ _ _ _|
-     *  ^                                          ^
-     * Source in                              Source Out
+     *              Timeline In         Timeline Out
+     *                    v              v
+     *  |' ' ' ' ' ' ' '  """""""""""""""" ' ' ' ' ' ' ' '|
+     *  |                 |              |                |
+     *  |                 | <-Duration-> |                |
+     *  | <----Head-----> |              | <---Tail------>|
+     *  |_ _ _ _ _ _ _ _ _|______________| _ _ _ _ _ _ _ _|
+     *  ^                 ^              ^                ^ 
+     * Source start   Source In       Source Out       Source end
      */
 
     v_frame_t TimelineIn() const { return m_TimelineIn; }
@@ -147,15 +156,11 @@ signals:
     void mediaChanged();
     void updated();
     void rangeChanged(v_frame_t start, v_frame_t end);
-
-    // /**
-    //  * Emitted when a frame is cached
-    //  * The cache could happen when the media cache operation is run continuously on a thread
-    //  * Or if the frame is queried by the viewport
-    //  */
-    // void frameCached(v_frame_t frame);
+    void effectCreated(Effect*);
+    void effectAboutToBeRemoved(const Effect*);
 
 protected:
+    std::vector<Effect*> m_Effects;
     SharedMediaClip m_Media;
     PlaybackTrack* m_Track;
     std::string m_Name;
