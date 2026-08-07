@@ -10,6 +10,7 @@
 /* Internal */
 #include "Definition.h"
 #include "SDescriptors.h"
+#include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -24,6 +25,9 @@ public:
     int TimelineTop() const { return Sequencer::RulerHeight; }
     // int ContentLeft() const { return Sequencer::TrackHeaderWidth; }
     int ContentLeft() const { return 0; }
+    
+    int VideoTrackHeight(int index) const;
+    int AudioTrackHeight(int index) const;
 
     double FrameToX(v_frame_t frame) const { return frame * m_PixelsPerFrame; }
     v_frame_t XToFrame(double x) const { return static_cast<v_frame_t>(x / m_PixelsPerFrame); }
@@ -35,8 +39,12 @@ public:
     void SetPixelsPerFrame(double p) { if (p > 0) m_PixelsPerFrame = p; }
     void ResetPixelsPerFrame() { m_PixelsPerFrame = 2.0; }
 
+    void SetSequence(const SharedPlaybackSequence& sequence) { m_Sequence = sequence; }
+    void ResetSequence() { m_Sequence = nullptr; }
+
 private:
     double m_PixelsPerFrame = 2.0;
+    SharedPlaybackSequence m_Sequence;
 };
 
 
