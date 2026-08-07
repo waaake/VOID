@@ -216,6 +216,80 @@ bool ToggleTrackStateCommand::Redo()
     return false;
 }
 
+/// ToggleTrackItemStateCommand
+
+ToggleTrackItemStateCommand::ToggleTrackItemStateCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_TrackType(item->Track()->Type())
+{
+    const PlaybackTrack* const track = item->Track();
+    m_TrackIndex = track->Type() == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+
+    setText("Toggle TrackItem");
+}
+
+void ToggleTrackItemStateCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetEnabled(!item->Enabled());
+    }
+}
+
+bool ToggleTrackItemStateCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetEnabled(!item->Enabled());
+        return true;
+    }
+    return false;
+}
+
+/// ToggleTimelineEffectCommand
+
+ToggleTimelineEffectCommand::ToggleTimelineEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->TimelineItem()->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->TimelineItem()->Track();
+    const TrackItem* const item = effect->TimelineItem();
+    m_TrackType = track->Type();
+    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_ItemIndex = track->ItemIndex(item);
+    m_EffectIndex = item->EffectIndex(effect);
+}
+
+void ToggleTimelineEffectCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = item->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+    }
+}
+
+bool ToggleTimelineEffectCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = item->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+        return true;
+    }
+    return false;
+}
+
 /// CreateTrackCommand
 
 CreateTrackCommand::CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent)

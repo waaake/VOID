@@ -8,6 +8,7 @@
 #include "Definition.h"
 #include "VoidCommand.h"
 #include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidObjects/Effects/Effects.h"
 #include "VoidUi/Sequencer/SController.h"
 
 VOID_NAMESPACE_OPEN
@@ -90,6 +91,35 @@ public:
 private:
     std::weak_ptr<PlaybackTrack> m_Track;
     bool m_Previous;
+};
+
+class ToggleTrackItemStateCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleTrackItemStateCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    Sequence::TrackType m_TrackType;
+};
+
+class ToggleTimelineEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleTimelineEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
 };
 
 class CreateTrackCommand : public VoidUndoCommand
