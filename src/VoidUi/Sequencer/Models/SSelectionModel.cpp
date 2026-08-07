@@ -41,13 +41,13 @@ void SSelectionModel::Select(const SharedPlaybackTrack& track)
     emit trackSelectionChanged();
 }
 
-void SSelectionModel::Select(const Effect* effect)
+void SSelectionModel::Select(Effect* effect)
 {
     m_Effects.insert(effect);
     emit effectSelectionChanged();
 }
 
-void SSelectionModel::Select(const std::vector<const Effect*>& effects)
+void SSelectionModel::Select(const std::vector<Effect*>& effects)
 {
     m_Effects.clear();
     m_Effects.reserve(effects.size());
@@ -70,7 +70,7 @@ void SSelectionModel::Deselect(const SharedPlaybackTrack& track)
     emit trackSelectionChanged();
 }
 
-void SSelectionModel::Deselect(const Effect* effect)
+void SSelectionModel::Deselect(Effect* effect)
 {
     m_Effects.erase(effect);
     emit effectSelectionChanged();
@@ -96,7 +96,7 @@ void SSelectionModel::Toggle(const SharedPlaybackTrack& track)
     emit trackSelectionChanged();
 }
 
-void SSelectionModel::Toggle(const Effect* effect)
+void SSelectionModel::Toggle(Effect* effect)
 {
     if (m_Effects.find(effect) == m_Effects.end())
         m_Effects.insert(effect);
@@ -130,7 +130,7 @@ bool SSelectionModel::IsSelected(const SharedPlaybackTrack& track)
     return m_Tracks.find(track) != m_Tracks.end();
 }
 
-bool SSelectionModel::IsSelected(const Effect* effect)
+bool SSelectionModel::IsSelected(Effect* effect)
 {
     return m_Effects.find(effect) != m_Effects.end();
 }
