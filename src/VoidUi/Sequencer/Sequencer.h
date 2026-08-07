@@ -68,6 +68,7 @@ private: /* Methods */
     void Connect();
     void DeleteSelected();
     void RippleDeleteSelected();
+    void UpdateAll();
 };
 
 VOID_NAMESPACE_CLOSE

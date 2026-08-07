@@ -29,12 +29,15 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
     {
         disconnect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
         disconnect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
+        disconnect(m_Sequence.get(), &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     }
 
     m_Sequence = sequence;
     connect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
     connect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
+    connect(m_Sequence.get(), &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
 
+    m_Context.Geometry()->SetSequence(sequence);
     Refresh();
 }
 
@@ -201,6 +204,12 @@ void SequencerTimeline::RippleDeleteSelected()
         m_Context.Controller()->RippleRemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
 
     m_Context.SelectionModel()->Clear();
+}
+
+void SequencerTimeline::UpdateAll()
+{
+    m_TrackHeader->Update();
+    m_View->Refresh();
 }
 
 VOID_NAMESPACE_CLOSE
