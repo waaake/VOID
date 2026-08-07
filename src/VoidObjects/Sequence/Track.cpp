@@ -18,6 +18,7 @@ PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
     , m_Duration(0)
+    , m_MaxEffects(0)
     , m_Visible(true)
     , m_Enabled(true)
     , m_Locked(false)
@@ -30,6 +31,17 @@ PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
 
 PlaybackTrack::~PlaybackTrack()
 {
+}
+
+Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::string& effect)
+{
+    Effect* created = item->CreateEffect(effect);
+    if (created)
+    {
+        emit effectAdded(created);
+        CalculateMaxEffects(item);
+    }
+    return created;
 }
 
 void PlaybackTrack::SetMedia(const SharedMediaClip& media)
@@ -262,6 +274,8 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item)
 {
     if (m_Items.Add(item, item->TimelineIn()))
     {
+        CalculateMaxEffects(item);
+        item->SetTrack(this);
         emit itemAdded(item);
         return true;
     }
@@ -272,6 +286,7 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 {
     if (m_Items.Add(item, frame))
     {
+        CalculateMaxEffects(item);
         item->SetTrack(this);
         // Set the timeline range based on the provided frame
         item->Move(frame);
@@ -291,8 +306,13 @@ void PlaybackTrack::RemoveItem(v_frame_t frame)
 
 void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 {
+    int effects = item->NumEffects();
     emit itemAboutToBeRemoved(item);
     m_Items.Remove(item);
+
+    if (effects == m_MaxEffects)
+        CalculateMaxEffects();
+
     emit itemRemoved();
     emit updated();
 }
@@ -344,12 +364,26 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
     {
         SharedTrackItem item = std::make_shared<TrackItem>(this);
         item->Deserialize(trackitems[i]);
-
-        // m_Items.Add(item);
-        // emit itemAdded(item);
         AddItem(item);
-        VOID_LOG_INFO("Added item -- {0} -- TimelineIn: {1}", item->Name(), item->TimelineIn());
     }
+}
+
+void PlaybackTrack::CalculateMaxEffects(const SharedTrackItem& item)
+{
+    int previous = m_MaxEffects;
+    m_MaxEffects = std::max(m_MaxEffects, item->NumEffects());
+
+    if (previous != m_MaxEffects);
+        emit maxEffectsChanged();
+}
+
+void PlaybackTrack::CalculateMaxEffects()
+{
+    m_MaxEffects = 0;
+    for (const auto& item : m_Items)
+        m_MaxEffects = std::max(m_MaxEffects, item->NumEffects());
+    
+    emit maxEffectsChanged();
 }
 
 VOID_NAMESPACE_CLOSE
