@@ -52,6 +52,9 @@ public:
     bool Linked() const { return (bool)m_Media; }
     void Unlink();
 
+    void SetEnabled(bool enable);
+    bool Enabled() const { return m_Enabled; }
+
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
@@ -62,7 +65,7 @@ public:
     void ClearEffects();
     bool HasEffects() const { return !m_Effects.empty(); }
     int NumEffects() const { return static_cast<int>(m_Effects.size()); }
-    int EffectIndex(const Effect* const effect);
+    int EffectIndex(const Effect* const effect) const;
     Effect* EffectAt(int index) const { return m_Effects.at(index); }
 
     /**
@@ -173,6 +176,8 @@ protected:
 
     v_frame_t m_SourceIn;
     v_frame_t m_SourceOut;
+
+    bool m_Enabled;
 };
 
 VOID_NAMESPACE_CLOSE

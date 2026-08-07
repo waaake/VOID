@@ -69,6 +69,12 @@ void TrackItem::Unlink()
     emit updated();
 }
 
+void TrackItem::SetEnabled(bool enable)
+{
+    m_Enabled = enable;
+    emit updated();
+}
+
 Effect* TrackItem::CreateEffect(const std::string& type)
 {
     if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut))
@@ -122,7 +128,7 @@ void TrackItem::ClearEffects()
     m_Effects.clear();
 }
 
-int TrackItem::EffectIndex(const Effect* const effect)
+int TrackItem::EffectIndex(const Effect* const effect) const
 {
     auto it = std::find(m_Effects.begin(), m_Effects.end(), effect);
     return it == m_Effects.end() ? -1 : it - m_Effects.begin();
@@ -234,6 +240,7 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("source_in", static_cast<int64_t>(m_SourceIn), allocator);
     out.AddMember("source_out", static_cast<int64_t>(m_SourceOut), allocator);
     out.AddMember("offset", static_cast<int64_t>(m_Offset), allocator);
+    out.AddMember("enabled", static_cast<int>(m_Enabled), allocator);
     out.AddMember("r", m_Color.red(), allocator);
     out.AddMember("g", m_Color.green(), allocator);
     out.AddMember("b", m_Color.blue(), allocator);
@@ -252,6 +259,7 @@ void TrackItem::Serialize(std::ostream& out) const
     out.write(reinterpret_cast<const char*>(&m_SourceIn), sizeof(m_SourceIn));
     out.write(reinterpret_cast<const char*>(&m_SourceOut), sizeof(m_SourceOut));
     out.write(reinterpret_cast<const char*>(&m_Offset), sizeof(m_Offset));
+    out.write(reinterpret_cast<const char*>(&m_Enabled), sizeof(m_Enabled));
 
     int r = m_Color.red();
     int g = m_Color.green();
@@ -273,6 +281,7 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
     m_SourceIn = in["source_in"].GetInt64();
     m_SourceOut = in["source_out"].GetInt64();
     m_Offset = in["offset"].GetInt64();
+    m_Enabled = in["enabled"].GetInt();
 
     m_Color.setRed(in["r"].GetInt());
     m_Color.setGreen(in["g"].GetInt());
@@ -292,6 +301,7 @@ void TrackItem::Deserialize(std::istream& in)
     in.read(reinterpret_cast<char*>(&m_SourceIn), sizeof(m_SourceIn));
     in.read(reinterpret_cast<char*>(&m_SourceOut), sizeof(m_SourceOut));
     in.read(reinterpret_cast<char*>(&m_Offset), sizeof(m_Offset));
+    in.read(reinterpret_cast<char*>(&m_Enabled), sizeof(m_Enabled));
 
     int r, g, b;
     in.read(reinterpret_cast<char*>(&r), sizeof(r));
