@@ -26,6 +26,19 @@ Effect* EffectsBridge::CreateEffect(const std::string& type)
     return nullptr;
 }
 
+Effect* EffectsBridge::CreateEffect(const std::string& type, v_frame_t in, v_frame_t out)
+{
+    if (std::unique_ptr<ImageOp> creator = Forge::Instance().GetImageOp(type))
+    {
+        /**
+         * We want to transfer the ownership of the created operator to the effect
+         * such that it will be it's new parent and will decide when the creator needs to be deleted
+         */
+        return new Effect(creator.release(), EffectName(type), in, out);
+    }
+    return nullptr;
+}
+
 std::string EffectsBridge::EffectName(const std::string& type)
 {
     std::string name = type;
