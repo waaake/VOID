@@ -404,6 +404,53 @@ bool DeleteTrackItemCommand::Redo()
     return false;
 }
 
+/// DeleteTimelineEffectCommand
+
+DeleteTimelineEffectCommand::DeleteTimelineEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->TimelineItem()->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->TimelineItem()->Track();
+    const TrackItem* const item = effect->TimelineItem();
+    m_TrackType = track->Type();
+    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_ItemIndex = track->ItemIndex(item);
+    m_EffectIndex = item->EffectIndex(effect);
+
+    m_EffectType = effect->TypeName();
+
+    setText("Delete Timeline Effect");
+}
+
+void DeleteTimelineEffectCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        std::istringstream is(m_EffectData, std::ios::binary);
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = EffectsBridge::Instance().CreateEffect(m_EffectType);
+        effect->Deserialize(is);
+        item->InsertEffect(effect, m_EffectIndex);
+    }
+}
+
+bool DeleteTimelineEffectCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        std::ostringstream os(std::ios::binary);
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = item->EffectAt(m_EffectIndex);
+        effect->Serialize(os);
+        m_EffectData = os.str();
+        item->RemoveEffect(m_EffectIndex);
+        return true;
+    }
+    return false;
+}
+
 /// RazorTrackCommand
 
 RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)

@@ -8,7 +8,7 @@
 #include "Definition.h"
 #include "VoidCommand.h"
 #include "VoidObjects/Sequence/TrackItem.h"
-#include "VoidObjects/Effects/Effects.h"
+#include "VoidObjects/Effects/Bridge.h"
 #include "VoidUi/Sequencer/SController.h"
 
 VOID_NAMESPACE_OPEN
@@ -162,6 +162,22 @@ private:
     int m_TrackIndex;
     int m_ItemIndex;
     std::string m_ItemData;
+};
+
+class DeleteTimelineEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit DeleteTimelineEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectData, m_EffectType;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;  
 };
 
 class RazorTrackCommand : public VoidUndoCommand
