@@ -73,6 +73,12 @@ public:
     v_frame_t TimelineIn() const { return m_TimelineIn; }
     v_frame_t TimelineOut() const { return m_TimelineOut; }
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const;
+    void Serialize(std::ostream& out) const;
+    void Deserialize(const rapidjson::Value& in);
+    void Deserialize(std::istream& in);
+    const char* TypeName() const { return m_Operator->Type().c_str(); }
+
 signals:
     void updated();
     void valueChanged(const Param*);
