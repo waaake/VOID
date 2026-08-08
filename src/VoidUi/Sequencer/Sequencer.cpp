@@ -199,6 +199,8 @@ void SequencerTimeline::DeleteSelected()
         m_Context.Controller()->RemoveTracks(m_Sequence, m_Context.SelectionModel()->SelectedTracks());
     else if (m_Context.SelectionModel()->HasTrackItemSelection())
         m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
+    else if (m_Context.SelectionModel()->HasEffectSelection())
+        m_Context.Controller()->RemoveTimelineEffects(m_Context.SelectionModel()->SelectedEffects());
 
     m_Context.SelectionModel()->Clear();
 }

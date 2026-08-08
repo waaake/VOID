@@ -233,6 +233,17 @@ void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& s
     stack->endMacro();
 }
 
+void SequencerController::RemoveTimelineEffects(std::unordered_set<Effect*> effects)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    stack->beginMacro("Delete Timeline Effect(s)");
+
+    for (auto& effect : effects)
+        stack->push(new DeleteTimelineEffectCommand(effect));
+
+    stack->endMacro();
+}
+
 STrack* SequencerController::TrackAt(int index) const
 {
     if (STimelineScene* scene = dynamic_cast<STimelineScene*>(m_Scene))
