@@ -106,6 +106,8 @@ public:
 
     bool IsRegistered(const std::string& extension) const;
 
+    const std::unordered_map<std::string, IOpForge>& Operators() const { return m_IOpForger; }
+
 private: /* Members */
     std::unordered_map<std::string, PixForge> m_ImageForger;
     std::unordered_map<std::string, MPixForge> m_MovieForger;
