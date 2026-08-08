@@ -331,8 +331,9 @@ void DeleteTrackCommand::undo()
 {
     if (SharedPlaybackSequence sequence = m_Sequence.lock())
     {
+        std::istringstream is(m_TrackData, std::ios::binary);
         SharedPlaybackTrack track = sequence->CreateTrack(m_Type, m_TrackIndex);
-        track->Deserialize(m_TrackData);
+        track->Deserialize(is);
     }
 }
 
@@ -340,13 +341,12 @@ bool DeleteTrackCommand::Redo()
 {
     if (SharedPlaybackSequence sequence = m_Sequence.lock())
     {
-        rapidjson::Document doc;
-        doc.SetObject();
-
-        rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& allocator = doc.GetAllocator();
         if (const SharedPlaybackTrack track = sequence->VideoTrackAt(m_TrackIndex))
         {
-            track->Serialize(m_TrackData, allocator);
+            std::ostringstream os(std::ios::binary);
+            track->Serialize(os);
+            m_TrackData = os.str();
+
             track->Clear();
             sequence->RemoveTrack(track);
             return true;

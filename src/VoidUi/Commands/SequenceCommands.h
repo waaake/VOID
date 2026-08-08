@@ -143,10 +143,10 @@ public:
     bool Redo() override;
 
 private:
+    std::string m_TrackData;
     std::weak_ptr<PlaybackSequence> m_Sequence;
     Sequence::TrackType m_Type;
     int m_TrackIndex;
-    rapidjson::Value m_TrackData;
 };
 
 class DeleteTrackItemCommand : public VoidUndoCommand
