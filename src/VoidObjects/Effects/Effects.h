@@ -77,7 +77,8 @@ public:
     void Serialize(std::ostream& out) const;
     void Deserialize(const rapidjson::Value& in);
     void Deserialize(std::istream& in);
-    const char* TypeName() const { return m_Operator->Type().c_str(); }
+    std::string Type() const { return m_Operator->Type(); }
+    const char* TypeName() const { return "Effect"; }
 
 signals:
     void updated();

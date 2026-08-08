@@ -417,7 +417,7 @@ DeleteTimelineEffectCommand::DeleteTimelineEffectCommand(Effect* effect, QUndoCo
     m_ItemIndex = track->ItemIndex(item);
     m_EffectIndex = item->EffectIndex(effect);
 
-    m_EffectType = effect->TypeName();
+    m_EffectType = effect->Type();
 
     setText("Delete Timeline Effect");
 }
