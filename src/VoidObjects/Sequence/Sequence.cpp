@@ -109,6 +109,9 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
     m_AudioTracks.push_back(track);
+    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+
     if (track->Name().empty())
     {
         std::string name;
@@ -135,6 +138,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index
     m_VideoTracks.insert(m_VideoTracks.begin() + index, track);
     connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    connect(track.get(), &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
 
     if (track->Name().empty())
     {
@@ -160,6 +164,9 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index)
 {
     m_AudioTracks.insert(m_AudioTracks.begin() + index, track);
+    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+
     if (track->Name().empty())
     {
         std::string name;
