@@ -451,6 +451,44 @@ bool DeleteTimelineEffectCommand::Redo()
     return false;
 }
 
+/// CreateTimelineEffectCommand
+
+CreateTimelineEffectCommand::CreateTimelineEffectCommand(const SharedTrackItem& item, const std::string type, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_EffectType(type)
+{
+    const PlaybackTrack* const track = item->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_ItemIndex = track->ItemIndex(item);
+    m_EffectIndex = item->NumEffects();
+
+    QString text("Create '%1' Effect");
+    setText(text.arg(type));
+}
+
+void CreateTimelineEffectCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->RemoveEffect(m_EffectIndex);
+    }
+}
+
+bool CreateTimelineEffectCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        return (bool)track->CreateEffect(item, m_EffectType);
+    }
+    return false;
+}
+
 /// RazorTrackCommand
 
 RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)

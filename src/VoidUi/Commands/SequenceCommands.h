@@ -177,7 +177,23 @@ private:
     int m_TrackIndex;
     int m_ItemIndex;
     int m_EffectIndex;
-    Sequence::TrackType m_TrackType;  
+    Sequence::TrackType m_TrackType;
+};
+
+class CreateTimelineEffectCommand : public VoidUndoCommand
+{
+public:
+    CreateTimelineEffectCommand(const SharedTrackItem& item, const std::string type, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectType;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
 };
 
 class RazorTrackCommand : public VoidUndoCommand
