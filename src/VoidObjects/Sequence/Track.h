@@ -138,7 +138,9 @@ public:
     inline void SetStartFrame(int start) { SetRange(start, start + m_EndFrame); }
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
 
     const char* TypeName() const override { return "PlaybackTrack"; }
 

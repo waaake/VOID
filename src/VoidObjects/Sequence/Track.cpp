@@ -345,6 +345,24 @@ void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::Alloca
     out.AddMember("TrackItems", trackitems, allocator);
 }
 
+void PlaybackTrack::Serialize(std::ostream& out) const
+{
+    WriteString(out, m_Name);
+    out.write(reinterpret_cast<const char*>(&m_StartFrame), sizeof(m_StartFrame));
+    out.write(reinterpret_cast<const char*>(&m_EndFrame), sizeof(m_EndFrame));
+    out.write(reinterpret_cast<const char*>(&m_Duration), sizeof(m_Duration));
+    out.write(reinterpret_cast<const char*>(&m_Visible), sizeof(m_Visible));
+    out.write(reinterpret_cast<const char*>(&m_Enabled), sizeof(m_Enabled));
+    out.write(reinterpret_cast<const char*>(&m_Locked), sizeof(m_Locked));
+    out.write(reinterpret_cast<const char*>(&m_Type), sizeof(m_Type));
+
+    int64_t itemCount = static_cast<int64_t>(m_Items.Size());
+    out.write(reinterpret_cast<const char*>(&itemCount), sizeof(itemCount));
+
+    for (int i = 0; i < itemCount; ++i)
+        m_Items.AtIndex(i)->Serialize(out);
+}
+
 void PlaybackTrack::Deserialize(const rapidjson::Value& in)
 {
     m_Name = in["name"].GetString();
@@ -368,6 +386,28 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
     }
 }
 
+void PlaybackTrack::Deserialize(std::istream& in)
+{
+    m_Name = ReadString(in);
+    in.read(reinterpret_cast<char*>(&m_StartFrame), sizeof(m_StartFrame));
+    in.read(reinterpret_cast<char*>(&m_EndFrame), sizeof(m_EndFrame));
+    in.read(reinterpret_cast<char*>(&m_Duration), sizeof(m_Duration));
+    in.read(reinterpret_cast<char*>(&m_Visible), sizeof(m_Visible));
+    in.read(reinterpret_cast<char*>(&m_Enabled), sizeof(m_Enabled));
+    in.read(reinterpret_cast<char*>(&m_Locked), sizeof(m_Locked));
+    in.read(reinterpret_cast<char*>(&m_Type), sizeof(m_Type));
+
+    int64_t itemCount;
+    in.read(reinterpret_cast<char*>(&itemCount), sizeof(itemCount));
+
+    for (int i = 0; i < itemCount; ++i)
+    {
+        SharedTrackItem item = std::make_shared<TrackItem>(this);
+        item->Deserialize(in);
+        AddItem(item);
+    }
+}
+
 void PlaybackTrack::CalculateMaxEffects(const SharedTrackItem& item)
 {
     int previous = m_MaxEffects;
@@ -382,7 +422,7 @@ void PlaybackTrack::CalculateMaxEffects()
     m_MaxEffects = 0;
     for (const auto& item : m_Items)
         m_MaxEffects = std::max(m_MaxEffects, item->NumEffects());
-    
+
     emit maxEffectsChanged();
 }
 
