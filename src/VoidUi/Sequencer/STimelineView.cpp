@@ -120,7 +120,7 @@ void STimelineView::mouseReleaseEvent(QMouseEvent* event)
     QGraphicsView::mouseReleaseEvent(event);
 }
 
-void STimelineView::enterEvent(QEvent* event)
+void STimelineView::enterEvent(EnterEvent* event)
 {
     QGraphicsView::enterEvent(event);
 
