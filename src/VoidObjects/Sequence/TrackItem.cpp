@@ -279,7 +279,7 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     for (const auto& effect : m_Effects)
     {
         rapidjson::Value entry(rapidjson::kObjectType);
-        std::string type(effect->TypeName());
+        std::string type(effect->Type());
         entry.AddMember("typename", rapidjson::Value(type.c_str(), allocator), allocator);
 
         rapidjson::Value effectObject;
@@ -316,7 +316,7 @@ void TrackItem::Serialize(std::ostream& out) const
     out.write(reinterpret_cast<const char*>(&effectsCount), sizeof(effectsCount));
     for (const auto& effect : m_Effects)
     {
-        WriteString(out, effect->TypeName());
+        WriteString(out, effect->Type());
         effect->Serialize(out);
     }
 }
