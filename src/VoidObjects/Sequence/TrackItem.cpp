@@ -82,7 +82,7 @@ Effect* TrackItem::CreateEffect(const std::string& type)
     if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut))
     {
         effect->SetTimelineItem(this);
-        VOID_LOG_INFO("Effect Created -> {}", effect->Name());
+        // VOID_LOG_INFO("Effect Created -> {}", effect->Name());
         m_Effects.push_back(effect);
 
         emit effectCreated(effect);
@@ -178,7 +178,6 @@ void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 const FloatImage TrackItem::Image(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
-    // VOID_LOG_INFO("Timeline frame: {0} -- Media Frame: {1} -- Offset: {2}", frame, f, m_Offset);
     if (m_Media && m_Media->Contains(f))
         return m_Media->Image(f);
 
@@ -275,7 +274,22 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("g", m_Color.green(), allocator);
     out.AddMember("b", m_Color.blue(), allocator);
 
-    // TODO: Pending work with handles (head and tail) & effects added on the track item;
+    out.AddMember("effect_count", static_cast<int>(m_Effects.size()), allocator);
+    rapidjson::Value effects(rapidjson::kArrayType);
+    for (const auto& effect : m_Effects)
+    {
+        rapidjson::Value entry(rapidjson::kObjectType);
+        std::string type(effect->TypeName());
+        entry.AddMember("typename", rapidjson::Value(type.c_str(), allocator), allocator);
+
+        rapidjson::Value effectObject;
+        effect->Serialize(effectObject, allocator);
+        entry.AddMember("effect", effectObject, allocator);
+
+        effects.PushBack(entry, allocator);
+    }
+
+    out.AddMember("timeline_effects", effects, allocator);
 }
 
 void TrackItem::Serialize(std::ostream& out) const
@@ -297,6 +311,14 @@ void TrackItem::Serialize(std::ostream& out) const
     out.write(reinterpret_cast<const char*>(&r), sizeof(r));
     out.write(reinterpret_cast<const char*>(&g), sizeof(g));
     out.write(reinterpret_cast<const char*>(&b), sizeof(b));
+
+    int effectsCount = static_cast<int>(m_Effects.size());
+    out.write(reinterpret_cast<const char*>(&effectsCount), sizeof(effectsCount));
+    for (const auto& effect : m_Effects)
+    {
+        WriteString(out, effect->TypeName());
+        effect->Serialize(out);
+    }
 }
 
 void TrackItem::Deserialize(const rapidjson::Value& in)
@@ -316,6 +338,18 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
     m_Color.setRed(in["r"].GetInt());
     m_Color.setGreen(in["g"].GetInt());
     m_Color.setBlue(in["b"].GetInt());
+
+    const rapidjson::Value::ConstArray effects = in["timeline_effects"].GetArray();
+    m_Effects.reserve(effects.Size());
+    for (int i = 0; i < effects.Size(); ++i)
+    {
+        std::string type = effects[i]["typename"].GetString();
+        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        {
+            effect->Deserialize(effects[i]["effect"]);
+            m_Effects.push_back(effect);
+        }
+    }
 }
 
 void TrackItem::Deserialize(std::istream& in)
@@ -341,6 +375,20 @@ void TrackItem::Deserialize(std::istream& in)
     m_Color.setRed(r);
     m_Color.setGreen(g);
     m_Color.setBlue(b);
+
+    int effectsCount;
+    in.read(reinterpret_cast<char*>(&effectsCount), sizeof(effectsCount));
+    m_Effects.reserve(effectsCount);
+
+    for (int i = 0; i < effectsCount; ++i)
+    {
+        std::string type = ReadString(in);
+        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        {
+            effect->Deserialize(in);
+            m_Effects.push_back(effect);
+        }
+    }
 }
 
 VOID_NAMESPACE_CLOSE
