@@ -158,24 +158,7 @@ void Effect::Serialize(std::ostream& out) const
 
     // Dynamic params
     for (const auto& p : m_Operator->Params())
-    {
-        // switch (p->type)
-        // {
-        //     case Param::TypeDesc::Boolean:
-        //         out.write(reinterpret_cast<const char*>(p->value), sizeof(p->value));
-        //         break;
-        //     case Param::TypeDesc::Int:
-        //         out.write(reinterpret_cast<const char*>(p->value), sizeof(p->value));
-        //         break;
-        //     case Param::TypeDesc::Float:
-        //         out.write(reinterpret_cast<const char*>(p->value), sizeof(p->value));
-        //         break;
-        //     case Param::TypeDesc::String:
-        //         out.write(reinterpret_cast<const char*>(p->value), sizeof(p->value));
-        //         break;
-        // }
         out.write(reinterpret_cast<const char*>(&p->value), sizeof(p->value));
-    }
 }
 
 void Effect::Deserialize(const rapidjson::Value& in)
@@ -214,7 +197,7 @@ void Effect::Deserialize(std::istream& in)
 {
     m_Name = ReadString(in);
 
-    in.read(reinterpret_cast<char*>(m_Enabled), sizeof(m_Enabled));
+    in.read(reinterpret_cast<char*>(&m_Enabled), sizeof(m_Enabled));
     in.read(reinterpret_cast<char*>(&m_TimelineIn), sizeof(m_TimelineIn));
     in.read(reinterpret_cast<char*>(&m_TimelineOut), sizeof(m_TimelineOut));
 
