@@ -39,6 +39,7 @@ public:
     void AddEffect(Effect* effect);
     void AddEffect(Effect* effect, int index);
     void AddEffects();
+    void RemoveEffect(Effect* effect);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;

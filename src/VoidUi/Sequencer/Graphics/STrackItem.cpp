@@ -39,6 +39,7 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
     connect(m_Item.get(), &TrackItem::rangeChanged, this, &STrackItem::Update);
     connect(m_Item.get(), &TrackItem::effectCreated, this, static_cast<void (STrackItem::*)(Effect*)>(&STrackItem::AddEffect));
+    connect(m_Item.get(), &TrackItem::effectAboutToBeRemoved, this, &STrackItem::RemoveEffect);
 
     AddEffects();
 }
@@ -174,6 +175,23 @@ void STrackItem::AddEffects()
 {
     for (int i = 0; i < m_Item->NumEffects(); ++i)
         AddEffect(m_Item->EffectAt(i), i);
+}
+
+void STrackItem::RemoveEffect(Effect* effect)
+{
+    // auto it = m_Effects.find(effect);
+    // if (it == m_Effects.end())
+    //     return;
+    if (m_Effects.find(effect) == m_Effects.end()) return;
+
+    STimelineEffect*& teffect = m_Effects[effect];
+    teffect->setParent(nullptr);
+    teffect->setVisible(false);
+    teffect->deleteLater();
+    delete teffect;
+    teffect = nullptr;
+
+    m_Effects.erase(effect);
 }
 
 void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
@@ -424,21 +442,36 @@ void STrackItem::AdjustTimelineRange(v_frame_t frame)
 
 QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
 {
-    if (Track()->Locked()) return option->palette.color(QPalette::Base).darker(150);
+//     if (Track()->Locked()) return option->palette.color(QPalette::Base).darker(150);
 
-    if (Track()->Enabled())
+//     if (!Track()->Enabled() || !m_Item->Enabled())
+//     {
+//         return m_Context->SelectionModel()->IsSelected(m_Item)
+//             ? option->palette.color(QPalette::Highlight).darker(180)
+//             : option->palette.color(QPalette::Base).darker(180);
+//     }
+
+//     QColor color = m_Item->Color().darker(250);
+//     return m_Context->SelectionModel()->IsSelected(m_Item)
+//         ? option->palette.color(QPalette::Highlight).darker(180)
+//         : m_Context->HoverModel()->IsHovered(m_Item) ? color.darker(140) : color;
+
+    if (Track()->Locked()) return option->palette.color(QPalette::Base).darker(150);
+    if (m_Context->SelectionModel()->IsSelected(m_Item)) return option->palette.color(QPalette::Highlight).darker(180);
+
+    if (Track()->Enabled() && m_Item->Enabled())
     {
+        // if (m_Context->SelectionModel()->IsSelected(m_Item)) return option->palette.color(QPalette::Highlight).darker(180);
         QColor color = m_Item->Color().darker(250);
-        return m_Context->SelectionModel()->IsSelected(m_Item)
-            ? option->palette.color(QPalette::Highlight).darker(180)
-            : m_Context->HoverModel()->IsHovered(m_Item)
-                ? color.darker(140)
-                : color;
+        return m_Context->HoverModel()->IsHovered(m_Item) ? color.darker(140) : color;
     }
 
-    return m_Context->SelectionModel()->IsSelected(m_Item)
-            ? option->palette.color(QPalette::Highlight).darker(180)
-            : option->palette.color(QPalette::Base).darker(180);
+    // Disabled
+    return option->palette.color(QPalette::Base).darker(180);
+
+    // return  m_Context->SelectionModel()->IsSelected(m_Item)
+    //         ? option->palette.color(QPalette::Highlight).darker(180)
+    //         : option->palette.color(QPalette::Base).darker(180);
 }
 
 int STrackItem::YPos() const
