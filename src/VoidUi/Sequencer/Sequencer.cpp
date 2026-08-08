@@ -172,12 +172,12 @@ void SequencerTimeline::Connect()
     connect(m_View->verticalScrollBar(), &QScrollBar::valueChanged, m_TrackHeader, &STrackHeaderWidget::SetScroll);
     connect(m_View, &STimelineView::sequenceCutRequested, this, static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt));
 
+    // Menu
     connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
     {
         m_Context.Controller()->CreateVideoTrack(m_Sequence);
     });
-    connect(m_Menu, &SequencerContextMenu::removeTracksRequested, this, &SequencerTimeline::DeleteSelected);
-    connect(m_Menu, &SequencerContextMenu::removeTrackItemsRequested, this, &SequencerTimeline::DeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
     connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {
@@ -191,6 +191,13 @@ void SequencerTimeline::Connect()
             m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems(), color);
         }
     });
+    connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
+}
+
+void SequencerTimeline::CreateEffect(const std::string& type)
+{
+    if (m_Context.SelectionModel()->HasTrackItemSelection())
+        m_Context.Controller()->CreateEffect(m_Context.SelectionModel()->SelectedItems(), type);
 }
 
 void SequencerTimeline::DeleteSelected()

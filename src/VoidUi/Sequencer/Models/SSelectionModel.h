@@ -43,6 +43,7 @@ public:
     bool HasTrackItemSelection() const { return !m_Items.empty(); }
     bool HasEffectSelection() const { return !m_Effects.empty(); }
     bool HasTrackSelection() const { return !m_Tracks.empty(); }
+    bool HasAnySelection() const { return !m_Items.empty() || !m_Effects.empty() || !m_Tracks.empty(); }
     const std::unordered_set<SharedTrackItem>& SelectedItems() const { return m_Items; }
     const std::unordered_set<SharedPlaybackTrack>& SelectedTracks() const { return m_Tracks; }
     const std::unordered_set<Effect*>& SelectedEffects() const { return m_Effects; }

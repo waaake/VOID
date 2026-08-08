@@ -70,6 +70,7 @@ private:
 private: /* Methods */
     void Build();
     void Connect();
+    void CreateEffect(const std::string& type);
     void DeleteSelected();
     void RippleDeleteSelected();
     void ToggleItemState();
