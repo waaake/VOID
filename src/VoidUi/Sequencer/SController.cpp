@@ -233,7 +233,20 @@ void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& s
     stack->endMacro();
 }
 
-void SequencerController::RemoveTimelineEffects(std::unordered_set<Effect*> effects)
+void SequencerController::CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+
+    QString text("Create '%1' Effect");
+    stack->beginMacro(text.arg(type));
+
+    for (const SharedTrackItem& item : items)
+        stack->push(new CreateTimelineEffectCommand(item, type));
+
+    stack->endMacro();
+}
+
+void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*>& effects)
 {
     QUndoStack* stack = _MediaBridge.UndoStack();
     stack->beginMacro("Delete Timeline Effect(s)");
