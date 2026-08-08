@@ -15,7 +15,7 @@ class VOID_API GradeOp : public ImageOp
 public:
     GradeOp();
     bool Evaluate(ImageRow& row) override;
-    std::string Type() const { return "ColorGrade"; }
+    std::string Type() const override { return "ColorGrade"; }
 
 private:
     Param* m_RedGain;
@@ -28,7 +28,7 @@ class VOID_API Grade2 : public ImageOp
 public:
     Grade2();
     bool Evaluate(ImageRow& row) override;
-    std::string Type() const { return "Grade2"; }
+    std::string Type() const override { return "Grade2"; }
 
 private:
     Param* m_ChannelRed;

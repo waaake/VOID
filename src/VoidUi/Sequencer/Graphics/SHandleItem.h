@@ -14,7 +14,7 @@ class SHandleItem : public STimelineItem
 {
 public:
     SHandleItem(int handle, SequencerContext* context, QGraphicsItem* parent = nullptr);
-    void Update();
+    void Update() override;
     void Update(int handle);
 
 protected:

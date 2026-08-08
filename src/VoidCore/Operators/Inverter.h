@@ -14,7 +14,7 @@ class VOID_API InvertOp : public ImageOp
 {
 public:
     bool Evaluate(ImageRow& row) override;
-    std::string Type() const { return "Invert"; }
+    std::string Type() const override { return "Invert"; }
 };
 
 VOID_NAMESPACE_CLOSE
