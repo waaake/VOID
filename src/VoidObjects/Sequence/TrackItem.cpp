@@ -20,6 +20,7 @@ TrackItem::TrackItem(QObject* parent)
     , m_TimelineOut(0)
     , m_SourceIn(0)
     , m_SourceOut(0)
+    , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
@@ -35,6 +36,7 @@ TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t en
     , m_TimelineOut(end)
     , m_SourceIn(media->FirstFrame())
     , m_SourceOut(media->LastFrame())
+    , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
 }
@@ -94,6 +96,20 @@ Effect* TrackItem::CreateEffect(const std::string& type)
     return nullptr;
 }
 
+void TrackItem::AddEffect(Effect* effect)
+{
+    effect->SetTimelineItem(this);
+    m_Effects.push_back(effect);
+    emit effectCreated(effect);
+}
+
+void TrackItem::InsertEffect(Effect* effect, int index)
+{
+    effect->SetTimelineItem(this);
+    m_Effects.insert(m_Effects.begin() + index, effect);
+    emit effectCreated(effect);
+}
+
 bool TrackItem::RemoveEffect(const std::string& name)
 {
     for (int i = static_cast<int>(m_Effects.size()) - 1; i >= 0; --i)
@@ -113,6 +129,20 @@ bool TrackItem::RemoveEffect(const std::string& name)
     }
 
     return false;
+}
+
+void TrackItem::RemoveEffect(int index, bool destroy)
+{
+    Effect*& effect = m_Effects[index];
+    emit effectAboutToBeRemoved(effect);
+    if (destroy)
+    {
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.erase(m_Effects.begin() + index);
 }
 
 void TrackItem::ClearEffects()

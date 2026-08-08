@@ -61,7 +61,10 @@ public:
 
     std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
     Effect* CreateEffect(const std::string& type);
+    void AddEffect(Effect* effect);
+    void InsertEffect(Effect* effect, int index);
     bool RemoveEffect(const std::string& name);
+    void RemoveEffect(int index, bool destroy = true);
     void ClearEffects();
     bool HasEffects() const { return !m_Effects.empty(); }
     int NumEffects() const { return static_cast<int>(m_Effects.size()); }
@@ -160,7 +163,7 @@ signals:
     void updated();
     void rangeChanged(v_frame_t start, v_frame_t end);
     void effectCreated(Effect*);
-    void effectAboutToBeRemoved(const Effect*);
+    void effectAboutToBeRemoved(Effect*);
 
 protected:
     std::vector<Effect*> m_Effects;
