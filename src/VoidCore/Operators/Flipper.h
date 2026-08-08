@@ -14,6 +14,7 @@ class VOID_API FlipOp : public ImageOp
 {
 public:
     bool Evaluate(ImageRow& row) override;
+    std::string Type() const { return "Flip"; }
 };
 
 VOID_NAMESPACE_CLOSE
