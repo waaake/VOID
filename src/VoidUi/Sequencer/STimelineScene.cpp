@@ -15,6 +15,7 @@
 #include "Graphics/SRazorItem.h"
 #include "Graphics/STrack.h"
 #include "Graphics/STrackItem.h"
+#include "Graphics/STimelineEffect.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -151,18 +152,23 @@ STrack*& STimelineScene::TrackAt(int index)
     return m_Tracks.at(index);
 }
 
-void STimelineScene::SelectTrackItems(const QRectF& rect)
+void STimelineScene::SelectItems(const QRectF& rect)
 {
     const QList<QGraphicsItem*> hits = items(rect, Qt::IntersectsItemShape);
     std::vector<SharedTrackItem> trackitems;
+    std::vector<Effect*> effects;
     trackitems.reserve(hits.size());
+    effects.reserve(hits.size());
     for (auto& item : hits)
     {
         if (const auto& trackitem = dynamic_cast<STrackItem*>(item))
             trackitems.emplace_back(trackitem->TrackItem());
+        else if (const auto& effect = dynamic_cast<STimelineEffect*>(item))
+            effects.push_back(effect->TimelineEffect());
     }
 
     m_Context->SelectionModel()->Select(trackitems);
+    m_Context->SelectionModel()->Select(effects);
 }
 
 void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)

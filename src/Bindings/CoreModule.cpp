@@ -167,6 +167,8 @@ void BindCore(py::module_& m)
         .def("set_name", &Effect::SetName, py::arg("name"))
         .def("enabled", &Effect::Enabled)
         .def("set_enabled", &Effect::SetEnabled, py::arg("enable"))
+        .def("timeline_in", &Effect::TimelineIn)
+        .def("timeline_out", &Effect::TimelineOut)
         .def("get_value", &Effect::Value, py::return_value_policy::reference)
         .def("set_value", &Effect::SetValue, py::arg("param"), py::arg("value"));
 
@@ -208,7 +210,8 @@ void BindCore(py::module_& m)
         .def("merge_cut", &PlaybackTrack::MergeCut, py::arg("frame"))
         .def("move_item", &PlaybackTrack::MoveItem, py::arg("track_item"), py::arg("frame"))
         .def("item_at", &PlaybackTrack::ItemAt, py::arg("index"), py::return_value_policy::reference)
-        .def("items", &PlaybackTrack::Items, py::return_value_policy::reference);
+        .def("items", &PlaybackTrack::Items, py::return_value_policy::reference)
+        .def("create_effect", &PlaybackTrack::CreateEffect, py::arg("track_item"), py::arg("effect"), py::return_value_policy::reference);
 
     py::class_<TrackItem, SharedTrackItem>(m, "TrackItem")
         .def("__repr__", [](py::handle h) -> std::string

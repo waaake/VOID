@@ -3,6 +3,8 @@
 
 /* Internal */
 #include "SMenu.h"
+#include "FormatForge.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -22,6 +24,7 @@ SequencerContextMenu::SequencerContextMenu(SequencerContext* context, QWidget* p
 
 void SequencerContextMenu::Show(const QPoint& position)
 {
+    BuildEffectsMenu();
     Validate();
     exec(position);
 }
@@ -29,8 +32,7 @@ void SequencerContextMenu::Show(const QPoint& position)
 void SequencerContextMenu::Build()
 {
     m_AddVideoTrackAction = new QAction("Add Video Track", this);
-    m_RemoveTrackAction = new QAction("Remove Selected Track(s)", this);
-    m_RemoveTrackItemsAction = new QAction("Remove Selected TrackItems(s)", this);
+    m_RemoveSelectedAction = new QAction("Delete Selected", this);
 
     m_ColorMenu = new QMenu("Color", this);
 
@@ -61,9 +63,10 @@ void SequencerContextMenu::Build()
     m_EditModeMenu->addAction(m_OverwriteAction);
     m_EditModeMenu->addAction(m_RippleAction);
 
+    m_EffectsMenu = new QMenu("Timeline Effects", this);
+
     addAction(m_AddVideoTrackAction);
-    addAction(m_RemoveTrackAction);
-    addAction(m_RemoveTrackItemsAction);
+    addAction(m_RemoveSelectedAction);
 
     addSeparator();
 
@@ -72,13 +75,16 @@ void SequencerContextMenu::Build()
     addSeparator();
     
     addMenu(m_EditModeMenu);
+
+    addSeparator();
+
+    addMenu(m_EffectsMenu);
 }
 
 void SequencerContextMenu::Connect()
 {
     connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
-    connect(m_RemoveTrackAction, &QAction::triggered, this, &SequencerContextMenu::removeTracksRequested);
-    connect(m_RemoveTrackItemsAction, &QAction::triggered, this, &SequencerContextMenu::removeTrackItemsRequested);
+    connect(m_RemoveSelectedAction, &QAction::triggered, this, &SequencerContextMenu::deleteSelectionRequested);
     connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
     connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
     connect(m_EditModeGroup, &QActionGroup::triggered, this, [this](QAction* action) -> void
@@ -89,14 +95,29 @@ void SequencerContextMenu::Connect()
 
 void SequencerContextMenu::Validate()
 {
-    m_RemoveTrackAction->setEnabled(m_Context->SelectionModel()->HasTrackSelection());
-    m_RemoveTrackItemsAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
+    m_RemoveSelectedAction->setEnabled(m_Context->SelectionModel()->HasAnySelection());
     m_ColorItemAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
     m_ResetItemColorAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
 
     m_NoOverwriteAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
     m_OverwriteAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::OVERWRITE);
     m_RippleAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::RIPPLE);
+
+    m_EffectsMenu->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
+}
+
+void SequencerContextMenu::BuildEffectsMenu()
+{
+    if (m_EffectsMenu->actions().empty())
+    {
+        for (const auto& [name, _] : Forge::Instance().Operators())
+        {
+            VOID_LOG_INFO("Effect: {0}", name);
+            QAction* effaction = new QAction(name.c_str(), m_EffectsMenu);
+            connect(effaction, &QAction::triggered, this, [=]() -> void { emit addEffectRequested(name); });
+            m_EffectsMenu->addAction(effaction);
+        }
+    }
 }
 
 VOID_NAMESPACE_CLOSE

@@ -91,6 +91,7 @@ signals: /* Signals denoting actions in the seqeuence */
     void cleared();
     void updated();
     void rangeChanged(int start, int end);
+    void maxTrackEffectsChanged(const SharedPlaybackTrack&);
 
 protected: /* Members */
     std::vector<SharedPlaybackTrack> m_VideoTracks;
@@ -105,7 +106,7 @@ private: /* Methods */
      * This method is responsible for updating the range of the sequence based on
      * any changes that have been made to underlying tracks of whose range has been updated
      * This method checks the current start and end frame and then evaluates the min and max of
-     * start and end frames respectively to ensure the range of the seqeunce is not messed up
+     * start and end frames respectively to ensure the range of the sequence is not messed up
      */
     void UpdateRange(int start, int end);
 };

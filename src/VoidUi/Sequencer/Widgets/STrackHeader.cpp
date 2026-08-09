@@ -28,6 +28,21 @@ STrackHeader::STrackHeader(const SharedPlaybackTrack& track, SequencerContext* c
     connect(m_Track.get(), &PlaybackTrack::updated, this, [this]() -> void { update(); });
 }
 
+QSize STrackHeader::sizeHint() const
+{
+    return QSize(
+        Sequencer::TrackHeaderWidth,
+        m_Track->Type() == Sequence::TrackType::VIDEO
+            ? m_Context->Geometry()->VideoTrackHeight(m_Track->TrackIndex())
+            : m_Context->Geometry()->AudioTrackHeight(m_Track->TrackIndex())
+    );
+}
+
+void STrackHeader::Update()
+{
+    UpdateSize();
+}
+
 void STrackHeader::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
@@ -76,7 +91,7 @@ void STrackHeader::mousePressEvent(QMouseEvent* event)
             m_Context->SelectionModel()->Toggle(m_Track);
         }
         else
-        {   
+        {
             m_Context->SelectionModel()->Clear();
             m_Context->SelectionModel()->Select(m_Track);
         }
@@ -100,6 +115,24 @@ void STrackHeader::resizeEvent(QResizeEvent* event)
     m_NameRect = QRect(m_StateRect.right() + spacing, 0, width() - (m_StateRect.right() + spacing + margin), height());
 
     QWidget::resizeEvent(event);
+}
+
+void STrackHeader::UpdateSize()
+{
+    // TODO: Check why the resize behaves differently when the layout is updated
+    // Probably because the layout alignment property? -- Needs more info and thought
+    // resize(
+    //     Sequencer::TrackHeaderWidth,
+    //     m_Track->Type() == Sequence::TrackType::VIDEO
+    //         ? m_Context->Geometry()->VideoTrackHeight(m_Track->TrackIndex())
+    //         : m_Context->Geometry()->AudioTrackHeight(m_Track->TrackIndex())    
+    // );
+    setFixedHeight(
+        m_Track->Type() == Sequence::TrackType::VIDEO
+            ? m_Context->Geometry()->VideoTrackHeight(m_Track->TrackIndex())
+            : m_Context->Geometry()->AudioTrackHeight(m_Track->TrackIndex())
+    );
+    update();
 }
 
 VOID_NAMESPACE_CLOSE

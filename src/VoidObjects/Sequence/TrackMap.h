@@ -52,6 +52,7 @@ public:
     std::size_t Size() const { return m_Items.size(); }
     SharedTrackItem AtIndex(std::size_t index) const { return m_Items.at(index); }
     std::size_t ItemIndex(const SharedTrackItem& item) const;
+    std::size_t ItemIndex(const TrackItem* item) const;
 
     /**
      * Returns a Track Item present at a given frame, if it exists

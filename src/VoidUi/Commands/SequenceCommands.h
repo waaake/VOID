@@ -8,6 +8,7 @@
 #include "Definition.h"
 #include "VoidCommand.h"
 #include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidObjects/Effects/Bridge.h"
 #include "VoidUi/Sequencer/SController.h"
 
 VOID_NAMESPACE_OPEN
@@ -92,6 +93,35 @@ private:
     bool m_Previous;
 };
 
+class ToggleTrackItemStateCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleTrackItemStateCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    Sequence::TrackType m_TrackType;
+};
+
+class ToggleTimelineEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleTimelineEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
 class CreateTrackCommand : public VoidUndoCommand
 {
 public:
@@ -113,10 +143,10 @@ public:
     bool Redo() override;
 
 private:
+    std::string m_TrackData;
     std::weak_ptr<PlaybackSequence> m_Sequence;
     Sequence::TrackType m_Type;
     int m_TrackIndex;
-    rapidjson::Value m_TrackData;
 };
 
 class DeleteTrackItemCommand : public VoidUndoCommand
@@ -132,6 +162,38 @@ private:
     int m_TrackIndex;
     int m_ItemIndex;
     std::string m_ItemData;
+};
+
+class DeleteTimelineEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit DeleteTimelineEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectData, m_EffectType;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
+class CreateTimelineEffectCommand : public VoidUndoCommand
+{
+public:
+    CreateTimelineEffectCommand(const SharedTrackItem& item, const std::string type, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectType;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
 };
 
 class RazorTrackCommand : public VoidUndoCommand

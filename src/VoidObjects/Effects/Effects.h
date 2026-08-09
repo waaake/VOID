@@ -4,6 +4,9 @@
 #ifndef _IMAGE_EFFECTS_H
 #define _IMAGE_EFFECTS_H
 
+/* Qt */
+#include <QColor>
+
 /* Internal */
 #include "Definition.h"
 #include "Operator.h"
@@ -11,16 +14,25 @@
 
 VOID_NAMESPACE_OPEN
 
+class TrackItem;
+
 class VOID_API Effect : public VoidObject
 {
     Q_OBJECT
 
 public:
     Effect(ImageOp* iop, const std::string& name, QObject* parent = nullptr);
+    Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, QObject* parent = nullptr);
     ~Effect();
 
+    TrackItem* TimelineItem() const { return m_TrackItem; }
+    void SetTimelineItem(TrackItem* item);
+
     const std::string& Name() const { return m_Name; }
-    void SetName(const std::string& name) { m_Name = name; }
+    void SetName(const std::string& name);
+
+    void SetColor(const QColor& color);
+    QColor Color() const { return m_Color; }
 
     /**
      * @brief Set the Value on the param.
@@ -55,13 +67,30 @@ public:
 
     const std::vector<Param*>& Params() const { return m_Operator->Params(); }
 
+    void SetTimelineIn(v_frame_t frame);
+    void SetTimelineOut(v_frame_t frame);
+    void SetTimelineRange(v_frame_t start, v_frame_t end);
+    v_frame_t TimelineIn() const { return m_TimelineIn; }
+    v_frame_t TimelineOut() const { return m_TimelineOut; }
+
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const;
+    void Serialize(std::ostream& out) const;
+    void Deserialize(const rapidjson::Value& in);
+    void Deserialize(std::istream& in);
+    std::string Type() const { return m_Operator->Type(); }
+    const char* TypeName() const { return "Effect"; }
+
 signals:
     void updated();
     void valueChanged(const Param*);
+    void rangeChanged(v_frame_t, v_frame_t);
 
 private:
     ImageOp* m_Operator;
+    TrackItem* m_TrackItem;
     std::string m_Name;
+    QColor m_Color;
+    v_frame_t m_TimelineIn, m_TimelineOut;
     bool m_Enabled;
 };
 

@@ -25,16 +25,15 @@ public:
 
 signals:
     void createTrackRequested();
-    void removeTracksRequested();
-    void removeTrackItemsRequested();
+    void deleteSelectionRequested();
     void colorChangeRequested(bool reset = false);
     void editModeChangeRequested(const SequencerController::EditMode&);
+    void addEffectRequested(const std::string&);
 
 private:
     SequencerContext* m_Context;
     QAction* m_AddVideoTrackAction;
-    QAction* m_RemoveTrackAction;
-    QAction* m_RemoveTrackItemsAction;
+    QAction* m_RemoveSelectedAction;
 
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;
@@ -46,8 +45,11 @@ private:
     QAction* m_RippleAction;
     QActionGroup* m_EditModeGroup;
 
+    QMenu* m_EffectsMenu;
+
 private: /* Methods */
     void Build();
+    void BuildEffectsMenu();
     void Connect();
     void Validate();
 };

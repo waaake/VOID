@@ -49,7 +49,7 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
     // We're moving forwards (towards right, so start with the right most item here)
     if (offset > 0)
     {
-        for (int i = static_cast<int>(track->ItemCount()) - 1; i > index; --i)
+        for (int i = static_cast<int>(track->NumItems()) - 1; i > index; --i)
         {
             const SharedTrackItem& trackitem = track->ItemAt(i);
             stack->push(new OffsetItemCommand(trackitem, offset));
@@ -57,7 +57,7 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
     }
     else
     {
-        for (int i = index; i < static_cast<int>(track->ItemCount()); ++i)
+        for (int i = index; i < static_cast<int>(track->NumItems()); ++i)
         {
             const SharedTrackItem& trackitem = track->ItemAt(i);
             stack->push(new OffsetItemCommand(trackitem, offset));
@@ -85,7 +85,7 @@ void SequencerController::RippleMoveItem(const SharedPlaybackTrack& track, const
     int index = track->ItemIndex(item);
     stack->push(new MoveItemToTrackCommand(track, item, trackIndex, frame));
 
-    std::size_t max = track->ItemCount();
+    std::size_t max = track->NumItems();
     // Last Item --- Nothing else to offset/move
     if (index >= max)
         return stack->endMacro();
@@ -215,7 +215,7 @@ void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& s
 
         stack->push(new DeleteTrackItemCommand(sequence, track->Type(), track->TrackIndex(), track->ItemIndex(item)));
 
-        std::size_t max = track->ItemCount();
+        std::size_t max = track->NumItems();
         // Last Item --- Nothing else to offset/move
         if (index >= max)
             continue;
@@ -230,6 +230,54 @@ void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& s
             stack->push(new OffsetItemCommand(trackitem, offset));
         }
     }
+    stack->endMacro();
+}
+
+void SequencerController::CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+
+    QString text("Create '%1' Effect");
+    stack->beginMacro(text.arg(type.c_str()));
+
+    for (const SharedTrackItem& item : items)
+        stack->push(new CreateTimelineEffectCommand(item, type));
+
+    stack->endMacro();
+}
+
+void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*>& effects)
+{
+    std::vector<Effect*> sorted;
+    sorted.reserve(effects.size());
+
+    for (const auto& effect : effects)
+        sorted.push_back(effect);
+
+    std::sort(sorted.begin(), sorted.end(), [&](const Effect* _a, const Effect* _b) -> bool
+    {
+        TrackItem* _aitem = _a->TimelineItem();
+        TrackItem* _bitem = _b->TimelineItem();
+
+        int _aitemidx = _aitem ? _aitem->Track()->ItemIndex(_aitem) : -1;
+        int _bitemidx = _bitem ? _bitem->Track()->ItemIndex(_bitem) : -2;
+
+        // Sort ascending based on the track item index -- effect _b belongs to a different track item than _a
+        if (_aitemidx != _bitemidx)
+            return _aitemidx < _bitemidx;
+
+        // Sort descending based on the effect index
+        // we need the items to be reversed such that when deleting them, the index of other items don't change
+        // and running undo works as expected
+        return _aitem->EffectIndex(_a) > _bitem->EffectIndex(_b);
+    });
+
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    stack->beginMacro("Delete Timeline Effect(s)");
+
+    for (auto& effect : sorted)
+        stack->push(new DeleteTimelineEffectCommand(effect));
+
     stack->endMacro();
 }
 
@@ -292,6 +340,28 @@ void SequencerController::ToggleTrackState(const SharedPlaybackTrack& track)
     _MediaBridge.PushCommand(new ToggleTrackStateCommand(track));
 }
 
+void SequencerController::ToggleItemState(const std::unordered_set<SharedTrackItem>& items)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    stack->beginMacro("Toggle TrackItem(s)");
+
+    for (const SharedTrackItem& item : items)
+        stack->push(new ToggleTrackItemStateCommand(item));
+
+    stack->endMacro();
+}
+
+void SequencerController::ToggleItemState(const std::unordered_set<Effect*>& effects)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    stack->beginMacro("Toggle Timeline Effect(s)");
+
+    for (Effect* effect : effects)
+        stack->push(new ToggleTimelineEffectCommand(effect));
+
+    stack->endMacro();
+}
+
 void SequencerController::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
 {
     _MediaBridge.PushCommand(new RazorSequenceCommand(sequence, frame));
@@ -333,7 +403,7 @@ void SequencerController::RippleTrimItemTail(const SharedTrackItem& item, int ha
     PlaybackTrack* track = item->Track();
     int index = track->ItemIndex(item);
 
-    std::size_t max = track->ItemCount();
+    std::size_t max = track->NumItems();
     // Last Item --- Nothing else to offset/move
     if (index + 1 >= max)
         return stack->endMacro();

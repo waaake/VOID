@@ -8,6 +8,7 @@
 #include "Track.h"
 #include "Sequence.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Effects/Bridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -18,6 +19,7 @@ PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
     , m_StartFrame(0)
     , m_EndFrame(0)
     , m_Duration(0)
+    , m_MaxEffects(0)
     , m_Visible(true)
     , m_Enabled(true)
     , m_Locked(false)
@@ -30,6 +32,29 @@ PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
 
 PlaybackTrack::~PlaybackTrack()
 {
+}
+
+Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::string& effect)
+{
+    Effect* created = item->CreateEffect(effect);
+    if (created)
+    {
+        emit effectAdded(created);
+        CalculateMaxEffects(item);
+    }
+    return created;
+}
+
+void PlaybackTrack::CopyEffect(Effect* effect, const SharedTrackItem& item)
+{
+    Effect* copied = _EffectsBridge.Copy(effect);
+    copied->SetTimelineItem(item.get());
+    copied->SetTimelineRange(item->TimelineIn(), item->TimelineOut());
+
+    item->AddEffect(copied);
+
+    // Recalc now that a new effect was added
+    CalculateMaxEffects();
 }
 
 void PlaybackTrack::SetMedia(const SharedMediaClip& media)
@@ -218,6 +243,10 @@ bool PlaybackTrack::RazorAt(v_frame_t frame)
         m_Razored.insert(frame);
         m_Razored.insert(frame + 1);
 
+        // Copy all effects as well
+        for (const auto& effect : item->Effects())
+            CopyEffect(effect, nitem);
+
         m_Items.Add(nitem);
         emit itemAdded(nitem);
 
@@ -262,6 +291,8 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item)
 {
     if (m_Items.Add(item, item->TimelineIn()))
     {
+        CalculateMaxEffects(item);
+        item->SetTrack(this);
         emit itemAdded(item);
         return true;
     }
@@ -272,6 +303,7 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 {
     if (m_Items.Add(item, frame))
     {
+        CalculateMaxEffects(item);
         item->SetTrack(this);
         // Set the timeline range based on the provided frame
         item->Move(frame);
@@ -291,8 +323,13 @@ void PlaybackTrack::RemoveItem(v_frame_t frame)
 
 void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 {
+    int effects = item->NumEffects();
     emit itemAboutToBeRemoved(item);
     m_Items.Remove(item);
+
+    if (effects == m_MaxEffects)
+        CalculateMaxEffects();
+
     emit itemRemoved();
     emit updated();
 }
@@ -325,6 +362,24 @@ void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::Alloca
     out.AddMember("TrackItems", trackitems, allocator);
 }
 
+void PlaybackTrack::Serialize(std::ostream& out) const
+{
+    WriteString(out, m_Name);
+    out.write(reinterpret_cast<const char*>(&m_StartFrame), sizeof(m_StartFrame));
+    out.write(reinterpret_cast<const char*>(&m_EndFrame), sizeof(m_EndFrame));
+    out.write(reinterpret_cast<const char*>(&m_Duration), sizeof(m_Duration));
+    out.write(reinterpret_cast<const char*>(&m_Visible), sizeof(m_Visible));
+    out.write(reinterpret_cast<const char*>(&m_Enabled), sizeof(m_Enabled));
+    out.write(reinterpret_cast<const char*>(&m_Locked), sizeof(m_Locked));
+    out.write(reinterpret_cast<const char*>(&m_Type), sizeof(m_Type));
+
+    int64_t itemCount = static_cast<int64_t>(m_Items.Size());
+    out.write(reinterpret_cast<const char*>(&itemCount), sizeof(itemCount));
+
+    for (int i = 0; i < itemCount; ++i)
+        m_Items.AtIndex(i)->Serialize(out);
+}
+
 void PlaybackTrack::Deserialize(const rapidjson::Value& in)
 {
     m_Name = in["name"].GetString();
@@ -344,12 +399,48 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
     {
         SharedTrackItem item = std::make_shared<TrackItem>(this);
         item->Deserialize(trackitems[i]);
-
-        // m_Items.Add(item);
-        // emit itemAdded(item);
         AddItem(item);
-        VOID_LOG_INFO("Added item -- {0} -- TimelineIn: {1}", item->Name(), item->TimelineIn());
     }
+}
+
+void PlaybackTrack::Deserialize(std::istream& in)
+{
+    m_Name = ReadString(in);
+    in.read(reinterpret_cast<char*>(&m_StartFrame), sizeof(m_StartFrame));
+    in.read(reinterpret_cast<char*>(&m_EndFrame), sizeof(m_EndFrame));
+    in.read(reinterpret_cast<char*>(&m_Duration), sizeof(m_Duration));
+    in.read(reinterpret_cast<char*>(&m_Visible), sizeof(m_Visible));
+    in.read(reinterpret_cast<char*>(&m_Enabled), sizeof(m_Enabled));
+    in.read(reinterpret_cast<char*>(&m_Locked), sizeof(m_Locked));
+    in.read(reinterpret_cast<char*>(&m_Type), sizeof(m_Type));
+
+    int64_t itemCount;
+    in.read(reinterpret_cast<char*>(&itemCount), sizeof(itemCount));
+
+    for (int i = 0; i < itemCount; ++i)
+    {
+        SharedTrackItem item = std::make_shared<TrackItem>(this);
+        item->Deserialize(in);
+        AddItem(item);
+    }
+}
+
+void PlaybackTrack::CalculateMaxEffects(const SharedTrackItem& item)
+{
+    int previous = m_MaxEffects;
+    m_MaxEffects = std::max(m_MaxEffects, item->NumEffects());
+
+    if (previous != m_MaxEffects);
+        emit maxEffectsChanged();
+}
+
+void PlaybackTrack::CalculateMaxEffects()
+{
+    m_MaxEffects = 0;
+    for (const auto& item : m_Items)
+        m_MaxEffects = std::max(m_MaxEffects, item->NumEffects());
+
+    emit maxEffectsChanged();
 }
 
 VOID_NAMESPACE_CLOSE

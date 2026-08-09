@@ -54,6 +54,14 @@ void STrackHeaderWidget::Clear()
     }
 }
 
+void STrackHeaderWidget::Update()
+{
+    for (auto& header : findChildren<STrackHeader*>())
+        header->Update();
+    
+    m_ScrollLayout->update();
+}
+
 void STrackHeaderWidget::SetScroll(int value)
 {
     m_ScrollArea->verticalScrollBar()->setValue(value);

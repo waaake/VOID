@@ -8,7 +8,7 @@
 #include <QGraphicsView>
 
 /* Internal */
-#include "Definition.h"
+#include "QDefinition.h"
 #include "FrameRange.h"
 #include "SDragContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
@@ -45,7 +45,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void drawForeground(QPainter* painter, const QRectF& rect) override;
-    void enterEvent(QEvent* event) override;
+    void enterEvent(EnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
 
 private:

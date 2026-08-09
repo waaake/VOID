@@ -105,33 +105,30 @@ ColorSelectionButton::ColorSelectionButton(const QColor& color, QWidget* parent)
     : QPushButton(parent)
     , m_Color(color)
 {
-    /* Connect to allow selecting Color */
     connect(this, &QPushButton::clicked, this, &ColorSelectionButton::SelectColor);
+}
+
+void ColorSelectionButton::SetColor(const QColor& color)
+{
+    m_Color = color;
+    update();
 }
 
 void ColorSelectionButton::paintEvent(QPaintEvent* event)
 {
-    /* Add the current color as what'll be displayed on the button */
     QPainter painter(this);
-
     painter.setPen(Qt::black);
     painter.setBrush(QBrush(m_Color));
-
     painter.drawRect(rect());
 }
 
 void ColorSelectionButton::SelectColor()
 {
     QColor selected = QColorDialog::getColor(m_Color, this, "Select Color");
-
-    /* If we have a valid and different color selected */
     if (selected.isValid() && selected != m_Color)
     {
-        /* Update the color */
         m_Color = selected;
-        /* Emit the updated color */
         emit colorChanged(m_Color);
-        /* And repaint */
         update();
     }
 }

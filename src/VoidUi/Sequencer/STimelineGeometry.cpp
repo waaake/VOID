@@ -18,14 +18,31 @@ QRectF STimelineGeometry::HeaderRect() const
 
 QRectF STimelineGeometry::TrackRect(int index) const
 {
-    const int y = TimelineTop() + index * (Sequencer::TrackHeight + Sequencer::TrackSpacing);
-    return QRectF(ContentLeft(), y, Sequencer::SceneWidth, Sequencer::TrackHeight);
+    int y = TimelineTop();
+    for (int i = 0; i < index; ++i)
+        y += (VideoTrackHeight(i) + Sequencer::TrackSpacing);
+
+    return QRect(0, y, Sequencer::SceneWidth, VideoTrackHeight(index));
 }
 
 QRectF STimelineGeometry::TrackHeaderRect(int index) const
 {
-    const int y = TimelineTop() + index * (Sequencer::TrackHeight + Sequencer::TrackSpacing);
-    return QRectF(0, y, Sequencer::TrackHeaderWidth, Sequencer::TrackHeight);
+    int y = TimelineTop();
+    for (int i = 0; i < index; ++i)
+        y += (VideoTrackHeight(i) + Sequencer::TrackSpacing);
+
+    return QRect(0, y, Sequencer::TrackHeaderWidth, VideoTrackHeight(index));
+}
+
+int STimelineGeometry::VideoTrackHeight(int index) const
+{
+    SharedPlaybackTrack track = m_Sequence->VideoTrackAt(index);
+    return Sequencer::TrackHeight + track->MaxEffects() * Sequencer::TimelineEffectHeight;
+}
+
+int STimelineGeometry::AudioTrackHeight(int index) const
+{
+    return Sequencer::TrackHeight;
 }
 
 double STimelineGeometry::FrameToSceneX(v_frame_t frame) const

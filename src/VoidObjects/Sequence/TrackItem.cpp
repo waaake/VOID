@@ -5,6 +5,7 @@
 #include "TrackItem.h"
 #include "VoidCore/Logging.h"
 #include "VoidObjects/VoidContext.h"
+#include "VoidObjects/Effects/Bridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -19,8 +20,10 @@ TrackItem::TrackItem(QObject* parent)
     , m_TimelineOut(0)
     , m_SourceIn(0)
     , m_SourceOut(0)
+    , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
+    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
@@ -34,8 +37,10 @@ TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t en
     , m_TimelineOut(end)
     , m_SourceIn(media->FirstFrame())
     , m_SourceOut(media->LastFrame())
+    , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
+    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::~TrackItem()
@@ -68,6 +73,99 @@ void TrackItem::Unlink()
     emit updated();
 }
 
+void TrackItem::SetEnabled(bool enable)
+{
+    m_Enabled = enable;
+    emit updated();
+}
+
+Effect* TrackItem::CreateEffect(const std::string& type)
+{
+    if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut))
+    {
+        effect->SetTimelineItem(this);
+        // VOID_LOG_INFO("Effect Created -> {}", effect->Name());
+        m_Effects.push_back(effect);
+
+        emit effectCreated(effect);
+
+        // For every effect that gets updated, the media will be set dirty
+        // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
+        // SetDirty(true);
+        return effect;
+    }
+
+    return nullptr;
+}
+
+void TrackItem::AddEffect(Effect* effect)
+{
+    effect->SetTimelineItem(this);
+    m_Effects.push_back(effect);
+    emit effectCreated(effect);
+}
+
+void TrackItem::InsertEffect(Effect* effect, int index)
+{
+    effect->SetTimelineItem(this);
+    m_Effects.insert(m_Effects.begin() + index, effect);
+    emit effectCreated(effect);
+}
+
+bool TrackItem::RemoveEffect(const std::string& name)
+{
+    for (int i = static_cast<int>(m_Effects.size()) - 1; i >= 0; --i)
+    {
+        Effect* effect = m_Effects[i];
+        if (effect->Name() == name)
+        {
+            emit effectAboutToBeRemoved(effect);
+
+            effect->deleteLater();
+            delete effect;
+            effect = nullptr;
+
+            m_Effects.erase(m_Effects.begin() + i);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void TrackItem::RemoveEffect(int index, bool destroy)
+{
+    Effect*& effect = m_Effects[index];
+    emit effectAboutToBeRemoved(effect);
+    if (destroy)
+    {
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.erase(m_Effects.begin() + index);
+}
+
+void TrackItem::ClearEffects()
+{
+    for (auto& effect : m_Effects)
+    {
+        emit effectAboutToBeRemoved(effect);
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.clear();
+}
+
+int TrackItem::EffectIndex(const Effect* const effect) const
+{
+    auto it = std::find(m_Effects.begin(), m_Effects.end(), effect);
+    return it == m_Effects.end() ? -1 : it - m_Effects.begin();
+}
+
 void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 {
     // Update the frame value with the offset so that we match the original media range
@@ -82,7 +180,6 @@ void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 const FloatImage TrackItem::Image(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
-    // VOID_LOG_INFO("Timeline frame: {0} -- Media Frame: {1} -- Offset: {2}", frame, f, m_Offset);
     if (m_Media && m_Media->Contains(f))
         return m_Media->Image(f);
 
@@ -174,11 +271,27 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     out.AddMember("source_in", static_cast<int64_t>(m_SourceIn), allocator);
     out.AddMember("source_out", static_cast<int64_t>(m_SourceOut), allocator);
     out.AddMember("offset", static_cast<int64_t>(m_Offset), allocator);
+    out.AddMember("enabled", static_cast<int>(m_Enabled), allocator);
     out.AddMember("r", m_Color.red(), allocator);
     out.AddMember("g", m_Color.green(), allocator);
     out.AddMember("b", m_Color.blue(), allocator);
 
-    // TODO: Pending work with handles (head and tail) & effects added on the track item;
+    out.AddMember("effect_count", static_cast<int>(m_Effects.size()), allocator);
+    rapidjson::Value effects(rapidjson::kArrayType);
+    for (const auto& effect : m_Effects)
+    {
+        rapidjson::Value entry(rapidjson::kObjectType);
+        std::string type(effect->Type());
+        entry.AddMember("typename", rapidjson::Value(type.c_str(), allocator), allocator);
+
+        rapidjson::Value effectObject;
+        effect->Serialize(effectObject, allocator);
+        entry.AddMember("effect", effectObject, allocator);
+
+        effects.PushBack(entry, allocator);
+    }
+
+    out.AddMember("timeline_effects", effects, allocator);
 }
 
 void TrackItem::Serialize(std::ostream& out) const
@@ -192,6 +305,7 @@ void TrackItem::Serialize(std::ostream& out) const
     out.write(reinterpret_cast<const char*>(&m_SourceIn), sizeof(m_SourceIn));
     out.write(reinterpret_cast<const char*>(&m_SourceOut), sizeof(m_SourceOut));
     out.write(reinterpret_cast<const char*>(&m_Offset), sizeof(m_Offset));
+    out.write(reinterpret_cast<const char*>(&m_Enabled), sizeof(m_Enabled));
 
     int r = m_Color.red();
     int g = m_Color.green();
@@ -199,6 +313,14 @@ void TrackItem::Serialize(std::ostream& out) const
     out.write(reinterpret_cast<const char*>(&r), sizeof(r));
     out.write(reinterpret_cast<const char*>(&g), sizeof(g));
     out.write(reinterpret_cast<const char*>(&b), sizeof(b));
+
+    int effectsCount = static_cast<int>(m_Effects.size());
+    out.write(reinterpret_cast<const char*>(&effectsCount), sizeof(effectsCount));
+    for (const auto& effect : m_Effects)
+    {
+        WriteString(out, effect->Type());
+        effect->Serialize(out);
+    }
 }
 
 void TrackItem::Deserialize(const rapidjson::Value& in)
@@ -213,10 +335,23 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
     m_SourceIn = in["source_in"].GetInt64();
     m_SourceOut = in["source_out"].GetInt64();
     m_Offset = in["offset"].GetInt64();
+    m_Enabled = in["enabled"].GetInt();
 
     m_Color.setRed(in["r"].GetInt());
     m_Color.setGreen(in["g"].GetInt());
     m_Color.setBlue(in["b"].GetInt());
+
+    const rapidjson::Value::ConstArray effects = in["timeline_effects"].GetArray();
+    m_Effects.reserve(effects.Size());
+    for (int i = 0; i < effects.Size(); ++i)
+    {
+        std::string type = effects[i]["typename"].GetString();
+        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        {
+            effect->Deserialize(effects[i]["effect"]);
+            m_Effects.push_back(effect);
+        }
+    }
 }
 
 void TrackItem::Deserialize(std::istream& in)
@@ -232,6 +367,7 @@ void TrackItem::Deserialize(std::istream& in)
     in.read(reinterpret_cast<char*>(&m_SourceIn), sizeof(m_SourceIn));
     in.read(reinterpret_cast<char*>(&m_SourceOut), sizeof(m_SourceOut));
     in.read(reinterpret_cast<char*>(&m_Offset), sizeof(m_Offset));
+    in.read(reinterpret_cast<char*>(&m_Enabled), sizeof(m_Enabled));
 
     int r, g, b;
     in.read(reinterpret_cast<char*>(&r), sizeof(r));
@@ -241,6 +377,26 @@ void TrackItem::Deserialize(std::istream& in)
     m_Color.setRed(r);
     m_Color.setGreen(g);
     m_Color.setBlue(b);
+
+    int effectsCount;
+    in.read(reinterpret_cast<char*>(&effectsCount), sizeof(effectsCount));
+    m_Effects.reserve(effectsCount);
+
+    for (int i = 0; i < effectsCount; ++i)
+    {
+        std::string type = ReadString(in);
+        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        {
+            effect->Deserialize(in);
+            m_Effects.push_back(effect);
+        }
+    }
+}
+
+void TrackItem::ResetEffectsRange(v_frame_t start, v_frame_t end)
+{
+    for (auto& effect : m_Effects)
+        effect->SetTimelineRange(start, end);
 }
 
 VOID_NAMESPACE_CLOSE

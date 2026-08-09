@@ -29,12 +29,15 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
     {
         disconnect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
         disconnect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
+        disconnect(m_Sequence.get(), &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     }
 
     m_Sequence = sequence;
     connect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
     connect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
+    connect(m_Sequence.get(), &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
 
+    m_Context.Geometry()->SetSequence(sequence);
     Refresh();
 }
 
@@ -103,6 +106,7 @@ void SequencerTimeline::Build()
     m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
     m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
     m_RippleDeleteShortcut = new QShortcut(QKeySequence("Ctrl+Backspace"), this);
+    m_ToggleStateShortcut = new QShortcut(QKeySequence(Qt::Key_D), this);
     m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);
@@ -148,28 +152,32 @@ void SequencerTimeline::Connect()
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
     connect(m_Toolbar, &SToolbar::actionSwitched, this, [this](const SequencerAction& action) -> void { m_Context.SetAction(action); });
 
+    // Controller
+    connect(m_Context.Controller(), &SequencerController::editEffectRequested, this, &SequencerTimeline::editEffectRequested);
+
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
     connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
     connect(m_RippleDeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::RippleDeleteSelected);
+    connect(m_ToggleStateShortcut, &QShortcut::activated, this, &SequencerTimeline::ToggleItemState);
 
     connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
     {
         SetHorizontalScale((float)value / 10);
     });
 
-    connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& position) -> void 
+    connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& position) -> void
     {
         m_Menu->Show(mapToGlobal(position));
     });
     connect(m_View->verticalScrollBar(), &QScrollBar::valueChanged, m_TrackHeader, &STrackHeaderWidget::SetScroll);
     connect(m_View, &STimelineView::sequenceCutRequested, this, static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt));
 
+    // Menu
     connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
     {
         m_Context.Controller()->CreateVideoTrack(m_Sequence);
     });
-    connect(m_Menu, &SequencerContextMenu::removeTracksRequested, this, &SequencerTimeline::DeleteSelected);
-    connect(m_Menu, &SequencerContextMenu::removeTrackItemsRequested, this, &SequencerTimeline::DeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
     connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {
@@ -180,9 +188,16 @@ void SequencerTimeline::Connect()
         else
         {
             QColor color = QColorDialog::getColor(QColor(255, 255, 255), this, "Select Trackitem Color");
-            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems(), color);    
+            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems(), color);
         }
     });
+    connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
+}
+
+void SequencerTimeline::CreateEffect(const std::string& type)
+{
+    if (m_Context.SelectionModel()->HasTrackItemSelection())
+        m_Context.Controller()->CreateEffect(m_Context.SelectionModel()->SelectedItems(), type);
 }
 
 void SequencerTimeline::DeleteSelected()
@@ -191,7 +206,9 @@ void SequencerTimeline::DeleteSelected()
         m_Context.Controller()->RemoveTracks(m_Sequence, m_Context.SelectionModel()->SelectedTracks());
     else if (m_Context.SelectionModel()->HasTrackItemSelection())
         m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
-    
+    else if (m_Context.SelectionModel()->HasEffectSelection())
+        m_Context.Controller()->RemoveTimelineEffects(m_Context.SelectionModel()->SelectedEffects());
+
     m_Context.SelectionModel()->Clear();
 }
 
@@ -201,6 +218,21 @@ void SequencerTimeline::RippleDeleteSelected()
         m_Context.Controller()->RippleRemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
 
     m_Context.SelectionModel()->Clear();
+}
+
+void SequencerTimeline::ToggleItemState()
+{
+    if (m_Context.SelectionModel()->HasTrackItemSelection())
+        m_Context.Controller()->ToggleItemState(m_Context.SelectionModel()->SelectedItems());
+
+    if (m_Context.SelectionModel()->HasEffectSelection())
+        m_Context.Controller()->ToggleItemState(m_Context.SelectionModel()->SelectedEffects());
+}
+
+void SequencerTimeline::UpdateAll()
+{
+    m_TrackHeader->Update();
+    m_View->Refresh();
 }
 
 VOID_NAMESPACE_CLOSE

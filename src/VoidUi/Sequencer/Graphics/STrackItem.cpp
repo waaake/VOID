@@ -9,6 +9,7 @@
 /* Internal */
 #include "STrackItem.h"
 #include "STrack.h"
+#include "STimelineEffect.h"
 #include "VoidUi/Sequencer/SContext.h"
 #include "VoidCore/Logging.h"
 
@@ -32,11 +33,15 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
     ToggleHandles();
 
     CalculateBoundingRect();
-    setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 2);
+    setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), YPos());
 
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
     connect(m_Item.get(), &TrackItem::rangeChanged, this, &STrackItem::Update);
+    connect(m_Item.get(), &TrackItem::effectCreated, this, static_cast<void (STrackItem::*)(Effect*)>(&STrackItem::AddEffect));
+    connect(m_Item.get(), &TrackItem::effectAboutToBeRemoved, this, &STrackItem::RemoveEffect);
+
+    AddEffects();
 }
 
 STrackItem::~STrackItem()
@@ -142,9 +147,48 @@ void STrackItem::Update()
 {
     prepareGeometryChange();
     CalculateBoundingRect();
-    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 2);
+    setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), YPos());
 
     update();
+}
+
+void STrackItem::UpdateItems()
+{
+    for (auto& [_, effect] : m_Effects)
+        effect->Update();
+}
+
+void STrackItem::AddEffect(Effect* effect)
+{
+    AddEffect(effect, m_Item->EffectIndex(effect));
+}
+
+void STrackItem::AddEffect(Effect* effect, int index)
+{
+    STimelineEffect* timelineEffect = new STimelineEffect(effect, m_Context, this);
+    timelineEffect->setPos(0, -(Sequencer::TimelineEffectHeight + index * Sequencer::TimelineEffectHeight));
+
+    m_Effects[effect] = timelineEffect;
+}
+
+void STrackItem::AddEffects()
+{
+    for (int i = 0; i < m_Item->NumEffects(); ++i)
+        AddEffect(m_Item->EffectAt(i), i);
+}
+
+void STrackItem::RemoveEffect(Effect* effect)
+{
+    if (m_Effects.find(effect) == m_Effects.end()) return;
+
+    STimelineEffect*& teffect = m_Effects[effect];
+    teffect->setParent(nullptr);
+    teffect->setVisible(false);
+    teffect->deleteLater();
+    delete teffect;
+    teffect = nullptr;
+
+    m_Effects.erase(effect);
 }
 
 void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
@@ -371,7 +415,7 @@ void STrackItem::AdjustTimelineRange(v_frame_t frame)
     {
         frame = std::min(std::max(frame, m_Item->TimelineIn() - m_Item->HeadHandle()), m_Item->TimelineOut());
         width = m_Context->Geometry()->FrameToSceneX(m_Item->TimelineOut() + 1) - m_Context->Geometry()->FrameToSceneX(frame);
-        setPos(m_Context->Geometry()->FrameToSceneX(frame), 2);
+        setPos(m_Context->Geometry()->FrameToSceneX(frame), YPos());
 
         m_TrimContext.handle = frame - m_Item->TimelineIn();
         head += m_TrimContext.handle;
@@ -380,35 +424,46 @@ void STrackItem::AdjustTimelineRange(v_frame_t frame)
     {
         frame = std::max(std::min(frame, m_Item->TimelineOut() + m_Item->TailHandle()), m_Item->TimelineIn());
         width = m_Context->Geometry()->FrameToSceneX(frame + 1) - m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn());
-        setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), 2);
+        setPos(m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn()), YPos());
 
         m_TrimContext.handle = m_Item->TimelineOut() - frame;
         tail += m_TrimContext.handle;
     }
 
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
+    // Need to see how expensive this becomes, we don't want slowness while dragging -- so keeping an eye on performance
+    AdjustEffectsWidth(width);
 
     // Dynamic handles shifting as we move
     ToggleHandles(head, tail, m_Item->Duration() - m_TrimContext.handle, true);
     update();
 }
 
+void STrackItem::AdjustEffectsWidth(double width)
+{
+    for (auto& [_, teffect] : m_Effects)
+        teffect->SetWidth(width);
+}
+
 QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
 {
     if (Track()->Locked()) return option->palette.color(QPalette::Base).darker(150);
+    if (m_Context->SelectionModel()->IsSelected(m_Item)) return option->palette.color(QPalette::Highlight).darker(180);
 
-    if (Track()->Enabled())
+    if (Track()->Enabled() && m_Item->Enabled())
     {
-        return m_Context->SelectionModel()->IsSelected(m_Item)
-            ? option->palette.color(QPalette::Highlight).darker(180)
-            : m_Context->HoverModel()->IsHovered(m_Item)
-                ? option->palette.color(QPalette::Base).darker(140)
-                : option->palette.color(QPalette::Base).darker(110);
+        // if (m_Context->SelectionModel()->IsSelected(m_Item)) return option->palette.color(QPalette::Highlight).darker(180);
+        QColor color = m_Item->Color().darker(250);
+        return m_Context->HoverModel()->IsHovered(m_Item) ? color.darker(140) : color;
     }
 
-    return m_Context->SelectionModel()->IsSelected(m_Item)
-            ? option->palette.color(QPalette::Highlight).darker(180)
-            : option->palette.color(QPalette::Base).darker(180);
+    // Disabled
+    return option->palette.color(QPalette::Base).darker(180);
+}
+
+int STrackItem::YPos() const
+{
+    return Track()->boundingRect().height() - Sequencer::TrackItemHeight + 2;
 }
 
 void STrackItem::ToggleHandles(int head, int tail, int duration, bool visible)
@@ -419,9 +474,9 @@ void STrackItem::ToggleHandles(int head, int tail, int duration, bool visible)
     if (visible)
     {
         // This results in a matrix mult -- need to see if there is a better way to do this
-        m_HeadHandle->setPos(mapToScene(0 - m_Context->Geometry()->FrameToSceneX(head), 2));
-        m_TailHandle->setPos(mapToScene(boundingRect().width(), 2));
-        m_DurationHandle->setPos(mapToScene(0, 2));
+        m_HeadHandle->setPos(mapToScene(0 - m_Context->Geometry()->FrameToSceneX(head), 22));
+        m_TailHandle->setPos(mapToScene(boundingRect().width(), 22));
+        m_DurationHandle->setPos(mapToScene(0, 22));
         m_HeadHandle->Update(head);
         m_TailHandle->Update(tail);
         m_DurationHandle->Update(duration);

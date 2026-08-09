@@ -42,7 +42,7 @@ public:
     STrack* TrackAt(int index) const;
     STrack*& TrackAt(int index);
 
-    void SelectTrackItems(const QRectF& rect);
+    void SelectItems(const QRectF& rect);
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;

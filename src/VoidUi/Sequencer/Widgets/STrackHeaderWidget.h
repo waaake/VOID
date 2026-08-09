@@ -27,6 +27,7 @@ public:
     void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
 
+    void Update();
     void SetScroll(int value);
 
 private:

@@ -466,7 +466,7 @@ MediaStruct MediaStruct::FromFile(const std::string& filepath)
     /**
      * If the type of the media is Movie or any other then we can just return the current MediaStruct from here
      * considering a movie or audio is a container on it's own and does not depend on other containers
-     * Also consider if the entry does not have a frame seqeunce number like #### or %03d or %04d something similar
+     * Also consider if the entry does not have a frame sequence number like #### or %03d or %04d something similar
      */
     if (m.Type() != MediaType::Image || m.SingleFile())
         return m;

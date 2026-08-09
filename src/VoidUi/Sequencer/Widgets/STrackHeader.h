@@ -20,8 +20,10 @@ class STrackHeader : public QWidget
 public:
     STrackHeader(const SharedPlaybackTrack& track, SequencerContext* context, QWidget* parent = nullptr);
 
-    QSize sizeHint() const override { return QSize(Sequencer::TrackHeaderWidth, Sequencer::TrackHeight); }
+    QSize sizeHint() const override;
     SharedPlaybackTrack Track() const { return m_Track; }
+
+    void Update();
 
 signals:
     void clicked(const SharedPlaybackTrack&);
@@ -49,6 +51,7 @@ private: /* Methods */
     QRect LockRect() const { return m_LockRect; }
     QRect StateRect() const { return m_StateRect; }
     QRect NameRect() const { return m_NameRect; }
+    void UpdateSize();
 };
 
 VOID_NAMESPACE_CLOSE

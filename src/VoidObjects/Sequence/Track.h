@@ -36,11 +36,6 @@ public:
     void SetName(std::string&& name) { m_Name = std::move(name); }
     const std::string& Name() const { return m_Name; }
 
-    /*
-     * Clears anything in the track and sets the provided media as first
-     */
-    void SetMedia(const SharedMediaClip& media);
-
     // /* Set a color for the Track */
     // inline void SetColor(const QColor& color)
     // {
@@ -50,13 +45,25 @@ public:
     //     emit updated();
     // }
 
-    std::size_t ItemCount() const { return m_Items.Size(); }
+    std::size_t NumItems() const { return m_Items.Size(); }
     std::size_t ItemIndex(const SharedTrackItem& item) const { return m_Items.ItemIndex(item); }
+    std::size_t ItemIndex(const TrackItem* item) const { return m_Items.ItemIndex(item); }
     SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
     MFrameRange ItemRange(std::size_t index) const { return m_Items.AtIndex(index)->TimelineRange(); }
     const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
 
-    /*
+    Effect* CreateEffect(const SharedTrackItem& item, const std::string& effect);
+    void CopyEffect(Effect* effect, const SharedTrackItem& item);
+    int MaxEffects() const { return m_MaxEffects; }
+
+    /**
+     * @brief Clears anything in the track and sets the provided media as first
+     * 
+     * @param media Media to be reset on the track.
+     */
+    void SetMedia(const SharedMediaClip& media);
+
+    /**
      * Appends the Media to the already existing track of Medis files
      * Which will get played in order
      */
@@ -132,14 +139,18 @@ public:
     inline void SetStartFrame(int start) { SetRange(start, start + m_EndFrame); }
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
 
     const char* TypeName() const override { return "PlaybackTrack"; }
 
 signals: /* Signals Denoting actions in the Track */
     void cleared();
-    void itemAdded(const SharedTrackItem& item);
-    void itemAboutToBeRemoved(const SharedTrackItem& item);
+    void itemAdded(const SharedTrackItem&);
+    void effectAdded(const Effect* const);
+    void itemAboutToBeRemoved(const SharedTrackItem&);
+    void maxEffectsChanged();
     void itemRemoved();
     void updated();
     void rangeChanged(int start, int end);
@@ -152,6 +163,7 @@ protected: /* Members */
     std::string m_Name;
     int m_StartFrame, m_EndFrame;
     int m_Duration;
+    int m_MaxEffects;
     bool m_Visible;
     bool m_Enabled;
     bool m_Locked;
@@ -159,6 +171,8 @@ protected: /* Members */
 
 protected: /* Methods */
     void SetRange(int start, int end, const bool inclusive = true);
+    void CalculateMaxEffects(const SharedTrackItem& item);
+    void CalculateMaxEffects();
 };
 
 VOID_NAMESPACE_CLOSE

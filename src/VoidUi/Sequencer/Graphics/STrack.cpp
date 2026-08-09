@@ -25,9 +25,18 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
     connect(m_Track.get(), &PlaybackTrack::itemAdded, this, &STrack::AddItem);
     connect(m_Track.get(), &PlaybackTrack::cleared, this, &STrack::Clear);
     connect(m_Track.get(), &PlaybackTrack::itemAboutToBeRemoved, this, &STrack::RemoveItem);
+    connect(m_Track.get(), &PlaybackTrack::itemRemoved, this, &STrack::Update);
 
-    m_BoundingRect = QRectF(0, 0, Sequencer::SceneWidth, Sequencer::TrackHeight);
-    setPos(0, context->Geometry()->TrackRect(track->TrackIndex()).top());
+    int index = track->TrackIndex();
+    m_BoundingRect = QRectF(
+        0,
+        0,
+        Sequencer::SceneWidth,
+        m_Track->Type() == Sequence::TrackType::VIDEO
+            ? m_Context->Geometry()->VideoTrackHeight(index)
+            : m_Context->Geometry()->AudioTrackHeight(index)
+    );
+    setPos(0, context->Geometry()->TrackRect(index).top());
     BuildItems();
 
     m_RazorMarker = new STrackRazorItem(context, this);
@@ -58,7 +67,17 @@ void STrack::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QW
 void STrack::Update()
 {
     prepareGeometryChange();
-    setPos(0, m_Context->Geometry()->TrackRect(m_Track->TrackIndex()).top());
+    int index = m_Track->TrackIndex();
+    setPos(0, m_Context->Geometry()->TrackRect(index).top());
+    
+    m_BoundingRect = QRectF(
+        0,
+        0,
+        Sequencer::SceneWidth,
+        m_Track->Type() == Sequence::TrackType::VIDEO
+            ? m_Context->Geometry()->VideoTrackHeight(index)
+            : m_Context->Geometry()->AudioTrackHeight(index)
+    );
 
     update();
 }
@@ -107,7 +126,10 @@ void STrack::UpdateItem(const SharedTrackItem& item)
 void STrack::UpdateItems()
 {
     for (auto& [_, trackitem] : m_Items)
+    {
         trackitem->Update();
+        trackitem->UpdateItems();
+    }
 }
 
 STrackItem* STrack::ItemAt(int index) const
@@ -149,7 +171,10 @@ void STrack::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
     STimelineItem::hoverEnterEvent(event);
 
     if (m_Context->Action() == SequencerAction::RAZOR)
+    {
         m_RazorMarker->setVisible(true);
+        m_RazorMarker->SetHeight(boundingRect().height());
+    }
 }
 
 void STrack::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
@@ -170,8 +195,8 @@ void STrack::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 
 void STrack::BuildItems()
 {
-    m_Items.reserve(m_Track->ItemCount());
-    for (int i = 0; i < m_Track->ItemCount(); ++i)
+    m_Items.reserve(m_Track->NumItems());
+    for (int i = 0; i < m_Track->NumItems(); ++i)
         AddItem(m_Track->ItemAt(i));
 }
 

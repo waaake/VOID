@@ -32,6 +32,13 @@ void SRazorItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     painter->drawLine(QPoint(0, 0), QPoint(0, boundingRect().height()));
 }
 
+void SRazorItem::SetHeight(int height)
+{
+    prepareGeometryChange();
+    m_BoundingRect = QRectF(-1, 0, 2, height);
+    update();    
+}
+
 /// STrackRazorItem
 
 STrackRazorItem::STrackRazorItem(SequencerContext* context, QGraphicsItem* parent)

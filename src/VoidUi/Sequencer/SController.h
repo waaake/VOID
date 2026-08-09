@@ -48,10 +48,12 @@ public:
     void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
-    void CreateAudioTrack(const SharedPlaybackSequence& seqeunce);
+    void CreateAudioTrack(const SharedPlaybackSequence& sequence);
     void RemoveTracks(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedPlaybackTrack>& tracks);
     void RemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items);
     void RippleRemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items);
+    void CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type);
+    void RemoveTimelineEffects(const std::unordered_set<Effect*>& effects);
 
     STrack* TrackAt(const QPointF& position) const;
     STrack* TrackAt(int index) const;
@@ -64,6 +66,8 @@ public:
     void SetTrackItemsColor(const std::unordered_set<SharedTrackItem>& items);
     void ToggleTrackLock(const SharedPlaybackTrack& track);
     void ToggleTrackState(const SharedPlaybackTrack& track);
+    void ToggleItemState(const std::unordered_set<SharedTrackItem>& items);
+    void ToggleItemState(const std::unordered_set<Effect*>& effects);
 
     void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);
     void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
@@ -77,8 +81,11 @@ public:
     void SetEditMode(const EditMode& mode) { m_EditMode = mode; }
     const EditMode& GetEditMode() const { return m_EditMode; }
 
+    void EditEffect(Effect* effect) { emit editEffectRequested(effect); }
+
 signals:
     void frameChanged(v_frame_t);
+    void editEffectRequested(Effect*);
 
 private:
     QGraphicsScene* m_Scene = { nullptr };

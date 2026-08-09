@@ -15,6 +15,7 @@ public:
     explicit SRazorItem(SequencerContext* context, QGraphicsItem* parent = nullptr);
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     void SetX(int x);
+    void SetHeight(int height);
 };
 
 class STrackRazorItem : public SRazorItem

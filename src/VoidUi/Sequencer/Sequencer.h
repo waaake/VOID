@@ -47,6 +47,9 @@ public:
 
     void SetHorizontalScale(float factor);
 
+signals:
+    void editEffectRequested(Effect*);
+
 private:
     QHBoxLayout* m_Layout;
     QSlider* m_HZoomSlider;
@@ -59,6 +62,7 @@ private:
     QShortcut* m_FitShortcut;
     QShortcut* m_DeleteShortcut;
     QShortcut* m_RippleDeleteShortcut;
+    QShortcut* m_ToggleStateShortcut;
 
     SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
@@ -66,8 +70,11 @@ private:
 private: /* Methods */
     void Build();
     void Connect();
+    void CreateEffect(const std::string& type);
     void DeleteSelected();
     void RippleDeleteSelected();
+    void ToggleItemState();
+    void UpdateAll();
 };
 
 VOID_NAMESPACE_CLOSE
