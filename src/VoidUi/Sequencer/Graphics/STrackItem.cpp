@@ -179,9 +179,6 @@ void STrackItem::AddEffects()
 
 void STrackItem::RemoveEffect(Effect* effect)
 {
-    // auto it = m_Effects.find(effect);
-    // if (it == m_Effects.end())
-    //     return;
     if (m_Effects.find(effect) == m_Effects.end()) return;
 
     STimelineEffect*& teffect = m_Effects[effect];
@@ -450,20 +447,6 @@ void STrackItem::AdjustEffectsWidth(double width)
 
 QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
 {
-//     if (Track()->Locked()) return option->palette.color(QPalette::Base).darker(150);
-
-//     if (!Track()->Enabled() || !m_Item->Enabled())
-//     {
-//         return m_Context->SelectionModel()->IsSelected(m_Item)
-//             ? option->palette.color(QPalette::Highlight).darker(180)
-//             : option->palette.color(QPalette::Base).darker(180);
-//     }
-
-//     QColor color = m_Item->Color().darker(250);
-//     return m_Context->SelectionModel()->IsSelected(m_Item)
-//         ? option->palette.color(QPalette::Highlight).darker(180)
-//         : m_Context->HoverModel()->IsHovered(m_Item) ? color.darker(140) : color;
-
     if (Track()->Locked()) return option->palette.color(QPalette::Base).darker(150);
     if (m_Context->SelectionModel()->IsSelected(m_Item)) return option->palette.color(QPalette::Highlight).darker(180);
 
@@ -476,10 +459,6 @@ QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
 
     // Disabled
     return option->palette.color(QPalette::Base).darker(180);
-
-    // return  m_Context->SelectionModel()->IsSelected(m_Item)
-    //         ? option->palette.color(QPalette::Highlight).darker(180)
-    //         : option->palette.color(QPalette::Base).darker(180);
 }
 
 int STrackItem::YPos() const
