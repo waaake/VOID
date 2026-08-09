@@ -50,7 +50,7 @@ QPixmap IconForge::Pixmap(const IconType& icon, int size, const QColor& color)
     font.setPointSize(size);
     // font.setBold(true);
 
-    QPixmap pixmap(size + 2, size + 2);
+    QPixmap pixmap(size + 4, size + 4);
     pixmap.fill(Qt::transparent);
 
     QPainter painter(&pixmap);
