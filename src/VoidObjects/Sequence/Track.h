@@ -53,6 +53,7 @@ public:
     const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
 
     Effect* CreateEffect(const SharedTrackItem& item, const std::string& effect);
+    void CopyEffect(Effect* effect, const SharedTrackItem& item);
     int MaxEffects() const { return m_MaxEffects; }
 
     /**

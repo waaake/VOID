@@ -70,6 +70,7 @@ public:
     int NumEffects() const { return static_cast<int>(m_Effects.size()); }
     int EffectIndex(const Effect* const effect) const;
     Effect* EffectAt(int index) const { return m_Effects.at(index); }
+    const std::vector<Effect*>& Effects() const { return m_Effects; }
 
     /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.

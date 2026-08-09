@@ -8,6 +8,7 @@
 #include "Track.h"
 #include "Sequence.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Effects/Bridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -42,6 +43,18 @@ Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::stri
         CalculateMaxEffects(item);
     }
     return created;
+}
+
+void PlaybackTrack::CopyEffect(Effect* effect, const SharedTrackItem& item)
+{
+    Effect* copied = _EffectsBridge.Copy(effect);
+    copied->SetTimelineItem(item.get());
+    copied->SetTimelineRange(item->TimelineIn(), item->TimelineOut());
+
+    item->AddEffect(copied);
+
+    // Recalc now that a new effect was added
+    CalculateMaxEffects();
 }
 
 void PlaybackTrack::SetMedia(const SharedMediaClip& media)
@@ -229,6 +242,10 @@ bool PlaybackTrack::RazorAt(v_frame_t frame)
         // The requested and the frame where the other item starts
         m_Razored.insert(frame);
         m_Razored.insert(frame + 1);
+
+        // Copy all effects as well
+        for (const auto& effect : item->Effects())
+            CopyEffect(effect, nitem);
 
         m_Items.Add(nitem);
         emit itemAdded(nitem);
