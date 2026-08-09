@@ -181,6 +181,9 @@ protected:
     v_frame_t m_SourceOut;
 
     bool m_Enabled;
+
+private:
+    void ResetEffectsRange(v_frame_t start, v_frame_t end);
 };
 
 VOID_NAMESPACE_CLOSE

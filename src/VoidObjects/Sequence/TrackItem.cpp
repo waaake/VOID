@@ -23,6 +23,7 @@ TrackItem::TrackItem(QObject* parent)
     , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
+    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
@@ -39,6 +40,7 @@ TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t en
     , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
+    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::~TrackItem()
@@ -389,6 +391,12 @@ void TrackItem::Deserialize(std::istream& in)
             m_Effects.push_back(effect);
         }
     }
+}
+
+void TrackItem::ResetEffectsRange(v_frame_t start, v_frame_t end)
+{
+    for (auto& effect : m_Effects)
+        effect->SetTimelineRange(start, end);
 }
 
 VOID_NAMESPACE_CLOSE
