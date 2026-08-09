@@ -77,7 +77,7 @@ void VoidPreferencesWidget::AddSettings()
     m_GeneralPrefs->Reset();
 
     /* Add the item and the widget to the List and Stack */
-    m_SettingsList->addItem(ListViewItem("General", ":resources/icons/icon_setting.png"));
+    m_SettingsList->addItem(ListViewItem("General", ":resources/icons/icon_settings_2.svg"));
     m_SettingsStacked->addWidget(m_GeneralPrefs);
 
     /* Add Player Preferences */
@@ -87,7 +87,7 @@ void VoidPreferencesWidget::AddSettings()
     m_PlayerPrefs->Reset();
 
     /* Add the item and the widget to the List and Stack */
-    m_SettingsList->addItem(ListViewItem("Player", ":resources/icons/icon_video_player.png"));
+    m_SettingsList->addItem(ListViewItem("Player", ":resources/icons/icon_play_2.svg"));
     m_SettingsStacked->addWidget(m_PlayerPrefs);
 
     /* Add Cache Preferences */
@@ -97,7 +97,7 @@ void VoidPreferencesWidget::AddSettings()
     m_CachePreferences->Reset();
 
     /* Add the item and the widget to the List and Stack */
-    m_SettingsList->addItem(ListViewItem("Caching", ":resources/icons/icon_cache.png"));
+    m_SettingsList->addItem(ListViewItem("Caching", ":resources/icons/icon_disks.svg"));
     m_SettingsStacked->addWidget(m_CachePreferences);
 
     /* Add Media View Preferences */
@@ -107,7 +107,7 @@ void VoidPreferencesWidget::AddSettings()
     m_MediaViewPrefs->Reset();
 
     /* Add the item and the widget to the List and Stack */
-    m_SettingsList->addItem(ListViewItem("Media View", ":resources/icons/icon_media_view.png"));
+    m_SettingsList->addItem(ListViewItem("Media View", ":resources/icons/icon_views.svg"));
     m_SettingsStacked->addWidget(m_MediaViewPrefs);
 }
 

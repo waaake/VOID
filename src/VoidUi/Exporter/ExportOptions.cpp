@@ -181,7 +181,7 @@ void ExportOptions::Setup()
     for (const auto& colorspace : ColorProcessor::Instance().Colorspaces())
     {
         m_OutColorspaceCombo->addItem(
-            IconForge::GetIcon(IconType::icon_deployed_cube, _DARK_COLOR(QPalette::Text, 100)),
+            IconForge::GetIcon(IconType::icon_deployed_cube, _DARK_COLOR(QPalette::Highlight, 150)),
             colorspace.c_str()
         );
     }
