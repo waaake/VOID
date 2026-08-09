@@ -171,7 +171,10 @@ void STrack::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
     STimelineItem::hoverEnterEvent(event);
 
     if (m_Context->Action() == SequencerAction::RAZOR)
+    {
         m_RazorMarker->setVisible(true);
+        m_RazorMarker->SetHeight(boundingRect().height());
+    }
 }
 
 void STrack::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
