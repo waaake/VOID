@@ -14,7 +14,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class EffectsBridge
+class VOID_API EffectsBridge
 {
     EffectsBridge() = default;
 public:
