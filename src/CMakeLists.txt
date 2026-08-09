@@ -111,31 +111,37 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_brush.svg
             ../icons/icon_bounce.svg
             ../icons/icon_close.svg
-            ../icons/icon_cache.png
             ../icons/icon_close_small.svg
+            ../icons/icon_cube.svg
             ../icons/icon_delete.svg
+            ../icons/icon_disks.svg
             ../icons/icon_eraser.svg
             ../icons/icon_fullscreen.svg
             ../icons/icon_grid_view.svg
+            ../icons/icon_hard_drive.svg
             ../icons/icon_load.svg
             ../icons/icon_list_view.svg
             ../icons/icon_maximize.svg
             ../icons/icon_minimize.svg
-            ../icons/icon_media_view.png
             ../icons/icon_missing_frame.svg
             ../icons/icon_pointer.svg
+            ../icons/icon_open.svg
             ../icons/icon_play.svg
+            ../icons/icon_play_2.svg
             ../icons/icon_playlist.svg
             ../icons/icon_play_selected.svg
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg
             ../icons/icon_save.svg
+            ../icons/icon_save_2.svg
             ../icons/icon_settings.svg
-            ../icons/icon_setting.png
+            ../icons/icon_settings_2.svg
             ../icons/icon_sort_abc.svg
             ../icons/icon_tab_options.svg
+            ../icons/icon_tag_yellow.svg
             ../icons/icon_text.svg
-            ../icons/icon_video_player.png
+            ../icons/icon_views.svg
+            ../icons/icon_wrench.svg
             ../icons/icon_zoom_in.svg
             ../icons/icon_zoom_out.svg
 
