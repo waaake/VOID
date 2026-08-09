@@ -20,6 +20,7 @@ STimelineEffect::STimelineEffect(Effect* effect, SequencerContext* context, QGra
     CalculateBoundingBox();
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
     connect(m_Context->SelectionModel(), &SSelectionModel::effectSelectionChanged, this, [this]() { update(); });
+    connect(m_Effect, &Effect::rangeChanged, this, &STimelineEffect::Update);
     connect(m_Effect, &Effect::updated, this, [this]() { update(); });
 }
 
@@ -49,6 +50,13 @@ void STimelineEffect::paint(QPainter* painter, const QStyleOptionGraphicsItem* o
     );
     painter->setPen(Qt::black);
     painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignVCenter, m_Effect->Name().c_str());
+}
+
+void STimelineEffect::SetWidth(double width)
+{
+    prepareGeometryChange();
+    m_BoundingRect = QRectF(0, 0, width, Sequencer::TimelineEffectHeight);
+    update();
 }
 
 void STimelineEffect::Update()

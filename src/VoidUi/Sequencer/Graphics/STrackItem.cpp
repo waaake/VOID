@@ -434,10 +434,18 @@ void STrackItem::AdjustTimelineRange(v_frame_t frame)
     }
 
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
+    // Need to see how expensive this becomes, we don't want slowness while dragging -- so keeping an eye on performance
+    AdjustEffectsWidth(width);
 
     // Dynamic handles shifting as we move
     ToggleHandles(head, tail, m_Item->Duration() - m_TrimContext.handle, true);
     update();
+}
+
+void STrackItem::AdjustEffectsWidth(double width)
+{
+    for (auto& [_, teffect] : m_Effects)
+        teffect->SetWidth(width);
 }
 
 QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const

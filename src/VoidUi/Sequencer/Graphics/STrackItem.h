@@ -60,6 +60,7 @@ private:
 private: /* Methods */
     void CalculateBoundingRect();
     void AdjustTimelineRange(v_frame_t frame);
+    void AdjustEffectsWidth(double width);
     int YPos() const;
     void ToggleHandles(int head = 0, int tail = 0, int duration = 0, bool visible = false);
     QColor Background(const QStyleOptionGraphicsItem* option) const;

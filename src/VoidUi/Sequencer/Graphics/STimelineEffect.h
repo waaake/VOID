@@ -19,6 +19,7 @@ public:
 
     Effect* TimelineEffect() const { return m_Effect; }
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+    void SetWidth(double width);
     void Update() override;
 
 protected:
