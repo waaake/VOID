@@ -238,7 +238,7 @@ void SequencerController::CreateEffect(const std::unordered_set<SharedTrackItem>
     QUndoStack* stack = _MediaBridge.UndoStack();
 
     QString text("Create '%1' Effect");
-    stack->beginMacro(text.arg(type));
+    stack->beginMacro(text.arg(type.c_str()));
 
     for (const SharedTrackItem& item : items)
         stack->push(new CreateTimelineEffectCommand(item, type));

@@ -465,7 +465,7 @@ CreateTimelineEffectCommand::CreateTimelineEffectCommand(const SharedTrackItem& 
     m_EffectIndex = item->NumEffects();
 
     QString text("Create '%1' Effect");
-    setText(text.arg(type));
+    setText(text.arg(type.c_str()));
 }
 
 void CreateTimelineEffectCommand::undo()
