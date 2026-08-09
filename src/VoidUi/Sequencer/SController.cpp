@@ -248,10 +248,34 @@ void SequencerController::CreateEffect(const std::unordered_set<SharedTrackItem>
 
 void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*>& effects)
 {
+    std::vector<Effect*> sorted;
+    sorted.reserve(effects.size());
+
+    for (const auto& effect : effects)
+        sorted.push_back(effect);
+
+    std::sort(sorted.begin(), sorted.end(), [&](const Effect* _a, const Effect* _b) -> bool
+    {
+        TrackItem* _aitem = _a->TimelineItem();
+        TrackItem* _bitem = _b->TimelineItem();
+
+        int _aitemidx = _aitem ? _aitem->Track()->ItemIndex(_aitem) : -1;
+        int _bitemidx = _bitem ? _bitem->Track()->ItemIndex(_bitem) : -2;
+
+        // Sort ascending based on the track item index -- effect _b belongs to a different track item than _a
+        if (_aitemidx != _bitemidx)
+            return _aitemidx < _bitemidx;
+
+        // Sort descending based on the effect index
+        // we need the items to be reversed such that when deleting them, the index of other items don't change
+        // and running undo works as expected
+        return _aitem->EffectIndex(_a) > _bitem->EffectIndex(_b);
+    });
+
     QUndoStack* stack = _MediaBridge.UndoStack();
     stack->beginMacro("Delete Timeline Effect(s)");
 
-    for (auto& effect : effects)
+    for (auto& effect : sorted)
         stack->push(new DeleteTimelineEffectCommand(effect));
 
     stack->endMacro();
