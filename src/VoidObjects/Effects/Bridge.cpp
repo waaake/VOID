@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <sstream>
+
 /* Internal */
 #include "Bridge.h"
 #include "FormatForge.h"
@@ -37,6 +40,21 @@ Effect* EffectsBridge::CreateEffect(const std::string& type, v_frame_t in, v_fra
         return new Effect(creator.release(), EffectName(type), in, out);
     }
     return nullptr;
+}
+
+Effect* EffectsBridge::Copy(const Effect* effect)
+{
+    Effect* copied = new Effect(Forge::Instance().GetImageOp(effect->Type()).release(), "copy");
+
+    // Copy internals and values
+    std::ostringstream out(std::ios::binary);
+    effect->Serialize(out);
+    std::istringstream in(out.str(), std::ios::binary);
+    copied->Deserialize(in);
+
+    // Finally set the next available name
+    copied->SetName(EffectName(effect->Type()));
+    return copied;
 }
 
 std::string EffectsBridge::EffectName(const std::string& type)

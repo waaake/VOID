@@ -22,6 +22,7 @@ public:
 
     Effect* CreateEffect(const std::string& type);
     Effect* CreateEffect(const std::string& type, v_frame_t in, v_frame_t out);
+    Effect* Copy(const Effect* effect);
 
 private: /* Members */
     std::unordered_map<std::string, std::size_t> m_EffectCount;
