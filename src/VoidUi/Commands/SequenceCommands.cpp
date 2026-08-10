@@ -16,8 +16,8 @@ VOID_NAMESPACE_OPEN
 MoveTrackItemCommand::MoveTrackItemCommand(const SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(item->Track()->Sequence())
-    , m_TrackIndex(item->Track()->TrackIndex())
-    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
     , m_Requested(frame)
     , m_Previous(item->TimelineIn())
     , m_TrackType(item->Track()->Type())
@@ -27,8 +27,7 @@ MoveTrackItemCommand::MoveTrackItemCommand(const SharedTrackItem& item, v_frame_
 
 void MoveTrackItemCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         track->MoveItem(item, m_Previous);
@@ -37,8 +36,7 @@ void MoveTrackItemCommand::undo()
 
 bool MoveTrackItemCommand::Redo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         return track->MoveItem(item, m_Requested);
@@ -54,9 +52,9 @@ MoveItemToTrackCommand::MoveItemToTrackCommand(const SharedPlaybackTrack& track,
     , m_Sequence(track->Sequence())
     , m_PreviousFrame(item->TimelineIn())
     , m_RequestedFrame(frame)
-    , m_PreviousTrackIndex(track->TrackIndex())
+    , m_PreviousTrackIndex(track->Index())
     , m_RequestedTrackIndex(trackIndex)
-    , m_PreviousItemIndex(track->ItemIndex(item))
+    , m_PreviousItemIndex(item->Index())
     , m_Type(track->Type())
 {
     setText("Move TrackItem");
@@ -64,8 +62,8 @@ MoveItemToTrackCommand::MoveItemToTrackCommand(const SharedPlaybackTrack& track,
 
 void MoveItemToTrackCommand::undo()
 {
-    SharedPlaybackTrack previous = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_PreviousTrackIndex) : m_Sequence->AudioTrackAt(m_PreviousTrackIndex);
-    SharedPlaybackTrack requested = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_RequestedTrackIndex) : m_Sequence->AudioTrackAt(m_RequestedTrackIndex);
+    SharedPlaybackTrack previous = m_Sequence->TrackAt(m_PreviousTrackIndex, m_Type);
+    SharedPlaybackTrack requested = m_Sequence->TrackAt(m_RequestedTrackIndex, m_Type);
 
     if (previous && requested)
     {
@@ -78,8 +76,8 @@ void MoveItemToTrackCommand::undo()
 
 bool MoveItemToTrackCommand::Redo()
 {
-    SharedPlaybackTrack previous = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_PreviousTrackIndex) : m_Sequence->AudioTrackAt(m_PreviousTrackIndex);
-    SharedPlaybackTrack requested = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_RequestedTrackIndex) : m_Sequence->AudioTrackAt(m_RequestedTrackIndex);
+    SharedPlaybackTrack previous = m_Sequence->TrackAt(m_PreviousTrackIndex, m_Type);
+    SharedPlaybackTrack requested = m_Sequence->TrackAt(m_RequestedTrackIndex, m_Type);
 
     if (previous && requested)
     {
@@ -99,8 +97,8 @@ bool MoveItemToTrackCommand::Redo()
 OffsetItemCommand::OffsetItemCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(item->Track()->Sequence())
-    , m_TrackIndex(item->Track()->TrackIndex())
-    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
     , m_Offset(offset)
     , m_TrackType(item->Track()->Type())
 {
@@ -109,8 +107,7 @@ OffsetItemCommand::OffsetItemCommand(const SharedTrackItem& item, int offset, QU
 
 void OffsetItemCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         track->OffsetItem(item, -m_Offset);
@@ -121,8 +118,7 @@ bool OffsetItemCommand::Redo()
 {
     if (m_Offset == 0) return false;
 
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         return track->OffsetItem(item, m_Offset);
@@ -136,8 +132,8 @@ bool OffsetItemCommand::Redo()
 SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, const QColor& color, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(item->Track()->Sequence())
-    , m_TrackIndex(item->Track()->TrackIndex())
-    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
     , m_Color(color)
     , m_Previous(item->Color())
     , m_TrackType(item->Track()->Type())
@@ -149,8 +145,8 @@ SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, 
 SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(item->Track()->Sequence())
-    , m_TrackIndex(item->Track()->TrackIndex())
-    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
     , m_Color(QColor(0, 0, 0))
     , m_Previous(item->Color())
     , m_Reset(true)
@@ -161,8 +157,7 @@ SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, 
 
 void SetTrackItemColorCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->SetColor(m_Previous);
@@ -171,8 +166,7 @@ void SetTrackItemColorCommand::undo()
 
 bool SetTrackItemColorCommand::Redo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         m_Reset ? item->ResetColor() : item->SetColor(m_Color);
@@ -187,7 +181,7 @@ bool SetTrackItemColorCommand::Redo()
 ToggleLockTrackCommand::ToggleLockTrackCommand(const SharedPlaybackTrack& track, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(track->Sequence())
-    , m_TrackIndex(track->TrackIndex())
+    , m_TrackIndex(track->Index())
     , m_TrackType(track->Type())
 {
     setText(track->Locked() ? "Unlock Track" : "Lock Track");
@@ -195,14 +189,13 @@ ToggleLockTrackCommand::ToggleLockTrackCommand(const SharedPlaybackTrack& track,
 
 void ToggleLockTrackCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track) track->Lock(!track->Locked());
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+        track->Lock(!track->Locked());
 }
 
 bool ToggleLockTrackCommand::Redo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         track->Lock(!track->Locked());
         return true;
@@ -216,7 +209,7 @@ bool ToggleLockTrackCommand::Redo()
 ToggleTrackStateCommand::ToggleTrackStateCommand(const SharedPlaybackTrack& track, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(track->Sequence())
-    , m_TrackIndex(track->TrackIndex())
+    , m_TrackIndex(track->Index())
     , m_TrackType(track->Type())
 {
     setText(track->Enabled() ? "Disable Track" : "Enable Track");
@@ -224,14 +217,13 @@ ToggleTrackStateCommand::ToggleTrackStateCommand(const SharedPlaybackTrack& trac
 
 void ToggleTrackStateCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track) track->SetEnabled(!track->Enabled());
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+        track->SetEnabled(!track->Enabled());
 }
 
 bool ToggleTrackStateCommand::Redo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         track->SetEnabled(!track->Enabled());
         return true;
@@ -247,17 +239,14 @@ ToggleTrackItemStateCommand::ToggleTrackItemStateCommand(const SharedTrackItem& 
     , m_Sequence(item->Track()->Sequence())
     , m_ItemIndex(item->Track()->ItemIndex(item))
     , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->Index())
 {
-    const PlaybackTrack* const track = item->Track();
-    m_TrackIndex = track->Type() == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
-
     setText("Toggle TrackItem");
 }
 
 void ToggleTrackItemStateCommand::undo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->SetEnabled(!item->Enabled());
@@ -266,8 +255,7 @@ void ToggleTrackItemStateCommand::undo()
 
 bool ToggleTrackItemStateCommand::Redo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->SetEnabled(!item->Enabled());
@@ -285,15 +273,14 @@ ToggleTimelineEffectCommand::ToggleTimelineEffectCommand(Effect* effect, QUndoCo
     const PlaybackTrack* const track = effect->TimelineItem()->Track();
     const TrackItem* const item = effect->TimelineItem();
     m_TrackType = track->Type();
-    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
-    m_ItemIndex = track->ItemIndex(item);
+    m_TrackIndex = track->Index();
+    m_ItemIndex = item->Index();
     m_EffectIndex = item->EffectIndex(effect);
 }
 
 void ToggleTimelineEffectCommand::undo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
         Effect* effect = item->EffectAt(m_EffectIndex);
@@ -303,8 +290,7 @@ void ToggleTimelineEffectCommand::undo()
 
 bool ToggleTimelineEffectCommand::Redo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
         Effect* effect = item->EffectAt(m_EffectIndex);
@@ -347,7 +333,7 @@ DeleteTrackCommand::DeleteTrackCommand(const SharedPlaybackTrack& track, QUndoCo
     , m_Sequence(track->Sequence())
     , m_Type(track->Type())
 {
-    m_TrackIndex = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track.get()) : m_Sequence->AudioTrackIndex(track.get());
+    m_TrackIndex = track->Index();
     setText("Delete Track");
 }
 
@@ -360,8 +346,7 @@ void DeleteTrackCommand::undo()
 
 bool DeleteTrackCommand::Redo()
 {
-    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (SharedPlaybackTrack track = m_Sequence->TrackAt(m_TrackIndex, m_Type))
     {
         std::ostringstream os(std::ios::binary);
         track->Serialize(os);
@@ -383,16 +368,15 @@ DeleteTrackItemCommand::DeleteTrackItemCommand(const SharedTrackItem& item, QUnd
     PlaybackTrack* track = item->Track();
     m_Sequence = track->Sequence();
     m_TrackType = track->Type();
-    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
-    m_ItemIndex = track->ItemIndex(item);
+    m_TrackIndex = track->Index();
+    m_ItemIndex = item->Index();
 
     setText("Delete TrackItem");
 }
 
 void DeleteTrackItemCommand::undo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         std::istringstream is(m_ItemData, std::ios::binary);
         SharedTrackItem item = std::make_shared<TrackItem>(track.get());
@@ -403,8 +387,7 @@ void DeleteTrackItemCommand::undo()
 
 bool DeleteTrackItemCommand::Redo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         std::ostringstream os(std::ios::binary);
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
@@ -482,8 +465,7 @@ CreateTimelineEffectCommand::CreateTimelineEffectCommand(const SharedTrackItem& 
 
 void CreateTimelineEffectCommand::undo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->RemoveEffect(m_EffectIndex);
@@ -492,8 +474,7 @@ void CreateTimelineEffectCommand::undo()
 
 bool CreateTimelineEffectCommand::Redo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
         return (bool)track->CreateEffect(item, m_EffectType);
@@ -506,7 +487,7 @@ bool CreateTimelineEffectCommand::Redo()
 RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(track->Sequence())
-    , m_TrackIndex(track->TrackIndex())
+    , m_TrackIndex(track->Index())
     , m_Type(track->Type())
     , m_Frame(frame)
 {
@@ -515,13 +496,13 @@ RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t
 
 void RazorTrackCommand::undo()
 {
-    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    track->MergeCut(m_Frame);
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_Type))
+        track->MergeCut(m_Frame);
 }
 
 bool RazorTrackCommand::Redo()
 {
-    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_Type);
     return track ? track->RazorAt(m_Frame) : false;
 }
 
@@ -562,7 +543,7 @@ bool RazorSequenceCommand::Redo()
 MergeCutCommand::MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(track->Sequence())
-    , m_TrackIndex(track->TrackIndex())
+    , m_TrackIndex(track->Index())
     , m_Type(track->Type())
     , m_Frame(frame)
 {
@@ -587,7 +568,7 @@ OffsetItemSourceCommand::OffsetItemSourceCommand(const SharedTrackItem& item, in
     : VoidUndoCommand(parent)
     , m_Sequence(item->Track()->Sequence())
     , m_TrackType(item->Track()->Type())
-    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_TrackIndex(item->Track()->Index())
     , m_ItemIndex(item->Track()->ItemIndex(item))
     , m_Offset(offset)
     , m_Previous(item->SourceIn())
@@ -597,8 +578,7 @@ OffsetItemSourceCommand::OffsetItemSourceCommand(const SharedTrackItem& item, in
 
 void OffsetItemSourceCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->SetSourceIn(m_Previous);
@@ -610,8 +590,7 @@ bool OffsetItemSourceCommand::Redo()
     if (m_Offset == 0)
         return false;
 
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->SetSourceIn(item->SourceIn() + m_Offset);
@@ -627,7 +606,7 @@ TrimItemHeadCommand::TrimItemHeadCommand(const SharedTrackItem& item, int handle
     : VoidUndoCommand(parent)
     , m_Sequence(item->Track()->Sequence())
     , m_TrackType(item->Track()->Type())
-    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_TrackIndex(item->Track()->Index())
     , m_ItemIndex(item->Track()->ItemIndex(item))
     , m_Handle(handle)
 {
@@ -636,8 +615,7 @@ TrimItemHeadCommand::TrimItemHeadCommand(const SharedTrackItem& item, int handle
 
 void TrimItemHeadCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->TrimHead(-m_Handle);
@@ -648,8 +626,7 @@ bool TrimItemHeadCommand::Redo()
 {
     if (m_Handle == 0) return false;
 
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         if (m_Handle > item->Duration()) return false;
@@ -666,7 +643,7 @@ TrimItemTailCommand::TrimItemTailCommand(const SharedTrackItem& item, int handle
     : VoidUndoCommand(parent)
     , m_Sequence(item->Track()->Sequence())
     , m_TrackType(item->Track()->Type())
-    , m_TrackIndex(item->Track()->TrackIndex())
+    , m_TrackIndex(item->Track()->Index())
     , m_ItemIndex(item->Track()->ItemIndex(item))
     , m_Handle(handle)
 {
@@ -675,8 +652,7 @@ TrimItemTailCommand::TrimItemTailCommand(const SharedTrackItem& item, int handle
 
 void TrimItemTailCommand::undo()
 {
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         item->TrimTail(-m_Handle);
@@ -687,8 +663,7 @@ bool TrimItemTailCommand::Redo()
 {
     if (m_Handle == 0) return false;
 
-    SharedPlaybackTrack track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
-    if (track)
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         if (m_Handle > item->Duration()) return false;
