@@ -116,7 +116,7 @@ public:
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
     inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
-    int TrackIndex() const;
+    int Index() const;
 
     /* Setters */
 

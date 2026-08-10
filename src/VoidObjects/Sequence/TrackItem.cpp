@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "TrackItem.h"
+#include "Track.h"
 #include "VoidCore/Logging.h"
 #include "VoidObjects/VoidContext.h"
 #include "VoidObjects/Effects/Bridge.h"
@@ -71,6 +72,11 @@ void TrackItem::Unlink()
 {
     m_Media.reset();
     emit updated();
+}
+
+std::size_t TrackItem::Index() const
+{
+    return m_Track->ItemIndex(this);
 }
 
 void TrackItem::SetEnabled(bool enable)

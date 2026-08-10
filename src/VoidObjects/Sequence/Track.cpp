@@ -215,7 +215,7 @@ SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
     return m_Recent;
 }
 
-int PlaybackTrack::TrackIndex() const
+int PlaybackTrack::Index() const
 {
     if (const auto& sequence = Sequence())
         return m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(this) : sequence->AudioTrackIndex(this);
