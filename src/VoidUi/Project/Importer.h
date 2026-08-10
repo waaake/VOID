@@ -49,6 +49,7 @@ private: /* Members */
 private: /* Methods */
     void Process();
     void GetMedia(const std::string& directory, std::vector<MediaStruct>& media, int level = 0) const;
+    std::vector<MediaStruct> GetMedia(const std::string& directory, int level = 0) const;
 };
 
 VOID_NAMESPACE_CLOSE
