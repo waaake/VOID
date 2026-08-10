@@ -129,20 +129,20 @@ void SequencerController::CreateAudioTrack(const SharedPlaybackSequence& sequenc
     _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::TrackType::AUDIO));
 }
 
-void SequencerController::RemoveTracks(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedPlaybackTrack>& tracks)
+void SequencerController::RemoveTracks(const std::unordered_set<SharedPlaybackTrack>& tracks)
 {
     QUndoStack* stack = _MediaBridge.UndoStack();
 
     stack->beginMacro("Remove Track(s)");
     for (const auto& track : tracks)
-        stack->push(new DeleteTrackCommand(sequence, track->TrackIndex(), track->Type()));
+        stack->push(new DeleteTrackCommand(track));
     stack->endMacro();
 }
 
-void SequencerController::RemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items)
+void SequencerController::RemoveTrackItems(const std::unordered_set<SharedTrackItem>& items)
 {
     if (m_EditMode == EditMode::RIPPLE)
-        return RippleRemoveTrackItems(sequence, items);
+        return RippleRemoveTrackItems(items);
 
     QUndoStack* stack = _MediaBridge.UndoStack();
 
@@ -174,12 +174,12 @@ void SequencerController::RemoveTrackItems(const SharedPlaybackSequence& sequenc
     for (const auto& item : items)
     {
         const PlaybackTrack* track = item->Track();
-        stack->push(new DeleteTrackItemCommand(sequence, track->Type(), track->TrackIndex(), track->ItemIndex(item)));
+        stack->push(new DeleteTrackItemCommand(item));
     }
     stack->endMacro();
 }
 
-void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items)
+void SequencerController::RippleRemoveTrackItems(const std::unordered_set<SharedTrackItem>& items)
 {
     QUndoStack* stack = _MediaBridge.UndoStack();
 
@@ -213,7 +213,7 @@ void SequencerController::RippleRemoveTrackItems(const SharedPlaybackSequence& s
         const PlaybackTrack* track = item->Track();
         int index = track->ItemIndex(item);
 
-        stack->push(new DeleteTrackItemCommand(sequence, track->Type(), track->TrackIndex(), track->ItemIndex(item)));
+        stack->push(new DeleteTrackItemCommand(item));
 
         std::size_t max = track->NumItems();
         // Last Item --- Nothing else to offset/move

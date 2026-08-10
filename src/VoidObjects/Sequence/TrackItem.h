@@ -52,6 +52,8 @@ public:
     bool Linked() const { return (bool)m_Media; }
     void Unlink();
 
+    std::size_t Index() const;
+
     void SetEnabled(bool enable);
     bool Enabled() const { return m_Enabled; }
 

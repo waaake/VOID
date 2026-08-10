@@ -25,7 +25,7 @@ public:
 
     SharedPlaybackTrack& Track() { return m_Track; }
     const SharedPlaybackTrack& Track() const { return m_Track; }
-    int Index() const { return m_Track->TrackIndex(); }
+    int Index() const { return m_Track->Index(); }
     bool Locked() const { return m_Track->Locked(); }
     bool Enabled() const { return m_Track->Enabled(); }
     bool IsRazored(v_frame_t frame) const { return m_Track->IsRazored(frame); }

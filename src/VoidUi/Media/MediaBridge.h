@@ -90,9 +90,10 @@ public:
      * Adds Media to the Graph
      */
     bool AddMedia(MediaStruct&& mstruct);
-    bool AddMedia(const MediaStruct& mstruct);    
+    bool AddMedia(const MediaStruct& mstruct);
     bool InsertMedia(MediaStruct&& mstruct, int index);
     bool InsertMedia(const MediaStruct& mstruct, int index);
+    bool InsertMedia(const SharedMediaClip& media, int index);
 
     void AddTag(const QModelIndex& index, const std::string& tag);
     void AddTag(const SharedMediaClip& media, const std::string& tag);

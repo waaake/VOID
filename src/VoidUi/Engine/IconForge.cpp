@@ -54,6 +54,7 @@ QPixmap IconForge::Pixmap(const IconType& icon, int size, const QColor& color)
     pixmap.fill(Qt::transparent);
 
     QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
     painter.setFont(font);
     painter.setPen(color);
     painter.drawText(pixmap.rect(), Qt::AlignCenter, QChar(static_cast<char16_t>(icon)));

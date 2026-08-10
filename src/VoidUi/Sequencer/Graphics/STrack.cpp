@@ -27,7 +27,7 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
     connect(m_Track.get(), &PlaybackTrack::itemAboutToBeRemoved, this, &STrack::RemoveItem);
     connect(m_Track.get(), &PlaybackTrack::itemRemoved, this, &STrack::Update);
 
-    int index = track->TrackIndex();
+    int index = track->Index();
     m_BoundingRect = QRectF(
         0,
         0,
@@ -67,7 +67,7 @@ void STrack::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QW
 void STrack::Update()
 {
     prepareGeometryChange();
-    int index = m_Track->TrackIndex();
+    int index = m_Track->Index();
     setPos(0, m_Context->Geometry()->TrackRect(index).top());
     
     m_BoundingRect = QRectF(

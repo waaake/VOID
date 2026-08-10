@@ -241,6 +241,11 @@ void PlaybackSequence::UpdateRange(int start, int end)
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
 }
 
+const SharedPlaybackTrack& PlaybackSequence::TrackAt(std::size_t index, const Sequence::TrackType& type) const
+{
+    return type == Sequence::TrackType::VIDEO ? m_VideoTracks.at(index) : m_AudioTracks.at(index);
+}
+
 int PlaybackSequence::VideoTrackIndex(const PlaybackTrack* track) const
 {
     auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
@@ -253,6 +258,11 @@ int PlaybackSequence::AudioTrackIndex(const PlaybackTrack* track) const
     auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
     auto it = std::find_if(m_AudioTracks.begin(), m_AudioTracks.end(), _f);
     return std::distance(m_AudioTracks.begin(), it);
+}
+
+int PlaybackSequence::TrackIndex(const PlaybackTrack* track) const
+{
+    return track->Type() == Sequence::TrackType::VIDEO ? VideoTrackIndex(track) : AudioTrackIndex(track);
 }
 
 bool PlaybackSequence::HasMedia() const

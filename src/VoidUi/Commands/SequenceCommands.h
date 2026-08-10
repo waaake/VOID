@@ -21,8 +21,10 @@ public:
     bool Redo() override;
 
 private:
-    std::weak_ptr<TrackItem> m_Item;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex, m_ItemIndex;
     v_frame_t m_Requested, m_Previous;
+    Sequence::TrackType m_TrackType;
 };
 
 class MoveItemToTrackCommand : public VoidUndoCommand
@@ -63,9 +65,11 @@ public:
     bool Redo() override;
 
 private:
-    std::weak_ptr<TrackItem> m_Item;
     QColor m_Color;
     QColor m_Previous;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex, m_ItemIndex;
+    Sequence::TrackType m_TrackType;
     bool m_Reset;
 };
 
@@ -77,8 +81,9 @@ public:
     bool Redo() override;
 
 private:
-    std::weak_ptr<PlaybackTrack> m_Track;
-    bool m_Previous;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    Sequence::TrackType m_TrackType;
 };
 
 class ToggleTrackStateCommand : public VoidUndoCommand
@@ -89,8 +94,9 @@ public:
     bool Redo() override;
 
 private:
-    std::weak_ptr<PlaybackTrack> m_Track;
-    bool m_Previous;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    Sequence::TrackType m_TrackType;
 };
 
 class ToggleTrackItemStateCommand : public VoidUndoCommand
@@ -138,13 +144,13 @@ private:
 class DeleteTrackCommand : public VoidUndoCommand
 {
 public:
-    DeleteTrackCommand(const SharedPlaybackSequence& sequence, int index, const Sequence::TrackType& type, QUndoCommand* parent = nullptr);
+    DeleteTrackCommand(const SharedPlaybackTrack& track, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
 private:
     std::string m_TrackData;
-    std::weak_ptr<PlaybackSequence> m_Sequence;
+    PlaybackSequence* m_Sequence;
     Sequence::TrackType m_Type;
     int m_TrackIndex;
 };
@@ -152,16 +158,16 @@ private:
 class DeleteTrackItemCommand : public VoidUndoCommand
 {
 public:
-    DeleteTrackItemCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, int trackindex, int index, QUndoCommand* parent = nullptr);
+    DeleteTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
 private:
-    std::weak_ptr<PlaybackSequence> m_Sequence;
-    Sequence::TrackType m_Type;
+    std::string m_ItemData;
+    PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_ItemIndex;
-    std::string m_ItemData;
+    Sequence::TrackType m_TrackType;
 };
 
 class DeleteTimelineEffectCommand : public VoidUndoCommand

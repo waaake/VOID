@@ -33,8 +33,8 @@ QSize STrackHeader::sizeHint() const
     return QSize(
         Sequencer::TrackHeaderWidth,
         m_Track->Type() == Sequence::TrackType::VIDEO
-            ? m_Context->Geometry()->VideoTrackHeight(m_Track->TrackIndex())
-            : m_Context->Geometry()->AudioTrackHeight(m_Track->TrackIndex())
+            ? m_Context->Geometry()->VideoTrackHeight(m_Track->Index())
+            : m_Context->Geometry()->AudioTrackHeight(m_Track->Index())
     );
 }
 
@@ -124,13 +124,13 @@ void STrackHeader::UpdateSize()
     // resize(
     //     Sequencer::TrackHeaderWidth,
     //     m_Track->Type() == Sequence::TrackType::VIDEO
-    //         ? m_Context->Geometry()->VideoTrackHeight(m_Track->TrackIndex())
-    //         : m_Context->Geometry()->AudioTrackHeight(m_Track->TrackIndex())    
+    //         ? m_Context->Geometry()->VideoTrackHeight(m_Track->Index())
+    //         : m_Context->Geometry()->AudioTrackHeight(m_Track->Index())    
     // );
     setFixedHeight(
         m_Track->Type() == Sequence::TrackType::VIDEO
-            ? m_Context->Geometry()->VideoTrackHeight(m_Track->TrackIndex())
-            : m_Context->Geometry()->AudioTrackHeight(m_Track->TrackIndex())
+            ? m_Context->Geometry()->VideoTrackHeight(m_Track->Index())
+            : m_Context->Geometry()->AudioTrackHeight(m_Track->Index())
     );
     update();
 }

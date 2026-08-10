@@ -61,11 +61,13 @@ public:
 
     const SharedPlaybackTrack& VideoTrackAt(std::size_t index) const { return m_VideoTracks.at(index); }
     const SharedPlaybackTrack& AudioTrackAt(std::size_t index) const { return m_AudioTracks.at(index); }
+    const SharedPlaybackTrack& TrackAt(std::size_t index, const Sequence::TrackType& type) const;
     const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
     const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
 
     int VideoTrackIndex(const PlaybackTrack* track) const;
     int AudioTrackIndex(const PlaybackTrack* track) const;
+    int TrackIndex(const PlaybackTrack* track) const;
 
     // const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
     // const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
