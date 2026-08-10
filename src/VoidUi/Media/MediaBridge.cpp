@@ -200,7 +200,7 @@ void MBridge::AddToPlaylist(QByteArray& data, Playlist* playlist)
         QDataStream stream(&data, QIODevice::ReadOnly);
         int count;
         stream >> count;
-    
+
         QUndoStack* stack = m_Project->UndoStack();
         stack->beginMacro("Add Media to Playlist");
 
@@ -275,7 +275,7 @@ bool MBridge::AddMedia(MediaStruct&& mstruct)
         m_Project->AddMedia(clip);
         emit mediaAdded(clip);
         // Success
-        return true;    
+        return true;
     }
 
     VOID_LOG_INFO("Invalid Media Type");
@@ -353,6 +353,19 @@ bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
     }
 
     VOID_LOG_INFO("Invalid Media Type");
+    return false;
+}
+
+bool MBridge::InsertMedia(const SharedMediaClip& media, int index)
+{
+    if (media->Valid())
+    {
+        m_Project->InsertMedia(media, index);
+        emit mediaAdded(media);
+        return true;
+    }
+
+    VOID_LOG_INFO("Invalid Media");
     return false;
 }
 
@@ -684,7 +697,7 @@ QMenu* MBridge::RecentProjectsMenu(QMenu* parent)
 {
     if (!m_RecentProjectsMenu)
         m_RecentProjectsMenu = new QMenu("Recent Projects", parent);
-    
+
     ResetProjectsMenu();
     return m_RecentProjectsMenu;
 }
