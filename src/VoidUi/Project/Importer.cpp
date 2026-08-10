@@ -52,8 +52,23 @@ void DirectoryImporter::Import(const std::vector<std::string>& directories, int 
 void DirectoryImporter::Process()
 {
     std::vector<MediaStruct> media;
-    for (auto& directory : m_Directories)
-        GetMedia(directory, media);
+
+    // Passing by reference here in the GetMedia seems to be much slower (atleast on linux trying to search across directories)
+    // Example case on nested exr/mov structs 12000+ elements across 3 directories, search took 50 seconds with recursive
+    // and 11 seconds where we return std::vector, need more benchmark testing across this
+    // tried multiple variations even with reserving the reference'd vector to 10000000 elements, but still is 5-7 times slower
+    // for (auto& directory : m_Directories)
+    //     GetMedia(directory, media);
+
+    // Anyways for now we'd go with the older implementation, which ensures each iteration/recursion gets its own vector
+    // A possible theory could be the growing vector elements leading to that many copies as it needs reallocations,
+    // but reserving should have solved that, maybe we spend some time on it later...
+    for (const auto& directory : m_Directories)
+    {
+        std::vector<MediaStruct> out = GetMedia(directory);
+        media.reserve(media.size() + out.size());
+        media.insert(media.end(), std::make_move_iterator(out.begin()), std::make_move_iterator(out.end()));
+    }
 
     if (media.empty() || m_Cancelled.load())
     {
@@ -138,6 +153,73 @@ void DirectoryImporter::GetMedia(const std::string& directory, std::vector<Media
     {
         VOID_LOG_ERROR(e.what());
     }
+}
+
+std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& directory, int level) const
+{
+    std::vector<MediaStruct> vec;
+
+    try
+    {
+        for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator(directory))
+        {
+
+            if (m_Cancelled.load())
+                return vec;
+
+            /* Recurse through the directory if the level allows */
+            if (entry.is_directory() && level <= m_MaxLevel)
+            {
+                /* Get all media inside the directory */
+                std::vector<MediaStruct> out = std::move(GetMedia(entry.path().string(), level + 1));
+
+                vec.reserve(vec.size() + out.size());
+                vec.insert(vec.end(), std::make_move_iterator(out.begin()), std::make_move_iterator(out.end()));
+
+                continue;
+            }
+
+            MEntry e(entry.path().string());
+            MediaType type = MHelper::GetMediaType(e);
+
+            if (type == MediaType::NonMedia)
+                continue;
+
+            /* Flag to control what happens with the entry */
+            bool new_entry = true;
+
+            /**
+             * Iterate over what we have in our vector currently
+             * i.e. the media structs to see if this entry belongs to any one of them
+             * if so, this gets added there, else we create a new media struct from it
+             */
+            for (MediaStruct& m : vec)
+            {
+                /**
+                 * The entry belongs to this Media Struct don't have to add it again
+                 * this search is going to be used to import media via the UndoQueue
+                 * which only needs path of a single media from it
+                 */
+                if (m.Validate(e))
+                {
+                    new_entry = false;
+                    break;
+                }
+            }
+
+            /* Check if no entry in the MediaStruct adopted our newly created Media entry */
+            if (new_entry)
+            {
+                vec.push_back(MediaStruct(e, type));
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e)
+    {
+        VOID_LOG_ERROR(e.what());
+    }
+
+    return vec;
 }
 
 VOID_NAMESPACE_CLOSE
