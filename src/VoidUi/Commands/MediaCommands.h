@@ -40,7 +40,7 @@ public:
     bool Redo() override;
 
 private: /* Members */
-    std::string m_Path;
+    std::string m_Data;
     QModelIndex m_Index;
 };
 
