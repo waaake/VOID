@@ -49,9 +49,9 @@ public:
     void RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
     void CreateAudioTrack(const SharedPlaybackSequence& sequence);
-    void RemoveTracks(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedPlaybackTrack>& tracks);
-    void RemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items);
-    void RippleRemoveTrackItems(const SharedPlaybackSequence& sequence, const std::unordered_set<SharedTrackItem>& items);
+    void RemoveTracks(const std::unordered_set<SharedPlaybackTrack>& tracks);
+    void RemoveTrackItems(const std::unordered_set<SharedTrackItem>& items);
+    void RippleRemoveTrackItems(const std::unordered_set<SharedTrackItem>& items);
     void CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type);
     void RemoveTimelineEffects(const std::unordered_set<Effect*>& effects);
 

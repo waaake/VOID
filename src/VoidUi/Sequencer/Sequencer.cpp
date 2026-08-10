@@ -203,9 +203,9 @@ void SequencerTimeline::CreateEffect(const std::string& type)
 void SequencerTimeline::DeleteSelected()
 {
     if (m_Context.SelectionModel()->HasTrackSelection())
-        m_Context.Controller()->RemoveTracks(m_Sequence, m_Context.SelectionModel()->SelectedTracks());
+        m_Context.Controller()->RemoveTracks(m_Context.SelectionModel()->SelectedTracks());
     else if (m_Context.SelectionModel()->HasTrackItemSelection())
-        m_Context.Controller()->RemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
+        m_Context.Controller()->RemoveTrackItems(m_Context.SelectionModel()->SelectedItems());
     else if (m_Context.SelectionModel()->HasEffectSelection())
         m_Context.Controller()->RemoveTimelineEffects(m_Context.SelectionModel()->SelectedEffects());
 
@@ -215,7 +215,7 @@ void SequencerTimeline::DeleteSelected()
 void SequencerTimeline::RippleDeleteSelected()
 {
     if (m_Context.SelectionModel()->HasTrackItemSelection())
-        m_Context.Controller()->RippleRemoveTrackItems(m_Sequence, m_Context.SelectionModel()->SelectedItems());
+        m_Context.Controller()->RippleRemoveTrackItems(m_Context.SelectionModel()->SelectedItems());
 
     m_Context.SelectionModel()->Clear();
 }
