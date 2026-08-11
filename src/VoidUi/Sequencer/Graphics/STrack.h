@@ -35,8 +35,13 @@ public:
     void Update() override;
     void Clear();
 
+    void AddEffect(Effect* effect);
+    void AddEffect(Effect* effect, int index);
+    void AddEffects();
+    void RemoveEffect(Effect* effect);
     void AddItem(const SharedTrackItem& item);
     void RemoveItem(const SharedTrackItem& item);
+    void UpdateEffects();
     void UpdateItem(const SharedTrackItem& item);
     void UpdateItems();
 
@@ -51,6 +56,7 @@ protected:
 
 private:
     std::unordered_map<TrackItem*, STrackItem*> m_Items;
+    std::unordered_map<Effect*, STimelineEffect*> m_Effects;
     STrackRazorItem* m_RazorMarker;
     SharedPlaybackTrack m_Track;
 

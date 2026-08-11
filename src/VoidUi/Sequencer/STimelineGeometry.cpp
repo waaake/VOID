@@ -37,7 +37,9 @@ QRectF STimelineGeometry::TrackHeaderRect(int index) const
 int STimelineGeometry::VideoTrackHeight(int index) const
 {
     SharedPlaybackTrack track = m_Sequence->VideoTrackAt(index);
-    return Sequencer::TrackHeight + track->MaxEffects() * Sequencer::TimelineEffectHeight;
+    return track->IsEffectsTrack()
+            ? track->MaxEffects() * Sequencer::TimelineEffectHeight + 4
+            : Sequencer::TrackHeight + track->MaxEffects() * Sequencer::TimelineEffectHeight;
 }
 
 int STimelineGeometry::AudioTrackHeight(int index) const
