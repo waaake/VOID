@@ -21,6 +21,7 @@
 VOID_NAMESPACE_OPEN
 
 class PlaybackSequence;
+class STimelineEffect;
 
 class VOID_API PlaybackTrack : public VoidObject
 {
@@ -46,15 +47,22 @@ public:
     // }
 
     std::size_t NumItems() const { return m_Items.Size(); }
+    int NumEffects() const { return static_cast<int>(m_Effects.size()); }
     std::size_t ItemIndex(const SharedTrackItem& item) const { return m_Items.ItemIndex(item); }
     std::size_t ItemIndex(const TrackItem* item) const { return m_Items.ItemIndex(item); }
+    int EffectIndex(const Effect* const effect) const;
     SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
+    Effect* EffectAt(std::size_t index) const { return m_Effects.at(index); }
     MFrameRange ItemRange(std::size_t index) const { return m_Items.AtIndex(index)->TimelineRange(); }
     const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
 
+    Effect* CreateEffect(const std::string& effect);
+    void InsertEffect(Effect* effect, int index);
+    void RemoveEffect(int index, bool destroy = true);
+    void ClearEffects();
     Effect* CreateEffect(const SharedTrackItem& item, const std::string& effect);
     void CopyEffect(Effect* effect, const SharedTrackItem& item);
-    int MaxEffects() const { return m_MaxEffects; }
+    int MaxEffects() const { return m_Effects.empty() ? m_MaxEffects : static_cast<int>(m_Effects.size()); }
 
     /**
      * @brief Clears anything in the track and sets the provided media as first
@@ -91,6 +99,7 @@ public:
     v_frame_t GetSnapFrame(v_frame_t frame, const SharedTrackItem& trackitem, int threshold = 5) const;
 
     inline bool IsEmpty() const { return m_Items.Empty(); }
+    inline bool IsEffectsTrack() const { return !m_Effects.empty(); }
 
     // /* Returns the Color associated with the Track */
     // inline QColor Color() const { return m_Color; }
@@ -148,16 +157,19 @@ public:
 signals: /* Signals Denoting actions in the Track */
     void cleared();
     void itemAdded(const SharedTrackItem&);
-    void effectAdded(const Effect* const);
     void itemAboutToBeRemoved(const SharedTrackItem&);
-    void maxEffectsChanged();
     void itemRemoved();
+    void effectAdded(Effect*);
+    void effectAboutToBeRemoved(Effect*);
+    void effectRemoved();
+    void maxEffectsChanged();
     void updated();
     void rangeChanged(int start, int end);
 
 protected: /* Members */
     TrackMap m_Items;
     std::unordered_set<v_frame_t> m_Razored;
+    std::vector<Effect*> m_Effects;
 
     SharedTrackItem m_Recent;
     std::string m_Name;

@@ -34,6 +34,59 @@ PlaybackTrack::~PlaybackTrack()
 {
 }
 
+int PlaybackTrack::EffectIndex(const Effect* const effect) const
+{
+    auto it = std::find(m_Effects.begin(), m_Effects.end(), effect);
+    return it == m_Effects.end() ? -1 : it - m_Effects.begin();
+}
+
+Effect* PlaybackTrack::CreateEffect(const std::string& effect)
+{
+    // Can only be created at the timeline level, if there are no current track items on it
+    if (m_Items.Empty())
+    {
+        if (Effect* created = _EffectsBridge.CreateEffect(effect, m_StartFrame, m_EndFrame))
+        {
+            created->SetTrack(this);
+            m_Effects.push_back(created);
+            emit effectAdded(created);
+            emit maxEffectsChanged();
+            return created;
+        }
+    }
+    return nullptr;
+}
+
+void PlaybackTrack::InsertEffect(Effect* effect, int index)
+{
+    effect->SetTrack(this);
+    m_Effects.insert(m_Effects.begin() + index, effect);
+    emit effectAdded(effect);
+    emit maxEffectsChanged();
+}
+
+void PlaybackTrack::RemoveEffect(int index, bool destroy)
+{
+    Effect*& effect = m_Effects[index];
+    emit effectAboutToBeRemoved(effect);
+    if (destroy)
+    {
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.erase(m_Effects.begin() + index);
+    emit effectRemoved();
+    emit maxEffectsChanged();
+}
+
+void PlaybackTrack::ClearEffects()
+{
+    for (int i = static_cast<int>(m_Effects.size()) - 1; i >= 0; --i)
+        RemoveEffect(i, true);
+}
+
 Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::string& effect)
 {
     Effect* created = item->CreateEffect(effect);
@@ -349,7 +402,6 @@ void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::Alloca
     out.AddMember("track_type", static_cast<int>(m_Type), allocator);
     
     out.AddMember("item_count", static_cast<int64_t>(m_Items.Size()), allocator);
-
     rapidjson::Value trackitems(rapidjson::kArrayType);
     for (const SharedTrackItem& item: m_Items)
     {
@@ -360,6 +412,23 @@ void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::Alloca
     }
 
     out.AddMember("TrackItems", trackitems, allocator);
+
+    out.AddMember("effect_count", static_cast<int>(m_Effects.size()), allocator);
+    rapidjson::Value effects(rapidjson::kArrayType);
+    for (const auto& effect : m_Effects)
+    {
+        rapidjson::Value entry(rapidjson::kObjectType);
+        std::string type(effect->Type());
+        entry.AddMember("typename", rapidjson::Value(type.c_str(), allocator), allocator);
+
+        rapidjson::Value effectObject;
+        effect->Serialize(effectObject, allocator);
+        entry.AddMember("effect", effectObject, allocator);
+
+        effects.PushBack(entry, allocator);
+    }
+
+    out.AddMember("timeline_effects", effects, allocator);
 }
 
 void PlaybackTrack::Serialize(std::ostream& out) const
@@ -378,6 +447,15 @@ void PlaybackTrack::Serialize(std::ostream& out) const
 
     for (int i = 0; i < itemCount; ++i)
         m_Items.AtIndex(i)->Serialize(out);
+    
+    int effectsCount = static_cast<int>(m_Effects.size());
+    out.write(reinterpret_cast<const char*>(&effectsCount), sizeof(effectsCount));
+
+    for (const auto& effect : m_Effects)
+    {
+        WriteString(out, effect->Type());
+        effect->Serialize(out);
+    }
 }
 
 void PlaybackTrack::Deserialize(const rapidjson::Value& in)
@@ -401,6 +479,18 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
         item->Deserialize(trackitems[i]);
         AddItem(item);
     }
+
+    const rapidjson::Value::ConstArray effects = in["timeline_effects"].GetArray();
+    m_Effects.reserve(effects.Size());
+    for (int i = 0; i < effects.Size(); ++i)
+    {
+        std::string type = effects[i]["typename"].GetString();
+        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        {
+            effect->Deserialize(effects[i]["effect"]);
+            m_Effects.push_back(effect);
+        }
+    }
 }
 
 void PlaybackTrack::Deserialize(std::istream& in)
@@ -422,6 +512,20 @@ void PlaybackTrack::Deserialize(std::istream& in)
         SharedTrackItem item = std::make_shared<TrackItem>(this);
         item->Deserialize(in);
         AddItem(item);
+    }
+
+    int effectsCount;
+    in.read(reinterpret_cast<char*>(&effectsCount), sizeof(effectsCount));
+    m_Effects.reserve(effectsCount);
+
+    for (int i = 0; i < effectsCount; ++i)
+    {
+        std::string type = ReadString(in);
+        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        {
+            effect->Deserialize(in);
+            m_Effects.push_back(effect);
+        }
     }
 }
 
