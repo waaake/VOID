@@ -169,6 +169,9 @@ void BindCore(py::module_& m)
         .def("set_enabled", &Effect::SetEnabled, py::arg("enable"))
         .def("timeline_in", &Effect::TimelineIn)
         .def("timeline_out", &Effect::TimelineOut)
+        .def("set_timeline_in", &Effect::SetTimelineIn, py::arg("frame"))
+        .def("set_timeline_out", &Effect::SetTimelineOut, py::arg("frame"))
+        .def("set_timeline_range", &Effect::SetTimelineRange, py::arg("start"), py::arg("end"))
         .def("get_value", &Effect::Value, py::return_value_policy::reference)
         .def("set_value", &Effect::SetValue, py::arg("param"), py::arg("value"));
 
@@ -178,9 +181,23 @@ void BindCore(py::module_& m)
         .def("end_frame", &PlaybackSequence::EndFrame)
         .def("set_range", &PlaybackSequence::SetRange, py::arg("start"), py::arg("end"))
         .def("has_media", &PlaybackSequence::HasMedia)
-        .def("create_track", static_cast<SharedPlaybackTrack (PlaybackSequence::*)(const Sequence::TrackType&)>(&PlaybackSequence::CreateTrack), py::arg("type"), py::return_value_policy::reference)
-        .def("remove_track", static_cast<void (PlaybackSequence::*)(const SharedPlaybackTrack&)>(&PlaybackSequence::RemoveTrack), py::arg("track"))
-        .def("remove_track", static_cast<void (PlaybackSequence::*)(int, const Sequence::TrackType&)>(&PlaybackSequence::RemoveTrack), py::arg("index"), py::arg("type"))
+        .def(
+            "create_track",
+            static_cast<SharedPlaybackTrack (PlaybackSequence::*)(const Sequence::TrackType&)>(&PlaybackSequence::CreateTrack),
+            py::arg("type"),
+            py::return_value_policy::reference
+        )
+        .def(
+            "remove_track",
+            static_cast<void (PlaybackSequence::*)(const SharedPlaybackTrack&)>(&PlaybackSequence::RemoveTrack),
+            py::arg("track")
+        )
+        .def(
+            "remove_track",
+            static_cast<void (PlaybackSequence::*)(int, const Sequence::TrackType&)>(&PlaybackSequence::RemoveTrack),
+            py::arg("index"),
+            py::arg("type")
+        )
         .def("video_track", &PlaybackSequence::VideoTrackAt, py::arg("index"), py::return_value_policy::reference)
         .def("audio_track", &PlaybackSequence::AudioTrackAt, py::arg("index"), py::return_value_policy::reference)
         .def("video_tracks", &PlaybackSequence::VideoTracks, py::return_value_policy::reference)
@@ -211,7 +228,29 @@ void BindCore(py::module_& m)
         .def("move_item", &PlaybackTrack::MoveItem, py::arg("track_item"), py::arg("frame"))
         .def("item_at", &PlaybackTrack::ItemAt, py::arg("index"), py::return_value_policy::reference)
         .def("items", &PlaybackTrack::Items, py::return_value_policy::reference)
-        .def("create_effect", &PlaybackTrack::CreateEffect, py::arg("track_item"), py::arg("effect"), py::return_value_policy::reference);
+        .def(
+            "create_effect",
+            static_cast<Effect* (PlaybackTrack::*)(const SharedTrackItem&, const std::string&)>(&PlaybackTrack::CreateEffect),
+            py::arg("track_item"),
+            py::arg("effect"),
+            py::return_value_policy::reference
+        )
+        .def(
+            "create_effect",
+            static_cast<Effect* (PlaybackTrack::*)(const std::string&)>(&PlaybackTrack::CreateEffect),
+            py::arg("effect"),
+            py::return_value_policy::reference
+        )
+        .def("remove_effect", [](const SharedPlaybackTrack& self, Effect* effect) -> void
+            {
+                int index = self->EffectIndex(effect);
+                if (index < 0) return;
+
+                self->RemoveEffect(index, true);
+            },
+            py::arg("effect")
+        )
+        .def("clear_effects", &PlaybackTrack::ClearEffects);
 
     py::class_<TrackItem, SharedTrackItem>(m, "TrackItem")
         .def("__repr__", [](py::handle h) -> std::string
