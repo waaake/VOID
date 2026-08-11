@@ -340,8 +340,9 @@ DeleteTrackCommand::DeleteTrackCommand(const SharedPlaybackTrack& track, QUndoCo
 void DeleteTrackCommand::undo()
 {
     std::istringstream is(m_TrackData, std::ios::binary);
-    SharedPlaybackTrack track = m_Sequence->CreateTrack(m_Type, m_TrackIndex);
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(m_Type, m_Sequence);
     track->Deserialize(is);
+    m_Type == Sequence::TrackType::VIDEO ? m_Sequence->AddVideoTrack(track, m_TrackIndex) : m_Sequence->AddAudioTrack(track, m_TrackIndex);
 }
 
 bool DeleteTrackCommand::Redo()
@@ -441,6 +442,48 @@ bool DeleteTimelineEffectCommand::Redo()
         effect->Serialize(os);
         m_EffectData = os.str();
         item->RemoveEffect(m_EffectIndex);
+        return true;
+    }
+    return false;
+}
+
+/// DeleteTrackEffectCommand
+
+DeleteTrackEffectCommand::DeleteTrackEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_EffectIndex = track->EffectIndex(effect);
+    m_EffectType = effect->Type();
+
+    setText("Delete Timeline Effect");
+}
+
+void DeleteTrackEffectCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        std::istringstream is(m_EffectData, std::ios::binary);
+        Effect* effect = EffectsBridge::Instance().CreateEffect(m_EffectType);
+        effect->Deserialize(is);
+        track->InsertEffect(effect, m_EffectIndex);
+    }
+}
+
+bool DeleteTrackEffectCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    if (track)
+    {
+        std::ostringstream os(std::ios::binary);
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->Serialize(os);
+        m_EffectData = os.str();
+        track->RemoveEffect(m_EffectIndex, true);
         return true;
     }
     return false;

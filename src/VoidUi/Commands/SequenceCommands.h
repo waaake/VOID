@@ -186,6 +186,21 @@ private:
     Sequence::TrackType m_TrackType;
 };
 
+class DeleteTrackEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit DeleteTrackEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectData, m_EffectType;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
 class CreateTimelineEffectCommand : public VoidUndoCommand
 {
 public:
