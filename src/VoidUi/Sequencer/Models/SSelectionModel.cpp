@@ -108,6 +108,8 @@ void SSelectionModel::Toggle(Effect* effect)
 
 bool SSelectionModel::IsSelected(const TrackItem* item)
 {
+    if (!item) return false;
+
     auto it = std::find_if(
         m_Items.begin(),
         m_Items.end(),
