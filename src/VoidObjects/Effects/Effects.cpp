@@ -14,11 +14,14 @@ Effect::Effect(ImageOp* iop, const std::string& name, QObject* parent)
 Effect::Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, QObject* parent)
     : VoidObject(parent)
     , m_Operator(iop)
+    , m_TrackItem(nullptr)
+    , m_Track(nullptr)
     , m_Name(name)
     , m_Color(225, 220, 225)
     , m_TimelineIn(in)
     , m_TimelineOut(out)
     , m_Enabled(true)
+    , m_Type(EffectType::ITEM)
 {
 }
 
@@ -34,6 +37,14 @@ Effect::~Effect()
 void Effect::SetTimelineItem(TrackItem* item)
 {
     m_TrackItem = item;
+    m_Type = EffectType::ITEM;
+    emit updated();
+}
+
+void Effect::SetTrack(PlaybackTrack* track)
+{
+    m_Track = track;
+    m_Type = EffectType::TRACK;
     emit updated();
 }
 
@@ -113,6 +124,7 @@ void Effect::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType
     out.SetObject();
     out.AddMember("name_", rapidjson::Value(m_Name.c_str(), allocator), allocator);
     out.AddMember("enabled_", static_cast<int>(m_Enabled), allocator);
+    out.AddMember("internal_type_", static_cast<int>(m_Type), allocator);
     out.AddMember("timeline_in_", static_cast<int64_t>(m_TimelineIn), allocator);
     out.AddMember("timeline_out_", static_cast<int64_t>(m_TimelineOut), allocator);
     out.AddMember("color_r_", m_Color.red(), allocator);
@@ -145,6 +157,7 @@ void Effect::Serialize(std::ostream& out) const
     WriteString(out, m_Name);
     
     out.write(reinterpret_cast<const char*>(&m_Enabled), sizeof(m_Enabled));
+    out.write(reinterpret_cast<const char*>(&m_Type), sizeof(m_Type));
     out.write(reinterpret_cast<const char*>(&m_TimelineIn), sizeof(m_TimelineIn));
     out.write(reinterpret_cast<const char*>(&m_TimelineOut), sizeof(m_TimelineOut));
 
@@ -165,6 +178,7 @@ void Effect::Deserialize(const rapidjson::Value& in)
 {
     m_Name = in["name_"].GetString();
     m_Enabled = in["enabled_"].GetInt();
+    m_Type = static_cast<EffectType>(in["internal_type_"].GetInt());
     m_TimelineIn = in["timeline_in_"].GetInt64();
     m_TimelineOut = in["timeline_out_"].GetInt64();
 
@@ -198,6 +212,7 @@ void Effect::Deserialize(std::istream& in)
     m_Name = ReadString(in);
 
     in.read(reinterpret_cast<char*>(&m_Enabled), sizeof(m_Enabled));
+    in.read(reinterpret_cast<char*>(&m_Type), sizeof(m_Type));
     in.read(reinterpret_cast<char*>(&m_TimelineIn), sizeof(m_TimelineIn));
     in.read(reinterpret_cast<char*>(&m_TimelineOut), sizeof(m_TimelineOut));
 

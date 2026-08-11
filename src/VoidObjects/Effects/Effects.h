@@ -14,11 +14,20 @@
 
 VOID_NAMESPACE_OPEN
 
+class PlaybackTrack;
 class TrackItem;
 
 class VOID_API Effect : public VoidObject
 {
     Q_OBJECT
+
+public:
+    enum class EffectType
+    {
+        CLIP,
+        ITEM,
+        TRACK
+    };
 
 public:
     Effect(ImageOp* iop, const std::string& name, QObject* parent = nullptr);
@@ -27,6 +36,11 @@ public:
 
     TrackItem* TimelineItem() const { return m_TrackItem; }
     void SetTimelineItem(TrackItem* item);
+
+    PlaybackTrack* Track() const { return m_Track; }
+    void SetTrack(PlaybackTrack* track);
+
+    const EffectType& GetEffectType() const { return m_Type; }
 
     const std::string& Name() const { return m_Name; }
     void SetName(const std::string& name);
@@ -88,9 +102,11 @@ signals:
 private:
     ImageOp* m_Operator;
     TrackItem* m_TrackItem;
+    PlaybackTrack* m_Track;
     std::string m_Name;
     QColor m_Color;
     v_frame_t m_TimelineIn, m_TimelineOut;
+    EffectType m_Type;
     bool m_Enabled;
 };
 
