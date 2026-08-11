@@ -139,6 +139,7 @@ void STimelineScene::UpdateItems()
     {
         track->Update();
         track->UpdateItems();
+        track->UpdateEffects();
     }
 }
 
@@ -155,6 +156,9 @@ STrack*& STimelineScene::TrackAt(int index)
 void STimelineScene::SelectItems(const QRectF& rect)
 {
     const QList<QGraphicsItem*> hits = items(rect, Qt::IntersectsItemShape);
+    if (hits.empty())
+        return;
+
     std::vector<SharedTrackItem> trackitems;
     std::vector<Effect*> effects;
     trackitems.reserve(hits.size());
