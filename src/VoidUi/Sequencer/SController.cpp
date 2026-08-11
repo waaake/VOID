@@ -259,8 +259,8 @@ void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*
         TrackItem* _aitem = _a->TimelineItem();
         TrackItem* _bitem = _b->TimelineItem();
 
-        int _aitemidx = _aitem ? _aitem->Track()->ItemIndex(_aitem) : -1;
-        int _bitemidx = _bitem ? _bitem->Track()->ItemIndex(_bitem) : -2;
+        int _aitemidx = _aitem ? _aitem->Track()->ItemIndex(_aitem) : _a->Track()->Index();
+        int _bitemidx = _bitem ? _bitem->Track()->ItemIndex(_bitem) : _b->Track()->Index();
 
         // Sort ascending based on the track item index -- effect _b belongs to a different track item than _a
         if (_aitemidx != _bitemidx)
@@ -276,7 +276,12 @@ void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*
     stack->beginMacro("Delete Timeline Effect(s)");
 
     for (auto& effect : sorted)
-        stack->push(new DeleteTimelineEffectCommand(effect));
+    {
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            stack->push(new DeleteTrackEffectCommand(effect));
+        else
+            stack->push(new DeleteTimelineEffectCommand(effect));
+    }
 
     stack->endMacro();
 }
