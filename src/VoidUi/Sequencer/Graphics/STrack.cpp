@@ -185,6 +185,9 @@ void STrack::UpdateItems()
         trackitem->Update();
         trackitem->UpdateItems();
     }
+
+    for (auto& [_, effect] : m_Effects)
+        effect->Update();
 }
 
 STrackItem* STrack::ItemAt(int index) const
