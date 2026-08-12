@@ -128,6 +128,20 @@ private:
     Sequence::TrackType m_TrackType;
 };
 
+class ToggleTrackEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleTrackEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
 class CreateTrackCommand : public VoidUndoCommand
 {
 public:
@@ -186,6 +200,21 @@ private:
     Sequence::TrackType m_TrackType;
 };
 
+class DeleteTrackEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit DeleteTrackEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectData, m_EffectType;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
 class CreateTimelineEffectCommand : public VoidUndoCommand
 {
 public:
@@ -195,9 +224,26 @@ public:
 
 private:
     std::string m_EffectType;
+    std::string m_Name;
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
+class CreateTrackEffectCommand : public VoidUndoCommand
+{
+public:
+    CreateTrackEffectCommand(const SharedPlaybackTrack& track, const std::string type, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectType;
+    std::string m_Name;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
     int m_EffectIndex;
     Sequence::TrackType m_TrackType;
 };

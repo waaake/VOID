@@ -61,7 +61,7 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
         {
             const SharedTrackItem& trackitem = track->ItemAt(i);
             stack->push(new OffsetItemCommand(trackitem, offset));
-        }    
+        }
     }
 
     stack->push(new MoveTrackItemCommand(item, frame));
@@ -233,6 +233,19 @@ void SequencerController::RippleRemoveTrackItems(const std::unordered_set<Shared
     stack->endMacro();
 }
 
+void SequencerController::CreateEffect(const std::unordered_set<SharedPlaybackTrack>& tracks, const std::string& type)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+
+    QString text("Create '%1' Effect");
+    stack->beginMacro(text.arg(type.c_str()));
+
+    for (const SharedPlaybackTrack& track : tracks)
+        stack->push(new CreateTrackEffectCommand(track, type));
+
+    stack->endMacro();
+}
+
 void SequencerController::CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type)
 {
     QUndoStack* stack = _MediaBridge.UndoStack();
@@ -256,27 +269,55 @@ void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*
 
     std::sort(sorted.begin(), sorted.end(), [&](const Effect* _a, const Effect* _b) -> bool
     {
-        TrackItem* _aitem = _a->TimelineItem();
-        TrackItem* _bitem = _b->TimelineItem();
+        if (_a->GetEffectType() != _b->GetEffectType())
+            return _a->GetEffectType() < _b->GetEffectType();
 
-        int _aitemidx = _aitem ? _aitem->Track()->ItemIndex(_aitem) : -1;
-        int _bitemidx = _bitem ? _bitem->Track()->ItemIndex(_bitem) : -2;
+        if (_a->GetEffectType() == Effect::EffectType::ITEM)
+        {
+            TrackItem* _aitem = _a->TimelineItem();
+            TrackItem* _bitem = _b->TimelineItem();
 
-        // Sort ascending based on the track item index -- effect _b belongs to a different track item than _a
-        if (_aitemidx != _bitemidx)
-            return _aitemidx < _bitemidx;
+            int _aitemidx = _aitem->Index();
+            int _bitemidx = _bitem->Index();
 
-        // Sort descending based on the effect index
-        // we need the items to be reversed such that when deleting them, the index of other items don't change
-        // and running undo works as expected
-        return _aitem->EffectIndex(_a) > _bitem->EffectIndex(_b);
+            // Sort ascending based on the track item index -- effect _b belongs to a different track item than _a
+            if (_aitemidx != _bitemidx)
+                return _aitemidx < _bitemidx;
+
+            // Sort descending based on the effect index
+            // we need the items to be reversed such that when deleting them, the index of other items don't change
+            // and running undo works as expected
+            return _aitem->EffectIndex(_a) > _bitem->EffectIndex(_b);
+        }
+        else
+        {
+            PlaybackTrack* _atrk = _a->Track();
+            PlaybackTrack* _btrk = _b->Track();
+
+            int _atrkidx = _atrk->Index();
+            int _btrkidx = _btrk->Index();
+
+            // Sort ascending based on the track item index -- effect _b belongs to a different track item than _a
+            if (_atrkidx != _btrkidx)
+                return _atrkidx < _btrkidx;
+
+            // Sort descending based on the effect index
+            // we need the items to be reversed such that when deleting them, the index of other items don't change
+            // and running undo works as expected
+            return _atrk->EffectIndex(_a) > _btrk->EffectIndex(_b);
+        }
     });
 
     QUndoStack* stack = _MediaBridge.UndoStack();
     stack->beginMacro("Delete Timeline Effect(s)");
 
     for (auto& effect : sorted)
-        stack->push(new DeleteTimelineEffectCommand(effect));
+    {
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            stack->push(new DeleteTrackEffectCommand(effect));
+        else
+            stack->push(new DeleteTimelineEffectCommand(effect));
+    }
 
     stack->endMacro();
 }
@@ -357,7 +398,10 @@ void SequencerController::ToggleItemState(const std::unordered_set<Effect*>& eff
     stack->beginMacro("Toggle Timeline Effect(s)");
 
     for (Effect* effect : effects)
-        stack->push(new ToggleTimelineEffectCommand(effect));
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            stack->push(new ToggleTrackEffectCommand(effect));
+        else
+            stack->push(new ToggleTimelineEffectCommand(effect));
 
     stack->endMacro();
 }

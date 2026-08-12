@@ -63,6 +63,7 @@ public:
 
     std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
     Effect* CreateEffect(const std::string& type);
+    Effect* CreateEffect(const std::string& type, const std::string& name);
     void AddEffect(Effect* effect);
     void InsertEffect(Effect* effect, int index);
     bool RemoveEffect(const std::string& name);

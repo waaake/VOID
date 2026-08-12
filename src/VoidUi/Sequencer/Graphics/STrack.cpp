@@ -9,6 +9,7 @@
 /* Internal */
 #include "STrack.h"
 #include "STrackItem.h"
+#include "STimelineEffect.h"
 #include "VoidUi/Sequencer/SContext.h"
 #include "VoidCore/Logging.h"
 
@@ -26,6 +27,16 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
     connect(m_Track.get(), &PlaybackTrack::cleared, this, &STrack::Clear);
     connect(m_Track.get(), &PlaybackTrack::itemAboutToBeRemoved, this, &STrack::RemoveItem);
     connect(m_Track.get(), &PlaybackTrack::itemRemoved, this, &STrack::Update);
+    connect(m_Track.get(), &PlaybackTrack::effectAdded, this, [this](Effect* effect) -> void
+    {
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            AddEffect(effect, m_Track->EffectIndex(effect));
+    });
+    connect(m_Track.get(), &PlaybackTrack::effectAboutToBeRemoved, this, [this](Effect* effect) -> void
+    {
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            RemoveEffect(effect);
+    });
 
     int index = track->Index();
     m_BoundingRect = QRectF(
@@ -37,7 +48,9 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
             : m_Context->Geometry()->AudioTrackHeight(index)
     );
     setPos(0, context->Geometry()->TrackRect(index).top());
+
     BuildItems();
+    AddEffects();
 
     m_RazorMarker = new STrackRazorItem(context, this);
     m_RazorMarker->setVisible(false);
@@ -94,6 +107,39 @@ void STrack::Clear()
     m_Items.clear();
 }
 
+void STrack::AddEffect(Effect* effect)
+{
+    AddEffect(effect, m_Track->EffectIndex(effect));
+}
+
+void STrack::AddEffect(Effect* effect, int index)
+{
+    STimelineEffect* teffect = new STimelineEffect(effect, m_Context, this);
+    teffect->setPos(0, boundingRect().height() - 2 - (Sequencer::TimelineEffectHeight + Sequencer::TimelineEffectHeight * index));
+    m_Effects[effect] = std::move(teffect);
+}
+
+void STrack::AddEffects()
+{
+    for (int i = 0; i < m_Track->NumEffects(); ++i)
+        AddEffect(m_Track->EffectAt(i), i);
+}
+
+void STrack::RemoveEffect(Effect* effect)
+{
+    if (m_Effects.find(effect) == m_Effects.end())
+        return;
+    
+    STimelineEffect*& teffect = m_Effects[effect];
+    teffect->setVisible(false);
+    teffect->setParent(nullptr);
+    teffect->deleteLater();
+    delete teffect;
+    teffect = nullptr;
+
+    m_Effects.erase(effect);
+}
+
 void STrack::AddItem(const SharedTrackItem& item)
 {
     STrackItem* trackitem = new STrackItem(item, m_Context, this);
@@ -115,6 +161,15 @@ void STrack::RemoveItem(const SharedTrackItem& item)
     m_Items.erase(item.get());
 }
 
+void STrack::UpdateEffects()
+{
+    for (auto& [effect, teffect] : m_Effects)
+    {
+        teffect->setPos(0, boundingRect().height() - 2 - (Sequencer::TimelineEffectHeight + Sequencer::TimelineEffectHeight * m_Track->EffectIndex(effect)));
+        teffect->Update();
+    }
+}
+
 void STrack::UpdateItem(const SharedTrackItem& item)
 {
     if (m_Items.find(item.get()) == m_Items.end())
@@ -130,6 +185,9 @@ void STrack::UpdateItems()
         trackitem->Update();
         trackitem->UpdateItems();
     }
+
+    for (auto& [_, effect] : m_Effects)
+        effect->Update();
 }
 
 STrackItem* STrack::ItemAt(int index) const

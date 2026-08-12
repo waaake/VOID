@@ -324,7 +324,7 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         STrack* track = m_Context->Controller()->TrackAt(scenePos());
         STrack* current = Track();
 
-        if (track && track->Locked())
+        if (track && (track->Locked() || track->IsEffectsTrack()))
         {
             Update();
             return;

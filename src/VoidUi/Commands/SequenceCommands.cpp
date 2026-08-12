@@ -300,6 +300,38 @@ bool ToggleTimelineEffectCommand::Redo()
     return false;
 }
 
+/// ToggleTrackEffectCommand
+
+ToggleTrackEffectCommand::ToggleTrackEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_EffectIndex = track->EffectIndex(effect);
+}
+
+void ToggleTrackEffectCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+    }
+}
+
+bool ToggleTrackEffectCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+        return true;
+    }
+    return false;
+}
+
 /// CreateTrackCommand
 
 CreateTrackCommand::CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent)
@@ -340,8 +372,9 @@ DeleteTrackCommand::DeleteTrackCommand(const SharedPlaybackTrack& track, QUndoCo
 void DeleteTrackCommand::undo()
 {
     std::istringstream is(m_TrackData, std::ios::binary);
-    SharedPlaybackTrack track = m_Sequence->CreateTrack(m_Type, m_TrackIndex);
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(m_Type, m_Sequence);
     track->Deserialize(is);
+    m_Type == Sequence::TrackType::VIDEO ? m_Sequence->AddVideoTrack(track, m_TrackIndex) : m_Sequence->AddAudioTrack(track, m_TrackIndex);
 }
 
 bool DeleteTrackCommand::Redo()
@@ -419,7 +452,7 @@ DeleteTimelineEffectCommand::DeleteTimelineEffectCommand(Effect* effect, QUndoCo
 
 void DeleteTimelineEffectCommand::undo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
     if (track)
     {
         std::istringstream is(m_EffectData, std::ios::binary);
@@ -432,7 +465,7 @@ void DeleteTimelineEffectCommand::undo()
 
 bool DeleteTimelineEffectCommand::Redo()
 {
-    const SharedPlaybackTrack& track = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
     if (track)
     {
         std::ostringstream os(std::ios::binary);
@@ -441,6 +474,48 @@ bool DeleteTimelineEffectCommand::Redo()
         effect->Serialize(os);
         m_EffectData = os.str();
         item->RemoveEffect(m_EffectIndex);
+        return true;
+    }
+    return false;
+}
+
+/// DeleteTrackEffectCommand
+
+DeleteTrackEffectCommand::DeleteTrackEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_EffectIndex = track->EffectIndex(effect);
+    m_EffectType = effect->Type();
+
+    setText("Delete Timeline Effect");
+}
+
+void DeleteTrackEffectCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
+    if (track)
+    {
+        std::istringstream is(m_EffectData, std::ios::binary);
+        Effect* effect = EffectsBridge::Instance().CreateEffect(m_EffectType);
+        effect->Deserialize(is);
+        track->InsertEffect(effect, m_EffectIndex);
+    }
+}
+
+bool DeleteTrackEffectCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
+    if (track)
+    {
+        std::ostringstream os(std::ios::binary);
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->Serialize(os);
+        m_EffectData = os.str();
+        track->RemoveEffect(m_EffectIndex, true);
         return true;
     }
     return false;
@@ -455,7 +530,7 @@ CreateTimelineEffectCommand::CreateTimelineEffectCommand(const SharedTrackItem& 
 {
     const PlaybackTrack* const track = item->Track();
     m_TrackType = track->Type();
-    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_TrackIndex = track->Index();
     m_ItemIndex = track->ItemIndex(item);
     m_EffectIndex = item->NumEffects();
 
@@ -477,7 +552,60 @@ bool CreateTimelineEffectCommand::Redo()
     if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         const SharedTrackItem item = track->ItemAt(m_ItemIndex);
-        return (bool)track->CreateEffect(item, m_EffectType);
+
+        if (m_Name.empty())
+        {
+            if (Effect* effect = track->CreateEffect(item, m_EffectType))
+            {
+                m_Name = effect->Name();
+                return true;
+            }
+        }
+        else
+        {
+            return (bool)track->CreateEffect(item, m_EffectType, m_Name);
+        }
+    }
+    return false;
+}
+
+/// CreateTrackEffectCommand
+
+CreateTrackEffectCommand::CreateTrackEffectCommand(const SharedPlaybackTrack& track, const std::string type, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_EffectType(type)
+{
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_EffectIndex = track->NumEffects();
+
+    QString text("Create '%1' Effect");
+    setText(text.arg(type.c_str()));
+}
+
+void CreateTrackEffectCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+        track->RemoveEffect(m_EffectIndex);
+}
+
+bool CreateTrackEffectCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        if (m_Name.empty())
+        {
+            if (Effect* effect = track->CreateEffect(m_EffectType))
+            {
+                m_Name = effect->Name();
+                return true;
+            }
+        }
+        else
+        {
+            return (bool)track->CreateEffect(m_EffectType, m_Name);
+        }
     }
     return false;
 }

@@ -28,6 +28,7 @@ public:
     int Index() const { return m_Track->Index(); }
     bool Locked() const { return m_Track->Locked(); }
     bool Enabled() const { return m_Track->Enabled(); }
+    bool IsEffectsTrack() const { return m_Track->IsEffectsTrack(); }
     bool IsRazored(v_frame_t frame) const { return m_Track->IsRazored(frame); }
 
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
@@ -35,8 +36,13 @@ public:
     void Update() override;
     void Clear();
 
+    void AddEffect(Effect* effect);
+    void AddEffect(Effect* effect, int index);
+    void AddEffects();
+    void RemoveEffect(Effect* effect);
     void AddItem(const SharedTrackItem& item);
     void RemoveItem(const SharedTrackItem& item);
+    void UpdateEffects();
     void UpdateItem(const SharedTrackItem& item);
     void UpdateItems();
 
@@ -51,6 +57,7 @@ protected:
 
 private:
     std::unordered_map<TrackItem*, STrackItem*> m_Items;
+    std::unordered_map<Effect*, STimelineEffect*> m_Effects;
     STrackRazorItem* m_RazorMarker;
     SharedPlaybackTrack m_Track;
 

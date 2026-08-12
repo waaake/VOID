@@ -52,6 +52,7 @@ public:
     void RemoveTracks(const std::unordered_set<SharedPlaybackTrack>& tracks);
     void RemoveTrackItems(const std::unordered_set<SharedTrackItem>& items);
     void RippleRemoveTrackItems(const std::unordered_set<SharedTrackItem>& items);
+    void CreateEffect(const std::unordered_set<SharedPlaybackTrack>& tracks, const std::string& type);
     void CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type);
     void RemoveTimelineEffects(const std::unordered_set<Effect*>& effects);
 

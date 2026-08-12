@@ -198,6 +198,8 @@ void SequencerTimeline::CreateEffect(const std::string& type)
 {
     if (m_Context.SelectionModel()->HasTrackItemSelection())
         m_Context.Controller()->CreateEffect(m_Context.SelectionModel()->SelectedItems(), type);
+    else if (m_Context.SelectionModel()->HasTrackSelection())
+        m_Context.Controller()->CreateEffect(m_Context.SelectionModel()->SelectedTracks(), type);
 }
 
 void SequencerTimeline::DeleteSelected()
