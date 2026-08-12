@@ -104,6 +104,25 @@ Effect* TrackItem::CreateEffect(const std::string& type)
     return nullptr;
 }
 
+Effect* TrackItem::CreateEffect(const std::string& type, const std::string& name)
+{
+    if (Effect* effect = _EffectsBridge.CreateEffect(type, name, m_TimelineIn, m_TimelineOut))
+    {
+        effect->SetTimelineItem(this);
+        // VOID_LOG_INFO("Effect Created -> {}", effect->Name());
+        m_Effects.push_back(effect);
+
+        emit effectCreated(effect);
+
+        // For every effect that gets updated, the media will be set dirty
+        // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
+        // SetDirty(true);
+        return effect;
+    }
+
+    return nullptr;
+}
+
 void TrackItem::AddEffect(Effect* effect)
 {
     effect->SetTimelineItem(this);
