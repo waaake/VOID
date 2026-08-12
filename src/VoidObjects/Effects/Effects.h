@@ -73,7 +73,7 @@ public:
      */
     const ValueType& Value(const std::string& param) const;
 
-    [[nodiscard]] bool Enabled() const { return m_Enabled; }
+    [[nodiscard]] bool Enabled() const;
     void SetEnabled(bool enable);
 
     Param* GetParam(const std::string& name) const { return m_Operator->GetParam(name); }

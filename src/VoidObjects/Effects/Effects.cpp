@@ -2,7 +2,8 @@
 // Licensed under the MIT License
 
 #include "Effects.h"
-#include "VoidCore/Logging.h"
+#include "VoidObjects/Sequence/Track.h"
+#include "VoidObjects/Sequence/TrackItem.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -92,6 +93,14 @@ const ValueType& Effect::Value(const std::string& param) const
 
     static ValueType invalid = std::monostate{};
     return invalid;
+}
+
+bool Effect::Enabled() const
+{
+    if (m_Enabled)
+        return m_Type == EffectType::TRACK ? m_Track->Enabled() : m_TrackItem->Enabled();
+
+    return false;
 }
 
 void Effect::SetEnabled(bool enable)
