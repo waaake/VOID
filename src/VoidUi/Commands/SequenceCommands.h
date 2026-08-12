@@ -210,9 +210,26 @@ public:
 
 private:
     std::string m_EffectType;
+    std::string m_Name;
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_ItemIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
+class CreateTrackEffectCommand : public VoidUndoCommand
+{
+public:
+    CreateTrackEffectCommand(const SharedPlaybackTrack& track, const std::string type, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_EffectType;
+    std::string m_Name;
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
     int m_EffectIndex;
     Sequence::TrackType m_TrackType;
 };
