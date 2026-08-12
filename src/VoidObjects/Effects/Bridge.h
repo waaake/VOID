@@ -21,7 +21,9 @@ public:
     static EffectsBridge& Instance();
 
     Effect* CreateEffect(const std::string& type);
+    Effect* CreateEffect(const std::string& type, const std::string& name);    
     Effect* CreateEffect(const std::string& type, v_frame_t in, v_frame_t out);
+    Effect* CreateEffect(const std::string& type, const std::string& name, v_frame_t in, v_frame_t out);
     Effect* Copy(const Effect* effect);
 
 private: /* Members */
