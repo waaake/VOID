@@ -211,6 +211,7 @@ SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
 void PlaybackTrack::Clear()
 {
     m_Items.Clear();
+    ClearEffects();
     SetRange(0, 0, false);
     emit cleared();
 }
@@ -384,6 +385,10 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item)
 
 bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 {
+    // Effects Track -- Can't allow Track items to be moved to this unless effects are cleared
+    // Need to double check this behaviour in other dccs too
+    if (m_Effects.size()) return false;
+
     if (m_Items.Add(item, frame))
     {
         CalculateMaxEffects(item);
