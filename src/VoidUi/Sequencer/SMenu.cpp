@@ -95,15 +95,18 @@ void SequencerContextMenu::Connect()
 
 void SequencerContextMenu::Validate()
 {
-    m_RemoveSelectedAction->setEnabled(m_Context->SelectionModel()->HasAnySelection());
-    m_ColorItemAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
-    m_ResetItemColorAction->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
+    const SSelectionModel* sel = m_Context->SelectionModel();
+    const SequencerController* controller = m_Context->Controller();
 
-    m_NoOverwriteAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
-    m_OverwriteAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::OVERWRITE);
-    m_RippleAction->setChecked(m_Context->Controller()->GetEditMode() == SequencerController::EditMode::RIPPLE);
+    m_RemoveSelectedAction->setEnabled(sel->HasAnySelection());
+    m_ColorItemAction->setEnabled(sel->HasTrackItemSelection());
+    m_ResetItemColorAction->setEnabled(sel->HasTrackItemSelection());
 
-    m_EffectsMenu->setEnabled(m_Context->SelectionModel()->HasTrackItemSelection());
+    m_NoOverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
+    m_OverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::OVERWRITE);
+    m_RippleAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::RIPPLE);
+
+    m_EffectsMenu->setEnabled(sel->HasTrackItemSelection() || sel->HasTrackSelection());
 }
 
 void SequencerContextMenu::BuildEffectsMenu()
