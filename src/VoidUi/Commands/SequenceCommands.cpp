@@ -300,6 +300,38 @@ bool ToggleTimelineEffectCommand::Redo()
     return false;
 }
 
+/// ToggleTrackEffectCommand
+
+ToggleTrackEffectCommand::ToggleTrackEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_EffectIndex = track->EffectIndex(effect);
+}
+
+void ToggleTrackEffectCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+    }
+}
+
+bool ToggleTrackEffectCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+        return true;
+    }
+    return false;
+}
+
 /// CreateTrackCommand
 
 CreateTrackCommand::CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent)

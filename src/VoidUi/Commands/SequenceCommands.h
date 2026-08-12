@@ -128,6 +128,20 @@ private:
     Sequence::TrackType m_TrackType;
 };
 
+class ToggleTrackEffectCommand : public VoidUndoCommand
+{
+public:
+    explicit ToggleTrackEffectCommand(Effect* effect, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    PlaybackSequence* m_Sequence;
+    int m_TrackIndex;
+    int m_EffectIndex;
+    Sequence::TrackType m_TrackType;
+};
+
 class CreateTrackCommand : public VoidUndoCommand
 {
 public:

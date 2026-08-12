@@ -398,7 +398,10 @@ void SequencerController::ToggleItemState(const std::unordered_set<Effect*>& eff
     stack->beginMacro("Toggle Timeline Effect(s)");
 
     for (Effect* effect : effects)
-        stack->push(new ToggleTimelineEffectCommand(effect));
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            stack->push(new ToggleTrackEffectCommand(effect));
+        else
+            stack->push(new ToggleTimelineEffectCommand(effect));
 
     stack->endMacro();
 }
