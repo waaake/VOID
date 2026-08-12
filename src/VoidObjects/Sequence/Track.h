@@ -57,10 +57,12 @@ public:
     const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
 
     Effect* CreateEffect(const std::string& effect);
+    Effect* CreateEffect(const std::string& effect, const std::string& name);
     void InsertEffect(Effect* effect, int index);
     void RemoveEffect(int index, bool destroy = true);
     void ClearEffects();
     Effect* CreateEffect(const SharedTrackItem& item, const std::string& effect);
+    Effect* CreateEffect(const SharedTrackItem& item, const std::string& effect, const std::string& name);
     void CopyEffect(Effect* effect, const SharedTrackItem& item);
     int MaxEffects() const { return m_Effects.empty() ? m_MaxEffects : static_cast<int>(m_Effects.size()); }
 

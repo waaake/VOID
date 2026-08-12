@@ -45,7 +45,26 @@ Effect* PlaybackTrack::CreateEffect(const std::string& effect)
     // Can only be created at the timeline level, if there are no current track items on it
     if (m_Items.Empty())
     {
-        if (Effect* created = _EffectsBridge.CreateEffect(effect, m_StartFrame, m_EndFrame))
+        PlaybackSequence* sequence = Sequence();
+        if (Effect* created = _EffectsBridge.CreateEffect(effect, sequence->StartFrame(), sequence->EndFrame()))
+        {
+            created->SetTrack(this);
+            m_Effects.push_back(created);
+            emit effectAdded(created);
+            emit maxEffectsChanged();
+            return created;
+        }
+    }
+    return nullptr;
+}
+
+Effect* PlaybackTrack::CreateEffect(const std::string& effect, const std::string& name)
+{
+    // Can only be created at the timeline level, if there are no current track items on it
+    if (m_Items.Empty())
+    {
+        PlaybackSequence* sequence = Sequence();
+        if (Effect* created = _EffectsBridge.CreateEffect(effect, name, sequence->StartFrame(), sequence->EndFrame()))
         {
             created->SetTrack(this);
             m_Effects.push_back(created);
@@ -90,6 +109,17 @@ void PlaybackTrack::ClearEffects()
 Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::string& effect)
 {
     Effect* created = item->CreateEffect(effect);
+    if (created)
+    {
+        emit effectAdded(created);
+        CalculateMaxEffects(item);
+    }
+    return created;
+}
+
+Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::string& effect, const std::string& name)
+{
+    Effect* created = item->CreateEffect(effect, name);
     if (created)
     {
         emit effectAdded(created);
