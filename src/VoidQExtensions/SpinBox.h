@@ -15,7 +15,7 @@ VOID_NAMESPACE_OPEN
 /**
  * SpinBox that allows click and drag to increment/decrement values quickly
  */
-class ControlDoubleSpinner : public QDoubleSpinBox
+class VOID_API ControlDoubleSpinner : public QDoubleSpinBox
 {
 public:
     ControlDoubleSpinner(QWidget* parent = nullptr);

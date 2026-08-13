@@ -8,7 +8,7 @@
 
 /* Internal */
 #include "TagWidget.h"
-#include "VoidUi/Engine/IconForge.h"
+#include "VoidIconForge/IconForge.h"
 #include "VoidUi/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN

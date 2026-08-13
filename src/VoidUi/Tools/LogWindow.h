@@ -11,8 +11,8 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Core/TaskLog.h"
-#include "VoidUi/QExtensions/Dialog.h"
-#include "VoidUi/QExtensions/Table.h"
+#include "VoidQExtensions/Dialog.h"
+#include "VoidQExtensions/Table.h"
 
 VOID_NAMESPACE_OPEN
 

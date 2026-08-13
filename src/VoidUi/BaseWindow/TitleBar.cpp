@@ -8,7 +8,7 @@
 /* Internal */
 #include "TitleBar.h"
 #include "VoidCore/Logging.h"
-#include "VoidUi/Engine/IconForge.h"
+#include "VoidIconForge/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 

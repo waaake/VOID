@@ -16,9 +16,11 @@ set(SOURCES
     Models/TagModel.cpp
     Models/TagMetadataModel.cpp
 
+    Playlist/Playlist.cpp
+    
     Project/Project.cpp
 
-    Playlist/Playlist.cpp
+    Preferences/Preferences.cpp
 
     Sequence/Sequence.cpp
     Sequence/SequenceView.cpp

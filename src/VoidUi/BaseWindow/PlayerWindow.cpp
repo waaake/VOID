@@ -10,11 +10,11 @@
 /* Internal */
 #include "About.h"
 #include "PlayerWindow.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidPreferences/PreferencesUI.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Dock/DockManager.h"
-#include "VoidUi/Engine/IconForge.h"
 #include "VoidUi/Project/ProjectBridge.h"
-#include "VoidUi/Preferences/PreferencesUI.h"
 #include "VoidUi/BaseWindow/StartupWindow.h"
 
 VOID_NAMESPACE_OPEN

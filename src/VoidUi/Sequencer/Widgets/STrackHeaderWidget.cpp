@@ -8,9 +8,9 @@
 /* Internal */
 #include "STrackHeaderWidget.h"
 #include "STrackHeader.h"
+#include "VoidQExtensions/Frame.h"
 #include "VoidUi/Sequencer/SDescriptors.h"
 #include "VoidUi/Sequencer/SContext.h"
-#include "VoidUi/QExtensions/Frame.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN

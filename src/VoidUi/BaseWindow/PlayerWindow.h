@@ -8,8 +8,8 @@
 #include "Definition.h"
 #include "BaseWindow.h"
 #include "TitleBar.h"
-#include "MenuSystem.h"
 #include "WorkspaceManager.h"
+#include "VoidMenuSystem/MenuSystem.h"
 
 VOID_NAMESPACE_OPEN
 

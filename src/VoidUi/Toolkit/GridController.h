@@ -11,7 +11,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/QExtensions/Dialog.h"
+#include "VoidQExtensions/Dialog.h"
 
 VOID_NAMESPACE_OPEN
 

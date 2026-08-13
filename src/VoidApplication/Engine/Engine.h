@@ -9,7 +9,7 @@
 
 /* Internal */
 #include "QDefinition.h"
-#include "VoidUi/BaseWindow/MenuSystem.h"
+#include "VoidMenuSystem/MenuSystem.h"
 #include "VoidUi/BaseWindow/PlayerWindow.h"
 #include "VoidApplication/Core/ArgumentParser.h"
 

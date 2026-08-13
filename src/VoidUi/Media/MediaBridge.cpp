@@ -12,7 +12,7 @@
 #include "MediaBridge.h"
 #include "VoidCore/Logging.h"
 #include "VoidObjects/VoidContext.h"
-#include "VoidUi/Preferences/Preferences.h"
+#include "VoidObjects/Preferences/Preferences.h"
 
 /* Commands */
 #include "VoidUi/Commands/MediaCommands.h"

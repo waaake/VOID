@@ -9,10 +9,10 @@
 
 /* Internal */
 #include "Effects.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Slider.h"
+#include "VoidQExtensions/Tooltip.h"
 #include "VoidUi/Player/PlayerBridge.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Slider.h"
-#include "VoidUi/QExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 

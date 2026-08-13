@@ -15,10 +15,9 @@
 
 VOID_NAMESPACE_OPEN
 
-class FramelessSlider : public QWidget
+class VOID_API FramelessSlider : public QWidget
 {
     Q_OBJECT
-
 public:
     FramelessSlider(QWidget* parent);
     ~FramelessSlider();
@@ -41,7 +40,7 @@ private: /* Methods */
     void Build();
 };
 
-class SimpleSlider : public QSlider
+class VOID_API SimpleSlider : public QSlider
 {
 public:
     SimpleSlider(Qt::Orientation orientation, QWidget* parent = nullptr);
@@ -51,7 +50,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
 };
 
-class QuickDoubleSlider : public QWidget
+class VOID_API QuickDoubleSlider : public QWidget
 {
     Q_OBJECT
 public:

@@ -3,7 +3,6 @@ set(SOURCES
     # Base Window
     BaseWindow/About.cpp
     BaseWindow/BaseWindow.cpp
-    BaseWindow/MenuSystem.cpp
     BaseWindow/PlayerWindow.cpp
     BaseWindow/TitleBar.cpp
     BaseWindow/WorkspaceManager.cpp
@@ -32,7 +31,6 @@ set(SOURCES
     # Core Engine Globals
     Engine/Bridge.cpp
     Engine/Globals.cpp
-    Engine/IconForge.cpp
 
     # Exporter
     Exporter/Exporter.cpp
@@ -62,15 +60,6 @@ set(SOURCES
     Playlist/Views/PlaylistView.cpp
     Playlist/Views/PlaylistMediaView.cpp
     Playlist/Delegates/ListDelegate.cpp
-
-    # Preferences
-    Preferences/Preferences.cpp
-    Preferences/PreferencesUI.cpp
-
-    Preferences/CachePreferences.cpp
-    Preferences/GeneralPreferences.cpp
-    Preferences/MediaViewPreferences.cpp
-    Preferences/PlayerPreferences.cpp
 
     # Player
     Player/OverlayWidget.cpp
@@ -137,21 +126,6 @@ set(SOURCES
     Tools/Task.cpp
     Tools/TaskView.cpp
     Tools/LogWindow.cpp
-
-    # QExtensions
-    QExtensions/Delegates.cpp
-    QExtensions/Dialog.cpp
-    QExtensions/Frame.cpp
-    QExtensions/Label.cpp
-    QExtensions/LineEdit.cpp
-    QExtensions/MessageBox.cpp
-    QExtensions/ProgressTask.cpp
-    QExtensions/PushButton.cpp
-    QExtensions/Slider.cpp
-    QExtensions/SpinBox.cpp
-    QExtensions/Table.cpp
-    QExtensions/Tooltip.cpp
-    QExtensions/Window.cpp
 )
 
 if (WIN32)
@@ -194,7 +168,11 @@ target_link_libraries(
     VoidUi
     PUBLIC
     VoidCore
+    VoidIconForge
+    VoidMenuSystem
     VoidObjects
+    VoidPreferences
+    VoidQExtensions
     VoidRenderer
     VoidAudio
 )

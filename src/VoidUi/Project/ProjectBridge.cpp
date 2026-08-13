@@ -4,10 +4,10 @@
 /* Internal */
 #include "ProjectBridge.h"
 #include "VoidCore/Logging.h"
+#include "VoidQExtensions/MessageBox.h"
 #include "VoidUi/Media/Browser.h"
 #include "VoidUi/Project/Browser.h"
-#include "VoidUi/QExtensions/MessageBox.h"
-#include "VoidUi/Preferences/Preferences.h"
+#include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -9,7 +9,7 @@
 /* Internal */
 #include "ListDelegate.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/Engine/IconForge.h"
+#include "VoidIconForge/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 

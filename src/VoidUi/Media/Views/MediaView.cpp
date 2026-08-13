@@ -13,8 +13,8 @@
 /* Internal */
 #include "MediaView.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Preferences/Preferences.h"
 #include "VoidUi/Descriptors.h"
-#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

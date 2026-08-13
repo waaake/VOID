@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class HCustomItemDelegate : public QStyledItemDelegate
+class VOID_API HCustomItemDelegate : public QStyledItemDelegate
 {
 public:
     HCustomItemDelegate(int height, QObject* parent = nullptr);

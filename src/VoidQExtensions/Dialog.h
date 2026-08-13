@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class TranslucentDialog : public QDialog
+class VOID_API TranslucentDialog : public QDialog
 {
 public:
     TranslucentDialog(QWidget* parent = nullptr);

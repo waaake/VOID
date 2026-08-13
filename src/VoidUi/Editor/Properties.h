@@ -12,7 +12,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Effects.h"
-#include "VoidUi/QExtensions/LineEdit.h"
+#include "VoidQExtensions/LineEdit.h"
 
 VOID_NAMESPACE_OPEN
 

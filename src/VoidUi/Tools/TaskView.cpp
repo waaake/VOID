@@ -12,7 +12,7 @@
 #include "TaskView.h"
 #include "VoidCore/Logging.h"
 #include "VoidObjects/Core/Threads.h"
-#include "VoidUi/QExtensions/Frame.h"
+#include "VoidQExtensions/Frame.h"
 
 VOID_NAMESPACE_OPEN
 

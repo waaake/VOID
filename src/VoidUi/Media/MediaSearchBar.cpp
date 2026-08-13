@@ -3,7 +3,7 @@
 
 /* Internal */
 #include "MediaSearchBar.h"
-#include "VoidUi/Engine/IconForge.h"
+#include "VoidIconForge/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 

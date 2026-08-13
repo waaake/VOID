@@ -11,7 +11,7 @@
 /* Internal */
 #include "Definition.h"
 #include "ParamEditor.h"
-#include "VoidUi/QExtensions/Slider.h"
+#include "VoidQExtensions/Slider.h"
 
 VOID_NAMESPACE_OPEN
 

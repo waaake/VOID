@@ -8,8 +8,8 @@
 
 /* Internal */
 #include "Properties.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Frame.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Frame.h"
 
 VOID_NAMESPACE_OPEN
 

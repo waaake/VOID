@@ -10,23 +10,21 @@
 #include <unordered_map>
 
 /* Qt */
-#include <QObject>
-#include <QMenu>
 #include <QAction>
+#include <QMenu>
+#include <QMenuBar>
+#include <QObject>
 
 /* Internal */
 #include "Definition.h"
 
 VOID_NAMESPACE_OPEN
 
-/* Forward Decl for the Main Window (Imager) */
-class VoidMainWindow;
-
 class VOID_API MenuSystem : public QObject
 {
     Q_OBJECT
 public:
-    explicit MenuSystem(VoidMainWindow* parent);
+    explicit MenuSystem(QMenuBar* menubar);
     QMenu* AddMenu(const std::string& name);
     QAction* AddAction(const std::string& menu, const std::string& action);
     QAction* AddAction(QMenu* menu, const std::string& action);
@@ -34,7 +32,7 @@ public:
     void RegisterAction(const std::string& menu, const std::string& action, std::function<void()> callback, const std::string& shortcut = "");
 
 private: /* Members */
-    VoidMainWindow* m_Window;
+    QMenuBar* m_Menubar;
     std::unordered_map<std::string, QMenu*> m_Menus;
 
 private: /* Methods */

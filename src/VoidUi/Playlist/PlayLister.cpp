@@ -15,10 +15,10 @@
 /* Internal */
 #include "PlayLister.h"
 #include "VoidCore/Logging.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidObjects/Preferences/Preferences.h"
+#include "VoidQExtensions/Tooltip.h"
 #include "VoidUi/Player/PlayerBridge.h"
-#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

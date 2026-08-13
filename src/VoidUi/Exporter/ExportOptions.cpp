@@ -7,7 +7,7 @@
 /* Internal */
 #include "ExportOptions.h"
 #include "VoidCore/ColorProcessor.h"
-#include "VoidUi/Engine/IconForge.h"
+#include "VoidIconForge/IconForge.h"
 #include "VoidUi/Tools/Delegates/LogDelegate.h"
 
 VOID_NAMESPACE_OPEN

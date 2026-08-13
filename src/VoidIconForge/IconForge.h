@@ -28,7 +28,7 @@ static constexpr int _default_size = 38;
 static constexpr int _default_size = 18;
 #endif
 
-class IconForge
+class VOID_API IconForge
 {
 private:
     IconForge();

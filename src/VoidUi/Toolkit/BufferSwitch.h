@@ -10,7 +10,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/QExtensions/Frame.h"
+#include "VoidQExtensions/Frame.h"
 #include "VoidUi/Player/ViewerBuffer.h"
 #include "VoidRenderer/Core/RenderTypes.h"
 

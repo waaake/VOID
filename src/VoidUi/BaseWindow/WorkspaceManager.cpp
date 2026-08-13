@@ -3,7 +3,7 @@
 
 /* Internal */
 #include "WorkspaceManager.h"
-#include "VoidUi/Preferences/Preferences.h"
+#include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

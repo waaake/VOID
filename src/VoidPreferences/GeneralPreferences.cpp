@@ -3,8 +3,8 @@
 
 /* Internal */
 #include "GeneralPreferences.h"
-#include "Preferences.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

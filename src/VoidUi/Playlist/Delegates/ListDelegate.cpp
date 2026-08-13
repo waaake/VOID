@@ -7,9 +7,9 @@
 
 /* Internal */
 #include "ListDelegate.h"
+#include "VoidIconForge/IconForge.h"
 #include "VoidObjects/Models/MediaModel.h"
 #include "VoidObjects/Models/PlaylistModel.h"
-#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 

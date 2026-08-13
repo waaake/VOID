@@ -12,8 +12,8 @@
 
 /* Internal */
 #include "QDefinition.h"
-#include "VoidUi/QExtensions/PushButton.h"
-#include "VoidUi/QExtensions/Slider.h"
+#include "VoidQExtensions/PushButton.h"
+#include "VoidQExtensions/Slider.h"
 
 VOID_NAMESPACE_OPEN
 

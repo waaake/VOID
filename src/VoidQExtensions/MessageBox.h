@@ -15,10 +15,8 @@ VOID_NAMESPACE_OPEN
 /**
  * A Generic Save Message Box
  */
-class SaveMessageBox : public QMessageBox
+class VOID_API SaveMessageBox : public QMessageBox
 {
-    Q_OBJECT
-
 public:
     SaveMessageBox(QWidget* parent = nullptr);
     SaveMessageBox(const QString& title, const QString& text, QWidget* parent = nullptr);

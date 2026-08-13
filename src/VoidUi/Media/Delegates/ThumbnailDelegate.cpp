@@ -8,8 +8,8 @@
 
 /* Internal */
 #include "ThumbnailDelegate.h"
+#include "VoidIconForge/IconForge.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/Engine/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 

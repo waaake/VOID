@@ -8,8 +8,20 @@ add_subdirectory(VoidCore)
 # Build Renderer Library
 add_subdirectory(VoidRenderer)
 
+# Icon Forge
+add_subdirectory(VoidIconForge)
+
+# Menu System
+add_subdirectory(VoidMenuSystem)
+
 # Build Intermediate Objects Library
 add_subdirectory(VoidObjects)
+
+# Preferences
+add_subdirectory(VoidPreferences)
+
+# Qt Extension common widgets/functionality
+add_subdirectory(VoidQExtensions)
 
 # Build Audio Library
 add_subdirectory(VoidAudio)
@@ -78,7 +90,11 @@ target_link_libraries(
     VOID
     PRIVATE
     VoidCore
+    VoidIconForge
+    VoidMenuSystem
     VoidObjects
+    VoidPreferences
+    VoidQExtensions
     VoidRenderer
     VoidUi
     Qt::Widgets
@@ -162,7 +178,18 @@ endif()
 # )
 
 # Install Libraries and Binaries
-install(TARGETS VoidAudio VoidCore VoidObjects VoidRenderer VoidUi VOID vortex
+install(TARGETS
+    VoidAudio
+    VoidCore
+    VoidIconForge
+    VoidMenuSystem
+    VoidObjects
+    VoidPreferences
+    VoidQExtensions
+    VoidRenderer
+    VoidUi
+    VOID
+    vortex
     EXPORT VOIDTargets
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib

@@ -3,13 +3,12 @@
 
 /* Internal */
 #include "MenuSystem.h"
-#include "PlayerWindow.h"
 
 VOID_NAMESPACE_OPEN
 
-MenuSystem::MenuSystem(VoidMainWindow* parent)
-    : QObject(parent)
-    , m_Window(parent)
+MenuSystem::MenuSystem(QMenuBar* menubar)
+    : QObject(menubar)
+    , m_Menubar(menubar)
 {
 }
 
@@ -60,8 +59,8 @@ void MenuSystem::RegisterAction(const std::string& menu, const std::string& acti
 
 QMenu* MenuSystem::CreateMenu(const std::string& name)
 {
-    QMenu* menu = new QMenu(name.c_str(), m_Window);
-    m_Window->MenuBar()->addMenu(menu);
+    QMenu* menu = new QMenu(name.c_str(), m_Menubar);
+    m_Menubar->addMenu(menu);
 
     m_Menus[name] = menu;
     return menu;

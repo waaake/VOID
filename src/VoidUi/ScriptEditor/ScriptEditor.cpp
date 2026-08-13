@@ -10,9 +10,9 @@
 /* Internal */
 #include "ScriptEditor.h"
 #include "VoidCore/Logging.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Tooltip.h"
-#include "VoidUi/Preferences/Preferences.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Tooltip.h"
+#include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

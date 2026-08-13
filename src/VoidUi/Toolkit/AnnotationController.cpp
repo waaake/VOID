@@ -3,8 +3,8 @@
 
 /* Internal */
 #include "AnnotationController.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 

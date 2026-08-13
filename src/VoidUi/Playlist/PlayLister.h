@@ -14,11 +14,11 @@
 
 /* Internal */
 #include "QDefinition.h"
+#include "VoidQExtensions/PushButton.h"
 #include "VoidUi/Media/MediaSearchBar.h"
 #include "VoidUi/Media/MediaBridge.h"
 #include "VoidUi/Playlist/Views/PlaylistView.h"
 #include "VoidUi/Playlist/Views/PlaylistMediaView.h"
-#include "VoidUi/QExtensions/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 

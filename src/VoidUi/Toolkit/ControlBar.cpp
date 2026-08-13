@@ -10,9 +10,9 @@
 
 /* Internal */
 #include "ControlBar.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Frame.h"
-#include "VoidUi/QExtensions/Tooltip.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Frame.h"
+#include "VoidQExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 

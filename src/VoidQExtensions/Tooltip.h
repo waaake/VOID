@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-std::string ToolTipString(const std::string& name, const std::string& description);
+std::string VOID_API ToolTipString(const std::string& name, const std::string& description);
 
 VOID_NAMESPACE_CLOSE
 

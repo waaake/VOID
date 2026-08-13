@@ -7,8 +7,8 @@
 
 /* Internal */
 #include "FileView.h"
-#include "VoidUi/QExtensions/Delegates.h"
-#include "VoidUi/Preferences/Preferences.h"
+#include "VoidObjects/Preferences/Preferences.h"
+#include "VoidQExtensions/Delegates.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN

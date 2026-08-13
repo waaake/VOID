@@ -12,10 +12,9 @@
 
 VOID_NAMESPACE_OPEN
 
-class IntBoundLineEdit : public QLineEdit
+class VOID_API IntBoundLineEdit : public QLineEdit
 {
     Q_OBJECT
-
 public:
     IntBoundLineEdit(int lower, int upper, QWidget* parent = nullptr);
     IntBoundLineEdit(int lower, int upper, int value, QWidget* parent = nullptr);

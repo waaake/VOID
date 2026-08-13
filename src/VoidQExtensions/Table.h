@@ -23,7 +23,7 @@ VOID_NAMESPACE_OPEN
  * @param selected Index of the default selection. The item at this index is selected/highlighted by default.
  * @param parent Parent widget to this filter, if any.
  */
-class FilterTable : public QTableWidget
+class VOID_API FilterTable : public QTableWidget
 {
     Q_OBJECT
 public:

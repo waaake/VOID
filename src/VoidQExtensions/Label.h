@@ -15,10 +15,9 @@ VOID_NAMESPACE_OPEN
 /**
  * A Label that emits 'clicked' signal when clicked on.
  */
-class ClickableLabel : public QLabel
+class VOID_API ClickableLabel : public QLabel
 {
     Q_OBJECT
-
 public:
     ClickableLabel(QWidget* parent = nullptr);
     ClickableLabel(const QString& text, QWidget* parent = nullptr);

@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "MediaQueue.h"
-#include "VoidUi/Engine/IconForge.h"
+#include "VoidIconForge/IconForge.h"
 #include "VoidUi/Player/PlayerBridge.h"
 
 VOID_NAMESPACE_OPEN

@@ -15,8 +15,8 @@
 
 /* Internal */
 #include "CachePreferences.h"
-#include "Preferences.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

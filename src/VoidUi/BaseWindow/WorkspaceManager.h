@@ -6,7 +6,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "MenuSystem.h"
+#include "VoidMenuSystem/MenuSystem.h"
+#include "VoidQExtensions/Window.h"
 #include "VoidUi/Dock/DockManager.h"
 #include "VoidUi/Dock/Docker.h"
 
@@ -17,7 +18,6 @@
 #include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Playlist/PlayLister.h"
 #include "VoidUi/ScriptEditor/ScriptEditor.h"
-#include "VoidUi/QExtensions/Window.h"
 #include "VoidUi/Media/MediaQueue.h"
 #include "VoidUi/Sequencer/Sequencer.h"
 #include "VoidUi/Tools/TaskView.h"

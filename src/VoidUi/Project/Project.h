@@ -11,7 +11,7 @@
 #include "Definition.h"
 #include "Importer.h"
 #include "VoidObjects/Project/Project.h"
-#include "VoidUi/QExtensions/ProgressTask.h"
+#include "VoidQExtensions/ProgressTask.h"
 
 VOID_NAMESPACE_OPEN
 

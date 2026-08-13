@@ -15,9 +15,9 @@
 #include "Docker.h"
 #include "DockManager.h"
 #include "VoidCore/Logging.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Window.h"
 #include "VoidUi/Descriptors.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Window.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -16,10 +16,9 @@
 
 VOID_NAMESPACE_OPEN
 
-class ProgressTask : public QDialog
+class VOID_API ProgressTask : public QDialog
 {
     Q_OBJECT
-
 public:
     ProgressTask(QWidget* parent = nullptr);
     ~ProgressTask();

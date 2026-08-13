@@ -10,8 +10,8 @@
 /* Internal */
 #include "StartupWindow.h"
 #include "VoidCore/Logging.h"
-#include "VoidUi/Preferences/Preferences.h"
-#include "VoidUi/QExtensions/Delegates.h"
+#include "VoidObjects/Preferences/Preferences.h"
+#include "VoidQExtensions/Delegates.h"
 #include "VoidUi/Project/ProjectBridge.h"
 #include "VoidUi/Project/Delegates/ListDelegate.h"
 

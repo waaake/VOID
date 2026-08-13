@@ -16,8 +16,8 @@
 
 /* Internal */
 #include "QDefinition.h"
-#include "VoidUi/QExtensions/Label.h"
-#include "VoidUi/QExtensions/SpinBox.h"
+#include "VoidQExtensions/Label.h"
+#include "VoidQExtensions/SpinBox.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -4,8 +4,8 @@
 /* Internal */
 #include "ViewerBuffer.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Preferences/Preferences.h"
 #include "VoidUi/Player/Player.h"
-#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

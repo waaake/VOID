@@ -13,9 +13,9 @@
 /* Internal */
 #include "Timeline.h"
 #include "VoidCore/Timekeeper.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Tooltip.h"
 #include "VoidUi/Engine/Globals.h"
-#include "VoidUi/Engine/IconForge.h"
-#include "VoidUi/QExtensions/Tooltip.h"
 
 static const int BUTTON_WIDTH = 30;
 static const int SMALL_BUTTON_WIDTH = 20;

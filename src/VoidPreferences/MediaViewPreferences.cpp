@@ -3,7 +3,7 @@
 
 /* Internal */
 #include "MediaViewPreferences.h"
-#include "Preferences.h"
+#include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 

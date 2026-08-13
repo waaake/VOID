@@ -19,10 +19,9 @@
 
 VOID_NAMESPACE_OPEN
 
-class SplitSectionSelector : public QPushButton
+class VOID_API SplitSectionSelector : public QPushButton
 {
     Q_OBJECT
-
 public:
     SplitSectionSelector(QWidget* parent = nullptr);
     ~SplitSectionSelector();
@@ -75,7 +74,7 @@ private: /* Methods */
 /**
  * Vertical Line similar to a QFrame with sunken shadow
  */
-class VLine : public QWidget
+class VOID_API VLine : public QWidget
 {
 public:
     VLine(QWidget* parent = nullptr);

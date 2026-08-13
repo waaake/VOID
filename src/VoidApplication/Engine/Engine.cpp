@@ -19,10 +19,10 @@
 
 #include "VoidCore/Profiler.h"
 #include "VoidObjects/Core/Threads.h"
+#include "VoidObjects/Preferences/Preferences.h"
 #include "VoidUi/BaseWindow/StartupWindow.h"
 #include "VoidUi/Engine/Bridge.h"
 #include "VoidUi/Engine/Globals.h"
-#include "VoidUi/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -130,7 +130,7 @@ void VoidEngine::Initialize()
                 : static_cast<Workspace>(VoidPreferences::Instance().GetDefaultWorkspace()));
 
     /* Init Menu */
-    m_MenuSystem = new MenuSystem(m_Imager);
+    m_MenuSystem = new MenuSystem(m_Imager->MenuBar());
     UIGlobals::g_MenuSystem = m_MenuSystem;
     m_Imager->InitMenu(m_MenuSystem);
 
