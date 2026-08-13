@@ -21,7 +21,7 @@
 #include "Definition.h"
 #include "Components.h"
 #include "PlayerBuffer.h"
-#include "VoidUi/Timeline/TimelineController.h"
+#include "VoidTimeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
 

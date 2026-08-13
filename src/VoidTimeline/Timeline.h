@@ -25,7 +25,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class Timeline : public QWidget
+class VOID_API Timeline : public QWidget
 {
 	Q_OBJECT
 public:

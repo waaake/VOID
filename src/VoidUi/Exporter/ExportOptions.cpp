@@ -8,7 +8,7 @@
 #include "ExportOptions.h"
 #include "VoidCore/ColorProcessor.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidUi/Tools/Delegates/LogDelegate.h"
+#include "VoidToolbox/Tools/Delegates/LogDelegate.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -6,21 +6,21 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidDocker/DockManager.h"
+#include "VoidDocker/Docker.h"
 #include "VoidMenuSystem/MenuSystem.h"
 #include "VoidQExtensions/Window.h"
-#include "VoidUi/Dock/DockManager.h"
-#include "VoidUi/Dock/Docker.h"
 
 /* Internal Widget Components */
-#include "VoidUi/Editor/Properties.h"
+#include "VoidScriptEditor/ScriptEditor.h"
+#include "VoidToolbox/Editor/Properties.h"
+#include "VoidToolbox/Tools/TaskView.h"
 #include "VoidUi/Media/MediaLister.h"
 #include "VoidUi/Media/MetadataViewer.h"
 #include "VoidUi/Player/PlayerBridge.h"
 #include "VoidUi/Playlist/PlayLister.h"
-#include "VoidUi/ScriptEditor/ScriptEditor.h"
 #include "VoidUi/Media/MediaQueue.h"
 #include "VoidUi/Sequencer/Sequencer.h"
-#include "VoidUi/Tools/TaskView.h"
 
 VOID_NAMESPACE_OPEN
 

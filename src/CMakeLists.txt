@@ -5,6 +5,9 @@ include(FreetypeInstallHelpers)
 # Build Core Library
 add_subdirectory(VoidCore)
 
+# Dock widgets and docking ability
+add_subdirectory(VoidDocker)
+
 # Build Renderer Library
 add_subdirectory(VoidRenderer)
 
@@ -22,6 +25,15 @@ add_subdirectory(VoidPreferences)
 
 # Qt Extension common widgets/functionality
 add_subdirectory(VoidQExtensions)
+
+# Python scripting window-console
+add_subdirectory(VoidScriptEditor)
+
+# Player Timeslider
+add_subdirectory(VoidTimeline)
+
+# Tools and other ui components serving as tools to perform certain operations
+add_subdirectory(VoidToolbox)
 
 # Build Audio Library
 add_subdirectory(VoidAudio)
@@ -90,12 +102,16 @@ target_link_libraries(
     VOID
     PRIVATE
     VoidCore
+    VoidDocker
     VoidIconForge
     VoidMenuSystem
     VoidObjects
     VoidPreferences
     VoidQExtensions
     VoidRenderer
+    VoidScriptEditor
+    VoidTimeline
+    VoidToolbox
     VoidUi
     Qt::Widgets
     Qt::Core
@@ -181,12 +197,16 @@ endif()
 install(TARGETS
     VoidAudio
     VoidCore
+    VoidDocker
     VoidIconForge
     VoidMenuSystem
     VoidObjects
     VoidPreferences
     VoidQExtensions
     VoidRenderer
+    VoidScriptEditor
+    VoidTimeline
+    VoidToolbox
     VoidUi
     VOID
     vortex

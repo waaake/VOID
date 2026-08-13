@@ -28,10 +28,9 @@ struct DockStruct
     std::string name;
 };
 
-class DockManager : public QObject
+class VOID_API DockManager : public QObject
 {
     Q_OBJECT
-
 private:
     DockManager(QObject* parent = nullptr) : QObject(parent) {}
 

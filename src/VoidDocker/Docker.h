@@ -19,7 +19,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidDocker : public QDockWidget
+class VOID_API VoidDocker : public QDockWidget
 {
     Q_OBJECT
 

@@ -18,8 +18,6 @@ VOID_NAMESPACE_OPEN
 
 class AboutVoid : public QDialog
 {
-    Q_OBJECT
-
 public:
     AboutVoid(QWidget* parent = nullptr);
     virtual ~AboutVoid();
@@ -44,11 +42,8 @@ private: /* Members */
     /* Details */
     QLabel* m_AuthorHeader;
     QLabel* m_Author;
-
     QLabel* m_ContactHeader;
-    
     QLabel* m_VersionHeader;
-
     QLabel* m_GithubHeader;
 
 private: /* Methods */

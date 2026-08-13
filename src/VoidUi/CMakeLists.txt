@@ -15,19 +15,7 @@ set(SOURCES
     Commands/TagCommands.cpp
     Commands/EffectCommands.cpp
     Commands/SequenceCommands.cpp
-    
-    # Dock
-    Dock/Docker.cpp
-    Dock/DockManager.cpp
-    Dock/DockPanel.cpp
-    Dock/DockSplitter.cpp
 
-    # Editors
-    Editor/Effects.cpp
-    Editor/ParamEditor.cpp
-    Editor/Properties.cpp
-    Editor/RangedParamEditor.cpp
-    
     # Core Engine Globals
     Engine/Bridge.cpp
     Engine/Globals.cpp
@@ -77,11 +65,6 @@ set(SOURCES
     Project/Views/ProjectView.cpp
     Project/Delegates/ListDelegate.cpp
 
-    # ScriptEditor
-    ScriptEditor/ScriptConsole.cpp
-    ScriptEditor/ScriptEditor.cpp
-    ScriptEditor/SyntaxHighlighter.cpp
-
     # Sequencer
     Sequencer/Graphics/SHandleItem.cpp
     Sequencer/Graphics/SPlayheadItem.cpp
@@ -106,12 +89,6 @@ set(SOURCES
     Sequencer/Widgets/STrackHeaderWidget.cpp
     Sequencer/Widgets/SToolbar.cpp
 
-    # Timeline
-    Timeline/Timeline.cpp
-    Timeline/TimelineController.cpp
-    Timeline/TimelineElements.cpp
-    Timeline/Timeslider.cpp
-
     # Toolkit
     Toolkit/AnnotationController.cpp
     Toolkit/BufferSwitch.cpp
@@ -120,12 +97,6 @@ set(SOURCES
     Toolkit/ControlScroller.cpp
     Toolkit/GridController.cpp
     Toolkit/ViewerController.cpp
-
-    # Tools
-    Tools/Delegates/LogDelegate.cpp
-    Tools/Task.cpp
-    Tools/TaskView.cpp
-    Tools/LogWindow.cpp
 )
 
 if (WIN32)
@@ -168,12 +139,16 @@ target_link_libraries(
     VoidUi
     PUBLIC
     VoidCore
+    VoidDocker
     VoidIconForge
     VoidMenuSystem
     VoidObjects
     VoidPreferences
     VoidQExtensions
     VoidRenderer
+    VoidScriptEditor
+    VoidTimeline
+    VoidToolbox
     VoidAudio
 )
 
@@ -184,7 +159,7 @@ target_link_libraries(
     Qt::Widgets
     Qt::Core
     OpenGL::GL
-    pybind11::embed
+    # pybind11::embed
     Python::Python
     OpenColorIO::OpenColorIO
 )

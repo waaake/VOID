@@ -21,8 +21,6 @@ VOID_NAMESPACE_OPEN
 
 class PyScriptEditor : public QWidget
 {
-    Q_OBJECT
-
 public:
     PyScriptEditor(QWidget* parent = nullptr);
     ~PyScriptEditor();

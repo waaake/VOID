@@ -16,7 +16,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class PropertiesPanel : public QWidget
+class VOID_API PropertiesPanel : public QWidget
 {
     Q_OBJECT
 

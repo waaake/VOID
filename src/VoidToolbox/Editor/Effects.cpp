@@ -4,6 +4,7 @@
 /* Qt */
 #include <QCheckBox>
 #include <QDoubleSpinBox>
+#include <QLabel>
 #include <QPainter>
 #include <QSpinBox>
 
@@ -12,7 +13,7 @@
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Slider.h"
 #include "VoidQExtensions/Tooltip.h"
-#include "VoidUi/Player/PlayerBridge.h"
+// #include "VoidUi/Player/PlayerBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -145,7 +146,7 @@ void EffectEditor::Connect()
     connect(m_EnableButton, &QToolButton::toggled, this, [this](bool checked) -> void
     {
         m_Effect->SetEnabled(checked);
-        _PlayerBridge.Refresh();
+        // _PlayerBridge.Refresh();
     });
     connect(m_ColorButton, &ColorSelectionButton::colorChanged, m_Effect, &Effect::SetColor);
 }
@@ -170,7 +171,7 @@ void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
     connect(editor, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [=](int i) -> void
     {
         m_Effect->SetValue(param->name, i);
-        _PlayerBridge.Refresh();
+        // _PlayerBridge.Refresh();
     });
 }
 
@@ -193,7 +194,7 @@ void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param
     connect(editor, &QuickDoubleSlider::valueChanged, this, [=](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
-        _PlayerBridge.Refresh();
+        // _PlayerBridge.Refresh();
     });
 }
 
@@ -213,7 +214,7 @@ void EffectEditor::SetupFloatParam(QGridLayout* grid, int row, const Param* para
     connect(editor, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, [=](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
-        _PlayerBridge.Refresh();
+        // _PlayerBridge.Refresh();
     });
 }
 
@@ -232,7 +233,7 @@ void EffectEditor::SetupBoolParam(QGridLayout* grid, int row, const Param* param
     connect(editor, &QCheckBox::toggled, this, [=](bool b) -> void
     {
         m_Effect->SetValue(param->name, b);
-        _PlayerBridge.Refresh();
+        // _PlayerBridge.Refresh();
     });
 }
 
@@ -251,7 +252,7 @@ void EffectEditor::SetupStringParam(QGridLayout* grid, int row, const Param* par
     connect(editor, &QLineEdit::editingFinished, this, [=]() -> void
     {
         m_Effect->SetValue(param->name, editor->text().toStdString());
-        _PlayerBridge.Refresh();
+        // _PlayerBridge.Refresh();
     });
 }
 

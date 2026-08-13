@@ -17,7 +17,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
-#include "VoidUi/Timeline/TimelineController.h"
+#include "VoidTimeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
 

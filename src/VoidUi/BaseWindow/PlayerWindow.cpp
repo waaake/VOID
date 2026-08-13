@@ -13,7 +13,6 @@
 #include "VoidIconForge/IconForge.h"
 #include "VoidPreferences/PreferencesUI.h"
 #include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/Dock/DockManager.h"
 #include "VoidUi/Project/ProjectBridge.h"
 #include "VoidUi/BaseWindow/StartupWindow.h"
 

@@ -18,16 +18,9 @@ DockManager::~DockManager()
 
 int DockManager::RegisterDock(QWidget* widget, const std::string& text)
 {
-    /* Current size determines the id of the next widget in place */
     int id = m_Docks.size();
-
-    /* Add the Dock to the underlying struct */
     m_Docks[id] = {id, widget, text};
-
-    /* Give the widget the same id as the object name */
     widget->setObjectName(QString::number(id));
-
-    /* Emit that the DockManager has received an update */
     emit updated();
 
     return id;

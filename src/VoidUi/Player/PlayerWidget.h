@@ -16,7 +16,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidRenderer/Core/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
-#include "VoidUi/Timeline/TimelineController.h"
+#include "VoidTimeline/TimelineController.h"
 #include "VoidUi/Toolkit/AnnotationController.h"
 #include "VoidUi/Toolkit/ControlBar.h"
 

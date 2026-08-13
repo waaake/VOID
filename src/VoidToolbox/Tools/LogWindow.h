@@ -16,7 +16,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class LoggerWindow : public TranslucentDialog
+class VOID_API LoggerWindow : public TranslucentDialog
 {
 public:
     LoggerWindow(TaskLogModel* model, QWidget* parent = nullptr);

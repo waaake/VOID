@@ -18,8 +18,8 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidToolbox/Tools/LogWindow.h"
 #include "VoidUi/Media/Browser.h"
-#include "VoidUi/Tools/LogWindow.h"
 
 VOID_NAMESPACE_OPEN
 

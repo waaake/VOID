@@ -16,13 +16,11 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Forward Declaration for Timeline class */
 class Timeline;
 
 class Timeslider : public QSlider
 {
 	Q_OBJECT
-
 public:
 	Timeslider(Qt::Orientation orientation, QWidget *parent = nullptr);
 
