@@ -569,7 +569,7 @@ void PlaybackTrack::CalculateMaxEffects(const SharedTrackItem& item)
     int previous = m_MaxEffects;
     m_MaxEffects = std::max(m_MaxEffects, item->NumEffects());
 
-    if (previous != m_MaxEffects);
+    if (previous != m_MaxEffects)
         emit maxEffectsChanged();
 }
 
