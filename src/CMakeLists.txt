@@ -8,11 +8,20 @@ add_subdirectory(VoidCore)
 # Dock widgets and docking ability
 add_subdirectory(VoidDocker)
 
+# Media Exporter - 
+add_subdirectory(VoidExporter)
+
 # Build Renderer Library
 add_subdirectory(VoidRenderer)
 
 # Icon Forge
 add_subdirectory(VoidIconForge)
+
+# Media Browser
+add_subdirectory(VoidMediaBrowser)
+
+# Media core ui component (composite of project - playlist and media components)
+add_subdirectory(VoidMediaPlayer)
 
 # Menu System
 add_subdirectory(VoidMenuSystem)
@@ -40,6 +49,9 @@ add_subdirectory(VoidAudio)
 
 # Build Ui Library
 add_subdirectory(VoidUi)
+
+# Undo system base
+add_subdirectory(VoidUndo)
 
 # Python Bindings
 add_subdirectory(Bindings)
@@ -103,7 +115,10 @@ target_link_libraries(
     PRIVATE
     VoidCore
     VoidDocker
+    VoidExporter
     VoidIconForge
+    VoidMediaBrowser
+    VoidMediaPlayer
     VoidMenuSystem
     VoidObjects
     VoidPreferences
@@ -113,6 +128,7 @@ target_link_libraries(
     VoidTimeline
     VoidToolbox
     VoidUi
+    VoidUndo
     Qt::Widgets
     Qt::Core
     OpenGL::GL
@@ -198,7 +214,10 @@ install(TARGETS
     VoidAudio
     VoidCore
     VoidDocker
+    VoidExporter
     VoidIconForge
+    VoidMediaBrowser
+    VoidMediaPlayer
     VoidMenuSystem
     VoidObjects
     VoidPreferences
@@ -208,6 +227,7 @@ install(TARGETS
     VoidTimeline
     VoidToolbox
     VoidUi
+    VoidUndo
     VOID
     vortex
     EXPORT VOIDTargets

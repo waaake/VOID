@@ -9,61 +9,16 @@ set(SOURCES
     BaseWindow/StartupWindow.cpp
 
     # Commands
-    Commands/VoidCommand.cpp
-    Commands/MediaCommands.cpp
-    Commands/PlaylistCommands.cpp
-    Commands/TagCommands.cpp
-    Commands/EffectCommands.cpp
     Commands/SequenceCommands.cpp
 
     # Core Engine Globals
     Engine/Bridge.cpp
     Engine/Globals.cpp
 
-    # Exporter
-    Exporter/Exporter.cpp
-    Exporter/ExportOptions.cpp
-    Exporter/MediaExporter.cpp
-    
-    # Media
-    Media/Browser.cpp
-    Media/FileDialog.cpp
-    Media/MediaBridge.cpp
-    Media/MediaLister.cpp
-    Media/MediaSearchBar.cpp
-    Media/MetadataViewer.cpp
-    Media/TagWidget.cpp
-    Media/MediaQueue.cpp
-    Media/Models/MetadataModel.cpp
-    Media/Models/MediaFilesModel.cpp
-    Media/Views/FileView.cpp
-    Media/Views/MediaView.cpp
-    Media/Views/MetadataView.cpp
-    Media/Views/QueueView.cpp
-    Media/Delegates/ListDelegate.cpp
-    Media/Delegates/ThumbnailDelegate.cpp
-
-    # Playlist
-    Playlist/PlayLister.cpp
-    Playlist/Views/PlaylistView.cpp
-    Playlist/Views/PlaylistMediaView.cpp
-    Playlist/Delegates/ListDelegate.cpp
-
-    # Player
-    Player/OverlayWidget.cpp
-    Player/Player.cpp
-    Player/PlayerBridge.cpp
-    Player/PlayerBuffer.cpp
-    Player/PlayerWidget.cpp
-    Player/ViewerBuffer.cpp
-
-    # Project
-    Project/Browser.cpp
-    Project/Project.cpp
-    Project/ProjectBridge.cpp
-    Project/Importer.cpp
-    Project/Views/ProjectView.cpp
-    Project/Delegates/ListDelegate.cpp
+    # # Exporter
+    # Exporter/Exporter.cpp
+    # Exporter/ExportOptions.cpp
+    # Exporter/MediaExporter.cpp
 
     # Sequencer
     Sequencer/Graphics/SHandleItem.cpp
@@ -88,15 +43,6 @@ set(SOURCES
     Sequencer/Widgets/STrackHeader.cpp
     Sequencer/Widgets/STrackHeaderWidget.cpp
     Sequencer/Widgets/SToolbar.cpp
-
-    # Toolkit
-    Toolkit/AnnotationController.cpp
-    Toolkit/BufferSwitch.cpp
-    Toolkit/ColorController.cpp
-    Toolkit/ControlBar.cpp
-    Toolkit/ControlScroller.cpp
-    Toolkit/GridController.cpp
-    Toolkit/ViewerController.cpp
 )
 
 if (WIN32)
@@ -140,7 +86,10 @@ target_link_libraries(
     PUBLIC
     VoidCore
     VoidDocker
+    VoidExporter
     VoidIconForge
+    VoidMediaBrowser
+    VoidMediaPlayer
     VoidMenuSystem
     VoidObjects
     VoidPreferences
@@ -149,6 +98,7 @@ target_link_libraries(
     VoidScriptEditor
     VoidTimeline
     VoidToolbox
+    VoidUndo
     VoidAudio
 )
 

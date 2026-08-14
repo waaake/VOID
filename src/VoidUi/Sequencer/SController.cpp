@@ -6,7 +6,7 @@
 #include "STimelineScene.h"
 #include "VoidCore/Logging.h"
 #include "Graphics/STrack.h"
-#include "VoidUi/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidUi/Commands/SequenceCommands.h"
 
 VOID_NAMESPACE_OPEN

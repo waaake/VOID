@@ -4,8 +4,8 @@
 /* Internal */
 #include "Bridge.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidUi/Player/PlayerBridge.h"
-#include "VoidUi/Project/ProjectBridge.h"
+#include "VoidMediaPlayer/Player/PlayerBridge.h"
+#include "VoidMediaPlayer/Project/ProjectBridge.h"
 
 VOID_NAMESPACE_OPEN
 

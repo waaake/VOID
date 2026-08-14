@@ -12,8 +12,8 @@
 #include "VoidCore/Logging.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidQExtensions/Delegates.h"
-#include "VoidUi/Project/ProjectBridge.h"
-#include "VoidUi/Project/Delegates/ListDelegate.h"
+#include "VoidMediaPlayer/Project/ProjectBridge.h"
+#include "VoidMediaPlayer/Project/Delegates/ListDelegate.h"
 
 VOID_NAMESPACE_OPEN
 

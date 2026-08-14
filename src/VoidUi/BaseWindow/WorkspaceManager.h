@@ -15,11 +15,11 @@
 #include "VoidScriptEditor/ScriptEditor.h"
 #include "VoidToolbox/Editor/Properties.h"
 #include "VoidToolbox/Tools/TaskView.h"
-#include "VoidUi/Media/MediaLister.h"
-#include "VoidUi/Media/MetadataViewer.h"
-#include "VoidUi/Player/PlayerBridge.h"
-#include "VoidUi/Playlist/PlayLister.h"
-#include "VoidUi/Media/MediaQueue.h"
+#include "VoidMediaPlayer/Media/MediaLister.h"
+#include "VoidMediaPlayer/Media/MetadataViewer.h"
+#include "VoidMediaPlayer/Playlist/PlayLister.h"
+#include "VoidMediaPlayer/Media/MediaQueue.h"
+#include "VoidMediaPlayer/Player/PlayerBridge.h"
 #include "VoidUi/Sequencer/Sequencer.h"
 
 VOID_NAMESPACE_OPEN
