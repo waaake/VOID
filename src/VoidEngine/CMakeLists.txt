@@ -50,6 +50,14 @@ add_library(
     ${SOURCES}
 )
 
+target_include_directories(
+    VoidEngine
+    PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    ${FREETYPE_INCLUDE_DIRS}
+)
+
 target_link_libraries(
     VoidEngine
     PUBLIC
