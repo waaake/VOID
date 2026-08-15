@@ -12,12 +12,12 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/Serialization.h"
-#include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/Player/PlayerBridge.h"
-#include "VoidUi/Media/MetadataViewer.h"
-#include "VoidUi/Sequencer/Sequencer.h"
-#include "VoidUi/Project/Project.h"
-#include "VoidUi/Engine/Globals.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Player/PlayerBridge.h"
+#include "VoidMediaPlayer/Media/MetadataViewer.h"
+#include "VoidMediaPlayer/Project/Project.h"
+#include "VoidSequencer/Sequencer.h"
+#include "VoidEngine/Engine/Globals.h"
 
 VOID_NAMESPACE_OPEN
 

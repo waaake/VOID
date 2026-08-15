@@ -1,0 +1,109 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+#ifndef _PLAYER_BRIDGE_H
+#define _PLAYER_BRIDGE_H
+
+/* Qt */
+#include <QObject>
+
+/* Internal */
+#include "Definition.h"
+#include "Player.h"
+#include "VoidMenuSystem/MenuSystem.h"
+#include "VoidTimeline/TimelineController.h"
+
+VOID_NAMESPACE_OPEN
+
+class VOID_API PlayerBridge : public QObject
+{
+    PlayerBridge();
+public:
+    ~PlayerBridge();
+
+    PlayerBridge(const PlayerBridge&) = delete;
+    PlayerBridge(PlayerBridge&&) = delete;
+
+    PlayerBridge& operator=(const PlayerBridge&) = delete;
+    PlayerBridge& operator=(PlayerBridge&&) = delete;
+
+    static PlayerBridge& Instance();
+    inline Player* ActivePlayer() const { return m_Player; }
+    inline ViewerBuffer* ActiveViewer() const { return m_Player->ActiveViewer(); }
+    TimelineController* TimeController() { return m_TimelineController; }
+
+    void InitMenu(MenuSystem* menuSystem);
+    inline void Clear() { m_Player->Clear(); }
+    inline void Refresh() { m_Player->Refresh(); }
+
+    inline void SetMedia(const SharedMediaClip& media) { m_Player->SetMedia(media); }
+    inline void SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
+    {
+        m_Player->SetMedia(media, buffer);
+    }
+    inline void SetMedia(const std::vector<SharedMediaClip>& media) { m_Player->SetMedia(media); }
+    inline void SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer)
+    {
+        m_Player->SetMedia(media, buffer);
+    }
+
+    inline void SetPlaylist(Playlist* playlist) { m_Player->SetPlaylist(playlist); }
+    inline void ClearQueue() { m_Playlist->Clear(); }
+    void AddToQueue(const SharedMediaClip& media, bool refresh = true);
+    void AddToQueue(const std::vector<SharedMediaClip>& media, bool refresh = true);
+    void SetGrid(const std::vector<SharedMediaClip>& media);
+    
+    inline void SetGrid(Playlist* playlist) { m_Player->SetGrid(playlist); }
+    void SetGridColumns(int columns) { m_Player->SetGridColumns(columns); }
+    void SetGridRows(int rows) { m_Player->SetGridRows(rows); }
+    int GridRows() const { return m_Player->GridRows(); }
+    int GridColumns() const { return m_Player->GridColumns(); }
+
+    float PeelFactor() const { return m_Player->PeelFactor(); }
+    void SetPeelFactor(float factor) { m_Player->SetPeelFactor(factor); }
+
+    inline void ResetPlaylistMedia() { m_Player->ResetPlaylistMedia(); }
+
+    inline void ResumeCache() { m_Player->ResumeCache(); }
+    inline void DisableCache() { m_Player->DisableCache(); }
+    inline void StopCache() { m_Player->StopCache(); }
+    inline void Recache() { m_Player->Recache(); }
+    inline void ClearCache() { m_Player->ClearCache(); }
+
+    inline void PlayForwards() { m_TimelineController->PlayForwards(); }
+    inline void PlayBackwards() { m_TimelineController->PlayBackwards(); }
+    inline void Stop() { m_TimelineController->Stop(); }
+
+    inline void NextFrame() { m_TimelineController->NextFrame(); }
+    inline void PreviousFrame() { m_TimelineController->PreviousFrame(); }
+    inline void MoveToStart() { m_TimelineController->MoveToStart(); }
+    inline void MoveToEnd() { m_TimelineController->MoveToEnd(); }
+    inline void ResetInFrame() { m_TimelineController->ResetInFrame(); }
+    inline void ResetOutFrame() { m_TimelineController->ResetOutFrame(); }
+    inline void ResetRange() { m_TimelineController->ResetRange(); }
+    inline void EditFramerate() { m_TimelineController->EditFramerate(); }
+
+    inline void InspectCurrentMetadata() { m_Player->InspectCurrentMetadata(); }
+    inline void ToggleChannels(int channel) { m_Player->ToggleChannels(channel); }
+
+    inline void ZoomIn() { m_Player->ZoomIn(); }
+    inline void ZoomOut() { m_Player->ZoomOut(); }
+    inline void ZoomToFit() { m_Player->ZoomToFit(); }
+    inline void SetFullscreen() { m_Player->SetRendererFullscreen(); }
+    inline void ExitFullscreen() { m_Player->ExitFullscreenRenderer(); }
+
+    inline void RenderCurrentFrame() { m_Player->RenderCurrentFrame(); }
+    inline void RenderAnnotatedFrames() { m_Player->RenderAnnotatedFrames(); }
+    inline void TranscodeMedia() { m_Player->TranscodeMedia(); }
+
+private: /* Members */
+    Player* m_Player;
+    Playlist* m_Playlist;
+    TimelineController* m_TimelineController;
+};
+
+#define _PlayerBridge PlayerBridge::Instance()
+
+VOID_NAMESPACE_CLOSE
+
+#endif // _PLAYER_BRIDGE_H

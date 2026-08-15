@@ -1,0 +1,55 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+#ifndef _VOID_ABOUT_H
+#define _VOID_ABOUT_H
+
+/* Qt */
+#include <QDialog>
+#include <QFrame>
+#include <QLabel>
+#include <QLayout>
+#include <QPushButton>
+
+/* Internal */
+#include "Definition.h"
+
+VOID_NAMESPACE_OPEN
+
+class AboutVoid : public QDialog
+{
+public:
+    AboutVoid(QWidget* parent = nullptr);
+    virtual ~AboutVoid();
+
+private: /* Members */
+    QPushButton* m_OkButton;
+
+    /* Main Layout for the Dialog */
+    QVBoxLayout* m_Layout;
+
+    /* Separators */
+    QFrame* m_LogoSeparator;
+    QFrame* m_ButtonSeparator;
+
+    /* Logo */
+    QLabel* m_VoidLabel;
+
+    /* Description */
+    QLabel* m_About;
+    QLabel* m_Description;
+
+    /* Details */
+    QLabel* m_AuthorHeader;
+    QLabel* m_Author;
+    QLabel* m_ContactHeader;
+    QLabel* m_VersionHeader;
+    QLabel* m_GithubHeader;
+
+private: /* Methods */
+    void Build();
+};
+
+VOID_NAMESPACE_CLOSE
+
+#endif // _VOID_ABOUT_H

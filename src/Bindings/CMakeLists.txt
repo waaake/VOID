@@ -21,7 +21,10 @@ target_link_libraries(
     vortex
     PRIVATE
     VoidCore
-    VoidUi
+    VoidMediaPlayer
+    VoidObjects
+    VoidSequencer
+    VoidEngine
     Qt::Widgets
     Freetype::Freetype
 )
