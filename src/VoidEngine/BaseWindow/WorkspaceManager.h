@@ -20,7 +20,7 @@
 #include "VoidMediaPlayer/Playlist/PlayLister.h"
 #include "VoidMediaPlayer/Media/MediaQueue.h"
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
-#include "VoidUi/Sequencer/Sequencer.h"
+#include "VoidSequencer/Sequencer.h"
 
 VOID_NAMESPACE_OPEN
 

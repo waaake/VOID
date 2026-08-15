@@ -10,7 +10,7 @@
 #include "STrackItem.h"
 #include "STrack.h"
 #include "STimelineEffect.h"
-#include "VoidUi/Sequencer/SContext.h"
+#include "VoidSequencer/SContext.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN

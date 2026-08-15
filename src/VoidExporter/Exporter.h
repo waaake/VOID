@@ -18,18 +18,18 @@ VOID_NAMESPACE_OPEN
 // Forward decl
 class Player;
 
-class ExportAnnotatedFramesTask : public Task
-{
-public:
-    ExportAnnotatedFramesTask(const MediaExportDescriptor& descriptor, Player* player);
+// class ExportAnnotatedFramesTask : public Task
+// {
+// public:
+//     ExportAnnotatedFramesTask(const MediaExportDescriptor& descriptor, Player* player);
 
-protected:
-    bool Work() override;
+// protected:
+//     bool Work() override;
 
-private:
-    Player* m_Player;
-    MediaExportDescriptor m_Descriptor;
-};
+// private:
+//     Player* m_Player;
+//     MediaExportDescriptor m_Descriptor;
+// };
 
 class ExportMediaFramesTask : public Task
 {

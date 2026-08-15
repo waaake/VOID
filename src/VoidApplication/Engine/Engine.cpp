@@ -20,9 +20,9 @@
 #include "VoidCore/Profiler.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidObjects/Preferences/Preferences.h"
-#include "VoidUi/BaseWindow/StartupWindow.h"
-#include "VoidUi/Engine/Bridge.h"
-#include "VoidUi/Engine/Globals.h"
+#include "VoidEngine/BaseWindow/StartupWindow.h"
+#include "VoidEngine/Engine/Bridge.h"
+#include "VoidEngine/Engine/Globals.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -5,96 +5,96 @@
 #include "Exporter.h"
 #include "VoidCore/ColorProcessor.h"
 #include "VoidCore/Media/Renderer.h"
-#include "VoidMediaPlayer/Player/Player.h"
+// #include "VoidMediaPlayer/Player/Player.h"
 
 VOID_NAMESPACE_OPEN
 
-ExportAnnotatedFramesTask::ExportAnnotatedFramesTask(const MediaExportDescriptor& descriptor, Player* player)
-    : Task("Export Annotated Frames")
-    , m_Player(player)
-    , m_Descriptor(descriptor)
-{
-}
+// ExportAnnotatedFramesTask::ExportAnnotatedFramesTask(const MediaExportDescriptor& descriptor, Player* player)
+//     : Task("Export Annotated Frames")
+//     , m_Player(player)
+//     , m_Descriptor(descriptor)
+// {
+// }
 
-bool ExportAnnotatedFramesTask::Work()
-{
-    const auto& annotations = m_Player->m_ActiveViewBuffer->Annotations();
-    if (annotations.empty())
-        return false;
+// bool ExportAnnotatedFramesTask::Work()
+// {
+//     const auto& annotations = m_Player->m_ActiveViewBuffer->Annotations();
+//     if (annotations.empty())
+//         return false;
 
-    SetMax(static_cast<int>(annotations.size()));
+//     SetMax(static_cast<int>(annotations.size()));
 
-    int count = 1;
+//     int count = 1;
 
 
-    if (m_Descriptor.type == WriterType::Image && m_Descriptor.entry.Templated())
-    {
-        const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
-        Renderer::ImageRenderer ir(m_Descriptor.entry, {r.width, r.height, r.channels, r.type});
+//     if (m_Descriptor.type == WriterType::Image && m_Descriptor.entry.Templated())
+//     {
+//         const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
+//         Renderer::ImageRenderer ir(m_Descriptor.entry, {r.width, r.height, r.channels, r.type});
 
-        for (auto& [frame, _] : annotations)
-        {
-            if (auto data = m_Player->m_ActiveViewBuffer->MData(frame))
-            {
-                m_Player->m_Renderer->Render(data.image, data.annotation);
-                const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
+//         for (auto& [frame, _] : annotations)
+//         {
+//             if (auto data = m_Player->m_ActiveViewBuffer->MData(frame))
+//             {
+//                 m_Player->m_Renderer->Render(data.image, data.annotation);
+//                 const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
 
-                if (!ir.Render(frame, r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
-                {
-                    // ErrorMessageBox box("There was an error in exporting media.", "Error", this);
-                    // box.exec();
-                    return false;
-                }
+//                 if (!ir.Render(frame, r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
+//                 {
+//                     // ErrorMessageBox box("There was an error in exporting media.", "Error", this);
+//                     // box.exec();
+//                     return false;
+//                 }
 
-                SetProgress(count);
-                count++;
-            }
-        }
+//                 SetProgress(count);
+//                 count++;
+//             }
+//         }
 
-        // Render back the current frame
-        // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
-        m_Player->Refresh();
+//         // Render back the current frame
+//         // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
+//         m_Player->Refresh();
 
-        // InfoMessageBox box("Annotated frames have been exported.", "Success", this);
-        // box.exec();
-        return true;
-    }
-    else if (m_Descriptor.type == WriterType::Movie)
-    {
-        const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
-        Renderer::MovieRenderer mr(m_Descriptor.entry, {r.width, r.height, r.channels, r.type});
+//         // InfoMessageBox box("Annotated frames have been exported.", "Success", this);
+//         // box.exec();
+//         return true;
+//     }
+//     else if (m_Descriptor.type == WriterType::Movie)
+//     {
+//         const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
+//         Renderer::MovieRenderer mr(m_Descriptor.entry, {r.width, r.height, r.channels, r.type});
 
-        for (auto& [frame, _] : annotations)
-        {
-            if (auto data = m_Player->m_ActiveViewBuffer->MData(frame))
-            {
-                m_Player->m_Renderer->Render(data.image, data.annotation);
-                const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
-                if (!mr.AddBuffer(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
-                {
-                    // ErrorMessageBox box("There was an error in exporting media.", "Error", this);
-                    // box.exec();
-                    return false;
-                }
+//         for (auto& [frame, _] : annotations)
+//         {
+//             if (auto data = m_Player->m_ActiveViewBuffer->MData(frame))
+//             {
+//                 m_Player->m_Renderer->Render(data.image, data.annotation);
+//                 const Renderer::RenderData r = m_Player->m_Renderer->FrameBuffer();
+//                 if (!mr.AddBuffer(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
+//                 {
+//                     // ErrorMessageBox box("There was an error in exporting media.", "Error", this);
+//                     // box.exec();
+//                     return false;
+//                 }
 
-                SetProgress(count);
-                count++;
-            }
-        }
+//                 SetProgress(count);
+//                 count++;
+//             }
+//         }
 
-        mr.Render();
+//         mr.Render();
 
-        // Render back the current frame
-        // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
-        m_Player->Refresh();
+//         // Render back the current frame
+//         // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
+//         m_Player->Refresh();
 
-        // InfoMessageBox box("Annotated frames have been exported.", "Success", this);
-        // box.exec();
-        return true;
-    }
+//         // InfoMessageBox box("Annotated frames have been exported.", "Success", this);
+//         // box.exec();
+//         return true;
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
 /// ExportMediaFramesTask
 

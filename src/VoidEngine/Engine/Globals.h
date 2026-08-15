@@ -9,11 +9,11 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidEngine/BaseWindow/PlayerWindow.h"
 #include "VoidObjects/Core/Task.h"
 #include "VoidMediaPlayer/Media/MetadataViewer.h"
 #include "VoidMenuSystem/MenuSystem.h"
-#include "VoidUi/Sequencer/Sequencer.h"
-#include "VoidUi/BaseWindow/PlayerWindow.h"
+#include "VoidSequencer/Sequencer.h"
 
 VOID_NAMESPACE_OPEN
 

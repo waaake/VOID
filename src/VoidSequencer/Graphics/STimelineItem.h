@@ -10,8 +10,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidUi/Sequencer/SContext.h"
-#include "VoidUi/Sequencer/SDragContext.h"
+#include "VoidSequencer/SContext.h"
+#include "VoidSequencer/SDragContext.h"
 
 VOID_NAMESPACE_OPEN
 

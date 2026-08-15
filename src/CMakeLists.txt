@@ -8,6 +8,9 @@ add_subdirectory(VoidCore)
 # Dock widgets and docking ability
 add_subdirectory(VoidDocker)
 
+# Build Core Engine - UI composite Library
+add_subdirectory(VoidEngine)
+
 # Media Exporter - 
 add_subdirectory(VoidExporter)
 
@@ -38,6 +41,9 @@ add_subdirectory(VoidQExtensions)
 # Python scripting window-console
 add_subdirectory(VoidScriptEditor)
 
+# Sequence timeline view
+add_subdirectory(VoidSequencer)
+
 # Player Timeslider
 add_subdirectory(VoidTimeline)
 
@@ -47,9 +53,6 @@ add_subdirectory(VoidToolbox)
 # Build Audio Library
 add_subdirectory(VoidAudio)
 
-# Build Ui Library
-add_subdirectory(VoidUi)
-
 # Undo system base
 add_subdirectory(VoidUndo)
 
@@ -58,7 +61,7 @@ add_subdirectory(Bindings)
 
 # Depends on Qt
 target_include_directories(
-    VoidUi
+    VoidEngine
     PRIVATE
     include
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -125,9 +128,10 @@ target_link_libraries(
     VoidQExtensions
     VoidRenderer
     VoidScriptEditor
+    VoidSequencer
     VoidTimeline
     VoidToolbox
-    VoidUi
+    VoidEngine
     VoidUndo
     Qt::Widgets
     Qt::Core
@@ -224,9 +228,10 @@ install(TARGETS
     VoidQExtensions
     VoidRenderer
     VoidScriptEditor
+    VoidSequencer
     VoidTimeline
     VoidToolbox
-    VoidUi
+    VoidEngine
     VoidUndo
     VOID
     vortex
@@ -244,7 +249,7 @@ install(DIRECTORY include/ DESTINATION include)
 if (APPLE) # MacOS uses @executable_path
 set_target_properties(VOID PROPERTIES INSTALL_RPATH "@executable_path/../lib/" INSTALL_RPATH_USE_LINK_PATH TRUE)
 elseif (UNIX) # Standard $ORIGIN RPATH
-set_target_properties(VoidUi PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
+set_target_properties(VoidEngine PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
 set_target_properties(VOID PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
 endif()
 

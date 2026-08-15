@@ -18,9 +18,9 @@
 #include "STimelineGeometry.h"
 #include "STimelineView.h"
 #include "VoidObjects/Sequence/Sequence.h"
-#include "VoidUi/Sequencer/Widgets/STimelineRuler.h"
-#include "VoidUi/Sequencer/Widgets/STrackHeaderWidget.h"
-#include "VoidUi/Sequencer/Widgets/SToolbar.h"
+#include "Widgets/STimelineRuler.h"
+#include "Widgets/STrackHeaderWidget.h"
+#include "Widgets/SToolbar.h"
 
 VOID_NAMESPACE_OPEN
 

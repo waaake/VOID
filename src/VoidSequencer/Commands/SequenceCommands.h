@@ -6,9 +6,10 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Effects/Bridge.h"
-#include "VoidUi/Sequencer/SController.h"
 #include "VoidUndo/VoidCommand.h"
 
 VOID_NAMESPACE_OPEN

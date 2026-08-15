@@ -1,5 +1,7 @@
 set(SOURCES
-
+    Exporter.cpp
+    ExportOptions.cpp
+    MediaExporter.cpp
 )
 
 add_library(

@@ -8,8 +8,8 @@
 
 /* Internal */
 #include "STimelineEffect.h"
-#include "VoidObjects/Effects/Effects.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Effects/Effects.h"
 
 VOID_NAMESPACE_OPEN
 

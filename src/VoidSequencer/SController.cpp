@@ -7,7 +7,7 @@
 #include "VoidCore/Logging.h"
 #include "Graphics/STrack.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
-#include "VoidUi/Commands/SequenceCommands.h"
+#include "Commands/SequenceCommands.h"
 
 VOID_NAMESPACE_OPEN
 

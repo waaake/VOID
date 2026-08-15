@@ -8,41 +8,9 @@ set(SOURCES
     BaseWindow/WorkspaceManager.cpp
     BaseWindow/StartupWindow.cpp
 
-    # Commands
-    Commands/SequenceCommands.cpp
-
     # Core Engine Globals
     Engine/Bridge.cpp
     Engine/Globals.cpp
-
-    # # Exporter
-    # Exporter/Exporter.cpp
-    # Exporter/ExportOptions.cpp
-    # Exporter/MediaExporter.cpp
-
-    # Sequencer
-    Sequencer/Graphics/SHandleItem.cpp
-    Sequencer/Graphics/SPlayheadItem.cpp
-    Sequencer/Graphics/SRazorItem.cpp
-    Sequencer/Graphics/STimelineEffect.cpp
-    Sequencer/Graphics/STimelineItem.cpp
-    Sequencer/Graphics/STrack.cpp
-    Sequencer/Graphics/STrackItem.cpp
-
-    Sequencer/Sequencer.cpp
-    Sequencer/SController.cpp
-    Sequencer/SMenu.cpp
-    Sequencer/STimelineScene.cpp
-    Sequencer/STimelineView.cpp
-    Sequencer/STimelineGeometry.cpp
-
-    Sequencer/Models/SSelectionModel.cpp
-    Sequencer/Models/SHoverModel.cpp
-
-    Sequencer/Widgets/STimelineRuler.cpp
-    Sequencer/Widgets/STrackHeader.cpp
-    Sequencer/Widgets/STrackHeaderWidget.cpp
-    Sequencer/Widgets/SToolbar.cpp
 )
 
 if (WIN32)
@@ -76,13 +44,13 @@ if (WIN32)
 endif()
 
 add_library(
-    VoidUi
+    VoidEngine
     SHARED
     ${SOURCES}
 )
 
 target_link_libraries(
-    VoidUi
+    VoidEngine
     PUBLIC
     VoidCore
     VoidDocker
@@ -96,6 +64,7 @@ target_link_libraries(
     VoidQExtensions
     VoidRenderer
     VoidScriptEditor
+    VoidSequencer
     VoidTimeline
     VoidToolbox
     VoidUndo
@@ -104,7 +73,7 @@ target_link_libraries(
 
 # Link to this library
 target_link_libraries(
-    VoidUi
+    VoidEngine
     PRIVATE
     Qt::Widgets
     Qt::Core
@@ -116,14 +85,14 @@ target_link_libraries(
 
 # Qt6 needs OpenGLWidgets be included/linked separately
 if (QT_MAJOR_VERSION EQUAL 6)
-    target_link_libraries(VoidUi PRIVATE Qt::OpenGLWidgets)
+    target_link_libraries(VoidEngine PRIVATE Qt::OpenGLWidgets)
 endif()
 
 # Mac for some reason needs this explicitly
 # TODO: Check if we can statically link OCIO to VoidCore?
 if (APPLE)
-    target_link_libraries(VoidUi PRIVATE OpenColorIO::OpenColorIO)
+    target_link_libraries(VoidEngine PRIVATE OpenColorIO::OpenColorIO)
 endif()
 
 # Export symbols for windows
-target_compile_definitions(VoidUi PRIVATE VOID_LIB)
+target_compile_definitions(VoidEngine PRIVATE VOID_LIB)

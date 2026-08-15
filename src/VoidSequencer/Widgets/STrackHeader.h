@@ -10,7 +10,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Sequence/Track.h"
-#include "VoidUi/Sequencer/SContext.h"
+#include "VoidSequencer/SContext.h"
 
 VOID_NAMESPACE_OPEN
 

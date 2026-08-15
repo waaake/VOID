@@ -14,8 +14,8 @@
 #include "VoidMediaPlayer/Descriptors.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 // #include "VoidUi/Engine/Globals.h"
-// #include "VoidUi/Exporter/Exporter.h"
-// #include "VoidUi/Exporter/MediaExporter.h"
+#include "VoidExporter/Exporter.h"
+#include "VoidExporter/MediaExporter.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -515,107 +515,107 @@ void Player::SetComparisonMode(int mode)
 
 void Player::RenderCurrentFrame()
 {
-    // MediaExportBrowser browser;
-    // if (browser.Save())
-    // {
-    //     const MediaExportDescriptor descriptor = browser.File();
-    //     const Renderer::RenderData r = m_Renderer->FrameBuffer();
+    MediaExportBrowser browser;
+    if (browser.Save())
+    {
+        const MediaExportDescriptor descriptor = browser.File();
+        const Renderer::RenderData r = m_Renderer->FrameBuffer();
 
-    //     Renderer::ImageRenderer ir(descriptor.entry, {r.width, r.height, r.channels, r.type});
-    //     ir.Render(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type});
+        Renderer::ImageRenderer ir(descriptor.entry, {r.width, r.height, r.channels, r.type});
+        ir.Render(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type});
 
-    //     InfoMessageBox box("Frame exported.", "Success", this);
-    //     box.exec();
-    // }
+        InfoMessageBox box("Frame exported.", "Success", this);
+        box.exec();
+    }
 }
 
 void Player::RenderAnnotatedFrames()
 {
-    // const auto& annotations = m_ActiveViewBuffer->Annotations();
-    // if (annotations.empty())
-    // {
-    //     ErrorMessageBox box("No annotated frames found for current media.", "Error", this);
-    //     box.exec();
-    //     return;
-    // }
+    const auto& annotations = m_ActiveViewBuffer->Annotations();
+    if (annotations.empty())
+    {
+        ErrorMessageBox box("No annotated frames found for current media.", "Error", this);
+        box.exec();
+        return;
+    }
 
-    // MediaExportBrowser browser;
-    // if (browser.Save())
-    // {
-    //     const MediaExportDescriptor descriptor = browser.File();
-    //     if (descriptor.type == WriterType::Image && descriptor.entry.Templated())
-    //     {
-    //         const Renderer::RenderData r = m_Renderer->FrameBuffer();
-    //         Renderer::ImageRenderer ir(descriptor.entry, {r.width, r.height, r.channels, r.type});
+    MediaExportBrowser browser;
+    if (browser.Save())
+    {
+        const MediaExportDescriptor descriptor = browser.File();
+        if (descriptor.type == WriterType::Image && descriptor.entry.Templated())
+        {
+            const Renderer::RenderData r = m_Renderer->FrameBuffer();
+            Renderer::ImageRenderer ir(descriptor.entry, {r.width, r.height, r.channels, r.type});
 
-    //         for (auto& [frame, _] : annotations)
-    //         {
-    //             if (auto data = m_ActiveViewBuffer->MData(frame))
-    //             {
-    //                 m_Renderer->Render(data.image, data.annotation);
-    //                 const Renderer::RenderData r = m_Renderer->FrameBuffer();
-    //                 if (!ir.Render(frame, r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
-    //                 {
-    //                     ErrorMessageBox box("There was an error in exporting media.", "Error", this);
-    //                     box.exec();
-    //                     return;
-    //                 }
-    //             }
-    //         }
+            for (auto& [frame, _] : annotations)
+            {
+                if (auto data = m_ActiveViewBuffer->MData(frame))
+                {
+                    m_Renderer->Render(data.image, data.annotation);
+                    const Renderer::RenderData r = m_Renderer->FrameBuffer();
+                    if (!ir.Render(frame, r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
+                    {
+                        ErrorMessageBox box("There was an error in exporting media.", "Error", this);
+                        box.exec();
+                        return;
+                    }
+                }
+            }
 
-    //         // Render back the current frame
-    //         // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
-    //         Refresh();
+            // Render back the current frame
+            // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
+            Refresh();
 
-    //         InfoMessageBox box("Annotated frames have been exported.", "Success", this);
-    //         box.exec();
-    //         return;
-    //     }
-    //     else if (descriptor.type == WriterType::Movie)
-    //     {
-    //         const Renderer::RenderData r = m_Renderer->FrameBuffer();
-    //         Renderer::MovieRenderer mr(descriptor.entry, {r.width, r.height, r.channels, r.type});
+            InfoMessageBox box("Annotated frames have been exported.", "Success", this);
+            box.exec();
+            return;
+        }
+        else if (descriptor.type == WriterType::Movie)
+        {
+            const Renderer::RenderData r = m_Renderer->FrameBuffer();
+            Renderer::MovieRenderer mr(descriptor.entry, {r.width, r.height, r.channels, r.type});
 
-    //         for (auto& [frame, _] : annotations)
-    //         {
-    //             if (auto data = m_ActiveViewBuffer->MData(frame))
-    //             {
-    //                 m_Renderer->Render(data.image, data.annotation);
-    //                 const Renderer::RenderData r = m_Renderer->FrameBuffer();
-    //                 if (!mr.AddBuffer(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
-    //                 {
-    //                     ErrorMessageBox box("There was an error in exporting media.", "Error", this);
-    //                     box.exec();
-    //                     return;
-    //                 }
-    //             }
-    //         }
+            for (auto& [frame, _] : annotations)
+            {
+                if (auto data = m_ActiveViewBuffer->MData(frame))
+                {
+                    m_Renderer->Render(data.image, data.annotation);
+                    const Renderer::RenderData r = m_Renderer->FrameBuffer();
+                    if (!mr.AddBuffer(r.pixels.data(), r.Size(), {r.width, r.height, r.channels, r.type}))
+                    {
+                        ErrorMessageBox box("There was an error in exporting media.", "Error", this);
+                        box.exec();
+                        return;
+                    }
+                }
+            }
 
-    //         mr.Render();
+            mr.Render();
 
-    //         // Render back the current frame
-    //         // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
-    //         Refresh();
+            // Render back the current frame
+            // This is obviously temporary till we have an offscreen renderer available for using offscreen framebuffer
+            Refresh();
 
-    //         InfoMessageBox box("Annotated frames have been exported.", "Success", this);
-    //         box.exec();
-    //         return;
-    //     }
-    // }
+            InfoMessageBox box("Annotated frames have been exported.", "Success", this);
+            box.exec();
+            return;
+        }
+    }
 }
 
 void Player::TranscodeMedia()
 {
-    // const SharedMediaClip& media = m_ActiveViewBuffer->GetMediaClip();
-    // if (!media->Valid())
-    // {
-    //     ErrorMessageBox box("No valid media found in the active viewer to export.", "Error", this);
-    //     box.exec();
-    //     return;
-    // }
+    const SharedMediaClip& media = m_ActiveViewBuffer->GetMediaClip();
+    if (!media->Valid())
+    {
+        ErrorMessageBox box("No valid media found in the active viewer to export.", "Error", this);
+        box.exec();
+        return;
+    }
 
-    // MediaExporter exporter(media);
-    // exporter.exec();
+    MediaExporter exporter(media);
+    exporter.exec();
 }
 
 void Player::ToggleChannels(int channel)
