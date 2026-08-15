@@ -21,6 +21,7 @@ target_include_directories(
 target_link_libraries(
     VoidTimeline
     PUBLIC
+    VoidBridge
     VoidCore
     VoidIconForge
     VoidQExtensions

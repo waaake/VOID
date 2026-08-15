@@ -2,6 +2,9 @@
 include(CMakePackageConfigHelpers)
 include(FreetypeInstallHelpers)
 
+# Application bridge
+add_subdirectory(VoidBridge)
+
 # Build Core Library
 add_subdirectory(VoidCore)
 
@@ -116,6 +119,7 @@ add_executable(
 target_link_libraries(
     VOID
     PRIVATE
+    # VoidBridge
     VoidCore
     VoidDocker
     VoidExporter
@@ -216,6 +220,7 @@ endif()
 # Install Libraries and Binaries
 install(TARGETS
     VoidAudio
+    VoidBridge
     VoidCore
     VoidDocker
     VoidExporter

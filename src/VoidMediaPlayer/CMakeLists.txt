@@ -14,8 +14,6 @@ set(SOURCES
     Commands/EffectCommands.cpp
 
     # Media
-    # Media/Browser.cpp
-    # Media/FileDialog.cpp
     Media/MediaBridge.cpp
     Media/MediaLister.cpp
     Media/MediaSearchBar.cpp
@@ -23,8 +21,6 @@ set(SOURCES
     Media/TagWidget.cpp
     Media/MediaQueue.cpp
     Media/Models/MetadataModel.cpp
-    # Media/Models/MediaFilesModel.cpp
-    # Media/Views/FileView.cpp
     Media/Views/MediaView.cpp
     Media/Views/MetadataView.cpp
     Media/Views/QueueView.cpp
@@ -80,6 +76,7 @@ target_link_libraries(
     VoidMediaPlayer
     PUBLIC
     VoidAudio
+    VoidBridge
     VoidCore
     VoidExporter
     VoidIconForge

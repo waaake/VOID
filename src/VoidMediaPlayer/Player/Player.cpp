@@ -7,13 +7,13 @@
 
 /* Internal */
 #include "Player.h"
+#include "VoidBridge/Engine.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidCore/Media/Renderer.h"
 #include "VoidQExtensions/MessageBox.h"
 #include "VoidMediaBrowser/Browser.h"
 #include "VoidMediaPlayer/Descriptors.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
-// #include "VoidUi/Engine/Globals.h"
 #include "VoidExporter/Exporter.h"
 #include "VoidExporter/MediaExporter.h"
 
@@ -49,8 +49,8 @@ void Player::SetMedia(const SharedMediaClip& media)
     Timekeeper::Instance().Reset();
     Timekeeper::Instance().SetMediaFramerate(media->Framerate());
 
-    // if (UIGlobals::AudioEnabled())
-    //     m_AudioDecoder.Init(media->Fullpath());
+    if (_EngineBridge.AudioEnabled())
+        m_AudioDecoder.Init(media->Fullpath());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)

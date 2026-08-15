@@ -29,10 +29,7 @@ namespace UIGlobals {
     VOID_API MetadataViewer* GetMetadataViewer();
     VOID_API SequencerTimeline* GetSequencer();
     VOID_API void ToggleAudio(bool enable);
-    VOID_API bool AudioEnabled();
     VOID_API void SetFramerate(float rate);
-    VOID_API float Framerate();
-    VOID_API std::string FramerateString();
     VOID_API void SetLuminance(const QColor& color);
     VOID_API bool IsDarkTheme();
     VOID_API void QueueTask(Task* task);

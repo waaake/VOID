@@ -23,6 +23,7 @@
 #include "VoidEngine/BaseWindow/StartupWindow.h"
 #include "VoidEngine/Engine/Bridge.h"
 #include "VoidEngine/Engine/Globals.h"
+#include "VoidEngine/Engine/Controller.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -58,6 +59,7 @@ int VoidEngine::Exec(int argc, char** argv)
 
     QApplication app(argc, argv);
 
+    EngineController controller;
     Setup(app);
     Initialize();
 

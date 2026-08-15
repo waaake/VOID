@@ -4,7 +4,7 @@
 /* Internal */
 #include "Exporter.h"
 #include "MediaExporter.h"
-// #include "VoidUi/Engine/Globals.h"
+#include "VoidBridge/Engine.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -47,7 +47,7 @@ void MediaExporter::Export()
             Codec(),
             false
         );
-        // UIGlobals::QueueTask(new ExportMediaFramesTask(m_Media, m_Descriptor, spec, Range(), Colorspace().toStdString()));
+        _EngineBridge.QueueTask(new ExportMediaFramesTask(m_Media, m_Descriptor, spec, Range(), Colorspace().toStdString()));
         close();
     }
 }

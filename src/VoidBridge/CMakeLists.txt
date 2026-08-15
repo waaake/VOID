@@ -1,37 +1,30 @@
 set(SOURCES
-    Exporter.cpp
-    ExportOptions.cpp
-    MediaExporter.cpp
+    Engine.cpp
 )
 
 add_library(
-    VoidExporter
+    VoidBridge
     SHARED
     ${SOURCES}
 )
 
 target_include_directories(
-    VoidExporter
+    VoidBridge
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 target_link_libraries(
-    VoidExporter
-    PUBLIC
     VoidBridge
-    VoidCore
-    VoidMediaBrowser
+    PRIVATE
     VoidObjects
-    VoidToolbox
 )
 
 target_link_libraries(
-    VoidExporter
+    VoidBridge
     PRIVATE
     Qt::Core
-    Qt::Widgets
 )
 
-target_compile_definitions(VoidExporter PRIVATE VOID_LIB)
+target_compile_definitions(VoidBridge PRIVATE VOID_LIB)

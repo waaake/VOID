@@ -12,10 +12,10 @@
 
 /* Internal */
 #include "Timeline.h"
+#include "VoidBridge/Engine.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Tooltip.h"
-// #include "VoidUi/Engine/Globals.h"
 
 static const int BUTTON_WIDTH = 30;
 static const int SMALL_BUTTON_WIDTH = 20;
@@ -197,7 +197,7 @@ void Timeline::Connect()
 
 void Timeline::Setup()
 {
-	SetFramerate("24");
+	SetFramerate(_EngineBridge.FramerateString());
 	SetFrame(m_Timeslider->minimum());
 	m_PlayTimer.setTimerType(Qt::PreciseTimer);
 

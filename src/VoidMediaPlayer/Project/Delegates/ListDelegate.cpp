@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "ListDelegate.h"
-// #include "VoidUi/Engine/Globals.h"
+#include "VoidBridge/Engine.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
@@ -54,8 +54,7 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
         painter->restore();
 
-        // if (!UIGlobals::IsDarkTheme())
-        //     fg = option.palette.color(QPalette::HighlightedText);
+        if (!_EngineBridge.IsDarkTheme()) fg = option.palette.color(QPalette::HighlightedText);
     }
 
     painter->restore();

@@ -11,6 +11,7 @@ set(SOURCES
     # Core Engine Globals
     Engine/Bridge.cpp
     Engine/Globals.cpp
+    Engine/Controller.cpp
 )
 
 if (WIN32)
@@ -52,6 +53,8 @@ add_library(
 target_link_libraries(
     VoidEngine
     PUBLIC
+    VoidAudio
+    VoidBridge
     VoidCore
     VoidDocker
     VoidExporter
@@ -68,7 +71,6 @@ target_link_libraries(
     VoidTimeline
     VoidToolbox
     VoidUndo
-    VoidAudio
 )
 
 # Link to this library
