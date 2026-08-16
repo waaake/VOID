@@ -35,10 +35,7 @@ Timeslider::Timeslider(Qt::Orientation orientation, QWidget *parent)
 	, m_UserStartframe(0)
 	, m_UserEndframe(0)
 {
-	/* Fixed height */
 	setFixedHeight(SL_HEIGHT);
-
-	/* Enable mouse tracking to be able to show the frame being hovered on */
 	setMouseTracking(true);
 }
 
@@ -128,7 +125,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	const float halfuwidth = uwidth * 0.5f;
 
 	// const int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
-	const int step = (maximum() - minimum() + 1) / std::max((maximum() - minimum() + 1) / SL_MARKING_STEP, 1);
+	const int step = std::max((maximum() - minimum() + 1) / TickCount(maximum() - minimum() + 1), 1);
 	const float rec_range = 1.f / (maximum() - minimum() + 1);
 
 	painter.setPen(QColor(30, 30, 30));
@@ -167,11 +164,11 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	);
 	/* }}} */
 
-	for (int i = minimum(); i <= maximum(); i += step)
+	for (int i = minimum(), count = 0; i <= maximum(); i += step, ++count)
 	{
 		painter.setPen(QPen(Qt::gray, 1));
 		painter.drawLine(
-			width() * (i - minimum()) * rec_range, height() - 10,
+			width() * (i - minimum()) * rec_range, height() - ((count % 5) == 0 ? 15 : 10),
 			width() * (i - minimum()) * rec_range, height()
 		);
 	}
@@ -224,57 +221,49 @@ void Timeslider::UpdateHovered(int xpos)
 					);
 }
 
+int Timeslider::TickCount(int duration) const
+{
+	if (duration < 20) return duration;
+	if (duration < 500) return 100;
+	if (duration < 10000) return 150;
+	return 200;
+}
+
 void Timeslider::SetUserFirstframe(int frame)
 {
-	/* Set the user defined first frame */
 	m_UserStartframe = frame;
-
-	/* Repaint the timeslider -- for any denotions of the frame */
 	update();
 }
 
 void Timeslider::SetUserEndframe(int frame)
 {
-	/* Set the user defined last frame */
 	m_UserEndframe = frame;
-
-	/* Repaint the timeslider -- for any denotions of the frame */
 	update();
 }
 
 void Timeslider::ResetRange()
 {
-	/* Reset the frames */
 	m_UserStartframe = 0;
 	m_UserEndframe = 0;
 
-	/* Repaint the timeslider -- for clearing any denotions of the frame */
 	update();
 }
 
 void Timeslider::ResetStartFrame()
 {
-	/* Reset the start frame */
 	m_UserStartframe = 0;
-
-	/* Repaint the timeslider -- for clearing any denotions of the frame */
 	update();
 }
 
 void Timeslider::ResetEndFrame()
 {
-	/* Reset the end frame */
 	m_UserEndframe = 0;
-
-	/* Repaint the timeslider -- for clearing any denotions of the frame */
 	update();
 }
 
 void Timeslider::AddCacheFrame(int frame)
 {
 	m_CachedFrames.push_back(frame);
-
-	/* Repaint after a frame has been cached to redraw the cache line */
 	update();
 }
 
@@ -289,7 +278,6 @@ void Timeslider::RemoveCachedFrame(int frame)
 	if (it != m_CachedFrames.end())
 	{
 		m_CachedFrames.erase(it);
-		/* Repaint after a frame has been cached to redraw the cache line */
 		update();
 	}
 }
@@ -308,20 +296,15 @@ void Timeslider::ClearCachedFrames()
 void Timeslider::AddAnnotatedFrame(int frame)
 {
 	m_AnnotatedFrames.push_back(frame);
-
-	/* Redraw now that we have annotated it */
 	update();
 }
 
 void Timeslider::RemoveAnnotatedFrame(int frame)
 {
-	// auto it = std::find(m_AnnotatedFrames.begin(), )
 	auto it = std::remove(m_AnnotatedFrames.begin(), m_AnnotatedFrames.end(), frame);
 	if (it != m_AnnotatedFrames.end())
 	{
-		/* Remove the frame from the Annotated frames */
 		m_AnnotatedFrames.erase(it, m_AnnotatedFrames.end());
-		/* And Redraw */
 		update();
 	}
 }
@@ -329,23 +312,18 @@ void Timeslider::RemoveAnnotatedFrame(int frame)
 void Timeslider::SetAnnotatedFrames(const std::vector<int>& frames)
 {
 	m_AnnotatedFrames = frames;
-	/* Redraw */
 	update();
 }
 
 void Timeslider::SetAnnotatedFrames(std::vector<int>&& frames)
 {
 	m_AnnotatedFrames = std::move(frames);
-	/* Redraw */
 	update();
 }
 
 void Timeslider::ClearAnnotatedFrames()
 {
-	/* Clear All frames that were marked annotated */
 	m_AnnotatedFrames.clear();
-
-	/* Redraw */
 	update();
 }
 

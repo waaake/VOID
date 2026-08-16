@@ -82,6 +82,8 @@ private: /* Methods */
 		return std::find(m_CachedFrames.begin(), m_CachedFrames.end(), frame) != m_CachedFrames.end();
 	}
 
+	int TickCount(int duration) const;
+
 private: /* Members */
 	bool m_Focussed;
 	int m_HovXPos;
