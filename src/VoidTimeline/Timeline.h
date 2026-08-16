@@ -129,6 +129,9 @@ private: /* Members */
 	TimeDisplay* m_TimeDisplay;
 	FramerateBox* m_FramerateBox;
 
+	TimeEdit* m_InTimeEdit;
+	TimeEdit* m_OutTimeEdit;
+
 	QDoubleValidator* m_DoubleValidator;
 	QTimer m_PlayTimer;
 	QElapsedTimer m_ElapsedTimer;
