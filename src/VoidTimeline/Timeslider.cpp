@@ -62,14 +62,10 @@ void Timeslider::leaveEvent(QEvent* event)
 
 void Timeslider::mouseMoveEvent(QMouseEvent* event)
 {
-	/* Allow other behaviour */
 	QSlider::mouseMoveEvent(event);
-
-	/* Update the hovered information */
 	if (m_Focussed)
 		UpdateHovered(event->pos().x());
 
-	/* Trigger a repaint */
 	update();
 }
 
@@ -152,8 +148,7 @@ void Timeslider::paintEvent(QPaintEvent* event)
 		r.setRight(endpos);
 	}
 
-	painter.fillRect(r, palette().color(QPalette::AlternateBase));
-
+	painter.fillRect(r, palette().color(QPalette::Dark).lighter(120));
 	painter.setBrush(palette().color(QPalette::Highlight));
 	painter.drawRect(
 		// Handle pos - half of the width of the handle
@@ -162,7 +157,6 @@ void Timeslider::paintEvent(QPaintEvent* event)
 		std::max(uwidth, 4.0f),
 		height()
 	);
-	/* }}} */
 
 	for (int i = minimum(), count = 0; i <= maximum(); i += step, ++count)
 	{
@@ -189,14 +183,14 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	{
 		painter.setPen(QPen(QColor(200, 75, 60), 2));
 		painter.drawLine(startpos, 0, startpos, height());
-		painter.drawText(startpos + 4, height() * 0.5f, QString::number(m_UserStartframe));
+		painter.drawText(0, 0, startpos - 4, height() * 0.5f, Qt::AlignRight | Qt::AlignBottom, QString::number(m_UserStartframe));
 	}
 
 	if (endpos)
 	{
 		painter.setPen(QPen(QColor(200, 75, 60), 2));
 		painter.drawLine(endpos, 0, endpos, height());
-		painter.drawText(endpos + 4, height() * 0.5f, QString::number(m_UserEndframe));
+		painter.drawText(endpos + 4, 0, rect().width(), height() * 0.5f, Qt::AlignLeft | Qt::AlignBottom, QString::number(m_UserEndframe));
 	}
 
 	if (m_Focussed)
