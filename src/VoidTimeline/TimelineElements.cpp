@@ -173,4 +173,21 @@ void FramerateBox::RateChanged(const QString& text)
 
 /* }}} */
 
+/// TimeEdit
+
+TimeEdit::TimeEdit(QWidget* parent)
+	: QLineEdit(parent)
+{
+	setAlignment(Qt::AlignCenter);
+
+    QPalette p = palette();
+    p.setColor(QPalette::Text, p.color(QPalette::Highlight));
+	p.setColor(QPalette::Base, p.color(QPalette::Dark));
+    setPalette(p);
+
+    QFont f = font();
+    f.setBold(true);
+    setFont(f);
+}
+
 VOID_NAMESPACE_CLOSE

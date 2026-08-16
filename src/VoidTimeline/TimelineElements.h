@@ -7,6 +7,7 @@
 /* Qt */
 #include <QComboBox>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 
 /* Internal */
@@ -94,6 +95,15 @@ private: /* Members */
 private: /* Methods */
 	void Setup();
 	void RateChanged(const QString& text);
+};
+
+class TimeEdit : public QLineEdit
+{
+public:
+	explicit TimeEdit(QWidget* parent = nullptr);
+
+	void Set(const QString& t) { setText(t); }
+	void Set(int t) { setText(QString::number(t)); }
 };
 
 VOID_NAMESPACE_CLOSE
