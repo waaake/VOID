@@ -29,9 +29,10 @@ void STimelineRuler::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.fillRect(rect(), palette().color(QPalette::AlternateBase));
+    painter.fillRect(rect(), palette().color(QPalette::Dark).lighter(120));
 
-    painter.setPen(palette().color(QPalette::Text));
+    // painter.setPen(palette().color(QPalette::Text));
+    painter.setPen(QPen(Qt::gray, 1));
     MFrameRange visible = m_View->VisibleRange();
 
     float uwidth = (float)width() / visible.duration;
