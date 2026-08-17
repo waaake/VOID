@@ -126,7 +126,7 @@ private: /* Members */
 	QPushButton* m_StopButton;
 
 	Timeslider* m_Timeslider;
-	TimeDisplay* m_TimeDisplay;
+	TimeEdit* m_TimeDisplay;
 	FramerateBox* m_FramerateBox;
 
 	TimeEdit* m_InTimeEdit;

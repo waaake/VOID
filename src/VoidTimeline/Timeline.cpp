@@ -20,7 +20,7 @@
 static constexpr int BUTTON_WIDTH = 30;
 static constexpr int SMALL_BUTTON_WIDTH = 20;
 static constexpr int MEDIUM_BUTTON_WIDTH = 40;
-static constexpr int TIME_DISPLAY_WIDTH = 80;
+static constexpr int TIME_DISPLAY_WIDTH = 100;
 
 VOID_NAMESPACE_OPEN
 
@@ -107,7 +107,7 @@ void Timeline::Build()
 	m_FullscreenButton->setToolTip(ToolTipString("Fullscreen", "Plays media in fullscreen.").c_str());
 
 	/* Timing */
-	m_TimeDisplay = new TimeDisplay;
+	m_TimeDisplay = new TimeEdit;
 	m_InTimeEdit = new TimeEdit;
 	m_OutTimeEdit = new TimeEdit;
 
@@ -213,10 +213,12 @@ void Timeline::Setup()
 	m_LoopTypeButton->setFixedWidth(MEDIUM_BUTTON_WIDTH);
 	m_FullscreenButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 
+	m_FramerateBox->setFixedWidth(TIME_DISPLAY_WIDTH);
 	m_TimeDisplay->setFixedWidth(TIME_DISPLAY_WIDTH);
 	m_InTimeEdit->setFixedWidth(TIME_DISPLAY_WIDTH);
 	m_OutTimeEdit->setFixedWidth(TIME_DISPLAY_WIDTH);
 
+	m_TimeDisplay->setReadOnly(true);
 	m_InTimeEdit->Set(m_Timeslider->minimum());
 	m_OutTimeEdit->Set(m_Timeslider->maximum());
 
