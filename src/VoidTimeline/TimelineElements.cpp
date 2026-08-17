@@ -12,6 +12,7 @@
 #include "TimelineElements.h"
 #include "VoidCore/Logging.h"
 #include "VoidCore/Timekeeper.h"
+#include "VoidIconForge/IconForge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -36,7 +37,6 @@ LoopTypeButton::LoopTypeButton(QWidget* parent)
 
 LoopTypeButton::~LoopTypeButton()
 {
-	/* Delete the Menu and all it's children */
 	m_Menu->deleteLater();
 }
 
@@ -60,15 +60,10 @@ void LoopTypeButton::Build()
 	/* Add menu for Loop Type Selection */
 	m_Menu = new QMenu(this);
 
-	for (std::pair<LoopType, LoopState> entry: m_LoopState)
+	for (const std::pair<LoopType, LoopState>& entry: m_LoopState)
 	{
-		/* Action for the menu */
-		QAction* action = new QAction(entry.second.text.c_str(), m_Menu);
-
-		/* Connect the action to set the Loop State */
+		QAction* action = new QAction(IconForge::GetIcon(entry.second.icon, _DARK_COLOR(QPalette::Text, 140)), entry.second.text.c_str(), m_Menu);
 		connect(action, &QAction::triggered, this, [this, entry]() { SetLoopType(entry.first); });
-
-		/* Add to the Menu */
 		m_Menu->addAction(action);
 	}
 
@@ -152,12 +147,15 @@ void FramerateBox::Setup()
 	};
 
 	addItems(values);
-
 	setEditable(true);
 
 	setValidator(m_DoubleValidator);
-	/* Setup the Focus policy to only accept focus when clicked on */
 	setFocusPolicy(Qt::ClickFocus);
+
+	QPalette p = palette();
+    // p.setColor(QPalette::Text, p.color(QPalette::Highlight));
+	p.setColor(QPalette::Base, p.color(QPalette::Dark));
+    setPalette(p);
 }
 
 void FramerateBox::RateChanged(const QString& text)
@@ -178,6 +176,7 @@ void FramerateBox::RateChanged(const QString& text)
 TimeEdit::TimeEdit(QWidget* parent)
 	: QLineEdit(parent)
 {
+	setValidator(new QIntValidator(this));
 	setAlignment(Qt::AlignCenter);
 
     QPalette p = palette();
