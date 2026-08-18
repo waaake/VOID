@@ -72,6 +72,8 @@ public:
 	void SetUserFirstframe(int frame);
 	void SetUserEndframe(int frame);
 
+	void SetOutFrame(int frame);
+	void SetInFrame(int frame);
 	void SetRange(const int min, const int max);
 	/**
 	 * (Re)sets the In and out framing of the Timeslider
@@ -126,8 +128,11 @@ private: /* Members */
 	QPushButton* m_StopButton;
 
 	Timeslider* m_Timeslider;
-	TimeDisplay* m_TimeDisplay;
+	TimeEdit* m_TimeDisplay;
 	FramerateBox* m_FramerateBox;
+
+	TimeEdit* m_InTimeEdit;
+	TimeEdit* m_OutTimeEdit;
 
 	QDoubleValidator* m_DoubleValidator;
 	QTimer m_PlayTimer;

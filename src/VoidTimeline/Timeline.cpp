@@ -17,9 +17,10 @@
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Tooltip.h"
 
-static const int BUTTON_WIDTH = 30;
-static const int SMALL_BUTTON_WIDTH = 20;
-static const int MEDIUM_BUTTON_WIDTH = 40;
+static constexpr int BUTTON_WIDTH = 30;
+static constexpr int SMALL_BUTTON_WIDTH = 20;
+static constexpr int MEDIUM_BUTTON_WIDTH = 40;
+static constexpr int TIME_DISPLAY_WIDTH = 100;
 
 VOID_NAMESPACE_OPEN
 
@@ -53,76 +54,67 @@ void Timeline::Build()
 	m_RightLayout = new QHBoxLayout;
 
 	QHBoxLayout* optionsLayout = new QHBoxLayout;
+	QHBoxLayout* timesliderLayout = new QHBoxLayout;
 
 	QStyle* s = style();
 
 	/* Forwards */
 	m_ForwardButton = new QPushButton;
 	m_ForwardButton->setIcon(IconForge::GetIcon(IconType::icon_play_arrow, _DARK_COLOR(QPalette::Text, 100)));
-	m_ForwardButton->setFixedWidth(BUTTON_WIDTH);
 	m_ForwardButton->setToolTip(ToolTipString("Play Forwards", "Starts Playing in forward direction.").c_str());
 
 	m_NextFrameButton = new QPushButton;
 	m_NextFrameButton->setIcon(IconForge::GetIcon(IconType::icon_fast_forward, _DARK_COLOR(QPalette::Text, 100)));
-	m_NextFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_NextFrameButton->setToolTip(ToolTipString("Next Frame", "Moves to the next frame.").c_str());
 
 	m_EndFrameButton = new QPushButton;
 	m_EndFrameButton->setIcon(IconForge::GetIcon(IconType::icon_skip_next, _DARK_COLOR(QPalette::Text, 100)));
-	m_EndFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_EndFrameButton->setToolTip(ToolTipString("End Frame", "Moves to the last frame.").c_str());
 
 	/* Backwards */
 	m_BackwardButton = new QPushButton;
 	m_BackwardButton->setIcon(IconForge::GetIcon(IconType::icon_arrow_back, _DARK_COLOR(QPalette::Text, 100)));
-	m_BackwardButton->setFixedWidth(BUTTON_WIDTH);
 	m_BackwardButton->setToolTip(ToolTipString("Play Backwards", "Starts Playing in reverse direction.").c_str());
 
 	m_PrevFrameButton = new QPushButton;
 	m_PrevFrameButton->setIcon(IconForge::GetIcon(IconType::icon_fast_rewind,  _DARK_COLOR(QPalette::Text, 100)));
-	m_PrevFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_PrevFrameButton->setToolTip(ToolTipString("Previous Frame", "Moves to the previous frame.").c_str());
 
 	m_StartFrameButton = new QPushButton;
 	m_StartFrameButton->setIcon(IconForge::GetIcon(IconType::icon_skip_previous,  _DARK_COLOR(QPalette::Text, 100)));
-	m_StartFrameButton->setFixedWidth(BUTTON_WIDTH);
 	m_StartFrameButton->setToolTip(ToolTipString("Start Frame", "Moves to the first frame.").c_str());
 
 	/* Stop and others */
 	m_StopButton = new QPushButton;
 	m_StopButton->setIcon(IconForge::GetIcon(IconType::icon_pause, _DARK_COLOR(QPalette::Text, 100)));
-	m_StopButton->setFixedWidth(BUTTON_WIDTH);
 	m_StopButton->setToolTip(ToolTipString("Stop", "Stops playing the media.").c_str());
 
 	/* In - Out Framing */
 	m_InFrameButton = new ToggleStatePushButton("I");
-	m_InFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 	m_InFrameButton->setToolTip(ToolTipString("Set In frame", "Sets the current frame as the new inframe for playing.").c_str());
 
 	m_OutFrameButton = new ToggleStatePushButton("O");
-	m_OutFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 	m_OutFrameButton->setToolTip(ToolTipString("Set Out frame", "Sets the current frame as the out inframe for playing.").c_str());
 
 	/* Loop Type Button */
 	m_LoopTypeButton = new LoopTypeButton;
-	m_LoopTypeButton->setFixedWidth(MEDIUM_BUTTON_WIDTH);
 	m_LoopTypeButton->setToolTip(ToolTipString("Playback Loop", "Sets the loop for playback.").c_str());
 
 	/* Fullscreen Button */
 	m_FullscreenButton = new QPushButton;
 	m_FullscreenButton->setIcon(IconForge::GetIcon(IconType::icon_pageless, _DARK_COLOR(QPalette::Text, 100)));
 	m_FullscreenButton->setFlat(true);
-	m_FullscreenButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 	m_FullscreenButton->setToolTip(ToolTipString("Fullscreen", "Plays media in fullscreen.").c_str());
 
 	/* Timing */
-	m_TimeDisplay = new TimeDisplay;
+	m_TimeDisplay = new TimeEdit;
+	m_InTimeEdit = new TimeEdit;
+	m_OutTimeEdit = new TimeEdit;
 
 	/* Framerate */
 	m_FramerateBox = new FramerateBox;
 
 	m_LeftLayout->addWidget(m_FramerateBox);
-	m_LeftLayout->addWidget(m_LoopTypeButton);
 	
 	/* Spacer */
 	m_LeftLayout->addStretch(1);
@@ -143,8 +135,9 @@ void Timeline::Build()
 
 	m_RightLayout->addItem(new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum));
 
+	m_RightLayout->addWidget(m_LoopTypeButton);
 	m_RightLayout->addWidget(m_FullscreenButton);
-	
+
 	optionsLayout->addLayout(m_LeftLayout);
 
 	optionsLayout->addWidget(m_BackwardButton);
@@ -157,9 +150,14 @@ void Timeline::Build()
 	/* Timeslider */
 	m_Timeslider = new Timeslider(Qt::Horizontal);
 
+	timesliderLayout->addWidget(m_InTimeEdit);
+	timesliderLayout->addWidget(m_Timeslider);
+	timesliderLayout->addWidget(m_OutTimeEdit);
+	timesliderLayout->setSpacing(4);
+
 	/* Add to the main Layout */
 	m_Layout->addLayout(optionsLayout);
-	m_Layout->addWidget(m_Timeslider);
+	m_Layout->addLayout(timesliderLayout);
 
 	/* Spacing */
 	m_Layout->setSpacing(0);
@@ -193,6 +191,8 @@ void Timeline::Connect()
 	connect(m_FullscreenButton, &QPushButton::clicked, this, &Timeline::fullscreenRequested);
 
 	connect(m_FramerateBox, &FramerateBox::framerateChanged, this, [this](double) { Replay(); });
+	connect(m_InTimeEdit, &TimeEdit::frameEdited, this, &Timeline::SetInFrame);
+	connect(m_OutTimeEdit, &TimeEdit::frameEdited, this, &Timeline::SetOutFrame);
 }
 
 void Timeline::Setup()
@@ -202,6 +202,27 @@ void Timeline::Setup()
 	m_PlayTimer.setTimerType(Qt::PreciseTimer);
 
 	setFixedHeight(50);
+
+	m_ForwardButton->setFixedWidth(BUTTON_WIDTH);
+	m_NextFrameButton->setFixedWidth(BUTTON_WIDTH);
+	m_EndFrameButton->setFixedWidth(BUTTON_WIDTH);
+	m_BackwardButton->setFixedWidth(BUTTON_WIDTH);
+	m_PrevFrameButton->setFixedWidth(BUTTON_WIDTH);
+	m_StartFrameButton->setFixedWidth(BUTTON_WIDTH);
+	m_StopButton->setFixedWidth(BUTTON_WIDTH);
+	m_InFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
+	m_OutFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
+	m_LoopTypeButton->setFixedWidth(MEDIUM_BUTTON_WIDTH);
+	m_FullscreenButton->setFixedWidth(SMALL_BUTTON_WIDTH);
+
+	m_FramerateBox->setFixedWidth(TIME_DISPLAY_WIDTH);
+	m_TimeDisplay->setFixedWidth(TIME_DISPLAY_WIDTH);
+	m_InTimeEdit->setFixedWidth(TIME_DISPLAY_WIDTH);
+	m_OutTimeEdit->setFixedWidth(TIME_DISPLAY_WIDTH);
+
+	m_TimeDisplay->setReadOnly(true);
+	m_InTimeEdit->Set(m_Timeslider->minimum());
+	m_OutTimeEdit->Set(m_Timeslider->maximum());
 
 	Timekeeper::Instance().SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
 }
@@ -263,6 +284,16 @@ void Timeline::TimeUpdated(const int time)
 	m_TimeDisplay->setText(std::to_string(time).c_str());
 }
 
+void Timeline::SetInFrame(int frame)
+{
+	SetRange(std::min(frame, m_Timeslider->maximum() - 1), m_Timeslider->maximum());
+}
+
+void Timeline::SetOutFrame(int frame)
+{
+	SetRange(m_Timeslider->minimum(), std::max(frame, m_Timeslider->minimum() + 1));
+}
+
 void Timeline::SetRange(const int min, const int max)
 {
 	/* Reset any user defined range for the timeslider */
@@ -271,6 +302,9 @@ void Timeline::SetRange(const int min, const int max)
 	/* Update timeslider range */
 	m_Timeslider->setRange(min, max);
 	m_Timeslider->m_CachedFrames.reserve(max - min + 1);
+
+	m_InTimeEdit->Set(min);
+	m_OutTimeEdit->Set(max);
 	Timekeeper::Instance().SetRange(min, max);
 }
 
@@ -424,6 +458,7 @@ void Timeline::PreviousFrame()
 void Timeline::PlayNextFrame()
 {
 	Timekeeper& t = Timekeeper::Instance();
+	v_frame_t current = t.CurrentFrame();
 	v_frame_t next = t.NextFrame(ElapsedFrames());
 	m_Timeslider->setValue(next);
 

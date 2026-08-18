@@ -212,7 +212,7 @@ v_frame_t Timekeeper::NextFrame__()
 v_frame_t Timekeeper::NextFrame__(int offset)
 {
     if (m_CurrentFrame + offset > m_End)
-        m_CurrentFrame = m_Start;
+        m_CurrentFrame = m_CurrentFrame == m_End ? m_Start : m_End;
     else
         m_CurrentFrame += offset;
 
@@ -231,7 +231,7 @@ v_frame_t Timekeeper::PreviousFrame__()
 v_frame_t Timekeeper::PreviousFrame__(int offset)
 {
     if (m_CurrentFrame - offset < m_Start)
-        m_CurrentFrame = m_End;
+        m_CurrentFrame = m_CurrentFrame == m_Start ? m_End : m_Start;
     else
         m_CurrentFrame -= offset;
     return m_CurrentFrame;
