@@ -42,38 +42,34 @@ LoopTypeButton::~LoopTypeButton()
 
 void LoopTypeButton::SetLoopType(const LoopType& looptype)
 {
-	/* Update Loop state */
 	m_LoopType = looptype;
-
-	/* Reset Icon */
 	Update();
 
-	/* Emit that the loop type has been changed */
 	emit loopTypeChanged(looptype);
 }
 
 void LoopTypeButton::Build()
 {
-	/* Update the state on the button */
 	Update();
-
-	/* Add menu for Loop Type Selection */
 	m_Menu = new QMenu(this);
 
 	for (const std::pair<LoopType, LoopState>& entry: m_LoopState)
 	{
-		QAction* action = new QAction(IconForge::GetIcon(entry.second.icon, _DARK_COLOR(QPalette::Text, 140)), entry.second.text.c_str(), m_Menu);
+		QIcon icon;
+		icon.addPixmap(IconForge::GetPixmap(entry.second.icon, _DARK_COLOR(QPalette::Text, 120), 18), QIcon::Normal);
+		icon.addPixmap(IconForge::GetPixmap(entry.second.icon, _COLOR(QPalette::Dark), 18), QIcon::Active);
+
+		QAction* action = new QAction(icon, entry.second.text.c_str(), m_Menu);
 		connect(action, &QAction::triggered, this, [this, entry]() { SetLoopType(entry.first); });
 		m_Menu->addAction(action);
 	}
 
-	/* Set the Menu on the button */
 	setMenu(m_Menu);
 }
 
 void LoopTypeButton::Update()
 {
-	setIcon(IconForge::GetIcon(m_LoopState.at(m_LoopType).icon, _DARK_COLOR(QPalette::Text, 140)));
+	setIcon(IconForge::GetIcon(m_LoopState.at(m_LoopType).icon, _DARK_COLOR(QPalette::Text, 120)));
 }
 
 /* }}} */
@@ -122,8 +118,10 @@ FramerateBox::FramerateBox(QWidget* parent)
 	Setup();
 
 	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int) { RateChanged(currentText()); });
-	connect(this->lineEdit(), &QLineEdit::returnPressed, this, [this]() { RateChanged(currentText()); });
-	connect(this->lineEdit(), &QLineEdit::editingFinished, this, [this]() { RateChanged(currentText()); });
+	connect(lineEdit(), &QLineEdit::returnPressed, this, [this]() { RateChanged(currentText()); });
+	connect(lineEdit(), &QLineEdit::editingFinished, this, [this]() { RateChanged(currentText()); });
+
+	lineEdit()->setAlignment(Qt::AlignCenter);
 }
 
 void FramerateBox::Setup()
@@ -163,8 +161,6 @@ void FramerateBox::RateChanged(const QString& text)
 	Timekeeper::Instance().SetFramerate(text.toDouble());
 	emit framerateChanged(text.toDouble());
 
-	VOID_LOG_INFO("Playback Framerate changed: {0}", text.toStdString());
-
 	/* Unset Focus once the text is updated */
 	clearFocus();
 }
@@ -175,6 +171,21 @@ void FramerateBox::RateChanged(const QString& text)
 
 TimeEdit::TimeEdit(QWidget* parent)
 	: QLineEdit(parent)
+{
+	Setup();
+
+	// Connections
+	connect(this, &QLineEdit::returnPressed, this, [this]() -> void { emit frameEdited(Frame()); clearFocus(); });
+	connect(this, &QLineEdit::editingFinished, this, [this]() -> void { emit frameEdited(Frame()); });
+}
+
+int TimeEdit::Frame() const
+{
+	QString t = text();
+	return t.isEmpty() ? 0 : t.toInt();
+}
+
+void TimeEdit::Setup()
 {
 	setValidator(new QIntValidator(this));
 	setAlignment(Qt::AlignCenter);
@@ -187,6 +198,8 @@ TimeEdit::TimeEdit(QWidget* parent)
     QFont f = font();
     f.setBold(true);
     setFont(f);
+
+	setFocusPolicy(Qt::ClickFocus);
 }
 
 VOID_NAMESPACE_CLOSE

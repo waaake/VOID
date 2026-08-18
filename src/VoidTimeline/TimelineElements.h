@@ -99,11 +99,20 @@ private: /* Methods */
 
 class TimeEdit : public QLineEdit
 {
+	Q_OBJECT
 public:
 	explicit TimeEdit(QWidget* parent = nullptr);
 
 	void Set(const QString& t) { setText(t); }
 	void Set(int t) { setText(QString::number(t)); }
+
+	int Frame() const;
+
+signals:
+	void frameEdited(int);
+
+private:
+	void Setup();
 };
 
 VOID_NAMESPACE_CLOSE
