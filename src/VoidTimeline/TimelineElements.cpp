@@ -151,7 +151,6 @@ void FramerateBox::Setup()
 	setFocusPolicy(Qt::ClickFocus);
 
 	QPalette p = palette();
-    // p.setColor(QPalette::Text, p.color(QPalette::Highlight));
 	p.setColor(QPalette::Base, p.color(QPalette::Dark));
     setPalette(p);
 }
