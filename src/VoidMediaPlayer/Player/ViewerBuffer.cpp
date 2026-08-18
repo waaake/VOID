@@ -215,7 +215,7 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
             d.image = m_Sequence->Image(frame);
             break;
         default:
-            if (m_Clip->Contains(frame))
+            if (m_Clip->Valid() && m_Clip->Contains(frame))
             {
                 d.image = m_Clip->Evaluate(frame);
                 d.annotation = m_Clip->Annotation(frame);
