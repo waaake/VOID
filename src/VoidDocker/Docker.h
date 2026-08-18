@@ -61,10 +61,9 @@ private: /* Members */
 	bool m_Dragging;
 };
 
-class DockWidget : public QTabWidget
+class VOID_API DockWidget : public QTabWidget
 {
 	Q_OBJECT
-
 public:
 	DockWidget(DockSplitter* parent = nullptr, bool floating = false);
 

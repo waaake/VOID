@@ -15,7 +15,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class TaskView : public QWidget
+class VOID_API TaskView : public QWidget
 {
 public:
     TaskView(QWidget* parent = nullptr);

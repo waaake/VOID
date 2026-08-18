@@ -62,18 +62,6 @@ add_subdirectory(VoidToolbox)
 # Undo system base
 add_subdirectory(VoidUndo)
 
-# # Depends on Qt
-# target_include_directories(
-#     VoidEngine
-#     PRIVATE
-#     include
-#     ${CMAKE_CURRENT_SOURCE_DIR}
-#     ${QtWidgets_INCLUDE_DIRS}
-#     ${QtCore_INCLUDE_DIRS}
-#     ${FREETYPE_INCLUDE_DIRS}
-#     ${FFMPEG_INCLUDE_DIRS}
-# )
-
 target_include_directories(
     VoidCore
     PUBLIC
@@ -99,12 +87,6 @@ if (QT_MAJOR_VERSION EQUAL 6)
     include_directories(${QtOpenGLWidgets_INCLUDE_DIRS})
 endif()
 
-# # Freetype
-# include_directories(
-#     ${FREETYPE_INCLUDE_DIRS}
-#     ${FFMPEG_INCLUDE_DIRS}
-# )
-
 # Main Executable
 add_executable(
     VOID
@@ -119,33 +101,18 @@ target_include_directories(
     VOID
     PRIVATE
     ${FREETYPE_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 # Finally Linking to our executable
 target_link_libraries(
     VOID
     PRIVATE
-    # VoidBridge
     VoidCore
-    # VoidDocker
-    # VoidExporter
-    # VoidIconForge
-    # VoidMediaBrowser
-    # VoidMediaPlayer
-    # VoidMenuSystem
     VoidObjects
-    # VoidPreferences
-    # VoidQExtensions
-    # VoidRenderer
-    # VoidScriptEditor
-    # VoidSequencer
-    # VoidTimeline
-    # VoidToolbox
     VoidEngine
-    # VoidUndo
     Qt::Widgets
     Qt::Core
-    # OpenGL::GL
     Python::Python
 )
 
@@ -215,13 +182,6 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../config/void-default.ocio
     )
 endif()
-
-# # Global
-# include_directories(PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-#     $<INSTALL_INTERFACE:include>
-# )
 
 # Install Libraries and Binaries
 install(TARGETS

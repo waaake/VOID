@@ -14,33 +14,48 @@ set(SOURCES
     Engine/Controller.cpp
 )
 
+# Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
 if (WIN32)
     list(APPEND SOURCES
-        # Renderer   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
-        # the staticMetaObject for BasicRenderer and VoidRenderer to be present at compile time rather link time
-        ../VoidRenderer/Renderer.h
-        ../VoidRenderer/VoidRenderer.h
-
-        # # Objects   --- This is needed on windows for the moc compilation to succeed on PlayerWidget which expects
-        # # the staticMetaObject for MediaClip, Track, TrackItem, Sequence and MediaBridge to be present at compile time rather link time
-        ../VoidObjects/Core/Task.h
-
-        ../VoidObjects/Effects/Effects.h
-
-        ../VoidObjects/Media/MediaClip.h
-
-        ../VoidObjects/Playlist/Playlist.h
-
-        ../VoidObjects/Sequence/Sequence.h
-        ../VoidObjects/Sequence/Track.h
-        ../VoidObjects/Sequence/TrackItem.h
-
+        ../VoidBridge/Engine.h
+        ../VoidDocker/Docker.h
+        ../VoidDocker/DockManager.h
+        ../VoidMediaPlayer/Media/MediaBridge.h
+        ../VoidMediaPlayer/Media/MediaLister.h
+        ../VoidMediaPlayer/Player/Player.h
+        ../VoidMediaPlayer/Player/PlayerBuffer.h
+        ../VoidMediaPlayer/Player/PlayerWidget.h
+        ../VoidMediaPlayer/Player/ViewerBuffer.h
+        ../VoidMediaPlayer/Playlist/PlayLister.h
+        ../VoidMediaPlayer/Project/Project.h
+        ../VoidMenuSystem/MenuSystem.h
         ../VoidObjects/Models/MediaModel.h
         ../VoidObjects/Models/PlaylistModel.h
         ../VoidObjects/Models/ProjectModel.h
-        ../VoidObjects/Models/TagModel.h
         ../VoidObjects/Models/TagMetadataModel.h
-        # TODO: Find a better way around this....
+        ../VoidObjects/Playlist/Playlist.h
+        ../VoidObjects/Sequence/Sequence.h
+        ../VoidObjects/Sequence/Track.h
+        ../VoidObjects/Sequence/TrackItem.h
+        ../VoidObjects/Core/Task.h
+        ../VoidObjects/Effects/Effects.h
+        ../VoidObjects/Media/MediaClip.h
+        ../VoidObjects/Models/TagModel.h
+        ../VoidObjects/Preferences/Preferences.h
+        ../VoidPreferences/PreferencesUI.h
+        ../VoidQExtensions/Frame.h
+        ../VoidQExtensions/Label.h
+        ../VoidQExtensions/PushButton.h
+        ../VoidQExtensions/LineEdit.h
+        ../VoidQExtensions/ProgressTask.h
+        ../VoidQExtensions/Slider.h
+        ../VoidRenderer/Renderer.h
+        ../VoidRenderer/VoidRenderer.h
+        ../VoidSequencer/Sequencer.h
+        ../VoidToolbox/Editor/Properties.h
+        ../VoidTimeline/Timeline.h
+        ../VoidTimeline/TimelineController.h
+        ../VoidTimeline/Timeslider.h
     )
 endif()
 
@@ -56,6 +71,7 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     ${FREETYPE_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 target_link_libraries(

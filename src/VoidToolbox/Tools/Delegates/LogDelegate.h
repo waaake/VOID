@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class ColoredLogDelegate : public QStyledItemDelegate
+class VOID_API ColoredLogDelegate : public QStyledItemDelegate
 {
 public:
     explicit ColoredLogDelegate(QObject* parent = nullptr);

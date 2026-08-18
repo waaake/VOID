@@ -38,7 +38,7 @@ private: /* Members */
     PlayerViewBuffer m_Buffer;
 };
 
-class ComparisonModeSelector : public SplitSectionSelector
+class VOID_API ComparisonModeSelector : public SplitSectionSelector
 {
 public:
     ComparisonModeSelector(QWidget* parent = nullptr);

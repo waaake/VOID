@@ -18,7 +18,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class MetadataModel : public QAbstractItemModel
+class VOID_API MetadataModel : public QAbstractItemModel
 {
 public:
     explicit MetadataModel(QObject* parent = nullptr);

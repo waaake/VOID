@@ -12,6 +12,19 @@ set(SOURCES
     Tools/LogWindow.cpp
 )
 
+# Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
+if (WIN32)
+    list(APPEND SOURCES
+        ../VoidObjects/Effects/Effects.h
+        ../VoidObjects/Core/Task.h
+        ../VoidQExtensions/Frame.h
+        ../VoidQExtensions/LineEdit.h
+        ../VoidQExtensions/PushButton.h
+        ../VoidQExtensions/Slider.h
+        ../VoidQExtensions/Table.h
+    )
+endif()
+
 add_library(
     VoidToolbox
     SHARED

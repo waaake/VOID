@@ -84,7 +84,7 @@ protected:
 
 
 /// Widget painted with base palette
-class BaseWidget : public QWidget
+class VOID_API BaseWidget : public QWidget
 {
 protected:
     void paintEvent(QPaintEvent* event) override;

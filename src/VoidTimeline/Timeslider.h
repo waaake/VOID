@@ -18,7 +18,7 @@ VOID_NAMESPACE_OPEN
 
 class Timeline;
 
-class Timeslider : public QSlider
+class VOID_API Timeslider : public QSlider
 {
 	Q_OBJECT
 public:

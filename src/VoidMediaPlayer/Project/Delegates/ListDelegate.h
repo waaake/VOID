@@ -14,8 +14,6 @@ VOID_NAMESPACE_OPEN
 
 class ProjectItemDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT
-
 public:
     explicit ProjectItemDelegate(QObject* parent = nullptr);
 
@@ -23,10 +21,8 @@ public:
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
 
-class RecentProjectItemDelegate : public QStyledItemDelegate
+class VOID_API RecentProjectItemDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT
-
 public:
     explicit RecentProjectItemDelegate(QObject* parent = nullptr);
 

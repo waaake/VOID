@@ -16,7 +16,7 @@ VOID_NAMESPACE_OPEN
 /* Forward Declrations for the DockSplitter to use DockWidget */
 class DockWidget;
 
-class DockSplitter : public QSplitter
+class VOID_API DockSplitter : public QSplitter
 {
 public:
     DockSplitter(Qt::Orientation orientation, QWidget* parent = nullptr);

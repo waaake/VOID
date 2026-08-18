@@ -24,13 +24,13 @@ public:
     QMessageBox::StandardButton Prompt();
 };
 
-class InfoMessageBox : public QMessageBox
+class VOID_API InfoMessageBox : public QMessageBox
 {
 public:
     InfoMessageBox(const QString& text, const QString& title = "Info", QWidget* parent = nullptr);
 };
 
-class ErrorMessageBox : public QMessageBox
+class VOID_API ErrorMessageBox : public QMessageBox
 {
 public:
     ErrorMessageBox(const QString& text, const QString& title = "Error", QWidget* parent = nullptr);

@@ -16,7 +16,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidPreferencesWidget : public QDialog
+class VOID_API VoidPreferencesWidget : public QDialog
 {
     Q_OBJECT
 

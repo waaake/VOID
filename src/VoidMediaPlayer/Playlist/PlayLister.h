@@ -22,10 +22,9 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidPlayLister : public QWidget
+class VOID_API VoidPlayLister : public QWidget
 {
     Q_OBJECT
-
 public:
     VoidPlayLister(QWidget* parent = nullptr);
     virtual ~VoidPlayLister();
