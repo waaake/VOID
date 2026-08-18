@@ -191,6 +191,8 @@ void Timeline::Connect()
 	connect(m_FullscreenButton, &QPushButton::clicked, this, &Timeline::fullscreenRequested);
 
 	connect(m_FramerateBox, &FramerateBox::framerateChanged, this, [this](double) { Replay(); });
+	connect(m_InTimeEdit, &TimeEdit::frameEdited, this, &Timeline::SetInFrame);
+	connect(m_OutTimeEdit, &TimeEdit::frameEdited, this, &Timeline::SetOutFrame);
 }
 
 void Timeline::Setup()
@@ -280,6 +282,16 @@ void Timeline::TimeUpdated(const int time)
 {
 	emit timeChanged(time);
 	m_TimeDisplay->setText(std::to_string(time).c_str());
+}
+
+void Timeline::SetInFrame(int frame)
+{
+	SetRange(std::min(frame, m_Timeslider->maximum() - 1), m_Timeslider->maximum());
+}
+
+void Timeline::SetOutFrame(int frame)
+{
+	SetRange(m_Timeslider->minimum(), std::max(frame, m_Timeslider->minimum() + 1));
 }
 
 void Timeline::SetRange(const int min, const int max)
@@ -446,6 +458,7 @@ void Timeline::PreviousFrame()
 void Timeline::PlayNextFrame()
 {
 	Timekeeper& t = Timekeeper::Instance();
+	v_frame_t current = t.CurrentFrame();
 	v_frame_t next = t.NextFrame(ElapsedFrames());
 	m_Timeslider->setValue(next);
 

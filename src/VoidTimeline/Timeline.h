@@ -72,6 +72,8 @@ public:
 	void SetUserFirstframe(int frame);
 	void SetUserEndframe(int frame);
 
+	void SetOutFrame(int frame);
+	void SetInFrame(int frame);
 	void SetRange(const int min, const int max);
 	/**
 	 * (Re)sets the In and out framing of the Timeslider
