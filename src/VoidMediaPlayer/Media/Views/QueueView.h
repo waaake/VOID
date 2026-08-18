@@ -13,7 +13,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class QueueView : public QListView
+class VOID_API QueueView : public QListView
 {
 public:
     explicit QueueView(QWidget* parent = nullptr);

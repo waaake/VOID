@@ -13,7 +13,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class EngineController : public QObject
+class VOID_API EngineController : public QObject
 {
 public:
     EngineController(QObject* parent = nullptr);

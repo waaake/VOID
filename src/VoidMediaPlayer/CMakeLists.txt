@@ -59,6 +59,44 @@ set(SOURCES
     Toolkit/ViewerController.cpp
 )
 
+# Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
+if (WIN32)
+    list(APPEND SOURCES
+        ../VoidObjects/Preferences/Preferences.h
+    )
+endif()
+
+# Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
+if (WIN32)
+list(APPEND SOURCES
+        ../VoidBridge/Engine.h
+        ../VoidMenuSystem/MenuSystem.h
+        ../VoidObjects/Core/Task.h
+        ../VoidObjects/Effects/Effects.h
+        ../VoidObjects/Media/MediaClip.h
+        ../VoidObjects/Models/MediaModel.h
+        ../VoidObjects/Models/PlaylistModel.h
+        ../VoidObjects/Models/ProjectModel.h
+        ../VoidObjects/Models/TagModel.h
+        ../VoidObjects/Models/TagMetadataModel.h
+        ../VoidObjects/Playlist/Playlist.h
+        ../VoidObjects/Sequence/Sequence.h
+        ../VoidObjects/Sequence/Track.h
+        ../VoidObjects/Sequence/TrackItem.h
+        ../VoidQExtensions/Frame.h
+        ../VoidQExtensions/Label.h
+        ../VoidQExtensions/ProgressTask.h
+        ../VoidQExtensions/PushButton.h
+        ../VoidQExtensions/Slider.h
+        ../VoidQExtensions/Table.h
+        ../VoidRenderer/Renderer.h
+        ../VoidRenderer/VoidRenderer.h
+        ../VoidTimeline/Timeline.h
+        ../VoidTimeline/TimelineController.h
+        ../VoidTimeline/Timeslider.h
+    )
+endif()
+
 add_library(
     VoidMediaPlayer
     SHARED
@@ -70,6 +108,7 @@ target_include_directories(
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 target_link_libraries(

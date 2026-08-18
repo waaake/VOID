@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class MediaQueue : public QWidget
+class VOID_API MediaQueue : public QWidget
 {
 public:
     explicit MediaQueue(QWidget* parent = nullptr);

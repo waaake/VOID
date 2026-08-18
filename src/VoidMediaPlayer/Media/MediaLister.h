@@ -29,10 +29,9 @@
 
 VOID_NAMESPACE_OPEN
 
-class VoidMediaLister : public QWidget
+class VOID_API VoidMediaLister : public QWidget
 {
     Q_OBJECT
-
 public:
     VoidMediaLister(QWidget* parent = nullptr);
     virtual ~VoidMediaLister();
