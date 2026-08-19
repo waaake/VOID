@@ -14,6 +14,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Entity/Entity.h"
 
 VOID_NAMESPACE_OPEN
 

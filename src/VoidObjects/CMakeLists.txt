@@ -7,6 +7,8 @@ set(SOURCES
     Effects/Effects.cpp
     Effects/Bridge.cpp
 
+    Entity/Entity.cpp
+
     Media/MediaClip.cpp
     Media/Tag.cpp
 

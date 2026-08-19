@@ -18,6 +18,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/Media/Media.h"
+#include "VoidObjects/Entity/Entity.h"
 #include "VoidObjects/VoidObject.h"
 #include "VoidObjects/Models/TagModel.h"
 #include "VoidRenderer/Core/RenderTypes.h"
@@ -29,22 +30,21 @@ class MediaClip;
 typedef std::shared_ptr<MediaClip> SharedMediaClip;
 class Effect;
 
-namespace Core {
-class Project;
-} // namespace Core
+// namespace Core {
+// class Project;
+// } // namespace Core
 
-class VOID_API MediaClip : public VoidObject, public Media
+class VOID_API MediaClip : public ProjectEntity, public Media
 {
     Q_OBJECT
-
 public:
-    MediaClip(QObject* parent = nullptr);
-    MediaClip(const MediaStruct& mstruct, QObject* parent = nullptr);
-    MediaClip(MediaStruct& mstruct, QObject* parent = nullptr);
+    MediaClip(Core::Project* parent = nullptr);
+    MediaClip(const MediaStruct& mstruct, Core::Project* parent = nullptr);
+    MediaClip(MediaStruct& mstruct, Core::Project* parent = nullptr);
     MediaClip(const std::string& basepath,
             const std::string& name,
             const std::string& extension,
-            QObject* parent = nullptr
+            Core::Project* parent = nullptr
     );
     MediaClip(const std::string& basepath,
             const std::string& name,
@@ -52,7 +52,7 @@ public:
             v_frame_t start,
             v_frame_t end,
             unsigned int padding,
-            QObject* parent = nullptr
+            Core::Project* parent = nullptr
     );
     MediaClip(const std::string& basepath,
             const std::string& name,
@@ -61,18 +61,28 @@ public:
             v_frame_t end,
             unsigned int padding,
             const std::vector<v_frame_t>& missing,
-            QObject* parent = nullptr
+            Core::Project* parent = nullptr
     );
     virtual ~MediaClip();
 
-    inline void SetColor(const QColor& color)
-    {
-        m_Color = color;
-        /* A change has been made */
-        emit updated();
-    }
+    // inline void SetColor(const QColor& color)
+    // {
+    //     m_Color = color;
+    //     /* A change has been made */
+    //     emit updated();
+    // }
 
-    inline QColor Color() const { return m_Color; }
+    // inline QColor Color() const { return m_Color; }
+
+    std::string Name() const override { return m_MediaStruct.Name(); }
+    std::string Extension() const override { return m_MediaStruct.Extension(); }
+    QPixmap Thumbnail() override;
+    double Framerate() const override { return m_Framerate; }
+    MFrameRange Framerange() const override { return MFrameRange(m_FirstFrame, m_LastFrame, (double)m_Framerate); }
+    bool HasAudio() const override { return (bool)m_Samplerate; }
+    // bool HasTags() const override {  }
+    int Channels() const override { return Media::Channels(); }
+    EntityType Type() const override { return EntityType::MEDIA_CLIP; }
 
     void Cache(v_frame_t frame);
     void Clear(v_frame_t frame);
@@ -101,7 +111,7 @@ public:
     inline bool HasEffects() const { return !m_Effects.empty(); }
 
     inline const std::vector<Tag*>& Tags() const { return m_TagModel->Tags(); }
-    inline bool HasTags() const { return m_TagModel->HasTags(); }
+    inline bool HasTags() const override { return m_TagModel->HasTags(); }
     inline TagModel* TagsModel() const { return m_TagModel; }
 
     /**
@@ -113,8 +123,8 @@ public:
     const std::vector<Effect*>& Effects() const { return m_Effects; }
     const std::unordered_map<v_frame_t, Renderer::SharedAnnotation>& Annotations() const { return m_Annotations; }
 
-    QPixmap Thumbnail();
-    Core::Project* Project() const;
+    // QPixmap Thumbnail();
+    // Core::Project* Project() const;
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;
@@ -133,11 +143,11 @@ public:
     const FloatImage Evaluate(v_frame_t frame);
 
 signals: /* Signals defining any change that has happened */
-    /*
-     * Defines if the media or any entity internally has been updated
-     * This is an intimation for other entities relying on this to update themselves
-     */
-    void updated();
+    // /*
+    //  * Defines if the media or any entity internally has been updated
+    //  * This is an intimation for other entities relying on this to update themselves
+    //  */
+    // void updated();
 
     /*
      * Emitted when a frame is cached
@@ -158,14 +168,14 @@ private: /* Members */
     std::unordered_map<v_frame_t, Renderer::SharedAnnotation> m_Annotations;
     std::vector<Effect*> m_Effects;
 
-    QColor m_Color;
+    // QColor m_Color;
     QPixmap m_Thumbnail;
     TagModel* m_TagModel;
     std::atomic_bool m_Working;
 
 private: /* Methods */
     void ReadThumbnail();
-    QPixmap DefaultThumbnail();
+    // QPixmap DefaultThumbnail();
     QPixmap FetchThumbnail();
 
 private: /* Classes */

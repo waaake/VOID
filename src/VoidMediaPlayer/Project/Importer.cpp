@@ -20,6 +20,7 @@ DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel,
     , m_MaxLevel(maxLevel)
     , m_Cancelled(false)
 {
+    m_Directories.clear();
     if (!directory.empty())
         m_Directories.push_back(directory);
 }
@@ -35,6 +36,7 @@ void DirectoryImporter::Import(const std::string& directory, int maxlevel)
 {
     m_MaxLevel = maxlevel;
     m_Cancelled.store(false);
+    m_Directories.clear();
     m_Directories.push_back(directory);
 
     m_Worker = std::async(std::launch::async, &DirectoryImporter::Process, this);

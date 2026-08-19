@@ -10,14 +10,13 @@
 #include "VoidCore/Processors/ImageProcessor.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidObjects/Effects/Bridge.h"
-#include "VoidObjects/Project/Project.h"
+// #include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
-MediaClip::MediaClip(QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(Core::Project* parent)
+    : ProjectEntity(parent)
     , Media()
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -25,10 +24,9 @@ MediaClip::MediaClip(QObject* parent)
     m_TagModel = new TagModel(this);
 }
 
-MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(const MediaStruct& mstruct, Core::Project* parent)
+    : ProjectEntity(parent)
     , Media(mstruct)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -36,10 +34,9 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     m_TagModel = new TagModel(this);
 }
 
-MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(MediaStruct& mstruct, Core::Project* parent)
+    : ProjectEntity(parent)
     , Media(mstruct)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -50,11 +47,10 @@ MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
 MediaClip::MediaClip(const std::string& basepath,
         const std::string& name,
         const std::string& extension,
-        QObject* parent
+        Core::Project* parent
     )
-    : VoidObject(parent)
+    : ProjectEntity(parent)
     , Media(basepath, name, extension)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -68,11 +64,10 @@ MediaClip::MediaClip(const std::string& basepath,
         v_frame_t start,
         v_frame_t end,
         unsigned int padding,
-        QObject* parent
+        Core::Project* parent
     )
-    : VoidObject(parent)
+    : ProjectEntity(parent)
     , Media(basepath, name, extension, start, end, padding)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -87,11 +82,10 @@ MediaClip::MediaClip(const std::string& basepath,
         v_frame_t end,
         unsigned int padding,
         const std::vector<v_frame_t>& missing,
-        QObject* parent
+        Core::Project* parent
     )
-    : VoidObject(parent)
+    : ProjectEntity(parent)
     , Media(basepath, name, extension, start, end, padding, missing)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -117,6 +111,11 @@ QPixmap MediaClip::Thumbnail()
      */
     return m_Thumbnail.isNull() ? FetchThumbnail() : m_Thumbnail;
 }
+
+// QPixmap MediaClip::EntityThumbnail()
+// {
+//     return m_Thumbnail.isNull() ? FetchThumbnail() : m_Thumbnail;
+// }
 
 void MediaClip::ReadThumbnail()
 {
@@ -149,14 +148,14 @@ void MediaClip::ReadThumbnail()
     emit updated();
 }
 
-QPixmap MediaClip::DefaultThumbnail()
-{
-    /* 16:9 aspect default */
-    QPixmap pix = QPixmap(QSize(400, 225));
-    pix.fill(Qt::black);
+// QPixmap MediaClip::DefaultThumbnail()
+// {
+//     /* 16:9 aspect default */
+//     QPixmap pix = QPixmap(QSize(400, 225));
+//     pix.fill(Qt::black);
 
-    return pix;
-}
+//     return pix;
+// }
 
 QPixmap MediaClip::FetchThumbnail()
 {
@@ -360,10 +359,10 @@ void MediaClip::Clear()
     Media::ClearCache(HasEffects());
 }
 
-Core::Project* MediaClip::Project() const
-{
-    return reinterpret_cast<Core::Project*>(parent());
-}
+// Core::Project* MediaClip::Project() const
+// {
+//     return reinterpret_cast<Core::Project*>(parent());
+// }
 
 void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
 {
