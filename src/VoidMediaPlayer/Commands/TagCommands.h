@@ -37,8 +37,7 @@ public:
 private: /* Members */
     QModelIndex m_MediaIndex;
     QModelIndex m_TagIndex;
-    std::string m_Name;
-    TagMetaStruct m_Metadata;
+    std::string m_TagData;
 };
 
 VOID_NAMESPACE_CLOSE
