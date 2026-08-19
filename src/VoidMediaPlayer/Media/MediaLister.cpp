@@ -539,7 +539,7 @@ void VoidMediaLister::ClearTagsFromSelected()
     if (current.isValid())
     {
         SharedMediaClip clip = _MediaBridge.MediaAt(current);
-        clip->ClearTags();
+        _MediaBridge.ClearTags(clip);
     }
 }
 
