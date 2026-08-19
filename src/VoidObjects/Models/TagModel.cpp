@@ -55,40 +55,51 @@ Qt::ItemFlags TagModel::flags(const QModelIndex& index) const
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
-bool TagModel::AddTag(const std::string& name)
+Tag* TagModel::AddTag(const std::string& name)
 {
     int insertidx = static_cast<int>(m_Tags.size());
 
     beginInsertRows(QModelIndex(), insertidx, insertidx);
-    m_Tags.push_back(new Tag(name));
+    Tag* tag = new Tag(name);
+    m_Tags.push_back(tag);
     endInsertRows();
-    return true;
+    return tag;
 }
 
-bool TagModel::AddTag(const std::string& name, const TagMetaStruct& metadata)
+Tag* TagModel::AddTag(const std::string& name, const TagMetaStruct& metadata)
 {
     int insertidx = static_cast<int>(m_Tags.size());
 
     beginInsertRows(QModelIndex(), insertidx, insertidx);
-    m_Tags.push_back(new Tag(name, metadata));
+    Tag* tag = new Tag(name, metadata);
+    m_Tags.push_back(tag);
     endInsertRows();
-    return true;
+    return tag;
 }
 
-bool TagModel::InsertTag(const std::string& name, int index)
+Tag* TagModel::InsertTag(const std::string& name, int index)
 {
     beginInsertRows(QModelIndex(), index, index);
-    m_Tags.insert(m_Tags.begin() + index, new Tag(name));
+    Tag* tag = new Tag(name);
+    m_Tags.insert(m_Tags.begin() + index, tag);
     endInsertRows();
-    return true;
+    return tag;
 }
 
-bool TagModel::InsertTag(const std::string& name, int index, const TagMetaStruct& metadata)
+Tag* TagModel::InsertTag(const std::string& name, int index, const TagMetaStruct& metadata)
 {
     beginInsertRows(QModelIndex(), index, index);
-    m_Tags.insert(m_Tags.begin() + index, new Tag(name, metadata));
+    Tag* tag = new Tag(name, metadata);
+    m_Tags.insert(m_Tags.begin() + index, tag);
     endInsertRows();
-    return true;
+    return tag;
+}
+
+void TagModel::InsertTag(Tag* tag, int index)
+{
+    beginInsertRows(QModelIndex(), index, index);
+    m_Tags.insert(m_Tags.begin() + index, tag);
+    endInsertRows();
 }
 
 void TagModel::RemoveTag(const QModelIndex& index)
