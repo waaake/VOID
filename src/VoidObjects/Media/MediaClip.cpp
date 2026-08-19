@@ -248,6 +248,12 @@ bool MediaClip::InsertTag(const std::string& name, int index, const TagMetaStruc
     return false;
 }
 
+void MediaClip::InsertTag(Tag* tag, int index)
+{
+    m_TagModel->InsertTag(tag, index);
+    emit updated();
+}
+
 void MediaClip::RemoveTag(const QModelIndex& index)
 {
     m_TagModel->RemoveTag(index);
