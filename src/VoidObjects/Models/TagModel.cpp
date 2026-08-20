@@ -77,6 +77,15 @@ Tag* TagModel::AddTag(const std::string& name, const TagMetaStruct& metadata)
     return tag;
 }
 
+void TagModel::AddTag(Tag* tag)
+{
+    int insertidx = static_cast<int>(m_Tags.size());
+
+    beginInsertRows(QModelIndex(), insertidx, insertidx);
+    m_Tags.push_back(tag);
+    endInsertRows();
+}
+
 Tag* TagModel::InsertTag(const std::string& name, int index)
 {
     beginInsertRows(QModelIndex(), index, index);

@@ -44,6 +44,7 @@ public:
 
     Tag* AddTag(const std::string& name);
     Tag* AddTag(const std::string& name, const TagMetaStruct& metadata);
+    void AddTag(Tag* tag);
     Tag* InsertTag(const std::string& name, int index);
     Tag* InsertTag(const std::string& name, int index, const TagMetaStruct& metdata);
     void InsertTag(Tag* tag, int index);
@@ -55,6 +56,7 @@ public:
 
     inline bool HasTags() const { return !m_Tags.empty(); }
     inline const std::vector<Tag*>& Tags() const { return m_Tags; }
+    void Reserve(std::size_t size) { m_Tags.reserve(size); }
 
 private: /* Members */
     std::vector<Tag*> m_Tags;
