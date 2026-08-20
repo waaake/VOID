@@ -248,6 +248,12 @@ bool MediaClip::InsertTag(const std::string& name, int index, const TagMetaStruc
     return false;
 }
 
+void MediaClip::InsertTag(Tag* tag, int index)
+{
+    m_TagModel->InsertTag(tag, index);
+    emit updated();
+}
+
 void MediaClip::RemoveTag(const QModelIndex& index)
 {
     m_TagModel->RemoveTag(index);
@@ -403,6 +409,16 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     }
 
     out.AddMember("annotations", annotations, allocator);
+
+    rapidjson::Value tags(rapidjson::kArrayType);
+    for (const Tag* tag : m_TagModel->Tags())
+    {
+        rapidjson::Value data;
+        tag->Serialize(data, allocator);
+        tags.PushBack(data, allocator);
+    }
+
+    out.AddMember("tags", tags, allocator);
 }
 
 void MediaClip::Serialize(std::ostream& out) const
@@ -453,6 +469,11 @@ void MediaClip::Serialize(std::ostream& out) const
         out.write(reinterpret_cast<const char*>(&data.first), sizeof(v_frame_t));
         data.second->Serialize(out);
     }
+
+    int tagcount = m_TagModel->rowCount();
+    out.write(reinterpret_cast<const char*>(&tagcount), sizeof(tagcount));
+    for (const Tag* tag : m_TagModel->Tags())
+        tag->Serialize(out);
 }
 
 void MediaClip::Deserialize(const rapidjson::Value& in)
@@ -515,6 +536,17 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
             m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
         }
     }
+
+    const rapidjson::Value::ConstArray tags = in["tags"].GetArray();
+    m_TagModel->Reserve(tags.Size());
+    for (int i = 0; i < tags.Size(); ++i)
+    {
+        // Use basic name, the actual name will be deserialized from the data
+        Tag* tag = new Tag("t");
+        tag->Deserialize(tags[i]);
+
+        m_TagModel->AddTag(tag);
+    }
 }
 
 void MediaClip::Deserialize(std::istream& in)
@@ -561,6 +593,18 @@ void MediaClip::Deserialize(std::istream& in)
         annotation->Deserialize(in);
 
         m_Annotations[f] = annotation;
+    }
+
+    int tagcount = 0;
+    in.read(reinterpret_cast<char*>(&tagcount), sizeof(tagcount));
+    m_TagModel->Reserve(tagcount);
+
+    for (int i = 0; i < tagcount; ++i)
+    {
+        Tag* tag = new Tag("t");
+        tag->Deserialize(in);
+
+        m_TagModel->AddTag(tag);
     }
 }
 

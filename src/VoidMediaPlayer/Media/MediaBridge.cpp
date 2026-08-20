@@ -402,6 +402,25 @@ void MBridge::RemoveTag(const QModelIndex& mindex, const QModelIndex& tindex)
     if (m_Project) m_Project->PushCommand(new RemoveTagCommand(mindex, tindex));
 }
 
+void MBridge::ClearTags(const SharedMediaClip& media)
+{
+    TagModel* model = media->TagsModel();
+    if (model->HasTags())
+    {
+        const std::vector<Tag*>& tags = model->Tags();
+        const QModelIndex index = m_Project->ClipIndex(media);
+
+        QUndoStack* stack = m_Project->UndoStack();
+
+        stack->beginMacro("Remove Tags");
+
+        for (int i = 0; i < static_cast<int>(tags.size()); ++i)
+            stack->push(new RemoveTagCommand(index, model->index(i, 0)));
+
+        stack->endMacro();
+    }
+}
+
 void MBridge::CreateEffect(const SharedMediaClip& media, const std::string& type)
 {
     if (m_Project)

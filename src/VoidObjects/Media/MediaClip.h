@@ -87,6 +87,7 @@ public:
     bool AddTag(const std::string& name, const TagMetaStruct& metadata);
     bool InsertTag(const std::string& name, int index);
     bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
+    void InsertTag(Tag* tag, int index);
     void RemoveTag(const QModelIndex& index);
     void RemoveTag(int row);
 

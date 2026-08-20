@@ -1,13 +1,16 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <sstream>
+
 /* Internal */
 #include "TagCommands.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 
-/* ApplyTagCommand {{{ */
+/// ApplyTagCommand
 
 ApplyTagCommand::ApplyTagCommand(const QModelIndex& index, const std::string& tag, QUndoCommand* parent)
     : VoidUndoCommand(parent)
@@ -40,9 +43,7 @@ bool ApplyTagCommand::Redo()
     return false;
 }
 
-/* }}} */
-
-/* {{{ */
+/// RemoveTagCommand
 
 RemoveTagCommand::RemoveTagCommand(const QModelIndex& mindex, const QModelIndex& tindex, QUndoCommand* parent)
     : VoidUndoCommand(parent)
@@ -56,9 +57,11 @@ void RemoveTagCommand::undo()
 {
     if (SharedMediaClip media = _MediaBridge.MediaAt(m_MediaIndex))
     {
-        m_Metadata.empty()
-            ? media->InsertTag(m_Name, m_TagIndex.row())
-            : media->InsertTag(m_Name, m_TagIndex.row(), m_Metadata);
+        std::istringstream in(m_TagData, std::ios::binary);
+        Tag* tag = new Tag("t");
+        tag->Deserialize(in);
+
+        media->InsertTag(tag, m_TagIndex.row());
     }
 }
 
@@ -68,8 +71,10 @@ bool RemoveTagCommand::Redo()
     {
         if (Tag* tag = media->TagAt(m_TagIndex))
         {
-            m_Name = tag->Name();
-            m_Metadata = tag->Metdata(); // TODO: This can be swapped as opposed to copy
+            std::ostringstream os(std::ios::binary);
+            tag->Serialize(os);
+
+            m_TagData = os.str();
 
             // We're going to Remove the same tag here, so Tag* tag will be a dangling pointer to something
             // which gets deleted after this call, make sure we don't have a case for that
@@ -82,7 +87,5 @@ bool RemoveTagCommand::Redo()
 
     return false;
 }
-
-/* }}} */
 
 VOID_NAMESPACE_CLOSE

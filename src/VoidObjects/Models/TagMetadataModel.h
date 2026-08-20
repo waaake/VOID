@@ -37,6 +37,8 @@ public:
 
     inline bool IsValid() const { return !m_Metadata.empty(); }
     const TagMetaStruct& Metadata() const { return m_Metadata; }
+    void Set(const TagMetaStruct& metadata) { m_Metadata = metadata; }
+    void Set(TagMetaStruct&& metadata) { std::swap(m_Metadata, metadata); }
 
 private:
     TagMetaStruct m_Metadata;

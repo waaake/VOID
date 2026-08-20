@@ -42,10 +42,12 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    bool AddTag(const std::string& name);
-    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
-    bool InsertTag(const std::string& name, int index);
-    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metdata);
+    Tag* AddTag(const std::string& name);
+    Tag* AddTag(const std::string& name, const TagMetaStruct& metadata);
+    void AddTag(Tag* tag);
+    Tag* InsertTag(const std::string& name, int index);
+    Tag* InsertTag(const std::string& name, int index, const TagMetaStruct& metdata);
+    void InsertTag(Tag* tag, int index);
     void RemoveTag(const QModelIndex& index);
     void RemoveTag(int row);
     Tag* TagAt(const QModelIndex& index) const;
@@ -54,6 +56,7 @@ public:
 
     inline bool HasTags() const { return !m_Tags.empty(); }
     inline const std::vector<Tag*>& Tags() const { return m_Tags; }
+    void Reserve(std::size_t size) { m_Tags.reserve(size); }
 
 private: /* Members */
     std::vector<Tag*> m_Tags;
