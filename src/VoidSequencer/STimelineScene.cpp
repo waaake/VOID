@@ -12,6 +12,7 @@
 /* Internal */
 #include "STimelineScene.h"
 #include "Graphics/SPlayheadItem.h"
+#include "Graphics/SPreviewTrackItem.h"
 #include "Graphics/SRazorItem.h"
 #include "Graphics/STrack.h"
 #include "Graphics/STrackItem.h"
@@ -173,6 +174,52 @@ void STimelineScene::SelectItems(const QRectF& rect)
 
     m_Context->SelectionModel()->Select(trackitems);
     m_Context->SelectionModel()->Select(effects);
+}
+
+void STimelineScene::InitDraggableItems(const std::vector<SharedMediaClip>& media)
+{
+    m_DraggedItems.reserve(media.size());
+
+    int duration = 0;
+    for (const SharedMediaClip& clip : media)
+    {
+        int offset = clip->FirstFrame() - duration;
+        duration = duration + clip->Duration();
+        SharedTrackItem item = std::make_shared<TrackItem>(
+                                        clip,
+                                        clip->FirstFrame() - offset,
+                                        clip->LastFrame() - offset,
+                                        offset
+                                    );
+        
+        SPreviewTrackItem* preview = new SPreviewTrackItem(item, m_Context);
+        m_DraggedItems.push_back(preview);
+        addItem(preview);
+    }
+
+    VOID_LOG_INFO("Constructed {0} Previews", static_cast<int>(m_DraggedItems.size()));
+}
+
+void STimelineScene::MoveDraggableItems(const QPointF& position)
+{
+    for (SPreviewTrackItem*& item : m_DraggedItems)
+    {
+        item->UpdatePosition(position.x(), position.y());
+    }
+}
+
+void STimelineScene::DestroyDraggableItems()
+{
+    for (SPreviewTrackItem*& item : m_DraggedItems)
+    {
+        removeItem(item);
+        item->deleteLater();
+        delete item;
+        item = nullptr;
+    }
+
+    VOID_LOG_INFO("Destroyed {0} Previews", static_cast<int>(m_DraggedItems.size()));
+    m_DraggedItems.clear();
 }
 
 void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)

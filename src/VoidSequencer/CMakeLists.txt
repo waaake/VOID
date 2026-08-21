@@ -10,6 +10,7 @@ set(SOURCES
 
     Graphics/SHandleItem.cpp
     Graphics/SPlayheadItem.cpp
+    Graphics/SPreviewTrackItem.cpp
     Graphics/SRazorItem.cpp
     Graphics/STimelineEffect.cpp
     Graphics/STimelineItem.cpp
