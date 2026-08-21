@@ -96,6 +96,20 @@ void MediaView::startDrag(Qt::DropActions supportedActions)
     painter.end();
 
     drag->setPixmap(stack);
+
+    connect(drag, &QDrag::targetChanged, this, [drag, stack](QObject* target) -> void
+    {
+        if (target)
+        {
+            QString name = target->objectName();
+            VOID_LOG_INFO("Target Changed... {0}", name.toStdString());
+            // if (dynamic_cast<STimelineView*>(target))
+            // {
+            //     VOID_LOG_INFO("Target is TimelineView");
+            // }
+        }
+    });
+
     drag->exec();
 }
 
