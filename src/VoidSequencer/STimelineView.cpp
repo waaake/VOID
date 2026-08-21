@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStyle>
@@ -10,9 +11,11 @@
 #include "SContext.h"
 #include "STimelineView.h"
 #include "STimelineScene.h"
+#include "Internal/Descriptors.h"
 #include "Graphics/STrackItem.h"
 #include "VoidCore/Logging.h"
 #include "VoidIconForge/IconForge.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -63,6 +66,35 @@ MFrameRange STimelineView::VisibleRange() const
         m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topLeft()).x()),
         m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topRight()).x() + style()->pixelMetric(QStyle::PM_ScrollBarExtent))
     );
+}
+
+void STimelineView::dragEnterEvent(QDragEnterEvent* event)
+{
+    VOID_LOG_INFO("Entering...");
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        event->acceptProposedAction();
+        QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
+        // const std::vector<SharedMediaClip>& media = _MediaBridge.UnpackProjectMedia(data);
+
+        m_Scene->InitDraggableItems(_MediaBridge.UnpackProjectMedia(data));
+    }
+}
+
+void STimelineView::dragMoveEvent(QDragMoveEvent* event)
+{
+    m_Scene->MoveDraggableItems(mapToScene(event->pos()));
+}
+
+void STimelineView::dragLeaveEvent(QDragLeaveEvent* event)
+{
+    VOID_LOG_INFO("Left...");
+    m_Scene->DestroyDraggableItems();
+}
+
+void STimelineView::dropEvent(QDropEvent* event)
+{
+    VOID_LOG_INFO("Dropped...");
 }
 
 void STimelineView::mousePressEvent(QMouseEvent* event)
@@ -194,6 +226,8 @@ void STimelineView::Setup()
 
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    setAcceptDrops(true);
 }
 
 VOID_NAMESPACE_CLOSE
