@@ -452,7 +452,6 @@ QColor STrackItem::Background(const QStyleOptionGraphicsItem* option) const
 
     if (Track()->Enabled() && m_Item->Enabled())
     {
-        // if (m_Context->SelectionModel()->IsSelected(m_Item)) return option->palette.color(QPalette::Highlight).darker(180);
         QColor color = m_Item->Color().darker(250);
         return m_Context->HoverModel()->IsHovered(m_Item) ? color.darker(140) : color;
     }
