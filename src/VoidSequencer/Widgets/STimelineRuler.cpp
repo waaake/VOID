@@ -9,7 +9,7 @@
 /* Internal */
 #include "STimelineRuler.h"
 #include "VoidCore/Logging.h"
-#include "VoidSequencer/SDescriptors.h"
+#include "VoidSequencer/Descriptors.h"
 #include "VoidSequencer/STimelineView.h"
 #include "VoidSequencer/SContext.h"
 

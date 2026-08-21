@@ -9,7 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "SDescriptors.h"
+#include "Descriptors.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN

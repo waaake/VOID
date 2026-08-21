@@ -12,8 +12,8 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Descriptors.h"
 #include "SContext.h"
-#include "SDescriptors.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN

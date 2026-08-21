@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "MetadataViewer.h"
-#include "VoidMediaPlayer/Descriptors.h"
+#include "Internal/Descriptors.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN

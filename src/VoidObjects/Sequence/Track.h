@@ -15,7 +15,7 @@
 #include "Definition.h"
 #include "TrackMap.h"
 #include "TrackItem.h"
-#include "Descriptors.h"
+#include "Internal/Descriptors.h"
 #include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN

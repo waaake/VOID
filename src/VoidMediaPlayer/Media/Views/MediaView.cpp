@@ -12,8 +12,8 @@
 
 /* Internal */
 #include "MediaView.h"
+#include "Internal/Descriptors.h"
 #include "VoidCore/Logging.h"
-#include "VoidMediaPlayer/Descriptors.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidObjects/Models/MediaModel.h"
 

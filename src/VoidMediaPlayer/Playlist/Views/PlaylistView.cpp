@@ -8,8 +8,8 @@
 
 /* Internal */
 #include "PlaylistView.h"
+#include "Internal/Descriptors.h"
 #include "VoidCore/Logging.h"
-#include "VoidMediaPlayer/Descriptors.h"
 #include "VoidMediaPlayer/Playlist/Delegates/ListDelegate.h"
 
 VOID_NAMESPACE_OPEN
