@@ -47,6 +47,7 @@ public:
     void InitDraggableItems(const std::vector<SharedMediaClip>& media);
     void MoveDraggableItems(const QPointF& position);
     void DestroyDraggableItems();
+    void DropItems(const QPointF& postion);
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;
