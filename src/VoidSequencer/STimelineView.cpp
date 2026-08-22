@@ -70,13 +70,10 @@ MFrameRange STimelineView::VisibleRange() const
 
 void STimelineView::dragEnterEvent(QDragEnterEvent* event)
 {
-    VOID_LOG_INFO("Entering...");
     if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
     {
         event->acceptProposedAction();
         QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
-        // const std::vector<SharedMediaClip>& media = _MediaBridge.UnpackProjectMedia(data);
-
         m_Scene->InitDraggableItems(_MediaBridge.UnpackProjectMedia(data));
     }
 }
@@ -88,13 +85,12 @@ void STimelineView::dragMoveEvent(QDragMoveEvent* event)
 
 void STimelineView::dragLeaveEvent(QDragLeaveEvent* event)
 {
-    VOID_LOG_INFO("Left...");
     m_Scene->DestroyDraggableItems();
 }
 
 void STimelineView::dropEvent(QDropEvent* event)
 {
-    VOID_LOG_INFO("Dropped...");
+    m_Scene->DropItems(mapToScene(event->pos()));
 }
 
 void STimelineView::mousePressEvent(QMouseEvent* event)
