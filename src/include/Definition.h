@@ -6,6 +6,7 @@
 
 /* STD includes */
 #include <cstddef>  // Included for std::size_t and std::byte
+#include <cstdint>
 
 /* Namespaces */
 #define VOID_NAMESPACE voidplayer
