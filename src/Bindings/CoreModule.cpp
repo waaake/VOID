@@ -222,7 +222,17 @@ void BindCore(py::module_& m)
         .def("end_frame", &PlaybackTrack::EndFrame)
         .def("set_enabled", &PlaybackTrack::SetEnabled, py::arg("enabled"))
         .def("enabled", &PlaybackTrack::Enabled)
-        .def("add_item", static_cast<SharedTrackItem (PlaybackTrack::*)(const SharedMediaClip&)>(&PlaybackTrack::AddMedia), py::arg("media"), py::return_value_policy::reference)
+        .def("add_item",
+            static_cast<SharedTrackItem (PlaybackTrack::*)(const SharedMediaClip&)>(&PlaybackTrack::AddMedia),
+            py::arg("media"),
+            py::return_value_policy::reference
+        )
+        .def("add_item",
+            static_cast<SharedTrackItem (PlaybackTrack::*)(const SharedMediaClip&, v_frame_t)>(&PlaybackTrack::AddMedia),
+            py::arg("media"),
+            py::arg("frame"),
+            py::return_value_policy::reference
+        )
         .def("razor_at", &PlaybackTrack::RazorAt, py::arg("frame"))
         .def("merge_cut", &PlaybackTrack::MergeCut, py::arg("frame"))
         .def("move_item", &PlaybackTrack::MoveItem, py::arg("track_item"), py::arg("frame"))
