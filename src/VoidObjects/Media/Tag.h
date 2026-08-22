@@ -35,7 +35,7 @@ public:
     void Deserialize(const rapidjson::Value& in) override;
     void Deserialize(std::istream& in) override;
 
-    const char* TypeName() const { return "Tag"; }
+    const char* TypeName() const override { return "Tag"; }
 
 private: /* Members */
     std::string m_Name;
