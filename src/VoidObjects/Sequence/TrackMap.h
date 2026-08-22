@@ -59,6 +59,7 @@ public:
      * else a null pointer is returned.
      */
     SharedTrackItem At(const int frame) const;
+    SharedTrackItem InRange(v_frame_t start, v_frame_t end) const;
     inline bool Empty() const { return m_Items.empty(); }
 
     bool Move(const SharedTrackItem& item, int frame);
