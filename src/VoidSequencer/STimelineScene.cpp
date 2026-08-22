@@ -196,8 +196,6 @@ void STimelineScene::InitDraggableItems(const std::vector<SharedMediaClip>& medi
         m_DraggedItems.push_back(preview);
         addItem(preview);
     }
-
-    VOID_LOG_INFO("Constructed {0} Previews", static_cast<int>(m_DraggedItems.size()));
 }
 
 void STimelineScene::MoveDraggableItems(const QPointF& position)
@@ -221,8 +219,6 @@ void STimelineScene::DestroyDraggableItems()
         delete item;
         item = nullptr;
     }
-
-    VOID_LOG_INFO("Destroyed {0} Previews", static_cast<int>(m_DraggedItems.size()));
     m_DraggedItems.clear();
 }
 
