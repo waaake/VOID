@@ -6,10 +6,49 @@
 
 /* Internal */
 #include "SequenceCommands.h"
-// #include "VoidObjects/Sequence/Track.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
+
+/// CreateTrackItemCommand
+
+CreateTrackItemCommand::CreateTrackItemCommand(const SharedMediaClip& media, const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Project(media->Project())
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->Index())
+    , m_MediaIndex(m_Project->MediaRow(media))
+    , m_Frame(frame)
+    , m_TrackType(track->Type())
+{
+    setText("Add media to track");
+}
+
+void CreateTrackItemCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        track->RemoveItem(item);
+    }
+}
+
+bool CreateTrackItemCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedMediaClip& media = m_Project->MediaAt(m_MediaIndex, 0);
+        if (SharedTrackItem item = track->AddMedia(media, m_Frame))
+        {
+            m_ItemIndex = item->Index();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/// MoveTrackItemCommand
 
 MoveTrackItemCommand::MoveTrackItemCommand(const SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent)
     : VoidUndoCommand(parent)
