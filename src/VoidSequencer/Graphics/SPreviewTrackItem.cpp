@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "SPreviewTrackItem.h"
+#include "STrack.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -25,11 +26,13 @@ void SPreviewTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
     painter->setRenderHint(QPainter::Antialiasing);
     const int width = boundingRect().width();
 
-    painter->setPen(QPen(m_Item->Color(), 1));
-    painter->setBrush(m_Item->Color().darker(250));
+    const QColor color = IsObstructed() ? QColor(220, 40, 50) : m_Item->Color();
+
+    painter->setPen(QPen(color, 1));
+    painter->setBrush(color.darker(250));
     painter->drawRect(boundingRect());
 
-    painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, m_Item->Color());
+    painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, color);
 
     painter->setPen(option->palette.color(QPalette::Text));
     painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
@@ -68,6 +71,21 @@ void SPreviewTrackItem::CalculateBoundingBox()
 {
     const double width = m_Context->Geometry()->FrameToSceneX(m_Item->TimelineOut() + 1) - m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn());
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
+}
+
+bool SPreviewTrackItem::IsObstructed() const
+{
+    QPointF position = pos();
+    if (STrack* track = m_Context->Controller()->TrackAt(position))
+    {
+        if (const SharedPlaybackTrack ptrack = track->Track())
+        {
+            v_frame_t start = m_Context->Geometry()->SceneXToFrame(position.x());
+            return (bool)ptrack->ItemInRange(start, start + m_Item->Duration() - 1);
+        }
+    }
+
+    return false;
 }
 
 VOID_NAMESPACE_CLOSE
