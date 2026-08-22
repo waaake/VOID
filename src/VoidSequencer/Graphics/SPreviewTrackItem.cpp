@@ -17,6 +17,7 @@ SPreviewTrackItem::SPreviewTrackItem(const SharedTrackItem& item, SequencerConte
 
     CalculateBoundingBox();
     setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), 0);
+    setOpacity(0.6);
 }
 
 void SPreviewTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
