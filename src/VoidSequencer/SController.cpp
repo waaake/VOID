@@ -22,6 +22,17 @@ void SequencerController::SetTimeController(TimelineController* controller)
     connect(m_TimelineController, &TimelineController::timeChanged, this, &SequencerController::SetCurrentFrame, Qt::DirectConnection);
 }
 
+void SequencerController::CreateTrackItems(const std::vector<std::pair<const SharedMediaClip, v_frame_t>>& media, const SharedPlaybackTrack& track)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    stack->beginMacro("Add media to track");
+
+    for (const std::pair<const SharedMediaClip, v_frame_t>& entity : media)
+        stack->push(new CreateTrackItemCommand(entity.first, track, entity.second));
+
+    stack->endMacro();
+}
+
 void SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     if (m_EditMode == EditMode::RIPPLE)
