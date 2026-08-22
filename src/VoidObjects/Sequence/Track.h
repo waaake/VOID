@@ -78,6 +78,7 @@ public:
      * Which will get played in order
      */
     SharedTrackItem AddMedia(const SharedMediaClip& media);
+    SharedTrackItem AddMedia(const SharedMediaClip& media, v_frame_t frame);
     SharedMediaClip Media(v_frame_t frame);
 
     /* Clears the Playback Track */
