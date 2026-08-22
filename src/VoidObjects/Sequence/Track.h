@@ -52,6 +52,7 @@ public:
     std::size_t ItemIndex(const TrackItem* item) const { return m_Items.ItemIndex(item); }
     int EffectIndex(const Effect* const effect) const;
     SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
+    SharedTrackItem ItemInRange(v_frame_t start, v_frame_t end) const { return m_Items.InRange(start, end); }
     Effect* EffectAt(std::size_t index) const { return m_Effects.at(index); }
     MFrameRange ItemRange(std::size_t index) const { return m_Items.AtIndex(index)->TimelineRange(); }
     const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
