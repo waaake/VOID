@@ -24,6 +24,12 @@ VoidPreferences::~VoidPreferences()
 {
 }
 
+unsigned long long VoidPreferences::GetCacheMemory() const
+{
+    unsigned long long c = GetSetting(Settings::CacheMemory).toULongLong();
+    return c ? c : 1ULL;
+}
+
 void VoidPreferences::AddRecentProject(const std::string& path)
 {
     std::vector<std::string> recents = RecentProjects();
