@@ -139,7 +139,7 @@ void Project::Deserialize(const rapidjson::Value& in)
     /* Media {{{ */
     const rapidjson::Value::ConstArray clips = in["Clips"].GetArray();
 
-    for (std::size_t i = 0; i < clips.Size(); ++i)
+    for (unsigned int i = 0; i < clips.Size(); ++i)
     {
         SharedMediaClip clip = std::make_shared<MediaClip>(this);
         clip->Deserialize(clips[i]);

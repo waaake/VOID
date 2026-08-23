@@ -539,7 +539,7 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
     const rapidjson::Value::ConstArray trackitems = in["TrackItems"].GetArray();
     m_Items.Reserve(trackitems.Size());
 
-    for (std::size_t i = 0; i < trackitems.Size(); ++i)
+    for (unsigned int i = 0; i < trackitems.Size(); ++i)
     {
         SharedTrackItem item = std::make_shared<TrackItem>(this);
         item->Deserialize(trackitems[i]);

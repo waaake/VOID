@@ -528,7 +528,7 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
     const rapidjson::Value::ConstArray annotations = in["annotations"].GetArray();
     if (!annotations.Empty())
     {
-        for (std::size_t i = 0; i < annotations.Size(); ++i)
+        for (unsigned int i = 0; i < annotations.Size(); ++i)
         {
             Renderer::SharedAnnotation annotation = std::make_shared<Renderer::Annotation>();
             annotation->Deserialize(annotations[i]["data"]);
