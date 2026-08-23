@@ -107,7 +107,7 @@ private: /* Members */
     double m_Framerate, m_Mediarate;
 
 private: /* Methods */
-    inline v_frame_t ConvertedTime() const { return m_CurrentTime * m_Framerate; }
+    inline v_frame_t ConvertedTime() const { return static_cast<v_frame_t>(m_CurrentTime * m_Framerate); }
     inline bool HasDifferentRate() const { return m_Mediarate != m_Framerate; }
     v_frame_t NextFrame__();
     v_frame_t NextFrame__(int offset);

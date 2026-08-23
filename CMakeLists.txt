@@ -11,6 +11,11 @@ set(CMAKE_AUTOMOC ON)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g -O1 -fno-omit-frame-pointer")
 # set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
 
+# Exception handling
+if (MSVC)
+    add_compile_options(/EHsc)
+endif()
+
 # USE CXX11 ABI
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 

@@ -163,7 +163,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
          * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
          * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
          */
-        distance = framenumber - m_CurrentFrame;
+        distance = static_cast<int>(framenumber - m_CurrentFrame);
         /* Decode the next frame and it returns back either a negative value or the decoded frame */
         v_frame_t ret = DecodeNextFrame((distance < 10));
 
@@ -249,7 +249,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
          * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
          * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
          */
-        distance = framenumber - m_CurrentFrame;
+        distance = static_cast<int>(framenumber - m_CurrentFrame);
         /* Decode the next frame and it returns back either a negative value or the decoded frame */
         v_frame_t ret = DecodeNextFrame((distance < 10));
 
@@ -312,16 +312,14 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
         sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
 
     av_packet_unref(m_Packet);
-
-    /* The decoded frame number*/
-    return m_CurrentFrame;
+    return (v_frame_t)m_CurrentFrame;
 }
 
 void FFmpegDecoder::FillBuffer(Buffer<float>& out)
 {
     for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
     {
-        int index = i * 3;
+        std::size_t index = i * 3;
         out[index] = Linear(m_Buffer[index] / 255.f);
         out[index + 1] = Linear(m_Buffer[index + 1] / 255.f);
         out[index + 2] = Linear(m_Buffer[index + 2] / 255.f);
@@ -378,8 +376,8 @@ void FFmpegPixReader::ProcessInformation()
             const AVStream* stream = formatContext->streams[i];
             if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
             {
-                m_Duration = stream->nb_frames;
-                m_Startframe = av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
+                m_Duration = (v_frame_t)stream->nb_frames;
+                m_Startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
                 m_Framerate = av_q2d(stream->r_frame_rate);
                 m_Endframe = m_Duration - 1;
             }
@@ -462,7 +460,7 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
         vidStream = formatContext->streams[streamId];
 
-        int endframe = vidStream->nb_frames;
+        int endframe = (int)vidStream->nb_frames;
         double framerate = av_q2d(vidStream->r_frame_rate);
         m["end_frame"] = std::to_string(endframe);
         m["duration"] = std::to_string(endframe - m_Startframe + 1);

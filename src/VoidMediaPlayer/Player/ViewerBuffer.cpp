@@ -3,6 +3,13 @@
 
 /* Internal */
 #include "ViewerBuffer.h"
+
+// allow std::min std::max to work correctly when including windows.h
+// windows defines them as macros so scope resolution doesn't work
+#ifdef _VOID_PLATFORM_WINDOWS
+#define NOMINMAX
+#endif
+
 #include "VoidCore/Logging.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidMediaPlayer/Player/Player.h"

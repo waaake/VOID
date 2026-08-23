@@ -104,9 +104,9 @@ void Project::ImportDirectory_(const std::string& path)
             }
         }
     }
-    catch (const std::filesystem::filesystem_error& e)
+    catch (const std::filesystem::filesystem_error& exc)
     {
-        VOID_LOG_ERROR(e.what());
+        VOID_LOG_ERROR(exc.what());
     }
 
     m_UndoStack->beginMacro("Import Directory");

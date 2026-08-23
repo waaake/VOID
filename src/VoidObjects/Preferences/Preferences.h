@@ -56,13 +56,13 @@ public:
     inline int GetMissingFrameHandler() const { return GetSetting(Settings::MissingFramesHandler).toInt(); }
     inline int GetUndoQueueSizeHint() const { return GetSetting(Settings::UndoQueueSize).toInt(); }
     inline int GetMediaViewType() const { return GetSetting(Settings::MediaViewType).toInt(); }
-    inline unsigned long long GetCacheMemory() const { return GetSetting(Settings::CacheMemory).toULongLong(); }
     inline unsigned int GetCacheThreads() const { return GetSetting(Settings::CacheThreads).toUInt(); }
     inline int GetColorStyle() const { return GetSetting(Settings::ColorStyle).toInt(); }
     inline bool ShowStartup() const { return !GetSetting(Settings::DontShowStartup).toBool(); }
     inline QString LastBrowsed() const { return GetSetting(Settings::LastBrowsedLocation).toString(); }
     inline int GetDefaultWorkspace() const { return GetSetting(Settings::DefaultWorkspace).toInt(); }
     inline QString LastScript() const { return GetSetting(Settings::LastPythonScript).toString(); }
+    unsigned long long GetCacheMemory() const;
 
     void AddRecentProject(const std::string& path);
     std::vector<std::string> RecentProjects();

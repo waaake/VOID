@@ -28,8 +28,6 @@ public: /* Enum */
     };
 
 public:
-
-    /* Singleton Instance of the Processor for the Rendering System */
     static ColorProcessor& Instance();
 
     void SetConfig(const Config& type = Config::Builtin);

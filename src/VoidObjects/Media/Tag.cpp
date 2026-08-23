@@ -80,7 +80,7 @@ void Tag::Deserialize(const rapidjson::Value& in)
         std::vector<std::pair<std::string, std::string>> m;
         m.reserve(metadata.Size());
 
-        for (int i = 0; i < metadata.Size(); ++i)
+        for (int i = 0; i < static_cast<int>(metadata.Size()); ++i)
             m.emplace_back(metadata[i]["key"].GetString(), metadata[i]["value"].GetString());
 
         m_Metadata->Set(std::move(m));

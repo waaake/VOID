@@ -16,7 +16,7 @@ Media::Media()
     , m_LastFrame(-1)
     , m_Framesize(0)
     , m_Framerate(24.0)
-    , m_Samplerate(0.0)
+    , m_Samplerate(0)
     , m_Type(Type::UNDEFINED)
 {
 }

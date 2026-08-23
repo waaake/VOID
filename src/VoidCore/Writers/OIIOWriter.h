@@ -4,9 +4,6 @@
 #ifndef _OIIO_PIX_WRITER_H
 #define _OIIO_PIX_WRITER_H
 
-/* OpenImageIO */
-#include <OpenImageIO/imageio.h>
-
 /* Internal */
 #include "Definition.h"
 #include "PixWriter.h"

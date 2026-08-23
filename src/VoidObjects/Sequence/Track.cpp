@@ -539,7 +539,7 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
     const rapidjson::Value::ConstArray trackitems = in["TrackItems"].GetArray();
     m_Items.Reserve(trackitems.Size());
 
-    for (int i = 0; i < trackitems.Size(); ++i)
+    for (unsigned int i = 0; i < trackitems.Size(); ++i)
     {
         SharedTrackItem item = std::make_shared<TrackItem>(this);
         item->Deserialize(trackitems[i]);
@@ -548,7 +548,7 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
 
     const rapidjson::Value::ConstArray effects = in["timeline_effects"].GetArray();
     m_Effects.reserve(effects.Size());
-    for (int i = 0; i < effects.Size(); ++i)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(effects.Size()); ++i)
     {
         std::string type = effects[i]["typename"].GetString();
         if (Effect* effect = _EffectsBridge.CreateEffect(type))

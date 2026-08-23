@@ -21,8 +21,6 @@ ColorController::ColorController(QWidget* parent)
     InitColorProcessor();
 
     Setup();
-
-    /* Color Display */
     connect(this, &QComboBox::currentTextChanged, this, [this](const QString& value) { emit colorDisplayChanged(value.toStdString());});
 }
 

@@ -105,7 +105,7 @@ void Playlist::Deserialize(const rapidjson::Value& in)
     m_Name = in["name"].GetString();
     const rapidjson::Value::ConstArray media = in["Clips"].GetArray();
 
-    for (int i = 0; i < media.Size(); ++i)
+    for (unsigned int i = 0; i < media.Size(); ++i)
         m_Media->Add(m_Project->MediaAt(media[i]["row"].GetInt(), 0));
 
     emit updated(this);

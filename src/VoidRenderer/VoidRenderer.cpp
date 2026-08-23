@@ -17,8 +17,8 @@
 #include "VoidCore/ColorProcessor.h"
 #include "VoidCore/Logging.h"
 
-constexpr float MAX_ZOOM = 12.8;
-constexpr float MIN_ZOOM = 0.1;
+constexpr float MAX_ZOOM = 12.8f;
+constexpr float MIN_ZOOM = 0.1f;
 
 VOID_NAMESPACE_OPEN
 
@@ -321,7 +321,7 @@ void VoidRenderer::wheelEvent(QWheelEvent* event)
     else
     {
         /* Zoom out */
-        m_ZoomFactor *= 0.9091;
+        m_ZoomFactor *= 0.9091f;
         m_ZoomFactor = std::max(m_ZoomFactor, MIN_ZOOM);
     }
 

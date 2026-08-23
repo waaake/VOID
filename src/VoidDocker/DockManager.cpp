@@ -18,7 +18,7 @@ DockManager::~DockManager()
 
 int DockManager::RegisterDock(QWidget* widget, const std::string& text)
 {
-    int id = m_Docks.size();
+    int id = static_cast<int>(m_Docks.size());
     m_Docks[id] = {id, widget, text};
     widget->setObjectName(QString::number(id));
     emit updated();

@@ -17,7 +17,7 @@ PlaylistModel::PlaylistModel(QObject* parent)
 
 PlaylistModel::~PlaylistModel()
 {
-    for (int i = m_Playlists.size() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(m_Playlists.size()) - 1; i >= 0; --i)
     {
         Playlist* playlist = m_Playlists.at(i);
 
