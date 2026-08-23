@@ -10,15 +10,16 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
-#include "VoidMediaPlayer/Media/Delegates/ListDelegate.h"
-#include "VoidMediaPlayer/Media/Delegates/ThumbnailDelegate.h"
 
 VOID_NAMESPACE_OPEN
+
+class BasicMediaItemDelegate;
+class MediaItemDelegate;
+class MediaThumbnailDelegate;
 
 class MediaView : public QListView
 {
     Q_OBJECT
-
 public: /* enums */
 
     enum class ViewType

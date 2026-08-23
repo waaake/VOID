@@ -22,7 +22,7 @@ class VoidMPixReader;
 typedef std::shared_ptr<VoidPixReader> SharedPixReader;
 typedef std::shared_ptr<VoidMPixReader> SharedMPixReader;
 
-class VoidPixReader
+class VOID_API VoidPixReader
 {
 public:
     VoidPixReader(const std::string& path, v_frame_t framenumber = 0)
@@ -137,7 +137,7 @@ protected:
     FloatImage m_Image;
 };
 
-class VoidMPixReader : public VoidPixReader
+class VOID_API VoidMPixReader : public VoidPixReader
 {
 public:
     VoidMPixReader(const std::string& path, v_frame_t framenumber = 0) : VoidPixReader(path, framenumber) {}

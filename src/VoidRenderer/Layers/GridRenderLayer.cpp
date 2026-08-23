@@ -38,7 +38,7 @@ GridRenderLayer::GridRenderLayer()
 
 GridRenderLayer::~GridRenderLayer()
 {
-    glDeleteTextures(m_Textures.size(), m_Textures.data());
+    glDeleteTextures((int)m_Textures.size(), m_Textures.data());
 }
 
 void GridRenderLayer::Initialize()
@@ -58,7 +58,7 @@ void GridRenderLayer::Initialize()
 
 void GridRenderLayer::Reset()
 {
-    glDeleteTextures(m_Textures.size(), m_Textures.data());
+    glDeleteTextures((int)m_Textures.size(), m_Textures.data());
 
     m_Textures.clear();
     m_Textures.shrink_to_fit();
@@ -94,7 +94,7 @@ void GridRenderLayer::SetImages(const std::vector<FloatImage>& images)
         m_Textures.resize(images.size());
         m_TexData.resize(images.size());
 
-        glGenTextures(images.size(), m_Textures.data());
+        glGenTextures((int)images.size(), m_Textures.data());
 
         // Auto layout grid
         SetRows(std::ceil(std::sqrt(m_Textures.size())));

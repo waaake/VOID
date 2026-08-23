@@ -29,7 +29,7 @@ public:
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex&) const override { return QModelIndex(); }
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override { return parent.isValid() ? 0 : m_Metadata.size(); }
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override { return parent.isValid() ? 0 : static_cast<int>(m_Metadata.size()); }
     /* Key: Value for the Metadata */
     int columnCount(const QModelIndex&) const override { return 2; }
 

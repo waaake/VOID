@@ -44,6 +44,7 @@ target_link_libraries(
     PRIVATE
     Qt::Core
     Qt::Widgets
+    OpenColorIO::OpenColorIO
 )
 
 target_compile_definitions(VoidExporter PRIVATE VOID_LIB)

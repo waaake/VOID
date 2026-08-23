@@ -16,7 +16,6 @@ MediaImportCommand::MediaImportCommand(const std::string& path, QUndoCommand* pa
     , m_Path(MediaFS::ResolvedPath(path))
     , m_InsertIndex(_MediaBridge.DataModel()->rowCount())
 {
-    // m_InsertIndex = 
     setText("Import Media");
 }
 

@@ -248,6 +248,7 @@ install(
 
 # Dll copier for windows
 if (WIN32)
+    find_package(zstd CONFIG REQUIRED)
     set(DEPENDENCY_TARGETS
         OpenEXR::OpenEXR
         OpenEXR::OpenEXRCore

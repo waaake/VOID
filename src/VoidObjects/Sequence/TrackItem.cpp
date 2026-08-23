@@ -368,7 +368,7 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
 
     const rapidjson::Value::ConstArray effects = in["timeline_effects"].GetArray();
     m_Effects.reserve(effects.Size());
-    for (int i = 0; i < effects.Size(); ++i)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(effects.Size()); ++i)
     {
         std::string type = effects[i]["typename"].GetString();
         if (Effect* effect = _EffectsBridge.CreateEffect(type))

@@ -509,7 +509,7 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
         std::vector<v_frame_t> missing;
         missing.reserve(missingFrames.Size());
 
-        for (int i = 0; i < missingFrames.Size(); ++i)
+        for (int i = 0; i < static_cast<int>(missingFrames.Size()); ++i)
             missing.emplace_back(missingFrames[i].GetInt64());
 
         Read(
@@ -528,7 +528,7 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
     const rapidjson::Value::ConstArray annotations = in["annotations"].GetArray();
     if (!annotations.Empty())
     {
-        for (int i = 0; i < annotations.Size(); ++i)
+        for (std::size_t i = 0; i < annotations.Size(); ++i)
         {
             Renderer::SharedAnnotation annotation = std::make_shared<Renderer::Annotation>();
             annotation->Deserialize(annotations[i]["data"]);
@@ -539,7 +539,7 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
 
     const rapidjson::Value::ConstArray tags = in["tags"].GetArray();
     m_TagModel->Reserve(tags.Size());
-    for (int i = 0; i < tags.Size(); ++i)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(tags.Size()); ++i)
     {
         // Use basic name, the actual name will be deserialized from the data
         Tag* tag = new Tag("t");

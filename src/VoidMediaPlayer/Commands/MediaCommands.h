@@ -20,14 +20,11 @@ class MediaImportCommand : public VoidUndoCommand
 public:
     MediaImportCommand(const std::string& path, QUndoCommand* parent = nullptr);
 
-    /* Define the Undo Action */
     void undo() override;
-    /* The return status governs if the command needs to be marked as obsolete when failed */
     bool Redo() override;
 
 private: /* Members */
-    size_t m_InsertIndex;
-    /* Non Destructable entity that can construct the media */
+    int m_InsertIndex;
     std::string m_Path;
 };
 

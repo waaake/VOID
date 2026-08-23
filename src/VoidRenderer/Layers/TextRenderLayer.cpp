@@ -32,9 +32,9 @@ TextAnnotationsRenderLayer::TextAnnotationsRenderLayer()
     , m_Typing(false)
     , m_Color(1.f, 1.f, 1.f)
     , m_Size(40)
-    , m_Scale(0.001)
-    , m_Scalex(0.001)
-    , m_CaretScalex(0.002)
+    , m_Scale(0.001f)
+    , m_Scalex(0.001f)
+    , m_CaretScalex(0.002f)
     , m_CaretIndex(0)
     , m_Caretxpos(0.f)
     , m_CaretOffset(4)
@@ -68,7 +68,7 @@ void TextAnnotationsRenderLayer::Begin(const glm::vec2& position)
             m_Annotation->draft.active = true;
             m_Annotation->draft.editing = true;
 
-            m_CaretIndex = m_Annotation->draft.text.size();
+            m_CaretIndex = static_cast<int>(m_Annotation->draft.text.size());
             m_Typing = true;
             m_EditText = m_Annotation->draft.text;
 
@@ -310,7 +310,7 @@ void TextAnnotationsRenderLayer::DrawText(const Renderer::RenderText& text)
     std::vector<float> vertices;
     vertices.reserve(6 * 4 * text.text.size());
 
-    FontAtlas& atlas = FontStore::Instance().Atlas(text.size);
+    FontAtlas& atlas = FontStore::Instance().Atlas(static_cast<int>(text.size));
 
     for (char c : text.text)
     {
@@ -359,7 +359,7 @@ void TextAnnotationsRenderLayer::DrawCurrent(Renderer::RenderText& text)
     glUniform3fv(m_UColor, 1, glm::value_ptr(text.color));
     glUniform1i(m_UText, 0);
 
-    FT_Set_Pixel_Sizes(m_Ft_Face, 0, text.size);
+    FT_Set_Pixel_Sizes(m_Ft_Face, 0, static_cast<int>(text.size));
 
     int count = 0;
 

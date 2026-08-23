@@ -39,7 +39,7 @@ public:
 
 };
 
-class DockTab : public QTabBar
+class VOID_API DockTab : public QTabBar
 {
 	Q_OBJECT
 

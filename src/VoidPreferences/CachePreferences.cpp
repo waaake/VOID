@@ -88,8 +88,8 @@ A larger cache can improve performance by reducing the need to recompute or relo
 
 void CachePreferences::Setup()
 {
-    /* Max Values */
-    unsigned int maxMem = TotalMemory() / (1024 * 1024 * 1024);
+    // Max Values
+    unsigned int maxMem = static_cast<unsigned int>(TotalMemory() / 1024UL * 1024UL * 1024UL);
     unsigned int maxThreads = ProcessorCount();
 
     VOID_LOG_INFO("Maximum Memory Available: {0} GB", maxMem);
@@ -101,7 +101,7 @@ void CachePreferences::Setup()
     m_ThreadsBox->setMinimum(1);
     m_ThreadsBox->setMaximum(maxThreads);
 
-    /* Default values */
+    // Default values
     m_CacheBox->setValue(1);
     m_ThreadsBox->setValue(maxThreads * 0.5);
 }

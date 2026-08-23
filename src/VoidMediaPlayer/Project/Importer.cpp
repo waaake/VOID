@@ -149,9 +149,9 @@ void DirectoryImporter::GetMedia(const std::string& directory, std::vector<Media
             }
         }
     }
-    catch (const std::filesystem::filesystem_error& e)
+    catch (const std::filesystem::filesystem_error& exc)
     {
-        VOID_LOG_ERROR(e.what());
+        VOID_LOG_ERROR(exc.what());
     }
 }
 
@@ -214,9 +214,9 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
             }
         }
     }
-    catch (const std::filesystem::filesystem_error& e)
+    catch (const std::filesystem::filesystem_error& exc)
     {
-        VOID_LOG_ERROR(e.what());
+        VOID_LOG_ERROR(exc.what());
     }
 
     return vec;

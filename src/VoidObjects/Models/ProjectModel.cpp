@@ -21,7 +21,7 @@ ProjectModel::ProjectModel(QObject* parent)
 
 ProjectModel::~ProjectModel()
 {
-    for (int i = m_Projects.size() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(m_Projects.size()) - 1; i >= 0; --i)
     {
         Core::Project* project = m_Projects.at(i);
 

@@ -173,7 +173,7 @@ void MEntry::Parse(const std::string& path)
      */
     if (ValidFrame(framestring))
     {
-        m_FramePadding = framestring.size();
+        m_FramePadding = static_cast<unsigned int>(framestring.size());
         m_Framenumber = std::stol(framestring);
         m_Name = remaining.substr(0, lastDot);
     }
@@ -495,9 +495,9 @@ MediaStruct MediaStruct::FromFile(const std::string& filepath)
                 m.Add(next);
         }
     }
-    catch (const std::filesystem::filesystem_error& e)
+    catch (const std::filesystem::filesystem_error& exc)
     {
-        VOID_LOG_ERROR(e.what());
+        VOID_LOG_ERROR(exc.what());
     }
 
     return m;

@@ -98,7 +98,8 @@ struct Image
 
     Buffer<_Ty> buffer;
 
-    unsigned int InternalFormat() const { return buffer.Size() * format; }
+    // Kind of like a hash to ensure that we know that the size or the internal format has changed in the image
+    unsigned int InternalFormat() const { return static_cast<unsigned int>(buffer.Size()) * format; }
     std::size_t Size() const noexcept { return buffer.Size() * sizeof(_Ty); }
     bool Valid() const noexcept { return !buffer.Empty(); }
     bool Empty() const noexcept { return buffer.Empty(); }

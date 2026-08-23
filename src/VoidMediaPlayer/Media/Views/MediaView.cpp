@@ -14,6 +14,8 @@
 #include "MediaView.h"
 #include "Internal/Descriptors.h"
 #include "VoidCore/Logging.h"
+#include "VoidMediaPlayer/Media/Delegates/ListDelegate.h"
+#include "VoidMediaPlayer/Media/Delegates/ThumbnailDelegate.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidObjects/Models/MediaModel.h"
 
