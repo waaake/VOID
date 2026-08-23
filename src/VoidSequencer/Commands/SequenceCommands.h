@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Project/Project.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 #include "VoidObjects/Sequence/Sequence.h"
@@ -13,6 +14,21 @@
 #include "VoidUndo/VoidCommand.h"
 
 VOID_NAMESPACE_OPEN
+
+class CreateTrackItemCommand : public VoidUndoCommand
+{
+public:
+    CreateTrackItemCommand(const SharedMediaClip& media, const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Core::Project* m_Project;
+    PlaybackSequence* m_Sequence;
+    v_frame_t m_Frame;
+    int m_TrackIndex, m_MediaIndex, m_ItemIndex;
+    Sequence::TrackType m_TrackType;
+};
 
 class MoveTrackItemCommand : public VoidUndoCommand
 {

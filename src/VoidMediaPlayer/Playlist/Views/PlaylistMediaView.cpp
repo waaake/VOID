@@ -13,9 +13,9 @@
 
 /* Internal */
 #include "PlaylistMediaView.h"
+#include "Internal/Descriptors.h"
 #include "VoidCore/Logging.h"
 #include "VoidObjects/Preferences/Preferences.h"
-#include "VoidMediaPlayer/Descriptors.h"
 #include "VoidMediaPlayer/Media/Delegates/ListDelegate.h"
 #include "VoidMediaPlayer/Media/Delegates/ThumbnailDelegate.h"
 

@@ -14,16 +14,12 @@
 /* Internal */
 #include "Docker.h"
 #include "DockManager.h"
+#include "Internal/Descriptors.h"
 #include "VoidCore/Logging.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Window.h"
 
 VOID_NAMESPACE_OPEN
-
-namespace MimeTypes {
-    constexpr const char* TabIndex = "application-void/x-tab-index";
-} // namespace MimeTypes
-
 
 VoidDocker::VoidDocker(QWidget* parent)
     : QDockWidget(parent)

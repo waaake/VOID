@@ -12,6 +12,7 @@
 /* Internal */
 #include "STimelineScene.h"
 #include "Graphics/SPlayheadItem.h"
+#include "Graphics/SPreviewTrackItem.h"
 #include "Graphics/SRazorItem.h"
 #include "Graphics/STrack.h"
 #include "Graphics/STrackItem.h"
@@ -173,6 +174,86 @@ void STimelineScene::SelectItems(const QRectF& rect)
 
     m_Context->SelectionModel()->Select(trackitems);
     m_Context->SelectionModel()->Select(effects);
+}
+
+void STimelineScene::InitDraggableItems(const std::vector<SharedMediaClip>& media)
+{
+    m_DraggedItems.reserve(media.size());
+
+    int duration = 0;
+    for (const SharedMediaClip& clip : media)
+    {
+        int offset = clip->FirstFrame() - duration;
+        duration = duration + clip->Duration();
+        SharedTrackItem item = std::make_shared<TrackItem>(
+                                        clip,
+                                        clip->FirstFrame() - offset,
+                                        clip->LastFrame() - offset,
+                                        offset
+                                    );
+
+        SPreviewTrackItem* preview = new SPreviewTrackItem(item, m_Context);
+        m_DraggedItems.push_back(preview);
+        addItem(preview);
+    }
+}
+
+void STimelineScene::MoveDraggableItems(const QPointF& position)
+{
+    if (m_DraggedItems.empty()) return;
+
+    int x = m_DraggedItems[0]->pos().x();
+    for (SPreviewTrackItem*& item : m_DraggedItems)
+    {
+        int offset = item->pos().x() - x;
+        item->UpdatePosition(offset + position.x(), position.y());
+    }
+}
+
+void STimelineScene::DestroyDraggableItems()
+{
+    for (SPreviewTrackItem*& item : m_DraggedItems)
+    {
+        removeItem(item);
+        item->deleteLater();
+        delete item;
+        item = nullptr;
+    }
+    m_DraggedItems.clear();
+}
+
+void STimelineScene::DropItems(const QPointF& position)
+{
+    STrack* track = m_Context->Controller()->TrackAt(position);
+    if (track)
+    {
+        std::vector<std::pair<const SharedMediaClip, v_frame_t>> media;
+        media.reserve(m_DraggedItems.size());
+
+        int offset = 0;
+        v_frame_t frame = m_Context->Geometry()->SceneXToFrame(position.x());
+
+        for (SPreviewTrackItem*& item : m_DraggedItems)
+        {
+            media.emplace_back(
+                item->TrackItem()->GetMedia(),
+                frame + offset
+            );
+            offset += item->TrackItem()->Duration();
+
+            removeItem(item);
+            item->deleteLater();
+            delete item;
+            item = nullptr;
+        }
+
+        m_DraggedItems.clear();
+        m_Context->Controller()->CreateTrackItems(media, track->Track());
+    }
+    else
+    {
+        DestroyDraggableItems();
+    }
 }
 
 void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)

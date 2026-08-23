@@ -10,7 +10,7 @@
 #include "STrackHeader.h"
 #include "VoidCore/Logging.h"
 #include "VoidQExtensions/Frame.h"
-#include "VoidSequencer/SDescriptors.h"
+#include "VoidSequencer/Descriptors.h"
 #include "VoidSequencer/SContext.h"
 
 VOID_NAMESPACE_OPEN

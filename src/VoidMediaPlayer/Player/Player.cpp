@@ -7,12 +7,12 @@
 
 /* Internal */
 #include "Player.h"
+#include "Internal/Descriptors.h"
 #include "VoidBridge/Engine.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidCore/Media/Renderer.h"
 #include "VoidQExtensions/MessageBox.h"
 #include "VoidMediaBrowser/Browser.h"
-#include "VoidMediaPlayer/Descriptors.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidExporter/Exporter.h"
 #include "VoidExporter/MediaExporter.h"

@@ -12,8 +12,8 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Descriptors.h"
 #include "SContext.h"
-#include "SDescriptors.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
@@ -21,6 +21,7 @@ VOID_NAMESPACE_OPEN
 class SPlayheadItem;
 class SRazorItem;
 class STrack;
+class SPreviewTrackItem;
 
 class STimelineScene : public QGraphicsScene
 {
@@ -43,6 +44,10 @@ public:
     STrack*& TrackAt(int index);
 
     void SelectItems(const QRectF& rect);
+    void InitDraggableItems(const std::vector<SharedMediaClip>& media);
+    void MoveDraggableItems(const QPointF& position);
+    void DestroyDraggableItems();
+    void DropItems(const QPointF& postion);
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -53,6 +58,9 @@ private:
     SequencerContext* m_Context;
     SPlayheadItem* m_Playhead;
     SRazorItem* m_Razorhead;
+
+    // DragItems
+    std::vector<SPreviewTrackItem*> m_DraggedItems;
 
 private:
     int SceneHeight() const;

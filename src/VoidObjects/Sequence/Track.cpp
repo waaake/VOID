@@ -200,6 +200,37 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
     return item;
 }
 
+SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t frame)
+{
+    int offset = media->FirstFrame() - frame;
+
+    // An item already exists in the range where this media was supposed to be added
+    if (m_Items.InRange(media->FirstFrame() - offset,media->LastFrame() - offset))
+        return nullptr;
+
+    SharedTrackItem item = std::make_shared<TrackItem>(
+                                        media,
+                                        media->FirstFrame() - offset,
+                                        media->LastFrame() - offset,
+                                        offset,
+                                        this
+                                    );
+
+    if (m_Items.Add(item, frame))
+    {
+        if (m_EndFrame < item->TimelineOut())
+        {
+            m_EndFrame = item->TimelineOut();
+            m_Duration = m_EndFrame + 1;
+            emit rangeChanged(m_StartFrame, m_EndFrame);
+        }
+
+        emit itemAdded(item);
+        return item;
+    }
+    return nullptr;
+}
+
 SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
 {
     if (const auto& item = GetTrackItem(frame))

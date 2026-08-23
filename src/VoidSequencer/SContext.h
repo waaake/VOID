@@ -6,8 +6,8 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Descriptors.h"
 #include "SController.h"
-#include "SDescriptors.h"
 #include "STimelineGeometry.h"
 #include "Models/SSelectionModel.h"
 #include "Models/SHoverModel.h"

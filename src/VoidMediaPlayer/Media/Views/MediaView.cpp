@@ -12,8 +12,8 @@
 
 /* Internal */
 #include "MediaView.h"
+#include "Internal/Descriptors.h"
 #include "VoidCore/Logging.h"
-#include "VoidMediaPlayer/Descriptors.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidObjects/Models/MediaModel.h"
 
@@ -76,9 +76,9 @@ void MediaView::startDrag(Qt::DropActions supportedActions)
     QDrag* drag = new QDrag(this);
     drag->setMimeData(data);
 
-    /* Stacked pixmaps */
+    // Stacked pixmaps
     const int count = std::min(static_cast<int>(indexes.size()), 4);
-    const int thumbsize = 100;
+    const int thumbsize = 60;
     const int offset = 10;
 
     QSize canvas(thumbsize + offset * (count - 1), thumbsize + offset * (count - 1));

@@ -112,6 +112,19 @@ SharedTrackItem TrackMap::At(const int frame) const
     return (item->InTimelineRange(frame)) ? item : nullptr;
 }
 
+SharedTrackItem TrackMap::InRange(v_frame_t start, v_frame_t end) const
+{
+    int step = std::max(1, (int)(end - start) / 10);
+    for (int i = start; i < end; i += step)
+    {
+        if (SharedTrackItem item = At(i))
+            return item;
+    }
+
+    // Ensures that we check the last frame always
+    return At(end);
+}
+
 bool TrackMap::Move(const SharedTrackItem& item, int frame)
 {
     auto it = std::lower_bound(
