@@ -28,6 +28,14 @@ struct MFrameRange
     MFrameRange(v_frame_t start, v_frame_t end, v_frame_t duration, double framerate = 24.0)
         : startframe(start), endframe(end), duration(duration), framerate(framerate) {}
 
+    bool Overlaps(const MFrameRange& other) const
+    {
+        return Contains(other.startframe) || Contains(other.endframe);
+    }
+    bool Covers(const MFrameRange& other) const
+    {
+        return Contains(other.startframe) && Contains(other.endframe);
+    }
     bool Contains(v_frame_t frame) const { return frame >= startframe && frame <= endframe; }
     bool operator==(const MFrameRange& other) const
     {
