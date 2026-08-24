@@ -60,6 +60,7 @@ public:
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
+    Frame* InternalFrame(v_frame_t frame) { return m_Media->InternalFrame(frame); }
 
     std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
     Effect* CreateEffect(const std::string& type);
