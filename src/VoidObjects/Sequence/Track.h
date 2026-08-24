@@ -142,7 +142,7 @@ public:
     bool AddItem(const SharedTrackItem& item);
     bool AddItem(const SharedTrackItem& item, v_frame_t frame);
     // Removes the Track Item at the given frame
-    void RemoveItem(v_frame_t frame);
+    // void RemoveItem(v_frame_t frame);
     void RemoveItem(const SharedTrackItem& item);
 
     /**
@@ -162,6 +162,8 @@ signals: /* Signals Denoting actions in the Track */
     void cleared();
     void itemAdded(const SharedTrackItem&);
     void itemAboutToBeRemoved(const SharedTrackItem&);
+    void itemUpdated(const SharedTrackItem&);
+    void itemMoved(const MFrameRange& previous, const MFrameRange& current);
     void itemRemoved();
     void effectAdded(Effect*);
     void effectAboutToBeRemoved(Effect*);
@@ -186,6 +188,7 @@ protected: /* Members */
     Sequence::TrackType m_Type;
 
 protected: /* Methods */
+    void ResetRange();
     void SetRange(int start, int end, const bool inclusive = true);
     void CalculateMaxEffects(const SharedTrackItem& item);
     void CalculateMaxEffects();

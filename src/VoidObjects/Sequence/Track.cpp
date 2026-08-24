@@ -157,19 +157,10 @@ void PlaybackTrack::SetMedia(const SharedMediaClip& media)
 
 SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
 {
-    /* Calculate the offset for reaching the first frame of media in the given timeline */
     int offset = media->FirstFrame() - m_Duration;
-
-    /* Update the duration of the track */
     m_Duration = m_Duration + media->Duration();
-
-    /* Update the last frame of the Track */
     m_EndFrame = m_Duration - 1;
 
-    /* Construct the trackItem with the given media */
-    /*
-     * The current track is being passed as the parent indicating this track is the parent of the track item
-     */
     SharedTrackItem item = std::make_shared<TrackItem>(
                                         media,
                                         media->FirstFrame() - offset,
@@ -184,12 +175,8 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
     // /* Connect to Allow frameCache signal be invoked when media in the track item is cached */
     // connect(trackItem.get(), &TrackItem::frameCached, this, [this](int frame) { emit frameCached(frame); });
 
-    /**
-     * When the media gets added, it always gets added towards the right side which means the start frame
-     * would never change in this case and only would result in a change in the last frame
-     * which gets calculated based on previous last frame
-     */
     m_Items.Add(item);
+    connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
 
     /**
      * Since the media is getting added to the start frame should just remain the same,
@@ -218,6 +205,8 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t 
 
     if (m_Items.Add(item, frame))
     {
+        connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+
         if (m_EndFrame < item->TimelineOut())
         {
             m_EndFrame = item->TimelineOut();
@@ -245,28 +234,6 @@ void PlaybackTrack::Clear()
     ClearEffects();
     SetRange(0, 0, false);
     emit cleared();
-}
-
-void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
-{
-    /* Update the internal frames */
-    m_StartFrame = start;
-    m_EndFrame = end;
-
-    /**
-     * If inclusive is true we include the last frame in duration calculation
-     *
-     * so if my start frame is 1001
-     * and my end frame is 1010
-     * if we're not inclusive my duration is
-     * 1010 - 1001 = 9 frames
-     * but if we're inclusive of the last frame then the duration becomes
-     * (1010 - 1001) + 1 = 10 frames
-     */
-    m_Duration = (end - start) + static_cast<int>(inclusive); // inclusive is bool so will be casted 0 or 1
-
-    /* Emit the signal the the range has been modified */
-    emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
 void PlaybackTrack::Cache(v_frame_t frame)
@@ -364,6 +331,7 @@ bool PlaybackTrack::RazorAt(v_frame_t frame)
 
         m_Items.Add(nitem);
         emit itemAdded(nitem);
+        connect(nitem.get(), &TrackItem::updated, this, [this, nitem]() -> void { emit itemUpdated(nitem); });
 
         return true;
     }
@@ -394,12 +362,28 @@ bool PlaybackTrack::MergeCut(v_frame_t frame)
 
 bool PlaybackTrack::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
-    return m_Items.Move(item, frame);
+    const MFrameRange old = item->TimelineRange();
+    if (m_Items.Move(item, frame))
+    {
+        ResetRange();
+        emit itemMoved(old, item->TimelineRange());
+        return true;
+    }
+
+    return false;
 }
 
 bool PlaybackTrack::OffsetItem(const SharedTrackItem& item, int offset)
 {
-    return m_Items.Offset(item, offset);
+    const MFrameRange old = item->TimelineRange();
+    if (m_Items.Offset(item, offset))
+    {
+        ResetRange();
+        emit itemMoved(old, item->TimelineRange());
+        return true;
+    }
+
+    return false;
 }
 
 bool PlaybackTrack::AddItem(const SharedTrackItem& item)
@@ -409,6 +393,9 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item)
         CalculateMaxEffects(item);
         item->SetTrack(this);
         emit itemAdded(item);
+        connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+        ResetRange();
+
         return true;
     }
     return false;
@@ -427,23 +414,26 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
         // Set the timeline range based on the provided frame
         item->Move(frame);
         emit itemAdded(item);
+        connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+        ResetRange();
 
         return true;
     }
     return false;
 }
 
-void PlaybackTrack::RemoveItem(v_frame_t frame)
-{
-    m_Items.Remove(frame);
-    emit itemRemoved();
-    emit updated();
-}
+// void PlaybackTrack::RemoveItem(v_frame_t frame)
+// {
+//     m_Items.Remove(frame);
+//     emit itemRemoved();
+//     emit updated();
+// }
 
 void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 {
     int effects = item->NumEffects();
     emit itemAboutToBeRemoved(item);
+    disconnect(item.get(), &TrackItem::updated, this, nullptr);
     m_Items.Remove(item);
 
     if (effects == m_MaxEffects)
@@ -451,6 +441,7 @@ void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 
     emit itemRemoved();
     emit updated();
+    ResetRange();
 }
 
 void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
@@ -466,7 +457,7 @@ void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::Alloca
     out.AddMember("enabled", static_cast<int>(m_Enabled), allocator);
     out.AddMember("locked", static_cast<int>(m_Locked), allocator);
     out.AddMember("track_type", static_cast<int>(m_Type), allocator);
-    
+
     out.AddMember("item_count", static_cast<int64_t>(m_Items.Size()), allocator);
     rapidjson::Value trackitems(rapidjson::kArrayType);
     for (const SharedTrackItem& item: m_Items)
@@ -513,7 +504,7 @@ void PlaybackTrack::Serialize(std::ostream& out) const
 
     for (int i = 0; i < itemCount; ++i)
         m_Items.AtIndex(i)->Serialize(out);
-    
+
     int effectsCount = static_cast<int>(m_Effects.size());
     out.write(reinterpret_cast<const char*>(&effectsCount), sizeof(effectsCount));
 
@@ -594,6 +585,34 @@ void PlaybackTrack::Deserialize(std::istream& in)
         }
     }
 }
+
+void PlaybackTrack::ResetRange()
+{
+    m_Items.Size() ? SetRange(m_StartFrame, m_Items.Last()->TimelineOut()) : SetRange(m_StartFrame, m_StartFrame);
+}
+
+void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
+{
+    if (start == m_StartFrame && end == m_EndFrame)
+        return;
+
+    m_StartFrame = start;
+    m_EndFrame = end;
+
+    /**
+     * If inclusive is true we include the last frame in duration calculation
+     *
+     * so if my start frame is 1001
+     * and my end frame is 1010
+     * if we're not inclusive my duration is
+     * 1010 - 1001 = 9 frames
+     * but if we're inclusive of the last frame then the duration becomes
+     * (1010 - 1001) + 1 = 10 frames
+     */
+    m_Duration = (end - start) + static_cast<int>(inclusive); // inclusive is bool so will be casted 0 or 1
+    emit rangeChanged(m_StartFrame, m_EndFrame);
+}
+
 
 void PlaybackTrack::CalculateMaxEffects(const SharedTrackItem& item)
 {
