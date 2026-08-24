@@ -60,6 +60,8 @@ public:
      */
     SharedTrackItem At(const int frame) const;
     SharedTrackItem InRange(v_frame_t start, v_frame_t end) const;
+    const SharedTrackItem& First() const noexcept { return m_Items.front(); }
+    const SharedTrackItem& Last() const noexcept { return m_Items.back(); }
     inline bool Empty() const { return m_Items.empty(); }
 
     bool Move(const SharedTrackItem& item, int frame);
