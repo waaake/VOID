@@ -102,6 +102,7 @@ public:
     void Thumbnail(v_frame_t frame, UInt8Image& image);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage& Image(v_frame_t frame) { return m_Frames[frame - m_FirstFrame].Image(); }
+    Frame* InternalFrame(v_frame_t frame) { return &(m_Frames[frame - m_FirstFrame]); }
 
     // Media Attribs
     inline int Channels() const { return m_Frames[0].Channels(); }
