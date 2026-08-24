@@ -45,6 +45,8 @@ void BindCore(py::module_& m)
             return ss.str();
         })
         .def("contains", &MFrameRange::Contains, py::arg("frame"))
+        .def("overlaps", &MFrameRange::Overlaps, py::arg("range"))
+        .def("covers", &MFrameRange::Covers, py::arg("range"))
         .def_readonly("startframe", &MFrameRange::startframe)
         .def_readonly("endframe", &MFrameRange::endframe)
         .def_readonly("duration", &MFrameRange::duration)
