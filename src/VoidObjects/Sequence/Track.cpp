@@ -392,9 +392,10 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item)
     {
         CalculateMaxEffects(item);
         item->SetTrack(this);
+        ResetRange();
+
         emit itemAdded(item);
         connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
-        ResetRange();
 
         return true;
     }
@@ -413,9 +414,10 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
         item->SetTrack(this);
         // Set the timeline range based on the provided frame
         item->Move(frame);
+        ResetRange();
+
         emit itemAdded(item);
         connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
-        ResetRange();
 
         return true;
     }
