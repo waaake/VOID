@@ -85,6 +85,15 @@ void TrackItem::SetEnabled(bool enable)
     emit updated();
 }
 
+SequenceFrame TrackItem::InternalFrame(v_frame_t frame)
+{
+    v_frame_t f = frame + m_Offset;
+    if (m_Media && m_Media->Contains(f))
+        return SequenceFrame(this, m_Media->InternalFrame(f));
+
+    return SequenceFrame();
+}
+
 Effect* TrackItem::CreateEffect(const std::string& type)
 {
     if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut))
