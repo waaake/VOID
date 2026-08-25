@@ -177,6 +177,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
 
     m_Items.Add(item);
     connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+    connect(item.get(), &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
 
     /**
      * Since the media is getting added to the start frame should just remain the same,
@@ -206,6 +207,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t 
     if (m_Items.Add(item, frame))
     {
         connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+        connect(item.get(), &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
 
         if (m_EndFrame < item->TimelineOut())
         {
@@ -366,7 +368,7 @@ bool PlaybackTrack::MoveItem(const SharedTrackItem& item, v_frame_t frame)
     if (m_Items.Move(item, frame))
     {
         ResetRange();
-        emit itemMoved(old, item->TimelineRange());
+        emit itemMoved(item->TimelineRange(), old);
         return true;
     }
 
@@ -379,7 +381,7 @@ bool PlaybackTrack::OffsetItem(const SharedTrackItem& item, int offset)
     if (m_Items.Offset(item, offset))
     {
         ResetRange();
-        emit itemMoved(old, item->TimelineRange());
+        emit itemMoved(item->TimelineRange(), old);
         return true;
     }
 
@@ -396,6 +398,7 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item)
 
         emit itemAdded(item);
         connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+        connect(item.get(), &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
 
         return true;
     }
@@ -418,6 +421,7 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 
         emit itemAdded(item);
         connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+        connect(item.get(), &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
 
         return true;
     }
@@ -436,6 +440,7 @@ void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
     int effects = item->NumEffects();
     emit itemAboutToBeRemoved(item);
     disconnect(item.get(), &TrackItem::updated, this, nullptr);
+    disconnect(item.get(), &TrackItem::rangeChanged, this, nullptr);
     m_Items.Remove(item);
 
     if (effects == m_MaxEffects)

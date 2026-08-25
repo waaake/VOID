@@ -163,7 +163,7 @@ signals: /* Signals Denoting actions in the Track */
     void itemAdded(const SharedTrackItem&);
     void itemAboutToBeRemoved(const SharedTrackItem&);
     void itemUpdated(const SharedTrackItem&);
-    void itemMoved(const MFrameRange& previous, const MFrameRange& current);
+    void itemMoved(const MFrameRange& current, const MFrameRange& previous);
     void itemRemoved();
     void effectAdded(Effect*);
     void effectAboutToBeRemoved(Effect*);
@@ -171,6 +171,7 @@ signals: /* Signals Denoting actions in the Track */
     void maxEffectsChanged();
     void updated();
     void rangeChanged(int start, int end);
+    void itemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
 
 protected: /* Members */
     TrackMap m_Items;
