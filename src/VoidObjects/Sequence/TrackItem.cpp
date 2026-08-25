@@ -229,30 +229,33 @@ void TrackItem::ClearCache(v_frame_t frame)
 
 void TrackItem::SetTimelineIn(v_frame_t frame)
 {
+    const MFrameRange previous = TimelineRange();
     m_TimelineIn = frame;
     m_Offset = m_SourceIn - m_TimelineIn;
     m_SourceOut = frame + (m_TimelineOut - m_TimelineIn);
 
-    emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    emit rangeChanged(TimelineRange(), previous);
 }
 
 void TrackItem::SetTimelineOut(v_frame_t frame)
 {
+    const MFrameRange previous = TimelineRange();
     m_TimelineOut = frame;
     m_SourceOut = m_SourceIn + (m_TimelineOut - m_TimelineIn);
 
-    emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    emit rangeChanged(TimelineRange(), previous);
 }
 
 void TrackItem::SetSourceIn(v_frame_t frame)
 {
+    const MFrameRange previous = TimelineRange();
     int offset = m_Media->FirstFrame() - frame;
     m_SourceIn = frame;
     m_SourceOut = m_SourceIn + (m_TimelineOut - m_TimelineIn);
 
     m_Offset = m_SourceIn - m_TimelineIn;
 
-    emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    emit rangeChanged(TimelineRange(), previous);
 }
 
 void TrackItem::SetSourceOut(v_frame_t frame)
@@ -262,27 +265,31 @@ void TrackItem::SetSourceOut(v_frame_t frame)
 
 void TrackItem::TrimHead(int handle)
 {
+    const MFrameRange previous = TimelineRange();
     m_SourceIn += handle;
     m_TimelineIn += handle;
 
-    emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    emit rangeChanged(TimelineRange(), previous);
 }
 
 void TrackItem::TrimTail(int handle)
 {
+    const MFrameRange previous = TimelineRange();
     m_SourceOut -= handle;
     m_TimelineOut -= handle;
 
-    emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    emit rangeChanged(TimelineRange(), previous);
 }
 
 void TrackItem::Move(v_frame_t frame)
 {
+    // const MFrameRange previous = TimelineRange();
     m_Offset = m_Media ? m_SourceIn - frame : 0;
     m_TimelineOut = frame + (m_TimelineOut - m_TimelineIn);
     m_TimelineIn = frame;
 
-    emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    // emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    // emit rangeChanged(TimelineRange(), previous);
     emit updated();
 }
 
@@ -427,10 +434,10 @@ void TrackItem::Deserialize(std::istream& in)
     }
 }
 
-void TrackItem::ResetEffectsRange(v_frame_t start, v_frame_t end)
+void TrackItem::ResetEffectsRange(const MFrameRange& updated)
 {
     for (auto& effect : m_Effects)
-        effect->SetTimelineRange(start, end);
+        effect->SetTimelineRange(updated.startframe, updated.endframe);
 }
 
 VOID_NAMESPACE_CLOSE

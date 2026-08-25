@@ -166,7 +166,7 @@ public:
 signals:
     void mediaChanged();
     void updated();
-    void rangeChanged(v_frame_t start, v_frame_t end);
+    void rangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void effectCreated(Effect*);
     void effectAboutToBeRemoved(Effect*);
 
@@ -188,7 +188,7 @@ protected:
     bool m_Enabled;
 
 private:
-    void ResetEffectsRange(v_frame_t start, v_frame_t end);
+    void ResetEffectsRange(const MFrameRange& updated);
 };
 
 VOID_NAMESPACE_CLOSE
