@@ -38,12 +38,11 @@ void PlaybackSequence::Clear()
 
 void PlaybackSequence::SetRange(int start, int end)
 {
-    /* Update the internal time range of the sequence */
     m_StartFrame = start;
     m_EndFrame = end;
 
-    /* Emit the rangeChanged signal to notify others */
     emit rangeChanged(m_StartFrame, m_EndFrame);
+    ResizeBuffer(m_EndFrame - m_StartFrame + 1);
 }
 
 SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type)
@@ -84,6 +83,8 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
     connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
     connect(track.get(), &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
+    connect(track.get(), &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleNewItem);
+    connect(track.get(), &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
 
     if (track->Name().empty())
     {
@@ -239,6 +240,7 @@ void PlaybackSequence::UpdateRange(int start, int end)
     }
 
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
+    ResizeBuffer(m_EndFrame - m_StartFrame + 1);
 }
 
 const SharedPlaybackTrack& PlaybackSequence::TrackAt(std::size_t index, const Sequence::TrackType& type) const
@@ -272,24 +274,20 @@ bool PlaybackSequence::HasMedia() const
      * But the same sequence can have track(s) but no media in them
      * This means that the sequence is not empty but has no media on it to be played
      */
-    if (IsEmpty())    /* Already has no tracks on it */
-        return false;
+    if (IsEmpty()) return false;
 
-    /* Check if there are any Video tracks that have any media on them */
     for (SharedPlaybackTrack track: m_VideoTracks)
     {
         if (!track->IsEmpty())
             return true;
     }
 
-    /* Check if there are any audio tracks which have any media on them */
     for (SharedPlaybackTrack track: m_AudioTracks)
     {
         if (!track->IsEmpty())
             return true;
     }
 
-    /* The Sequence is empty */
     return false;
 }
 
@@ -350,15 +348,18 @@ void PlaybackSequence::Image(v_frame_t frame, FloatImage& image)
     // if (m_Recent && m_Recent->InRange(frame))
         // m_Recent->Image(frame, image);
 
-    for (auto& track : m_VideoTracks)
-    {
-        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
-        if (track->IsEmpty() || !track->Enabled())
-            continue;
+    // for (auto& track : m_VideoTracks)
+    // {
+    //     // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+    //     if (track->IsEmpty() || !track->Enabled())
+    //         continue;
 
-        if ((m_Recent = track->GetTrackItem(frame)))
-            m_Recent->Image(frame, image);
-    }
+    //     if ((m_Recent = track->GetTrackItem(frame)))
+    //         m_Recent->Image(frame, image);
+    // }
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+        return m_FrameBuffer[index].Image(image);
 }
 
 const FloatImage PlaybackSequence::Image(v_frame_t frame)
@@ -366,15 +367,19 @@ const FloatImage PlaybackSequence::Image(v_frame_t frame)
     // if (m_Recent && m_Recent->InRange(frame))
         // return m_Recent->Image(frame);
 
-    for (auto& track : m_VideoTracks)
-    {
-        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
-        if (track->IsEmpty() || !track->Enabled())
-            continue;
+    // for (auto& track : m_VideoTracks)
+    // {
+    //     // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+    //     if (track->IsEmpty() || !track->Enabled())
+    //         continue;
 
-        if ((m_Recent = track->GetTrackItem(frame)))
-            return m_Recent->Image(frame);
-    }
+    //     if ((m_Recent = track->GetTrackItem(frame)))
+    //         return m_Recent->Image(frame);
+    // }
+
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+        return m_FrameBuffer[index].Image();
 
     return nullptr;
 }
@@ -387,13 +392,54 @@ void PlaybackSequence::ClearCache()
 
 void PlaybackSequence::ClearCache(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->ClearCache(frame);
+    // /**
+    //  * When the Sequence is asked for an image for a given frame
+    //  * The sequence always returns back the data from the track which is at the top of the stack
+    //  * Meaning bottom of (last added to) the underlying video tracks
+    //  */
+    // if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
+    //     return m_VideoTracks.back()->ClearCache(frame);
+
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+        return m_FrameBuffer[index].Clear();
+}
+
+void PlaybackSequence::ResizeBuffer(std::size_t size)
+{
+    m_FrameBuffer.resize(size);
+    VOID_LOG_INFO("Resized to: {}", size);
+}
+
+void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
+{
+    for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
+    {
+        if (SharedTrackItem item = GetTrackItem(i))
+            m_FrameBuffer[i - m_StartFrame] = item->InternalFrame(i);
+        else
+            m_FrameBuffer[i - m_StartFrame] = SequenceFrame();
+    }
+    VOID_LOG_INFO("Updated Buffer in range: {} - {}", range.startframe, range.endframe);
+}
+
+void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
+{
+    UpdateBuffer(item->TimelineRange());
+}
+
+void PlaybackSequence::HandleItemMoved(const MFrameRange& previous, const MFrameRange& current)
+{
+    // Item was moved slightly i.e offsetted
+    if (current.Overlaps(previous))
+    {
+        UpdateBuffer({std::min(previous.startframe, current.startframe), std::max(previous.endframe, current.endframe)});
+    }
+    else
+    {
+        UpdateBuffer(previous);
+        UpdateBuffer(current);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

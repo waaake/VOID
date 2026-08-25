@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Frame.h"
 #include "Track.h"
 #include "VoidObjects/VoidObject.h"
 
@@ -26,7 +27,6 @@ typedef std::shared_ptr<PlaybackSequence> SharedPlaybackSequence;
 class VOID_API PlaybackSequence : public VoidObject
 {
     Q_OBJECT
-
 public:
     PlaybackSequence(QObject* parent = nullptr);
 
@@ -96,6 +96,7 @@ signals: /* Signals denoting actions in the seqeuence */
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);
 
 protected: /* Members */
+    std::vector<SequenceFrame> m_FrameBuffer;
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
     SharedTrackItem m_Recent;
@@ -111,6 +112,10 @@ private: /* Methods */
      * start and end frames respectively to ensure the range of the sequence is not messed up
      */
     void UpdateRange(int start, int end);
+    void ResizeBuffer(std::size_t size);
+    void UpdateBuffer(const MFrameRange& range);
+    void HandleNewItem(const SharedTrackItem& item);
+    void HandleItemMoved(const MFrameRange& previous, const MFrameRange& current);
 };
 
 VOID_NAMESPACE_CLOSE
