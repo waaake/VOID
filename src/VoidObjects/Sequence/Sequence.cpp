@@ -406,6 +406,8 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleNewItem);
     connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
     connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
+    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
+    connect(ptr, &PlaybackTrack::itemStateChanged, this, &PlaybackSequence::HandleItemStateChanged);
 }
 
 void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
@@ -413,6 +415,7 @@ void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
     auto* ptr = track.get();
     connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
 }
 
 void PlaybackSequence::ResizeBuffer(std::size_t size)
@@ -425,7 +428,8 @@ void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
 {
     for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
     {
-        if (SharedTrackItem item = GetTrackItem(i))
+        SharedTrackItem item = GetTrackItem(i);
+        if (item && item->Enabled())
             m_FrameBuffer[i - m_StartFrame] = item->InternalFrame(i);
         else
             m_FrameBuffer[i - m_StartFrame] = SequenceFrame();
@@ -456,6 +460,17 @@ void PlaybackSequence::HandleItemRangeChanged(const MFrameRange& current, const 
 {
     UpdateBuffer(current.HeadDiff(previous));
     UpdateBuffer(current.TailDiff(previous));
+}
+
+void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
+{
+    for (const SharedTrackItem& item : track->Items())
+        UpdateBuffer(item->TimelineRange());
+}
+
+void PlaybackSequence::HandleItemStateChanged(const SharedTrackItem& item)
+{
+    UpdateBuffer(item->TimelineRange());
 }
 
 VOID_NAMESPACE_CLOSE

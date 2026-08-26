@@ -119,6 +119,8 @@ private: /* Methods */
     void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous);
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
+    void HandleTrackStateChanged(const SharedPlaybackTrack& track);
+    void HandleItemStateChanged(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE
