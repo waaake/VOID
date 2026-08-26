@@ -82,7 +82,6 @@ std::size_t TrackItem::Index() const
 void TrackItem::SetEnabled(bool enable)
 {
     m_Enabled = enable;
-    emit updated();
     emit stateChanged();
 }
 
