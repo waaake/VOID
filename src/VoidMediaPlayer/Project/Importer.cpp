@@ -13,6 +13,8 @@ VOID_NAMESPACE_OPEN
 DirectoryImporter::DirectoryImporter(QObject* parent)
     : DirectoryImporter("", 5, parent)
 {
+    // Have space for single directory import
+    m_Directories.resize(1);
 }
 
 DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel, QObject* parent)
@@ -35,7 +37,7 @@ void DirectoryImporter::Import(const std::string& directory, int maxlevel)
 {
     m_MaxLevel = maxlevel;
     m_Cancelled.store(false);
-    m_Directories.push_back(directory);
+    m_Directories[0] = directory;
 
     m_Worker = std::async(std::launch::async, &DirectoryImporter::Process, this);
 }
