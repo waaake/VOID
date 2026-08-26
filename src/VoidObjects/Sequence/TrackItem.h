@@ -169,6 +169,7 @@ signals:
     void rangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void effectCreated(Effect*);
     void effectAboutToBeRemoved(Effect*);
+    void stateChanged();
 
 protected:
     std::vector<Effect*> m_Effects;

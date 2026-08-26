@@ -83,6 +83,7 @@ void TrackItem::SetEnabled(bool enable)
 {
     m_Enabled = enable;
     emit updated();
+    emit stateChanged();
 }
 
 SequenceFrame TrackItem::InternalFrame(v_frame_t frame)
