@@ -193,6 +193,8 @@ protected: /* Methods */
     void SetRange(int start, int end, const bool inclusive = true);
     void CalculateMaxEffects(const SharedTrackItem& item);
     void CalculateMaxEffects();
+    void ConnectItem(const SharedTrackItem& item);
+    void DisconnectItem(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE
