@@ -118,7 +118,7 @@ public:
     bool Locked() const { return m_Locked; }
     void Lock(bool lock) { m_Locked = lock; emit updated(); }
 
-    void SetEnabled(bool enable) { m_Enabled = enable; emit stateChanged(); emit updated(); }
+    void SetEnabled(bool enable) { m_Enabled = enable; emit stateChanged(); }
     inline bool Enabled() const { return m_Enabled; }
 
     /**
