@@ -112,10 +112,13 @@ private: /* Methods */
      * start and end frames respectively to ensure the range of the sequence is not messed up
      */
     void UpdateRange(int start, int end);
+    void ConnectVideoTrack(const SharedPlaybackTrack& track);
+    void ConnectAudioTrack(const SharedPlaybackTrack& track);
     void ResizeBuffer(std::size_t size);
     void UpdateBuffer(const MFrameRange& range);
     void HandleNewItem(const SharedTrackItem& item);
-    void HandleItemMoved(const MFrameRange& previous, const MFrameRange& current);
+    void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous);
+    void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
 };
 
 VOID_NAMESPACE_CLOSE

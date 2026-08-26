@@ -80,11 +80,7 @@ SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
     m_VideoTracks.push_back(track);
-    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
-    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
-    connect(track.get(), &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
-    connect(track.get(), &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleNewItem);
-    connect(track.get(), &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
+    ConnectVideoTrack(track);
 
     if (track->Name().empty())
     {
@@ -110,8 +106,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
     m_AudioTracks.push_back(track);
-    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
-    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    ConnectAudioTrack(track);
 
     if (track->Name().empty())
     {
@@ -137,9 +132,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index)
 {
     m_VideoTracks.insert(m_VideoTracks.begin() + index, track);
-    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
-    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
-    connect(track.get(), &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
+    ConnectVideoTrack(track);
 
     if (track->Name().empty())
     {
@@ -165,8 +158,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index)
 {
     m_AudioTracks.insert(m_AudioTracks.begin() + index, track);
-    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
-    connect(track.get(), &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    ConnectAudioTrack(track);
 
     if (track->Name().empty())
     {
@@ -405,6 +397,24 @@ void PlaybackSequence::ClearCache(v_frame_t frame)
         return m_FrameBuffer[index].Clear();
 }
 
+void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
+{
+    auto* ptr = track.get();
+    connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    connect(ptr, &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
+    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleNewItem);
+    connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
+    connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
+}
+
+void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
+{
+    auto* ptr = track.get();
+    connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+}
+
 void PlaybackSequence::ResizeBuffer(std::size_t size)
 {
     m_FrameBuffer.resize(size);
@@ -428,7 +438,7 @@ void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
     UpdateBuffer(item->TimelineRange());
 }
 
-void PlaybackSequence::HandleItemMoved(const MFrameRange& previous, const MFrameRange& current)
+void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameRange& previous)
 {
     // Item was moved slightly i.e offsetted
     if (current.Overlaps(previous))
@@ -440,6 +450,12 @@ void PlaybackSequence::HandleItemMoved(const MFrameRange& previous, const MFrame
         UpdateBuffer(previous);
         UpdateBuffer(current);
     }
+}
+
+void PlaybackSequence::HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous)
+{
+    UpdateBuffer(current.HeadDiff(previous));
+    UpdateBuffer(current.TailDiff(previous));
 }
 
 VOID_NAMESPACE_CLOSE
