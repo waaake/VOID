@@ -27,7 +27,7 @@ private:
 
 private: /* Methods */
     void CalculateBoundingBox();
-    bool IsObstructed() const;
+    bool CanDrop() const;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -34,12 +34,7 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
 
     CalculateBoundingRect();
     setPos(context->Geometry()->FrameToSceneX(item->TimelineIn()), YPos());
-
-    connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
-    connect(m_Item.get(), &TrackItem::updated, this, &STrackItem::Update);
-    connect(m_Item.get(), &TrackItem::rangeChanged, this, &STrackItem::Update);
-    connect(m_Item.get(), &TrackItem::effectCreated, this, static_cast<void (STrackItem::*)(Effect*)>(&STrackItem::AddEffect));
-    connect(m_Item.get(), &TrackItem::effectAboutToBeRemoved, this, &STrackItem::RemoveEffect);
+    Connect();
 
     AddEffects();
 }
@@ -73,7 +68,7 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     const int width = boundingRect().width();
     if (m_Item->Linked())
     {
-        const QColor itemcol = Track()->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
+        const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
 
         painter->setPen(QPen(itemcol, 1));
         painter->setBrush(Background(option));
@@ -393,6 +388,17 @@ void STrackItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
     }
 
     STimelineItem::hoverLeaveEvent(event);
+}
+
+void STrackItem::Connect()
+{
+    auto* ptr = m_Item.get();
+    connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
+    connect(ptr, &TrackItem::updated, this, &STrackItem::Update);
+    connect(ptr, &TrackItem::stateChanged, this, &STrackItem::Update);
+    connect(ptr, &TrackItem::rangeChanged, this, &STrackItem::Update);
+    connect(ptr, &TrackItem::effectCreated, this, static_cast<void (STrackItem::*)(Effect*)>(&STrackItem::AddEffect));
+    connect(ptr, &TrackItem::effectAboutToBeRemoved, this, &STrackItem::RemoveEffect);
 }
 
 void STrackItem::CalculateBoundingRect()

@@ -26,7 +26,7 @@ void SPreviewTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
     painter->setRenderHint(QPainter::Antialiasing);
     const int width = boundingRect().width();
 
-    const QColor color = IsObstructed() ? QColor(220, 40, 50) : m_Item->Color();
+    const QColor color = CanDrop() ? m_Item->Color() : QColor(220, 40, 50);
 
     painter->setPen(QPen(color, 1));
     painter->setBrush(color.darker(250));
@@ -73,7 +73,7 @@ void SPreviewTrackItem::CalculateBoundingBox()
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
 }
 
-bool SPreviewTrackItem::IsObstructed() const
+bool SPreviewTrackItem::CanDrop() const
 {
     QPointF position = pos();
     if (STrack* track = m_Context->Controller()->TrackAt(position))
@@ -81,7 +81,7 @@ bool SPreviewTrackItem::IsObstructed() const
         if (const SharedPlaybackTrack ptrack = track->Track())
         {
             v_frame_t start = m_Context->Geometry()->SceneXToFrame(position.x());
-            return (bool)ptrack->ItemInRange(start, start + m_Item->Duration() - 1);
+            return !ptrack->ItemInRange(start, start + m_Item->Duration() - 1);
         }
     }
 

@@ -63,6 +63,7 @@ private:
 
 private: /* Methods */
     void BuildItems();
+    void Connect();
 
     friend class STrackItem;
 };

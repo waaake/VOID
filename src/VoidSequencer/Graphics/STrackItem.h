@@ -58,6 +58,7 @@ private:
     SHandleItem *m_HeadHandle, *m_TailHandle, *m_DurationHandle;
 
 private: /* Methods */
+    void Connect();
     void CalculateBoundingRect();
     void AdjustTimelineRange(v_frame_t frame);
     void AdjustEffectsWidth(double width);

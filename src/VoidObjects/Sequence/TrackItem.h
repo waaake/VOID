@@ -15,6 +15,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Sequence/Frame.h"
 #include "VoidObjects/VoidObject.h"
 
 VOID_NAMESPACE_OPEN
@@ -29,7 +30,6 @@ typedef std::shared_ptr<TrackItem> SharedTrackItem;
 class VOID_API TrackItem : public VoidObject
 {
     Q_OBJECT
-
 public:
     TrackItem(QObject* parent = nullptr);
     TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset = 0, QObject* parent = nullptr);
@@ -60,7 +60,7 @@ public:
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
-    Frame* InternalFrame(v_frame_t frame) { return m_Media->InternalFrame(frame); }
+    SequenceFrame InternalFrame(v_frame_t frame);
 
     std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
     Effect* CreateEffect(const std::string& type);
@@ -166,9 +166,10 @@ public:
 signals:
     void mediaChanged();
     void updated();
-    void rangeChanged(v_frame_t start, v_frame_t end);
+    void rangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void effectCreated(Effect*);
     void effectAboutToBeRemoved(Effect*);
+    void stateChanged();
 
 protected:
     std::vector<Effect*> m_Effects;
@@ -188,7 +189,7 @@ protected:
     bool m_Enabled;
 
 private:
-    void ResetEffectsRange(v_frame_t start, v_frame_t end);
+    void ResetEffectsRange(const MFrameRange& updated);
 };
 
 VOID_NAMESPACE_CLOSE

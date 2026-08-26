@@ -22,21 +22,7 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
     setAcceptHoverEvents(true);
 
     setZValue(Sequencer::ZTrack);
-    connect(m_Track.get(), &PlaybackTrack::updated, this, &STrack::UpdateItems);
-    connect(m_Track.get(), &PlaybackTrack::itemAdded, this, &STrack::AddItem);
-    connect(m_Track.get(), &PlaybackTrack::cleared, this, &STrack::Clear);
-    connect(m_Track.get(), &PlaybackTrack::itemAboutToBeRemoved, this, &STrack::RemoveItem);
-    connect(m_Track.get(), &PlaybackTrack::itemRemoved, this, &STrack::Update);
-    connect(m_Track.get(), &PlaybackTrack::effectAdded, this, [this](Effect* effect) -> void
-    {
-        if (effect->GetEffectType() == Effect::EffectType::TRACK)
-            AddEffect(effect, m_Track->EffectIndex(effect));
-    });
-    connect(m_Track.get(), &PlaybackTrack::effectAboutToBeRemoved, this, [this](Effect* effect) -> void
-    {
-        if (effect->GetEffectType() == Effect::EffectType::TRACK)
-            RemoveEffect(effect);
-    });
+    Connect();
 
     int index = track->Index();
     m_BoundingRect = QRectF(
@@ -256,6 +242,27 @@ void STrack::BuildItems()
     m_Items.reserve(m_Track->NumItems());
     for (int i = 0; i < m_Track->NumItems(); ++i)
         AddItem(m_Track->ItemAt(i));
+}
+
+void STrack::Connect()
+{
+    auto* ptr = m_Track.get();
+    connect(ptr, &PlaybackTrack::updated, this, &STrack::UpdateItems);
+    connect(ptr, &PlaybackTrack::stateChanged, this, &STrack::UpdateItems);
+    connect(ptr, &PlaybackTrack::itemAdded, this, &STrack::AddItem);
+    connect(ptr, &PlaybackTrack::cleared, this, &STrack::Clear);
+    connect(ptr, &PlaybackTrack::itemAboutToBeRemoved, this, &STrack::RemoveItem);
+    connect(ptr, &PlaybackTrack::itemRemoved, this, &STrack::Update);
+    connect(ptr, &PlaybackTrack::effectAdded, this, [this](Effect* effect) -> void
+    {
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            AddEffect(effect, m_Track->EffectIndex(effect));
+    });
+    connect(ptr, &PlaybackTrack::effectAboutToBeRemoved, this, [this](Effect* effect) -> void
+    {
+        if (effect->GetEffectType() == Effect::EffectType::TRACK)
+            RemoveEffect(effect);
+    });
 }
 
 VOID_NAMESPACE_CLOSE

@@ -118,7 +118,7 @@ public:
     bool Locked() const { return m_Locked; }
     void Lock(bool lock) { m_Locked = lock; emit updated(); }
 
-    void SetEnabled(bool enable) { m_Enabled = enable; emit updated(); }
+    void SetEnabled(bool enable) { m_Enabled = enable; emit stateChanged(); }
     inline bool Enabled() const { return m_Enabled; }
 
     /**
@@ -159,18 +159,22 @@ public:
     const char* TypeName() const override { return "PlaybackTrack"; }
 
 signals: /* Signals Denoting actions in the Track */
-    void cleared();
     void itemAdded(const SharedTrackItem&);
     void itemAboutToBeRemoved(const SharedTrackItem&);
     void itemUpdated(const SharedTrackItem&);
-    void itemMoved(const MFrameRange& previous, const MFrameRange& current);
+    void itemMoved(const MFrameRange& current, const MFrameRange& previous);
+    void itemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
+    void itemStateChanged(const SharedTrackItem& item);
     void itemRemoved();
+
+    void cleared();
+    void updated();
+    void rangeChanged(int start, int end);
+    void stateChanged();
     void effectAdded(Effect*);
     void effectAboutToBeRemoved(Effect*);
     void effectRemoved();
     void maxEffectsChanged();
-    void updated();
-    void rangeChanged(int start, int end);
 
 protected: /* Members */
     TrackMap m_Items;
@@ -192,6 +196,8 @@ protected: /* Methods */
     void SetRange(int start, int end, const bool inclusive = true);
     void CalculateMaxEffects(const SharedTrackItem& item);
     void CalculateMaxEffects();
+    void ConnectItem(const SharedTrackItem& item);
+    void DisconnectItem(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE
