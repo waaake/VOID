@@ -636,12 +636,14 @@ void PlaybackTrack::CalculateMaxEffects()
 void PlaybackTrack::ConnectItem(const SharedTrackItem& item)
 {
     connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+    connect(item.get(), &TrackItem::stateChanged, this, [this, item]() -> void { emit itemStateChanged(item); });
     connect(item.get(), &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
 }
 
 void PlaybackTrack::DisconnectItem(const SharedTrackItem& item)
 {
     disconnect(item.get(), &TrackItem::updated, this, nullptr);
+    disconnect(item.get(), &TrackItem::stateChanged, this, nullptr);
     disconnect(item.get(), &TrackItem::rangeChanged, this, nullptr);
 }
 
