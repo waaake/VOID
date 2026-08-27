@@ -13,7 +13,8 @@
 VOID_NAMESPACE_OPEN
 
 PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
-    : VoidObject(parent)
+    : VoidObject()
+    , m_Sequence(reinterpret_cast<PlaybackSequence*>(parent))
     , m_Recent(nullptr)
     , m_Name("")
     , m_StartFrame(0)
