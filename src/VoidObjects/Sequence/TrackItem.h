@@ -57,6 +57,8 @@ public:
     void SetEnabled(bool enable);
     bool Enabled() const { return m_Enabled; }
 
+    QPixmap Thumbnail() const { return m_Media ? m_Media->Thumbnail() : ProjectEntity::DefaultThumbnail(); }
+
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
