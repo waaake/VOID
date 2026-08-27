@@ -10,8 +10,10 @@
 
 VOID_NAMESPACE_OPEN
 
-PlaybackSequence::PlaybackSequence(QObject* parent)
-    : VoidObject(parent)
+PlaybackSequence::PlaybackSequence(Core::Project* project)
+    : ProjectEntity(project)
+    , m_Name("Sequence")
+    , m_Framerate(24.0)
     , m_StartFrame(0)
     , m_EndFrame(0)
     , m_Recent(nullptr)
@@ -43,6 +45,18 @@ void PlaybackSequence::SetRange(int start, int end)
 
     emit rangeChanged(m_StartFrame, m_EndFrame);
     ResizeBuffer(m_EndFrame - m_StartFrame + 1);
+}
+
+void PlaybackSequence::SetFramerate(double framerate)
+{
+    m_Framerate = framerate;
+    emit updated();
+}
+
+void PlaybackSequence::SetName(const std::string& name)
+{
+    m_Name = name;
+    emit updated();
 }
 
 SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type)
