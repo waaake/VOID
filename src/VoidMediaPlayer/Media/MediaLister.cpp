@@ -23,6 +23,8 @@
 
 VOID_NAMESPACE_OPEN
 
+#define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
+
 VoidMediaLister::VoidMediaLister(QWidget* parent)
     : QWidget(parent)
 {
@@ -310,7 +312,10 @@ void VoidMediaLister::IndexSelected(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    _PlayerBridge.SetMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+        _PlayerBridge.SetMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    else
+        _PlayerBridge.SetSequence(*(static_cast<SharedPlaybackSequence*>(index.internalPointer())));
 }
 
 void VoidMediaLister::AddSelectionToSequence()
@@ -325,7 +330,10 @@ void VoidMediaLister::AddSelectionToSequence()
     m.reserve(selected.size());
 
     for (const QModelIndex& index : selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.SetMedia(m);
 }
@@ -341,7 +349,10 @@ void VoidMediaLister::PlaySelectionAsQueue()
     m.reserve(selected.size());
 
     for (const QModelIndex& index: selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.ClearQueue();
     _PlayerBridge.AddToQueue(m);
@@ -358,7 +369,10 @@ void VoidMediaLister::AddSelectionToQueue()
     m.reserve(selected.size());
 
     for (const QModelIndex& index: selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.AddToQueue(m, false);
 }
@@ -374,7 +388,10 @@ void VoidMediaLister::PlaySelectionAsGrid()
     m.reserve(selected.size());
 
     for (const QModelIndex& index: selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.SetGrid(m);
 }
@@ -430,18 +447,15 @@ void VoidMediaLister::RescaleThumbnails(float scale)
 
 void VoidMediaLister::InspectMetadata()
 {
-    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
-    if (selected.empty())
-        return;
-
-    /* We can only inspect one item at a time */
-    emit metadataInspected(*(static_cast<SharedMediaClip*>(selected[0].internalPointer())));
+    QModelIndex current = m_MediaView->currentIndex();
+    if (_ENTITY_TYPE(current) == ProjectEntity::Type::MEDIA)
+        emit metadataInspected(_MediaBridge.MediaAt(current));
 }
 
 void VoidMediaLister::EditEffects()
 {
     QModelIndex current = m_MediaView->currentIndex();
-    if (current.isValid())
+    if (current.isValid() && _ENTITY_TYPE(current) == ProjectEntity::Type::MEDIA)
     {
         emit effectsEdited(_MediaBridge.MediaAt(current));
     }
@@ -484,7 +498,7 @@ void VoidMediaLister::AddToPrimaryViewer()
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
     if (selected.empty())
         return;
-    
+
     _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::A);
 }
 
@@ -493,7 +507,7 @@ void VoidMediaLister::AddToSecondaryViewer()
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
     if (selected.empty())
         return;
-    
+
     _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::B);
 }
 
