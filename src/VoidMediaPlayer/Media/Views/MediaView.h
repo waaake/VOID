@@ -61,7 +61,7 @@ signals:
 
 private: /* Models */
     /* Proxy for filtering and sorting */
-    MediaProxyModel* m_Proxy;
+    EntityProxyModel* m_Proxy;
 
     BasicMediaItemDelegate* m_BasicDelegate;
     MediaItemDelegate* m_MediaDelegate;
@@ -74,7 +74,7 @@ private: /* Methods */
     void Setup();
     void ResetView();
     void Connect();
-    void ResetModel(MediaModel* model);
+    void ResetModel(EntityModel* model);
     void ItemDoubleClicked(const QModelIndex& index);
 };
 

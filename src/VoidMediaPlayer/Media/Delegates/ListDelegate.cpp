@@ -9,7 +9,7 @@
 /* Internal */
 #include "ListDelegate.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -44,7 +44,7 @@ bool BasicMediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
         QPoint pos = mevent->pos();
         #endif
         
-        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
 
@@ -105,27 +105,27 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         option.rect.left() + 2, option.rect.top() + 2,
         IconForge::GetPixmap(
             IconType::icon_volume_up,
-            index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool()
+            index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool()
             ? option.palette.color(QPalette::Text)
             : option.palette.color(QPalette::Window).lighter(280),
             ICON_SIZE
         )
     );
 
-    // if (index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+    // if (index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
     painter->drawPixmap(
         m_TagX,
         m_TagY,
         IconForge::GetPixmap(
             IconType::icon_style,
-            index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool()
+            index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool()
             ? option.palette.color(QPalette::Text)
             : option.palette.color(QPalette::Window).lighter(280),
             ICON_SIZE
         )
     );
 
-    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
@@ -147,7 +147,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Name)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
     /* Frame Range */
@@ -157,7 +157,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         option.rect.right() - 40,
         option.rect.height(),
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
 }
 
@@ -187,7 +187,7 @@ bool MediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, con
         QPoint pos = mevent->pos();
         #endif
         
-        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
 
@@ -237,7 +237,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     /* Thumbnail */
     const QRect thumbrect(rect.left() + ICON_SIZE + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-    QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+    QPixmap p = index.data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
     /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
@@ -250,10 +250,10 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
-    const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
-    const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
+    const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
+    const bool tags = index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool();
 
-    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
@@ -291,7 +291,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Name)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
     /* Extension */
@@ -299,7 +299,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawText(
         extrect,
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Extension)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Extension)).toString()
     );
 
     /* Frame range */
@@ -309,7 +309,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         namewidth,
         halfheight,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
 
     /* Framerate */
@@ -319,7 +319,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         46,
         halfheight,
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Framerate)).toString()
     );
 }
 

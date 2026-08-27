@@ -9,7 +9,7 @@
 /* Internal */
 #include "ThumbnailDelegate.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -42,7 +42,7 @@ bool MediaThumbnailDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
         QPoint pos = mevent->pos();
         #endif
 
-        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
 
@@ -103,7 +103,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     /* Thumbnail */
     const QRect thumbrect(left, rect.top() + 5, rect.width() - 30, rect.height() - 46);   // Rect of 120 x 100 * scale;
-    QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+    QPixmap p = index.data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(rect.width() - 30, thumbrect.height(), Qt::KeepAspectRatio);
 
     /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
@@ -116,8 +116,8 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
-    const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
-    const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
+    const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
+    const bool tags = index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool();
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
         IconType::icon_volume_up,
@@ -131,7 +131,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         ICON_SIZE
     ));
 
-    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
@@ -153,7 +153,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Name)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
     /* Extension */
@@ -161,7 +161,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->drawText(
         extrect,
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Extension)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Extension)).toString()
     );
 
     /* Frame range */
@@ -169,7 +169,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     painter->drawText(
         rangerect,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
 
     /* Framerate */
@@ -179,7 +179,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         50 * m_Scale,
         20,
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Framerate)).toString()
     );
 }
 

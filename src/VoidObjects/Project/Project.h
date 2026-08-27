@@ -7,7 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/VoidObject.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 #include "VoidObjects/Models/PlaylistModel.h"
 
 VOID_NAMESPACE_OPEN
@@ -17,7 +17,7 @@ namespace Core {
 /**
  * A Project is essentially, just the store for Media and Media entities or collection
  * like Sequence and/or Playlist, it does not do anything apart from holding references
- * to the data via the MediaModel
+ * to the data via the media/other entities' EntityModel
  */
 class VOID_API Project : public VoidObject
 {
@@ -53,7 +53,7 @@ public:
     SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const;
     SharedMediaClip PlaylistMediaAt(int row, int column) const;
 
-    inline MediaModel* DataModel() const { return m_Media; }
+    inline EntityModel* DataModel() const { return m_Media; }
     inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
 
     inline QModelIndex ClipIndex(const SharedMediaClip& clip, int column = 0) const
@@ -105,19 +105,14 @@ public:
     inline void SetSavePath(const std::string& path) { m_Path = path; }
 
 protected: /* Members */
-    /* The Project holds the media and anything linking to the media */
-    MediaModel* m_Media;
-    /* Any Playlists in the project */
+    EntityModel* m_Media;
     PlaylistModel* m_Playlists;
-    /* Currently Active Playlist */
     Playlist* m_Playlist;
 
-    /* Project Descriptors */
     std::string m_Name;
     std::string m_Path;
     EtherFormat::Type m_Type;
 
-    /* If the project is currently active */
     bool m_Active;
     bool m_Modified;
 

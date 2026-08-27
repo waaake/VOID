@@ -18,7 +18,7 @@ VOID_NAMESPACE_OPEN
 /**
  * A Project is essentially, just the store for Media and Media entities or collection
  * like Sequence and/or Playlist, it does not do anything apart from holding references
- * to the data via the MediaModel
+ * to the data via the EntityModel
  */
 class VOID_API Project : public Core::Project
 {

@@ -18,16 +18,12 @@
 VOID_NAMESPACE_OPEN
 
 /**
- * Describes how the Media is held in a Project/Subdirs
+ * Describes how the Entities is held in a Project/Subdirs
  */
-class VOID_API MediaModel : public QAbstractItemModel
+class VOID_API EntityModel : public QAbstractItemModel
 {
     Q_OBJECT
-
 public:
-    /**
-     * Roles for various fields of data from the MediaClip
-     */
     enum class MRoles
     {
         Name = Qt::UserRole + 1001,
@@ -42,7 +38,7 @@ public:
     };
 
 public:
-    explicit MediaModel(QObject* parent = nullptr);
+    explicit EntityModel(QObject* parent = nullptr);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
@@ -95,32 +91,24 @@ private: /* Methods */
     void UpdateMedia(const SharedMediaClip& clip);
 };
 
-class VOID_API MediaProxyModel : public QSortFilterProxyModel
+class VOID_API EntityProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
-
 public:
-    explicit MediaProxyModel(QObject* parent = nullptr);
+    explicit EntityProxyModel(QObject* parent = nullptr);
 
-    /* Sets the key which needs to be searched in the data */
+    // Sets the key which needs to be searched in the data
     void SetSearchText(const std::string& text);
-
-    /* Sets to role to look at in the model index for data */
-    void SetSearchRole(const MediaModel::MRoles& role);
+    // Sets to role to look at in the model index for data
+    void SetSearchRole(const EntityModel::MRoles& role);
 
 protected:
-    /* Returns true for the row that is valid for the search filter */
     bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
-
-    /* Returns if the left value is lesser than the right value (previous < next )*/
     bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
 
 private: /* Members */
     QString m_SearchText;
-    /* The Role to look at while searching */
     int m_SearchRole;
-
-    /* Sorting role */
     int m_SortRole;
 };
 

@@ -33,7 +33,7 @@ if (WIN32)
         ../VoidMediaPlayer/Project/Project.h
         ../VoidObjects/Effects/Effects.h
         ../VoidObjects/Media/MediaClip.h
-        ../VoidObjects/Models/MediaModel.h
+        ../VoidObjects/Models/EntityModel.h
         ../VoidObjects/Models/PlaylistModel.h
         ../VoidObjects/Models/ProjectModel.h
         ../VoidObjects/Models/TagModel.h

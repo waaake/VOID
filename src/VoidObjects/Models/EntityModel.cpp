@@ -2,35 +2,34 @@
 // Licensed under the MIT License
 
 /* Internal */
-#include "MediaModel.h"
+#include "EntityModel.h"
 #include "VoidCore/VoidTools.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
-/* MediaModel {{{ */
+/// EntityModel
 
-MediaModel::MediaModel(QObject* parent)
+EntityModel::EntityModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
 }
 
-QModelIndex MediaModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex EntityModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (!parent.isValid() && row >= 0 && row < static_cast<int>(m_Media.size()))
         return createIndex(row, column, const_cast<SharedMediaClip*>(&m_Media[row]));  // Non-const
 
-    /* Empty */
     return QModelIndex();
 }
 
-QModelIndex MediaModel::parent(const QModelIndex& index) const
+QModelIndex EntityModel::parent(const QModelIndex& index) const
 {
-    /* Currently the underlying structure is flat */
+    // Currently the underlying structure is flat
     return QModelIndex();
 }
 
-int MediaModel::rowCount(const QModelIndex& index) const
+int EntityModel::rowCount(const QModelIndex& index) const
 {
     /**
      * We have a flat structure as of now,
@@ -43,12 +42,12 @@ int MediaModel::rowCount(const QModelIndex& index) const
     return static_cast<int>(m_Media.size());
 }
 
-int MediaModel::columnCount(const QModelIndex& index) const
+int EntityModel::columnCount(const QModelIndex& index) const
 {
     return 1;
 }
 
-QVariant MediaModel::data(const QModelIndex& index, int role) const
+QVariant EntityModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid() || index.row() >= static_cast<int>(m_Media.size()))
         return QVariant();
@@ -70,7 +69,7 @@ QVariant MediaModel::data(const QModelIndex& index, int role) const
     }
 }
 
-Qt::ItemFlags MediaModel::flags(const QModelIndex& index) const
+Qt::ItemFlags EntityModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
@@ -78,7 +77,7 @@ Qt::ItemFlags MediaModel::flags(const QModelIndex& index) const
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 }
 
-bool MediaModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild)
+bool EntityModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild)
 {
     if (sourceRow < 0 || sourceRow >= static_cast<int>(m_Media.size()) ||
         destinationChild < 0 || destinationChild >= static_cast<int>(m_Media.size()) || count != 1)
@@ -98,27 +97,25 @@ bool MediaModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int co
     return true;
 }
 
-std::string MediaModel::ItemFramerate(const SharedMediaClip& clip) const
+std::string EntityModel::ItemFramerate(const SharedMediaClip& clip) const
 {
     std::string framerate = Tools::to_trimmed_string(clip->Framerate());
-    framerate += "fps"; // Append
+    framerate += "fps";
 
     return framerate;
 }
 
-std::string MediaModel::ItemFramerange(const SharedMediaClip& clip) const
+std::string EntityModel::ItemFramerange(const SharedMediaClip& clip) const
 {
     std::string range = std::to_string(clip->FirstFrame());
-    /* Append */
     range += "-";
     range += std::to_string(clip->LastFrame());
 
     return  range;
 }
 
-void MediaModel::Add(const SharedMediaClip& media)
+void EntityModel::Add(const SharedMediaClip& media)
 {
-    /* Where the media will be inserted */
     int insertidx = static_cast<int>(m_Media.size());
 
     beginInsertRows(QModelIndex(), insertidx, insertidx);
@@ -127,21 +124,19 @@ void MediaModel::Add(const SharedMediaClip& media)
     endInsertRows();
 }
 
-void MediaModel::Insert(const SharedMediaClip& media, const int index)
+void EntityModel::Insert(const SharedMediaClip& media, const int index)
 {
     beginInsertRows(QModelIndex(), index, index);
     m_Media.insert(m_Media.begin() + index, media);
     endInsertRows();
 }
 
-void MediaModel::Remove(const QModelIndex& index, bool destroy)
+void EntityModel::Remove(const QModelIndex& index, bool destroy)
 {
     if (!index.isValid())
         return;
 
-    /* Row currently being affected */
     int row = index.row();
-
     beginRemoveRows(index.parent(), row, row);
 
     /* Media Clip at the row */
@@ -152,20 +147,18 @@ void MediaModel::Remove(const QModelIndex& index, bool destroy)
     if (destroy)
         clip.get()->deleteLater();
 
-    /* End Remove Process */
     endRemoveRows();
 }
 
-SharedMediaClip MediaModel::Media(const QModelIndex& index) const
+SharedMediaClip EntityModel::Media(const QModelIndex& index) const
 {
     if (!index.isValid())
         return nullptr;
 
-    /* Return the media at the index from the underlying vector */
     return m_Media.at(index.row());
 }
 
-int MediaModel::MediaRow(const SharedMediaClip& clip) const
+int EntityModel::MediaRow(const SharedMediaClip& clip) const
 {
     auto it = std::find(m_Media.begin(), m_Media.end(), clip);
 
@@ -175,7 +168,7 @@ int MediaModel::MediaRow(const SharedMediaClip& clip) const
     return -1;
 }
 
-SharedMediaClip MediaModel::LastMedia() const
+SharedMediaClip EntityModel::LastMedia() const
 {
     if (m_Media.empty())
         return nullptr;
@@ -183,7 +176,7 @@ SharedMediaClip MediaModel::LastMedia() const
     return m_Media.back();
 }
 
-QModelIndex MediaModel::ShiftIndexUp(const QModelIndex& index)
+QModelIndex EntityModel::ShiftIndexUp(const QModelIndex& index)
 {
     if (!index.isValid() || index.row() == 0)
         return QModelIndex();
@@ -192,7 +185,7 @@ QModelIndex MediaModel::ShiftIndexUp(const QModelIndex& index)
     return createIndex(index.row() - 1, index.column());
 }
 
-QModelIndex MediaModel::ShiftIndexDown(const QModelIndex& index)
+QModelIndex EntityModel::ShiftIndexDown(const QModelIndex& index)
 {
     if (!index.isValid() || index.row() == m_Media.size() - 1)
         return QModelIndex();
@@ -201,22 +194,17 @@ QModelIndex MediaModel::ShiftIndexDown(const QModelIndex& index)
     return createIndex(index.row() + 1, index.column());
 }
 
-void MediaModel::Update()
+void EntityModel::Update()
 {
     if (m_Media.empty())
         return;
 
-    /* the first item from the struct */
     QModelIndex top = index(0, 0);
-
-    /* last item from the struct */
     QModelIndex bottom = index(static_cast<int>(m_Media.size()) - 1, columnCount() - 1);
-
-    /* Emit that all the data has now been changed */
     emit dataChanged(top, bottom);
 }
 
-void MediaModel::UpdateMedia(const SharedMediaClip& clip)
+void EntityModel::UpdateMedia(const SharedMediaClip& clip)
 {
     if (m_Media.empty())
         return;
@@ -229,19 +217,17 @@ void MediaModel::UpdateMedia(const SharedMediaClip& clip)
     }
 }
 
-/* }}} */
+/// EntityProxyModel
 
-/* Media Proxy Model {{{ */
-
-MediaProxyModel::MediaProxyModel(QObject * parent)
+EntityProxyModel::EntityProxyModel(QObject * parent)
     : QSortFilterProxyModel(parent)
     , m_SearchText("")
-    , m_SearchRole(static_cast<int>(MediaModel::MRoles::Name))
-    , m_SortRole(static_cast<int>(MediaModel::MRoles::Name))
+    , m_SearchRole(static_cast<int>(EntityModel::MRoles::Name))
+    , m_SortRole(static_cast<int>(EntityModel::MRoles::Name))
 {
 }
 
-void MediaProxyModel::SetSearchText(const std::string& text)
+void EntityProxyModel::SetSearchText(const std::string& text)
 {
     m_SearchText = text.c_str();
 
@@ -249,7 +235,7 @@ void MediaProxyModel::SetSearchText(const std::string& text)
     invalidateFilter();
 }
 
-void MediaProxyModel::SetSearchRole(const MediaModel::MRoles& role)
+void EntityProxyModel::SetSearchRole(const EntityModel::MRoles& role)
 {
     m_SearchRole = static_cast<int>(role);
 
@@ -257,7 +243,7 @@ void MediaProxyModel::SetSearchRole(const MediaModel::MRoles& role)
     invalidateFilter();
 }
 
-bool MediaProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+bool EntityProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
     /* The index from the source model */
     QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
@@ -268,7 +254,7 @@ bool MediaProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceP
     return data.contains(m_SearchText, Qt::CaseInsensitive);
 }
 
-bool MediaProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
+bool EntityProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
     /* Get the Data (name) from the Source model */
     QString ldata = sourceModel()->index(left.row(), 0, left.parent()).data(m_SortRole).toString();

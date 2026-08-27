@@ -18,7 +18,7 @@
 #include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Track.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 #include "VoidObjects/Models/ProjectModel.h"
 #include "VoidMediaPlayer/Project/Project.h"
 
@@ -127,7 +127,7 @@ public:
     bool Remove(SharedMediaClip clip);
     bool Remove(const QModelIndex& index);
 
-    inline MediaModel* DataModel() const { return m_Project->DataModel(); }
+    inline EntityModel* DataModel() const { return m_Project->DataModel(); }
     inline ProjectModel* ProjectDataModel() const { return m_Projects; }
     inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Project->MediaAt(index); }
     inline SharedMediaClip MediaAt(int row, int column) const { return m_Project->MediaAt(row, column); }

@@ -29,7 +29,7 @@ if (WIN32)
         ../VoidMediaPlayer/Playlist/PlayLister.h
         ../VoidMediaPlayer/Project/Project.h
         ../VoidMenuSystem/MenuSystem.h
-        ../VoidObjects/Models/MediaModel.h
+        ../VoidObjects/Models/EntityModel.h
         ../VoidObjects/Models/PlaylistModel.h
         ../VoidObjects/Models/ProjectModel.h
         ../VoidObjects/Models/TagMetadataModel.h

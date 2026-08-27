@@ -26,7 +26,7 @@ Project::Project(const std::string& name, bool active, QObject* parent)
     , m_Active(active)
     , m_Modified(false)
 {
-    m_Media = new MediaModel(this);
+    m_Media = new EntityModel(this);
     m_Playlists = new PlaylistModel(this);
     VOID_LOG_INFO("Project {0} Created: {1}", name, Vuid());
 }

@@ -80,7 +80,7 @@ void PlaylistMediaView::startDrag(Qt::DropActions supportedActions)
     for (int i = 0; i < count; ++i)
     {
         QPoint pos(i * offset, i * offset);
-        QPixmap p = indexes.at(i).data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+        QPixmap p = indexes.at(i).data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
         painter.drawPixmap(pos, p.scaled(thumbsize, thumbsize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
     painter.end();
@@ -131,8 +131,7 @@ void PlaylistMediaView::Refresh()
 
 void PlaylistMediaView::Setup()
 {
-    /* Proxy */
-    proxy = new MediaProxyModel(this);
+    proxy = new EntityProxyModel(this);
     setModel(proxy);
 
     /* Selection Mode */
@@ -196,7 +195,7 @@ void PlaylistMediaView::Connect()
     connect(&_MediaBridge, &MBridge::playlistChanged, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
 }
 
-void PlaylistMediaView::ResetModel(MediaModel* model)
+void PlaylistMediaView::ResetModel(EntityModel* model)
 {
     proxy->setSourceModel(model);
     VOID_LOG_INFO("Playlist Media Source Model Updated");

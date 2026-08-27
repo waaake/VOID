@@ -1,5 +1,6 @@
 # Build Intermediate Objects Library
 set(SOURCES
+    Core/Entity.cpp
     Core/Task.cpp
     Core/TaskLog.cpp
     Core/Threads.cpp
@@ -10,7 +11,7 @@ set(SOURCES
     Media/MediaClip.cpp
     Media/Tag.cpp
 
-    Models/MediaModel.cpp
+    Models/EntityModel.cpp
     Models/ProjectModel.cpp
     Models/PlaylistModel.cpp
     Models/TagModel.cpp

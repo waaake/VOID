@@ -15,7 +15,7 @@ Playlist::Playlist(const std::string& name, Core::Project* parent)
     , m_Project(parent)
     , m_CurrentRow(0)
 {
-    m_Media = new MediaModel(this);
+    m_Media = new EntityModel(this);
     connect(m_Media, &QAbstractItemModel::rowsMoved, this, [this]() -> void
     {
         emit updated(this);
