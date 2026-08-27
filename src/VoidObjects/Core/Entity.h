@@ -23,6 +23,8 @@ class VOID_API ProjectEntity : public VoidObject
 {
     Q_OBJECT
 public:
+    enum class Type { MEDIA, SEQUENCE };
+public:
     explicit ProjectEntity(Core::Project* project = nullptr);
     explicit ProjectEntity(const QColor& color, Core::Project* project = nullptr);
     virtual ~ProjectEntity() = default;
@@ -41,11 +43,10 @@ public:
     const QColor& Color() const { return m_Color; }
     void SetColor(const QColor& color);
 
+    static QPixmap DefaultThumbnail();
+
 signals:
     void updated();
-
-protected:
-    QPixmap DefaultThumbnail() const;
 
 protected:
     QColor m_Color;

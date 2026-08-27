@@ -15,6 +15,7 @@ ProjectEntity::ProjectEntity(Core::Project* project)
 ProjectEntity::ProjectEntity(const QColor& color, Core::Project* project)
     : VoidObject(project)
     , m_Color(color)
+    , m_Project(project)
 {
 }
 
@@ -24,7 +25,7 @@ void ProjectEntity::SetColor(const QColor& color)
     emit updated();
 }
 
-QPixmap ProjectEntity::DefaultThumbnail() const
+QPixmap ProjectEntity::DefaultThumbnail()
 {
     QPixmap pix = QPixmap(QSize(400, 225));
     pix.fill(Qt::black);
