@@ -35,7 +35,8 @@ public:
         Color,
         Audio,
         Tags,
-        Channels
+        Channels,
+        Type
     };
 
 public:
