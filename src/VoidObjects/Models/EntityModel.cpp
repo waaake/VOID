@@ -17,8 +17,18 @@ EntityModel::EntityModel(QObject* parent)
 
 QModelIndex EntityModel::index(int row, int column, const QModelIndex& parent) const
 {
-    if (!parent.isValid() && row >= 0 && row < static_cast<int>(m_Media.size()))
-        return createIndex(row, column, const_cast<SharedMediaClip*>(&m_Media[row]));  // Non-const
+    // if (!parent.isValid() && row >= 0 && row < static_cast<int>(m_Media.size()))
+    //     return createIndex(row, column, const_cast<SharedMediaClip*>(&m_Media[row]));  // Non-const
+    // At the moment, we don't have nested hierarchy -- it will be there in the future
+    if (parent.isValid() || row < 0)
+        return QModelIndex();
+
+    if (row < static_cast<int>(m_Media.size()))
+        return createIndex(row, column, const_cast<SharedMediaClip*>(&m_Media[row]));
+
+    int srow = row - static_cast<int>(m_Media.size());
+    if (srow < static_cast<int>(m_Sequences.size()))
+        return createIndex(row, column, const_cast<SharedPlaybackSequence*>(&m_Sequences[srow]));
 
     return QModelIndex();
 }
@@ -39,7 +49,7 @@ int EntityModel::rowCount(const QModelIndex& index) const
     if (index.isValid())
         return 0;
 
-    return static_cast<int>(m_Media.size());
+    return static_cast<int>(m_Media.size() + m_Sequences.size());
 }
 
 int EntityModel::columnCount(const QModelIndex& index) const
@@ -49,24 +59,49 @@ int EntityModel::columnCount(const QModelIndex& index) const
 
 QVariant EntityModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || index.row() >= static_cast<int>(m_Media.size()))
+    // if (!index.isValid() || index.row() >= static_cast<int>(m_Media.size()))
+    //     return QVariant();
+    if (index.isValid() || index.row() < 0)
         return QVariant();
 
-    const SharedMediaClip& item = m_Media.at(index.row());
-
-    switch (static_cast<MRoles>(role))
+    if (index.row() < static_cast<int>(m_Media.size()))
     {
-        case MRoles::Name: return QVariant(item->Name().c_str());
-        case MRoles::FrameRange: return QVariant(ItemFramerange(item).c_str());
-        case MRoles::Extension: return QVariant(item->Extension().c_str());
-        case MRoles::Thumbnail: return item->Thumbnail();
-        case MRoles::Framerate: return QVariant(ItemFramerate(item).c_str());
-        case MRoles::Color: return item->Color();
-        case MRoles::Audio: return item->HasAudio();
-        case MRoles::Tags: return item->HasTags();
-        case MRoles::Channels: return item->Channels();
-        default: return QVariant();
+        const SharedMediaClip& item = m_Media.at(index.row());
+        switch (static_cast<MRoles>(role))
+        {
+            case MRoles::Name: return QVariant(item->Name().c_str());
+            case MRoles::FrameRange: return QVariant(ItemFramerange(item).c_str());
+            case MRoles::Extension: return QVariant(item->Extension().c_str());
+            case MRoles::Thumbnail: return item->Thumbnail();
+            case MRoles::Framerate: return QVariant(ItemFramerate(item).c_str());
+            case MRoles::Color: return item->Color();
+            case MRoles::Audio: return item->HasAudio();
+            case MRoles::Tags: return item->HasTags();
+            case MRoles::Channels: return item->Channels();
+            default: return QVariant();
+        }
     }
+
+    int srow = index.row() - static_cast<int>(m_Media.size());
+    if (srow < static_cast<int>(m_Sequences.size()))
+    {
+        const SharedPlaybackSequence& sequence = m_Sequences.at(srow);
+        switch (static_cast<MRoles>(role))
+        {
+            case MRoles::Name: return QVariant(sequence->Name().c_str());
+            case MRoles::FrameRange: return QVariant(ItemFramerange(sequence).c_str());
+            case MRoles::Extension: return QVariant();
+            case MRoles::Thumbnail: return sequence->Thumbnail();
+            case MRoles::Framerate: return QVariant(ItemFramerate(sequence).c_str());
+            case MRoles::Color: return sequence->Color();
+            case MRoles::Audio: return sequence->HasAudio();
+            case MRoles::Tags: return sequence->HasTags();
+            case MRoles::Channels: return sequence->Channels();
+            default: return QVariant();
+        }
+    }
+
+    return QVariant();
 }
 
 Qt::ItemFlags EntityModel::flags(const QModelIndex& index) const
@@ -105,11 +140,36 @@ std::string EntityModel::ItemFramerate(const SharedMediaClip& clip) const
     return framerate;
 }
 
+std::string EntityModel::ItemFramerate(const SharedPlaybackSequence& sequence) const
+{
+    std::string framerate = Tools::to_trimmed_string(sequence->Framerate());
+    framerate += "fps";
+
+    return framerate;
+}
+
 std::string EntityModel::ItemFramerange(const SharedMediaClip& clip) const
 {
-    std::string range = std::to_string(clip->FirstFrame());
-    range += "-";
-    range += std::to_string(clip->LastFrame());
+    const MFrameRange& r = clip->FrameRange();
+    std::string range;
+    range.reserve(2 * (r.endframe == 0 ? 1 : static_cast<int>(std::log10(r.endframe)) + 1) + 1);
+
+    range.append(std::to_string(r.startframe));
+    range.append("-");
+    range.append(std::to_string(r.endframe));
+
+    return  range;
+}
+
+std::string EntityModel::ItemFramerange(const SharedPlaybackSequence& sequence) const
+{
+    const MFrameRange& r = sequence->FrameRange();
+    std::string range;
+    range.reserve(2 * (r.endframe == 0 ? 1 : static_cast<int>(std::log10(r.endframe)) + 1) + 1);
+
+    range.append(std::to_string(r.startframe));
+    range.append("-");
+    range.append(std::to_string(r.endframe));
 
     return  range;
 }
@@ -194,15 +254,15 @@ QModelIndex EntityModel::ShiftIndexDown(const QModelIndex& index)
     return createIndex(index.row() + 1, index.column());
 }
 
-void EntityModel::Update()
-{
-    if (m_Media.empty())
-        return;
+// void EntityModel::Update()
+// {
+//     if (m_Media.empty())
+//         return;
 
-    QModelIndex top = index(0, 0);
-    QModelIndex bottom = index(static_cast<int>(m_Media.size()) - 1, columnCount() - 1);
-    emit dataChanged(top, bottom);
-}
+//     QModelIndex top = index(0, 0);
+//     QModelIndex bottom = index(static_cast<int>(m_Media.size()) - 1, columnCount() - 1);
+//     emit dataChanged(top, bottom);
+// }
 
 void EntityModel::UpdateMedia(const SharedMediaClip& clip)
 {
@@ -213,6 +273,19 @@ void EntityModel::UpdateMedia(const SharedMediaClip& clip)
     if (it != m_Media.end())
     {
         QModelIndex idx = index(static_cast<int>(std::distance(m_Media.begin(), it)), 0);
+        emit dataChanged(idx, idx);
+    }
+}
+
+void EntityModel::UpdateSequence(const SharedPlaybackSequence& sequence)
+{
+    if (m_Sequences.empty())
+        return;
+
+    auto it = std::find(m_Sequences.begin(), m_Sequences.end(), sequence);
+    if (it != m_Sequences.end())
+    {
+        QModelIndex idx = index(static_cast<int>(m_Media.size()) + static_cast<int>(std::distance(m_Sequences.begin(), it)), 0);
         emit dataChanged(idx, idx);
     }
 }

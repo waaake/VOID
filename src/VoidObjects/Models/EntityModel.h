@@ -14,6 +14,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -82,13 +83,17 @@ public:
 
 private: /* Members */
     std::vector<SharedMediaClip> m_Media;
+    std::vector<SharedPlaybackSequence> m_Sequences;
 
 private: /* Methods */
     std::string ItemFramerate(const SharedMediaClip& clip) const;
+    std::string ItemFramerate(const SharedPlaybackSequence& sequence) const;
     std::string ItemFramerange(const SharedMediaClip& clip) const;
+    std::string ItemFramerange(const SharedPlaybackSequence& sequence) const;
 
-    void Update();
+    // void Update();
     void UpdateMedia(const SharedMediaClip& clip);
+    void UpdateSequence(const SharedPlaybackSequence& sequence);
 };
 
 class VOID_API EntityProxyModel : public QSortFilterProxyModel
