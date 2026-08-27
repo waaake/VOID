@@ -34,7 +34,7 @@ public:
     MFrameRange FrameRange() const override { return MFrameRange(m_StartFrame, m_EndFrame, m_Framerate); }
     double Framerate() const override { return m_Framerate; }
     int Channels() const override { return 0; }
-    QPixmap Thumbnail() override { return DefaultThumbnail(); }
+    QPixmap Thumbnail() override;
 
     /* Clears the Sequence of any tracks that have been added */
     void Clear();

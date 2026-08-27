@@ -59,6 +59,11 @@ void PlaybackSequence::SetName(const std::string& name)
     emit updated();
 }
 
+QPixmap PlaybackSequence::Thumbnail()
+{
+    return m_Recent ? m_Recent->Thumbnail() : DefaultThumbnail();
+}
+
 SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type)
 {
     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
