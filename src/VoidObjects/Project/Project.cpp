@@ -54,6 +54,12 @@ void Project::AddMedia(const SharedMediaClip& media)
     m_Modified = true;
 }
 
+void Project::Add(const SharedPlaybackSequence& sequence)
+{
+    m_Media->Add(sequence);
+    m_Modified = true;
+}
+
 void Project::InsertMedia(const SharedMediaClip& media, const int index)
 {
     m_Media->Insert(media, index);

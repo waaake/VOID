@@ -44,6 +44,7 @@ public:
     inline bool Saved() const { return !m_Modified && !m_Path.empty(); }
     
     void AddMedia(const SharedMediaClip& media);
+    void Add(const SharedPlaybackSequence& media);
     void InsertMedia(const SharedMediaClip& media, const int index);
     void RemoveMedia(const QModelIndex& index);
 
