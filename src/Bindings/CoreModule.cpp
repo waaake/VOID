@@ -185,6 +185,8 @@ void BindCore(py::module_& m)
         .def("start_frame", &PlaybackSequence::StartFrame)
         .def("end_frame", &PlaybackSequence::EndFrame)
         .def("set_range", &PlaybackSequence::SetRange, py::arg("start"), py::arg("end"))
+        .def("set_framerate", &PlaybackSequence::SetFramerate, py::arg("framerate"))
+        .def("set_name", &PlaybackSequence::SetName, py::arg("name"))
         .def("has_media", &PlaybackSequence::HasMedia)
         .def(
             "create_track",
