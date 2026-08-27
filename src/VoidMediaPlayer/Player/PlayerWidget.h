@@ -14,13 +14,14 @@
 #include "OverlayWidget.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Sequence.h"
-#include "VoidRenderer/Core/RenderTypes.h"
-#include "VoidRenderer/VoidRenderer.h"
 #include "VoidTimeline/TimelineController.h"
 #include "VoidMediaPlayer/Toolkit/AnnotationController.h"
 #include "VoidMediaPlayer/Toolkit/ControlBar.h"
 
 VOID_NAMESPACE_OPEN
+
+class VoidRenderer;
+class VoidPlaceholderRenderer;
 
 class VOID_API PlayerWidget : public QWidget
 {
@@ -63,7 +64,7 @@ public:
     /**
      * Returns whether the player is currently fullscreen or not
      */
-    [[nodiscard]] inline bool Fullscreen() { return m_Renderer->Fullscreen(); }
+    // [[nodiscard]] inline bool Fullscreen() { return m_Renderer->Fullscreen(); }
     /**
      * Returns true if the current comparison mode is not Compare None
      */
@@ -82,10 +83,15 @@ public:
         // Refresh();
     }
 
-    /* Zoom on the Viewport */
-    inline void ZoomIn() { m_ControlBar->ZoomIn(); }
-    inline void ZoomOut() { m_ControlBar->ZoomOut(); }
-    inline void ZoomToFit() { m_Renderer->ZoomToFit(); }
+    // Zoom on the Viewport
+    void ZoomIn();
+    void ZoomOut();
+    void ZoomToFit();
+
+    int GridRows() const;
+    int GridColumns() const;
+    void SetGridRows(int rows);
+    void SetGridColumns(int columns);
 
     /**
      * Removes the MediaClip from the player buffer, if found
