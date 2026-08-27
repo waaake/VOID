@@ -56,9 +56,11 @@ public:
 
     /* Media */
     void Add(const SharedMediaClip& media);
+    void Add(const SharedPlaybackSequence& sequence);
     void Insert(const SharedMediaClip& media, const int index);
+    void Insert(const SharedPlaybackSequence& sequence, const int index);
     void Remove(const QModelIndex& index, bool destroy = true);
-    
+
     SharedMediaClip Media(const QModelIndex& index) const;
     int MediaRow(const SharedMediaClip& clip) const;
 

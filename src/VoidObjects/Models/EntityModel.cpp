@@ -61,7 +61,7 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
 {
     // if (!index.isValid() || index.row() >= static_cast<int>(m_Media.size()))
     //     return QVariant();
-    if (index.isValid() || index.row() < 0)
+    if (!index.isValid() || index.row() < 0)
         return QVariant();
 
     if (index.row() < static_cast<int>(m_Media.size()))
@@ -184,10 +184,29 @@ void EntityModel::Add(const SharedMediaClip& media)
     endInsertRows();
 }
 
+void EntityModel::Add(const SharedPlaybackSequence& sequence)
+{
+    int insertidx = static_cast<int>(m_Media.size() + m_Sequences.size());
+
+    beginInsertRows(QModelIndex(), insertidx, insertidx);
+    m_Sequences.push_back(sequence);
+    connect(sequence.get(), &PlaybackSequence::updated, this, [this, sequence]() { UpdateSequence(sequence); });
+    endInsertRows();
+}
+
 void EntityModel::Insert(const SharedMediaClip& media, const int index)
 {
     beginInsertRows(QModelIndex(), index, index);
     m_Media.insert(m_Media.begin() + index, media);
+    endInsertRows();
+}
+
+void EntityModel::Insert(const SharedPlaybackSequence& sequence, const int index)
+{
+    int mediaSize = static_cast<int>(m_Media.size());
+
+    beginInsertRows(QModelIndex(), index, index);
+    m_Sequences.insert(m_Sequences.begin() + index - mediaSize, sequence);
     endInsertRows();
 }
 
@@ -199,13 +218,24 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
     int row = index.row();
     beginRemoveRows(index.parent(), row, row);
 
-    /* Media Clip at the row */
-    SharedMediaClip clip = m_Media.at(row);
-    m_Media.erase(std::remove(m_Media.begin(), m_Media.end(), clip));
+    if (row < static_cast<int>(m_Media.size()))
+    {
+        SharedMediaClip clip = m_Media.at(row);
+        m_Media.erase(std::remove(m_Media.begin(), m_Media.end(), clip));
 
-    /* Now Kill the clip */
-    if (destroy)
-        clip.get()->deleteLater();
+        /* Now Kill the clip */
+        if (destroy)
+            clip.get()->deleteLater();
+    }
+
+    int srow = row - static_cast<int>(m_Media.size());
+    if (srow < static_cast<int>(m_Media.size()))
+    {
+        const SharedPlaybackSequence& sequence = m_Sequences.at(srow);
+        m_Sequences.erase(std::remove(m_Sequences.begin(), m_Sequences.end(), sequence));
+
+        if (destroy) sequence.get()->deleteLater();
+    }
 
     endRemoveRows();
 }
