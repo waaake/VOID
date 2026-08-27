@@ -144,6 +144,7 @@ void BindUi(py::module_& m)
             return ss.str();
         })
         .def("add_media", &Project::AddMedia, py::arg("media_clip"))
+        .def("add", static_cast<void (Project::*)(const SharedPlaybackSequence&)>(&Project::Add), py::arg("sequence"))
         .def("document", &Project::Document, py::arg("name"))
         .def("modified", &Project::Modified)
         .def(
