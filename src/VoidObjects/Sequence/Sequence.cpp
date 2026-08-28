@@ -11,7 +11,7 @@
 VOID_NAMESPACE_OPEN
 
 PlaybackSequence::PlaybackSequence(Core::Project* project)
-    : ProjectEntity(project)
+    : ProjectEntity({230, 140, 40}, project)
     , m_Name("Sequence")
     , m_Framerate(24.0)
     , m_StartFrame(0)
