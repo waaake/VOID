@@ -272,7 +272,7 @@ bool MBridge::AddMedia(MediaStruct&& mstruct)
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
-        m_Project->AddMedia(clip);
+        m_Project->Add(clip);
         emit mediaAdded(clip);
         // Success
         return true;
@@ -301,7 +301,7 @@ bool MBridge::AddMedia(const MediaStruct& mstruct)
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
-        m_Project->AddMedia(clip);
+        m_Project->Add(clip);
         emit mediaAdded(clip);
         // Success
         return true;
@@ -330,7 +330,7 @@ bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
-        m_Project->InsertMedia(clip, index);
+        m_Project->Insert(clip, index);
         emit mediaAdded(clip);
         // Success
         return true;
@@ -346,7 +346,7 @@ bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
     SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
     if (clip->Valid())
     {
-        m_Project->InsertMedia(clip, index);
+        m_Project->Insert(clip, index);
         emit mediaAdded(clip);
         // Success
         return true;
@@ -360,7 +360,7 @@ bool MBridge::InsertMedia(const SharedMediaClip& media, int index)
 {
     if (media->Valid())
     {
-        m_Project->InsertMedia(media, index);
+        m_Project->Insert(media, index);
         emit mediaAdded(media);
         return true;
     }
@@ -437,35 +437,23 @@ void MBridge::CreateEffect(const QModelIndex& index, const std::string& type)
 
 bool MBridge::Remove(SharedMediaClip clip)
 {
-    /* Emit the mediaAboutToBeRemoved signal for all listeners to clear the item */
     emit mediaAboutToBeRemoved(clip);
-
-    /* Ensure All events are Processed before deleting the Media Clip internally */
     QCoreApplication::processEvents();
-
-    /* Remove this from the Underlying model */
-    m_Project->RemoveMedia(m_Project->ClipIndex(clip));
+    m_Project->Remove(m_Project->ClipIndex(clip));
 
     return true;
 }
 
 bool MBridge::Remove(const QModelIndex& index)
 {
-    /* The Media Associated with the Model index */
+    // The Media Associated with the Model index
     SharedMediaClip clip = m_Project->MediaAt(index);
-
-    /* Invalid Index */
     if (!clip)
         return false;
 
-    /* Emit the mediaAboutToBeRemoved signal for all listeners to clear the item */
     emit mediaAboutToBeRemoved(clip);
-
-    /* Ensure All events are Processed before deleting the Media Clip internally */
     QCoreApplication::processEvents();
-
-    /* Remove this from the Underlying model */
-    m_Project->RemoveMedia(index);
+    m_Project->Remove(index);
 
     return true;
 }
