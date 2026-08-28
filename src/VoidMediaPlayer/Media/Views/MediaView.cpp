@@ -113,6 +113,7 @@ void MediaView::Setup()
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setContextMenuPolicy(Qt::CustomContextMenu);
     setUniformItemSizes(true);
+    setEditTriggers(QAbstractItemView::EditKeyPressed);
 
     ResetView();
 }
