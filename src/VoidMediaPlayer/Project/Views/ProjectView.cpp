@@ -16,8 +16,6 @@ ProjectView::ProjectView(QWidget* parent)
     : QListView(parent)
 {
     Setup();
-
-    /* Connect Signals */
     Connect();
 }
 
@@ -38,26 +36,19 @@ void ProjectView::Setup()
 {
     m_ImportMediaAction = new QAction("Import Media...", this);
     m_ImportDirectoryAction = new QAction("Import Directory...", this);
+    m_CreateSequenceAction = new QAction("Add New Sequence", this);
     m_CloseProjectAction = new QAction("Close Project", this);
 
-    /* Source Model */
     ProjectModel* model = _MediaBridge.ProjectDataModel();
-
-    /* Proxy */
     proxy = new ProjectProxyModel(this);
-    /* Setup the Proxy's Source Model */
     ResetModel(model);
     setModel(proxy);
 
-    /* Selection Mode */
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setUniformItemSizes(true);
-     /* Set Delegate */
     setItemDelegate(new ProjectItemDelegate(this));
-    /* Spacing between entries */
     setSpacing(1);
 
-    /* Context Menu */
     setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
@@ -66,6 +57,7 @@ void ProjectView::Connect()
     /* Menu */
     connect(m_ImportMediaAction, &QAction::triggered, this, &ProjectView::ImportMedia);
     connect(m_ImportDirectoryAction, &QAction::triggered, this, &ProjectView::ImportDirectory);
+    connect(m_CreateSequenceAction, &QAction::triggered, this, &ProjectView::AddSequence);
     connect(m_CloseProjectAction, &QAction::triggered, this, &ProjectView::CloseProject);
 
     /* View */
@@ -91,16 +83,13 @@ void ProjectView::ItemClicked(const QModelIndex& index)
 const std::vector<QModelIndex> ProjectView::SelectedIndexes() const
 {
     std::vector<QModelIndex> sources;
-
-    /* Get the selection model */
     QItemSelectionModel* selection = selectionModel();
 
-    /* Nothing is selected at the moment */
+    // Nothing is selected at the moment
     if (!selection)
         return sources;
 
     const QModelIndexList proxyindexes = selection->selectedRows();
-    /* We know how many items are selected */
     sources.reserve(proxyindexes.size());
 
     for (const QModelIndex& index: proxyindexes)
@@ -110,7 +99,6 @@ const std::vector<QModelIndex> ProjectView::SelectedIndexes() const
             sources.emplace_back(source);
     }
 
-    /* Return the updated source indexes that are selected */
     return sources;
 }
 
@@ -140,6 +128,7 @@ void ProjectView::ShowContextMenu(const _QPoint& position)
     QMenu contextMenu(this);
     contextMenu.addAction(m_ImportMediaAction);
     contextMenu.addAction(m_ImportDirectoryAction);
+    contextMenu.addAction(m_CreateSequenceAction);
 
     contextMenu.addSeparator();
     contextMenu.addAction(m_CloseProjectAction);
@@ -166,25 +155,25 @@ Project* ProjectView::HighlightedProject()
 
 void ProjectView::ImportMedia()
 {
-    Project* project = HighlightedProject();
-
-    if (project)
+    if (Project* project = HighlightedProject())
         _ProjectBridge.ImportMedia(project);
 }
 
 void ProjectView::ImportDirectory()
 {
-    Project* project = HighlightedProject();
-
-    if (project)
+    if (Project* project = HighlightedProject())
         _ProjectBridge.ImportDirectory(project);   
+}
+
+void ProjectView::AddSequence()
+{
+    if (Project* project = HighlightedProject())
+        _ProjectBridge.AddSequence(project);
 }
 
 void ProjectView::CloseProject()
 {
-    Project* project = HighlightedProject();
-
-    if (project)
+    if (Project* project = HighlightedProject())
         _ProjectBridge.Close(project);
 }
 
