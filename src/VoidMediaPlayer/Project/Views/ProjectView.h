@@ -43,6 +43,8 @@ private:
     QAction* m_ImportMediaAction;
     QAction* m_ImportDirectoryAction;
     QAction* m_CreateSequenceAction;
+    QAction* m_SaveProjectAction;
+    QAction* m_SaveAsProjectAction;
     QAction* m_CloseProjectAction;
 
 private: /* Methods */
@@ -55,6 +57,7 @@ private: /* Methods */
     void ImportMedia();
     void ImportDirectory();
     void AddSequence();
+    void SaveProject(bool saveas = false);
     void CloseProject();
 };
 

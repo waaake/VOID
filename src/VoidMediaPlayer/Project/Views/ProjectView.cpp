@@ -37,6 +37,8 @@ void ProjectView::Setup()
     m_ImportMediaAction = new QAction("Import Media...", this);
     m_ImportDirectoryAction = new QAction("Import Directory...", this);
     m_CreateSequenceAction = new QAction("Add New Sequence", this);
+    m_SaveProjectAction = new QAction("Save Project", this);
+    m_SaveAsProjectAction = new QAction("Save Project As...", this);
     m_CloseProjectAction = new QAction("Close Project", this);
 
     ProjectModel* model = _MediaBridge.ProjectDataModel();
@@ -58,6 +60,8 @@ void ProjectView::Connect()
     connect(m_ImportMediaAction, &QAction::triggered, this, &ProjectView::ImportMedia);
     connect(m_ImportDirectoryAction, &QAction::triggered, this, &ProjectView::ImportDirectory);
     connect(m_CreateSequenceAction, &QAction::triggered, this, &ProjectView::AddSequence);
+    connect(m_SaveProjectAction, &QAction::triggered, this, [this]() -> void { SaveProject(); });
+    connect(m_SaveAsProjectAction, &QAction::triggered, this, [this]() -> void { SaveProject(true); });
     connect(m_CloseProjectAction, &QAction::triggered, this, &ProjectView::CloseProject);
 
     /* View */
@@ -131,6 +135,8 @@ void ProjectView::ShowContextMenu(const _QPoint& position)
     contextMenu.addAction(m_CreateSequenceAction);
 
     contextMenu.addSeparator();
+    contextMenu.addAction(m_SaveProjectAction);
+    contextMenu.addAction(m_SaveAsProjectAction);
     contextMenu.addAction(m_CloseProjectAction);
 
     /* Show Menu */
@@ -169,6 +175,12 @@ void ProjectView::AddSequence()
 {
     if (Project* project = HighlightedProject())
         _ProjectBridge.AddSequence(project);
+}
+
+void ProjectView::SaveProject(bool saveas)
+{
+    if (Project* project = HighlightedProject())
+        saveas ? _ProjectBridge.SaveAs(project) : _ProjectBridge.Save(project);
 }
 
 void ProjectView::CloseProject()
