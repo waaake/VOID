@@ -89,7 +89,7 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
         {
             case MRoles::Name: return QVariant(sequence->Name().c_str());
             case MRoles::FrameRange: return QVariant(ItemFramerange(sequence).c_str());
-            case MRoles::Extension: return QVariant();
+            case MRoles::Extension: return QVariant(sequence->Extension().c_str());
             case MRoles::Thumbnail: return sequence->Thumbnail();
             case MRoles::Framerate: return QVariant(ItemFramerate(sequence).c_str());
             case MRoles::Color: return sequence->Color();
@@ -259,13 +259,13 @@ SharedMediaClip EntityModel::Media(const QModelIndex& index) const
 int EntityModel::MediaRow(const SharedMediaClip& clip) const
 {
     auto it = std::find(m_Media.begin(), m_Media.end(), clip);
-    return it == m_Media.end() ? - 1 static_cast<int>(std::distance(m_Media.begin(), it));
+    return it == m_Media.end() ? -1 : static_cast<int>(std::distance(m_Media.begin(), it));
 }
 
 int EntityModel::SequenceRow(const SharedPlaybackSequence& sequence) const
 {
     auto it = std::find(m_Sequences.begin(), m_Sequences.end(), sequence);
-    return it == m_Sequences.end() ? - 1 static_cast<int>(std::distance(m_Sequences.begin(), it));
+    return it == m_Sequences.end() ? -1 : static_cast<int>(std::distance(m_Sequences.begin(), it));
 }
 
 SharedMediaClip EntityModel::LastMedia() const
