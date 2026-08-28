@@ -43,10 +43,11 @@ public:
      */
     inline bool Saved() const { return !m_Modified && !m_Path.empty(); }
     
-    void AddMedia(const SharedMediaClip& media);
+    void Add(const SharedMediaClip& media);
     void Add(const SharedPlaybackSequence& media);
-    void InsertMedia(const SharedMediaClip& media, const int index);
-    void RemoveMedia(const QModelIndex& index);
+    void Insert(const SharedMediaClip& media, const int index);
+    void Insert(const SharedPlaybackSequence& sequence, const int index);
+    void Remove(const QModelIndex& index);
 
     inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip MediaAt(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
@@ -97,7 +98,7 @@ public:
      * The provided name is the underlying name of the project to which it will be saved
      */
     bool Save();
-    inline bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type) { return SaveInternal(path, name, type); }
+    bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type);
     
     /**
      * Update the path for the project on which it will save to

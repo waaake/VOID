@@ -28,6 +28,8 @@ Project::Project(const std::string& name, bool active, QObject* parent)
 {
     m_Media = new EntityModel(this);
     m_Playlists = new PlaylistModel(this);
+    
+    connect(m_Media, &EntityModel::updated, this, [this]() -> void { m_Modified = true; });
     VOID_LOG_INFO("Project {0} Created: {1}", name, Vuid());
 }
 
@@ -47,38 +49,36 @@ Project::~Project()
     m_Playlists = nullptr;
 }
 
-void Project::AddMedia(const SharedMediaClip& media)
+void Project::Add(const SharedMediaClip& media)
 {
     m_Media->Add(media);
-    /* Update the modification state for the project */
-    m_Modified = true;
 }
 
 void Project::Add(const SharedPlaybackSequence& sequence)
 {
     m_Media->Add(sequence);
-    m_Modified = true;
 }
 
-void Project::InsertMedia(const SharedMediaClip& media, const int index)
+void Project::Insert(const SharedMediaClip& media, const int index)
 {
     m_Media->Insert(media, index);
-    /* Update the modification state for the project */
-    m_Modified = true;
 }
 
-void Project::RemoveMedia(const QModelIndex& index)
+void Project::Insert(const SharedPlaybackSequence& sequence, const int index)
+{
+    m_Media->Insert(sequence, index);
+}
+
+void Project::Remove(const QModelIndex& index)
 {
     m_Media->Remove(index, false);
-    /* Update the modification state for the project */
-    m_Modified = true;
 }
 
 SharedMediaClip Project::PlaylistMediaAt(const QModelIndex& index) const
 {
     if (m_Playlist)
         return m_Playlist->Media(index);
-    
+
     return nullptr;
 }
 
@@ -95,9 +95,8 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
     out.SetObject();
     out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
 
-    /* Media {{{ */
+    /// Media
     rapidjson::Value clips(rapidjson::kArrayType);
-
     for (const SharedMediaClip& clip : *m_Media)
     {
         rapidjson::Value clipObject;
@@ -106,11 +105,9 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
     }
 
     out.AddMember("Clips", clips, allocator);
-    /* }}} */
 
-    /* Playlists {{{ */
+    /// Playlists
     rapidjson::Value playlists(rapidjson::kArrayType);
-
     for (const Playlist* playlist : *m_Playlists)
     {
         rapidjson::Value playlistObject;
@@ -119,7 +116,6 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
     }
 
     out.AddMember("Playlists", playlists, allocator);
-    /* }}} */
 }
 
 void Project::Serialize(std::ostream& out) const
@@ -127,7 +123,7 @@ void Project::Serialize(std::ostream& out) const
     uint32_t count = static_cast<uint32_t>(m_Media->rowCount());
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
-    /* Serialize each of the clip data */
+    // Serialize each of the clip data
     for (const SharedMediaClip& clip : *m_Media)
         clip->Serialize(out);
 
@@ -142,30 +138,23 @@ void Project::Deserialize(const rapidjson::Value& in)
 {
     Tools::VoidProfiler<std::chrono::duration<double>> p("Deserialize Project");
 
-    /* Media {{{ */
+    /// Media
     const rapidjson::Value::ConstArray clips = in["Clips"].GetArray();
-
     for (unsigned int i = 0; i < clips.Size(); ++i)
     {
         SharedMediaClip clip = std::make_shared<MediaClip>(this);
         clip->Deserialize(clips[i]);
-
-        /* Add the Deserialized clip back */
         m_Media->Add(clip);
     }
-    /* }}} */
 
-    /* Playlist {{{ */
+    /// Playlists
     const rapidjson::Value::ConstArray playlists = in["Playlists"].GetArray();
-
     for (unsigned int i = 0; i < static_cast<unsigned int>(playlists.Size()); ++i)
     {
         Playlist* playlist = new Playlist(this);
         playlist->Deserialize(playlists[i]);
-
         m_Playlists->Add(playlist);
     }
-    /* }}} */
 }
 
 void Project::Deserialize(std::istream& in)
@@ -174,20 +163,17 @@ void Project::Deserialize(std::istream& in)
 
     uint32_t count;
 
-    /* Read Media {{{ */
+    /// Read Media
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
 
     for (uint32_t i = 0; i < count; ++i)
     {
         SharedMediaClip clip = std::make_shared<MediaClip>(this);
         clip->Deserialize(in);
-
-        /* Add the Deserialized clip back */
         m_Media->Add(clip);
     }
-    /* }}} */
 
-    /* Read Playlists {{{ */
+    /// Read Playlists
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
 
     for (uint32_t i = 0; i < count; ++i)
@@ -197,7 +183,6 @@ void Project::Deserialize(std::istream& in)
 
         m_Playlists->Add(playlist);
     }
-    /* }}} */
 }
 
 std::string Project::Document(const std::string& name) const
@@ -216,7 +201,7 @@ std::string Project::Document(const std::string& name) const
     doc.AddMember("Project", project, allocator);
 
     rapidjson::StringBuffer buffer;
-    /* Using Pretty Writer to dump with indented json formatting */
+    // Using Pretty Writer to dump with indented json formatting
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
 
     doc.Accept(writer);
@@ -259,11 +244,16 @@ Project* Project::FromStream(std::istream& in)
 
 bool Project::Save()
 {
-    /* The project hasn't been saved yet */
+    // The project hasn't been saved the first time yet, we don't know where the save path should be...
     if (m_Path.empty())
         return false;
 
     return SaveInternal(m_Path, m_Name, m_Type);
+}
+
+bool Project::Save(const std::string& path, const std::string& name, const EtherFormat::Type& type)
+{
+    return SaveInternal(path, name, type);
 }
 
 bool Project::SaveInternal(const std::string& path, const std::string& name, const EtherFormat::Type& type)
@@ -283,18 +273,18 @@ bool Project::SaveAscii(const std::string& path, const std::string& name)
         return false;
     }
 
-    /* Update internals */
+    // Update internals
     m_Path = path;
     m_Name = name;
     m_Type = EtherFormat::Type::ASCII;
 
-    /* Serialize and onto the file */
+    // Serialize and onto the file
     out.write(EtherFormat::ASCII_MAGIC, EtherFormat::MAGIC_SIZE);
     out << '\n';
     out << Document(name);
     out.close();
 
-    /* The project is No longer modified */
+    // The project is No longer considered modified
     m_Modified = false;
     return true;
 }
@@ -308,17 +298,17 @@ bool Project::SaveBinary(const std::string& path, const std::string& name)
         return false;
     }
 
-    /* Update Internals */
+    // Update Internals
     m_Path = path;
     m_Name = name;
     m_Type = EtherFormat::Type::BINARY;
 
     out.write(EtherFormat::BINARY_MAGIC, EtherFormat::MAGIC_SIZE);
-    /* Now serialize all content on the binary */
+    // Now serialize all content on the binary
     ToStream(out, name);
     out.close();
 
-    /* The project is No longer modified */
+    // The project is No longer considered modified
     m_Modified = false;
     return true;
 }
