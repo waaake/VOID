@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QEvent>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -24,7 +25,7 @@ constexpr int ICON_SIZE = 12;
 
 #define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
 
-/* Basic Media Item Delegate {{{ */
+/// Basic Media Item Delegate
 
 BasicMediaItemDelegate::BasicMediaItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
@@ -80,7 +81,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
         /* Draw the right indicator rect */
         painter->fillRect(
-            option.rect.width() - 4,
+            option.rect.width() - 3,
             option.rect.top(),
             4,
             option.rect.height(),
@@ -113,7 +114,6 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         )
     );
 
-    // if (index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
     painter->drawPixmap(
         m_TagX,
         m_TagY,
@@ -130,17 +130,26 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left(), option.rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom(), w, 1, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
         const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 1, QColor(0, 0, 255));
-        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+        painter->fillRect(option.rect.left(), option.rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom(), w, 1, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom(), w, 1, QColor(255, 255, 255));
+    }
+
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
+    {
+        painter->drawPixmap(option.rect.left() + 2, option.rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
+            IconType::icon_view_object_track,
+            option.palette.color(QPalette::Text),
+            ICON_SIZE
+        ));
     }
 
     /* Name */
@@ -167,7 +176,7 @@ QSize BasicMediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const
     return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 54);
 }
 
-/* }}} */
+/// MediaItemDelegate
 
 MediaItemDelegate::MediaItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
@@ -228,7 +237,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         painter->drawRect(rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(rect.width() - 4, rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
+        painter->fillRect(rect.width() - 3, rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
 
         painter->restore();
     }
@@ -258,17 +267,17 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
         const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
-        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom(), w, 1, QColor(255, 255, 255));
     }
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
@@ -305,7 +314,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     );
 
     /* Extension */
-    const QRect extrect(namerect.right(), rect.top(), 56, halfheight);
+    const QRect extrect(namerect.right(), rect.top(), 60, halfheight);
     painter->drawText(
         extrect,
         Qt::AlignRight | Qt::AlignVCenter,
@@ -326,7 +335,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawText(
         namerect.right(),
         extrect.bottom(),
-        46,
+        60,
         halfheight,
         Qt::AlignRight | Qt::AlignVCenter,
         index.data(static_cast<int>(EntityModel::MRoles::Framerate)).toString()
@@ -336,6 +345,18 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 QSize MediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 60);
+}
+
+QWidget* MediaItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void MediaItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
 }
 
 VOID_NAMESPACE_CLOSE

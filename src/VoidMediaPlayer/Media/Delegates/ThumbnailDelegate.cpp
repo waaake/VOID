@@ -22,6 +22,8 @@ constexpr int ICON_SIZE = 16;
 constexpr int ICON_SIZE = 12;
 #endif
 
+#define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
+
 MediaThumbnailDelegate::MediaThumbnailDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
     , m_TagX(0)
@@ -92,7 +94,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         painter->drawRect(rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(rect.left() + (rect.width() - 4), rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
+        painter->fillRect(rect.left() + (rect.width() - 3), rect.top(), 3, rect.height(), option.palette.color(QPalette::Highlight));
         painter->restore();
     }
 
@@ -135,17 +137,26 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
         const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
-        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom(), w, 1, QColor(255, 255, 255));
+    }
+
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
+    {
+        painter->drawPixmap(option.rect.left() + 2, option.rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
+            IconType::icon_view_object_track,
+            option.palette.color(QPalette::Text),
+            ICON_SIZE
+        ));
     }
 
     /* Name */
