@@ -62,6 +62,7 @@ public:
     virtual ~MediaClip();
 
     std::string Name() const override { return Media::Name(); }
+    std::string Extension() const override { return Media::Extension(); }
     MFrameRange FrameRange() const override { return MFrameRange(m_FirstFrame, m_LastFrame, m_Framerate); }
     double Framerate() const override { return Media::Channels(); }
     int Channels() const override { return Media::Channels(); };

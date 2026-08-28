@@ -32,6 +32,7 @@ public:
     Core::Project* Project() const { return m_Project; }
 
     virtual std::string Name() const = 0;
+    virtual std::string Extension() const = 0;
     virtual MFrameRange FrameRange() const = 0;
     virtual double Framerate() const = 0;
     virtual int Channels() const = 0;

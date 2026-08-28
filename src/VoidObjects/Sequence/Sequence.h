@@ -31,6 +31,7 @@ public:
     virtual ~PlaybackSequence();
 
     std::string Name() const override { return m_Name; }
+    std::string Extension() const override { return "Sequence"; }
     MFrameRange FrameRange() const override { return MFrameRange(m_StartFrame, m_EndFrame, m_Framerate); }
     double Framerate() const override { return m_Framerate; }
     int Channels() const override { return 0; }
