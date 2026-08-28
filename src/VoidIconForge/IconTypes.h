@@ -63,6 +63,7 @@ enum class IconType : char16_t
     icon_title              = 0xe264,
     icon_trail_length_short = 0xeb6d,
     icon_trending_flat      = 0xe8e4,
+    icon_view_object_track  = 0xf432,
     icon_view_stream        = 0xe8f2,
     icon_visible            = 0xe8f4,
     icon_visible_off        = 0xe8f5,

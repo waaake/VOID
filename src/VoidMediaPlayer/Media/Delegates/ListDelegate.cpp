@@ -22,6 +22,7 @@ constexpr int ICON_SIZE = 14;
 constexpr int ICON_SIZE = 12;
 #endif
 
+#define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
 
 /* Basic Media Item Delegate {{{ */
 
@@ -282,9 +283,18 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         ICON_SIZE
     ));
 
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
+    {
+        painter->drawPixmap(rect.left() + 2, rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
+            IconType::icon_view_object_track,
+            option.palette.color(QPalette::Text),
+            ICON_SIZE
+        ));
+    }
+
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;
-    const int namewidth = rect.width() - (thumbrect.width() + 80);
+    const int namewidth = rect.width() - (thumbrect.width() + 90);
 
     /* Name */
     const QRect namerect(thumbright, rect.top(), namewidth, halfheight);
@@ -295,7 +305,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     );
 
     /* Extension */
-    const QRect extrect(namerect.right(), rect.top(), 46, halfheight);
+    const QRect extrect(namerect.right(), rect.top(), 56, halfheight);
     painter->drawText(
         extrect,
         Qt::AlignRight | Qt::AlignVCenter,
