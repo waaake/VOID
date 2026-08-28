@@ -8,6 +8,8 @@
 
 VOID_NAMESPACE_OPEN
 
+#define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
+
 /// EntityModel
 
 EntityModel::EntityModel(QObject* parent)
@@ -104,12 +106,36 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
+bool EntityModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (role == Qt::EditRole)
+    {
+        if (index.row() < static_cast<int>(m_Media.size()))
+            return false;
+        
+        int srow = index.row() - static_cast<int>(m_Media.size());
+        if (srow < static_cast<int>(m_Sequences.size()))
+        {
+            const SharedPlaybackSequence& sequence = m_Sequences.at(srow);
+            sequence->SetName(value.toString().toStdString());
+            emit dataChanged(index, index);
+            emit updated();
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 Qt::ItemFlags EntityModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+    // if (_ENTITY_TYPE())
+
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable;
 }
 
 bool EntityModel::moveRows(const QModelIndex& sourceParent, int sourceRow, int count, const QModelIndex& destinationParent, int destinationChild)
