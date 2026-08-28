@@ -41,7 +41,9 @@ public:
     void Close(Project* project);
 
     void Save();
+    void Save(Project* project);
     void SaveAs();
+    void SaveAs(Project* project);
 
     /**
      * Retrieve the Project at a given row or Index

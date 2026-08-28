@@ -189,10 +189,15 @@ void ProjectBridge::Save()
     }
 }
 
+void ProjectBridge::Save(Project* project)
+{
+    m_Bridge.SetActiveProject(project);
+    Save();
+}
+
 void ProjectBridge::SaveAs()
 {
     VoidProjectBrowser browser;
-
     if (!browser.Save())
     {
         VOID_LOG_INFO("User Cancelled Saving.");
@@ -201,6 +206,12 @@ void ProjectBridge::SaveAs()
 
     VoidFileDescriptor d = browser.File();
     m_Bridge.Save(d.path, d.name, d.type);
+}
+
+void ProjectBridge::SaveAs(Project* project)
+{
+    m_Bridge.SetActiveProject(project);
+    SaveAs();
 }
 
 Project* ProjectBridge::ProjectAt(int row)
