@@ -5,6 +5,7 @@
 #include "ProjectBridge.h"
 #include "VoidCore/Logging.h"
 #include "VoidMediaBrowser/Browser.h"
+#include "VoidMediaPlayer/Commands/MediaCommands.h"
 #include "VoidMediaPlayer/Project/Browser.h"
 #include "VoidQExtensions/MessageBox.h"
 #include "VoidObjects/Preferences/Preferences.h"
@@ -60,7 +61,6 @@ void ProjectBridge::ImportMedia()
 void ProjectBridge::ImportDirectory()
 {
     MediaBrowser mediaBrowser;
-
     if (!mediaBrowser.BrowseDirectory())
     {
         VOID_LOG_INFO("User Cancelled Importing");
@@ -74,7 +74,6 @@ void ProjectBridge::ImportDirectory()
 void ProjectBridge::ImportMedia(Project* project)
 {
     MediaBrowser mediaBrowser;
-
     /* In case the dialog was not accepted */
     if (!mediaBrowser.Browse())
     {
@@ -89,7 +88,6 @@ void ProjectBridge::ImportMedia(Project* project)
 void ProjectBridge::ImportDirectory(Project* project)
 {
     MediaBrowser mediaBrowser;
-
     if (!mediaBrowser.BrowseDirectory())
     {
         VOID_LOG_INFO("User Cancelled Importing");
@@ -98,6 +96,12 @@ void ProjectBridge::ImportDirectory(Project* project)
 
     m_Bridge.SetCurrentProject(project);
     m_Bridge.ImportDirectory(mediaBrowser.SelectedDirectory());
+}
+
+void ProjectBridge::AddSequence(Project* project)
+{
+    QUndoStack* stack = project->UndoStack();
+    stack->push(new AddSequenceCommand(project));
 }
 
 void ProjectBridge::New()
