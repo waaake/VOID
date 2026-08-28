@@ -58,4 +58,26 @@ bool MediaRemoveCommand::Redo()
     return _MediaBridge.Remove(m_Index);
 }
 
+/// AddSequenceCommand
+
+AddSequenceCommand::AddSequenceCommand(Project* project, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Project(project)
+    , m_InsertIndex(project->DataModel()->rowCount())
+{
+    setText("Add Sequence");
+}
+
+void AddSequenceCommand::undo()
+{
+    QModelIndex index = m_Project->DataModel()->index(m_InsertIndex, 0);
+    m_Project->Remove(index); // Need to call it Remove
+}
+
+bool AddSequenceCommand::Redo()
+{
+    m_Project->Add(std::make_shared<PlaybackSequence>(m_Project));
+    return true;
+}
+
 VOID_NAMESPACE_CLOSE

@@ -24,8 +24,8 @@ public:
     bool Redo() override;
 
 private: /* Members */
-    int m_InsertIndex;
     std::string m_Path;
+    int m_InsertIndex;
 };
 
 class MediaRemoveCommand : public VoidUndoCommand
@@ -39,6 +39,19 @@ public:
 private: /* Members */
     std::string m_Data;
     QModelIndex m_Index;
+};
+
+class AddSequenceCommand : public VoidUndoCommand
+{
+public:
+    AddSequenceCommand(Project* project, QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Project* m_Project;
+    int m_InsertIndex;    
 };
 
 VOID_NAMESPACE_CLOSE
