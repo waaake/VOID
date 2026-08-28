@@ -64,6 +64,7 @@ public:
 
     SharedMediaClip Media(const QModelIndex& index) const;
     int MediaRow(const SharedMediaClip& clip) const;
+    int SequenceRow(const SharedPlaybackSequence& sequence) const;
 
     /**
      * Returns the last/latest media clip from the underlying model
@@ -83,6 +84,10 @@ public:
     inline std::vector<SharedMediaClip>::iterator end() noexcept { return m_Media.end(); }
 
     const std::vector<SharedMediaClip> AllMedia() const { return m_Media; }
+    const std::vector<SharedPlaybackSequence>& Sequences() const { return m_Sequences; }
+
+signals:
+    void updated();
 
 private: /* Members */
     std::vector<SharedMediaClip> m_Media;

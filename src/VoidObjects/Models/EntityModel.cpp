@@ -59,8 +59,6 @@ int EntityModel::columnCount(const QModelIndex& index) const
 
 QVariant EntityModel::data(const QModelIndex& index, int role) const
 {
-    // if (!index.isValid() || index.row() >= static_cast<int>(m_Media.size()))
-    //     return QVariant();
     if (!index.isValid() || index.row() < 0)
         return QVariant();
 
@@ -184,6 +182,8 @@ void EntityModel::Add(const SharedMediaClip& media)
     m_Media.push_back(media);
     connect(media.get(), &MediaClip::updated, this, [this, media]() { UpdateMedia(media); });
     endInsertRows();
+
+    emit updated();
 }
 
 void EntityModel::Add(const SharedPlaybackSequence& sequence)
@@ -194,6 +194,8 @@ void EntityModel::Add(const SharedPlaybackSequence& sequence)
     m_Sequences.push_back(sequence);
     connect(sequence.get(), &PlaybackSequence::updated, this, [this, sequence]() { UpdateSequence(sequence); });
     endInsertRows();
+
+    emit updated();
 }
 
 void EntityModel::Insert(const SharedMediaClip& media, const int index)
@@ -201,15 +203,18 @@ void EntityModel::Insert(const SharedMediaClip& media, const int index)
     beginInsertRows(QModelIndex(), index, index);
     m_Media.insert(m_Media.begin() + index, media);
     endInsertRows();
+
+    emit updated();
 }
 
 void EntityModel::Insert(const SharedPlaybackSequence& sequence, const int index)
 {
-    int mediaSize = static_cast<int>(m_Media.size());
-
-    beginInsertRows(QModelIndex(), index, index);
-    m_Sequences.insert(m_Sequences.begin() + index - mediaSize, sequence);
+    int seqidx = index + static_cast<int>(m_Media.size());
+    beginInsertRows(QModelIndex(), seqidx , seqidx);
+    m_Sequences.insert(m_Sequences.begin() + index, sequence);
     endInsertRows();
+
+    emit updated();
 }
 
 void EntityModel::Remove(const QModelIndex& index, bool destroy)
@@ -231,7 +236,7 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
     }
 
     int srow = row - static_cast<int>(m_Media.size());
-    if (srow < static_cast<int>(m_Media.size()))
+    if (srow < static_cast<int>(m_Sequences.size()))
     {
         const SharedPlaybackSequence& sequence = m_Sequences.at(srow);
         m_Sequences.erase(std::remove(m_Sequences.begin(), m_Sequences.end(), sequence));
@@ -240,6 +245,7 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
     }
 
     endRemoveRows();
+    emit updated();
 }
 
 SharedMediaClip EntityModel::Media(const QModelIndex& index) const
@@ -253,11 +259,13 @@ SharedMediaClip EntityModel::Media(const QModelIndex& index) const
 int EntityModel::MediaRow(const SharedMediaClip& clip) const
 {
     auto it = std::find(m_Media.begin(), m_Media.end(), clip);
+    return it == m_Media.end() ? - 1 static_cast<int>(std::distance(m_Media.begin(), it));
+}
 
-    if (it != m_Media.end())
-        return static_cast<int>(std::distance(m_Media.begin(), it));
-
-    return -1;
+int EntityModel::SequenceRow(const SharedPlaybackSequence& sequence) const
+{
+    auto it = std::find(m_Sequences.begin(), m_Sequences.end(), sequence);
+    return it == m_Sequences.end() ? - 1 static_cast<int>(std::distance(m_Sequences.begin(), it));
 }
 
 SharedMediaClip EntityModel::LastMedia() const
@@ -319,6 +327,7 @@ void EntityModel::UpdateSequence(const SharedPlaybackSequence& sequence)
     {
         QModelIndex idx = index(static_cast<int>(m_Media.size()) + static_cast<int>(std::distance(m_Sequences.begin(), it)), 0);
         emit dataChanged(idx, idx);
+        emit updated();
     }
 }
 
@@ -335,39 +344,29 @@ EntityProxyModel::EntityProxyModel(QObject * parent)
 void EntityProxyModel::SetSearchText(const std::string& text)
 {
     m_SearchText = text.c_str();
-
-    /* (Re)filters the underlying model data */
     invalidateFilter();
 }
 
 void EntityProxyModel::SetSearchRole(const EntityModel::MRoles& role)
 {
     m_SearchRole = static_cast<int>(role);
-
-    /* (Re)filters the underlying model data */
     invalidateFilter();
 }
 
 bool EntityProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
-    /* The index from the source model */
     QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
-    /* data from the index */
     QString data = sourceIndex.data(m_SearchRole).toString();
 
-    /* Returns true if the data contains the text without any case sensitivity */
     return data.contains(m_SearchText, Qt::CaseInsensitive);
 }
 
 bool EntityProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
-    /* Get the Data (name) from the Source model */
     QString ldata = sourceModel()->index(left.row(), 0, left.parent()).data(m_SortRole).toString();
     QString rdata = sourceModel()->index(right.row(), 0, right.parent()).data(m_SortRole).toString();
 
     return ldata < rdata;
 }
-
-/* }}} */
 
 VOID_NAMESPACE_CLOSE
