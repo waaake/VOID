@@ -107,4 +107,16 @@ void PlaylistItemDelegate::setEditorData(QWidget* editor, const QModelIndex& ind
         edit->setText(index.data(static_cast<int>(PlaylistModel::Roles::Name)).toString());
 }
 
+void PlaylistItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(
+        QRect(
+            option.rect.left() + 50,
+            option.rect.top(),
+            option.rect.width() - 90,
+            option.rect.height()
+        )
+    );
+}
+
 VOID_NAMESPACE_CLOSE
