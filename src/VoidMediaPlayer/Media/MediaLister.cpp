@@ -84,6 +84,10 @@ VoidMediaLister::~VoidMediaLister()
     m_ClearTagsAction->deleteLater();
     delete m_ClearTagsAction;
     m_ClearTagsAction = nullptr;
+
+    m_RenameAction->deleteLater();
+    delete m_RenameAction;
+    m_RenameAction = nullptr;
 }
 
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
@@ -128,6 +132,7 @@ void VoidMediaLister::Build()
     m_PlaylistMenu = new QMenu("Add to Playlist");
     /* Add any playlists which are present in the active project */
     RebuildPlaylistMenu();
+    m_RenameAction = new QAction("Rename");
 
     /* Shortcuts */
 #ifdef __APPLE__
@@ -267,6 +272,7 @@ void VoidMediaLister::Connect()
     connect(m_EditEffectsAction, &QAction::triggered, this, &VoidMediaLister::EditEffects);
     connect(m_AddTagAction, &QAction::triggered, this, &VoidMediaLister::AddTagToSelected);
     connect(m_ClearTagsAction, &QAction::triggered, this, &VoidMediaLister::ClearTagsFromSelected);
+    connect(m_RenameAction, &QAction::triggered, this, [this]() -> void { m_MediaView->edit(m_MediaView->currentIndex()); });
 
     /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
@@ -326,9 +332,7 @@ void VoidMediaLister::AddSelectionToSequence()
         return;
 
     std::vector<SharedMediaClip> m;
-    /* Already aware of the amount of items which are to be copied */
     m.reserve(selected.size());
-
     for (const QModelIndex& index : selected)
     {
         if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
@@ -421,6 +425,10 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     contextMenu.addAction(m_EditEffectsAction);
 
     contextMenu.addSeparator();
+    contextMenu.addAction(m_RenameAction);
+    m_RenameAction->setEnabled(CanRenameSelection());
+
+    contextMenu.addSeparator();
     contextMenu.addMenu(m_PlaylistMenu);
 
     /* Show Menu */
@@ -493,7 +501,7 @@ void VoidMediaLister::RebuildPlaylistMenu()
     }
 }
 
-void VoidMediaLister::AddToPrimaryViewer()
+void VoidMediaLister::AddToPrimaryViewer() const
 {
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
     if (selected.empty())
@@ -502,7 +510,7 @@ void VoidMediaLister::AddToPrimaryViewer()
     _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::A);
 }
 
-void VoidMediaLister::AddToSecondaryViewer()
+void VoidMediaLister::AddToSecondaryViewer() const
 {
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
     if (selected.empty())
@@ -511,7 +519,7 @@ void VoidMediaLister::AddToSecondaryViewer()
     _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::B);
 }
 
-void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
+void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist) const
 {
     if (!playlist)
         return;
@@ -555,6 +563,15 @@ void VoidMediaLister::ClearTagsFromSelected()
         SharedMediaClip clip = _MediaBridge.MediaAt(current);
         _MediaBridge.ClearTags(clip);
     }
+}
+
+bool VoidMediaLister::CanRenameSelection() const
+{
+    QItemSelectionModel* selection = m_MediaView->selectionModel();
+    if (selection->selectedRows().size() != 1)
+        return false;
+    
+    return _ENTITY_TYPE(m_MediaView->currentIndex()) == ProjectEntity::Type::SEQUENCE;
 }
 
 VOID_NAMESPACE_CLOSE

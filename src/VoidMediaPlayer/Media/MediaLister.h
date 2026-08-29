@@ -108,6 +108,7 @@ private: /* Members */
     QAction* m_ClearTagsAction;
     QMenu* m_PlaylistMenu;
     QAction* m_CreatePlaylistAction;
+    QAction* m_RenameAction;
 
     /* Shortcuts */
     QShortcut* m_DeleteShortcut;
@@ -119,12 +120,13 @@ private: /* Methods */
     void SetFromPreferences();
     // void ProjectChanged();
     void RebuildPlaylistMenu();
-    void AddToPrimaryViewer();
-    void AddToSecondaryViewer();
-    void AddSelectionToPlaylist(Playlist* playlist);
+    void AddToPrimaryViewer() const;
+    void AddToSecondaryViewer() const;
+    void AddSelectionToPlaylist(Playlist* playlist) const;
     void AddTagToSelected();
     void EditSelectedTags(const QModelIndex& index, const QPoint& position);
     void ClearTagsFromSelected();
+    bool CanRenameSelection() const;
 };
 
 VOID_NAMESPACE_CLOSE
