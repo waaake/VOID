@@ -41,17 +41,17 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
 
 STrackItem::~STrackItem()
 {
-    m_Context->Controller()->RemoveFromScene(m_HeadHandle);
+    // m_Context->Controller()->RemoveFromScene(m_HeadHandle);
     m_HeadHandle->deleteLater();
     delete m_HeadHandle;
     m_HeadHandle = nullptr;
 
-    m_Context->Controller()->RemoveFromScene(m_TailHandle);
+    // m_Context->Controller()->RemoveFromScene(m_TailHandle);
     m_TailHandle->deleteLater();
     delete m_TailHandle;
     m_TailHandle = nullptr;
 
-    m_Context->Controller()->RemoveFromScene(m_DurationHandle);
+    // m_Context->Controller()->RemoveFromScene(m_DurationHandle);
     m_DurationHandle->deleteLater();
     delete m_DurationHandle;
     m_DurationHandle = nullptr;
