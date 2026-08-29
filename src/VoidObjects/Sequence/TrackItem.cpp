@@ -6,6 +6,7 @@
 #include "Track.h"
 #include "VoidCore/Logging.h"
 #include "VoidObjects/Effects/Bridge.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 

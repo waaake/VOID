@@ -29,8 +29,6 @@ set(SOURCES
     Sequence/TrackMap.cpp
     Sequence/TrackItem.cpp
     Sequence/TrackView.cpp
-
-    VoidContext.cpp
 )
 
 add_library(

@@ -11,7 +11,6 @@
 /* Internal */
 #include "MediaBridge.h"
 #include "VoidCore/Logging.h"
-#include "VoidObjects/VoidContext.h"
 #include "VoidObjects/Preferences/Preferences.h"
 
 /* Commands */
@@ -115,7 +114,6 @@ void MBridge::SetActiveProject(Project* project)
     m_UndoGroup->setActiveStack(m_Project->UndoStack());
 
     m_Projects->Refresh();
-    _VoidContext.SetActiveProject(m_Project);
 }
 
 void MBridge::AddMedia(const std::string& filepath)
