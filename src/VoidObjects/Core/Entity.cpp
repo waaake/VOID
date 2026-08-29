@@ -13,7 +13,7 @@ ProjectEntity::ProjectEntity(Core::Project* project)
 }
 
 ProjectEntity::ProjectEntity(const QColor& color, Core::Project* project)
-    : VoidObject(project)
+    : VoidObject()
     , m_Color(color)
     , m_Project(project)
 {
