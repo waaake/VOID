@@ -26,6 +26,7 @@ STrackHeader::STrackHeader(const SharedPlaybackTrack& track, SequencerContext* c
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     connect(m_Context->SelectionModel(), &SSelectionModel::trackSelectionChanged, this, static_cast<void (STrackHeader::*)(void)>(&STrackHeader::update));
     connect(m_Track.get(), &PlaybackTrack::updated, this, [this]() -> void { update(); });
+    connect(m_Track.get(), &PlaybackTrack::stateChanged, this, [this]() -> void { update(); });
 }
 
 QSize STrackHeader::sizeHint() const
