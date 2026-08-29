@@ -152,7 +152,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         ));
     }
 
-    /* Name */
+    // Name
     const QRect namerect(option.rect.left() + 30, option.rect.top(), option.rect.right(), option.rect.height());
     painter->drawText(
         namerect,
@@ -160,7 +160,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
-    /* Frame Range */
+    // Frame Range
     painter->drawText(
         namerect.left(),
         option.rect.top(),
@@ -174,6 +174,23 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 QSize BasicMediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 54);
+}
+
+QWidget* BasicMediaItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void BasicMediaItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
+}
+
+void BasicMediaItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(QRect(option.rect.left() + 26, option.rect.top(), option.rect.width() - 80, option.rect.height()));
 }
 
 /// MediaItemDelegate
@@ -357,6 +374,18 @@ void MediaItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index)
     QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
     if (edit)
         edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
+}
+
+void MediaItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(
+        QRect(
+            option.rect.left() + ICON_SIZE + 10 + MAX_THUMBNAIL_WIDTH,
+            option.rect.top(),
+            option.rect.width() - (MAX_THUMBNAIL_WIDTH + 90),
+            option.rect.height() * 0.5
+        )
+    );
 }
 
 VOID_NAMESPACE_CLOSE

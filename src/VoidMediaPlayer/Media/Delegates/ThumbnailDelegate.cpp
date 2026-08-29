@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QEvent>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -197,6 +198,23 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 QSize MediaThumbnailDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     return QSize(150, 146) * m_Scale;
+}
+
+QWidget* MediaThumbnailDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void MediaThumbnailDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
+}
+
+void MediaThumbnailDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(QRect(option.rect.left() + ICON_SIZE + 6, option.rect.top() + option.rect.height() - 42, 90 * m_Scale, 20));
 }
 
 VOID_NAMESPACE_CLOSE

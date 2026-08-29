@@ -15,13 +15,17 @@ VOID_NAMESPACE_OPEN
 class MediaThumbnailDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
-
 public:
     explicit MediaThumbnailDelegate(QObject* parent = nullptr);
 
     void SetScale(float scale) { m_Scale = std::max(scale, 1.f); }
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+
+    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 signals:
     void tagClicked(const QModelIndex&, const QPoint&);
