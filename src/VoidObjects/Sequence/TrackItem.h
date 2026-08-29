@@ -39,9 +39,9 @@ public:
     /**
      * Update the media on the track item
      * Offset corresponds to the offet in the framerange as when compared against the original range
-     * of the media. 
+     * of the media.
      * This is the number which when added to the range of the TrackItem gives the range of the Media
-     * 
+     *
      * e.g. Media Range: 1001 - 1010
      * TrackItem Range: 1 - 10
      * Offset: 1000
@@ -80,7 +80,7 @@ public:
 
     /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.
-     * 
+     *
      * @param frame Frame number.
      * @param image Image Buffer to be updated.
      */
@@ -97,7 +97,7 @@ public:
      *  |                 | <-Duration-> |                |
      *  | <----Head-----> |              | <---Tail------>|
      *  |_ _ _ _ _ _ _ _ _|______________| _ _ _ _ _ _ _ _|
-     *  ^                 ^              ^                ^ 
+     *  ^                 ^              ^                ^
      * Source start   Source In       Source Out       Source end
      */
 
@@ -129,7 +129,7 @@ public:
     /**
      * Returns whether the given frame is in range of the underlying media
      * Applies the offset of the track item's range back to check against the media
-     * 
+     *
      * TODO: Consider handle frames when they are implemented.
      */
     inline bool InRange(const v_frame_t frame) const { return m_Media ? m_Media->InRange(frame + m_Offset) : false; }
@@ -141,7 +141,7 @@ public:
      * E.g. Media's nearest frame for 1003 is 1001 and the offset of the Track Item is 1001
      * Hence for frame 3, the nearest frame is 0 by adding offset and querying media for nearest frame and
      * then negating back the offset
-     * 
+     *
      * TODO: See if we can improve our logic to get a frame value or Image Data directly?
      */
     inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media ? m_Media->NearestFrame(frame + m_Offset) - m_Offset : frame; }
@@ -152,14 +152,15 @@ public:
 
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
     inline PlaybackTrack* Track() const { return m_Track; }
-    void SetTrack(PlaybackTrack* track) { m_Track = track; } 
+    void SetTrack(PlaybackTrack* track) { m_Track = track; }
+    Core::Project* Project() const;
 
     inline QColor Color() const { return m_Color; }
     void ResetColor() { if (m_Media) SetColor(m_Media->Color()); }
     void SetColor(const QColor& color);
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
-    void Serialize(std::ostream& out) const override;    
+    void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
     void Deserialize(std::istream& in) override;
 
