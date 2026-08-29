@@ -131,6 +131,7 @@ private: /* Methods */
     void ConnectVideoTrack(const SharedPlaybackTrack& track);
     void ConnectAudioTrack(const SharedPlaybackTrack& track);
     void ResizeBuffer(std::size_t size);
+    void UpdateBuffer();
     void UpdateBuffer(const MFrameRange& range);
     void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous);

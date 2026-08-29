@@ -501,6 +501,8 @@ void PlaybackSequence::Deserialize(const rapidjson::Value& in)
 
         m_AudioTracks.push_back(std::move(track));
     }
+
+    UpdateBuffer();
 }
 
 void PlaybackSequence::Deserialize(std::istream& in)
@@ -533,6 +535,8 @@ void PlaybackSequence::Deserialize(std::istream& in)
 
         m_AudioTracks.push_back(std::move(track));
     }
+
+    UpdateBuffer();
 }
 
 void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
@@ -560,6 +564,12 @@ void PlaybackSequence::ResizeBuffer(std::size_t size)
 {
     m_FrameBuffer.resize(size);
     VOID_LOG_INFO("Resized to: {}", size);
+}
+
+void PlaybackSequence::UpdateBuffer()
+{
+    ResizeBuffer(m_EndFrame - m_StartFrame + 1);
+    UpdateBuffer(FrameRange());
 }
 
 void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
