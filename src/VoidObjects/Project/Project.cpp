@@ -97,14 +97,25 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
 
     /// Media
     rapidjson::Value clips(rapidjson::kArrayType);
-    for (const SharedMediaClip& clip : *m_Media)
+    for (const SharedMediaClip& clip : m_Media->MediaClips())
     {
         rapidjson::Value clipObject;
         clip->Serialize(clipObject, allocator);
         clips.PushBack(clipObject, allocator);
     }
 
-    out.AddMember("Clips", clips, allocator);
+    out.AddMember("clips", clips, allocator);
+
+    /// Sequences
+    rapidjson::Value sequences(rapidjson::kArrayType);
+    for (const SharedPlaybackSequence& sequence : m_Media->Sequences())
+    {
+        rapidjson::Value sequenceObject;
+        sequence->Serialize(sequenceObject, allocator);
+        sequences.PushBack(sequenceObject, allocator);
+    }
+
+    out.AddMember("sequences", sequences, allocator);
 
     /// Playlists
     rapidjson::Value playlists(rapidjson::kArrayType);
@@ -115,17 +126,23 @@ void Project::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorTyp
         playlists.PushBack(playlistObject, allocator);
     }
 
-    out.AddMember("Playlists", playlists, allocator);
+    out.AddMember("playlists", playlists, allocator);
 }
 
 void Project::Serialize(std::ostream& out) const
 {
-    uint32_t count = static_cast<uint32_t>(m_Media->rowCount());
+    uint32_t count = static_cast<uint32_t>(m_Media->MediaCount());
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
     // Serialize each of the clip data
-    for (const SharedMediaClip& clip : *m_Media)
+    for (const SharedMediaClip& clip : m_Media->MediaClips())
         clip->Serialize(out);
+
+    count = static_cast<uint32_t>(m_Media->SequenceCount());
+    out.write(reinterpret_cast<const char*>(&count), sizeof(count));
+
+    for (const SharedPlaybackSequence& sequence : m_Media->Sequences())
+        sequence->Serialize(out);
 
     count = static_cast<uint32_t>(m_Playlists->rowCount());
     out.write(reinterpret_cast<const char*>(&count), sizeof(count));
@@ -139,7 +156,8 @@ void Project::Deserialize(const rapidjson::Value& in)
     Tools::VoidProfiler<std::chrono::duration<double>> p("Deserialize Project");
 
     /// Media
-    const rapidjson::Value::ConstArray clips = in["Clips"].GetArray();
+    const rapidjson::Value::ConstArray clips = in["clips"].GetArray();
+    m_Media->ReserveMedia(clips.Size());
     for (unsigned int i = 0; i < clips.Size(); ++i)
     {
         SharedMediaClip clip = std::make_shared<MediaClip>(this);
@@ -147,8 +165,20 @@ void Project::Deserialize(const rapidjson::Value& in)
         m_Media->Add(clip);
     }
 
+    /// Sequences
+    const rapidjson::Value::ConstArray sequences = in["sequences"].GetArray();
+    m_Media->ReserveSequences(sequences.Size());
+
+    for (unsigned int i = 0; i < sequences.Size(); ++i)
+    {
+        SharedPlaybackSequence sequence = std::make_shared<PlaybackSequence>(this);
+        sequence->Deserialize(sequences[i]);
+        m_Media->Add(sequence);
+    }
+
     /// Playlists
-    const rapidjson::Value::ConstArray playlists = in["Playlists"].GetArray();
+    const rapidjson::Value::ConstArray playlists = in["playlists"].GetArray();
+    m_Playlists->Reserve(playlists.Size());
     for (unsigned int i = 0; i < static_cast<unsigned int>(playlists.Size()); ++i)
     {
         Playlist* playlist = new Playlist(this);
@@ -165,7 +195,7 @@ void Project::Deserialize(std::istream& in)
 
     /// Read Media
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
-
+    m_Media->ReserveMedia(count);
     for (uint32_t i = 0; i < count; ++i)
     {
         SharedMediaClip clip = std::make_shared<MediaClip>(this);
@@ -173,9 +203,19 @@ void Project::Deserialize(std::istream& in)
         m_Media->Add(clip);
     }
 
+    /// Read Sequences
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+    m_Media->ReserveSequences(count);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        SharedPlaybackSequence sequence = std::make_shared<PlaybackSequence>(this);
+        sequence->Deserialize(in);
+        m_Media->Add(sequence);
+    }
+
     /// Read Playlists
     in.read(reinterpret_cast<char*>(&count), sizeof(count));
-
+    m_Playlists->Reserve(count);
     for (uint32_t i = 0; i < count; ++i)
     {
         Playlist* playlist = new Playlist(this);
@@ -198,7 +238,7 @@ std::string Project::Document(const std::string& name) const
     rapidjson::Value project;
     Serialize(project, allocator);
 
-    doc.AddMember("Project", project, allocator);
+    doc.AddMember("project", project, allocator);
 
     rapidjson::StringBuffer buffer;
     // Using Pretty Writer to dump with indented json formatting

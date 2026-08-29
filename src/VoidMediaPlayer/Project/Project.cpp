@@ -124,7 +124,7 @@ Project* Project::FromDocument(const std::string& document)
     doc.Parse(document.c_str());
 
     Project* p = new Project(doc["name"].GetString(), true);
-    p->Deserialize(doc["Project"]);
+    p->Deserialize(doc["project"]);
 
     return p;
 }

@@ -609,7 +609,7 @@ void MBridge::Load(const std::string& path)
         return;
     }
 
-    /* Read the File header to understand whether this is a valid file */
+    // Valid ?
     char header[EtherFormat::MAGIC_SIZE] = {};
     in.read(header, EtherFormat::MAGIC_SIZE);
 
@@ -620,7 +620,7 @@ void MBridge::Load(const std::string& path)
         return;
     }
 
-    /* Save as the Last project Opened */
+    // Save as the Last project Opened
     VoidPreferences::Instance().AddRecentProject(path);
 
     if (type == EtherFormat::Type::ASCII)
@@ -637,7 +637,7 @@ void MBridge::Load(const std::string& path)
     connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
     connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
 
-    /* Add to the projects */
+    // Add to the projects
     m_Projects->Add(m_Project);
     m_Project->SetSavePath(path);
 
