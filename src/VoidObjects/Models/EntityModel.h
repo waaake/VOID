@@ -67,6 +67,9 @@ public:
     int MediaRow(const SharedMediaClip& clip) const;
     int SequenceRow(const SharedPlaybackSequence& sequence) const;
 
+    int MediaCount() const { return static_cast<int>(m_Media.size()); }
+    int SequenceCount() const { return static_cast<int>(m_Sequences.size()); }
+
     /**
      * Returns the last/latest media clip from the underlying model
      */
@@ -85,7 +88,11 @@ public:
     inline std::vector<SharedMediaClip>::iterator end() noexcept { return m_Media.end(); }
 
     const std::vector<SharedMediaClip> AllMedia() const { return m_Media; }
+    const std::vector<SharedMediaClip>& MediaClips() const { return m_Media; }
     const std::vector<SharedPlaybackSequence>& Sequences() const { return m_Sequences; }
+
+    void ReserveMedia(std::size_t size) { m_Media.reserve(size); }
+    void ReserveSequences(std::size_t size) { m_Sequences.reserve(size); }
 
 signals:
     void updated();
