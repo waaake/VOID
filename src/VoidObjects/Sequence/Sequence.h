@@ -30,10 +30,16 @@ public:
     explicit PlaybackSequence(Core::Project* project = nullptr);
     virtual ~PlaybackSequence();
 
+    void SetName(const std::string& name);
     std::string Name() const override { return m_Name; }
     std::string Extension() const override { return "SEQ"; }
+
+    void SetRange(int start, int end);
     MFrameRange FrameRange() const override { return MFrameRange(m_StartFrame, m_EndFrame, m_Framerate); }
+
+    void SetFramerate(double framerate);
     double Framerate() const override { return m_Framerate; }
+
     int Channels() const override { return 0; }
     QPixmap Thumbnail() override;
 
@@ -79,12 +85,6 @@ public:
 
     bool HasMedia() const;
 
-    /* Update the range of the Sequence */
-    void SetRange(int start, int end);
-    void SetFramerate(double framerate);
-
-    void SetName(const std::string& name);
-
     /**
      * Returns the last track that is active
      */
@@ -93,6 +93,13 @@ public:
     SharedMediaClip Media(v_frame_t frame);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
+
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
+
+    const char* TypeName() const override { return "Sequence"; }
 
 signals: /* Signals denoting actions in the seqeuence */
     void trackAdded(const SharedPlaybackTrack& track);

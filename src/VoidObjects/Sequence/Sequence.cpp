@@ -416,6 +416,125 @@ void PlaybackSequence::ClearCache(v_frame_t frame)
         return m_FrameBuffer[index].Clear();
 }
 
+void PlaybackSequence::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
+{
+    out.SetObject();
+
+    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+    out.AddMember("name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
+    out.AddMember("start_frame", static_cast<int>(m_StartFrame), allocator);
+    out.AddMember("end_frame", static_cast<int>(m_EndFrame), allocator);
+    out.AddMember("framerate", static_cast<double>(m_Framerate), allocator);
+
+    out.AddMember("video_tracks_count", static_cast<int>(m_VideoTracks.size()), allocator);
+    rapidjson::Value vtracks(rapidjson::kArrayType);
+    for (const SharedPlaybackTrack& vtrack : m_VideoTracks)
+    {
+        rapidjson::Value track(rapidjson::kObjectType);
+        vtrack->Serialize(track, allocator);
+
+        vtracks.PushBack(track, allocator);
+    }
+    out.AddMember("video_tracks", vtracks, allocator);
+
+    out.AddMember("audio_tracks_count", static_cast<int>(m_AudioTracks.size()), allocator);
+    rapidjson::Value atracks(rapidjson::kArrayType);
+    for (const SharedPlaybackTrack& atrack : m_AudioTracks)
+    {
+        rapidjson::Value track(rapidjson::kObjectType);
+        atrack->Serialize(track, allocator);
+
+        atracks.PushBack(track, allocator);
+    }
+    out.AddMember("audio_tracks", atracks, allocator);
+}
+
+void PlaybackSequence::Serialize(std::ostream& out) const
+{
+    WriteString(out, m_Name);
+    out.write(reinterpret_cast<const char*>(&m_StartFrame), sizeof(m_StartFrame));
+    out.write(reinterpret_cast<const char*>(&m_EndFrame), sizeof(m_EndFrame));
+    out.write(reinterpret_cast<const char*>(&m_Framerate), sizeof(m_Framerate));
+
+    /// Video
+    int vcount = static_cast<int>(m_VideoTracks.size());
+    out.write(reinterpret_cast<const char*>(&vcount), sizeof(vcount));
+
+    for (const SharedPlaybackTrack& vtrack : m_VideoTracks)
+        vtrack->Serialize(out);
+
+    /// Audio
+    int acount = static_cast<int>(m_AudioTracks.size());
+    out.write(reinterpret_cast<const char*>(&acount), sizeof(acount));
+
+    for (const SharedPlaybackTrack& atrack : m_AudioTracks)
+        atrack->Serialize(out);
+}
+
+void PlaybackSequence::Deserialize(const rapidjson::Value& in)
+{
+    m_Name = in["name"].GetString();
+    m_StartFrame = in["start_frame"].GetInt();
+    m_EndFrame = in["end_frame"].GetInt();
+    m_Framerate = in["framerate"].GetDouble();
+
+    const rapidjson::Value::ConstArray vtracks = in["video_tracks"].GetArray();
+    m_VideoTracks.reserve(vtracks.Size());
+
+    for (unsigned int i = 0; i < vtracks.Size(); ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO, this);
+        track->Deserialize(vtracks[i]);
+        ConnectVideoTrack(track);
+
+        m_VideoTracks.push_back(std::move(track));
+    }
+
+    const rapidjson::Value::ConstArray atracks = in["audio_tracks"].GetArray();
+    m_AudioTracks.reserve(atracks.Size());
+
+    for (int i = 0; i < atracks.Size(); ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::AUDIO, this);
+        track->Deserialize(atracks[i]);
+        ConnectAudioTrack(track);
+
+        m_AudioTracks.push_back(std::move(track));
+    }
+}
+
+void PlaybackSequence::Deserialize(std::istream& in)
+{
+    m_Name = ReadString(in);
+    in.read(reinterpret_cast<char*>(&m_StartFrame), sizeof(m_StartFrame));
+    in.read(reinterpret_cast<char*>(&m_EndFrame), sizeof(m_EndFrame));
+    in.read(reinterpret_cast<char*>(&m_Framerate), sizeof(m_Framerate));
+
+    int vcount = 0;
+    in.read(reinterpret_cast<char*>(&vcount), sizeof(vcount));
+
+    for (int i = 0; i < vcount; ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO, this);
+        track->Deserialize(in);
+        ConnectVideoTrack(track);
+
+        m_VideoTracks.push_back(std::move(track));
+    }
+
+    int acount = 0;
+    in.read(reinterpret_cast<char*>(&acount), sizeof(acount));
+
+    for (int i = 0; i < acount; ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::AUDIO, this);
+        track->Deserialize(in);
+        ConnectAudioTrack(track);
+
+        m_AudioTracks.push_back(std::move(track));
+    }
+}
+
 void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
 {
     auto* ptr = track.get();
