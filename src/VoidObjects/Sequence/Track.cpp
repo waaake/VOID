@@ -296,6 +296,12 @@ SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
     return m_Recent;
 }
 
+Core::Project* PlaybackTrack::Project() const
+{
+    if (const auto& sequence = Sequence()) return sequence->Project();
+    return nullptr;
+}
+
 int PlaybackTrack::Index() const
 {
     if (const auto& sequence = Sequence())
@@ -546,6 +552,7 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
         std::string type = effects[i]["typename"].GetString();
         if (Effect* effect = _EffectsBridge.CreateEffect(type))
         {
+            effect->SetTrack(this);
             effect->Deserialize(effects[i]["effect"]);
             m_Effects.push_back(effect);
         }
@@ -582,6 +589,7 @@ void PlaybackTrack::Deserialize(std::istream& in)
         std::string type = ReadString(in);
         if (Effect* effect = _EffectsBridge.CreateEffect(type))
         {
+            effect->SetTrack(this);
             effect->Deserialize(in);
             m_Effects.push_back(effect);
         }

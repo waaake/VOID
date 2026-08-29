@@ -129,6 +129,7 @@ public:
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
     inline PlaybackSequence* Sequence() const { return m_Sequence; }
+    Core::Project* Project() const;
     int Index() const;
 
     /* Setters */
