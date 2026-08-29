@@ -133,7 +133,8 @@ Qt::ItemFlags EntityModel::flags(const QModelIndex& index) const
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    // if (_ENTITY_TYPE())
+    if (index.row() < static_cast<int>(m_Media.size()))
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable;
 }
