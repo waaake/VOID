@@ -112,7 +112,7 @@ bool EntityModel::setData(const QModelIndex& index, const QVariant& value, int r
     {
         if (index.row() < static_cast<int>(m_Media.size()))
             return false;
-        
+
         int srow = index.row() - static_cast<int>(m_Media.size());
         if (srow < static_cast<int>(m_Sequences.size()))
         {
@@ -236,9 +236,9 @@ void EntityModel::Insert(const SharedMediaClip& media, const int index)
 
 void EntityModel::Insert(const SharedPlaybackSequence& sequence, const int index)
 {
-    int seqidx = index + static_cast<int>(m_Media.size());
-    beginInsertRows(QModelIndex(), seqidx , seqidx);
-    m_Sequences.insert(m_Sequences.begin() + index, sequence);
+    int seqidx = index - static_cast<int>(m_Media.size());
+    beginInsertRows(QModelIndex(), index , index);
+    m_Sequences.insert(m_Sequences.begin() + seqidx, sequence);
     endInsertRows();
 
     emit updated();
@@ -277,10 +277,12 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
 
 SharedMediaClip EntityModel::Media(const QModelIndex& index) const
 {
-    if (!index.isValid())
-        return nullptr;
+    return index.isValid() ? m_Media.at(index.row()) : nullptr;
+}
 
-    return m_Media.at(index.row());
+SharedPlaybackSequence EntityModel::Sequence(const QModelIndex& index) const
+{
+    return index.isValid() ? m_Sequences.at(index.row() - static_cast<int>(m_Media.size())) : nullptr;
 }
 
 int EntityModel::MediaRow(const SharedMediaClip& clip) const

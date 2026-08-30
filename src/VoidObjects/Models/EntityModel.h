@@ -64,6 +64,7 @@ public:
     void Remove(const QModelIndex& index, bool destroy = true);
 
     SharedMediaClip Media(const QModelIndex& index) const;
+    SharedPlaybackSequence Sequence(const QModelIndex& index) const;
     int MediaRow(const SharedMediaClip& clip) const;
     int SequenceRow(const SharedPlaybackSequence& sequence) const;
 
