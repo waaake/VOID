@@ -124,12 +124,12 @@ void MBridge::AddMedia(const std::string& filepath)
     PushCommand(new MediaImportCommand(m_Project, filepath));
 }
 
-void MBridge::RemoveMedia(const QModelIndex& index)
+void MBridge::RemoveEntity(const QModelIndex& index)
 {
-    PushCommand(new MediaRemoveCommand(m_Project, index));
+    PushCommand(new RemoveEntityCommand(m_Project, index));
 }
 
-void MBridge::RemoveMedia(const std::vector<QModelIndex>& indexes)
+void MBridge::RemoveEntity(const std::vector<QModelIndex>& indexes)
 {
     if (m_Project)
     {
@@ -144,7 +144,7 @@ void MBridge::RemoveMedia(const std::vector<QModelIndex>& indexes)
         for (int i = indexes.size() - 1; i >= 0; --i)
         {
             QModelIndex idx = indexes.at(i);
-            stack->push(new MediaRemoveCommand(m_Project, idx));
+            stack->push(new RemoveEntityCommand(m_Project, idx));
         }
 
         stack->endMacro();
@@ -350,7 +350,7 @@ bool MBridge::Remove(SharedMediaClip clip)
 {
     emit mediaAboutToBeRemoved(clip);
     QCoreApplication::processEvents();
-    m_Project->Remove(m_Project->ClipIndex(clip));
+    m_Project->RemoveMedia(m_Project->ClipIndex(clip));
 
     return true;
 }

@@ -263,7 +263,7 @@ void MediaView::RemoveSelectedMedia()
         if (!sources.empty())
         {
             const int scroll = verticalScrollBar()->value();
-            _MediaBridge.RemoveMedia(sources);
+            _MediaBridge.RemoveEntity(sources);
 
             verticalScrollBar()->setValue(scroll);
         }
