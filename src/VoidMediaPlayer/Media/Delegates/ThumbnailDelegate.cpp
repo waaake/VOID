@@ -76,15 +76,17 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     // int width = 150;
     // int height = rect.height();
 
-    /* Default background */
-    painter->fillRect(rect, option.palette.color(QPalette::Window).lighter(150));
+    // Background
+    painter->fillRect(rect, option.palette.color(QPalette::Base).darker(
+        _ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150
+    ));
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {
         /* Gradient */
         QLinearGradient gradient(rect.left(), rect.top(), rect.left() + 150, rect.top());
-        gradient.setColorAt(0, option.palette.color(QPalette::Window).lighter(150));
+        gradient.setColorAt(0, option.palette.color(QPalette::Base).darker(150));
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
 
         painter->save();
@@ -154,7 +156,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
     {
         painter->drawPixmap(option.rect.left() + 2, option.rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
-            IconType::icon_view_object_track,
+            IconType::icon_burst_mode,
             option.palette.color(QPalette::Text),
             ICON_SIZE
         ));
