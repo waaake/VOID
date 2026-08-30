@@ -113,7 +113,7 @@ void Project::ImportDirectory_(const std::string& path)
 
     /* Add All the found media */
     for (MediaStruct m : vec)
-        m_UndoStack->push(new MediaImportCommand(m.FirstPath()));
+        m_UndoStack->push(new MediaImportCommand(this, m.FirstPath()));
 
     m_UndoStack->endMacro();
 }
@@ -177,7 +177,7 @@ void Project::SetupImporter()
     connect(m_DirectoryImporter, &DirectoryImporter::mediaFound, this, [this](const QString& path) -> void
     {
         m_ProgressTask->SetCurrentTask(path.toStdString().c_str());
-        m_UndoStack->push(new MediaImportCommand(path.toStdString()));
+        m_UndoStack->push(new MediaImportCommand(this, path.toStdString()));
     });
 
     connect(m_DirectoryImporter, &DirectoryImporter::maxCount, this, [this](int value) -> void
@@ -206,82 +206,6 @@ void Project::CancelImporting()
     if (m_DirectoryImporter)
         m_DirectoryImporter->Cancel();
     DeleteProgressTask();
-}
-
-Playlist* Project::NewPlaylist()
-{
-    /* Use default name */
-    std::string name = "Playlist ";
-    name += std::to_string(m_Playlists->rowCount() + 1);
-    return NewPlaylist(name);
-}
-
-Playlist* Project::NewPlaylist(const std::string& name)
-{
-    SetActivePlaylist(new Playlist(name, this));
-
-    /* Add to the playlists */
-    m_Playlists->Add(m_Playlist);
-    emit playlistCreated(m_Playlist);
-
-    return m_Playlist;
-}
-
-Playlist* Project::NewPlaylist(const std::string& name, int index)
-{
-    SetActivePlaylist(new Playlist(name, this));
-    
-    m_Playlists->Insert(m_Playlist, index);
-    emit playlistCreated(m_Playlist);
-
-    return m_Playlist;
-}
-
-void Project::SetCurrentPlaylist(const QModelIndex& index)
-{
-    /* Provided index is not valid */
-    if (!index.isValid())
-        return;
-
-    SetActivePlaylist(m_Playlists->PlaylistAt(index));
-    emit playlistChanged(m_Playlist);
-}
-
-void Project::SetCurrentPlaylist(int index)
-{
-    if (index < 0 || index > m_Playlists->rowCount() - 1)
-        return;
-
-    SetActivePlaylist(m_Playlists->PlaylistAt(index, 0));
-    emit playlistChanged(m_Playlist);
-}
-
-void Project::RemovePlaylist(const QModelIndex& index)
-{
-    int row = index.row();
-    m_Playlists->Remove(index);
-
-    /* Set to null before resetting the current playlist*/
-    m_Playlist = nullptr;
-
-    /* Based on whether this is the last row or any from the beginning */
-    SetCurrentPlaylist(row >= m_Playlists->rowCount() ? [](int x) { return --x; }(m_Playlists->rowCount()) : row);
-}
-
-void Project::SetActivePlaylist(Playlist* playlist)
-{
-    if (!playlist)
-        return;
-
-    /* Mark the current one as inactive */
-    if (m_Playlist)
-        m_Playlist->SetActive(false);
-
-    m_Playlist = playlist;
-    m_Playlist->SetActive(true);
-
-    /* Force Update on the Model */
-    m_Playlists->Refresh();
 }
 
 VOID_NAMESPACE_CLOSE
