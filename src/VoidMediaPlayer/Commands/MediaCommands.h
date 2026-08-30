@@ -10,6 +10,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidMediaPlayer/Project/Project.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidUndo/VoidCommand.h"
 
@@ -18,12 +19,13 @@ VOID_NAMESPACE_OPEN
 class MediaImportCommand : public VoidUndoCommand
 {
 public:
-    MediaImportCommand(const std::string& path, QUndoCommand* parent = nullptr);
+    MediaImportCommand(Project* project, const std::string& path, QUndoCommand* parent = nullptr);
 
     void undo() override;
     bool Redo() override;
 
 private: /* Members */
+    Project* m_Project;
     std::string m_Path;
     int m_InsertIndex;
 };

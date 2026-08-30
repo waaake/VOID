@@ -11,23 +11,24 @@ VOID_NAMESPACE_OPEN
 
 /// MediaImportCommand
 
-MediaImportCommand::MediaImportCommand(const std::string& path, QUndoCommand* parent)
+MediaImportCommand::MediaImportCommand(Project* project, const std::string& path, QUndoCommand* parent)
     : VoidUndoCommand(parent)
+    , m_Project(project)
     , m_Path(MediaFS::ResolvedPath(path))
-    , m_InsertIndex(_MediaBridge.DataModel()->rowCount())
+    , m_InsertIndex(project->DataModel()->MediaCount())
 {
     setText("Import Media");
 }
 
 void MediaImportCommand::undo()
 {
-    QModelIndex index = _MediaBridge.DataModel()->index(m_InsertIndex, 0);
-    _MediaBridge.Remove(index);
+    QModelIndex index = m_Project->DataModel()->index(m_InsertIndex, 0);
+    m_Project->Remove(index);
 }
 
 bool MediaImportCommand::Redo()
 {
-    return _MediaBridge.AddMedia(MediaStruct::FromFile(m_Path));
+    return m_Project->AddMedia(MediaStruct::FromFile(m_Path));
 }
 
 /// MediaRemoveCommand
