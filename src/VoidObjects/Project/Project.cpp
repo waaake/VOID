@@ -49,29 +49,206 @@ Project::~Project()
     m_Playlists = nullptr;
 }
 
+bool Project::AddMedia(MediaStruct&& mstruct)
+{
+    if (mstruct.Empty())
+    {
+        VOID_LOG_INFO("Invalid Media");
+        return false;
+    }
+
+    if (!mstruct.ValidMedia())
+    {
+        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
+        return false;
+    }
+
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    if (clip->Valid())
+    {
+        m_Media->Add(clip);
+        emit mediaAdded(clip);
+        // Success
+        return true;
+    }
+
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
+}
+
+bool Project::AddMedia(const MediaStruct& mstruct)
+{
+    if (mstruct.Empty())
+    {
+        VOID_LOG_INFO("Invalid Media");
+        return false;
+    }
+
+    if (!mstruct.ValidMedia())
+    {
+        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
+        return false;
+    }
+
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    if (clip->Valid())
+    {
+        m_Media->Add(clip);
+        emit mediaAdded(clip);
+        // Success
+        return true;
+    }
+
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
+}
+
+bool Project::InsertMedia(MediaStruct&& mstruct, int index)
+{
+    if (mstruct.Empty())
+    {
+        VOID_LOG_INFO("Invalid Media");
+        return false;
+    }
+
+    if (!mstruct.ValidMedia())
+    {
+        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
+        return false;
+    }
+
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    if (clip->Valid())
+    {
+        m_Media->Insert(clip, index);
+        emit mediaAdded(clip);
+        // Success
+        return true;
+    }
+
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
+}
+
+bool Project::InsertMedia(const MediaStruct& mstruct, int index)
+{
+    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, this);
+    if (clip->Valid())
+    {
+        m_Media->Insert(clip, index);
+        emit mediaAdded(clip);
+        // Success
+        return true;
+    }
+
+    VOID_LOG_INFO("Invalid Media Type");
+    return false;
+}
+
 void Project::Add(const SharedMediaClip& media)
 {
     m_Media->Add(media);
+    emit mediaAdded(media);
 }
 
 void Project::Add(const SharedPlaybackSequence& sequence)
 {
     m_Media->Add(sequence);
+    emit sequenceAdded(sequence);
 }
 
 void Project::Insert(const SharedMediaClip& media, const int index)
 {
     m_Media->Insert(media, index);
+    emit mediaAdded(media);
 }
 
 void Project::Insert(const SharedPlaybackSequence& sequence, const int index)
 {
     m_Media->Insert(sequence, index);
+    emit sequenceAdded(sequence);
 }
 
-void Project::Remove(const QModelIndex& index)
+bool Project::Remove(const QModelIndex& index)
 {
-    m_Media->Remove(index, false);
+    SharedMediaClip clip = m_Media->Media(index);
+    if (clip)
+    {
+        emit mediaAboutToBeRemoved(clip);
+        // QCoreApplication::processEvents();
+        m_Media->Remove(index, false);
+    
+        return true;
+    }
+    return false;
+}
+
+Playlist* Project::NewPlaylist()
+{
+    std::string name = "Playlist ";
+    name += std::to_string(m_Playlists->rowCount() + 1);
+    return NewPlaylist(name);
+}
+
+Playlist* Project::NewPlaylist(const std::string& name)
+{
+    SetActivePlaylist(new Playlist(name, this));
+
+    m_Playlists->Add(m_Playlist);
+    emit playlistCreated(m_Playlist);
+
+    return m_Playlist;
+}
+
+Playlist* Project::NewPlaylist(const std::string& name, int index)
+{
+    SetActivePlaylist(new Playlist(name, this));
+    
+    m_Playlists->Insert(m_Playlist, index);
+    emit playlistCreated(m_Playlist);
+
+    return m_Playlist;
+}
+
+void Project::SetCurrentPlaylist(const QModelIndex& index)
+{
+    if (!index.isValid())
+        return;
+
+    SetActivePlaylist(m_Playlists->PlaylistAt(index));
+    emit playlistChanged(m_Playlist);
+}
+
+void Project::SetCurrentPlaylist(int index)
+{
+    if (index < 0 || index > m_Playlists->rowCount() - 1)
+        return;
+
+    SetActivePlaylist(m_Playlists->PlaylistAt(index, 0));
+    emit playlistChanged(m_Playlist);
+}
+
+void Project::RemovePlaylist(const QModelIndex& index)
+{
+    int row = index.row();
+    m_Playlists->Remove(index);
+    // Current playlist
+    m_Playlist = nullptr;
+    SetCurrentPlaylist(row >= m_Playlists->rowCount() ? [](int x) { return --x; }(m_Playlists->rowCount()) : row);
+}
+
+void Project::SetActivePlaylist(Playlist* playlist)
+{
+    if (!playlist)
+        return;
+
+    if (m_Playlist)
+        m_Playlist->SetActive(false);
+
+    m_Playlist = playlist;
+    m_Playlist->SetActive(true);
+
+    m_Playlists->Refresh();
 }
 
 SharedMediaClip Project::PlaylistMediaAt(const QModelIndex& index) const

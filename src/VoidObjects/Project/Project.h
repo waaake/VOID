@@ -21,6 +21,7 @@ namespace Core {
  */
 class VOID_API Project : public VoidObject
 {
+    Q_OBJECT
 public:
     Project(bool active = true, QObject* parent = nullptr);
     Project(const std::string& name, bool active = true, QObject* parent = nullptr);
@@ -42,12 +43,17 @@ public:
      * Project being referred to as saved means that it has a physical file location
      */
     inline bool Saved() const { return !m_Modified && !m_Path.empty(); }
+
+    bool AddMedia(MediaStruct&& mstruct);
+    bool AddMedia(const MediaStruct& mstruct);
+    bool InsertMedia(MediaStruct&& mstruct, int index);
+    bool InsertMedia(const MediaStruct& mstruct, int index);
     
     void Add(const SharedMediaClip& media);
     void Add(const SharedPlaybackSequence& media);
     void Insert(const SharedMediaClip& media, const int index);
     void Insert(const SharedPlaybackSequence& sequence, const int index);
-    void Remove(const QModelIndex& index);
+    bool Remove(const QModelIndex& index);
 
     inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip MediaAt(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
@@ -64,10 +70,16 @@ public:
     }
     int MediaRow(const SharedMediaClip& clip) const { return m_Media->MediaRow(clip); }
 
+    Playlist* NewPlaylist();
+    Playlist* NewPlaylist(const std::string& name);
+    Playlist* NewPlaylist(const std::string& name, int index);
     inline Playlist* ActivePlaylist() const { return m_Playlist; }
     inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Playlists->PlaylistAt(index); }
     inline Playlist* PlaylistAt(int row, int column) const { return m_Playlists->PlaylistAt(row, column); }
     inline void RefreshPlaylist() { m_Playlists->Refresh(); }
+    void SetCurrentPlaylist(const QModelIndex& index);
+    void SetCurrentPlaylist(int index);
+    void RemovePlaylist(const QModelIndex& index);
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;
@@ -106,6 +118,16 @@ public:
      */
     inline void SetSavePath(const std::string& path) { m_Path = path; }
 
+signals:
+    void mediaAdded(const SharedMediaClip&);
+    void mediaAboutToBeRemoved(const SharedMediaClip&);
+    void mediaRemoved();
+    void sequenceAdded(const SharedPlaybackSequence&);
+    void sequenceAboutToBeRemoved(const SharedPlaybackSequence&);
+    void sequenceRemoved();
+    void playlistCreated(const Playlist*);
+    void playlistChanged(const Playlist*);
+
 protected: /* Members */
     EntityModel* m_Media;
     PlaylistModel* m_Playlists;
@@ -119,6 +141,7 @@ protected: /* Members */
     bool m_Modified;
 
 private: /* Methods */
+    void SetActivePlaylist(Playlist* playlist);
     bool SaveInternal(const std::string& path, const std::string& name, const EtherFormat::Type& type);
     bool SaveAscii(const std::string& path, const std::string& name);
     bool SaveBinary(const std::string& path, const std::string& name);
