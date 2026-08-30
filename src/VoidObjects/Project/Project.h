@@ -55,6 +55,8 @@ public:
     void Insert(const SharedMediaClip& media, const int index);
     void Insert(const SharedPlaybackSequence& sequence, const int index);
     bool Remove(const QModelIndex& index);
+    bool RemoveMedia(const QModelIndex& index);
+    bool RemoveSequence(const QModelIndex& index);
 
     inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip MediaAt(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }

@@ -184,6 +184,13 @@ void Project::Insert(const SharedPlaybackSequence& sequence, const int index)
 
 bool Project::Remove(const QModelIndex& index)
 {
+    if (static_cast<ProjectEntity::Type>(index.data(static_cast<int>(EntityModel::MRoles::Type)).toInt()) == ProjectEntity::Type::MEDIA)
+        return RemoveMedia(index);
+    return RemoveSequence(index);
+}
+
+bool Project::RemoveMedia(const QModelIndex& index)
+{
     SharedMediaClip clip = m_Media->Media(index);
     if (clip)
     {
@@ -191,6 +198,18 @@ bool Project::Remove(const QModelIndex& index)
         // QCoreApplication::processEvents();
         m_Media->Remove(index, false);
     
+        return true;
+    }
+    return false;
+}
+
+bool Project::RemoveSequence(const QModelIndex& index)
+{
+    SharedPlaybackSequence sequence = m_Media->Sequence(index);
+    if (sequence)
+    {
+        emit sequenceAboutToBeRemoved(sequence);
+        m_Media->Remove(index, false);
         return true;
     }
     return false;
