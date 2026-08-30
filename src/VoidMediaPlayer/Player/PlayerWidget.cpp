@@ -8,8 +8,10 @@
 /* Internal */
 #include "PlayerWidget.h"
 #include "VoidCore/Logging.h"
-#include "VoidObjects/Preferences/Preferences.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidObjects/Preferences/Preferences.h"
+#include "VoidRenderer/Core/RenderTypes.h"
+#include "VoidRenderer/VoidRenderer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -89,6 +91,41 @@ void PlayerWidget::Connect()
 
     // Bridge
     connect(&_MediaBridge, &MBridge::mediaAboutToBeRemoved, this, &PlayerWidget::RemoveMedia, Qt::DirectConnection);
+}
+
+void PlayerWidget::ZoomIn()
+{
+    m_ControlBar->ZoomIn();
+}
+
+void PlayerWidget::ZoomOut()
+{
+    m_ControlBar->ZoomOut();
+}
+
+void PlayerWidget::ZoomToFit()
+{
+    m_Renderer->ZoomToFit();
+}
+
+int PlayerWidget::GridRows() const
+{
+    return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Rows() : 1;
+}
+
+int PlayerWidget::GridColumns() const
+{
+    return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Columns() : 1;
+}
+
+void PlayerWidget::SetGridRows(int rows)
+{
+    m_Renderer->SetRows(rows);
+}
+
+void PlayerWidget::SetGridColumns(int columns)
+{
+    m_Renderer->SetColumns(columns);
 }
 
 void PlayerWidget::RemoveMedia(const SharedMediaClip& media)

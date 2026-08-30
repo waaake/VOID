@@ -3,13 +3,14 @@
 
 /* Qt */
 #include <QEvent>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
 
 /* Internal */
 #include "ListDelegate.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -22,8 +23,9 @@ constexpr int ICON_SIZE = 14;
 constexpr int ICON_SIZE = 12;
 #endif
 
+#define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
 
-/* Basic Media Item Delegate {{{ */
+/// Basic Media Item Delegate
 
 BasicMediaItemDelegate::BasicMediaItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
@@ -44,7 +46,7 @@ bool BasicMediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
         QPoint pos = mevent->pos();
         #endif
         
-        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
 
@@ -60,14 +62,17 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
      * ------------------------------
      */
 
-    painter->fillRect(option.rect, option.palette.color(QPalette::Window).lighter(150));
+    // Background
+    painter->fillRect(option.rect, option.palette.color(QPalette::Base).darker(
+        _ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150
+    ));
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {   
         /* Gradient */
         QLinearGradient gradient(0, 0, option.rect.width(), 0);
-        gradient.setColorAt(0, option.palette.color(QPalette::Window).lighter(150));
+        gradient.setColorAt(0, option.palette.color(QPalette::Base).darker(150));
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
 
         painter->save();
@@ -79,7 +84,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
         /* Draw the right indicator rect */
         painter->fillRect(
-            option.rect.width() - 4,
+            option.rect.width() - 3,
             option.rect.top(),
             4,
             option.rect.height(),
@@ -105,59 +110,67 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         option.rect.left() + 2, option.rect.top() + 2,
         IconForge::GetPixmap(
             IconType::icon_volume_up,
-            index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool()
+            index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool()
             ? option.palette.color(QPalette::Text)
             : option.palette.color(QPalette::Window).lighter(280),
             ICON_SIZE
         )
     );
 
-    // if (index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
     painter->drawPixmap(
         m_TagX,
         m_TagY,
         IconForge::GetPixmap(
             IconType::icon_style,
-            index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool()
+            index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool()
             ? option.palette.color(QPalette::Text)
             : option.palette.color(QPalette::Window).lighter(280),
             ICON_SIZE
         )
     );
 
-    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left(), option.rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom(), w, 1, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
         const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 1, QColor(0, 0, 255));
-        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+        painter->fillRect(option.rect.left(), option.rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom(), w, 1, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom(), w, 1, QColor(255, 255, 255));
     }
 
-    /* Name */
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
+    {
+        painter->drawPixmap(option.rect.left() + 2, option.rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
+            IconType::icon_burst_mode,
+            option.palette.color(QPalette::Text),
+            ICON_SIZE
+        ));
+    }
+
+    // Name
     const QRect namerect(option.rect.left() + 30, option.rect.top(), option.rect.right(), option.rect.height());
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Name)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
-    /* Frame Range */
+    // Frame Range
     painter->drawText(
         namerect.left(),
         option.rect.top(),
         option.rect.right() - 40,
         option.rect.height(),
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
 }
 
@@ -166,7 +179,24 @@ QSize BasicMediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const
     return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 54);
 }
 
-/* }}} */
+QWidget* BasicMediaItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void BasicMediaItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
+}
+
+void BasicMediaItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(QRect(option.rect.left() + 26, option.rect.top(), option.rect.width() - 80, option.rect.height()));
+}
+
+/// MediaItemDelegate
 
 MediaItemDelegate::MediaItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
@@ -187,7 +217,7 @@ bool MediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, con
         QPoint pos = mevent->pos();
         #endif
         
-        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool())
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
 
@@ -205,18 +235,19 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
      * -------------------------------------------------------------
      */
 
-    /* Base Rect */
+    // Base Rect
     QRect rect = option.rect;
-
-    /* Default background */
-    painter->fillRect(rect, option.palette.color(QPalette::Window).lighter(150));
+    // Background
+    painter->fillRect(rect, option.palette.color(QPalette::Base).darker(
+        _ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150
+    ));
 
     /* Selected */
     if (option.state & QStyle::State_Selected)
     {
         /* Gradient */
         QLinearGradient gradient(0, 0, rect.width(), 0);
-        gradient.setColorAt(0, option.palette.color(QPalette::Window).lighter(150));
+        gradient.setColorAt(0, option.palette.color(QPalette::Base).darker(150));
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(150));
         
         painter->save();
@@ -227,7 +258,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         painter->drawRect(rect);
 
         /* Draw the right indicator rect */
-        painter->fillRect(rect.width() - 4, rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
+        painter->fillRect(rect.width() - 3, rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
 
         painter->restore();
     }
@@ -237,7 +268,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     /* Thumbnail */
     const QRect thumbrect(rect.left() + ICON_SIZE + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-    QPixmap p = index.data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+    QPixmap p = index.data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
     /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
@@ -250,24 +281,24 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
-    const bool audio = index.data(static_cast<int>(MediaModel::MRoles::Audio)).toBool();
-    const bool tags = index.data(static_cast<int>(MediaModel::MRoles::Tags)).toBool();
+    const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
+    const bool tags = index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool();
 
-    const int channels = index.data(static_cast<int>(MediaModel::MRoles::Channels)).toInt();
+    const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
         const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 1, QColor(0, 0, 255));
-        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 1, QColor(255, 255, 255));
+        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom(), w, 1, QColor(255, 255, 255));
     }
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
@@ -282,24 +313,33 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         ICON_SIZE
     ));
 
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
+    {
+        painter->drawPixmap(rect.left() + 2, rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
+            IconType::icon_burst_mode,
+            option.palette.color(QPalette::Text),
+            ICON_SIZE
+        ));
+    }
+
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;
-    const int namewidth = rect.width() - (thumbrect.width() + 80);
+    const int namewidth = rect.width() - (thumbrect.width() + 90);
 
     /* Name */
     const QRect namerect(thumbright, rect.top(), namewidth, halfheight);
     painter->drawText(
         namerect,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Name)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
     /* Extension */
-    const QRect extrect(namerect.right(), rect.top(), 46, halfheight);
+    const QRect extrect(namerect.right(), rect.top(), 60, halfheight);
     painter->drawText(
         extrect,
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Extension)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Extension)).toString()
     );
 
     /* Frame range */
@@ -309,23 +349,47 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         namewidth,
         halfheight,
         Qt::AlignLeft | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::FrameRange)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
 
     /* Framerate */
     painter->drawText(
         namerect.right(),
         extrect.bottom(),
-        46,
+        60,
         halfheight,
         Qt::AlignRight | Qt::AlignVCenter,
-        index.data(static_cast<int>(MediaModel::MRoles::Framerate)).toString()
+        index.data(static_cast<int>(EntityModel::MRoles::Framerate)).toString()
     );
 }
 
 QSize MediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 60);
+}
+
+QWidget* MediaItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void MediaItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
+}
+
+void MediaItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(
+        QRect(
+            option.rect.left() + ICON_SIZE + 10 + MAX_THUMBNAIL_WIDTH,
+            option.rect.top(),
+            option.rect.width() - (MAX_THUMBNAIL_WIDTH + 90),
+            option.rect.height() * 0.5
+        )
+    );
 }
 
 VOID_NAMESPACE_CLOSE

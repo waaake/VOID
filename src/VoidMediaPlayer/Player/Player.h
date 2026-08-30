@@ -42,10 +42,6 @@ public:
     void SetPlaylist(Playlist* playlist);
     void SetGrid(Playlist* playlist);
     void ResetPlaylistMedia();
-    void SetGridRows(int rows) { m_Renderer->SetRows(rows); }
-    void SetGridColumns(int columns) { m_Renderer->SetColumns(columns); }
-    int GridRows() const { return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Rows() : 1; }
-    int GridColumns() const { return m_ComparisonMode == Renderer::ComparisonMode::GRID ? m_Renderer->Columns() : 1; }
 
     void RenderCurrentFrame();
     void RenderAnnotatedFrames();
@@ -56,8 +52,8 @@ public:
     void SwitchBlendMode(int delta) { m_ControlBar->SwitchBlendMode(delta); }
     void SetComparisonMode(int mode);
 
-    float PeelFactor() const { return m_Renderer->PeelFactor(); }
-    void SetPeelFactor(float factor) { m_Renderer->SetPeelFactor(factor); }
+    float PeelFactor() const;
+    void SetPeelFactor(float factor);
 
     /* Compare Media on the Player */
     void Compare(const SharedMediaClip& first, const SharedMediaClip& second);

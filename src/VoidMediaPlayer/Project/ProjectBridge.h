@@ -32,6 +32,8 @@ public:
     void ImportMedia(Project* project);
     void ImportDirectory(Project* project);
 
+    void AddSequence(Project* project);
+
     void New();
     void Open();
     void Open(const std::string& path);
@@ -39,7 +41,9 @@ public:
     void Close(Project* project);
 
     void Save();
+    void Save(Project* project);
     void SaveAs();
+    void SaveAs(Project* project);
 
     /**
      * Retrieve the Project at a given row or Index

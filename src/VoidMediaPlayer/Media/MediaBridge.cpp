@@ -11,7 +11,6 @@
 /* Internal */
 #include "MediaBridge.h"
 #include "VoidCore/Logging.h"
-#include "VoidObjects/VoidContext.h"
 #include "VoidObjects/Preferences/Preferences.h"
 
 /* Commands */
@@ -65,10 +64,13 @@ void MBridge::NewProject(const std::string& name)
 {
     SetActiveProject(new Project(name, true, this));
 
-    /* Add to the projects */
     m_Projects->Add(m_Project);
     emit projectCreated(m_Project);
-    /* Connect Project Signals */
+
+    // Connect Project Signals
+    connect(m_Project, &Project::mediaAdded, this, &MBridge::mediaAdded);
+    connect(m_Project, &Project::mediaAboutToBeRemoved, this, &MBridge::mediaAboutToBeRemoved);
+    connect(m_Project, &Project::mediaRemoved, this, &MBridge::mediaRemoved);
     connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
     connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
 }
@@ -115,20 +117,19 @@ void MBridge::SetActiveProject(Project* project)
     m_UndoGroup->setActiveStack(m_Project->UndoStack());
 
     m_Projects->Refresh();
-    _VoidContext.SetActiveProject(m_Project);
 }
 
 void MBridge::AddMedia(const std::string& filepath)
 {
-    PushCommand(new MediaImportCommand(filepath));
+    PushCommand(new MediaImportCommand(m_Project, filepath));
 }
 
-void MBridge::RemoveMedia(const QModelIndex& index)
+void MBridge::RemoveEntity(const QModelIndex& index)
 {
-    PushCommand(new MediaRemoveCommand(index));
+    PushCommand(new RemoveEntityCommand(m_Project, index));
 }
 
-void MBridge::RemoveMedia(const std::vector<QModelIndex>& indexes)
+void MBridge::RemoveEntity(const std::vector<QModelIndex>& indexes)
 {
     if (m_Project)
     {
@@ -143,7 +144,7 @@ void MBridge::RemoveMedia(const std::vector<QModelIndex>& indexes)
         for (int i = indexes.size() - 1; i >= 0; --i)
         {
             QModelIndex idx = indexes.at(i);
-            stack->push(new MediaRemoveCommand(idx));
+            stack->push(new RemoveEntityCommand(m_Project, idx));
         }
 
         stack->endMacro();
@@ -256,117 +257,27 @@ void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes, Playli
 
 bool MBridge::AddMedia(MediaStruct&& mstruct)
 {
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return false;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return false;
-    }
-
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->AddMedia(clip);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->AddMedia(mstruct);
 }
 
 bool MBridge::AddMedia(const MediaStruct& mstruct)
 {
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return false;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return false;
-    }
-
-    /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->AddMedia(clip);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->AddMedia(mstruct);
 }
 
 bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
 {
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return false;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return false;
-    }
-
-     /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->InsertMedia(clip, index);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->InsertMedia(mstruct, index);
 }
 
 bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
 {
-    /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->InsertMedia(clip, index);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->InsertMedia(mstruct, index);
 }
 
 bool MBridge::InsertMedia(const SharedMediaClip& media, int index)
 {
-    if (media->Valid())
-    {
-        m_Project->InsertMedia(media, index);
-        emit mediaAdded(media);
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media");
-    return false;
+    return m_Project->InsertMedia(media, index);
 }
 
 void MBridge::AddTag(const QModelIndex& index, const std::string& tag)
@@ -437,13 +348,8 @@ void MBridge::CreateEffect(const QModelIndex& index, const std::string& type)
 
 bool MBridge::Remove(SharedMediaClip clip)
 {
-    /* Emit the mediaAboutToBeRemoved signal for all listeners to clear the item */
     emit mediaAboutToBeRemoved(clip);
-
-    /* Ensure All events are Processed before deleting the Media Clip internally */
     QCoreApplication::processEvents();
-
-    /* Remove this from the Underlying model */
     m_Project->RemoveMedia(m_Project->ClipIndex(clip));
 
     return true;
@@ -451,23 +357,7 @@ bool MBridge::Remove(SharedMediaClip clip)
 
 bool MBridge::Remove(const QModelIndex& index)
 {
-    /* The Media Associated with the Model index */
-    SharedMediaClip clip = m_Project->MediaAt(index);
-
-    /* Invalid Index */
-    if (!clip)
-        return false;
-
-    /* Emit the mediaAboutToBeRemoved signal for all listeners to clear the item */
-    emit mediaAboutToBeRemoved(clip);
-
-    /* Ensure All events are Processed before deleting the Media Clip internally */
-    QCoreApplication::processEvents();
-
-    /* Remove this from the Underlying model */
-    m_Project->RemoveMedia(index);
-
-    return true;
+    return m_Project->Remove(index);
 }
 
 Playlist* MBridge::NewPlaylist()
@@ -621,7 +511,7 @@ void MBridge::Load(const std::string& path)
         return;
     }
 
-    /* Read the File header to understand whether this is a valid file */
+    // Valid ?
     char header[EtherFormat::MAGIC_SIZE] = {};
     in.read(header, EtherFormat::MAGIC_SIZE);
 
@@ -632,7 +522,7 @@ void MBridge::Load(const std::string& path)
         return;
     }
 
-    /* Save as the Last project Opened */
+    // Save as the Last project Opened
     VoidPreferences::Instance().AddRecentProject(path);
 
     if (type == EtherFormat::Type::ASCII)
@@ -646,10 +536,13 @@ void MBridge::Load(const std::string& path)
         SetActiveProject(Project::FromStream(in));
     }
 
+    connect(m_Project, &Project::mediaAdded, this, &MBridge::mediaAdded);
+    connect(m_Project, &Project::mediaAboutToBeRemoved, this, &MBridge::mediaAboutToBeRemoved);
+    connect(m_Project, &Project::mediaRemoved, this, &MBridge::mediaRemoved);
     connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
     connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
 
-    /* Add to the projects */
+    // Add to the projects
     m_Projects->Add(m_Project);
     m_Project->SetSavePath(path);
 

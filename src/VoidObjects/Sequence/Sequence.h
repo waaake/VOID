@@ -15,22 +15,33 @@
 #include "Definition.h"
 #include "Frame.h"
 #include "Track.h"
-#include "VoidObjects/VoidObject.h"
+#include "VoidObjects/Core/Entity.h"
 
 VOID_NAMESPACE_OPEN
 
 /* Forward Declaration of the PlaybackSequence class */
 class PlaybackSequence;
-
 typedef std::shared_ptr<PlaybackSequence> SharedPlaybackSequence;
 
-class VOID_API PlaybackSequence : public VoidObject
+class VOID_API PlaybackSequence : public ProjectEntity
 {
     Q_OBJECT
 public:
-    PlaybackSequence(QObject* parent = nullptr);
-
+    explicit PlaybackSequence(Core::Project* project = nullptr);
     virtual ~PlaybackSequence();
+
+    void SetName(const std::string& name);
+    std::string Name() const override { return m_Name; }
+    std::string Extension() const override { return "SEQ"; }
+
+    void SetRange(int start, int end);
+    MFrameRange FrameRange() const override { return MFrameRange(m_StartFrame, m_EndFrame, m_Framerate); }
+
+    void SetFramerate(double framerate);
+    double Framerate() const override { return m_Framerate; }
+
+    int Channels() const override { return 0; }
+    QPixmap Thumbnail() override;
 
     /* Clears the Sequence of any tracks that have been added */
     void Clear();
@@ -74,9 +85,6 @@ public:
 
     bool HasMedia() const;
 
-    /* Update the range of the Sequence */
-    void SetRange(int start, int end);
-
     /**
      * Returns the last track that is active
      */
@@ -86,12 +94,19 @@ public:
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
+
+    const char* TypeName() const override { return "Sequence"; }
+
 signals: /* Signals denoting actions in the seqeuence */
     void trackAdded(const SharedPlaybackTrack& track);
     void trackAboutToBeRemoved(const SharedPlaybackTrack& track);
     void trackRemoved();
     void cleared();
-    void updated();
+    // void updated();
     void rangeChanged(int start, int end);
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);
 
@@ -99,9 +114,10 @@ protected: /* Members */
     std::vector<SequenceFrame> m_FrameBuffer;
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
+    std::string m_Name;
     SharedTrackItem m_Recent;
 
-    /* Timerange of the sequence */
+    double m_Framerate;
     int m_StartFrame, m_EndFrame;
 
 private: /* Methods */
@@ -115,6 +131,7 @@ private: /* Methods */
     void ConnectVideoTrack(const SharedPlaybackTrack& track);
     void ConnectAudioTrack(const SharedPlaybackTrack& track);
     void ResizeBuffer(std::size_t size);
+    void UpdateBuffer();
     void UpdateBuffer(const MFrameRange& range);
     void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous);

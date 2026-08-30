@@ -70,6 +70,8 @@ private:
 private: /* Methods */
     void Build();
     void Connect();
+    void Connect(PlaybackSequence* sequence);
+    void Disconnect(PlaybackSequence* sequence);
     void CreateEffect(const std::string& type);
     void DeleteSelected();
     void RippleDeleteSelected();

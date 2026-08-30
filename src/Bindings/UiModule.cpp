@@ -30,7 +30,7 @@ void BindUi(py::module_& m)
     m.doc() = "Void UI Module.";
 
     m.def("active_player", &UIGlobals::GetActivePlayer, py::return_value_policy::reference);
-    m.def("active_project", []() { return _MediaBridge.ActiveProject(); }, py::return_value_policy::reference);
+    m.def("active_project", []() { return static_cast<Core::Project*>(_MediaBridge.ActiveProject()); }, py::return_value_policy::reference);
     m.def("load_project", [](const std::string& path) { _MediaBridge.Load(path); }, py::arg("path"));
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
     m.def("sequencer", &UIGlobals::GetSequencer, py::return_value_policy::reference);
@@ -82,6 +82,7 @@ void BindUi(py::module_& m)
         .def("set_media",
             py::overload_cast<const std::vector<SharedMediaClip>&, const PlayerViewBuffer&>(&PlayerBridge::SetMedia),
             py::arg("media_list"), py::arg("buffer"))
+        .def("set_sequence", &PlayerBridge::SetSequence, py::arg("sequence"))
         .def("set_grid_rows", &PlayerBridge::SetGridRows, py::arg("rows"))
         .def("set_grid_columns", &PlayerBridge::SetGridColumns, py::arg("columns"))
         .def("active_viewer", &PlayerBridge::ActiveViewer, py::return_value_policy::reference);
@@ -125,32 +126,6 @@ void BindUi(py::module_& m)
     py::class_<MenuSystem>(m, "MenuSystem")
         .def("add_menu", [](MenuSystem* self, const std::string& name) { self->AddMenu(name); }, py::arg("name"))
         .def("register_action", &MenuSystem::RegisterAction, py::arg("menu"), py::arg("action"), py::arg("function"), py::arg("shortcut") = "");
-
-    /* Project */
-    py::class_<Project> project(m, "Project");
-
-    /* Project Save Type*/
-    py::enum_<EtherFormat::Type>(project, "EtherFormat")
-        .value("Ascii", EtherFormat::Type::ASCII)
-        .value("Binary", EtherFormat::Type::BINARY)
-        .export_values();
-
-    project
-        .def("__repr__", [](py::handle h)
-        {
-            const Project& p = h.cast<Project&>();
-            std::stringstream ss;
-            ss << "Project <" << p.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
-            return ss.str();
-        })
-        .def("add_media", &Project::AddMedia, py::arg("media_clip"))
-        .def("document", &Project::Document, py::arg("name"))
-        .def("modified", &Project::Modified)
-        .def(
-            "save",
-            static_cast<bool (Project::*)(const std::string&, const std::string&, const EtherFormat::Type&)>(&Project::Save),
-            py::arg("path"), py::arg("name"), py::arg("type")
-        );
 }
 
 } // namespace bindings

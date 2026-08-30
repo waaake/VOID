@@ -251,7 +251,7 @@ void VoidPlayLister::AddSelectionToSequence()
 void VoidPlayLister::RemoveSelectedMedia()
 {
     /* Push all of the selected indexes for removal */
-    _MediaBridge.RemoveMedia(m_MediaView->SelectedIndexes());
+    _MediaBridge.RemoveEntity(m_MediaView->SelectedIndexes());
 }
 
 void VoidPlayLister::Play(Playlist* playlist)

@@ -23,6 +23,8 @@
 
 VOID_NAMESPACE_OPEN
 
+#define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
+
 VoidMediaLister::VoidMediaLister(QWidget* parent)
     : QWidget(parent)
 {
@@ -82,6 +84,10 @@ VoidMediaLister::~VoidMediaLister()
     m_ClearTagsAction->deleteLater();
     delete m_ClearTagsAction;
     m_ClearTagsAction = nullptr;
+
+    m_RenameAction->deleteLater();
+    delete m_RenameAction;
+    m_RenameAction = nullptr;
 }
 
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
@@ -126,6 +132,7 @@ void VoidMediaLister::Build()
     m_PlaylistMenu = new QMenu("Add to Playlist");
     /* Add any playlists which are present in the active project */
     RebuildPlaylistMenu();
+    m_RenameAction = new QAction("Rename");
 
     /* Shortcuts */
 #ifdef __APPLE__
@@ -265,6 +272,7 @@ void VoidMediaLister::Connect()
     connect(m_EditEffectsAction, &QAction::triggered, this, &VoidMediaLister::EditEffects);
     connect(m_AddTagAction, &QAction::triggered, this, &VoidMediaLister::AddTagToSelected);
     connect(m_ClearTagsAction, &QAction::triggered, this, &VoidMediaLister::ClearTagsFromSelected);
+    connect(m_RenameAction, &QAction::triggered, this, [this]() -> void { m_MediaView->edit(m_MediaView->currentIndex()); });
 
     /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
@@ -310,7 +318,10 @@ void VoidMediaLister::IndexSelected(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    _PlayerBridge.SetMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+        _PlayerBridge.SetMedia(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    else
+        _PlayerBridge.SetSequence(*(static_cast<SharedPlaybackSequence*>(index.internalPointer())));
 }
 
 void VoidMediaLister::AddSelectionToSequence()
@@ -321,11 +332,12 @@ void VoidMediaLister::AddSelectionToSequence()
         return;
 
     std::vector<SharedMediaClip> m;
-    /* Already aware of the amount of items which are to be copied */
     m.reserve(selected.size());
-
     for (const QModelIndex& index : selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.SetMedia(m);
 }
@@ -341,7 +353,10 @@ void VoidMediaLister::PlaySelectionAsQueue()
     m.reserve(selected.size());
 
     for (const QModelIndex& index: selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.ClearQueue();
     _PlayerBridge.AddToQueue(m);
@@ -358,7 +373,10 @@ void VoidMediaLister::AddSelectionToQueue()
     m.reserve(selected.size());
 
     for (const QModelIndex& index: selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.AddToQueue(m, false);
 }
@@ -374,7 +392,10 @@ void VoidMediaLister::PlaySelectionAsGrid()
     m.reserve(selected.size());
 
     for (const QModelIndex& index: selected)
-        m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    {
+        if (_ENTITY_TYPE(index) == ProjectEntity::Type::MEDIA)
+            m.emplace_back(*(static_cast<SharedMediaClip*>(index.internalPointer())));
+    }
 
     _PlayerBridge.SetGrid(m);
 }
@@ -404,6 +425,10 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     contextMenu.addAction(m_EditEffectsAction);
 
     contextMenu.addSeparator();
+    contextMenu.addAction(m_RenameAction);
+    m_RenameAction->setEnabled(CanRenameSelection());
+
+    contextMenu.addSeparator();
     contextMenu.addMenu(m_PlaylistMenu);
 
     /* Show Menu */
@@ -430,18 +455,15 @@ void VoidMediaLister::RescaleThumbnails(float scale)
 
 void VoidMediaLister::InspectMetadata()
 {
-    std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
-    if (selected.empty())
-        return;
-
-    /* We can only inspect one item at a time */
-    emit metadataInspected(*(static_cast<SharedMediaClip*>(selected[0].internalPointer())));
+    QModelIndex current = m_MediaView->currentIndex();
+    if (_ENTITY_TYPE(current) == ProjectEntity::Type::MEDIA)
+        emit metadataInspected(_MediaBridge.MediaAt(current));
 }
 
 void VoidMediaLister::EditEffects()
 {
     QModelIndex current = m_MediaView->currentIndex();
-    if (current.isValid())
+    if (current.isValid() && _ENTITY_TYPE(current) == ProjectEntity::Type::MEDIA)
     {
         emit effectsEdited(_MediaBridge.MediaAt(current));
     }
@@ -479,25 +501,25 @@ void VoidMediaLister::RebuildPlaylistMenu()
     }
 }
 
-void VoidMediaLister::AddToPrimaryViewer()
+void VoidMediaLister::AddToPrimaryViewer() const
 {
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
     if (selected.empty())
         return;
-    
+
     _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::A);
 }
 
-void VoidMediaLister::AddToSecondaryViewer()
+void VoidMediaLister::AddToSecondaryViewer() const
 {
     std::vector<QModelIndex> selected = m_MediaView->SelectedIndexes();
     if (selected.empty())
         return;
-    
+
     _PlayerBridge.SetMedia(_MediaBridge.MediaAt(selected[0]), PlayerViewBuffer::B);
 }
 
-void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist)
+void VoidMediaLister::AddSelectionToPlaylist(Playlist* playlist) const
 {
     if (!playlist)
         return;
@@ -541,6 +563,15 @@ void VoidMediaLister::ClearTagsFromSelected()
         SharedMediaClip clip = _MediaBridge.MediaAt(current);
         _MediaBridge.ClearTags(clip);
     }
+}
+
+bool VoidMediaLister::CanRenameSelection() const
+{
+    QItemSelectionModel* selection = m_MediaView->selectionModel();
+    if (selection->selectedRows().size() != 1)
+        return false;
+    
+    return _ENTITY_TYPE(m_MediaView->currentIndex()) == ProjectEntity::Type::SEQUENCE;
 }
 
 VOID_NAMESPACE_CLOSE

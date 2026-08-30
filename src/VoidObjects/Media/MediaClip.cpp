@@ -14,10 +14,9 @@
 
 VOID_NAMESPACE_OPEN
 
-MediaClip::MediaClip(QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(Core::Project* project)
+    : ProjectEntity({93, 150, 163}, project)
     , Media()
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -25,10 +24,9 @@ MediaClip::MediaClip(QObject* parent)
     m_TagModel = new TagModel(this);
 }
 
-MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(const MediaStruct& mstruct, Core::Project* project)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(mstruct)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -36,10 +34,9 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     m_TagModel = new TagModel(this);
 }
 
-MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(MediaStruct& mstruct, Core::Project* project)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(mstruct)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -50,11 +47,10 @@ MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
 MediaClip::MediaClip(const std::string& basepath,
         const std::string& name,
         const std::string& extension,
-        QObject* parent
+        Core::Project* project
     )
-    : VoidObject(parent)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(basepath, name, extension)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -68,11 +64,10 @@ MediaClip::MediaClip(const std::string& basepath,
         v_frame_t start,
         v_frame_t end,
         unsigned int padding,
-        QObject* parent
+        Core::Project* project
     )
-    : VoidObject(parent)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(basepath, name, extension, start, end, padding)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -87,11 +82,10 @@ MediaClip::MediaClip(const std::string& basepath,
         v_frame_t end,
         unsigned int padding,
         const std::vector<v_frame_t>& missing,
-        QObject* parent
+        Core::Project* project
     )
-    : VoidObject(parent)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(basepath, name, extension, start, end, padding, missing)
-    , m_Color(93, 150, 163)
     , m_Thumbnail()
     , m_Working(false)
 {
@@ -149,15 +143,6 @@ void MediaClip::ReadThumbnail()
     emit updated();
 }
 
-QPixmap MediaClip::DefaultThumbnail()
-{
-    /* 16:9 aspect default */
-    QPixmap pix = QPixmap(QSize(400, 225));
-    pix.fill(Qt::black);
-
-    return pix;
-}
-
 QPixmap MediaClip::FetchThumbnail()
 {
     if (m_Thumbnail.isNull() && !m_Working.load())
@@ -171,20 +156,16 @@ QPixmap MediaClip::FetchThumbnail()
 
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const
 {
-    /* We have an annotation available for the given frame */
     if (m_Annotations.find(frame) != m_Annotations.end())
         return m_Annotations.at(frame);
 
-    /* Nothing available */
     return nullptr;
 }
 
 /* Add Annotation for a Frame */
 void MediaClip::SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation)
 {
-    /* Update the Annotation */
     m_Annotations[frame] = annotation;
-    /* Media Clip has been updated */
     emit updated();
 
     VOID_LOG_INFO("Annotation Added. Frame {0}", frame);
@@ -198,7 +179,6 @@ void MediaClip::RemoveAnnotation(const v_frame_t frame)
      * deleted as there are no more references to it
      */
     m_Annotations.erase(frame);
-    /* Media clip has been updated */
     emit updated();
 
     VOID_LOG_INFO("Annotation Removed. Frame {0}", frame);
@@ -364,11 +344,6 @@ void MediaClip::Clear()
     // This obviously is temporary till we have the actual workflow where effects are applied
     // only on the track item and not on the media
     Media::ClearCache(HasEffects());
-}
-
-Core::Project* MediaClip::Project() const
-{
-    return reinterpret_cast<Core::Project*>(parent());
 }
 
 void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const

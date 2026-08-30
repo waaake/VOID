@@ -33,16 +33,16 @@ public:
     explicit MediaView(QWidget* parent = nullptr);
     ~MediaView();
 
-    /* Search and filter items from the Model */
+    // Search and filter items from the Model
     inline void Search(const std::string& text) { m_Proxy->SetSearchText(text); }
 
-    /* Returns the currently selected Media row Model Indices */
+    // Returns the currently selected Media row Model Indices
     const std::vector<QModelIndex> SelectedIndexes() const;
 
-    /* Returns if the widget has selection */
+    // Returns if the widget has selection
     bool HasSelection();
 
-    /* Toggle sorting on the Model */
+    // Toggle sorting on the Model
     void EnableSorting(bool state, const Qt::SortOrder& order = Qt::AscendingOrder);
 
     const ViewType GetViewType() const { return m_ViewType; }
@@ -60,21 +60,20 @@ signals:
     void tagClicked(const QModelIndex&, const QPoint&);
 
 private: /* Models */
-    /* Proxy for filtering and sorting */
-    MediaProxyModel* m_Proxy;
+    EntityProxyModel* m_Proxy;
 
     BasicMediaItemDelegate* m_BasicDelegate;
     MediaItemDelegate* m_MediaDelegate;
     MediaThumbnailDelegate* m_ThumbnailDelegate;
 
-    /* View Type for display */
+    // View Type for display
     ViewType m_ViewType;
 
 private: /* Methods */
     void Setup();
     void ResetView();
     void Connect();
-    void ResetModel(MediaModel* model);
+    void ResetModel(EntityModel* model);
     void ItemDoubleClicked(const QModelIndex& index);
 };
 

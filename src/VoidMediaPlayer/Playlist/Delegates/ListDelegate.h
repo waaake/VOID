@@ -15,7 +15,6 @@ VOID_NAMESPACE_OPEN
 class PlaylistItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
-
 public:
     explicit PlaylistItemDelegate(QObject* parent = nullptr);
 
@@ -24,6 +23,8 @@ public:
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+
+    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
 
 VOID_NAMESPACE_CLOSE

@@ -128,7 +128,8 @@ public:
     SharedTrackItem GetTrackItem(v_frame_t frame);
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
-    inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
+    inline PlaybackSequence* Sequence() const { return m_Sequence; }
+    Core::Project* Project() const;
     int Index() const;
 
     /* Setters */
@@ -180,7 +181,8 @@ protected: /* Members */
     TrackMap m_Items;
     std::unordered_set<v_frame_t> m_Razored;
     std::vector<Effect*> m_Effects;
-
+    
+    PlaybackSequence* m_Sequence;
     SharedTrackItem m_Recent;
     std::string m_Name;
     int m_StartFrame, m_EndFrame;

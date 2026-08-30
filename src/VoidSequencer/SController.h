@@ -40,6 +40,7 @@ public:
 
     void SetTimeController(TimelineController* controller);
     TimelineController* TimeController() { return m_TimelineController; }
+    void ResetRange(int start, int end) { m_TimelineController->SetRange(start, end); }
 
     void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
     void RemoveFromScene(QGraphicsItem* item) { m_Scene->removeItem(item); }

@@ -39,6 +39,36 @@ PlayerBridge& PlayerBridge::Instance()
     return instance;
 }
 
+void PlayerBridge::SetMedia(const SharedMediaClip& media)
+{
+    m_Player->SetMedia(media);
+    emit playComponentUpdated(PlayerBuffer::PlayableComponent::Clip);
+}
+
+void PlayerBridge::SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
+{
+    m_Player->SetMedia(media, buffer);
+    emit playComponentUpdated(PlayerBuffer::PlayableComponent::Clip);
+}
+
+void PlayerBridge::SetMedia(const std::vector<SharedMediaClip>& media)
+{
+    m_Player->SetMedia(media);
+    emit playComponentUpdated(PlayerBuffer::PlayableComponent::Clip);
+}
+
+void PlayerBridge::SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer)
+{
+    m_Player->SetMedia(media, buffer);
+    emit playComponentUpdated(PlayerBuffer::PlayableComponent::Clip);
+}
+
+void PlayerBridge::SetSequence(const SharedPlaybackSequence& sequence)
+{
+    m_Player->SetSequence(sequence);
+    emit playComponentUpdated(PlayerBuffer::PlayableComponent::Sequence);
+}
+
 void PlayerBridge::InitMenu(MenuSystem* menuSystem)
 {
     /* Playback Menu {{{ */

@@ -76,11 +76,9 @@ bool PlaylistRemoveCommand::Redo()
 
     if (playlist)
     {
-        /* Store the name for when undo is called to recreate with the same name */
+        // Store the name for when undo is called to recreate with the same name
         m_Name = playlist->Name();
-
-        /* Save indexes for all the Media references */
-        const MediaModel* model = project->DataModel();
+        const EntityModel* model = project->DataModel();
         m_MediaIndexes.reserve(playlist->Size());
 
         for (const SharedMediaClip& media : playlist->AllMedia())
@@ -171,7 +169,7 @@ bool PlaylistRemoveMediaCommand::Redo()
          * this index would be then used to re insert this back when the command is undone
          */
         const SharedMediaClip& clip = m_Playlist->Media(m_Index);
-        const MediaModel* model = _MediaBridge.DataModel();
+        const EntityModel* model = _MediaBridge.DataModel();
         m_MediaIndex = model->index(model->MediaRow(clip), 0);
 
         return m_Playlist->RemoveMedia(m_Index);

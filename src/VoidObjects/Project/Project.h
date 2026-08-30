@@ -7,7 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/VoidObject.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 #include "VoidObjects/Models/PlaylistModel.h"
 
 VOID_NAMESPACE_OPEN
@@ -17,10 +17,11 @@ namespace Core {
 /**
  * A Project is essentially, just the store for Media and Media entities or collection
  * like Sequence and/or Playlist, it does not do anything apart from holding references
- * to the data via the MediaModel
+ * to the data via the media/other entities' EntityModel
  */
 class VOID_API Project : public VoidObject
 {
+    Q_OBJECT
 public:
     Project(bool active = true, QObject* parent = nullptr);
     Project(const std::string& name, bool active = true, QObject* parent = nullptr);
@@ -42,10 +43,20 @@ public:
      * Project being referred to as saved means that it has a physical file location
      */
     inline bool Saved() const { return !m_Modified && !m_Path.empty(); }
+
+    bool AddMedia(MediaStruct&& mstruct);
+    bool AddMedia(const MediaStruct& mstruct);
+    bool InsertMedia(MediaStruct&& mstruct, int index);
+    bool InsertMedia(const MediaStruct& mstruct, int index);
+    bool InsertMedia(const SharedMediaClip& media, int index);
     
-    void AddMedia(const SharedMediaClip& media);
-    void InsertMedia(const SharedMediaClip& media, const int index);
-    void RemoveMedia(const QModelIndex& index);
+    void Add(const SharedMediaClip& media);
+    void Add(const SharedPlaybackSequence& media);
+    void Insert(const SharedMediaClip& media, const int index);
+    void Insert(const SharedPlaybackSequence& sequence, const int index);
+    bool Remove(const QModelIndex& index);
+    bool RemoveMedia(const QModelIndex& index);
+    bool RemoveSequence(const QModelIndex& index);
 
     inline SharedMediaClip MediaAt(const QModelIndex& index) const { return m_Media->Media(index); }
     inline SharedMediaClip MediaAt(int row, int column) const { return m_Media->Media(m_Media->index(row, column)); }
@@ -53,7 +64,7 @@ public:
     SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const;
     SharedMediaClip PlaylistMediaAt(int row, int column) const;
 
-    inline MediaModel* DataModel() const { return m_Media; }
+    inline EntityModel* DataModel() const { return m_Media; }
     inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
 
     inline QModelIndex ClipIndex(const SharedMediaClip& clip, int column = 0) const
@@ -62,10 +73,16 @@ public:
     }
     int MediaRow(const SharedMediaClip& clip) const { return m_Media->MediaRow(clip); }
 
+    Playlist* NewPlaylist();
+    Playlist* NewPlaylist(const std::string& name);
+    Playlist* NewPlaylist(const std::string& name, int index);
     inline Playlist* ActivePlaylist() const { return m_Playlist; }
     inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Playlists->PlaylistAt(index); }
     inline Playlist* PlaylistAt(int row, int column) const { return m_Playlists->PlaylistAt(row, column); }
     inline void RefreshPlaylist() { m_Playlists->Refresh(); }
+    void SetCurrentPlaylist(const QModelIndex& index);
+    void SetCurrentPlaylist(int index);
+    void RemovePlaylist(const QModelIndex& index);
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;
@@ -96,7 +113,7 @@ public:
      * The provided name is the underlying name of the project to which it will be saved
      */
     bool Save();
-    inline bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type) { return SaveInternal(path, name, type); }
+    bool Save(const std::string& path, const std::string& name, const EtherFormat::Type& type);
     
     /**
      * Update the path for the project on which it will save to
@@ -104,24 +121,30 @@ public:
      */
     inline void SetSavePath(const std::string& path) { m_Path = path; }
 
+signals:
+    void mediaAdded(const SharedMediaClip&);
+    void mediaAboutToBeRemoved(const SharedMediaClip&);
+    void mediaRemoved();
+    void sequenceAdded(const SharedPlaybackSequence&);
+    void sequenceAboutToBeRemoved(const SharedPlaybackSequence&);
+    void sequenceRemoved();
+    void playlistCreated(const Playlist*);
+    void playlistChanged(const Playlist*);
+
 protected: /* Members */
-    /* The Project holds the media and anything linking to the media */
-    MediaModel* m_Media;
-    /* Any Playlists in the project */
+    EntityModel* m_Media;
     PlaylistModel* m_Playlists;
-    /* Currently Active Playlist */
     Playlist* m_Playlist;
 
-    /* Project Descriptors */
     std::string m_Name;
     std::string m_Path;
     EtherFormat::Type m_Type;
 
-    /* If the project is currently active */
     bool m_Active;
     bool m_Modified;
 
 private: /* Methods */
+    void SetActivePlaylist(Playlist* playlist);
     bool SaveInternal(const std::string& path, const std::string& name, const EtherFormat::Type& type);
     bool SaveAscii(const std::string& path, const std::string& name);
     bool SaveBinary(const std::string& path, const std::string& name);

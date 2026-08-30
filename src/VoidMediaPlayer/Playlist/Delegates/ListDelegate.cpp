@@ -8,7 +8,7 @@
 /* Internal */
 #include "ListDelegate.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 #include "VoidObjects/Models/PlaylistModel.h"
 
 VOID_NAMESPACE_OPEN
@@ -105,6 +105,18 @@ void PlaylistItemDelegate::setEditorData(QWidget* editor, const QModelIndex& ind
     QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
     if (edit)
         edit->setText(index.data(static_cast<int>(PlaylistModel::Roles::Name)).toString());
+}
+
+void PlaylistItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(
+        QRect(
+            option.rect.left() + 50,
+            option.rect.top(),
+            option.rect.width() - 90,
+            option.rect.height()
+        )
+    );
 }
 
 VOID_NAMESPACE_CLOSE

@@ -11,7 +11,7 @@
 #include "Definition.h"
 #include "VoidObjects/VoidObject.h"
 #include "VoidObjects/Media/MediaClip.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -36,7 +36,7 @@ public:
     bool InsertMedia(const SharedMediaClip& media, const int index);
     bool RemoveMedia(const QModelIndex& index);
 
-    inline MediaModel* DataModel() const { return m_Media; }
+    inline EntityModel* DataModel() const { return m_Media; }
     const std::vector<SharedMediaClip> AllMedia() const { return m_Media->AllMedia(); }
 
     inline SharedMediaClip Media(const QModelIndex& index) const { return m_Media->Media(index); }
@@ -68,7 +68,7 @@ signals:
     void updated(const Playlist*);
 
 protected: /* Members */
-    MediaModel* m_Media;
+    EntityModel* m_Media;
     std::string m_Name;
     bool m_Modified;
     bool m_Active;

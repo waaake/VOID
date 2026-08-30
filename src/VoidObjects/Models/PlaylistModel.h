@@ -56,6 +56,7 @@ public:
     void Add(Playlist* playlist);
     void Insert(Playlist* playlist, int index);
     void Remove(const QModelIndex& index);
+    void Reserve(std::size_t size) { m_Playlists.reserve(size); }
 
     Playlist* PlaylistAt(const QModelIndex& index) const;
     Playlist* PlaylistAt(int row, int column) const;

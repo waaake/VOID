@@ -5,8 +5,8 @@
 #include "TrackItem.h"
 #include "Track.h"
 #include "VoidCore/Logging.h"
-#include "VoidObjects/VoidContext.h"
 #include "VoidObjects/Effects/Bridge.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -293,6 +293,11 @@ void TrackItem::Move(v_frame_t frame)
     emit updated();
 }
 
+Core::Project* TrackItem::Project() const
+{
+    return m_Track->Project();
+}
+
 void TrackItem::SetColor(const QColor& color)
 {
     m_Color = color;
@@ -305,7 +310,7 @@ void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
 
     out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
     // All Unlinked media gets -1 index
-    out.AddMember("media_index", m_Media ? _VoidContext.ActiveProject()->MediaRow(m_Media) : -1, allocator);
+    out.AddMember("media_index", m_Media ? m_Media->Project()->MediaRow(m_Media) : -1, allocator);
     out.AddMember("source_name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
     out.AddMember("timeline_in", static_cast<int64_t>(m_TimelineIn), allocator);
     out.AddMember("timeline_out", static_cast<int64_t>(m_TimelineOut), allocator);
@@ -339,7 +344,7 @@ void TrackItem::Serialize(std::ostream& out) const
 {
     WriteString(out, m_Name);
 
-    int index = m_Media ? _VoidContext.ActiveProject()->MediaRow(m_Media) : -1;
+    int index = m_Media ? m_Media->Project()->MediaRow(m_Media) : -1;
     out.write(reinterpret_cast<const char*>(&index), sizeof(index));
     out.write(reinterpret_cast<const char*>(&m_TimelineIn), sizeof(m_TimelineIn));
     out.write(reinterpret_cast<const char*>(&m_TimelineOut), sizeof(m_TimelineOut));
@@ -368,7 +373,7 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
 {
     // Media could be unlinked from the item
     int index = in["media_index"].GetInt();
-    m_Media = index > -1 ? _VoidContext.ActiveProject()->MediaAt(index, 0) : nullptr;
+    m_Media = index > -1 ? Project()->MediaAt(index, 0) : nullptr;
 
     m_Name = in["source_name"].GetString();
     m_TimelineIn = in["timeline_in"].GetInt64();
@@ -389,6 +394,7 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
         std::string type = effects[i]["typename"].GetString();
         if (Effect* effect = _EffectsBridge.CreateEffect(type))
         {
+            effect->SetTimelineItem(this);
             effect->Deserialize(effects[i]["effect"]);
             m_Effects.push_back(effect);
         }
@@ -401,7 +407,7 @@ void TrackItem::Deserialize(std::istream& in)
 
     int index;
     in.read(reinterpret_cast<char*>(&index), sizeof(index));
-    m_Media = index > -1 ? _VoidContext.ActiveProject()->MediaAt(index, 0) : nullptr;
+    m_Media = index > -1 ? Project()->MediaAt(index, 0) : nullptr;
 
     in.read(reinterpret_cast<char*>(&m_TimelineIn), sizeof(m_TimelineIn));
     in.read(reinterpret_cast<char*>(&m_TimelineOut), sizeof(m_TimelineOut));
@@ -428,6 +434,7 @@ void TrackItem::Deserialize(std::istream& in)
         std::string type = ReadString(in);
         if (Effect* effect = _EffectsBridge.CreateEffect(type))
         {
+            effect->SetTimelineItem(this);
             effect->Deserialize(in);
             m_Effects.push_back(effect);
         }

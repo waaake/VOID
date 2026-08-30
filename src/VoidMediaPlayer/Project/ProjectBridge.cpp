@@ -5,6 +5,7 @@
 #include "ProjectBridge.h"
 #include "VoidCore/Logging.h"
 #include "VoidMediaBrowser/Browser.h"
+#include "VoidMediaPlayer/Commands/MediaCommands.h"
 #include "VoidMediaPlayer/Project/Browser.h"
 #include "VoidQExtensions/MessageBox.h"
 #include "VoidObjects/Preferences/Preferences.h"
@@ -60,7 +61,6 @@ void ProjectBridge::ImportMedia()
 void ProjectBridge::ImportDirectory()
 {
     MediaBrowser mediaBrowser;
-
     if (!mediaBrowser.BrowseDirectory())
     {
         VOID_LOG_INFO("User Cancelled Importing");
@@ -74,7 +74,6 @@ void ProjectBridge::ImportDirectory()
 void ProjectBridge::ImportMedia(Project* project)
 {
     MediaBrowser mediaBrowser;
-
     /* In case the dialog was not accepted */
     if (!mediaBrowser.Browse())
     {
@@ -89,7 +88,6 @@ void ProjectBridge::ImportMedia(Project* project)
 void ProjectBridge::ImportDirectory(Project* project)
 {
     MediaBrowser mediaBrowser;
-
     if (!mediaBrowser.BrowseDirectory())
     {
         VOID_LOG_INFO("User Cancelled Importing");
@@ -98,6 +96,12 @@ void ProjectBridge::ImportDirectory(Project* project)
 
     m_Bridge.SetCurrentProject(project);
     m_Bridge.ImportDirectory(mediaBrowser.SelectedDirectory());
+}
+
+void ProjectBridge::AddSequence(Project* project)
+{
+    QUndoStack* stack = project->UndoStack();
+    stack->push(new AddSequenceCommand(project));
 }
 
 void ProjectBridge::New()
@@ -185,10 +189,15 @@ void ProjectBridge::Save()
     }
 }
 
+void ProjectBridge::Save(Project* project)
+{
+    m_Bridge.SetActiveProject(project);
+    Save();
+}
+
 void ProjectBridge::SaveAs()
 {
     VoidProjectBrowser browser;
-
     if (!browser.Save())
     {
         VOID_LOG_INFO("User Cancelled Saving.");
@@ -197,6 +206,12 @@ void ProjectBridge::SaveAs()
 
     VoidFileDescriptor d = browser.File();
     m_Bridge.Save(d.path, d.name, d.type);
+}
+
+void ProjectBridge::SaveAs(Project* project)
+{
+    m_Bridge.SetActiveProject(project);
+    SaveAs();
 }
 
 Project* ProjectBridge::ProjectAt(int row)

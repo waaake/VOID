@@ -17,7 +17,7 @@
 #include "VoidMediaPlayer/Media/Delegates/ListDelegate.h"
 #include "VoidMediaPlayer/Media/Delegates/ThumbnailDelegate.h"
 #include "VoidObjects/Preferences/Preferences.h"
-#include "VoidObjects/Models/MediaModel.h"
+#include "VoidObjects/Models/EntityModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -92,7 +92,7 @@ void MediaView::startDrag(Qt::DropActions supportedActions)
     for (int i = 0; i < count; ++i)
     {
         QPoint pos(i * offset, i * offset);
-        QPixmap p = indexes.at(i).data(static_cast<int>(MediaModel::MRoles::Thumbnail)).value<QPixmap>();
+        QPixmap p = indexes.at(i).data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
         painter.drawPixmap(pos, p.scaled(thumbsize, thumbsize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
     painter.end();
@@ -103,17 +103,17 @@ void MediaView::startDrag(Qt::DropActions supportedActions)
 
 void MediaView::Setup()
 {
-    /* Set Model */
-    MediaModel* model = _MediaBridge.DataModel();
-    m_Proxy = new MediaProxyModel(this);
+    // EntityModel* model = _MediaBridge.DataModel();
+    m_Proxy = new EntityProxyModel(this);
 
     /* Setup the Proxy's Source Model */
-    ResetModel(model);
+    ResetModel(_MediaBridge.DataModel());
     setModel(m_Proxy);
 
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setContextMenuPolicy(Qt::CustomContextMenu);
     setUniformItemSizes(true);
+    setEditTriggers(QAbstractItemView::EditKeyPressed);
 
     ResetView();
 }
@@ -177,7 +177,7 @@ void MediaView::Connect()
     connect(&_MediaBridge, &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(project->DataModel()); });
 }
 
-void MediaView::ResetModel(MediaModel* model)
+void MediaView::ResetModel(EntityModel* model)
 {
     m_Proxy->setSourceModel(model);
     VOID_LOG_INFO("Source Model Updated");
@@ -263,7 +263,7 @@ void MediaView::RemoveSelectedMedia()
         if (!sources.empty())
         {
             const int scroll = verticalScrollBar()->value();
-            _MediaBridge.RemoveMedia(sources);
+            _MediaBridge.RemoveEntity(sources);
 
             verticalScrollBar()->setValue(scroll);
         }

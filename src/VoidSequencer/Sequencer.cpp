@@ -9,6 +9,7 @@
 /* Internal */
 #include "Sequencer.h"
 #include "VoidCore/Logging.h"
+#include "VoidMediaPlayer/Player/PlayerBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -26,16 +27,10 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
     if (m_Sequence)
-    {
-        disconnect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
-        disconnect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
-        disconnect(m_Sequence.get(), &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
-    }
+        Disconnect(m_Sequence.get());
 
     m_Sequence = sequence;
-    connect(m_Sequence.get(), &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
-    connect(m_Sequence.get(), &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
-    connect(m_Sequence.get(), &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
+    Connect(m_Sequence.get());
 
     m_Context.Geometry()->SetSequence(sequence);
     Refresh();
@@ -149,6 +144,17 @@ void SequencerTimeline::Build()
 
 void SequencerTimeline::Connect()
 {
+    // PlayerBridge
+    connect(&_PlayerBridge, &PlayerBridge::playComponentUpdated, this, [this](const PlayerBuffer::PlayableComponent& component) -> void
+    {
+        if (component == PlayerBuffer::PlayableComponent::Sequence)
+        {
+            ViewerBuffer* viewer = _PlayerBridge.ActiveViewer();
+            SetSequence(viewer->GetSequence());
+            VOID_LOG_INFO("Set sequence...");
+        }
+    });
+
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
     connect(m_Toolbar, &SToolbar::actionSwitched, this, [this](const SequencerAction& action) -> void { m_Context.SetAction(action); });
 
@@ -192,6 +198,22 @@ void SequencerTimeline::Connect()
         }
     });
     connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
+}
+
+void SequencerTimeline::Connect(PlaybackSequence* sequence)
+{
+    connect(sequence, &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
+    connect(sequence, &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
+    connect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
+    connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
+}
+
+void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
+{
+    disconnect(sequence, &PlaybackSequence::trackAdded, this, &SequencerTimeline::AddTrack);
+    disconnect(sequence, &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
+    disconnect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
+    disconnect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
 }
 
 void SequencerTimeline::CreateEffect(const std::string& type)

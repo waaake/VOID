@@ -17,7 +17,7 @@ public:
     Core::Project* ActiveProject() const { return m_Project; }
 
 private:
-    Core::Project* m_Project = { nullptr };
+    Core::Project* m_Project { nullptr };
 };
 
 #define _VoidContext VoidContext::Instance()

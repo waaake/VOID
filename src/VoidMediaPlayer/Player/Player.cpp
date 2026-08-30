@@ -16,6 +16,7 @@
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidExporter/Exporter.h"
 #include "VoidExporter/MediaExporter.h"
+#include "VoidRenderer/VoidRenderer.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -447,6 +448,16 @@ void Player::Render(int frame)
 //         }
 //     }
 // }
+
+float Player::PeelFactor() const
+{
+    return m_Renderer->PeelFactor();
+}
+
+void Player::SetPeelFactor(float factor)
+{
+    m_Renderer->SetPeelFactor(factor);
+}
 
 void Player::Compare(const SharedMediaClip& first, const SharedMediaClip& second)
 {

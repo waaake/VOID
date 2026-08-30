@@ -17,6 +17,8 @@ VOID_NAMESPACE_OPEN
 
 class VOID_API PlayerBridge : public QObject
 {
+    Q_OBJECT
+
     PlayerBridge();
 public:
     ~PlayerBridge();
@@ -36,16 +38,11 @@ public:
     inline void Clear() { m_Player->Clear(); }
     inline void Refresh() { m_Player->Refresh(); }
 
-    inline void SetMedia(const SharedMediaClip& media) { m_Player->SetMedia(media); }
-    inline void SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer)
-    {
-        m_Player->SetMedia(media, buffer);
-    }
-    inline void SetMedia(const std::vector<SharedMediaClip>& media) { m_Player->SetMedia(media); }
-    inline void SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer)
-    {
-        m_Player->SetMedia(media, buffer);
-    }
+    void SetMedia(const SharedMediaClip& media);
+    void SetMedia(const SharedMediaClip& media, const PlayerViewBuffer& buffer);
+    void SetMedia(const std::vector<SharedMediaClip>& media);
+    void SetMedia(const std::vector<SharedMediaClip>& media, const PlayerViewBuffer& buffer);
+    void SetSequence(const SharedPlaybackSequence& sequence);
 
     inline void SetPlaylist(Playlist* playlist) { m_Player->SetPlaylist(playlist); }
     inline void ClearQueue() { m_Playlist->Clear(); }
@@ -95,6 +92,9 @@ public:
     inline void RenderCurrentFrame() { m_Player->RenderCurrentFrame(); }
     inline void RenderAnnotatedFrames() { m_Player->RenderAnnotatedFrames(); }
     inline void TranscodeMedia() { m_Player->TranscodeMedia(); }
+
+signals:
+    void playComponentUpdated(const PlayerBuffer::PlayableComponent&);
 
 private: /* Members */
     Player* m_Player;

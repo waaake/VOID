@@ -14,8 +14,9 @@
 #include "FrameRange.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidCore/VoidTools.h"
-#include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Effects/Effects.h"
+#include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Project/Project.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
@@ -185,6 +186,8 @@ void BindCore(py::module_& m)
         .def("start_frame", &PlaybackSequence::StartFrame)
         .def("end_frame", &PlaybackSequence::EndFrame)
         .def("set_range", &PlaybackSequence::SetRange, py::arg("start"), py::arg("end"))
+        .def("set_framerate", &PlaybackSequence::SetFramerate, py::arg("framerate"))
+        .def("set_name", &PlaybackSequence::SetName, py::arg("name"))
         .def("has_media", &PlaybackSequence::HasMedia)
         .def(
             "create_track",
@@ -292,6 +295,33 @@ void BindCore(py::module_& m)
         .def("trim_tail", &TrackItem::TrimTail, py::arg("handle"))
         .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference)
         .def("unlink", &TrackItem::Unlink);
+
+    /* Project */
+    py::class_<Core::Project> project(m, "Project");
+
+    /* Project Save Type*/
+    py::enum_<EtherFormat::Type>(project, "EtherFormat")
+        .value("Ascii", EtherFormat::Type::ASCII)
+        .value("Binary", EtherFormat::Type::BINARY)
+        .export_values();
+
+    project
+        .def("__repr__", [](py::handle h)
+        {
+            const Core::Project& p = h.cast<Core::Project&>();
+            std::stringstream ss;
+            ss << "Project <" << p.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+        .def("add", static_cast<void (Core::Project::*)(const SharedMediaClip&)>(&Core::Project::Add), py::arg("media_clip"))
+        .def("add", static_cast<void (Core::Project::*)(const SharedPlaybackSequence&)>(&Core::Project::Add), py::arg("sequence"))
+        .def("document", &Core::Project::Document, py::arg("name"))
+        .def("modified", &Core::Project::Modified)
+        .def(
+            "save",
+            static_cast<bool (Core::Project::*)(const std::string&, const std::string&, const EtherFormat::Type&)>(&Core::Project::Save),
+            py::arg("path"), py::arg("name"), py::arg("type")
+        );
 }
 
 } // namespace bindings

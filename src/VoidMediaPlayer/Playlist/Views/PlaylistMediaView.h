@@ -62,7 +62,7 @@ signals:
 
 private: /* Models */
     /* Proxy for filtering and sorting */
-    MediaProxyModel* proxy;
+    EntityProxyModel* proxy;
 
     /* View Type for display */
     ViewType m_ViewType;
@@ -80,7 +80,7 @@ private: /* Methods */
     /* Setup Signals */
     void Connect();
 
-    void ResetModel(MediaModel* model);
+    void ResetModel(EntityModel* model);
     void ItemDoubleClicked(const QModelIndex& index);
     void ShowContextMenu(const _QPoint& position);
     void PlaySelected();
