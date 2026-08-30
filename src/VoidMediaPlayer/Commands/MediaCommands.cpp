@@ -13,8 +13,8 @@ VOID_NAMESPACE_OPEN
 
 MediaImportCommand::MediaImportCommand(Project* project, const std::string& path, QUndoCommand* parent)
     : VoidUndoCommand(parent)
-    , m_Project(project)
     , m_Path(MediaFS::ResolvedPath(path))
+    , m_Project(project)
     , m_InsertIndex(project->DataModel()->MediaCount())
 {
     setText("Import Media");
@@ -33,30 +33,31 @@ bool MediaImportCommand::Redo()
 
 /// MediaRemoveCommand
 
-MediaRemoveCommand::MediaRemoveCommand(const QModelIndex& index, QUndoCommand* parent)
+MediaRemoveCommand::MediaRemoveCommand(Project* project, const QModelIndex& index, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Index(index)
+    , m_Project(project)
 {
     setText("Remove Media");
 }
 
 void MediaRemoveCommand::undo()
 {
-    SharedMediaClip media = std::make_shared<MediaClip>(_MediaBridge.ActiveProject());
+    SharedMediaClip media = std::make_shared<MediaClip>(m_Project);
     std::istringstream is(m_Data, std::ios::binary);
     media->Deserialize(is);
 
-    _MediaBridge.InsertMedia(media, m_Index.row());
+    m_Project->InsertMedia(media, m_Index.row());
 }
 
 bool MediaRemoveCommand::Redo()
 {
     std::ostringstream os(std::ios::binary);
-    const SharedMediaClip& clip = _MediaBridge.DataModel()->Media(m_Index);
+    const SharedMediaClip& clip = m_Project->DataModel()->Media(m_Index);
     clip->Serialize(os);
     m_Data = os.str();
 
-    return _MediaBridge.Remove(m_Index);
+    return m_Project->Remove(m_Index);
 }
 
 /// AddSequenceCommand

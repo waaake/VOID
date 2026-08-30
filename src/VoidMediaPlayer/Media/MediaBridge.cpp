@@ -126,7 +126,7 @@ void MBridge::AddMedia(const std::string& filepath)
 
 void MBridge::RemoveMedia(const QModelIndex& index)
 {
-    PushCommand(new MediaRemoveCommand(index));
+    PushCommand(new MediaRemoveCommand(m_Project, index));
 }
 
 void MBridge::RemoveMedia(const std::vector<QModelIndex>& indexes)
@@ -144,7 +144,7 @@ void MBridge::RemoveMedia(const std::vector<QModelIndex>& indexes)
         for (int i = indexes.size() - 1; i >= 0; --i)
         {
             QModelIndex idx = indexes.at(i);
-            stack->push(new MediaRemoveCommand(idx));
+            stack->push(new MediaRemoveCommand(m_Project, idx));
         }
 
         stack->endMacro();
@@ -277,15 +277,7 @@ bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
 
 bool MBridge::InsertMedia(const SharedMediaClip& media, int index)
 {
-    if (media->Valid())
-    {
-        m_Project->Insert(media, index);
-        emit mediaAdded(media);
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media");
-    return false;
+    return m_Project->InsertMedia(media, index);
 }
 
 void MBridge::AddTag(const QModelIndex& index, const std::string& tag)

@@ -11,7 +11,6 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidMediaPlayer/Project/Project.h"
-#include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidUndo/VoidCommand.h"
 
 VOID_NAMESPACE_OPEN
@@ -25,15 +24,15 @@ public:
     bool Redo() override;
 
 private: /* Members */
-    Project* m_Project;
     std::string m_Path;
+    Project* m_Project;
     int m_InsertIndex;
 };
 
 class MediaRemoveCommand : public VoidUndoCommand
 {
 public:
-    MediaRemoveCommand(const QModelIndex& index, QUndoCommand* parent = nullptr);
+    MediaRemoveCommand(Project* project, const QModelIndex& index, QUndoCommand* parent = nullptr);
 
     void undo() override;
     bool Redo() override;
@@ -41,6 +40,7 @@ public:
 private: /* Members */
     std::string m_Data;
     QModelIndex m_Index;
+    Project* m_Project;
 };
 
 class AddSequenceCommand : public VoidUndoCommand
