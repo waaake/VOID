@@ -64,10 +64,13 @@ void MBridge::NewProject(const std::string& name)
 {
     SetActiveProject(new Project(name, true, this));
 
-    /* Add to the projects */
     m_Projects->Add(m_Project);
     emit projectCreated(m_Project);
-    /* Connect Project Signals */
+
+    // Connect Project Signals
+    connect(m_Project, &Project::mediaAdded, this, &MBridge::mediaAdded);
+    connect(m_Project, &Project::mediaAboutToBeRemoved, this, &MBridge::mediaAboutToBeRemoved);
+    connect(m_Project, &Project::mediaRemoved, this, &MBridge::mediaRemoved);
     connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
     connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
 }
@@ -118,7 +121,7 @@ void MBridge::SetActiveProject(Project* project)
 
 void MBridge::AddMedia(const std::string& filepath)
 {
-    PushCommand(new MediaImportCommand(filepath));
+    PushCommand(new MediaImportCommand(m_Project, filepath));
 }
 
 void MBridge::RemoveMedia(const QModelIndex& index)
@@ -254,104 +257,22 @@ void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes, Playli
 
 bool MBridge::AddMedia(MediaStruct&& mstruct)
 {
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return false;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return false;
-    }
-
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->Add(clip);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->AddMedia(mstruct);
 }
 
 bool MBridge::AddMedia(const MediaStruct& mstruct)
 {
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return false;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return false;
-    }
-
-    /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->Add(clip);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->AddMedia(mstruct);
 }
 
 bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
 {
-    /* Validate before adding */
-    if (mstruct.Empty())
-    {
-        VOID_LOG_INFO("Invalid Media");
-        return false;
-    }
-
-    if (!mstruct.ValidMedia())
-    {
-        VOID_LOG_INFO("Invalid Media: {0}", mstruct.FirstPath());
-        return false;
-    }
-
-     /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->Insert(clip, index);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->InsertMedia(mstruct, index);
 }
 
 bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
 {
-    /* Create the Media Clip */
-    SharedMediaClip clip = std::make_shared<MediaClip>(mstruct, m_Project);
-    if (clip->Valid())
-    {
-        m_Project->Insert(clip, index);
-        emit mediaAdded(clip);
-        // Success
-        return true;
-    }
-
-    VOID_LOG_INFO("Invalid Media Type");
-    return false;
+    return m_Project->InsertMedia(mstruct, index);
 }
 
 bool MBridge::InsertMedia(const SharedMediaClip& media, int index)
@@ -444,16 +365,7 @@ bool MBridge::Remove(SharedMediaClip clip)
 
 bool MBridge::Remove(const QModelIndex& index)
 {
-    // The Media Associated with the Model index
-    SharedMediaClip clip = m_Project->MediaAt(index);
-    if (!clip)
-        return false;
-
-    emit mediaAboutToBeRemoved(clip);
-    QCoreApplication::processEvents();
-    m_Project->Remove(index);
-
-    return true;
+    return m_Project->Remove(index);
 }
 
 Playlist* MBridge::NewPlaylist()
@@ -632,6 +544,9 @@ void MBridge::Load(const std::string& path)
         SetActiveProject(Project::FromStream(in));
     }
 
+    connect(m_Project, &Project::mediaAdded, this, &MBridge::mediaAdded);
+    connect(m_Project, &Project::mediaAboutToBeRemoved, this, &MBridge::mediaAboutToBeRemoved);
+    connect(m_Project, &Project::mediaRemoved, this, &MBridge::mediaRemoved);
     connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
     connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
 

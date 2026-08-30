@@ -173,8 +173,9 @@ signals:
      *  or is about to be removed to accordingly handle internals
      */
     void updated();
-    void mediaAdded(SharedMediaClip);
-    void mediaAboutToBeRemoved(SharedMediaClip);
+    void mediaAdded(const SharedMediaClip&);
+    void mediaAboutToBeRemoved(const SharedMediaClip&);
+    void mediaRemoved();
     void projectCreated(const Project*);
     void projectChanged(const Project*);
     void playlistCreated(const Playlist*);
