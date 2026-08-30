@@ -145,6 +145,19 @@ bool Project::InsertMedia(const MediaStruct& mstruct, int index)
     return false;
 }
 
+bool Project::InsertMedia(const SharedMediaClip& media, int index)
+{
+    if (media->Valid())
+    {
+        m_Media->Insert(media, index);
+        emit mediaAdded(media);
+        return true;
+    }
+
+    VOID_LOG_INFO("Invalid Media");
+    return false;
+}
+
 void Project::Add(const SharedMediaClip& media)
 {
     m_Media->Add(media);

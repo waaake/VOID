@@ -48,6 +48,7 @@ public:
     bool AddMedia(const MediaStruct& mstruct);
     bool InsertMedia(MediaStruct&& mstruct, int index);
     bool InsertMedia(const MediaStruct& mstruct, int index);
+    bool InsertMedia(const SharedMediaClip& media, int index);
     
     void Add(const SharedMediaClip& media);
     void Add(const SharedPlaybackSequence& media);
