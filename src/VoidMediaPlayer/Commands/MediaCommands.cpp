@@ -31,33 +31,54 @@ bool MediaImportCommand::Redo()
     return m_Project->AddMedia(MediaStruct::FromFile(m_Path));
 }
 
-/// MediaRemoveCommand
+/// RemoveEntityCommand
 
-MediaRemoveCommand::MediaRemoveCommand(Project* project, const QModelIndex& index, QUndoCommand* parent)
+RemoveEntityCommand::RemoveEntityCommand(Project* project, const QModelIndex& index, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Index(index)
     , m_Project(project)
+    , m_Type(static_cast<ProjectEntity::Type>(index.data(static_cast<int>(EntityModel::MRoles::Type)).toInt()))
 {
-    setText("Remove Media");
+    setText(m_Type == ProjectEntity::Type::MEDIA ? "Remove Media" : "Remove Sequence");
 }
 
-void MediaRemoveCommand::undo()
+void RemoveEntityCommand::undo()
 {
-    SharedMediaClip media = std::make_shared<MediaClip>(m_Project);
-    std::istringstream is(m_Data, std::ios::binary);
-    media->Deserialize(is);
+    if (m_Type == ProjectEntity::Type::MEDIA)
+    {
+        SharedMediaClip media = std::make_shared<MediaClip>(m_Project);
+        std::istringstream is(m_Data, std::ios::binary);
+        media->Deserialize(is);
+    
+        m_Project->Insert(media, m_Index.row());
+    }
+    else
+    {
+        SharedPlaybackSequence sequence = std::make_shared<PlaybackSequence>(m_Project);
+        std::istringstream is(m_Data, std::ios::binary);
+        sequence->Deserialize(is);
 
-    m_Project->InsertMedia(media, m_Index.row());
+        m_Project->Insert(sequence, m_Index.row());
+    }
 }
 
-bool MediaRemoveCommand::Redo()
+bool RemoveEntityCommand::Redo()
 {
     std::ostringstream os(std::ios::binary);
-    const SharedMediaClip& clip = m_Project->DataModel()->Media(m_Index);
-    clip->Serialize(os);
+    if (m_Type == ProjectEntity::Type::MEDIA)
+    {
+        const SharedMediaClip& clip = m_Project->DataModel()->Media(m_Index);
+        clip->Serialize(os);
+        m_Data = os.str();
+    
+        return m_Project->RemoveMedia(m_Index);
+    }
+
+    const SharedPlaybackSequence& sequence = m_Project->DataModel()->Sequence(m_Index);
+    sequence->Serialize(os);
     m_Data = os.str();
 
-    return m_Project->Remove(m_Index);
+    return m_Project->RemoveSequence(m_Index);
 }
 
 /// AddSequenceCommand
@@ -73,7 +94,7 @@ AddSequenceCommand::AddSequenceCommand(Project* project, QUndoCommand* parent)
 void AddSequenceCommand::undo()
 {
     QModelIndex index = m_Project->DataModel()->index(m_InsertIndex, 0);
-    m_Project->Remove(index); // Need to call it Remove
+    m_Project->RemoveSequence(index);
 }
 
 bool AddSequenceCommand::Redo()

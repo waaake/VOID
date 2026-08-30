@@ -29,10 +29,10 @@ private: /* Members */
     int m_InsertIndex;
 };
 
-class MediaRemoveCommand : public VoidUndoCommand
+class RemoveEntityCommand : public VoidUndoCommand
 {
 public:
-    MediaRemoveCommand(Project* project, const QModelIndex& index, QUndoCommand* parent = nullptr);
+    RemoveEntityCommand(Project* project, const QModelIndex& index, QUndoCommand* parent = nullptr);
 
     void undo() override;
     bool Redo() override;
@@ -41,6 +41,7 @@ private: /* Members */
     std::string m_Data;
     QModelIndex m_Index;
     Project* m_Project;
+    ProjectEntity::Type m_Type;
 };
 
 class AddSequenceCommand : public VoidUndoCommand
