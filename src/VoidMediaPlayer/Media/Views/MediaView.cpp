@@ -262,6 +262,15 @@ void MediaView::RemoveSelectedMedia()
 
         if (!sources.empty())
         {
+            /**
+             * sort in reverse as forward iteration would shift the model indexes and
+             * result in wrong indexes being deleted, or a worst case scenario result in crashes as
+             * the second model index doesn't even exist after the first has been deleted
+             */
+            std::sort(sources.begin(), sources.end(), [](const QModelIndex& _a, const QModelIndex& _b) -> bool
+            {
+                return _a.row() > _b.row();
+            });
             const int scroll = verticalScrollBar()->value();
             _MediaBridge.RemoveEntity(sources);
 

@@ -136,16 +136,8 @@ void MBridge::RemoveEntity(const std::vector<QModelIndex>& indexes)
         QUndoStack* stack = m_Project->UndoStack();
         stack->beginMacro("Remove Media");
 
-        /**
-         * Loop over in a a reverse way as forward iteration would shift the model indexes and
-         * result in wrong indexes being deleted, or a worst case scenario result in crashes as
-         * the second model index doesn't even exist after the first has been deleted
-         */
-        for (int i = indexes.size() - 1; i >= 0; --i)
-        {
-            QModelIndex idx = indexes.at(i);
-            stack->push(new RemoveEntityCommand(m_Project, idx));
-        }
+        for (const QModelIndex& index : indexes)
+            stack->push(new RemoveEntityCommand(m_Project, index));
 
         stack->endMacro();
     }
