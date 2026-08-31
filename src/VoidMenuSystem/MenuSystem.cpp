@@ -57,6 +57,50 @@ void MenuSystem::RegisterAction(const std::string& menu, const std::string& acti
     connect(a, &QAction::triggered, this, [=]() { callback(); });
 }
 
+bool MenuSystem::RegisterContextMenu(QMenu* menu, const std::string& name)
+{
+    if (m_ContextMenu.find(name) == m_ContextMenu.end())
+    {
+        m_ContextMenu[name] = menu;
+        return true;
+    }
+
+    return false;
+}
+
+QMenu* MenuSystem::RegisterContextMenu(const std::string& name)
+{
+    if (m_ContextMenu.find(name) == m_ContextMenu.end())
+    {
+        QMenu* menu = new QMenu();
+        m_ContextMenu[name] = menu;
+        return menu;
+    }
+
+    return m_ContextMenu[name];
+}
+
+QMenu* MenuSystem::ContextMenu(const std::string& name) const
+{
+    auto it = m_ContextMenu.find(name);
+    return it == m_ContextMenu.end() ? nullptr : it->second;
+}
+
+QAction* MenuSystem::AddContextMenuAction(const std::string& menu, const std::string& action, std::function<void()> callback)
+{
+    if (QMenu* m = ContextMenu(menu))
+    {
+        QAction* a = new QAction(action.c_str(), m);
+        m->addAction(a);
+
+        connect(a, &QAction::triggered, this, [=]() { callback(); });
+
+        return a;
+    }
+
+    return nullptr;
+}
+
 QMenu* MenuSystem::CreateMenu(const std::string& name)
 {
     QMenu* menu = new QMenu(name.c_str(), m_Menubar);

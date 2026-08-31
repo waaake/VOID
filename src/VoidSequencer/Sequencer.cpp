@@ -24,6 +24,36 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
     Connect();
 }
 
+void SequencerTimeline::InitMenu(MenuSystem* menuSystem)
+{
+    m_Menu = new SequencerContextMenu(&m_Context, this);
+    menuSystem->RegisterContextMenu(m_Menu, "ContextMenu::Sequencer");
+
+    connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& position) -> void
+    {
+        m_Menu->Show(mapToGlobal(position));
+    });
+    connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
+    {
+        m_Context.Controller()->CreateVideoTrack(m_Sequence);
+    });
+    connect(m_Menu, &SequencerContextMenu::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
+    connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
+    {
+        if (reset)
+        {
+            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems());
+        }
+        else
+        {
+            QColor color = QColorDialog::getColor(QColor(255, 255, 255), this, "Select Trackitem Color");
+            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems(), color);
+        }
+    });
+    connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
+}
+
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
     if (m_Sequence)
@@ -102,7 +132,6 @@ void SequencerTimeline::Build()
     m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
     m_RippleDeleteShortcut = new QShortcut(QKeySequence("Ctrl+Backspace"), this);
     m_ToggleStateShortcut = new QShortcut(QKeySequence(Qt::Key_D), this);
-    m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);
 
@@ -171,33 +200,8 @@ void SequencerTimeline::Connect()
         SetHorizontalScale((float)value / 10);
     });
 
-    connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& position) -> void
-    {
-        m_Menu->Show(mapToGlobal(position));
-    });
     connect(m_View->verticalScrollBar(), &QScrollBar::valueChanged, m_TrackHeader, &STrackHeaderWidget::SetScroll);
     connect(m_View, &STimelineView::sequenceCutRequested, this, static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt));
-
-    // Menu
-    connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
-    {
-        m_Context.Controller()->CreateVideoTrack(m_Sequence);
-    });
-    connect(m_Menu, &SequencerContextMenu::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
-    connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
-    connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
-    {
-        if (reset)
-        {
-            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems());
-        }
-        else
-        {
-            QColor color = QColorDialog::getColor(QColor(255, 255, 255), this, "Select Trackitem Color");
-            m_Context.Controller()->SetTrackItemsColor(m_Context.SelectionModel()->SelectedItems(), color);
-        }
-    });
-    connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)

@@ -128,6 +128,9 @@ void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
         VoidPreferences::Instance().Set(Settings::DefaultWorkspace, 0);
         Switch(Workspace::PLAYBACK);
     });
+
+    // Widget Menus
+    m_Sequencer->InitMenu(menuSystem);
 }
 
 void WorkspaceManager::Switch(const Workspace& workspace)

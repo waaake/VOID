@@ -69,6 +69,7 @@ target_link_libraries(
     PUBLIC
     VoidCore
     VoidMediaPlayer # Needs to be fixed when bridges are separate entities
+    VoidMenuSystem
     VoidObjects
     VoidQExtensions
     VoidTimeline

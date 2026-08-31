@@ -46,6 +46,11 @@ void BindUi(py::module_& m)
     {
         UIGlobals::InternalMenuSystem()->RegisterAction(m, action, f, shortcut);
     };
+    auto register_context_menu_action = []
+    (const std::string& m, const std::string& action, std::function<void()> f)
+    {
+        UIGlobals::InternalMenuSystem()->AddContextMenuAction(m, action, f);
+    };
 
     m.def(
         "register_action",
@@ -54,6 +59,13 @@ void BindUi(py::module_& m)
         py::arg("action"),
         py::arg("function"),
         py::arg("shortcut") = ""
+    );
+    m.def(
+        "register_context_menu_action",
+        register_context_menu_action,
+        py::arg("menu"),
+        py::arg("action"),
+        py::arg("function")
     );
 
     /* PlayerBridge -- PlayerController */

@@ -21,6 +21,7 @@
 #include "Widgets/STimelineRuler.h"
 #include "Widgets/STrackHeaderWidget.h"
 #include "Widgets/SToolbar.h"
+#include "VoidMenuSystem/MenuSystem.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -30,6 +31,8 @@ class VOID_API SequencerTimeline : public QWidget
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
     virtual inline QSize sizeHint() const override { return QSize(640, 300); }
+
+    void InitMenu(MenuSystem* menuSystem);
 
     void SetSequence(const SharedPlaybackSequence& sequence);
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }

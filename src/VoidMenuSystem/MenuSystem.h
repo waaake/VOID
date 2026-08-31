@@ -31,9 +31,15 @@ public:
     QAction* AddAction(QMenu* menu, const std::string& action, const QKeySequence& shortcut);
     void RegisterAction(const std::string& menu, const std::string& action, std::function<void()> callback, const std::string& shortcut = "");
 
+    bool RegisterContextMenu(QMenu* menu, const std::string& name);
+    QMenu* RegisterContextMenu(const std::string& name);
+    QMenu* ContextMenu(const std::string& name) const;
+    QAction* AddContextMenuAction(const std::string& menu, const std::string& action, std::function<void()> callback);
+
 private: /* Members */
     QMenuBar* m_Menubar;
     std::unordered_map<std::string, QMenu*> m_Menus;
+    std::unordered_map<std::string, QMenu*> m_ContextMenu;
 
 private: /* Methods */
     QMenu* CreateMenu(const std::string& Name);
