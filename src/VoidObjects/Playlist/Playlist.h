@@ -29,6 +29,7 @@ public:
     Playlist(Core::Project* parent = nullptr);
     ~Playlist();
 
+    Core::Project* Project() const { return m_Project; }
     inline bool Active() const { return m_Active; }
     inline void SetActive(bool active) { m_Active = active; }
 
