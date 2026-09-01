@@ -6,6 +6,8 @@
 
 /* Internal */
 #include "WorkspaceManager.h"
+#include "VoidComponents/View.h"
+#include "VoidComponents/Widget.h"
 #include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
@@ -251,8 +253,14 @@ bool WorkspaceManager::ShowIfDocked(const QString& name) const
 
 void WorkspaceManager::DeleteRequested()
 {
-    if (IView* view = dynamic_cast<IView*>(QApplication::focusWidget()))
+    QWidget* w = QApplication::focusWidget();
+    if (IView* view = dynamic_cast<IView*>(w))
         view->DeleteSelected();
+    
+    // For certain views/areas that we have not overridden, we certainly do own the parent
+    // hence trigger it from the parent level
+    if (IWidget* widget = dynamic_cast<IWidget*>(w->parent()))
+        widget->DeleteSelected();
 }
 
 VOID_NAMESPACE_CLOSE
