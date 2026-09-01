@@ -56,6 +56,7 @@ private:
 
     QAction* m_PlayAction;
     QAction* m_PlayAsSequenceAction;
+    QAction* m_AddAction;
     QAction* m_RemoveAction;
 
 private: /* Methods */

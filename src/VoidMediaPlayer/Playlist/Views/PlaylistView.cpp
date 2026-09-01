@@ -20,6 +20,7 @@ PlaylistView::PlaylistView(QWidget* parent)
 {
     m_PlayAction = new QAction("Play");
     m_PlayAsSequenceAction = new QAction("Play as Sequence");
+    m_AddAction = new QAction("Create Playlist");
     m_RemoveAction = new QAction("Remove Playlist");
 
     Setup();
@@ -47,6 +48,10 @@ PlaylistView::~PlaylistView()
     m_PlayAsSequenceAction->deleteLater();
     delete m_PlayAsSequenceAction;
     m_PlayAsSequenceAction = nullptr;
+
+    m_AddAction->deleteLater();
+    delete m_AddAction;
+    m_AddAction = nullptr;
 
     m_RemoveAction->deleteLater();
     delete m_RemoveAction;
@@ -117,6 +122,7 @@ void PlaylistView::Connect()
 
     connect(m_PlayAction, &QAction::triggered, this, &PlaylistView::Play);
     connect(m_PlayAsSequenceAction, &QAction::triggered, this, &PlaylistView::PlayAsSequence);
+    connect(m_AddAction, &QAction::triggered, this, []() -> void { _MediaBridge.NewPlaylist(); });
     connect(m_RemoveAction, &QAction::triggered, this, &PlaylistView::RemoveSelected);
 }
 
@@ -173,14 +179,18 @@ void PlaylistView::ProjectChanged(const Project* project)
 
 void PlaylistView::ShowContextMenu(const _QPoint& position)
 {
-    if (!HasSelection())
-        return;
-
     QMenu contextMenu(this);
 
     contextMenu.addAction(m_PlayAction);
     contextMenu.addAction(m_PlayAsSequenceAction);
+    contextMenu.addSeparator();
+    contextMenu.addAction(m_AddAction);
     contextMenu.addAction(m_RemoveAction);
+
+    bool hasSelection = HasSelection();
+    m_PlayAction->setEnabled(hasSelection);
+    m_PlayAsSequenceAction->setEnabled(hasSelection);
+    m_RemoveAction->setEnabled(hasSelection);
 
     /* Show Menu */
     #if _QT6
