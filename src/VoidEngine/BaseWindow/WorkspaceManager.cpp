@@ -1,8 +1,13 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QApplication>
+
 /* Internal */
 #include "WorkspaceManager.h"
+#include "VoidComponents/View.h"
+#include "VoidComponents/Widget.h"
 #include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
@@ -11,6 +16,12 @@ WorkspaceManager::WorkspaceManager(QWidget* parent)
     : MainWindow(parent)
     , m_Current(Workspace::PLAYBACK)
 {
+    #ifdef __APPLE__
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+    #else
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    #endif
+    connect(m_DeleteShortcut, &QShortcut::activated, this, &WorkspaceManager::DeleteRequested);
 }
 
 WorkspaceManager::~WorkspaceManager()
@@ -83,9 +94,6 @@ void WorkspaceManager::Init()
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
     setCentralWidget(m_Splitter);
-
-    // Temporary
-    m_Sequencer->SetSequence(_PlayerBridge.ActivePlayer()->ActiveViewer()->GetSequence());
 }
 
 void WorkspaceManager::Connect()
@@ -238,6 +246,18 @@ bool WorkspaceManager::ShowIfDocked(const QString& name) const
     }
 
     return false;
+}
+
+void WorkspaceManager::DeleteRequested()
+{
+    QWidget* w = QApplication::focusWidget();
+    if (IView* view = dynamic_cast<IView*>(w))
+        view->DeleteSelected();
+    
+    // For certain views/areas that we have not overridden, we certainly do own the parent
+    // hence trigger it from the parent level
+    if (IWidget* widget = dynamic_cast<IWidget*>(w->parent()))
+        widget->DeleteSelected();
 }
 
 VOID_NAMESPACE_CLOSE

@@ -10,6 +10,7 @@
 #include <QMenu>
 #include <QMimeData>
 #include <QPainter>
+#include <QScrollBar>
 
 /* Internal */
 #include "PlaylistMediaView.h"
@@ -18,6 +19,7 @@
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidMediaPlayer/Media/Delegates/ListDelegate.h"
 #include "VoidMediaPlayer/Media/Delegates/ThumbnailDelegate.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -27,9 +29,8 @@ PlaylistMediaView::PlaylistMediaView(QWidget* parent)
 {
     m_PlayAction = new QAction("Play Selected Media");
     m_RemoveAction = new QAction("Remove Selected Media from playlist");
-    Setup();
 
-    /* Connect Signals */
+    Setup();
     Connect();
 }
 
@@ -39,11 +40,11 @@ PlaylistMediaView::~PlaylistMediaView()
      * Set the source Model as nullpointer so that we don't actually delete
      * the original source model
      */
-    proxy->setSourceModel(nullptr);
+    m_Proxy->setSourceModel(nullptr);
 
-    proxy->deleteLater();
-    delete proxy;
-    proxy = nullptr;
+    m_Proxy->deleteLater();
+    delete m_Proxy;
+    m_Proxy = nullptr;
 
     m_PlayAction->deleteLater();
     delete m_PlayAction;
@@ -66,7 +67,7 @@ void PlaylistMediaView::startDrag(Qt::DropActions supportedActions)
     QDrag* drag = new QDrag(this);
     drag->setMimeData(data);
 
-    /* Stacked pixmaps */
+    // Stacked pixmaps
     const int count = std::min(static_cast<int>(indexes.size()), 4);
     const int thumbsize = 100;
     const int offset = 10;
@@ -126,21 +127,20 @@ void PlaylistMediaView::Refresh()
         ResetModel(playlist->DataModel());
     else
         ResetModel(nullptr);
-    VOID_LOG_INFO("Refreshed");
 }
 
 void PlaylistMediaView::Setup()
 {
-    proxy = new EntityProxyModel(this);
-    setModel(proxy);
+    m_Proxy = new EntityProxyModel(this);
+    setModel(m_Proxy);
 
-    /* Selection Mode */
+    // Selection Mode
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setUniformItemSizes(true);
 
     ResetView();
 
-    /* Context Menu */
+    // Context Menu
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     setDragEnabled(true);
@@ -155,8 +155,6 @@ void PlaylistMediaView::ResetView()
         setViewMode(QListView::ListMode);
         setSpacing(1);
         setResizeMode(QListView::Fixed);
-
-        /* Reset Grid Size */
         setGridSize(QSize());
     }
     else if (m_ViewType == ViewType::DetailedListView)
@@ -165,8 +163,6 @@ void PlaylistMediaView::ResetView()
         setViewMode(QListView::ListMode);
         setSpacing(1);
         setResizeMode(QListView::Fixed);
-
-        /* Reset Grid Size */
         setGridSize(QSize());
     }
     else
@@ -175,8 +171,6 @@ void PlaylistMediaView::ResetView()
         setViewMode(QListView::IconMode);
         setSpacing(2);
         setResizeMode(QListView::Adjust);
-
-        /* Grid Size */
         setGridSize(QSize(154, 150)); // Delegate Item::SizeHint().width() + 4, .Height() + 4;
     }
 }
@@ -189,7 +183,7 @@ void PlaylistMediaView::Connect()
     connect(this, &QListView::doubleClicked, this, &PlaylistMediaView::ItemDoubleClicked);
     connect(this, &QListView::customContextMenuRequested, this, &PlaylistMediaView::ShowContextMenu);
 
-    /* Media Bridge */
+    // Media Bridge
     connect(&_MediaBridge, &MBridge::projectChanged, this, [this](const Project* project) { ResetModel(nullptr); });
     connect(&_MediaBridge, &MBridge::playlistCreated, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
     connect(&_MediaBridge, &MBridge::playlistChanged, this, [this](const Playlist* playlist) { ResetModel(playlist->DataModel()); });
@@ -197,7 +191,7 @@ void PlaylistMediaView::Connect()
 
 void PlaylistMediaView::ResetModel(EntityModel* model)
 {
-    proxy->setSourceModel(model);
+    m_Proxy->setSourceModel(model);
     VOID_LOG_INFO("Playlist Media Source Model Updated");
 }
 
@@ -206,24 +200,18 @@ void PlaylistMediaView::ItemDoubleClicked(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    /* The source index */
-    emit itemDoubleClicked(proxy->mapToSource(index));
+    emit itemDoubleClicked(m_Proxy->mapToSource(index));
 }
 
 void PlaylistMediaView::ShowContextMenu(const _QPoint& position)
 {
-     /* Show up only if we have selection */
     if (!HasSelection())
         return;
 
-    /* Create a context menu */
     QMenu contextMenu(this);
-
-    /* Add the Defined actions */
     contextMenu.addAction(m_PlayAction);
     contextMenu.addAction(m_RemoveAction);
 
-    /* Show Menu */
     #if _QT6
     /**
      * Qt6 mapToGlobal returns QPointF while menu.exec expects QPoint
@@ -237,74 +225,53 @@ void PlaylistMediaView::ShowContextMenu(const _QPoint& position)
 const std::vector<QModelIndex> PlaylistMediaView::SelectedIndexes() const
 {
     std::vector<QModelIndex> sources;
-
-    /* Get the selection model */
     QItemSelectionModel* selection = selectionModel();
-
-    /* Nothing is selected at the moment */
     if (!selection)
         return sources;
 
     const QModelIndexList proxyindexes = selection->selectedRows();
-    /* We know how many items are selected */
     sources.reserve(proxyindexes.size());
 
     for (const QModelIndex& index: proxyindexes)
     {
-        QModelIndex source = proxy->mapToSource(index);
+        QModelIndex source = m_Proxy->mapToSource(index);
         if (source.isValid())
             sources.emplace_back(source);
     }
 
-    /* Return the updated source indexes that are selected */
     return sources;
 }
 
 bool PlaylistMediaView::HasSelection()
 {
-    /* Underlying selection model */
     QItemSelectionModel* s = selectionModel();
-
-    /* Doesn't have the selection model ?*/
-    if (!s)
-        return false;
-
-    /* Return whether the selection model has any selection currently */
-    return s->hasSelection();
+    return s && s->hasSelection();
 }
 
 void PlaylistMediaView::EnableSorting(bool state, const Qt::SortOrder& order)
 {
-    proxy->sort(state ? 0 : -1, order);
+    m_Proxy->sort(state ? 0 : -1, order);
 }
 
 void PlaylistMediaView::SetViewType(const ViewType& type)
 {
-    /* Update the internal view type */
     m_ViewType = type;
-
-    /* Reset the view */
     ResetView();
 }
 
 void PlaylistMediaView::PlaySelected()
 {
-    std::vector<SharedMediaClip> clips;
-
-    /* Get the selection model */
     QItemSelectionModel* selection = selectionModel();
-
-    /* Nothing is selected at the moment */
     if (!selection)
         return;
 
+    std::vector<SharedMediaClip> clips;
     const QModelIndexList proxyindexes = selection->selectedRows();
-    /* We know how many items are selected */
     clips.reserve(proxyindexes.size());
 
     for (const QModelIndex& index: proxyindexes)
     {
-        QModelIndex source = proxy->mapToSource(index);
+        QModelIndex source = m_Proxy->mapToSource(index);
         if (source.isValid())
             clips.emplace_back(_MediaBridge.PlaylistMediaAt(source));
     }
@@ -314,22 +281,37 @@ void PlaylistMediaView::PlaySelected()
 
 void PlaylistMediaView::RemoveSelected()
 {
-    /* Get the selection model */
     QItemSelectionModel* selection = selectionModel();
-
-    /* Nothing is selected at the moment */
     if (!selection)
         return;
 
-    const QModelIndexList proxyindexes = selection->selectedRows();
-
+    const QModelIndexList proxies = selection->selectedRows();
     std::vector<QModelIndex> sources;
-    sources.reserve(proxyindexes.size());
+    sources.reserve(proxies.size());
 
-    for (int i = proxyindexes.size() - 1; i >=0; --i)
-        sources.emplace_back(proxy->mapToSource(proxyindexes.at(i)));
+    for (const QModelIndex& index : proxies)
+    {
+        const QModelIndex source = m_Proxy->mapToSource(index);
+        if (source.isValid())
+            sources.emplace_back(source);
+    }
 
-    _MediaBridge.RemoveFromPlaylist(sources);
+    if (!sources.empty())
+    {
+        /**
+         * sort in reverse as forward iteration would shift the model indexes and
+         * result in wrong indexes being deleted, or a worst case scenario result in crashes as
+         * the second model index doesn't even exist after the first has been deleted
+         */
+        std::sort(sources.begin(), sources.end(), [](const QModelIndex& _a, const QModelIndex& _b) -> bool
+        {
+            return _a.row() > _b.row();
+        });
+        const int scroll = verticalScrollBar()->value();
+        _MediaBridge.RemoveFromPlaylist(sources);
+
+        verticalScrollBar()->setValue(scroll);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

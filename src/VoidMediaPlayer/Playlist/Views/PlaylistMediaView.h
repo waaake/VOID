@@ -10,41 +10,41 @@
 
 /* Internal */
 #include "QDefinition.h"
-#include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidComponents/View.h"
+#include "VoidObjects/Models/EntityModel.h"
 
 VOID_NAMESPACE_OPEN
 
-class PlaylistMediaView : public QListView
+class PlaylistMediaView : public QListView, public IView
 {
     Q_OBJECT
-
-public: /* enums */
-
+public:
     enum class ViewType
     {
         ListView,
         DetailedListView,
         ThumbnailView
     };
-
 public:
     explicit PlaylistMediaView(QWidget* parent = nullptr);
     ~PlaylistMediaView();
 
-    /* Search and filter items from the Model */
-    inline void Search(const std::string& text) { proxy->SetSearchText(text); }
+    void DeleteSelected() override { RemoveSelected(); }
 
-    /* Returns the currently selected Media row Model Indices */
+    // Search and filter items from the Model
+    inline void Search(const std::string& text) { m_Proxy->SetSearchText(text); }
+
+    // Returns the currently selected Media row Model Indices
     const std::vector<QModelIndex> SelectedIndexes() const;
 
-    /* Returns if the widget has selection */
+    // Returns if the widget has selection
     bool HasSelection();
 
-    /* Toggle sorting on the Model */
+    // Toggle sorting on the Model
     void EnableSorting(bool state, const Qt::SortOrder& order = Qt::AscendingOrder);
 
     const ViewType GetViewType() const { return m_ViewType; }
-    /* Set the View Type */
+    // Set the View Type
     void SetViewType(const ViewType& type);
 
     void Refresh();
@@ -56,28 +56,19 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 signals:
-    /* Sends the Source Model Index mapped from the proxy model */
     void itemDoubleClicked(const QModelIndex&);
     void played(const std::vector<SharedMediaClip>&);
 
 private: /* Models */
-    /* Proxy for filtering and sorting */
-    EntityProxyModel* proxy;
-
-    /* View Type for display */
+    EntityProxyModel* m_Proxy;
     ViewType m_ViewType;
 
     QAction* m_PlayAction;
     QAction* m_RemoveAction;
 
 private: /* Methods */
-    /* Setup the View */
     void Setup();
-
-    /* (Re)sets the view of the list */
     void ResetView();
-
-    /* Setup Signals */
     void Connect();
 
     void ResetModel(EntityModel* model);

@@ -134,12 +134,6 @@ void VoidMediaLister::Build()
     RebuildPlaylistMenu();
     m_RenameAction = new QAction("Rename");
 
-    /* Shortcuts */
-#ifdef __APPLE__
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
-#else
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
-#endif
     m_PrimaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_1), this);
     m_SecondaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_2), this);
 
@@ -305,7 +299,6 @@ void VoidMediaLister::Connect()
     connect(&_MediaBridge, &MBridge::updated, this, &VoidMediaLister::RebuildPlaylistMenu);
 
     /* Shortcut */
-    connect(m_DeleteShortcut, &QShortcut::activated, m_MediaView, &MediaView::RemoveSelectedMedia);
     connect(m_PrimaryViewShortcut, &QShortcut::activated, this, &VoidMediaLister::AddToPrimaryViewer);
     connect(m_SecondaryViewShortcut, &QShortcut::activated, this, &VoidMediaLister::AddToSecondaryViewer);
 

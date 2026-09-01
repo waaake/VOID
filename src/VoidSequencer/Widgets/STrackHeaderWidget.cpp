@@ -23,6 +23,11 @@ STrackHeaderWidget::STrackHeaderWidget(SequencerContext* context, QWidget* paren
     Build();
 }
 
+void STrackHeaderWidget::DeleteSelected()
+{
+    emit deleteSelectionRequested();
+}
+
 void STrackHeaderWidget::AddTrack(const SharedPlaybackTrack& track)
 {
     STrackHeader* header = new STrackHeader(track, m_Context, this);
@@ -81,7 +86,7 @@ void STrackHeaderWidget::Build()
 
     m_ScrollLayout->addItem(new QSpacerItem(0, Sequencer::RulerHeight, QSizePolicy::Expanding, QSizePolicy::Fixed));
 
-    m_ScrollArea = new QScrollArea;
+    m_ScrollArea = new QScrollArea(this);
     m_ScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_ScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 

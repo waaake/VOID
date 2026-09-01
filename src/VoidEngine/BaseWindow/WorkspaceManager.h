@@ -4,6 +4,9 @@
 #ifndef _VOID_WORKSPACE_MANAGER_H
 #define _VOID_WORKSPACE_MANAGER_H
 
+/* Qt */
+#include <QShortcut>
+
 /* Internal */
 #include "Definition.h"
 #include "VoidDocker/DockManager.h"
@@ -83,6 +86,7 @@ private: /* Members */
     TaskView* m_TaskQueue;
     SequencerTimeline* m_Sequencer;
 
+    QShortcut* m_DeleteShortcut;
     Workspace m_Current;
 
 private: /* Members */
@@ -93,6 +97,7 @@ private: /* Members */
     void EditEffects(Effect* effect);
     void ShowComponent(const Component& component) const;
     bool ShowIfDocked(const QString& name) const;
+    void DeleteRequested();
 };
 
 VOID_NAMESPACE_CLOSE

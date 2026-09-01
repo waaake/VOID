@@ -76,6 +76,7 @@ public:
     Playlist* NewPlaylist();
     Playlist* NewPlaylist(const std::string& name);
     Playlist* NewPlaylist(const std::string& name, int index);
+    void InsertPlaylist(Playlist* playlist, int index);
     inline Playlist* ActivePlaylist() const { return m_Playlist; }
     inline Playlist* PlaylistAt(const QModelIndex& index) const { return m_Playlists->PlaylistAt(index); }
     inline Playlist* PlaylistAt(int row, int column) const { return m_Playlists->PlaylistAt(row, column); }
