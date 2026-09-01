@@ -111,7 +111,6 @@ private: /* Members */
     QAction* m_RenameAction;
 
     /* Shortcuts */
-    QShortcut* m_DeleteShortcut;
     QShortcut* m_PrimaryViewShortcut;
     QShortcut* m_SecondaryViewShortcut;
 
