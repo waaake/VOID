@@ -242,6 +242,12 @@ Playlist* Project::NewPlaylist(const std::string& name, int index)
     return m_Playlist;
 }
 
+void Project::InsertPlaylist(Playlist* playlist, int index)
+{
+    m_Playlists->Insert(playlist, index);
+    emit playlistCreated(playlist);
+}
+
 void Project::SetCurrentPlaylist(const QModelIndex& index)
 {
     if (!index.isValid())
