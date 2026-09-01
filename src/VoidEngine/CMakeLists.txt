@@ -23,17 +23,20 @@ if (WIN32)
         ../VoidMediaPlayer/Media/MediaBridge.h
         ../VoidMediaPlayer/Media/MediaLister.h
         ../VoidMediaPlayer/Player/Player.h
+        ../VoidMediaPlayer/Player/PlayerBridge.h
         ../VoidMediaPlayer/Player/PlayerBuffer.h
         ../VoidMediaPlayer/Player/PlayerWidget.h
         ../VoidMediaPlayer/Player/ViewerBuffer.h
         ../VoidMediaPlayer/Playlist/PlayLister.h
         ../VoidMediaPlayer/Project/Project.h
         ../VoidMenuSystem/MenuSystem.h
+        ../VoidObjects/Core/Entity.h
         ../VoidObjects/Models/EntityModel.h
         ../VoidObjects/Models/PlaylistModel.h
         ../VoidObjects/Models/ProjectModel.h
         ../VoidObjects/Models/TagMetadataModel.h
         ../VoidObjects/Playlist/Playlist.h
+        ../VoidObjects/Project/Project.h
         ../VoidObjects/Sequence/Sequence.h
         ../VoidObjects/Sequence/Track.h
         ../VoidObjects/Sequence/TrackItem.h

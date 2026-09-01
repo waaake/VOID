@@ -8,8 +8,9 @@ set(SOURCES
 if (WIN32)
     list(APPEND SOURCES
         ../VoidBridge/Engine.h
-        ../VoidObjects/Media/MediaClip.h
         ../VoidObjects/Core/Task.h
+        ../VoidObjects/Core/Entity.h
+        ../VoidObjects/Media/MediaClip.h
         ../VoidObjects/Models/TagModel.h
         ../VoidObjects/Models/TagMetadataModel.h
         ../VoidQExtensions/Table.h

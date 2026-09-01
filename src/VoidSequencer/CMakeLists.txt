@@ -30,7 +30,14 @@ set(SOURCES
 if (WIN32)
     list(APPEND SOURCES
         ../VoidMediaPlayer/Media/MediaBridge.h
+        ../VoidMediaPlayer/Player/Player.h
+        ../VoidMediaPlayer/Player/PlayerBridge.h
+        ../VoidMediaPlayer/Player/PlayerBuffer.h
+        ../VoidMediaPlayer/Player/PlayerWidget.h
         ../VoidMediaPlayer/Project/Project.h
+        ../VoidMediaPlayer/Player/ViewerBuffer.h
+        ../VoidMenuSystem/MenuSystem.h
+        ../VoidObjects/Core/Entity.h
         ../VoidObjects/Effects/Effects.h
         ../VoidObjects/Media/MediaClip.h
         ../VoidObjects/Models/EntityModel.h
@@ -39,12 +46,15 @@ if (WIN32)
         ../VoidObjects/Models/TagModel.h
         ../VoidObjects/Models/TagMetadataModel.h
         ../VoidObjects/Playlist/Playlist.h
+        ../VoidObjects/Project/Project.h
         ../VoidObjects/Sequence/Sequence.h
         ../VoidObjects/Sequence/Track.h
         ../VoidObjects/Sequence/TrackItem.h
         ../VoidQExtensions/Frame.h
+        ../VoidQExtensions/Label.h
         ../VoidQExtensions/ProgressTask.h
         ../VoidQExtensions/PushButton.h
+        ../VoidQExtensions/Slider.h
         ../VoidTimeline/Timeline.h
         ../VoidTimeline/TimelineController.h
         ../VoidTimeline/Timeslider.h
@@ -62,6 +72,7 @@ target_include_directories(
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    ${FFMPEG_INCLUDE_DIRS}
 )
 
 target_link_libraries(

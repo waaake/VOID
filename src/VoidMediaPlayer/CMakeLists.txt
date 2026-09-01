@@ -72,6 +72,7 @@ list(APPEND SOURCES
         ../VoidBridge/Engine.h
         ../VoidMenuSystem/MenuSystem.h
         ../VoidObjects/Core/Task.h
+        ../VoidObjects/Core/Entity.h
         ../VoidObjects/Effects/Effects.h
         ../VoidObjects/Media/MediaClip.h
         ../VoidObjects/Models/EntityModel.h
@@ -80,6 +81,7 @@ list(APPEND SOURCES
         ../VoidObjects/Models/TagModel.h
         ../VoidObjects/Models/TagMetadataModel.h
         ../VoidObjects/Playlist/Playlist.h
+        ../VoidObjects/Project/Project.h
         ../VoidObjects/Sequence/Sequence.h
         ../VoidObjects/Sequence/Track.h
         ../VoidObjects/Sequence/TrackItem.h
