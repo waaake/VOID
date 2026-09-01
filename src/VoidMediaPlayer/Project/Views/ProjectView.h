@@ -7,6 +7,7 @@
 /* Qt */
 #include <QAction>
 #include <QListView>
+#include <QMenu>
 
 /* Internal */
 #include "QDefinition.h"
@@ -40,6 +41,8 @@ signals:
 private:
     ProjectProxyModel* proxy;
 
+    QMenu* m_NewMenu;
+    QMenu* m_ImportMenu;
     QAction* m_ImportMediaAction;
     QAction* m_ImportDirectoryAction;
     QAction* m_CreateSequenceAction;
