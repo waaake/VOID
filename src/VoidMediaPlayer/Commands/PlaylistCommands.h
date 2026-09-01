@@ -10,7 +10,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Project/Project.h"
 #include "VoidUndo/VoidCommand.h"
 
 VOID_NAMESPACE_OPEN
@@ -18,28 +18,30 @@ VOID_NAMESPACE_OPEN
 class PlaylistAddCommand : public VoidUndoCommand
 {
 public:
-    explicit PlaylistAddCommand(QUndoCommand* parent = nullptr);
-    PlaylistAddCommand(const std::string& name, QUndoCommand* parent = nullptr);
+    explicit PlaylistAddCommand(Project* project, QUndoCommand* parent = nullptr);
+    PlaylistAddCommand(Project* project, const std::string& name, QUndoCommand* parent = nullptr);
 
     void undo() override;
     bool Redo() override;
 
 private: /* Members */
-    unsigned int m_InsertIndex;
     std::string m_Name;
+    unsigned int m_InsertIndex;
+    Project* m_Project;
 };
 
 class PlaylistRemoveCommand : public VoidUndoCommand
 {
 public:
-    PlaylistRemoveCommand(const QModelIndex& index, QUndoCommand* parent = nullptr);
+    PlaylistRemoveCommand(Project* project, const QModelIndex& index, QUndoCommand* parent = nullptr);
 
     void undo() override;
     bool Redo() override;
 
 private: /* Members */
+    std::string m_Data;
     QModelIndex m_Index;
-    std::string m_Name;
+    Project* m_Project;
 
     /**
      * A playlist may or may not contain media added from the project
@@ -57,21 +59,22 @@ private: /* Members */
 class PlaylistAddMediaCommand : public VoidUndoCommand
 {
 public:
-    PlaylistAddMediaCommand(const QModelIndex& index, QUndoCommand* parent = nullptr);
+    PlaylistAddMediaCommand(Core::Project* project, const QModelIndex& index, QUndoCommand* parent = nullptr);
     PlaylistAddMediaCommand(const QModelIndex& index, Playlist* playlist, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
 private: /* Members */
     QModelIndex m_Index;
-    Playlist* m_Playlist;
+    Core::Project* m_Project;
+    int m_PlaylistIndex;
     unsigned int m_InsertIndex;
 };
 
 class PlaylistRemoveMediaCommand : public VoidUndoCommand
 {
 public:
-    PlaylistRemoveMediaCommand(const QModelIndex& index, QUndoCommand* parent = nullptr);
+    PlaylistRemoveMediaCommand(Core::Project* project, const QModelIndex& index, QUndoCommand* parent = nullptr);
     PlaylistRemoveMediaCommand(const QModelIndex& index, Playlist* playlist, QUndoCommand* parent = nullptr);
 
     void undo() override;
@@ -80,7 +83,8 @@ public:
 private: /* Members */
     QModelIndex m_Index;
     QModelIndex m_MediaIndex;
-    Playlist* m_Playlist;
+    Core::Project* m_Project;
+    int m_PlaylistIndex;
 };
 
 VOID_NAMESPACE_CLOSE
