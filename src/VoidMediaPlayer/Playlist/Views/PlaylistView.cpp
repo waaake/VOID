@@ -10,6 +10,7 @@
 #include "PlaylistView.h"
 #include "Internal/Descriptors.h"
 #include "VoidCore/Logging.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidMediaPlayer/Playlist/Delegates/ListDelegate.h"
 
 VOID_NAMESPACE_OPEN
@@ -33,11 +34,11 @@ PlaylistView::~PlaylistView()
      * Set the source Model as nullpointer so that we don't actually delete
      * the original source model
      */
-    proxy->setSourceModel(nullptr);
+    m_Proxy->setSourceModel(nullptr);
 
-    proxy->deleteLater();
-    delete proxy;
-    proxy = nullptr;
+    m_Proxy->deleteLater();
+    delete m_Proxy;
+    m_Proxy = nullptr;
 
     m_PlayAction->deleteLater();
     delete m_PlayAction;
@@ -54,24 +55,15 @@ PlaylistView::~PlaylistView()
 
 void PlaylistView::Setup()
 {
-    /* Proxy Model */
-    proxy = new PlaylistProxyModel(this);
-
-    /* Source Model */
+    m_Proxy = new PlaylistProxyModel(this);
     Project* project = _MediaBridge.ActiveProject();
-
-    /* Setup the Proxy's Source Model */
     ResetModel(project->PlaylistMediaModel());
 
-    /* Selection Mode */
     setSelectionMode(QAbstractItemView::SingleSelection);
     setUniformItemSizes(true);
-    /* Set Delegate */
     setItemDelegate(new PlaylistItemDelegate(this));
-    /* Spacing between entries */
     setSpacing(1);
 
-    /* Context Menu */
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     setAcceptDrops(true);
@@ -108,7 +100,6 @@ void PlaylistView::dropEvent(QDropEvent* event)
             return;
 
         Playlist* playlist = _MediaBridge.PlaylistAt(index);
-        
         if (!playlist)
             return;
 
@@ -131,8 +122,8 @@ void PlaylistView::Connect()
 
 void PlaylistView::ResetModel(PlaylistModel* model)
 {
-    proxy->setSourceModel(model);
-    setModel(proxy);
+    m_Proxy->setSourceModel(model);
+    setModel(m_Proxy);
     VOID_LOG_INFO("Playlist Source Model Updated");
 }
 
@@ -141,52 +132,38 @@ void PlaylistView::ItemClicked(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    /* The source index */
-    emit itemClicked(proxy->mapToSource(index));
+    emit itemClicked(m_Proxy->mapToSource(index));
 }
 
 const std::vector<QModelIndex> PlaylistView::SelectedIndexes() const
 {
     std::vector<QModelIndex> sources;
-
-    /* Get the selection model */
     QItemSelectionModel* selection = selectionModel();
-
-    /* Nothing is selected at the moment */
     if (!selection)
         return sources;
 
     const QModelIndexList proxyindexes = selection->selectedRows();
-    /* We know how many items are selected */
     sources.reserve(proxyindexes.size());
 
     for (const QModelIndex& index: proxyindexes)
     {
-        QModelIndex source = proxy->mapToSource(index);
+        QModelIndex source = m_Proxy->mapToSource(index);
         if (source.isValid())
             sources.emplace_back(source);
     }
 
-    /* Return the updated source indexes that are selected */
     return sources;
 }
 
 bool PlaylistView::HasSelection()
 {
-    /* Underlying selection model */
     QItemSelectionModel* s = selectionModel();
-
-    /* Doesn't have the selection model ?*/
-    if (!s)
-        return false;
-
-    /* Return whether the selection model has any selection currently */
-    return s->hasSelection();
+    return s && s->hasSelection();
 }
 
 void PlaylistView::EnableSorting(bool state, const Qt::SortOrder& order)
 {
-    proxy->sort(state ? 0 : -1, order);
+    m_Proxy->sort(state ? 0 : -1, order);
 }
 
 void PlaylistView::ProjectChanged(const Project* project)
@@ -196,14 +173,11 @@ void PlaylistView::ProjectChanged(const Project* project)
 
 void PlaylistView::ShowContextMenu(const _QPoint& position)
 {
-    /* Show up only if we have selection */
     if (!HasSelection())
         return;
 
-    /* Create a context menu */
     QMenu contextMenu(this);
 
-    /* Add the Defined actions */
     contextMenu.addAction(m_PlayAction);
     contextMenu.addAction(m_PlayAsSequenceAction);
     contextMenu.addAction(m_RemoveAction);
@@ -225,7 +199,7 @@ void PlaylistView::Play()
     if (!selection)
         return;
 
-    Playlist* playlist = _MediaBridge.PlaylistAt(proxy->mapToSource(selection->currentIndex()));
+    Playlist* playlist = _MediaBridge.PlaylistAt(m_Proxy->mapToSource(selection->currentIndex()));
 
     if (playlist)
         emit played(playlist);
@@ -237,7 +211,7 @@ void PlaylistView::PlayAsSequence()
     if (!selection)
         return;
     
-    Playlist* playlist = _MediaBridge.PlaylistAt(proxy->mapToSource(selection->currentIndex()));
+    Playlist* playlist = _MediaBridge.PlaylistAt(m_Proxy->mapToSource(selection->currentIndex()));
 
     if (playlist)
         emit playedAsSequence(playlist);
@@ -249,7 +223,7 @@ void PlaylistView::RemoveSelected()
     if (!selection)
         return;
 
-    _MediaBridge.RemovePlaylist(proxy->mapToSource(selection->currentIndex()));
+    _MediaBridge.RemovePlaylist(m_Proxy->mapToSource(selection->currentIndex()));
     emit updated();
 }
 
