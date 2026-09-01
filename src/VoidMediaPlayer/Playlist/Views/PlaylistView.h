@@ -10,12 +10,13 @@
 
 /* Internal */
 #include "QDefinition.h"
+#include "VoidComponents/View.h"
 #include "VoidMediaPlayer/Project/Project.h"
 #include "VoidObjects/Models/PlaylistModel.h"
 
 VOID_NAMESPACE_OPEN
 
-class PlaylistView : public QListView
+class PlaylistView : public QListView, public IView
 {
     Q_OBJECT
 
@@ -23,6 +24,7 @@ public:
     explicit PlaylistView(QWidget* parent = nullptr);
     ~PlaylistView();
 
+    void DeleteSelected() override { RemoveSelected(); }
     // Search and filter items from the Model
     inline void Search(const std::string& text) { m_Proxy->SetSearchText(text); }
 
