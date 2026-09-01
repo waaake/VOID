@@ -145,7 +145,7 @@ void MBridge::RemoveEntity(const std::vector<QModelIndex>& indexes)
 
 void MBridge::AddToPlaylist(const QModelIndex& index)
 {
-    PushCommand(new PlaylistAddMediaCommand(index));
+    PushCommand(new PlaylistAddMediaCommand(m_Project, index));
 }
 
 void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes)
@@ -156,7 +156,7 @@ void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes)
         stack->beginMacro("Add Media to Playlist");
 
         for (const QModelIndex& index : indexes)
-            stack->push(new PlaylistAddMediaCommand(index));
+            stack->push(new PlaylistAddMediaCommand(m_Project, index));
 
         stack->endMacro();
     }
@@ -211,7 +211,7 @@ void MBridge::AddToPlaylist(QByteArray& data, Playlist* playlist)
 
 void MBridge::RemoveFromPlaylist(const QModelIndex& index)
 {
-    PushCommand(new PlaylistRemoveMediaCommand(index));
+    PushCommand(new PlaylistRemoveMediaCommand(m_Project, index));
 }
 
 void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes)
@@ -222,7 +222,7 @@ void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes)
         stack->beginMacro("Remove Media from Playlist");
 
         for (const QModelIndex& index : indexes)
-            stack->push(new PlaylistRemoveMediaCommand(index));
+            stack->push(new PlaylistRemoveMediaCommand(m_Project, index));
 
         stack->endMacro();
     }
@@ -356,7 +356,7 @@ Playlist* MBridge::NewPlaylist()
 {
     if (m_Project)
     {
-        m_Project->UndoStack()->push(new PlaylistAddCommand());
+        m_Project->UndoStack()->push(new PlaylistAddCommand(m_Project));
         return m_Project->ActivePlaylist();
     }
 
@@ -367,7 +367,7 @@ Playlist* MBridge::NewPlaylist(const std::string& name)
 {
     if (m_Project)
     {
-        m_Project->UndoStack()->push(new PlaylistAddCommand(name));
+        m_Project->UndoStack()->push(new PlaylistAddCommand(m_Project, name));
         return m_Project->ActivePlaylist();
     }
 
@@ -376,7 +376,7 @@ Playlist* MBridge::NewPlaylist(const std::string& name)
 
 void MBridge::RemovePlaylist(const QModelIndex& index)
 {
-    PushCommand(new PlaylistRemoveCommand(index));
+    PushCommand(new PlaylistRemoveCommand(m_Project, index));
 }
 
 void MBridge::SetCurrentPlaylist(const QModelIndex& index)
