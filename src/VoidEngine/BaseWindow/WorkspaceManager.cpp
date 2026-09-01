@@ -94,9 +94,6 @@ void WorkspaceManager::Init()
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
     setCentralWidget(m_Splitter);
-
-    // Temporary
-    m_Sequencer->SetSequence(_PlayerBridge.ActivePlayer()->ActiveViewer()->GetSequence());
 }
 
 void WorkspaceManager::Connect()
