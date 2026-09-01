@@ -7,7 +7,6 @@
 /* Qt */
 #include <QButtonGroup>
 #include <QLayout>
-#include <QPushButton>
 #include <QSplitter>
 #include <QWidget>
 
@@ -28,11 +27,9 @@ public:
     VoidPlayLister(QWidget* parent = nullptr);
     virtual ~VoidPlayLister();
 
-    /* Override the default size of the widget */
-    QSize sizeHint() const override;
+    inline QSize sizeHint() const override { return QSize(300, 720); }
 
 signals:
-    /* For a bunch of media is set to be played */
     void playlistChanged(const std::vector<SharedMediaClip>&);
     void mediaChanged(const SharedMediaClip&);
 
@@ -42,11 +39,7 @@ protected: /* Methods */
 
 private: /* Methods */
     void Build();
-
-    /* Setup how the default UI elements appear */
     void Setup();
-
-    /* Connects Signals across the componets of the widget */
     void Connect();
     void SetFromPreferences();
 
@@ -64,21 +57,13 @@ private: /* Members */
     QHBoxLayout* m_OptionsLayout;
     QSplitter* m_ViewSplitter;
 
-    /* Options */
     HighlightToggleButton* m_ListViewToggle;
     HighlightToggleButton* m_DetailedListViewToggle;
     HighlightToggleButton* m_ThumbnailViewToggle;
 
-    /* Button Group to allow exclusive (single) selection */
     QButtonGroup* m_ViewButtonGroup;
-
     MediaSearchBar* m_SearchBar;
 
-    /* Options */
-    QPushButton* m_CreateButton;
-    QPushButton* m_DeleteButton;
-
-    /* Views */
     PlaylistView* m_PlaylistView;
     PlaylistMediaView* m_MediaView;
 };
