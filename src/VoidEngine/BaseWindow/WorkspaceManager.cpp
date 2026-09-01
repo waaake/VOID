@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QApplication>
+
 /* Internal */
 #include "WorkspaceManager.h"
 #include "VoidObjects/Preferences/Preferences.h"
@@ -11,6 +14,12 @@ WorkspaceManager::WorkspaceManager(QWidget* parent)
     : MainWindow(parent)
     , m_Current(Workspace::PLAYBACK)
 {
+    #ifdef __APPLE__
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+    #else
+    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    #endif
+    connect(m_DeleteShortcut, &QShortcut::activated, this, &WorkspaceManager::DeleteRequested);
 }
 
 WorkspaceManager::~WorkspaceManager()
@@ -238,6 +247,12 @@ bool WorkspaceManager::ShowIfDocked(const QString& name) const
     }
 
     return false;
+}
+
+void WorkspaceManager::DeleteRequested()
+{
+    if (IView* view = dynamic_cast<IView*>(QApplication::focusWidget()))
+        view->DeleteSelected();
 }
 
 VOID_NAMESPACE_CLOSE
