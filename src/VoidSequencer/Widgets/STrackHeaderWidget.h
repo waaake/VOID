@@ -11,24 +11,29 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidComponents/Widget.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
 
 class SequencerContext;
 
-class STrackHeaderWidget : public QWidget
+class STrackHeaderWidget : public QWidget, public IWidget
 {
     Q_OBJECT
 public:
     explicit STrackHeaderWidget(SequencerContext* context, QWidget* parent = nullptr);
 
+    void DeleteSelected() override;
     void AddTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
 
     void Update();
     void SetScroll(int value);
+
+signals:
+    void deleteSelectionRequested();
 
 private:
     QVBoxLayout* m_Layout;
