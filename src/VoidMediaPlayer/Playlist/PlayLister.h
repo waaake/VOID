@@ -8,7 +8,6 @@
 #include <QButtonGroup>
 #include <QLayout>
 #include <QPushButton>
-#include <QShortcut>
 #include <QSplitter>
 #include <QWidget>
 
@@ -82,9 +81,6 @@ private: /* Members */
     /* Views */
     PlaylistView* m_PlaylistView;
     PlaylistMediaView* m_MediaView;
-
-    /* Shortcuts */
-    QShortcut* m_DeleteShortcut;
 };
 
 VOID_NAMESPACE_CLOSE

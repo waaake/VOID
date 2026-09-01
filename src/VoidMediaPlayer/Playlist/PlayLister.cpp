@@ -81,13 +81,6 @@ void VoidPlayLister::dropEvent(QDropEvent* event)
 
 void VoidPlayLister::Build()
 {
-    /* Shortcuts */
-#ifdef __APPLE__
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
-#else
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
-#endif
-
     /* Base */
     m_layout = new QVBoxLayout(this);
 
@@ -217,10 +210,6 @@ void VoidPlayLister::Connect()
             m_MediaView->SetViewType(static_cast<PlaylistMediaView::ViewType>(m_ViewButtonGroup->id(b)));
     });
     connect(m_PlaylistView, &PlaylistView::updated, m_MediaView, &PlaylistMediaView::Refresh);
-
-
-    /* Shortcut */
-    connect(m_DeleteShortcut, &QShortcut::activated, this, &VoidPlayLister::RemoveSelectedMedia);
 }
 
 void VoidPlayLister::IndexSelected(const QModelIndex& index)
@@ -250,13 +239,11 @@ void VoidPlayLister::AddSelectionToSequence()
 
 void VoidPlayLister::RemoveSelectedMedia()
 {
-    /* Push all of the selected indexes for removal */
     _MediaBridge.RemoveEntity(m_MediaView->SelectedIndexes());
 }
 
 void VoidPlayLister::Play(Playlist* playlist)
 {
-    /* All of the Media from the playlist as a Queue */
     _PlayerBridge.SetPlaylist(playlist);
 }
 
