@@ -100,8 +100,14 @@ void SequencerTimeline::Build()
 {
     m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
     m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
+    m_DeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
     m_RippleDeleteShortcut = new QShortcut(QKeySequence("Ctrl+Backspace"), this);
+    m_RippleDeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
     m_ToggleStateShortcut = new QShortcut(QKeySequence(Qt::Key_D), this);
+    m_ToggleStateShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
     m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);
@@ -144,6 +150,9 @@ void SequencerTimeline::Build()
 
 void SequencerTimeline::Connect()
 {
+    // Sub-Components
+    connect(m_TrackHeader, &STrackHeaderWidget::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
+
     // PlayerBridge
     connect(&_PlayerBridge, &PlayerBridge::playComponentUpdated, this, [this](const PlayerBuffer::PlayableComponent& component) -> void
     {
@@ -151,7 +160,6 @@ void SequencerTimeline::Connect()
         {
             ViewerBuffer* viewer = _PlayerBridge.ActiveViewer();
             SetSequence(viewer->GetSequence());
-            VOID_LOG_INFO("Set sequence...");
         }
     });
 
