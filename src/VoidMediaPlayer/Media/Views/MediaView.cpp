@@ -16,6 +16,7 @@
 #include "VoidCore/Logging.h"
 #include "VoidMediaPlayer/Media/Delegates/ListDelegate.h"
 #include "VoidMediaPlayer/Media/Delegates/ThumbnailDelegate.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidObjects/Models/EntityModel.h"
 
@@ -103,10 +104,7 @@ void MediaView::startDrag(Qt::DropActions supportedActions)
 
 void MediaView::Setup()
 {
-    // EntityModel* model = _MediaBridge.DataModel();
     m_Proxy = new EntityProxyModel(this);
-
-    /* Setup the Proxy's Source Model */
     ResetModel(_MediaBridge.DataModel());
     setModel(m_Proxy);
 
@@ -188,7 +186,6 @@ void MediaView::ItemDoubleClicked(const QModelIndex& index)
     if (!index.isValid())
         return;
 
-    /* The source index */
     emit itemDoubleClicked(m_Proxy->mapToSource(index));
 }
 

@@ -9,7 +9,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidComponents/View.h"
+#include "VoidObjects/Models/EntityModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -17,7 +18,7 @@ class BasicMediaItemDelegate;
 class MediaItemDelegate;
 class MediaThumbnailDelegate;
 
-class MediaView : public QListView
+class MediaView : public QListView, public IView
 {
     Q_OBJECT
 public: /* enums */
@@ -33,6 +34,7 @@ public:
     explicit MediaView(QWidget* parent = nullptr);
     ~MediaView();
 
+    void DeleteSelected() override { RemoveSelectedMedia(); }
     // Search and filter items from the Model
     inline void Search(const std::string& text) { m_Proxy->SetSearchText(text); }
 
