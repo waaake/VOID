@@ -19,6 +19,8 @@
 #include "VoidIconForge/IconForge.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidQExtensions/Tooltip.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Project/ProjectBridge.h"
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
 
 VOID_NAMESPACE_OPEN
@@ -45,21 +47,33 @@ VoidMediaLister::~VoidMediaLister()
     delete m_MediaView;
     m_MediaView = nullptr;
 
-    m_PlayAction->deleteLater();
-    delete m_PlayAction;
-    m_PlayAction = nullptr;
+    m_PlayMenu->deleteLater();
+    delete m_PlayMenu;
+    m_PlayMenu = nullptr;
 
-    m_PlayAsListAction->deleteLater();
-    delete m_PlayAsListAction;
-    m_PlayAsListAction = nullptr;
+    m_TagsMenu->deleteLater();
+    delete m_TagsMenu;
+    m_TagsMenu = nullptr;
 
-    m_AddToQueueAction->deleteLater();
-    delete m_AddToQueueAction;
-    m_AddToQueueAction = nullptr;
+    m_SequenceMenu->deleteLater();
+    delete m_SequenceMenu;
+    m_SequenceMenu = nullptr;
 
-    m_PlayAsGridAction->deleteLater();
-    delete m_PlayAsGridAction;
-    m_PlayAsGridAction = nullptr;
+    // m_PlayAction->deleteLater();
+    // delete m_PlayAction;
+    // m_PlayAction = nullptr;
+
+    // m_PlayAsListAction->deleteLater();
+    // delete m_PlayAsListAction;
+    // m_PlayAsListAction = nullptr;
+
+    // m_AddToQueueAction->deleteLater();
+    // delete m_AddToQueueAction;
+    // m_AddToQueueAction = nullptr;
+
+    // m_PlayAsGridAction->deleteLater();
+    // delete m_PlayAsGridAction;
+    // m_PlayAsGridAction = nullptr;
 
     m_RemoveAction->deleteLater();
     delete m_RemoveAction;
@@ -73,21 +87,21 @@ VoidMediaLister::~VoidMediaLister()
     delete m_InspectMetadataAction;
     m_InspectMetadataAction = nullptr;
 
-    m_EditEffectsAction->deleteLater();
-    delete m_EditEffectsAction;
-    m_EditEffectsAction = nullptr;
+    // m_AddTagAction->deleteLater();
+    // delete m_AddTagAction;
+    // m_AddTagAction = nullptr;
 
-    m_AddTagAction->deleteLater();
-    delete m_AddTagAction;
-    m_AddTagAction = nullptr;
+    // m_ClearTagsAction->deleteLater();
+    // delete m_ClearTagsAction;
+    // m_ClearTagsAction = nullptr;
 
-    m_ClearTagsAction->deleteLater();
-    delete m_ClearTagsAction;
-    m_ClearTagsAction = nullptr;
+    // m_RenameAction->deleteLater();
+    // delete m_RenameAction;
+    // m_RenameAction = nullptr;
 
-    m_RenameAction->deleteLater();
-    delete m_RenameAction;
-    m_RenameAction = nullptr;
+    // m_AddSequenceAction->deleteLater();
+    // delete m_AddSequenceAction;
+    // m_AddSequenceAction = nullptr;
 }
 
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
@@ -117,37 +131,47 @@ void VoidMediaLister::dropEvent(QDropEvent* event)
 
 void VoidMediaLister::Build()
 {
-    /* Menu Actions */
-    m_PlayAction = new QAction("Play Selected As Sequence");
-    m_PlayAsListAction = new QAction("Play Selected in Queue");
-    m_AddToQueueAction = new QAction("Add Selected to Queue");
-    m_PlayAsGridAction = new QAction("Play Selected as Grid");
+    m_PlayMenu = new QMenu("Play");
+    m_PlayAction = new QAction("Play Selected As Sequence", m_PlayMenu);
+    m_PlayAsListAction = new QAction("Play Selected in Queue", m_PlayMenu);
+    m_AddToQueueAction = new QAction("Add Selected to Queue", m_PlayMenu);
+    m_PlayAsGridAction = new QAction("Play Selected as Grid", m_PlayMenu);
+    m_PlayMenu->addAction(m_PlayAction);
+    m_PlayMenu->addAction(m_PlayAsListAction);
+    m_PlayMenu->addAction(m_AddToQueueAction);
+    m_PlayMenu->addAction(m_PlayAsGridAction);
+
     m_RemoveAction = new QAction("Remove Selected");
     m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
-    m_EditEffectsAction = new QAction("Edit Effects");
 
-    m_AddTagAction = new QAction("Add tag...");
-    m_ClearTagsAction = new QAction("Clear all tags");
+    m_TagsMenu = new QMenu("Tags");
+    m_AddTagAction = new QAction("Add tag...", m_TagsMenu);
+    m_ClearTagsAction = new QAction("Clear all tags", m_TagsMenu);
+    m_TagsMenu->addAction(m_AddTagAction);
+    m_TagsMenu->addAction(m_ClearTagsAction);
 
     m_PlaylistMenu = new QMenu("Add to Playlist");
-    /* Add any playlists which are present in the active project */
+    // Add any playlists which are present in the active project
     RebuildPlaylistMenu();
-    m_RenameAction = new QAction("Rename");
+
+    m_SequenceMenu = new QMenu("Sequence");
+    m_RenameAction = new QAction("Rename", m_SequenceMenu);
+    m_AddSequenceAction = new QAction("Add Sequence", m_SequenceMenu);
+    m_SequenceMenu->addAction(m_AddSequenceAction);
+    m_SequenceMenu->addAction(m_RenameAction);
 
     m_PrimaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_1), this);
+    m_PrimaryViewShortcut->setContext(Qt::WidgetWithChildrenShortcut);
     m_SecondaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_2), this);
+    m_SecondaryViewShortcut->setContext(Qt::WidgetWithChildrenShortcut);
 
-    /* Base */
     m_layout = new QVBoxLayout(this);
 
-    /* Options {{{ */
     m_OptionsLayout = new QHBoxLayout;
-
     m_ViewButtonGroup = new QButtonGroup(this);
     m_ViewButtonGroup->setExclusive(true);
 
-    /* View Toggle Buttons */
-
+    // View Toggle Buttons
     m_DetailedListViewToggle = new HighlightToggleButton(this);
     m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 100)));
     m_DetailedListViewToggle->setToolTip(
@@ -206,74 +230,62 @@ void VoidMediaLister::Build()
     m_OptionsLayout->addWidget(m_ScaleSlider);
     m_OptionsLayout->addWidget(m_SortButton);
 
-    /* Setup margins */
     m_OptionsLayout->setContentsMargins(4, 0, 4, 0);
-    /* }}} */
 
-    /* Views {{{ */
     m_ViewSplitter = new QSplitter(Qt::Horizontal);
-
     m_ProjectView = new ProjectView(this);
     m_MediaView = new MediaView(this);
-
     m_ViewSplitter->addWidget(m_ProjectView);
     m_ViewSplitter->addWidget(m_MediaView);
-    /* }}} */
 
-    /* Add to the base Layout */
     m_layout->addLayout(m_OptionsLayout);
     m_layout->addWidget(m_ViewSplitter);
 
-    /* Spacing */
     int left, top, right, bottom;
     m_layout->getContentsMargins(&left, &top, &right, &bottom);
-    /* Only adjust the right side spacing to make it cleaner against the viewer */
     m_layout->setContentsMargins(0, top, 0, 2);
 }
 
 void VoidMediaLister::Setup()
 {
-    /* Size Policy */
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
     /* Dark Panel */
     QPalette p = this->palette();
     p.setColor(QPalette::Window, palette().color(QPalette::Dark));
-
-    this->setPalette(p);
+    setPalette(p);
 
     m_ScaleSlider->setRange(100, 150);
 
-    /* Splitter sizes */
     int w = sizeHint().width();
     int p_width = static_cast<int>(w * 0.3);
-    /* Project view is smaller than media view*/
     m_ViewSplitter->setSizes({p_width, w - p_width});
 
-    /* Load Settings from Preferences */
+    // Load Settings from Preferences
     SetFromPreferences();
 }
 
 void VoidMediaLister::Connect()
 {
-    /* Context Menu */
+    // Context Menu
+    connect(m_AddSequenceAction, &QAction::triggered, this, []() -> void 
+    {
+        _ProjectBridge.AddSequence(_MediaBridge.ActiveProject());
+    });
     connect(m_PlayAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToSequence);
     connect(m_PlayAsListAction, &QAction::triggered, this, &VoidMediaLister::PlaySelectionAsQueue);
     connect(m_AddToQueueAction, &QAction::triggered, this, &VoidMediaLister::AddSelectionToQueue);
     connect(m_PlayAsGridAction, &QAction::triggered, this, &VoidMediaLister::PlaySelectionAsGrid);
     connect(m_RemoveAction, &QAction::triggered, m_MediaView, &MediaView::RemoveSelectedMedia);
     connect(m_InspectMetadataAction, &QAction::triggered, this, &VoidMediaLister::InspectMetadata);
-    connect(m_EditEffectsAction, &QAction::triggered, this, &VoidMediaLister::EditEffects);
     connect(m_AddTagAction, &QAction::triggered, this, &VoidMediaLister::AddTagToSelected);
     connect(m_ClearTagsAction, &QAction::triggered, this, &VoidMediaLister::ClearTagsFromSelected);
     connect(m_RenameAction, &QAction::triggered, this, [this]() -> void { m_MediaView->edit(m_MediaView->currentIndex()); });
 
-    /* Options */
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
     connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
     connect(m_ScaleSlider, &QSlider::valueChanged, this, [this](int value) { RescaleThumbnails((float)value / 100); });
 
-    /* View Changed */
     /* The call to buttonToggled is a slightly expensive as this gets called 2 times if we have n buttons (once for checked off and once for checked on) */
     connect(m_ViewButtonGroup, static_cast<void(QButtonGroup::*)(QAbstractButton*, bool)>(&QButtonGroup::buttonToggled), this, [this](QAbstractButton* b, bool s)
     {
@@ -395,34 +407,27 @@ void VoidMediaLister::PlaySelectionAsGrid()
 
 void VoidMediaLister::ShowContextMenu(const _QPoint& position)
 {
-    /* Show up only if we have selection */
-    if (!m_MediaView->HasSelection())
-        return;
-
-    /* Create a context menu */
     QMenu contextMenu(this);
 
-    /* Add the Defined actions */
-    contextMenu.addAction(m_PlayAction);
-    contextMenu.addAction(m_PlayAsListAction);
-    contextMenu.addAction(m_AddToQueueAction);
-    contextMenu.addAction(m_PlayAsGridAction);
-    contextMenu.addAction(m_RemoveAction);
+    const bool selection = m_MediaView->HasSelection();
+    contextMenu.addMenu(m_PlayMenu);
+    m_PlayMenu->setEnabled(selection);
 
-    contextMenu.addSeparator();
-    contextMenu.addAction(m_AddTagAction);
-    contextMenu.addAction(m_ClearTagsAction);
+    contextMenu.addMenu(m_TagsMenu);
+    m_TagsMenu->setEnabled(selection);
 
-    contextMenu.addSeparator();
     contextMenu.addAction(m_InspectMetadataAction);
-    contextMenu.addAction(m_EditEffectsAction);
+    contextMenu.addAction(m_RemoveAction);
+    
+    m_InspectMetadataAction->setEnabled(selection);
+    m_RemoveAction->setEnabled(selection);
 
     contextMenu.addSeparator();
-    contextMenu.addAction(m_RenameAction);
+    contextMenu.addMenu(m_SequenceMenu);
     m_RenameAction->setEnabled(CanRenameSelection());
 
-    contextMenu.addSeparator();
     contextMenu.addMenu(m_PlaylistMenu);
+    m_PlaylistMenu->setEnabled(selection);
 
     /* Show Menu */
     #if _QT6
