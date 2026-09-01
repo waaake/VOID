@@ -59,22 +59,6 @@ VoidMediaLister::~VoidMediaLister()
     delete m_SequenceMenu;
     m_SequenceMenu = nullptr;
 
-    // m_PlayAction->deleteLater();
-    // delete m_PlayAction;
-    // m_PlayAction = nullptr;
-
-    // m_PlayAsListAction->deleteLater();
-    // delete m_PlayAsListAction;
-    // m_PlayAsListAction = nullptr;
-
-    // m_AddToQueueAction->deleteLater();
-    // delete m_AddToQueueAction;
-    // m_AddToQueueAction = nullptr;
-
-    // m_PlayAsGridAction->deleteLater();
-    // delete m_PlayAsGridAction;
-    // m_PlayAsGridAction = nullptr;
-
     m_RemoveAction->deleteLater();
     delete m_RemoveAction;
     m_RemoveAction = nullptr;
@@ -86,22 +70,6 @@ VoidMediaLister::~VoidMediaLister()
     m_InspectMetadataAction->deleteLater();
     delete m_InspectMetadataAction;
     m_InspectMetadataAction = nullptr;
-
-    // m_AddTagAction->deleteLater();
-    // delete m_AddTagAction;
-    // m_AddTagAction = nullptr;
-
-    // m_ClearTagsAction->deleteLater();
-    // delete m_ClearTagsAction;
-    // m_ClearTagsAction = nullptr;
-
-    // m_RenameAction->deleteLater();
-    // delete m_RenameAction;
-    // m_RenameAction = nullptr;
-
-    // m_AddSequenceAction->deleteLater();
-    // delete m_AddSequenceAction;
-    // m_AddSequenceAction = nullptr;
 }
 
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
