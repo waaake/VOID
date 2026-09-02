@@ -1,12 +1,16 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _SEQUENCE_COMMANDS_H
+#define _SEQUENCE_COMMANDS_H
+
 /* Qt */
 #include <QColor>
 
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Project/Project.h"
+#include "VoidObjects/Sequence/Context.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 #include "VoidObjects/Sequence/Sequence.h"
@@ -351,4 +355,35 @@ private:
     int m_Handle;
 };
 
+// class CutPasteTrackitemCommand : public VoidUndoCommand
+// {
+// public:
+//     CutPasteTrackItemCommand(const SharedTrackItem& item, int trackIndex, v_frame_t frame, QUndoCommand* parent = nullptr);
+//     void undo() override;
+//     bool Redo() override;
+
+// private:
+//     PlaybackSequence* m_Sequence;
+//     Sequence::TrackType m_TrackType;
+//     int m_TrackIndex;
+//     int m_SourceTrackIndex;
+//     int m_DestinationTrackIndex;
+//     v_frame_t m_Requested, m_Previous;
+// }
+
+class CopyPasteTrackItemCommand : public VoidUndoCommand
+{
+public:
+    CopyPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_SourceCtx;
+    Sequence::Context m_DestinationCtx;
+    Sequence::Context m_ActedCtx;
+};
+
 VOID_NAMESPACE_CLOSE
+
+#endif // _SEQUENCE_COMMANDS_H

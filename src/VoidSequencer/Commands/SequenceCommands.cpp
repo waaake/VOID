@@ -839,4 +839,42 @@ bool TrimItemTailCommand::Redo()
     return false;
 }
 
+/// CopyPasteTrackItemCommand
+
+CopyPasteTrackItemCommand::CopyPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Copy TrackItem");
+}
+
+void CopyPasteTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+    acted.track->RemoveItem(acted.trackItem);
+}
+
+bool CopyPasteTrackItemCommand::Redo()
+{
+    // Ensure that we have a Track Context to copy the item to
+    if (m_DestinationCtx.type == Sequence::Context::Type::TRACK)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        SharedTrackItem copied = std::make_shared<TrackItem>(*rsource.trackItem.get());
+        if (rdest.track->AddItem(copied, rdest.frame))
+        {
+            // Store the acted upon context
+            m_ActedCtx = Sequence::Context::Get(copied);
+            return true;
+        }
+
+        return false;
+    }
+
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE
