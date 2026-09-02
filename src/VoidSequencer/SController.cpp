@@ -43,7 +43,10 @@ void SequencerController::Paste(Sequence::Context&& context)
         stack->beginMacro("Copy TrackItem(s)");
 
         for (const auto& item : m_TrackItemClipboard.items)
+        {
             stack->push(new CopyPasteTrackItemCommand(Sequence::Context::Get(item), context));
+            context.frame += item->Duration();
+        }
 
         stack->endMacro();
     }
