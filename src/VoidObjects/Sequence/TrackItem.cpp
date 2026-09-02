@@ -48,6 +48,74 @@ TrackItem::~TrackItem()
 {
 }
 
+TrackItem::TrackItem(const TrackItem& other)
+    : m_Effects(other.m_Effects)
+    , m_Media(other.m_Media)
+    , m_Track(other.m_Track)
+    , m_Name(other.m_Name)
+    , m_Color(other.m_Color)
+    , m_Offset(other.m_Offset)
+    , m_TimelineIn(other.m_TimelineIn)
+    , m_TimelineOut(other.m_TimelineOut)
+    , m_SourceIn(other.m_SourceIn)
+    , m_SourceOut(other.m_SourceOut)
+    , m_Enabled(other.m_Enabled)
+{
+
+}
+
+TrackItem& TrackItem::operator=(const TrackItem& other)
+{
+    if (&other == this) return *this;
+
+    m_Effects = other.m_Effects;
+    m_Media = other.m_Media;
+    m_Track = other.m_Track;
+    m_Name = other.m_Name;
+    m_Color = other.m_Color;
+    m_Offset = other.m_Offset;
+    m_TimelineIn = other.m_TimelineIn;
+    m_TimelineOut = other.m_TimelineOut;
+    m_SourceIn = other.m_SourceIn;
+    m_SourceOut = other.m_SourceOut;
+    m_Enabled = other.m_Enabled;
+
+    return *this;
+}
+
+TrackItem::TrackItem(TrackItem&& other) noexcept
+{
+    std::swap(m_Effects, other.m_Effects);
+    m_Media = other.m_Media;
+    m_Track = other.m_Track;
+    m_Name = std::move(other.m_Name);
+    m_Color = std::move(other.m_Color);
+    m_Offset = other.m_Offset;
+    m_TimelineIn = other.m_TimelineIn;
+    m_TimelineOut = other.m_TimelineOut;
+    m_SourceIn = other.m_SourceIn;
+    m_SourceOut = other.m_SourceOut;
+    m_Enabled = other.m_Enabled;
+}
+
+TrackItem& TrackItem::operator=(TrackItem&& other) noexcept
+{
+    if (&other == this) return *this;
+
+    std::swap(m_Effects, other.m_Effects);
+    m_Media = other.m_Media;
+    m_Track = other.m_Track;
+    m_Name = std::move(other.m_Name);
+    m_Color = std::move(other.m_Color);
+    m_Offset = other.m_Offset;
+    m_TimelineIn = other.m_TimelineIn;
+    m_TimelineOut = other.m_TimelineOut;
+    m_SourceIn = other.m_SourceIn;
+    m_SourceOut = other.m_SourceOut;
+    m_Enabled = other.m_Enabled;
+    return *this;
+}
+
 void TrackItem::SetMedia(const SharedMediaClip& media, v_frame_t offset)
 {
     /* Update the underlying media and relevant offset */
