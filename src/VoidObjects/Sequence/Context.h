@@ -29,7 +29,7 @@ struct ResolvedContext;
  * it's current sequence and it's index, pointer to the current project and track item's index in the current track.
  *
  */
-struct Context
+struct VOID_API Context
 {
     enum class Type { SEQUENCE, TRACK, TRACK_ITEM, TRACK_EFFECT, EFFECT };
 
@@ -67,7 +67,7 @@ struct Context
  * This is effectively the actual item's address within the project.
  * 
  */
-struct ResolvedContext
+struct VOID_API ResolvedContext
 {
     Context::Type type;
     Core::Project* project;
