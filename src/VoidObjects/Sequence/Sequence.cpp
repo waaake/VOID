@@ -7,6 +7,7 @@
 /* Internal */
 #include "Sequence.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -276,6 +277,12 @@ int PlaybackSequence::AudioTrackIndex(const PlaybackTrack* track) const
 int PlaybackSequence::TrackIndex(const PlaybackTrack* track) const
 {
     return track->Type() == Sequence::TrackType::VIDEO ? VideoTrackIndex(track) : AudioTrackIndex(track);
+}
+
+int PlaybackSequence::Index() const
+{
+    Core::Project* p = Project();
+    return p ? p->SequenceRow(this) : -1;
 }
 
 bool PlaybackSequence::HasMedia() const

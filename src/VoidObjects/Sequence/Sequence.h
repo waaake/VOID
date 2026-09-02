@@ -79,6 +79,7 @@ public:
     int VideoTrackIndex(const PlaybackTrack* track) const;
     int AudioTrackIndex(const PlaybackTrack* track) const;
     int TrackIndex(const PlaybackTrack* track) const;
+    int Index() const;
 
     // const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
     // const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
