@@ -24,6 +24,7 @@ SequencerContextMenu::SequencerContextMenu(SequencerContext* context, QWidget* p
 
 void SequencerContextMenu::Show(const QPoint& position)
 {
+    m_ExecPosition = position;
     BuildEffectsMenu();
     Validate();
     exec(position);
@@ -32,7 +33,17 @@ void SequencerContextMenu::Show(const QPoint& position)
 void SequencerContextMenu::Build()
 {
     m_AddVideoTrackAction = new QAction("Add Video Track", this);
-    m_RemoveSelectedAction = new QAction("Delete Selected", this);
+    
+    m_EditMenu = new QMenu("Edit", this);
+    m_CutAction = new QAction("Cut", m_EditMenu);
+    m_CopyAction = new QAction("Copy", m_EditMenu);
+    m_PasteAction = new QAction("Paste", m_EditMenu);
+    m_RemoveSelectedAction = new QAction("Delete Selected", m_EditMenu);
+    m_EditMenu->addAction(m_CutAction);
+    m_EditMenu->addAction(m_CopyAction);
+    m_EditMenu->addAction(m_PasteAction);
+    m_EditMenu->addSeparator();
+    m_EditMenu->addAction(m_RemoveSelectedAction);
 
     m_ColorMenu = new QMenu("Color", this);
 
@@ -66,7 +77,7 @@ void SequencerContextMenu::Build()
     m_EffectsMenu = new QMenu("Timeline Effects", this);
 
     addAction(m_AddVideoTrackAction);
-    addAction(m_RemoveSelectedAction);
+    addMenu(m_EditMenu);
 
     addSeparator();
 
@@ -84,6 +95,9 @@ void SequencerContextMenu::Build()
 void SequencerContextMenu::Connect()
 {
     connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
+    connect(m_CutAction, &QAction::triggered, this, &SequencerContextMenu::cutSelectionRequested);
+    connect(m_CopyAction, &QAction::triggered, this, &SequencerContextMenu::copySelectionRequested);
+    connect(m_PasteAction, &QAction::triggered, this, [this]() -> void { emit pasteRequested(m_ExecPosition); });
     connect(m_RemoveSelectedAction, &QAction::triggered, this, &SequencerContextMenu::deleteSelectionRequested);
     connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
     connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
@@ -97,6 +111,10 @@ void SequencerContextMenu::Validate()
 {
     const SSelectionModel* sel = m_Context->SelectionModel();
     const SequencerController* controller = m_Context->Controller();
+
+    m_CutAction->setEnabled(sel->HasAnySelection());
+    m_CopyAction->setEnabled(sel->HasAnySelection());
+    m_PasteAction->setEnabled(controller->ClipboardValid());
 
     m_RemoveSelectedAction->setEnabled(sel->HasAnySelection());
     m_ColorItemAction->setEnabled(sel->HasTrackItemSelection());
