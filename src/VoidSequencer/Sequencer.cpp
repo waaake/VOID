@@ -10,6 +10,8 @@
 #include "Sequencer.h"
 #include "VoidCore/Logging.h"
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
+#include "VoidObjects/Sequence/Context.h"
+#include "VoidSequencer/Graphics/STrack.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -191,6 +193,9 @@ void SequencerTimeline::Connect()
     {
         m_Context.Controller()->CreateVideoTrack(m_Sequence);
     });
+    connect(m_Menu, &SequencerContextMenu::cutSelectionRequested, this, &SequencerTimeline::Cut);
+    connect(m_Menu, &SequencerContextMenu::copySelectionRequested, this, &SequencerTimeline::Copy);
+    connect(m_Menu, &SequencerContextMenu::pasteRequested, this, &SequencerTimeline::Paste);
     connect(m_Menu, &SequencerContextMenu::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
     connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
@@ -265,6 +270,26 @@ void SequencerTimeline::UpdateAll()
 {
     m_TrackHeader->Update();
     m_View->Refresh();
+}
+
+void SequencerTimeline::Cut()
+{
+    if (m_Context.SelectionModel()->HasTrackItemSelection())
+        m_Context.Controller()->Cut(m_Context.SelectionModel()->SelectedItems());
+}
+
+void SequencerTimeline::Copy()
+{
+    if (m_Context.SelectionModel()->HasTrackItemSelection())
+        m_Context.Controller()->Copy(m_Context.SelectionModel()->SelectedItems());
+}
+
+void SequencerTimeline::Paste(const QPoint& position)
+{
+    const QPointF mapped = m_View->mapToScene(m_View->mapFromGlobal(position));
+    v_frame_t frame = m_Context.Geometry()->SceneXToFrame(mapped.x());
+    if (STrack* track = m_Context.Controller()->TrackAt(mapped))
+        m_Context.Controller()->Paste(Sequence::Context::Get(track->Track(), frame));
 }
 
 VOID_NAMESPACE_CLOSE

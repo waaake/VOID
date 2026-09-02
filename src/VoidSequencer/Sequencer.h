@@ -77,6 +77,9 @@ private: /* Methods */
     void RippleDeleteSelected();
     void ToggleItemState();
     void UpdateAll();
+    void Cut();
+    void Copy();
+    void Paste(const QPoint& position);
 };
 
 VOID_NAMESPACE_CLOSE
