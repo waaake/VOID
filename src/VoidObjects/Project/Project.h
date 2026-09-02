@@ -64,6 +64,11 @@ public:
     SharedMediaClip PlaylistMediaAt(const QModelIndex& index) const;
     SharedMediaClip PlaylistMediaAt(int row, int column) const;
 
+    int SequenceRow(const PlaybackSequence* sequence) const { return m_Media->SequenceRow(sequence); }
+    int SequenceRow(const SharedPlaybackSequence& sequence) const { return m_Media->SequenceRow(sequence); }
+    SharedPlaybackSequence Sequence(const QModelIndex& index) const { return m_Media->Sequence(index); }
+    SharedPlaybackSequence Sequence(int row) const { return m_Media->Sequence(row); }
+
     inline EntityModel* DataModel() const { return m_Media; }
     inline PlaylistModel* PlaylistMediaModel() const { return m_Playlists; }
 
