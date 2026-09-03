@@ -19,7 +19,6 @@ VOID_NAMESPACE_OPEN
 
 SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* parent)
     : QWidget(parent)
-    , m_Sequence(nullptr)
 {
     m_Context.Controller()->SetTimeController(controller);
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -31,28 +30,29 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
 void SequencerTimeline::ResetTabText()
 {
     if (DockPanel* panel = dynamic_cast<DockPanel*>(parent()))
-        panel->SetTabText(m_Sequence ? m_Sequence->Name().c_str() : "Sequencer");
+        panel->SetTabText(m_Context.HasActiveSequence() ? m_Context.Sequence()->Name().c_str() : "Sequencer");
 }
 
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
-    if (m_Sequence)
-        Disconnect(m_Sequence.get());
+    if (m_Context.HasActiveSequence())
+        Disconnect(m_Context.Sequence().get());
 
-    m_Sequence = sequence;
-    Connect(m_Sequence.get());
-
+    m_Context.SetSequence(sequence);
+    Connect(sequence.get());
     m_Context.Geometry()->SetSequence(sequence);
+
     Refresh();
     ResetTabText();
 }
 
 void SequencerTimeline::ClearSequence()
 {
-    if (m_Sequence)
-        Disconnect(m_Sequence.get());
-    
-    m_Sequence = nullptr;
+    if (m_Context.HasActiveSequence())
+        Disconnect(m_Context.Sequence().get());
+
+    m_Context.SetSequence(nullptr);
+    m_Context.Geometry()->ResetSequence();
 
     m_TrackHeader->Clear();
     m_View->Clear();
@@ -75,7 +75,7 @@ void SequencerTimeline::RemoveTrack(const SharedPlaybackTrack& track)
 
 void SequencerTimeline::RazorAt(v_frame_t frame)
 {
-    if (m_Sequence) m_Context.Controller()->RazorAt(m_Sequence, frame);
+    if (m_Context.HasActiveSequence()) m_Context.Controller()->RazorAt(m_Context.Sequence(), frame);
 }
 
 void SequencerTimeline::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
@@ -107,11 +107,10 @@ void SequencerTimeline::Refresh()
 {
     m_TrackHeader->Clear();
     m_View->Clear();
-
     m_View->AddPlayhead();
-
-    for (int i = 0; i < m_Sequence->NumVideoTracks(); ++i)
-        AddTrack(m_Sequence->VideoTrackAt(i));
+    
+    for (const SharedPlaybackTrack& track : m_Context.Sequence()->VideoTracks())
+        AddTrack(track);
 }
 
 void SequencerTimeline::SetHorizontalScale(float factor)
@@ -228,7 +227,7 @@ void SequencerTimeline::Connect()
     // Menu
     connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
     {
-        m_Context.Controller()->CreateVideoTrack(m_Sequence);
+        m_Context.Controller()->CreateVideoTrack(m_Context.Sequence());
     });
     connect(m_Menu, &SequencerContextMenu::cutSelectionRequested, this, &SequencerTimeline::Cut);
     connect(m_Menu, &SequencerContextMenu::copySelectionRequested, this, &SequencerTimeline::Copy);

@@ -34,7 +34,7 @@ public:
 
     void SetSequence(const SharedPlaybackSequence& sequence);
     void ClearSequence();
-    SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
+    SharedPlaybackSequence ActiveSequence() const { return m_Context.Sequence(); }
 
     void AddTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);
@@ -69,7 +69,6 @@ private:
     QShortcut* m_RippleDeleteShortcut;
     QShortcut* m_ToggleStateShortcut;
 
-    SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
 
 private: /* Methods */
