@@ -11,6 +11,7 @@
 #include "STimelineGeometry.h"
 #include "Models/SSelectionModel.h"
 #include "Models/SHoverModel.h"
+#include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -36,14 +37,18 @@ public:
     void SetAction(const SequencerAction& action) { m_Action = action; }
     void ResetAction() { m_Action = SequencerAction::NONE; }
     const SequencerAction& Action() const { return m_Action; }
+    void SetSequence(const SharedPlaybackSequence& sequence) { m_Sequence = sequence; }
+    SharedPlaybackSequence Sequence() const { return m_Sequence; }
+    bool HasActiveSequence() const { return (bool)m_Sequence; }
 
 private:
     SSelectionModel m_Selection;
     SHoverModel m_Hover;
     STimelineGeometry m_Geometry;
     SequencerController m_Controller;
-    v_frame_t m_CurrentFrame = { 0 };
-    SequencerAction m_Action = { SequencerAction::NONE };
+    v_frame_t m_CurrentFrame { 0 };
+    SequencerAction m_Action { SequencerAction::NONE };
+    SharedPlaybackSequence m_Sequence { nullptr };
 };
 
 VOID_NAMESPACE_CLOSE
