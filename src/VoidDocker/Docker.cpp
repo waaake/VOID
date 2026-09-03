@@ -48,15 +48,12 @@ void VoidDocker::SetClosable(const bool closable)
 DockTab::DockTab(QWidget* parent)
 	: QTabBar(parent)
 {
-	/* Sets the tabs as movable */
 	setMovable(true);
 }
 
 void DockTab::mousePressEvent(QMouseEvent* event)
 {
-	/* Save the point where the click happened */
 	m_StartPos = event->pos();
-	/* And enable dragging */
 	m_Dragging = true;
 
 	QTabBar::mousePressEvent(event);
@@ -127,19 +124,13 @@ DockWidget::DockWidget(DockSplitter* parent, bool floating)
 	m_DockTab = new DockTab(this);
 
 	setTabBar(m_DockTab);
-
-	/* Dock Panel Options */
 	SetupOptions();
-
-	/* Connect Signals */
 	Connect();
 }
 
 DockPanel* DockWidget::AddDock(QWidget* widget, const std::string& title, bool closable)
 {
-	/* Create a dockable panel for the widget */
 	DockPanel* panel = new DockPanel(widget, this);
-	/* Add that to the tab widget */
 	int index = addTab(panel, title.c_str());
 	setCurrentIndex(index);
 
@@ -151,14 +142,11 @@ DockPanel* DockWidget::AddDock(QWidget* widget, const std::string& title, bool c
 
 void DockWidget::AddDockManagerWidget(int index)
 {
-	/* Get the struct at the provided index */
 	DockStruct d = DockManager::Instance().Dock(index);
-
-	/* It is an invalid Dock */
 	if (d.id < 0)
 		return;
 
-	/* All Dock Manager Widgets shall be closable */
+	// All Dock Manager Widgets shall be closable
 	DockPanel* panel = AddDock(d.widget, d.name, true);
 	panel->setObjectName(d.widget->objectName());
 }
@@ -252,7 +240,6 @@ void DockWidget::HideTab(int index)
 
 void DockWidget::RemoveTab(int index)
 {
-	/* Dock panel at the index */
 	DockPanel* panel = dynamic_cast<DockPanel*>(widget(index));
 	panel->setParent(nullptr);
 
@@ -271,10 +258,7 @@ void DockWidget::UndockTab(int index, const QPoint& position)
 	DockWidget* undocked = new DockWidget(splitter, true);
 	window->setCentralWidget(undocked);
 
-	/* Get the Dock Panel at the index */
 	DockPanel* panel = static_cast<DockPanel*>(widget(index));
-
-	/* Unparent the Panel */
 	panel->setParent(nullptr);
 	undocked->AddDockManagerWidget(panel->PanelId());
 
