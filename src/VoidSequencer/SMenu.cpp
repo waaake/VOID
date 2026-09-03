@@ -32,8 +32,10 @@ void SequencerContextMenu::Show(const QPoint& position)
 
 void SequencerContextMenu::Build()
 {
-    m_AddVideoTrackAction = new QAction("Add Video Track", this);
-    
+    m_NewMenu = new QMenu("New", this);
+    m_AddVideoTrackAction = new QAction("Add Video Track", m_NewMenu);
+    m_NewMenu->addAction(m_AddVideoTrackAction);
+
     m_EditMenu = new QMenu("Edit", this);
     m_CutAction = new QAction("Cut", m_EditMenu);
     m_CutAction->setShortcut(QKeySequence::Cut);
@@ -80,19 +82,13 @@ void SequencerContextMenu::Build()
 
     m_EffectsMenu = new QMenu("Timeline Effects", this);
 
-    addAction(m_AddVideoTrackAction);
+    addMenu(m_NewMenu);
     addMenu(m_EditMenu);
-
     addSeparator();
-
     addMenu(m_ColorMenu);
-
     addSeparator();
-    
     addMenu(m_EditModeMenu);
-
     addSeparator();
-
     addMenu(m_EffectsMenu);
 }
 
@@ -115,20 +111,28 @@ void SequencerContextMenu::Validate()
 {
     const SSelectionModel* sel = m_Context->SelectionModel();
     const SequencerController* controller = m_Context->Controller();
+    const bool hasSequence = m_Context->HasActiveSequence();
+    const bool anySelection = hasSequence && sel->HasAnySelection();
+    const bool itemSelection = hasSequence && sel->HasTrackItemSelection();
+    const bool trackSelection = hasSequence && sel->HasTrackSelection();
 
-    m_CutAction->setEnabled(sel->HasAnySelection());
-    m_CopyAction->setEnabled(sel->HasAnySelection());
-    m_PasteAction->setEnabled(controller->ValidClipboard());
+    m_NewMenu->setEnabled(hasSequence);
+    m_EditMenu->setEnabled(hasSequence);
+    m_ColorMenu->setEnabled(hasSequence);
 
-    m_RemoveSelectedAction->setEnabled(sel->HasAnySelection());
-    m_ColorItemAction->setEnabled(sel->HasTrackItemSelection());
-    m_ResetItemColorAction->setEnabled(sel->HasTrackItemSelection());
+    m_CutAction->setEnabled(anySelection);
+    m_CopyAction->setEnabled(anySelection);
+    m_PasteAction->setEnabled(controller->ValidClipboard() && hasSequence);
+
+    m_RemoveSelectedAction->setEnabled(anySelection);
+    m_ColorItemAction->setEnabled(itemSelection);
+    m_ResetItemColorAction->setEnabled(itemSelection);
 
     m_NoOverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
     m_OverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::OVERWRITE);
     m_RippleAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::RIPPLE);
 
-    m_EffectsMenu->setEnabled(sel->HasTrackItemSelection() || sel->HasTrackSelection());
+    m_EffectsMenu->setEnabled(itemSelection || trackSelection);
 }
 
 void SequencerContextMenu::BuildEffectsMenu()

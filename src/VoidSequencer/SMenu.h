@@ -38,6 +38,7 @@ private:
     SequencerContext* m_Context;
     QAction* m_AddVideoTrackAction;
 
+    QMenu* m_NewMenu;
     QMenu* m_EditMenu;
     QAction* m_CutAction;
     QAction* m_CopyAction;
