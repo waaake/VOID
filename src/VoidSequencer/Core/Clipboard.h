@@ -14,6 +14,7 @@ VOID_NAMESPACE_OPEN
 
 enum class ClipboardContext
 {
+    NONE,
     COPY,
     CUT
 };
@@ -22,10 +23,16 @@ template <typename _Ty>
 struct Clipboard
 {
     std::unordered_set<_Ty> items;
-    ClipboardContext context;
+    ClipboardContext context { ClipboardContext::NONE };
+
+    explicit operator bool() const noexcept { return !items.empty(); }
 
     bool Empty() const noexcept { return items.empty(); }
-    explicit operator bool() const noexcept { return !items.empty(); }
+    void Reset()
+    {
+        items.clear();
+        context = ClipboardContext::NONE;
+    }
 };
 
 VOID_NAMESPACE_CLOSE
