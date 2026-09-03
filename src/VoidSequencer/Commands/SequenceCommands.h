@@ -355,21 +355,18 @@ private:
     int m_Handle;
 };
 
-// class CutPasteTrackitemCommand : public VoidUndoCommand
-// {
-// public:
-//     CutPasteTrackItemCommand(const SharedTrackItem& item, int trackIndex, v_frame_t frame, QUndoCommand* parent = nullptr);
-//     void undo() override;
-//     bool Redo() override;
+class CutPasteTrackItemCommand : public VoidUndoCommand
+{
+public:
+    CutPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
 
-// private:
-//     PlaybackSequence* m_Sequence;
-//     Sequence::TrackType m_TrackType;
-//     int m_TrackIndex;
-//     int m_SourceTrackIndex;
-//     int m_DestinationTrackIndex;
-//     v_frame_t m_Requested, m_Previous;
-// }
+private:
+    Sequence::Context m_SourceCtx;
+    Sequence::Context m_DestinationCtx;
+    Sequence::Context m_ActedCtx;
+};
 
 class CopyPasteTrackItemCommand : public VoidUndoCommand
 {

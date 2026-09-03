@@ -839,6 +839,58 @@ bool TrimItemTailCommand::Redo()
     return false;
 }
 
+/// CutPasteTrackItemCommand
+
+CutPasteTrackItemCommand::CutPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Cut TrackItem");
+}
+
+void CutPasteTrackItemCommand::undo()
+{
+    // The source track item has been moved, can't resolve back to the track item object
+    Sequence::ResolvedContext rsource = m_SourceCtx.Resolve(Sequence::Context::Type::TRACK);
+    Sequence::ResolvedContext rdest = m_ActedCtx.Resolve();
+    if (rdest.track.get() == rsource.track.get())
+    {
+        rsource.track->MoveItem(rdest.trackItem, rsource.frame);
+        return;
+    }
+
+    if (rsource.track->AddItem(rdest.trackItem, rsource.frame))
+    {
+        rdest.track->RemoveItem(rdest.trackItem);
+    }
+}
+
+bool CutPasteTrackItemCommand::Redo()
+{
+    // Ensure that we have a Track Context to copy the item to
+    if (m_DestinationCtx.type == Sequence::Context::Type::TRACK)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        if (rdest.track.get() == rsource.track.get())
+        {
+            rdest.track->MoveItem(rsource.trackItem, rdest.frame);
+            m_ActedCtx = Sequence::Context::Get(rsource.trackItem);
+            return true;
+        }
+
+        if (rdest.track->AddItem(rsource.trackItem, rdest.frame))
+        {
+            rsource.track->RemoveItem(rsource.trackItem);
+            m_ActedCtx = Sequence::Context::Get(rsource.trackItem);
+            return true;
+        }
+    }
+    return false;
+}
+
 /// CopyPasteTrackItemCommand
 
 CopyPasteTrackItemCommand::CopyPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
@@ -870,10 +922,7 @@ bool CopyPasteTrackItemCommand::Redo()
             m_ActedCtx = Sequence::Context::Get(copied);
             return true;
         }
-
-        return false;
     }
-
     return false;
 }
 
