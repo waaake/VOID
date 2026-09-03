@@ -58,6 +58,7 @@ void PlaybackSequence::SetName(const std::string& name)
 {
     m_Name = name;
     emit updated();
+    emit nameChanged();
 }
 
 QPixmap PlaybackSequence::Thumbnail()

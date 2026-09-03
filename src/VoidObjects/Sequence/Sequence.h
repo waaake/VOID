@@ -108,6 +108,7 @@ signals: /* Signals denoting actions in the seqeuence */
     void trackRemoved();
     void cleared();
     // void updated();
+    void nameChanged();
     void rangeChanged(int start, int end);
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);
 
