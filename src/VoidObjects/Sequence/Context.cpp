@@ -87,6 +87,37 @@ ResolvedContext Context::Resolve() const
     return rctx;
 }
 
+ResolvedContext Context::Resolve(const Type& type) const
+{
+    ResolvedContext rctx;
+    rctx.type = type;
+    rctx.project = project;
+    rctx.sequence = project->Sequence(sequenceIdx);
+
+    switch (type)
+    {
+        case Context::Type::TRACK:
+            rctx.track = rctx.sequence->TrackAt(trackIdx, trackType);
+            break;
+        case Context::Type::TRACK_ITEM:
+            rctx.track = rctx.sequence->TrackAt(trackIdx, trackType);
+            rctx.trackItem = rctx.track->ItemAt(trackitemIdx);
+            break;
+        case Context::Type::TRACK_EFFECT:
+            rctx.track = rctx.sequence->TrackAt(trackIdx, trackType);
+            rctx.effect = rctx.track->EffectAt(effectIdx);
+            break;
+        case Context::Type::EFFECT:
+            rctx.track = rctx.sequence->TrackAt(trackIdx, trackType);
+            rctx.trackItem = rctx.track->ItemAt(trackitemIdx);
+            rctx.effect = rctx.trackItem->EffectAt(effectIdx);
+            break;
+    }
+
+    rctx.frame = frame;
+    return rctx;
+}
+
 } // namespace Sequence
 
 VOID_NAMESPACE_CLOSE

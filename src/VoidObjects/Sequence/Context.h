@@ -54,6 +54,7 @@ struct VOID_API Context
     Context(Core::Project* p, int seq, int track, const TrackType& ty, int trackitem, int effect, v_frame_t frame = 0)
         : type(Type::EFFECT), project(p), sequenceIdx(seq), trackIdx(track), trackitemIdx(trackitem), effectIdx(effect), frame(frame), trackType(ty) {}
     ResolvedContext Resolve() const;
+    ResolvedContext Resolve(const Type& type) const;
 
     static Context Get(const Effect* effect);
     static Context Get(const SharedTrackItem& item);
