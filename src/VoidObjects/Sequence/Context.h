@@ -70,13 +70,14 @@ struct VOID_API Context
  */
 struct VOID_API ResolvedContext
 {
-    Context::Type type;
     Core::Project* project;
     SharedPlaybackSequence sequence { nullptr };
     SharedPlaybackTrack track { nullptr };
     SharedTrackItem trackItem { nullptr };
     Effect* effect { nullptr };
     v_frame_t frame;
+    TrackType tracktype;
+    Context::Type type;
 };
 
 } // namespace Sequence

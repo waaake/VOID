@@ -83,6 +83,7 @@ ResolvedContext Context::Resolve() const
             break;
     }
 
+    rctx.tracktype = trackType;
     rctx.frame = frame;
     return rctx;
 }
@@ -114,6 +115,7 @@ ResolvedContext Context::Resolve(const Type& type) const
             break;
     }
 
+    rctx.tracktype = trackType;
     rctx.frame = frame;
     return rctx;
 }
