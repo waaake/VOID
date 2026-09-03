@@ -50,6 +50,21 @@ void SequencerController::Paste(Sequence::Context&& context)
 
         stack->endMacro();
     }
+    else if (m_TrackItemClipboard.context == ClipboardContext::CUT)
+    {
+        QUndoStack* stack = _MediaBridge.UndoStack();
+        stack->beginMacro("Cut TrackItem(s)");
+
+        for (const auto& item : m_TrackItemClipboard.items)
+        {
+            stack->push(new CutPasteTrackItemCommand(Sequence::Context::Get(item), context));
+            context.frame += item->Duration();
+        }
+
+        stack->endMacro();
+        // Cut-paste can happen only once
+        m_TrackItemClipboard.Reset();
+    }
 }
 
 void SequencerController::CreateTrackItems(const std::vector<std::pair<const SharedMediaClip, v_frame_t>>& media, const SharedPlaybackTrack& track)
