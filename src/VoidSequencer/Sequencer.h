@@ -59,6 +59,9 @@ private:
     STimelineView* m_View;
     SequencerContextMenu* m_Menu;
 
+    QShortcut* m_CutShortcut;
+    QShortcut* m_CopyShortcut;
+    QShortcut* m_PasteShortcut;
     QShortcut* m_FitShortcut;
     QShortcut* m_DeleteShortcut;
     QShortcut* m_RippleDeleteShortcut;

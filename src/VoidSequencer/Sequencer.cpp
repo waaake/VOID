@@ -3,6 +3,7 @@
 
 /* Qt */
 #include <QColorDialog>
+#include <QCursor>
 #include <QScrollBar>
 #include <QStyle>
 
@@ -100,7 +101,18 @@ void SequencerTimeline::SetHorizontalScale(float factor)
 
 void SequencerTimeline::Build()
 {
+    m_CutShortcut = new QShortcut(QKeySequence::Cut, this);
+    m_CutShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
+    m_CopyShortcut = new QShortcut(QKeySequence::Copy, this);
+    m_CopyShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
+    m_PasteShortcut = new QShortcut(QKeySequence::Paste, this);
+    m_PasteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
     m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
+    m_FitShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
     m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
     m_DeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
 
@@ -171,6 +183,9 @@ void SequencerTimeline::Connect()
     // Controller
     connect(m_Context.Controller(), &SequencerController::editEffectRequested, this, &SequencerTimeline::editEffectRequested);
 
+    connect(m_CutShortcut, &QShortcut::activated, this, &SequencerTimeline::Cut);
+    connect(m_CopyShortcut, &QShortcut::activated, this, &SequencerTimeline::Copy);
+    connect(m_PasteShortcut, &QShortcut::activated, this, [this]() -> void { Paste(QCursor::pos()); });
     connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
     connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
     connect(m_RippleDeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::RippleDeleteSelected);
