@@ -47,7 +47,7 @@ public:
     void Cut(const std::unordered_set<SharedTrackItem>& items);
     void Copy(const std::unordered_set<SharedTrackItem>& items);
     void Paste(Sequence::Context&& context);
-    bool ClipboardValid() const { return (bool)m_TrackItemClipboard; }
+    bool ValidClipboard() const { return (bool)m_TrackItemClipboard; }
 
     void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
     void RemoveFromScene(QGraphicsItem* item) { m_Scene->removeItem(item); }

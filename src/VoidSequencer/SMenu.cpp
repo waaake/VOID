@@ -36,8 +36,12 @@ void SequencerContextMenu::Build()
     
     m_EditMenu = new QMenu("Edit", this);
     m_CutAction = new QAction("Cut", m_EditMenu);
+    m_CutAction->setShortcut(QKeySequence::Cut);
     m_CopyAction = new QAction("Copy", m_EditMenu);
+    m_CopyAction->setShortcut(QKeySequence::Copy);
     m_PasteAction = new QAction("Paste", m_EditMenu);
+    m_PasteAction->setShortcut(QKeySequence::Paste);
+
     m_RemoveSelectedAction = new QAction("Delete Selected", m_EditMenu);
     m_EditMenu->addAction(m_CutAction);
     m_EditMenu->addAction(m_CopyAction);
@@ -114,7 +118,7 @@ void SequencerContextMenu::Validate()
 
     m_CutAction->setEnabled(sel->HasAnySelection());
     m_CopyAction->setEnabled(sel->HasAnySelection());
-    m_PasteAction->setEnabled(controller->ClipboardValid());
+    m_PasteAction->setEnabled(controller->ValidClipboard());
 
     m_RemoveSelectedAction->setEnabled(sel->HasAnySelection());
     m_ColorItemAction->setEnabled(sel->HasTrackItemSelection());
