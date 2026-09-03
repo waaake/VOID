@@ -277,7 +277,7 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
 
 SharedMediaClip EntityModel::Media(const QModelIndex& index) const
 {
-    return index.isValid() ? m_Media.at(index.row()) : nullptr;
+    return index.isValid()&& index.row() < static_cast<int>(m_Media.size()) ? m_Media.at(index.row()) : nullptr;
 }
 
 SharedPlaybackSequence EntityModel::Sequence(const QModelIndex& index) const
