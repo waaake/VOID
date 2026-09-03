@@ -29,9 +29,11 @@ class VOID_API SequencerTimeline : public QWidget
     Q_OBJECT
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
-    virtual inline QSize sizeHint() const override { return QSize(640, 300); }
+    inline QSize sizeHint() const override { return QSize(640, 300); }
+    void ResetTabText();
 
     void SetSequence(const SharedPlaybackSequence& sequence);
+    void ClearSequence();
     SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
 
     void AddTrack(const SharedPlaybackTrack& track);

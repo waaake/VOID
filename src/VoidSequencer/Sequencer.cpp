@@ -10,6 +10,7 @@
 /* Internal */
 #include "Sequencer.h"
 #include "VoidCore/Logging.h"
+#include "VoidDocker/DockPanel.h"
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
 #include "VoidObjects/Sequence/Context.h"
 #include "VoidSequencer/Graphics/STrack.h"
@@ -27,6 +28,12 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
     Connect();
 }
 
+void SequencerTimeline::ResetTabText()
+{
+    if (DockPanel* panel = dynamic_cast<DockPanel*>(parent()))
+        panel->SetTabText(m_Sequence ? m_Sequence->Name().c_str() : "Sequencer");
+}
+
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
     if (m_Sequence)
@@ -37,6 +44,21 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 
     m_Context.Geometry()->SetSequence(sequence);
     Refresh();
+    ResetTabText();
+}
+
+void SequencerTimeline::ClearSequence()
+{
+    if (m_Sequence)
+        Disconnect(m_Sequence.get());
+    
+    m_Sequence = nullptr;
+
+    m_TrackHeader->Clear();
+    m_View->Clear();
+    m_View->AddPlayhead();
+
+    ResetTabText();
 }
 
 void SequencerTimeline::AddTrack(const SharedPlaybackTrack& track)
@@ -234,6 +256,7 @@ void SequencerTimeline::Connect(PlaybackSequence* sequence)
     connect(sequence, &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
     connect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
+    connect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
 }
 
 void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
@@ -242,6 +265,7 @@ void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
     disconnect(sequence, &PlaybackSequence::trackAboutToBeRemoved, this, &SequencerTimeline::RemoveTrack);
     disconnect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     disconnect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
+    disconnect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
 }
 
 void SequencerTimeline::CreateEffect(const std::string& type)
