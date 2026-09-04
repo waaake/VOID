@@ -85,7 +85,7 @@ TrackItem& TrackItem::operator=(const TrackItem& other)
 
 TrackItem::TrackItem(TrackItem&& other) noexcept
 {
-    std::swap(m_Effects, other.m_Effects);
+    m_Effects = std::move(other.m_Effects);
     m_Media = other.m_Media;
     m_Track = other.m_Track;
     m_Name = std::move(other.m_Name);
@@ -102,7 +102,7 @@ TrackItem& TrackItem::operator=(TrackItem&& other) noexcept
 {
     if (&other == this) return *this;
 
-    std::swap(m_Effects, other.m_Effects);
+    m_Effects = std::move(other.m_Effects);
     m_Media = other.m_Media;
     m_Track = other.m_Track;
     m_Name = std::move(other.m_Name);
