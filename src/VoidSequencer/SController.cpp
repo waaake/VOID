@@ -91,6 +91,16 @@ void SequencerController::Paste(Sequence::Context&& context)
 
             stack->endMacro();
         }
+        else if (m_TrackClipboard.context == ClipboardContext::CUT)
+        {
+            QUndoStack* stack = _MediaBridge.UndoStack();
+            stack->beginMacro("Cut Track(s)");
+
+            for (const auto& track : m_TrackClipboard.items)
+                stack->push(new CutPasteTrackCommand(Sequence::Context::Get(track), context));
+            
+            stack->endMacro();
+        }
     }
 }
 
