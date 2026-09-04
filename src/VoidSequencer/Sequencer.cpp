@@ -312,14 +312,20 @@ void SequencerTimeline::UpdateAll()
 
 void SequencerTimeline::Cut()
 {
-    if (m_Context.SelectionModel()->HasTrackItemSelection())
-        m_Context.Controller()->Cut(m_Context.SelectionModel()->SelectedItems());
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->Cut(sel->SelectedItems());
+    if (sel->HasTrackSelection())
+        m_Context.Controller()->Cut(sel->SelectedTracks());
 }
 
 void SequencerTimeline::Copy()
 {
-    if (m_Context.SelectionModel()->HasTrackItemSelection())
-        m_Context.Controller()->Copy(m_Context.SelectionModel()->SelectedItems());
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->Copy(sel->SelectedItems());
+    if (sel->HasTrackSelection())
+        m_Context.Controller()->Copy(sel->SelectedTracks());
 }
 
 void SequencerTimeline::Paste(const QPoint& position)
@@ -328,6 +334,8 @@ void SequencerTimeline::Paste(const QPoint& position)
     v_frame_t frame = m_Context.Geometry()->SceneXToFrame(mapped.x());
     if (STrack* track = m_Context.Controller()->TrackAt(mapped))
         m_Context.Controller()->Paste(Sequence::Context::Get(track->Track(), frame));
+    else
+        m_Context.Controller()->Paste(Sequence::Context::Get(m_Context.Sequence()));
 }
 
 VOID_NAMESPACE_CLOSE
