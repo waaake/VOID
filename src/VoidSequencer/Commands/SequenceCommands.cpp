@@ -926,4 +926,43 @@ bool CopyPasteTrackItemCommand::Redo()
     return false;
 }
 
+/// CopyPasteTrackCommand
+
+CopyPasteTrackCommand::CopyPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Copy Track");
+}
+
+void CopyPasteTrackCommand::undo()
+{
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+    acted.sequence->RemoveTrack(acted.track);
+}
+
+bool CopyPasteTrackCommand::Redo()
+{
+    // Ensure that we have a Sequence Context to copy the item to
+    if (m_DestinationCtx.type == Sequence::Context::Type::SEQUENCE)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        std::ostringstream os(std::ios::binary);
+        rsource.track->Serialize(os);
+
+        std::istringstream is(os.str(), std::ios::binary);
+        SharedPlaybackTrack copied = std::make_shared<PlaybackTrack>(rsource.tracktype, rsource.sequence.get());
+        // rdest.sequence->Add
+        rsource.tracktype == Sequence::TrackType::VIDEO ? rdest.sequence->AddVideoTrack(copied) : rdest.sequence->AddAudioTrack(copied);
+        copied->Deserialize(is);
+
+        m_ActedCtx = Sequence::Context::Get(copied);
+        return true;
+    }
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE

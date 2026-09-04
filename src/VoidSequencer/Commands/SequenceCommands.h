@@ -381,6 +381,19 @@ private:
     Sequence::Context m_ActedCtx;
 };
 
+class CopyPasteTrackCommand : public VoidUndoCommand
+{
+public:
+    CopyPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_SourceCtx;
+    Sequence::Context m_DestinationCtx;
+    Sequence::Context m_ActedCtx;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _SEQUENCE_COMMANDS_H
