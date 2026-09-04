@@ -23,7 +23,7 @@ public:
 
 	inline QWidget* Widget() const { return m_Widget; }
 	inline int PanelId() const { return m_Widget ? m_Widget->objectName().toInt() : -1; }
-	void SetTabText(const QString& text);
+	void VOID_API SetTabText(const QString& text);
 
 private: /* Members */
 	QWidget* m_Widget;

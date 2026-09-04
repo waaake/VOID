@@ -89,6 +89,7 @@ target_link_libraries(
 target_link_libraries(
     VoidSequencer
     PRIVATE
+    VoidDocker
     Qt::Core
     Qt::Widgets
 )
