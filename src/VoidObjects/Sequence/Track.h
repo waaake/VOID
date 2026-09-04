@@ -26,7 +26,6 @@ class STimelineEffect;
 class VOID_API PlaybackTrack : public VoidObject
 {
     Q_OBJECT
-
 public:
     explicit PlaybackTrack(const Sequence::TrackType& type, QObject* parent = nullptr);
     virtual ~PlaybackTrack();
@@ -128,6 +127,7 @@ public:
     SharedTrackItem GetTrackItem(v_frame_t frame);
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
+    void SetSequence(PlaybackSequence* sequence) { m_Sequence = sequence; }
     inline PlaybackSequence* Sequence() const { return m_Sequence; }
     Core::Project* Project() const;
     int Index() const;

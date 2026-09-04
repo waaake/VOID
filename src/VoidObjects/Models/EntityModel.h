@@ -65,7 +65,9 @@ public:
 
     SharedMediaClip Media(const QModelIndex& index) const;
     SharedPlaybackSequence Sequence(const QModelIndex& index) const;
+    SharedPlaybackSequence Sequence(int row) const;
     int MediaRow(const SharedMediaClip& clip) const;
+    int SequenceRow(const PlaybackSequence* sequence) const;
     int SequenceRow(const SharedPlaybackSequence& sequence) const;
 
     int MediaCount() const { return static_cast<int>(m_Media.size()); }

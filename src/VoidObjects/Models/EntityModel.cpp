@@ -277,12 +277,18 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
 
 SharedMediaClip EntityModel::Media(const QModelIndex& index) const
 {
-    return index.isValid() ? m_Media.at(index.row()) : nullptr;
+    return index.isValid()&& index.row() < static_cast<int>(m_Media.size()) ? m_Media.at(index.row()) : nullptr;
 }
 
 SharedPlaybackSequence EntityModel::Sequence(const QModelIndex& index) const
 {
     return index.isValid() ? m_Sequences.at(index.row() - static_cast<int>(m_Media.size())) : nullptr;
+}
+
+SharedPlaybackSequence EntityModel::Sequence(int row) const
+{
+    unsigned int srow = row - static_cast<int>(m_Media.size());
+    return srow < static_cast<int>(m_Sequences.size()) ? m_Sequences.at(srow) : nullptr;
 }
 
 int EntityModel::MediaRow(const SharedMediaClip& clip) const
@@ -291,10 +297,23 @@ int EntityModel::MediaRow(const SharedMediaClip& clip) const
     return it == m_Media.end() ? -1 : static_cast<int>(std::distance(m_Media.begin(), it));
 }
 
+int EntityModel::SequenceRow(const PlaybackSequence* sequence) const
+{
+    auto it = std::find_if(
+        m_Sequences.begin(),
+        m_Sequences.end(),
+        [sequence](const SharedPlaybackSequence& _seq) -> bool
+        {
+            return sequence == _seq.get();
+        }
+    );
+    return it == m_Sequences.end() ? -1 : static_cast<int>(m_Media.size()) + static_cast<int>(std::distance(m_Sequences.begin(), it));
+}
+
 int EntityModel::SequenceRow(const SharedPlaybackSequence& sequence) const
 {
     auto it = std::find(m_Sequences.begin(), m_Sequences.end(), sequence);
-    return it == m_Sequences.end() ? -1 : static_cast<int>(std::distance(m_Sequences.begin(), it));
+    return it == m_Sequences.end() ? -1 : static_cast<int>(m_Media.size()) + static_cast<int>(std::distance(m_Sequences.begin(), it));
 }
 
 SharedMediaClip EntityModel::LastMedia() const

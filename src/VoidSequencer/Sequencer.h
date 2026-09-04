@@ -29,10 +29,12 @@ class VOID_API SequencerTimeline : public QWidget
     Q_OBJECT
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
-    virtual inline QSize sizeHint() const override { return QSize(640, 300); }
+    inline QSize sizeHint() const override { return QSize(640, 300); }
+    void ResetTabText();
 
     void SetSequence(const SharedPlaybackSequence& sequence);
-    SharedPlaybackSequence ActiveSequence() const { return m_Sequence; }
+    void ClearSequence();
+    SharedPlaybackSequence ActiveSequence() const { return m_Context.Sequence(); }
 
     void AddTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);
@@ -59,12 +61,14 @@ private:
     STimelineView* m_View;
     SequencerContextMenu* m_Menu;
 
+    QShortcut* m_CutShortcut;
+    QShortcut* m_CopyShortcut;
+    QShortcut* m_PasteShortcut;
     QShortcut* m_FitShortcut;
     QShortcut* m_DeleteShortcut;
     QShortcut* m_RippleDeleteShortcut;
     QShortcut* m_ToggleStateShortcut;
 
-    SharedPlaybackSequence m_Sequence;
     SequencerContext m_Context;
 
 private: /* Methods */
@@ -77,6 +81,9 @@ private: /* Methods */
     void RippleDeleteSelected();
     void ToggleItemState();
     void UpdateAll();
+    void Cut();
+    void Copy();
+    void Paste(const QPoint& position);
 };
 
 VOID_NAMESPACE_CLOSE

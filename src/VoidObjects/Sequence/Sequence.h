@@ -79,6 +79,7 @@ public:
     int VideoTrackIndex(const PlaybackTrack* track) const;
     int AudioTrackIndex(const PlaybackTrack* track) const;
     int TrackIndex(const PlaybackTrack* track) const;
+    int Index() const;
 
     // const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
     // const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
@@ -107,6 +108,7 @@ signals: /* Signals denoting actions in the seqeuence */
     void trackRemoved();
     void cleared();
     // void updated();
+    void nameChanged();
     void rangeChanged(int start, int end);
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);
 

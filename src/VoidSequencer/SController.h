@@ -14,9 +14,11 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Sequence/Context.h"
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidSequencer/Core/Clipboard.h"
 #include "VoidTimeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
@@ -41,6 +43,13 @@ public:
     void SetTimeController(TimelineController* controller);
     TimelineController* TimeController() { return m_TimelineController; }
     void ResetRange(int start, int end) { m_TimelineController->SetRange(start, end); }
+
+    void Cut(const std::unordered_set<SharedTrackItem>& items);
+    void Cut(const std::unordered_set<SharedPlaybackTrack>& tracks);
+    void Copy(const std::unordered_set<SharedTrackItem>& items);
+    void Copy(const std::unordered_set<SharedPlaybackTrack>& tracks);
+    void Paste(Sequence::Context&& context);
+    bool ValidClipboard() const { return m_TrackClipboard || m_TrackItemClipboard; }
 
     void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
     void RemoveFromScene(QGraphicsItem* item) { m_Scene->removeItem(item); }
@@ -91,6 +100,8 @@ signals:
     void editEffectRequested(Effect*);
 
 private:
+    Clipboard<SharedTrackItem> m_TrackItemClipboard;
+    Clipboard<SharedPlaybackTrack> m_TrackClipboard;
     QGraphicsScene* m_Scene = { nullptr };
     TimelineController* m_TimelineController = { nullptr };
     v_frame_t m_Frame;

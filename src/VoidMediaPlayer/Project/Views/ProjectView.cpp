@@ -30,13 +30,28 @@ ProjectView::~ProjectView()
     proxy->deleteLater();
     delete proxy;
     proxy = nullptr;
+
+    m_NewMenu->deleteLater();
+    delete m_NewMenu;
+    m_NewMenu = nullptr;
+
+    m_ImportMenu->deleteLater();
+    delete m_ImportMenu;
+    m_ImportMenu = nullptr;
 }
 
 void ProjectView::Setup()
 {
-    m_ImportMediaAction = new QAction("Import Media...", this);
-    m_ImportDirectoryAction = new QAction("Import Directory...", this);
-    m_CreateSequenceAction = new QAction("Add New Sequence", this);
+    m_NewMenu = new QMenu("New");
+    m_CreateSequenceAction = new QAction("New Sequence", m_NewMenu);
+    m_NewMenu->addAction(m_CreateSequenceAction);
+
+    m_ImportMenu = new QMenu("Import");
+    m_ImportMediaAction = new QAction("Import Media...", m_ImportMenu);
+    m_ImportDirectoryAction = new QAction("Import Directory...", m_ImportMenu);
+    m_ImportMenu->addAction(m_ImportMediaAction);
+    m_ImportMenu->addAction(m_ImportDirectoryAction);
+
     m_SaveProjectAction = new QAction("Save Project", this);
     m_SaveAsProjectAction = new QAction("Save Project As...", this);
     m_CloseProjectAction = new QAction("Close Project", this);
@@ -56,7 +71,6 @@ void ProjectView::Setup()
 
 void ProjectView::Connect()
 {
-    /* Menu */
     connect(m_ImportMediaAction, &QAction::triggered, this, &ProjectView::ImportMedia);
     connect(m_ImportDirectoryAction, &QAction::triggered, this, &ProjectView::ImportDirectory);
     connect(m_CreateSequenceAction, &QAction::triggered, this, &ProjectView::AddSequence);
@@ -64,7 +78,6 @@ void ProjectView::Connect()
     connect(m_SaveAsProjectAction, &QAction::triggered, this, [this]() -> void { SaveProject(true); });
     connect(m_CloseProjectAction, &QAction::triggered, this, &ProjectView::CloseProject);
 
-    /* View */
     connect(this, &QListView::clicked, this, &ProjectView::ItemClicked);
     connect(this, &QListView::customContextMenuRequested, this, &ProjectView::ShowContextMenu);
 }
@@ -95,7 +108,6 @@ const std::vector<QModelIndex> ProjectView::SelectedIndexes() const
 
     const QModelIndexList proxyindexes = selection->selectedRows();
     sources.reserve(proxyindexes.size());
-
     for (const QModelIndex& index: proxyindexes)
     {
         QModelIndex source = proxy->mapToSource(index);
@@ -108,15 +120,8 @@ const std::vector<QModelIndex> ProjectView::SelectedIndexes() const
 
 bool ProjectView::HasSelection()
 {
-    /* Underlying selection model */
     QItemSelectionModel* s = selectionModel();
-
-    /* Doesn't have the selection model ?*/
-    if (!s)
-        return false;
-
-    /* Return whether the selection model has any selection currently */
-    return s->hasSelection();
+    return s && s->hasSelection();
 }
 
 void ProjectView::EnableSorting(bool state, const Qt::SortOrder& order)
@@ -130,10 +135,9 @@ void ProjectView::ShowContextMenu(const _QPoint& position)
         return;
 
     QMenu contextMenu(this);
-    contextMenu.addAction(m_ImportMediaAction);
-    contextMenu.addAction(m_ImportDirectoryAction);
-    contextMenu.addAction(m_CreateSequenceAction);
-
+    
+    contextMenu.addMenu(m_NewMenu);
+    contextMenu.addMenu(m_ImportMenu);
     contextMenu.addSeparator();
     contextMenu.addAction(m_SaveProjectAction);
     contextMenu.addAction(m_SaveAsProjectAction);

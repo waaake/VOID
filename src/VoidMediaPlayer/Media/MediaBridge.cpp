@@ -452,13 +452,15 @@ std::vector<SharedMediaClip> MBridge::UnpackProjectMedia(QByteArray& data) const
 
     std::vector<SharedMediaClip> clips;
     clips.reserve(count);
+    const EntityModel* entities = m_Project->DataModel();
 
     for (int i = 0; i < count; ++i)
     {
         int row, column;
         stream >> row >> column;
 
-        clips.emplace_back(m_Project->MediaAt(row, column));
+        if (row < entities->MediaCount())
+            clips.emplace_back(entities->Media(entities->index(row, column)));
     }
 
     return clips;

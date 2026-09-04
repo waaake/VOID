@@ -5,9 +5,9 @@
 #define _SEQUENCER_CONTEXT_MENU_H
 
 /* Qt */
-#include <QMenu>
 #include <QAction>
 #include <QActionGroup>
+#include <QMenu>
 
 /* Internal */
 #include "Definition.h"
@@ -24,6 +24,9 @@ public:
     void Show(const QPoint& position);
 
 signals:
+    void cutSelectionRequested();
+    void copySelectionRequested();
+    void pasteRequested(const QPoint&);
     void createTrackRequested();
     void deleteSelectionRequested();
     void colorChangeRequested(bool reset = false);
@@ -31,8 +34,15 @@ signals:
     void addEffectRequested(const std::string&);
 
 private:
+    QPoint m_ExecPosition;
     SequencerContext* m_Context;
     QAction* m_AddVideoTrackAction;
+
+    QMenu* m_NewMenu;
+    QMenu* m_EditMenu;
+    QAction* m_CutAction;
+    QAction* m_CopyAction;
+    QAction* m_PasteAction;
     QAction* m_RemoveSelectedAction;
 
     QMenu* m_ColorMenu;

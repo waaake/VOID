@@ -36,6 +36,12 @@ public:
 
     virtual ~TrackItem();
 
+    TrackItem(const TrackItem& other);
+    TrackItem& operator=(const TrackItem& other);
+
+    TrackItem(TrackItem&& other) noexcept;
+    TrackItem& operator=(TrackItem&& other) noexcept;
+
     /**
      * Update the media on the track item
      * Offset corresponds to the offet in the framerange as when compared against the original range
@@ -163,7 +169,7 @@ public:
     void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
     void Deserialize(std::istream& in) override;
-
+    
     const char* TypeName() const override { return "TrackItem"; }
 
 signals:

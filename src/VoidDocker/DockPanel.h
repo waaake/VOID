@@ -13,17 +13,21 @@
 
 VOID_NAMESPACE_OPEN
 
+class DockWidget;
+
 class DockPanel : public QFrame
 {
 public:
 	DockPanel(QWidget* widget, QWidget* parent = nullptr);
 	~DockPanel();
 
-	inline QWidget* Widget() const { return widget; }
-	inline int PanelId() const { return widget ? widget->objectName().toInt() : -1; }
+	inline QWidget* Widget() const { return m_Widget; }
+	inline int PanelId() const { return m_Widget ? m_Widget->objectName().toInt() : -1; }
+	void VOID_API SetTabText(const QString& text);
 
 private: /* Members */
-	QWidget* widget;
+	QWidget* m_Widget;
+	DockWidget* m_Parent;
 	QHBoxLayout* m_Layout;
 
 private: /* Methods */

@@ -13,6 +13,7 @@
 #include <QButtonGroup>
 #include <QSlider>
 #include <QLayout>
+#include <QMenu>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QShortcut>
@@ -22,7 +23,6 @@
 /* Internal */
 #include "QDefinition.h"
 #include "MediaSearchBar.h"
-#include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidMediaPlayer/Media/Views/MediaView.h"
 #include "VoidMediaPlayer/Project/Views/ProjectView.h"
 #include "VoidQExtensions/PushButton.h"
@@ -36,15 +36,14 @@ public:
     VoidMediaLister(QWidget* parent = nullptr);
     virtual ~VoidMediaLister();
 
-    /* Override the default size of the widget */
     QSize sizeHint() const override { return QSize(300, 720); }
 
 signals:
     void mediaChanged(const SharedMediaClip&);
-    /* For a bunch of media is set to be played */
+    // For a bunch of media is set to be played
     void playlistChanged(const std::vector<SharedMediaClip>&);
     void mediaDropped(const std::string&);
-    /* When a Media is inspected of its Metdata */
+    // When a Media is inspected of its Metdata
     void metadataInspected(const SharedMediaClip&);
     void effectsEdited(const SharedMediaClip&);
 
@@ -80,42 +79,40 @@ private: /* Members */
     QHBoxLayout* m_OptionsLayout;
     QSplitter* m_ViewSplitter;
 
-    /* Options */
     HighlightToggleButton* m_ListViewToggle;
     HighlightToggleButton* m_DetailedListViewToggle;
     HighlightToggleButton* m_ThumbnailViewToggle;
 
-    /* Button Group to allow exclusive (single) selection */
     QButtonGroup* m_ViewButtonGroup;
 
     MediaSearchBar* m_SearchBar;
     QSlider* m_ScaleSlider;
     HighlightToggleButton* m_SortButton;
 
-    /* Views */
     ProjectView* m_ProjectView;
     MediaView* m_MediaView;
 
-    /* Context Menu */
+    QMenu* m_PlayMenu;
+    QMenu* m_SequenceMenu;
+    QMenu* m_TagsMenu;
+
     QAction* m_PlayAction;
     QAction* m_PlayAsListAction;
     QAction* m_AddToQueueAction;
     QAction* m_PlayAsGridAction;
     QAction* m_RemoveAction;
     QAction* m_InspectMetadataAction;
-    QAction* m_EditEffectsAction;
     QAction* m_AddTagAction;
     QAction* m_ClearTagsAction;
     QMenu* m_PlaylistMenu;
     QAction* m_CreatePlaylistAction;
+    QAction* m_AddSequenceAction;
     QAction* m_RenameAction;
 
-    /* Shortcuts */
     QShortcut* m_PrimaryViewShortcut;
     QShortcut* m_SecondaryViewShortcut;
 
 private: /* Methods */
-    /* Set values from User preferences */
     void SetFromPreferences();
     // void ProjectChanged();
     void RebuildPlaylistMenu();

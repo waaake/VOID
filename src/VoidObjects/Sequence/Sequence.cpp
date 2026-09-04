@@ -7,6 +7,7 @@
 /* Internal */
 #include "Sequence.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -57,6 +58,7 @@ void PlaybackSequence::SetName(const std::string& name)
 {
     m_Name = name;
     emit updated();
+    emit nameChanged();
 }
 
 QPixmap PlaybackSequence::Thumbnail()
@@ -99,6 +101,7 @@ SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
     m_VideoTracks.push_back(track);
+    track->SetSequence(this);
     ConnectVideoTrack(track);
 
     if (track->Name().empty())
@@ -125,6 +128,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
     m_AudioTracks.push_back(track);
+    track->SetSequence(this);
     ConnectAudioTrack(track);
 
     if (track->Name().empty())
@@ -151,6 +155,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index)
 {
     m_VideoTracks.insert(m_VideoTracks.begin() + index, track);
+    track->SetSequence(this);
     ConnectVideoTrack(track);
 
     if (track->Name().empty())
@@ -177,6 +182,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index)
 {
     m_AudioTracks.insert(m_AudioTracks.begin() + index, track);
+    track->SetSequence(this);
     ConnectAudioTrack(track);
 
     if (track->Name().empty())
@@ -276,6 +282,12 @@ int PlaybackSequence::AudioTrackIndex(const PlaybackTrack* track) const
 int PlaybackSequence::TrackIndex(const PlaybackTrack* track) const
 {
     return track->Type() == Sequence::TrackType::VIDEO ? VideoTrackIndex(track) : AudioTrackIndex(track);
+}
+
+int PlaybackSequence::Index() const
+{
+    Core::Project* p = Project();
+    return p ? p->SequenceRow(this) : -1;
 }
 
 bool PlaybackSequence::HasMedia() const

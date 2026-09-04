@@ -1,12 +1,16 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _SEQUENCE_COMMANDS_H
+#define _SEQUENCE_COMMANDS_H
+
 /* Qt */
 #include <QColor>
 
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Project/Project.h"
+#include "VoidObjects/Sequence/Context.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 #include "VoidObjects/Sequence/Sequence.h"
@@ -351,4 +355,58 @@ private:
     int m_Handle;
 };
 
+class CutPasteTrackItemCommand : public VoidUndoCommand
+{
+public:
+    CutPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_SourceCtx;
+    Sequence::Context m_DestinationCtx;
+    Sequence::Context m_ActedCtx;
+};
+
+class CopyPasteTrackItemCommand : public VoidUndoCommand
+{
+public:
+    CopyPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_SourceCtx;
+    Sequence::Context m_DestinationCtx;
+    Sequence::Context m_ActedCtx;
+};
+
+class CutPasteTrackCommand : public VoidUndoCommand
+{
+public:
+    CutPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_SourceCtx;
+    Sequence::Context m_DestinationCtx;
+    Sequence::Context m_ActedCtx;
+};
+
+class CopyPasteTrackCommand : public VoidUndoCommand
+{
+public:
+    CopyPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_SourceCtx;
+    Sequence::Context m_DestinationCtx;
+    Sequence::Context m_ActedCtx;
+};
+
 VOID_NAMESPACE_CLOSE
+
+#endif // _SEQUENCE_COMMANDS_H

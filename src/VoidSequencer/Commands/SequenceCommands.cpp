@@ -839,4 +839,170 @@ bool TrimItemTailCommand::Redo()
     return false;
 }
 
+/// CutPasteTrackItemCommand
+
+CutPasteTrackItemCommand::CutPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Cut TrackItem");
+}
+
+void CutPasteTrackItemCommand::undo()
+{
+    // The source track item has been moved, can't resolve back to the track item object
+    Sequence::ResolvedContext rsource = m_SourceCtx.Resolve(Sequence::Context::Type::TRACK);
+    Sequence::ResolvedContext rdest = m_ActedCtx.Resolve();
+    if (rdest.track.get() == rsource.track.get())
+    {
+        rsource.track->MoveItem(rdest.trackItem, rsource.frame);
+        return;
+    }
+
+    if (rsource.track->AddItem(rdest.trackItem, rsource.frame))
+    {
+        rdest.track->RemoveItem(rdest.trackItem);
+    }
+}
+
+bool CutPasteTrackItemCommand::Redo()
+{
+    // Ensure that we have a Track Context to copy the item to
+    if (m_DestinationCtx.type == Sequence::Context::Type::TRACK)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        if (rdest.track.get() == rsource.track.get())
+        {
+            rdest.track->MoveItem(rsource.trackItem, rdest.frame);
+            m_ActedCtx = Sequence::Context::Get(rsource.trackItem);
+            return true;
+        }
+
+        if (rdest.track->AddItem(rsource.trackItem, rdest.frame))
+        {
+            rsource.track->RemoveItem(rsource.trackItem);
+            m_ActedCtx = Sequence::Context::Get(rsource.trackItem);
+            return true;
+        }
+    }
+    return false;
+}
+
+/// CopyPasteTrackItemCommand
+
+CopyPasteTrackItemCommand::CopyPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Copy TrackItem");
+}
+
+void CopyPasteTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+    acted.track->RemoveItem(acted.trackItem);
+}
+
+bool CopyPasteTrackItemCommand::Redo()
+{
+    // Ensure that we have a Track Context to copy the item to
+    if (m_DestinationCtx.type == Sequence::Context::Type::TRACK)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        SharedTrackItem copied = std::make_shared<TrackItem>(*rsource.trackItem.get());
+        if (rdest.track->AddItem(copied, rdest.frame))
+        {
+            // Store the acted upon context
+            m_ActedCtx = Sequence::Context::Get(copied);
+            return true;
+        }
+    }
+    return false;
+}
+
+/// CutPasteTrackCommand
+
+CutPasteTrackCommand::CutPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Cut Track");
+}
+
+void CutPasteTrackCommand::undo()
+{
+    Sequence::ResolvedContext rsource = m_SourceCtx.Resolve(Sequence::Context::Type::SEQUENCE);
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+
+    SharedPlaybackTrack track = acted.track;
+    acted.sequence->RemoveTrack(track);
+    acted.tracktype == Sequence::TrackType::VIDEO
+                    ? rsource.sequence->AddVideoTrack(track, m_SourceCtx.trackIdx)
+                    : rsource.sequence->AddAudioTrack(track, m_SourceCtx.trackIdx);
+}
+
+bool CutPasteTrackCommand::Redo()
+{
+    // Ensure that we have a Sequence Context to move the track to
+    if (m_DestinationCtx.type >= Sequence::Context::Type::SEQUENCE)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        SharedPlaybackTrack track = rsource.track;
+        rsource.sequence->RemoveTrack(track);
+        rsource.tracktype == Sequence::TrackType::VIDEO ? rdest.sequence->AddVideoTrack(track) : rdest.sequence->AddAudioTrack(track);
+        m_ActedCtx = Sequence::Context::Get(track);
+
+        return true;
+    }
+    return false;
+}
+
+/// CopyPasteTrackCommand
+
+CopyPasteTrackCommand::CopyPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Copy Track");
+}
+
+void CopyPasteTrackCommand::undo()
+{
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+    acted.sequence->RemoveTrack(acted.track);
+}
+
+bool CopyPasteTrackCommand::Redo()
+{
+    // Ensure that we have a Sequence Context to copy the track to
+    if (m_DestinationCtx.type >= Sequence::Context::Type::SEQUENCE)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        std::ostringstream os(std::ios::binary);
+        rsource.track->Serialize(os);
+
+        std::istringstream is(os.str(), std::ios::binary);
+        SharedPlaybackTrack copied = std::make_shared<PlaybackTrack>(rsource.tracktype, rdest.sequence.get());
+        // rdest.sequence->Add
+        rsource.tracktype == Sequence::TrackType::VIDEO ? rdest.sequence->AddVideoTrack(copied) : rdest.sequence->AddAudioTrack(copied);
+        copied->Deserialize(is);
+
+        m_ActedCtx = Sequence::Context::Get(copied);
+        return true;
+    }
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE
