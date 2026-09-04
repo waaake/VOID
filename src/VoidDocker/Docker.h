@@ -21,14 +21,10 @@ VOID_NAMESPACE_OPEN
 
 class VOID_API VoidDocker : public QDockWidget
 {
-    Q_OBJECT
-
 public:
     VoidDocker(QWidget* parent = nullptr);
     VoidDocker(const std::string& title, QWidget*parent = nullptr);
     virtual ~VoidDocker();
-    
-    /* Helpers */
 
     /*
      * Adjusts the Dock panel's closable property
@@ -42,7 +38,6 @@ public:
 class VOID_API DockTab : public QTabBar
 {
 	Q_OBJECT
-
 public:
 	DockTab(QWidget* parent = nullptr);
 
@@ -70,6 +65,7 @@ public:
 	DockPanel* AddDock(QWidget* panel, const std::string& title, bool closable = false);
 	void AddDockManagerWidget(int index);
 
+	void RemoveTab(int index);
 	int DockTabIndex(const QString& name) const;
 
 protected:
@@ -80,7 +76,6 @@ protected:
 	void paintEvent(QPaintEvent* event) override;
 
 signals:
-	/* Emitted when the DockWidget is to be closed */
 	void closureRequested(QWidget*);
 	void splitRequested(const Qt::Orientation&);
 
@@ -101,23 +96,14 @@ private: /* Members */
 
 private: /* Methods */
 	void HideTab(int index);
-	void RemoveTab(int index);
 	void UndockTab(int index, const QPoint& positiion);
 	void SetTabClosable(int index);
-
-	/**
-	 * Sets up the Dock Panel Options Tool button
-	 */
 	void SetupOptions();
-
 	void Connect();
-	
-	/* Closes the entire Pane of tab widgets */
 	void ClosePane();
 	void CloseParent();
-
-	/* (Re)setup the Menu for the Docks */
 	void ResetDockMenu();
+	bool ShowIfDocked(const QString& name);
 };
 
 VOID_NAMESPACE_CLOSE
