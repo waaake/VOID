@@ -6,6 +6,7 @@
 
 /* STD */
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -171,8 +172,8 @@ struct VOID_API MHelper
     /**
      * Checks if the MEntry is a Media format
      */
-    static inline bool IsImage(const MEntry& entry) { return std::find(std::begin(m_ImageFormats), std::end(m_ImageFormats), entry.Extension()) != std::end(m_ImageFormats); }
-    static inline bool IsMovie(const MEntry& entry) { return std::find(std::begin(m_MovieFormats), std::end(m_MovieFormats), entry.Extension()) != std::end(m_MovieFormats); }
+    static inline bool IsImage(const MEntry& entry) { return std::find(m_ImageFormats.begin(), m_ImageFormats.end(), entry.Extension()) != m_ImageFormats.end(); }
+    static inline bool IsMovie(const MEntry& entry) { return std::find(m_MovieFormats.begin(), m_MovieFormats.end(), entry.Extension()) != m_MovieFormats.end(); }
 
 private:
     /**
@@ -181,7 +182,7 @@ private:
      * types based on registered file formats (which will come soon)
      */
     /* Which can be classified as Images */
-    inline static const std::string m_ImageFormats[8] = {
+    inline static constexpr std::array<std::string_view, 8> m_ImageFormats = {
         "bmp",
         "dpx",
         "exr",
@@ -193,7 +194,7 @@ private:
     };
 
     /* Can be classified as Movies */
-    inline static const std::string m_MovieFormats[5] = {
+    inline static constexpr std::array<std::string_view, 5> m_MovieFormats = {
         "mov",
         "mp4",
         "mxf",

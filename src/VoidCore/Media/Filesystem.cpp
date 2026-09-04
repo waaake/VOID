@@ -141,13 +141,9 @@ void MEntry::Parse(const std::string& path)
     m_Path = path;
 
     std::filesystem::path filepath(path);
-
-    /* The base path for the file */
     m_Basepath = filepath.parent_path().string();
-    /* Grab the filename from the rest of the base path */
     std::string filename = filepath.filename().string();
 
-    /* From the last . try to get the extension and other parts */
     size_t lastDot = filename.find_last_of(".");
     std::string remaining = filename.substr(0, lastDot);
 
@@ -156,14 +152,11 @@ void MEntry::Parse(const std::string& path)
     lastDot = remaining.find_last_of(".");
     std::string framestring = remaining.substr(lastDot + 1);
 
-    /* Validate a case where file is named 1.ext or 1001.ext */
+    // Validate a case where file is named 1.ext or 1001.ext
     if (framestring == remaining)
     {
         m_Name = remaining;
-        /* It can be considered as a single file */
         m_SingleFile = true;
-
-        /* No need to proceed further */
         return;
     }
 
@@ -182,10 +175,9 @@ void MEntry::Parse(const std::string& path)
         m_Templated = true;
         m_Name = remaining.substr(0, lastDot);
     }
-    else /* In case we don't have an image sequence, just a standard image */
+    else // In case we don't have an image sequence, just a standard image
     {
         m_Name = remaining;
-        /* Update the state so we know it is a single file */
         m_SingleFile = true;
     }
 }
@@ -201,7 +193,7 @@ bool MEntry::ValidFrame(const std::string& framestring) const
             return false;
     }
 
-    /* Valid frame */
+    // Valid frame number
     return true;
 }
 
@@ -302,7 +294,6 @@ MediaStruct::MediaStruct()
 
 MediaStruct::MediaStruct(const MEntry& entry, const MediaType& type)
 {
-    /* Setup Media */
     Reset(entry, type);
 }
 
