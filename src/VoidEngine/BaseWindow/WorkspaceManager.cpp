@@ -221,7 +221,7 @@ void WorkspaceManager::ShowComponent(const Component& component) const
 {
     DockStruct d = DockManager::Instance().Dock(static_cast<int>(component));
 
-    if (d.widget->isVisible() || ShowIfDocked(d.name.c_str()))
+    if (d.widget->isVisible() || ShowIfDocked(d.widget->objectName()))
         return;
 
     MainWindow* window = new MainWindow;

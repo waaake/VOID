@@ -63,6 +63,7 @@ public:
      * Returns the DockWidget Pane at the provided index
      */
     DockWidget* DockerAt(int index);
+    void CloseExisting(const QString& name);
 
 private: /* Methods */
     int AddWidget(DockWidget* widget);
