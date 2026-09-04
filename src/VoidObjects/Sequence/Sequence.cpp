@@ -101,6 +101,7 @@ SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
     m_VideoTracks.push_back(track);
+    track->SetSequence(this);
     ConnectVideoTrack(track);
 
     if (track->Name().empty())
@@ -127,6 +128,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
     m_AudioTracks.push_back(track);
+    track->SetSequence(this);
     ConnectAudioTrack(track);
 
     if (track->Name().empty())
@@ -153,6 +155,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index)
 {
     m_VideoTracks.insert(m_VideoTracks.begin() + index, track);
+    track->SetSequence(this);
     ConnectVideoTrack(track);
 
     if (track->Name().empty())
@@ -179,6 +182,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index)
 {
     m_AudioTracks.insert(m_AudioTracks.begin() + index, track);
+    track->SetSequence(this);
     ConnectAudioTrack(track);
 
     if (track->Name().empty())
