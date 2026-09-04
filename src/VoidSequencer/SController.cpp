@@ -28,42 +28,69 @@ void SequencerController::Cut(const std::unordered_set<SharedTrackItem>& items)
     m_TrackItemClipboard.context = ClipboardContext::CUT;
 }
 
+void SequencerController::Cut(const std::unordered_set<SharedPlaybackTrack>& tracks)
+{
+    m_TrackClipboard.items = tracks;
+    m_TrackClipboard.context = ClipboardContext::CUT;
+}
+
 void SequencerController::Copy(const std::unordered_set<SharedTrackItem>& items)
 {
     m_TrackItemClipboard.items = items;
     m_TrackItemClipboard.context = ClipboardContext::COPY;
 }
 
+void SequencerController::Copy(const std::unordered_set<SharedPlaybackTrack>& tracks)
+{
+    m_TrackClipboard.items = tracks;
+    m_TrackClipboard.context = ClipboardContext::COPY;
+}
+
 void SequencerController::Paste(Sequence::Context&& context)
 {
-    if (m_TrackItemClipboard.Empty()) return;
-    if (m_TrackItemClipboard.context == ClipboardContext::COPY)
+    if (m_TrackItemClipboard)
     {
-        QUndoStack* stack = _MediaBridge.UndoStack();
-        stack->beginMacro("Copy TrackItem(s)");
-
-        for (const auto& item : m_TrackItemClipboard.items)
+        if (m_TrackItemClipboard.context == ClipboardContext::COPY)
         {
-            stack->push(new CopyPasteTrackItemCommand(Sequence::Context::Get(item), context));
-            context.frame += item->Duration();
-        }
+            QUndoStack* stack = _MediaBridge.UndoStack();
+            stack->beginMacro("Copy TrackItem(s)");
 
-        stack->endMacro();
+            for (const auto& item : m_TrackItemClipboard.items)
+            {
+                stack->push(new CopyPasteTrackItemCommand(Sequence::Context::Get(item), context));
+                context.frame += item->Duration();
+            }
+
+            stack->endMacro();
+        }
+        else if (m_TrackItemClipboard.context == ClipboardContext::CUT)
+        {
+            QUndoStack* stack = _MediaBridge.UndoStack();
+            stack->beginMacro("Cut TrackItem(s)");
+
+            for (const auto& item : m_TrackItemClipboard.items)
+            {
+                stack->push(new CutPasteTrackItemCommand(Sequence::Context::Get(item), context));
+                context.frame += item->Duration();
+            }
+
+            stack->endMacro();
+            // Cut-paste can happen only once
+            m_TrackItemClipboard.Reset();
+        }
     }
-    else if (m_TrackItemClipboard.context == ClipboardContext::CUT)
+    else if (m_TrackClipboard)
     {
-        QUndoStack* stack = _MediaBridge.UndoStack();
-        stack->beginMacro("Cut TrackItem(s)");
-
-        for (const auto& item : m_TrackItemClipboard.items)
+        if (m_TrackClipboard.context == ClipboardContext::COPY)
         {
-            stack->push(new CutPasteTrackItemCommand(Sequence::Context::Get(item), context));
-            context.frame += item->Duration();
-        }
+            QUndoStack* stack = _MediaBridge.UndoStack();
+            stack->beginMacro("Copy Track(s)");
 
-        stack->endMacro();
-        // Cut-paste can happen only once
-        m_TrackItemClipboard.Reset();
+            for (const auto& track : m_TrackClipboard.items)
+                stack->push(new CopyPasteTrackCommand(Sequence::Context::Get(track), context));
+
+            stack->endMacro();
+        }
     }
 }
 
