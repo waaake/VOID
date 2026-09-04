@@ -57,8 +57,6 @@ private:
 
     QMenu* m_EffectsMenu;
 
-    v_frame_t m_FocussedFrame;
-
 private: /* Methods */
     void Build();
     void BuildEffectsMenu();
