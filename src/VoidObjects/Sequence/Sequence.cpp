@@ -3,6 +3,7 @@
 
 /* STD */
 #include <algorithm>
+#include <sstream>
 
 /* Internal */
 #include "Sequence.h"
@@ -426,6 +427,30 @@ void PlaybackSequence::ClearCache(v_frame_t frame)
     std::size_t index = frame - m_StartFrame;
     if (index < m_FrameBuffer.size())
         return m_FrameBuffer[index].Clear();
+}
+
+void PlaybackSequence::SaveSnapshot(const std::string& name, const std::string& description)
+{
+    std::ostringstream os(std::ios::binary);
+    Serialize(os);
+    m_Snapshots.emplace_back(name, description, os.str());
+}
+
+void PlaybackSequence::RemoveSnapshot(int index)
+{
+    m_Snapshots.erase(m_Snapshots.begin() + index);
+}
+
+void PlaybackSequence::RestoreSnapshot(int index)
+{
+    if (index < static_cast<int>(m_Snapshots.size()))
+    {
+        std::istringstream is(m_Snapshots[index].data, std::ios::binary);
+        Clear();
+        Deserialize(is);
+
+        emit restored();
+    }
 }
 
 void PlaybackSequence::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
