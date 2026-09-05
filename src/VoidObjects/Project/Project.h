@@ -44,6 +44,8 @@ public:
      */
     inline bool Saved() const { return !m_Modified && !m_Path.empty(); }
 
+    const std::vector<SharedMediaClip>& MediaClips() const { return m_Media->MediaClips(); }
+    const std::vector<SharedPlaybackSequence>& Sequences() const { return m_Media->Sequences(); }
     bool AddMedia(MediaStruct&& mstruct);
     bool AddMedia(const MediaStruct& mstruct);
     bool InsertMedia(MediaStruct&& mstruct, int index);
