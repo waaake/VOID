@@ -1,6 +1,7 @@
 # Build Intermediate Objects Library
 set(SOURCES
     Core/Entity.cpp
+    Core/Snapshot.cpp
     Core/Task.cpp
     Core/TaskLog.cpp
     Core/Threads.cpp
