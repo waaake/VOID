@@ -133,6 +133,7 @@ target_link_libraries(
 target_link_libraries(
     VoidMediaPlayer
     PRIVATE
+    VoidToolbox
     Qt::Core
     Qt::Widgets
     OpenGL::GL

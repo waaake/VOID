@@ -22,6 +22,7 @@
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidMediaPlayer/Project/ProjectBridge.h"
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
+#include "VoidToolbox/Tools/SnapshotBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -123,10 +124,14 @@ void VoidMediaLister::Build()
     RebuildPlaylistMenu();
 
     m_SequenceMenu = new QMenu("Sequence");
-    m_RenameAction = new QAction("Rename", m_SequenceMenu);
     m_AddSequenceAction = new QAction("Add Sequence", m_SequenceMenu);
+    m_RenameAction = new QAction("Rename", m_SequenceMenu);
+    m_SaveSnapshotAction = new QAction("Add Snapshot...", m_SequenceMenu);
+    m_RestoreSnapshotAction = new QAction("Restore from Snapshot...", m_SequenceMenu);
     m_SequenceMenu->addAction(m_AddSequenceAction);
     m_SequenceMenu->addAction(m_RenameAction);
+    m_SequenceMenu->addAction(m_SaveSnapshotAction);
+    m_SequenceMenu->addAction(m_RestoreSnapshotAction);
 
     m_PrimaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_1), this);
     m_PrimaryViewShortcut->setContext(Qt::WidgetWithChildrenShortcut);
@@ -249,6 +254,8 @@ void VoidMediaLister::Connect()
     connect(m_AddTagAction, &QAction::triggered, this, &VoidMediaLister::AddTagToSelected);
     connect(m_ClearTagsAction, &QAction::triggered, this, &VoidMediaLister::ClearTagsFromSelected);
     connect(m_RenameAction, &QAction::triggered, this, [this]() -> void { m_MediaView->edit(m_MediaView->currentIndex()); });
+    connect(m_SaveSnapshotAction, &QAction::triggered, this, &VoidMediaLister::SaveSnapshot);
+    connect(m_RestoreSnapshotAction, &QAction::triggered, this, &VoidMediaLister::RestoreSnapshot);
 
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
     connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
@@ -378,6 +385,7 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     QMenu contextMenu(this);
 
     const bool selection = m_MediaView->HasSelection();
+    const bool seqSelection = IsSequenceSelected();
     contextMenu.addMenu(m_PlayMenu);
     m_PlayMenu->setEnabled(selection);
 
@@ -392,7 +400,9 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
 
     contextMenu.addSeparator();
     contextMenu.addMenu(m_SequenceMenu);
-    m_RenameAction->setEnabled(CanRenameSelection());
+    m_RenameAction->setEnabled(seqSelection);
+    m_SaveSnapshotAction->setEnabled(seqSelection);
+    m_RestoreSnapshotAction->setEnabled(HasSnapshots());
 
     contextMenu.addMenu(m_PlaylistMenu);
     m_PlaylistMenu->setEnabled(selection);
@@ -531,13 +541,45 @@ void VoidMediaLister::ClearTagsFromSelected()
     }
 }
 
-bool VoidMediaLister::CanRenameSelection() const
+bool VoidMediaLister::IsSequenceSelected() const
 {
-    QItemSelectionModel* selection = m_MediaView->selectionModel();
-    if (selection->selectedRows().size() != 1)
+    if (m_MediaView->selectionModel()->selectedRows().size() != 1)
         return false;
     
     return _ENTITY_TYPE(m_MediaView->currentIndex()) == ProjectEntity::Type::SEQUENCE;
+}
+
+bool VoidMediaLister::HasSnapshots() const
+{
+    if (m_MediaView->selectionModel()->selectedRows().size() == 1)
+        return (bool)m_MediaView->currentIndex().data(static_cast<int>(EntityModel::MRoles::Snapshots)).toInt();
+
+    return false;
+}
+
+void VoidMediaLister::SaveSnapshot()
+{
+    SnapshotBox s(this);
+    if (s.exec())
+    {
+        QModelIndex index = m_MediaView->currentIndex();
+        if (_ENTITY_TYPE(m_MediaView->currentIndex()) == ProjectEntity::Type::SEQUENCE)
+            _MediaBridge.SaveSnapshot(index, s.Name(), s.Description());
+    }
+}
+
+void VoidMediaLister::RestoreSnapshot()
+{
+    QModelIndex index = m_MediaView->currentIndex();
+    Project* p = _MediaBridge.ActiveProject();
+    if (const SharedPlaybackSequence& s = p->Sequence(m_MediaView->currentIndex()))
+    {
+        if (s->NumSnapshots() > 0)
+        {
+            RestoreSnapshotBox r(s->Snapshots(), this);
+            r.exec();
+        }
+    }
 }
 
 VOID_NAMESPACE_CLOSE
