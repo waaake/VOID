@@ -2,6 +2,10 @@
 // Licensed under the MIT License
 
 /* STD */
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include <string_view>
 
 /* Internal */
@@ -49,6 +53,28 @@ namespace Tools {
         }
 
         return false;
+    }
+
+    std::string timestamp()
+    {
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        std::time_t time = std::chrono::high_resolution_clock::to_time_t(now);
+        std::tm tm = *std::localtime(&time);
+
+        std::ostringstream os;
+        os << std::put_time(&tm, "%Y%m%d_%H%M%S");
+        return os.str();
+    }
+
+    std::string timestamp(const std::string& prefix)
+    {
+        std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+        std::time_t time = std::chrono::high_resolution_clock::to_time_t(now);
+        std::tm tm = *std::localtime(&time);
+
+        std::ostringstream os;
+        os << prefix << "_" << std::put_time(&tm, "%Y%m%d_%H%M%S");
+        return os.str();
     }
 
     template <typename Ty>

@@ -24,6 +24,8 @@ namespace Tools {
     inline VOID_API void to_lower(std::string& in) { std::transform(in.begin(), in.end(), in.begin(), [](unsigned char c) { return std::tolower(c); }); }
 
     VOID_API bool find_replace(std::string& text, const std::string& placeholder, const std::string& replacement);
+    VOID_API std::string timestamp();
+    VOID_API std::string timestamp(const std::string& prefix);
 
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value);
