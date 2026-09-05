@@ -78,6 +78,7 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Audio: return item->HasAudio();
             case MRoles::Tags: return item->HasTags();
             case MRoles::Channels: return item->Channels();
+            case MRoles::Snapshots: return 0;
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::MEDIA);
             default: return QVariant();
         }
@@ -98,6 +99,7 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Audio: return sequence->HasAudio();
             case MRoles::Tags: return sequence->HasTags();
             case MRoles::Channels: return sequence->Channels();
+            case MRoles::Snapshots: return sequence->NumSnapshots();
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::SEQUENCE);
             default: return QVariant();
         }
