@@ -256,6 +256,7 @@ void SequencerTimeline::Connect(PlaybackSequence* sequence)
     connect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     connect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
+    connect(sequence, &PlaybackSequence::restored, this, &SequencerTimeline::Refresh); 
 }
 
 void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
@@ -265,6 +266,7 @@ void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
     disconnect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     disconnect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     disconnect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
+    disconnect(sequence, &PlaybackSequence::restored, this, &SequencerTimeline::Refresh);
 }
 
 void SequencerTimeline::CreateEffect(const std::string& type)
