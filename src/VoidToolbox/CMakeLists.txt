@@ -5,8 +5,11 @@ set(SOURCES
     Editor/Properties.cpp
     Editor/RangedParamEditor.cpp
 
+    Tools/Models/SnapshotModel.cpp
+
     # Tools
     Tools/Delegates/LogDelegate.cpp
+    Tools/SnapshotBox.cpp
     Tools/Task.cpp
     Tools/TaskView.cpp
     Tools/LogWindow.cpp
