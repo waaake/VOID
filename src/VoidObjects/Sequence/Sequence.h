@@ -98,7 +98,7 @@ public:
 
     void SaveSnapshot(const std::string& name, const std::string& description);
     void RemoveSnapshot(int index);
-    void RestoreSnapshot(int index);
+    bool RestoreSnapshot(int index);
     int NumSnapshots() const { return static_cast<int>(m_Snapshots.size()); }
     const std::vector<Snapshot>& Snapshots() const { return m_Snapshots; }
 
@@ -115,7 +115,6 @@ signals: /* Signals denoting actions in the seqeuence */
     void trackRemoved();
     void cleared();
     // void updated();
-    void restored();
     void nameChanged();
     void rangeChanged(int start, int end);
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);

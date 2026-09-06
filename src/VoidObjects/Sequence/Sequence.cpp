@@ -441,16 +441,16 @@ void PlaybackSequence::RemoveSnapshot(int index)
     m_Snapshots.erase(m_Snapshots.begin() + index);
 }
 
-void PlaybackSequence::RestoreSnapshot(int index)
+bool PlaybackSequence::RestoreSnapshot(int index)
 {
     if (index < static_cast<int>(m_Snapshots.size()))
     {
         std::istringstream is(m_Snapshots[index].data, std::ios::binary);
         Clear();
         Deserialize(is);
-
-        emit restored();
+        return true;
     }
+    return false;
 }
 
 void PlaybackSequence::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
@@ -522,9 +522,7 @@ void PlaybackSequence::Deserialize(const rapidjson::Value& in)
     {
         SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO, this);
         track->Deserialize(vtracks[i]);
-        ConnectVideoTrack(track);
-
-        m_VideoTracks.push_back(std::move(track));
+        AddVideoTrack(track);
     }
 
     const rapidjson::Value::ConstArray atracks = in["audio_tracks"].GetArray();
@@ -534,9 +532,7 @@ void PlaybackSequence::Deserialize(const rapidjson::Value& in)
     {
         SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::AUDIO, this);
         track->Deserialize(atracks[i]);
-        ConnectAudioTrack(track);
-
-        m_AudioTracks.push_back(std::move(track));
+        AddAudioTrack(track);
     }
 
     UpdateBuffer();
@@ -556,9 +552,7 @@ void PlaybackSequence::Deserialize(std::istream& in)
     {
         SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO, this);
         track->Deserialize(in);
-        ConnectVideoTrack(track);
-
-        m_VideoTracks.push_back(std::move(track));
+        AddVideoTrack(track);
     }
 
     int acount = 0;
@@ -568,9 +562,7 @@ void PlaybackSequence::Deserialize(std::istream& in)
     {
         SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::AUDIO, this);
         track->Deserialize(in);
-        ConnectAudioTrack(track);
-
-        m_AudioTracks.push_back(std::move(track));
+        AddAudioTrack(track);
     }
 
     UpdateBuffer();
