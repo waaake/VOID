@@ -16,7 +16,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class SnapshotBox : public QDialog
+class VOID_API SnapshotBox : public QDialog
 {
 public:
     SnapshotBox(QWidget* parent = nullptr);
@@ -39,7 +39,7 @@ private:
     void Connect();
 };
 
-class RestoreSnapshotBox : public QDialog
+class VOID_API RestoreSnapshotBox : public QDialog
 {
 public:
     RestoreSnapshotBox(std::vector<Snapshot>& snapshots, QWidget* parent = nullptr);
