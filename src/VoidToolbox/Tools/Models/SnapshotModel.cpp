@@ -29,6 +29,8 @@ QVariant SnapshotModel::data(const QModelIndex& index, int role) const
         const Snapshot& snapshot = m_Snapshots[index.row()];
         if (role == Qt::DisplayRole)
             return index.column() == 0 ? snapshot.name.c_str() : snapshot.description.c_str();
+        if (role == Qt::ToolTipRole)
+            return index.column() == 0 ? QVariant() : snapshot.description.c_str();
     }
 
     return QVariant();
