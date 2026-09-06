@@ -343,6 +343,11 @@ void MBridge::SaveSnapshot(const QModelIndex& index, const std::string& name, co
     if (m_Project) m_Project->PushCommand(new SaveSnapshotCommand(m_Project, index, name, description));
 }
 
+void MBridge::RestoreSnapshot(const QModelIndex& index, int snapshotidx)
+{
+    if (m_Project) m_Project->PushCommand(new RestoreSnapshotCommand(m_Project, index, snapshotidx));
+}
+
 bool MBridge::Remove(SharedMediaClip clip)
 {
     emit mediaAboutToBeRemoved(clip);
