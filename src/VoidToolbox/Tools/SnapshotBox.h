@@ -6,7 +6,7 @@
 
 /* Qt */
 #include <QDialog>
-#include <QListView>
+#include <QTreeView>
 #include <QPushButton>
 #include <QTextEdit>
 
@@ -42,22 +42,23 @@ private:
 class RestoreSnapshotBox : public QDialog
 {
 public:
-    RestoreSnapshotBox(const std::vector<Snapshot>& snapshots, QWidget* parent = nullptr);
+    RestoreSnapshotBox(std::vector<Snapshot>& snapshots, QWidget* parent = nullptr);
     ~RestoreSnapshotBox();
 
-    QSize sizeHint() const override { return QSize(460, 500); }
+    QSize sizeHint() const override { return QSize(600, 400); }
 
     int Index() const { return m_View->currentIndex().row(); }
 
 private:
     QPushButton* m_SaveButton;
     QPushButton* m_CancelButton;
-    QListView* m_View;
+    QTreeView* m_View;
     SnapshotModel* m_Model;
 
 private:
     void Build();
     void Connect();
+    void Setup();
 };
 
 VOID_NAMESPACE_CLOSE

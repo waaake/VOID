@@ -3,11 +3,13 @@
 
 /* Qt */
 #include <QGridLayout>
+#include <QHeaderView>
 #include <QLabel>
 
 /* Internal */
 #include "SnapshotBox.h"
 #include "VoidCore/VoidTools.h"
+#include "VoidQExtensions/Delegates.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -70,7 +72,7 @@ void SnapshotBox::Connect()
 
 /// RestoreSnapshotBox
 
-RestoreSnapshotBox::RestoreSnapshotBox(const std::vector<Snapshot>& snapshots, QWidget* parent)
+RestoreSnapshotBox::RestoreSnapshotBox(std::vector<Snapshot>& snapshots, QWidget* parent)
     : QDialog(parent)
 {
     setWindowTitle("Restore from Snapshot");
@@ -78,6 +80,7 @@ RestoreSnapshotBox::RestoreSnapshotBox(const std::vector<Snapshot>& snapshots, Q
     m_Model = new SnapshotModel(snapshots, this);
     Build();
     Connect();
+    Setup();
 }
 
 RestoreSnapshotBox::~RestoreSnapshotBox()
@@ -102,7 +105,7 @@ RestoreSnapshotBox::~RestoreSnapshotBox()
 void RestoreSnapshotBox::Build()
 {
     QGridLayout* layout = new QGridLayout(this);
-    m_View = new QListView;
+    m_View = new QTreeView;
 
     m_View->setModel(m_Model);
 
@@ -115,17 +118,33 @@ void RestoreSnapshotBox::Build()
 
     name->setFont(f);
 
-    layout->addWidget(name, 0, 0);
-    layout->addWidget(m_View, 1, 0, 4, 4);
+    layout->addWidget(name, 0, 0, 1, 3);
+    layout->addWidget(m_View, 1, 0, 4, 6);
 
-    layout->addWidget(m_SaveButton, 5, 2, 1, 1);
-    layout->addWidget(m_CancelButton, 5, 3, 1, 1);
+    layout->addWidget(m_SaveButton, 5, 4, 1, 1);
+    layout->addWidget(m_CancelButton, 5, 5, 1, 1);
+
+    layout->setRowStretch(1, 1);
 }
 
 void RestoreSnapshotBox::Connect()
 {
     connect(m_SaveButton, &QPushButton::clicked, this, &QDialog::accept);
     connect(m_CancelButton, &QPushButton::clicked, this, &QDialog::reject);
+}
+
+void RestoreSnapshotBox::Setup()
+{
+    QHeaderView* h = m_View->header();
+    h->setSectionResizeMode(0, QHeaderView::Interactive);
+    h->setSectionResizeMode(1, QHeaderView::Stretch);
+
+    // We just need to cover snapshot_20260512_022445 as the name width initially
+    m_View->setColumnWidth(0, 220);
+    m_View->setAlternatingRowColors(true);
+    m_View->setFocusPolicy(Qt::FocusPolicy::ClickFocus);
+
+    m_View->setItemDelegate(new HCustomItemDelegate(40, m_View));
 }
 
 VOID_NAMESPACE_CLOSE
