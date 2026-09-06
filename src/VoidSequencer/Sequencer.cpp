@@ -103,6 +103,13 @@ void SequencerTimeline::TrimItemTail(const SharedTrackItem& item, int handle)
     m_Context.Controller()->TrimItemTail(item, handle);
 }
 
+void SequencerTimeline::SetHorizontalScale(float factor)
+{
+    m_Context.Geometry()->SetPixelsPerFrame(factor);
+    m_View->Refresh();
+    m_Ruler->Update();
+}
+
 void SequencerTimeline::Refresh()
 {
     m_TrackHeader->Clear();
@@ -113,11 +120,11 @@ void SequencerTimeline::Refresh()
         AddTrack(track);
 }
 
-void SequencerTimeline::SetHorizontalScale(float factor)
+void SequencerTimeline::Clear()
 {
-    m_Context.Geometry()->SetPixelsPerFrame(factor);
-    m_View->Refresh();
-    m_Ruler->Update();
+    m_TrackHeader->Clear();
+    m_View->Clear();
+    m_View->AddPlayhead();
 }
 
 void SequencerTimeline::Build()
@@ -256,7 +263,7 @@ void SequencerTimeline::Connect(PlaybackSequence* sequence)
     connect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     connect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
-    connect(sequence, &PlaybackSequence::restored, this, &SequencerTimeline::Refresh); 
+    connect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear); 
 }
 
 void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
@@ -266,7 +273,7 @@ void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
     disconnect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     disconnect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     disconnect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
-    disconnect(sequence, &PlaybackSequence::restored, this, &SequencerTimeline::Refresh);
+    disconnect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
 }
 
 void SequencerTimeline::CreateEffect(const std::string& type)

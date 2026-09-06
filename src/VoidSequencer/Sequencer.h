@@ -45,9 +45,8 @@ public:
     void TrimItemHead(const SharedTrackItem& item, int handle);
     void TrimItemTail(const SharedTrackItem& item, int handle);
 
-    void Refresh();
-
     void SetHorizontalScale(float factor);
+    void Refresh();
 
 signals:
     void editEffectRequested(Effect*);
@@ -72,6 +71,7 @@ private:
     SequencerContext m_Context;
 
 private: /* Methods */
+    void Clear();
     void Build();
     void Connect();
     void Connect(PlaybackSequence* sequence);
