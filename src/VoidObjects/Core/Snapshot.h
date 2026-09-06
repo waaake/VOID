@@ -21,7 +21,7 @@ VOID_NAMESPACE_OPEN
  * Provides generic serialization by storing the data as a standard string and it's name and description/comment if any
  * 
  */
-struct Snapshot : SerializableEntity
+struct VOID_API Snapshot : SerializableEntity
 {
     std::string name;
     std::string description; // Comment or anything attached to the snapshot
