@@ -577,7 +577,8 @@ void VoidMediaLister::RestoreSnapshot()
         if (s->NumSnapshots() > 0)
         {
             RestoreSnapshotBox r(s->Snapshots(), this);
-            r.exec();
+            if (r.exec())
+                _MediaBridge.RestoreSnapshot(index, r.Index());
         }
     }
 }
