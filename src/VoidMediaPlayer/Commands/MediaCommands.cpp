@@ -132,4 +132,38 @@ bool SaveSnapshotCommand::Redo()
     return false;
 }
 
+/// RestoreSnapshotCommand
+
+RestoreSnapshotCommand::RestoreSnapshotCommand(Project* project, const QModelIndex& index, int snapshotidx, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Project(project)
+    , m_Index(index)
+    , m_SnapshotIndex(snapshotidx)
+{
+    setText("Restore Snapshot");
+}
+
+void RestoreSnapshotCommand::undo()
+{
+    if (SharedPlaybackSequence sequence = m_Project->Sequence(m_Index))
+    {
+        std::istringstream is(m_Data, std::ios::binary);
+        sequence->Clear();
+        sequence->Deserialize(is);
+    }
+}
+
+bool RestoreSnapshotCommand::Redo()
+{
+    if (SharedPlaybackSequence sequence = m_Project->Sequence(m_Index))
+    {
+        std::ostringstream os(std::ios::binary);
+        sequence->Serialize(os);
+        m_Data = os.str();
+
+        return sequence->RestoreSnapshot(m_SnapshotIndex);
+    }
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE
