@@ -125,9 +125,14 @@ void VoidMediaLister::Build()
 
     m_SequenceMenu = new QMenu("Sequence");
     m_AddSequenceAction = new QAction("Add Sequence", m_SequenceMenu);
+    m_AddSequenceAction->setShortcut(QKeySequence::New);
+    m_AddSequenceAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
     m_RenameAction = new QAction("Rename", m_SequenceMenu);
     m_SaveSnapshotAction = new QAction("Add Snapshot...", m_SequenceMenu);
     m_RestoreSnapshotAction = new QAction("Restore from Snapshot...", m_SequenceMenu);
+
+    addAction(m_AddSequenceAction);
     m_SequenceMenu->addAction(m_AddSequenceAction);
     m_SequenceMenu->addAction(m_RenameAction);
     m_SequenceMenu->addAction(m_SaveSnapshotAction);
