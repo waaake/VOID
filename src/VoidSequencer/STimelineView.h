@@ -23,6 +23,7 @@ class STimelineView : public QGraphicsView
     Q_OBJECT
 public:
     explicit STimelineView(SequencerContext* m_Context, QWidget* parent = nullptr);
+    ~STimelineView();
     void AddPlayhead();
     void AddTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);

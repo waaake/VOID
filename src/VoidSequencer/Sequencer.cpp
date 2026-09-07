@@ -27,6 +27,26 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
     Connect();
 }
 
+SequencerTimeline::~SequencerTimeline()
+{
+    m_Toolbar->deleteLater();
+    delete m_Toolbar;
+    m_Toolbar = nullptr;
+
+    m_TrackHeader->deleteLater();
+    delete m_TrackHeader;
+    m_TrackHeader = nullptr;
+
+    m_View->deleteLater();
+    delete m_View;
+    m_View = nullptr;
+
+    m_Ruler->deleteLater();
+    delete m_Ruler;
+    m_Ruler = nullptr;
+
+}
+
 void SequencerTimeline::ResetTabText()
 {
     if (DockPanel* panel = dynamic_cast<DockPanel*>(parent()))
@@ -115,7 +135,7 @@ void SequencerTimeline::Refresh()
     m_TrackHeader->Clear();
     m_View->Clear();
     m_View->AddPlayhead();
-    
+
     for (const SharedPlaybackTrack& track : m_Context.Sequence()->VideoTracks())
         AddTrack(track);
 }
@@ -159,7 +179,6 @@ void SequencerTimeline::Build()
     grid->setContentsMargins(0, 0, 0, 0);
 
     m_Toolbar = new SToolbar;
-
     m_TrackHeader = new STrackHeaderWidget(&m_Context);
 
     m_HZoomSlider = new QSlider(Qt::Horizontal, this);
@@ -263,7 +282,7 @@ void SequencerTimeline::Connect(PlaybackSequence* sequence)
     connect(sequence, &PlaybackSequence::maxTrackEffectsChanged, this, &SequencerTimeline::UpdateAll);
     connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     connect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
-    connect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear); 
+    connect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
 }
 
 void SequencerTimeline::Disconnect(PlaybackSequence* sequence)

@@ -29,6 +29,8 @@ class VOID_API SequencerTimeline : public QWidget
     Q_OBJECT
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
+    ~SequencerTimeline();
+
     inline QSize sizeHint() const override { return QSize(640, 300); }
     void ResetTabText();
 

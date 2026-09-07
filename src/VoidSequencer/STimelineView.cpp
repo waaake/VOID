@@ -27,6 +27,13 @@ STimelineView::STimelineView(SequencerContext* context, QWidget* parent)
     Setup();
 }
 
+STimelineView::~STimelineView()
+{
+    m_Scene->deleteLater();
+    delete m_Scene;
+    m_Scene = nullptr;
+}
+
 void STimelineView::AddPlayhead()
 {
     m_Scene->AddPlayhead();
