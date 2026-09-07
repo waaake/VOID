@@ -15,7 +15,7 @@ VOID_NAMESPACE_OPEN
 
 namespace Tools {
 
-    #define _PADDING = '='
+    #define _PADDING '='
     static constexpr std::string_view s_Base64Table =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz"
