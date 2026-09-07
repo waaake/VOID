@@ -484,6 +484,17 @@ void PlaybackSequence::Serialize(rapidjson::Value& out, rapidjson::Document::All
         atracks.PushBack(track, allocator);
     }
     out.AddMember("audio_tracks", atracks, allocator);
+
+    out.AddMember("snapshot_count", static_cast<int>(m_Snapshots.size()), allocator);
+    rapidjson::Value snapshots(rapidjson::kArrayType);
+    for (const auto& snapshot : m_Snapshots)
+    {
+        rapidjson::Value s(rapidjson::kObjectType);
+        snapshot.Serialize(s, allocator);
+
+        snapshots.PushBack(s, allocator);
+    }
+    out.AddMember("snapshots", snapshots, allocator);
 }
 
 void PlaybackSequence::Serialize(std::ostream& out) const
@@ -506,6 +517,13 @@ void PlaybackSequence::Serialize(std::ostream& out) const
 
     for (const SharedPlaybackTrack& atrack : m_AudioTracks)
         atrack->Serialize(out);
+
+    /// Snapshots
+    int scount = static_cast<int>(m_Snapshots.size());
+    out.write(reinterpret_cast<const char*>(&scount), sizeof(scount));
+
+    for (const auto& snapshot : m_Snapshots)
+        snapshot.Serialize(out);
 }
 
 void PlaybackSequence::Deserialize(const rapidjson::Value& in)
@@ -535,6 +553,12 @@ void PlaybackSequence::Deserialize(const rapidjson::Value& in)
         AddAudioTrack(track);
     }
 
+    const rapidjson::Value::ConstArray snapshots = in["snapshots"].GetArray();
+    m_Snapshots.resize(snapshots.Size());
+
+    for (int i = 0; i < snapshots.Size(); ++i)
+        m_Snapshots[i].Deserialize(snapshots[i]);
+
     UpdateBuffer();
 }
 
@@ -547,6 +571,7 @@ void PlaybackSequence::Deserialize(std::istream& in)
 
     int vcount = 0;
     in.read(reinterpret_cast<char*>(&vcount), sizeof(vcount));
+    m_VideoTracks.reserve(vcount);
 
     for (int i = 0; i < vcount; ++i)
     {
@@ -557,6 +582,7 @@ void PlaybackSequence::Deserialize(std::istream& in)
 
     int acount = 0;
     in.read(reinterpret_cast<char*>(&acount), sizeof(acount));
+    m_AudioTracks.reserve(acount);
 
     for (int i = 0; i < acount; ++i)
     {
@@ -564,6 +590,13 @@ void PlaybackSequence::Deserialize(std::istream& in)
         track->Deserialize(in);
         AddAudioTrack(track);
     }
+
+    int scount = 0;
+    in.read(reinterpret_cast<char*>(&scount), sizeof(scount));
+    m_Snapshots.resize(scount);
+
+    for (int i = 0; i < scount; ++i)
+        m_Snapshots[i].Deserialize(in);
 
     UpdateBuffer();
 }
