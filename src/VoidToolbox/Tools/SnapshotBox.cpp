@@ -129,6 +129,7 @@ void RestoreSnapshotBox::Build()
 
 void RestoreSnapshotBox::Connect()
 {
+    connect(m_View, &QTreeView::doubleClicked, this, &QDialog::accept);
     connect(m_SaveButton, &QPushButton::clicked, this, [this]() -> void
     {
         if (m_View->selectionModel()->hasSelection()) accept();
