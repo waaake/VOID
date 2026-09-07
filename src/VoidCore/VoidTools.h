@@ -26,6 +26,8 @@ namespace Tools {
     VOID_API bool find_replace(std::string& text, const std::string& placeholder, const std::string& replacement);
     VOID_API std::string timestamp();
     VOID_API std::string timestamp(const std::string& prefix);
+    VOID_API std::string b64_encode(const std::string& binary);
+    VOID_API std::string b64_decode(const std::string& encoded);
 
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value);
