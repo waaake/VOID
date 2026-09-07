@@ -29,6 +29,8 @@ class VOID_API SequencerTimeline : public QWidget
     Q_OBJECT
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
+    ~SequencerTimeline();
+
     inline QSize sizeHint() const override { return QSize(640, 300); }
     void ResetTabText();
 
@@ -45,9 +47,8 @@ public:
     void TrimItemHead(const SharedTrackItem& item, int handle);
     void TrimItemTail(const SharedTrackItem& item, int handle);
 
-    void Refresh();
-
     void SetHorizontalScale(float factor);
+    void Refresh();
 
 signals:
     void editEffectRequested(Effect*);
@@ -72,6 +73,7 @@ private:
     SequencerContext m_Context;
 
 private: /* Methods */
+    void Clear();
     void Build();
     void Connect();
     void Connect(PlaybackSequence* sequence);

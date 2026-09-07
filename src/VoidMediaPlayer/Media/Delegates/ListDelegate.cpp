@@ -133,27 +133,21 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(option.rect.left(), option.rect.bottom(), w, 1, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom(), w, 1, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom(), w, 1, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
         const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(option.rect.left(), option.rect.bottom(), w, 1, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom(), w, 1, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom(), w, 1, QColor(0, 0, 255));
-        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom(), w, 1, QColor(255, 255, 255));
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 2, QColor(255, 255, 255));
     }
 
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
-    {
-        painter->drawPixmap(option.rect.left() + 2, option.rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
-            IconType::icon_burst_mode,
-            option.palette.color(QPalette::Text),
-            ICON_SIZE
-        ));
-    }
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, (ICON_SIZE + 6), 2, QColor(255, 130, 0));
 
     // Name
     const QRect namerect(option.rect.left() + 30, option.rect.top(), option.rect.right(), option.rect.height());
@@ -287,18 +281,18 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
-        const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
+        constexpr int w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
-        const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
-        painter->fillRect(rect.left() + 3 * w, rect.bottom(), w, 1, QColor(255, 255, 255));
+        constexpr int w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 2, QColor(255, 255, 255));
     }
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
@@ -314,13 +308,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     ));
 
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
-    {
-        painter->drawPixmap(rect.left() + 2, rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
-            IconType::icon_burst_mode,
-            option.palette.color(QPalette::Text),
-            ICON_SIZE
-        ));
-    }
+        painter->fillRect(rect.left(), rect.bottom() - 1, (ICON_SIZE + 6), 2, QColor(255, 130, 0));
 
     const int thumbright = thumbrect.right() + 5;
     const int halfheight = rect.height() * 0.5;

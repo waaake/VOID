@@ -209,7 +209,9 @@ void BindCore(py::module_& m)
         .def("video_track", &PlaybackSequence::VideoTrackAt, py::arg("index"), py::return_value_policy::reference)
         .def("audio_track", &PlaybackSequence::AudioTrackAt, py::arg("index"), py::return_value_policy::reference)
         .def("video_tracks", &PlaybackSequence::VideoTracks, py::return_value_policy::reference)
-        .def("audio_tracks", &PlaybackSequence::AudioTracks, py::return_value_policy::reference);
+        .def("audio_tracks", &PlaybackSequence::AudioTracks, py::return_value_policy::reference)
+        .def("save_snapshot", &PlaybackSequence::SaveSnapshot, py::arg("name"), py::arg("description"))
+        .def("restore_snapshot", &PlaybackSequence::RestoreSnapshot, py::arg("index"));
 
     py::enum_<Sequence::TrackType>(m, "TrackType")
         .value("VIDEO", Sequence::TrackType::VIDEO)
@@ -321,7 +323,9 @@ void BindCore(py::module_& m)
             "save",
             static_cast<bool (Core::Project::*)(const std::string&, const std::string&, const EtherFormat::Type&)>(&Core::Project::Save),
             py::arg("path"), py::arg("name"), py::arg("type")
-        );
+        )
+        .def("media_clips", &Core::Project::MediaClips, py::return_value_policy::reference_internal)
+        .def("sequences", &Core::Project::Sequences, py::return_value_policy::reference_internal);
 }
 
 } // namespace bindings

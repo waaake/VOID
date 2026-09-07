@@ -140,27 +140,21 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     if (channels == 3)
     {
         const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
         const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(rect.left(), rect.bottom(), w, 1, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom(), w, 1, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom(), w, 1, QColor(0, 0, 255));
-        painter->fillRect(rect.left() + 3 * w, rect.bottom(), w, 1, QColor(255, 255, 255));
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 2, QColor(255, 255, 255));
     }
 
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
-    {
-        painter->drawPixmap(option.rect.left() + 2, option.rect.bottom() - 2 - ICON_SIZE, IconForge::GetPixmap(
-            IconType::icon_burst_mode,
-            option.palette.color(QPalette::Text),
-            ICON_SIZE
-        ));
-    }
+        painter->fillRect(rect.left(), rect.bottom() - 1, (ICON_SIZE + 6), 2, QColor(255, 130, 0));
 
     /* Name */
     const QRect namerect(left, thumbrect.bottom(), 90 * m_Scale, 20);

@@ -107,6 +107,8 @@ private: /* Members */
     QMenu* m_PlaylistMenu;
     QAction* m_CreatePlaylistAction;
     QAction* m_AddSequenceAction;
+    QAction* m_SaveSnapshotAction;
+    QAction* m_RestoreSnapshotAction;
     QAction* m_RenameAction;
 
     QShortcut* m_PrimaryViewShortcut;
@@ -122,7 +124,10 @@ private: /* Methods */
     void AddTagToSelected();
     void EditSelectedTags(const QModelIndex& index, const QPoint& position);
     void ClearTagsFromSelected();
-    bool CanRenameSelection() const;
+    bool IsSequenceSelected() const;
+    bool HasSnapshots() const;
+    void SaveSnapshot();
+    void RestoreSnapshot();
 };
 
 VOID_NAMESPACE_CLOSE

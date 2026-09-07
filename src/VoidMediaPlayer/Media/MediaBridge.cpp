@@ -338,6 +338,16 @@ void MBridge::CreateEffect(const QModelIndex& index, const std::string& type)
     if (m_Project) m_Project->PushCommand(new CreateEffectCommand(index, type));
 }
 
+void MBridge::SaveSnapshot(const QModelIndex& index, const std::string& name, const std::string& description)
+{
+    if (m_Project) m_Project->PushCommand(new SaveSnapshotCommand(m_Project, index, name, description));
+}
+
+void MBridge::RestoreSnapshot(const QModelIndex& index, int snapshotidx)
+{
+    if (m_Project) m_Project->PushCommand(new RestoreSnapshotCommand(m_Project, index, snapshotidx));
+}
+
 bool MBridge::Remove(SharedMediaClip clip)
 {
     emit mediaAboutToBeRemoved(clip);

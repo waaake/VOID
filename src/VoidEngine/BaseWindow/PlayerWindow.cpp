@@ -120,7 +120,7 @@ void VoidMainWindow::InitMenu(MenuSystem* menuSystem)
     /* -------------------------------- */
     fileMenu->addSeparator();
 
-    QAction* newProjectAction = menuSystem->AddAction(fileMenu, "New Project", QKeySequence("Ctrl+N"));
+    QAction* newProjectAction = menuSystem->AddAction(fileMenu, "New Project", QKeySequence("Ctrl+Shift+N"));
     QAction* saveProjectAction = menuSystem->AddAction(fileMenu, "Save Project", QKeySequence("Ctrl+S"));
     QAction* saveAsProjectAction = menuSystem->AddAction(fileMenu, "Save Project As...", QKeySequence("Ctrl+Shift+S"));
     QAction* loadProjectAction = menuSystem->AddAction(fileMenu, "Open Project", QKeySequence("Ctrl+O"));

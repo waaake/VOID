@@ -16,6 +16,7 @@
 #include "Frame.h"
 #include "Track.h"
 #include "VoidObjects/Core/Entity.h"
+#include "VoidObjects/Core/Snapshot.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -95,6 +96,13 @@ public:
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
 
+    void SaveSnapshot(const std::string& name, const std::string& description);
+    void RemoveSnapshot(int index);
+    bool RestoreSnapshot(int index);
+    int NumSnapshots() const { return static_cast<int>(m_Snapshots.size()); }
+    const std::vector<Snapshot>& Snapshots() const { return m_Snapshots; }
+    std::vector<Snapshot>& Snapshots() { return m_Snapshots; }
+
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
@@ -116,6 +124,7 @@ protected: /* Members */
     std::vector<SequenceFrame> m_FrameBuffer;
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
+    std::vector<Snapshot> m_Snapshots;
     std::string m_Name;
     SharedTrackItem m_Recent;
 

@@ -57,6 +57,37 @@ private:
     int m_InsertIndex;    
 };
 
+class SaveSnapshotCommand : public VoidUndoCommand
+{
+public:
+    SaveSnapshotCommand(Project* project, const QModelIndex& index, const std::string& name, const std::string& description, QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Project* m_Project;
+    std::string m_Name;
+    std::string m_Description;
+    QModelIndex m_Index;
+    int m_InsertIndex;
+};
+
+class RestoreSnapshotCommand : public VoidUndoCommand
+{
+public:
+    RestoreSnapshotCommand(Project* project, const QModelIndex& index, int snapshotidx, QUndoCommand* parent = nullptr);
+
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Project* m_Project;
+    std::string m_Data;
+    QModelIndex m_Index;
+    int m_SnapshotIndex;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _VOID_MEDIA_COMMANDS_H

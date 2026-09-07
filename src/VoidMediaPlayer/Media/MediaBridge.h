@@ -103,6 +103,8 @@ public:
 
     void CreateEffect(const SharedMediaClip& media, const std::string& type);
     void CreateEffect(const QModelIndex& index, const std::string& type);
+    void SaveSnapshot(const QModelIndex& index, const std::string& name, const std::string& description);
+    void RestoreSnapshot(const QModelIndex& index, int snapshotidx);
     // void RemoveEffect(const QModelIndex& index, const std::string& name);
     // void RemoveEffect(const SharedMediaClip& index, const std::string& name);
 

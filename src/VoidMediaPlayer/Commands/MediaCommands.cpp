@@ -103,4 +103,67 @@ bool AddSequenceCommand::Redo()
     return true;
 }
 
+/// SaveSnapshotCommand
+
+SaveSnapshotCommand::SaveSnapshotCommand(Project* project, const QModelIndex& index, const std::string& name, const std::string& description, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Project(project)
+    , m_Name(name)
+    , m_Description(description)
+    , m_Index(index)
+{
+    setText("Add Snapshot");
+}
+
+void SaveSnapshotCommand::undo()
+{
+    if (SharedPlaybackSequence sequence = m_Project->Sequence(m_Index))
+        sequence->RemoveSnapshot(m_InsertIndex);
+}
+
+bool SaveSnapshotCommand::Redo()
+{
+    if (SharedPlaybackSequence sequence = m_Project->Sequence(m_Index))
+    {
+        m_InsertIndex = sequence->NumSnapshots();
+        sequence->SaveSnapshot(m_Name, m_Description);
+        return true;
+    }
+    return false;
+}
+
+/// RestoreSnapshotCommand
+
+RestoreSnapshotCommand::RestoreSnapshotCommand(Project* project, const QModelIndex& index, int snapshotidx, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Project(project)
+    , m_Index(index)
+    , m_SnapshotIndex(snapshotidx)
+{
+    setText("Restore Snapshot");
+}
+
+void RestoreSnapshotCommand::undo()
+{
+    if (SharedPlaybackSequence sequence = m_Project->Sequence(m_Index))
+    {
+        std::istringstream is(m_Data, std::ios::binary);
+        sequence->Clear();
+        sequence->Deserialize(is);
+    }
+}
+
+bool RestoreSnapshotCommand::Redo()
+{
+    if (SharedPlaybackSequence sequence = m_Project->Sequence(m_Index))
+    {
+        std::ostringstream os(std::ios::binary);
+        sequence->Serialize(os);
+        m_Data = os.str();
+
+        return sequence->RestoreSnapshot(m_SnapshotIndex);
+    }
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE

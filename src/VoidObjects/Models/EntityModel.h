@@ -36,6 +36,7 @@ public:
         Audio,
         Tags,
         Channels,
+        Snapshots,
         Type
     };
 
