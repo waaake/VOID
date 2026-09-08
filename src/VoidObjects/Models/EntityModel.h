@@ -94,6 +94,7 @@ public:
     const std::vector<SharedMediaClip> AllMedia() const { return m_Media; }
     const std::vector<SharedMediaClip>& MediaClips() const { return m_Media; }
     const std::vector<SharedPlaybackSequence>& Sequences() const { return m_Sequences; }
+    std::vector<SharedMediaClip> AvailableVersions(const std::string& name) const;
 
     void ReserveMedia(std::size_t size) { m_Media.reserve(size); }
     void ReserveSequences(std::size_t size) { m_Sequences.reserve(size); }

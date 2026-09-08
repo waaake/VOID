@@ -344,6 +344,18 @@ QModelIndex EntityModel::ShiftIndexDown(const QModelIndex& index)
     return createIndex(index.row() + 1, index.column());
 }
 
+std::vector<SharedMediaClip> EntityModel::AvailableVersions(const std::string& name) const
+{
+    std::vector<SharedMediaClip> clips;
+    for (auto& media : m_Media)
+    {
+        if (media->Tokens().Similar(name))
+            clips.push_back(media);
+    }
+
+    return clips;
+}
+
 // void EntityModel::Update()
 // {
 //     if (m_Media.empty())
