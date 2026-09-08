@@ -55,6 +55,18 @@ void BindCore(py::module_& m)
         .def_readonly("endframe", &MFrameRange::endframe)
         .def_readonly("duration", &MFrameRange::duration)
         .def_readonly("framerate", &MFrameRange::framerate);
+    
+    py::class_<ElementTokens>(m, "ElementTokens")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const ElementTokens& t = h.cast<ElementTokens&>();
+            std::stringstream ss;
+            ss << "ElementTokens <" << t.name << " (" << t.version << ")>";
+            return ss.str();
+        })
+        .def_readonly("name", &ElementTokens::name)
+        .def_readonly("version", &ElementTokens::version)
+        .def_readonly("version_number", &ElementTokens::vnum);
 
     /* Media Type */
     py::enum_<MediaType>(m, "MediaType")
@@ -125,7 +137,8 @@ void BindCore(py::module_& m)
         .def("extension", &MediaClip::Extension)
         .def("startframe", &MediaClip::FirstFrame)
         .def("endframe", &MediaClip::LastFrame)
-        .def("metadata", &MediaClip::Metadata);
+        .def("metadata", &MediaClip::Metadata)
+        .def("tokens", &MediaClip::Tokens, py::return_value_policy::reference_internal);
 
     /* Operator */
     py::class_<ParamValue>(m, "ParamValue")
@@ -183,6 +196,13 @@ void BindCore(py::module_& m)
 
     py::class_<PlaybackSequence, SharedPlaybackSequence>(m, "PlaybackSequence")
         .def(py::init())
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const PlaybackSequence& t = h.cast<PlaybackSequence&>();
+            std::stringstream ss;
+            ss << "PlaybackSequence <" << t.Name() << " at 0x " << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
         .def("start_frame", &PlaybackSequence::StartFrame)
         .def("end_frame", &PlaybackSequence::EndFrame)
         .def("set_range", &PlaybackSequence::SetRange, py::arg("start"), py::arg("end"))
@@ -223,7 +243,7 @@ void BindCore(py::module_& m)
         {
             const PlaybackTrack& t = h.cast<PlaybackTrack&>();
             std::stringstream ss;
-            ss << "PlaybackTrack <" << t.Name() << " at 0x " << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            ss << "PlaybackTrack <" << t.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
             return ss.str();
         })
         .def("set_name", static_cast<void (PlaybackTrack::*)(std::string&&)>(&PlaybackTrack::SetName), py::arg("name"))
@@ -277,7 +297,7 @@ void BindCore(py::module_& m)
         {
             const TrackItem& t = h.cast<TrackItem&>();
             std::stringstream ss;
-            ss << "TrackItem <" << t.Name() << " at 0x " << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            ss << "TrackItem <" << t.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
             return ss.str();
         })
         .def("name", &TrackItem::Name)
@@ -324,6 +344,7 @@ void BindCore(py::module_& m)
             static_cast<bool (Core::Project::*)(const std::string&, const std::string&, const EtherFormat::Type&)>(&Core::Project::Save),
             py::arg("path"), py::arg("name"), py::arg("type")
         )
+        .def("available_versions", &Core::Project::AvailableVersions, py::arg("name"), py::return_value_policy::reference_internal)
         .def("media_clips", &Core::Project::MediaClips, py::return_value_policy::reference_internal)
         .def("sequences", &Core::Project::Sequences, py::return_value_policy::reference_internal);
 }
