@@ -78,6 +78,8 @@ public:
     inline v_frame_t LastFrame() const { return m_LastFrame; }
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
+    ElementTokens Tokens() const { return m_MediaStruct.Tokens(); }
+
     /**
      * Returns whether a given frame falls in the range of Media
      * i.e. between the first and the last frame of media
