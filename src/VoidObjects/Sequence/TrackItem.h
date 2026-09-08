@@ -58,6 +58,10 @@ public:
     bool Linked() const { return (bool)m_Media; }
     void Unlink();
 
+    void VersionUp();
+    void VersionDown();
+    void SetLatestAvailableVersion();
+
     std::size_t Index() const;
 
     void SetEnabled(bool enable);

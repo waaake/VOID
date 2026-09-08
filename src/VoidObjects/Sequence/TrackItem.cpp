@@ -142,6 +142,62 @@ void TrackItem::Unlink()
     emit updated();
 }
 
+void TrackItem::VersionUp()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+
+        // The clips are sorted in descending order and we're looking to get the current clip
+        // and go backwards to get a clip with just a version higher than current
+        for (int i = 0; i < static_cast<int>(clips.size()); ++i)
+        {
+            if (m_Media.get() == clips[i].get() && i != 0)
+            {
+                m_Media = clips[i - 1];
+                emit updated();
+            }
+        }
+    }
+}
+
+void TrackItem::VersionDown()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+
+        // The clips are sorted in descending order and we're looking to get the current clip
+        // and go backwards to get a clip with just a version higher than current
+        for (int i = 0; i < static_cast<int>(clips.size()); ++i)
+        {
+            if (m_Media.get() == clips[i].get() && (i + 1) < static_cast<int>(clips.size()))
+            {
+                m_Media = clips[i + 1];
+                emit updated();
+            }
+        }
+    }
+}
+
+void TrackItem::SetLatestAvailableVersion()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+        const SharedMediaClip& clip = clips.front();
+
+        if (clip.get() != m_Media.get())
+        {
+            m_Media = clip;
+            emit updated();
+        }
+    }
+}
+
 std::size_t TrackItem::Index() const
 {
     return m_Track->ItemIndex(this);
