@@ -353,6 +353,12 @@ std::vector<SharedMediaClip> EntityModel::AvailableVersions(const std::string& n
             clips.push_back(media);
     }
 
+    // Sort descending on the versions of the clips
+    std::sort(clips.begin(), clips.end(), [](const SharedMediaClip& _a, const SharedMediaClip& _b) -> bool
+    {
+        return _a->Tokens() > _b->Tokens();
+    });
+
     return clips;
 }
 
