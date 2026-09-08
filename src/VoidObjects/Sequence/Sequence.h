@@ -148,7 +148,7 @@ private: /* Methods */
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous);
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void HandleTrackStateChanged(const SharedPlaybackTrack& track);
-    void HandleItemStateChanged(const SharedTrackItem& item);
+    void HandleItemUpdated(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE
