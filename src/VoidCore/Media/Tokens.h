@@ -32,6 +32,10 @@ struct VOID_API ElementTokens
 
     bool operator==(const ElementTokens& other) const noexcept { return other.name == name && other.vnum == vnum; }
     bool operator!=(const ElementTokens& other) const noexcept { return other.vnum != vnum || other.name != name; }
+    bool operator>(const ElementTokens& other) const noexcept { return vnum > other.vnum; }
+    bool operator<(const ElementTokens& other) const noexcept { return vnum < other.vnum; }
+
+    explicit operator bool() const noexcept { return !name.empty(); }
 
 private:
     void ParseVersion();
