@@ -316,7 +316,10 @@ void BindCore(py::module_& m)
         .def("trim_head", &TrackItem::TrimHead, py::arg("handle"))
         .def("trim_tail", &TrackItem::TrimTail, py::arg("handle"))
         .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference)
-        .def("unlink", &TrackItem::Unlink);
+        .def("unlink", &TrackItem::Unlink)
+        .def("version_up", &TrackItem::VersionUp)
+        .def("version_down", &TrackItem::VersionDown)
+        .def("update_to_latest_version", &TrackItem::SetLatestAvailableVersion);
 
     /* Project */
     py::class_<Core::Project> project(m, "Project");
