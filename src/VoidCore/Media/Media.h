@@ -78,7 +78,7 @@ public:
     inline v_frame_t LastFrame() const { return m_LastFrame; }
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
-    ElementTokens Tokens() const { return m_MediaStruct.Tokens(); }
+    ElementTokens Tokens() const { return m_Tokens; }
 
     /**
      * Returns whether a given frame falls in the range of Media
@@ -127,6 +127,7 @@ protected: /* Members */
     MediaStruct m_MediaStruct;
     std::vector<Frame> m_Frames;
     std::vector<v_frame_t> m_Numbers;
+    ElementTokens m_Tokens;
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
     double m_Framerate;
