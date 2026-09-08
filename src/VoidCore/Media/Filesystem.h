@@ -12,10 +12,10 @@
 #include <vector>
 #include <unordered_map>
 
-
 /* Internal */
 #include "FrameRange.h"
 #include "Definition.h"
+#include "Tokens.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -101,6 +101,8 @@ public:
      */
     inline bool operator==(const MEntry& other) const { return m_Path == other.m_Path; }
     explicit inline operator bool() const noexcept { return !m_Path.empty(); }
+
+    ElementTokens Tokens() const;
 
 private: /* Members */
     std::string m_Path;
@@ -287,6 +289,8 @@ public:
 
     unsigned int Framepadding() const { return m_Entries.empty() ? 0 : m_Entries[0].Framepadding(); }
     MFrameRange Framerange() const;
+
+    ElementTokens Tokens() const { return m_Entries.empty() ? ElementTokens() : m_Entries[0].Tokens(); }
 
     /**
      * Returns whether the media struct is currently empty
