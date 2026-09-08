@@ -28,6 +28,7 @@ namespace Tools {
     VOID_API std::string timestamp(const std::string& prefix);
     VOID_API std::string b64_encode(const std::string& binary);
     VOID_API std::string b64_decode(const std::string& encoded);
+    VOID_API bool isnum(const std::string_view& text);
 
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value);
