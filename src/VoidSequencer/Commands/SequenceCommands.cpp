@@ -1005,4 +1005,46 @@ bool CopyPasteTrackCommand::Redo()
     return false;
 }
 
+/// VersionUpTrackItemCommand
+
+VersionUpTrackItemCommand::VersionUpTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    setText("Version Up TrackItem");
+}
+
+void VersionUpTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->VersionDown();
+}
+
+bool VersionUpTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->VersionUp();
+}
+
+/// VersionDownTrackItemCommand
+
+VersionDownTrackItemCommand::VersionDownTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    setText("Version Up TrackItem");
+}
+
+void VersionDownTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->VersionUp();
+}
+
+bool VersionDownTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->VersionDown();
+}
+
 VOID_NAMESPACE_CLOSE

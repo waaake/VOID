@@ -407,6 +407,28 @@ private:
     Sequence::Context m_ActedCtx;
 };
 
+class VersionUpTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit VersionUpTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+};
+
+class VersionDownTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit VersionDownTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _SEQUENCE_COMMANDS_H
