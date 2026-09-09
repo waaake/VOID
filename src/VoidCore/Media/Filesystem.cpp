@@ -301,7 +301,7 @@ ElementTokens MEntry::Tokens() const
     }
 
     std::filesystem::path p(m_Basepath);
-    std::string stem(p.stem());
+    std::string stem(p.stem().string());
 
     return (stem[0] == 'v' || stem[0] == 'V') ? ElementTokens(m_Name, stem) : ElementTokens(m_Name);
 }
