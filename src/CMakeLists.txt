@@ -62,6 +62,9 @@ add_subdirectory(VoidToolbox)
 # Undo system base
 add_subdirectory(VoidUndo)
 
+# Views
+add_subdirectory(VoidViews)
+
 target_include_directories(
     VoidCore
     PUBLIC
@@ -204,6 +207,7 @@ install(TARGETS
     VoidToolbox
     VoidEngine
     VoidUndo
+    VoidViews
     VOID
     vortex
     EXPORT VOIDTargets

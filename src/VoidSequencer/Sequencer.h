@@ -21,6 +21,7 @@
 #include "Widgets/STimelineRuler.h"
 #include "Widgets/STrackHeaderWidget.h"
 #include "Widgets/SToolbar.h"
+#include "Widgets/SVersionSwitcher.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -60,6 +61,7 @@ private:
     STimelineRuler* m_Ruler;
     STrackHeaderWidget* m_TrackHeader;
     STimelineView* m_View;
+    SVersionSwitcher* m_VersionSwitcher;
     SequencerContextMenu* m_Menu;
 
     QShortcut* m_CutShortcut;
@@ -87,6 +89,7 @@ private: /* Methods */
     void Copy();
     void Paste(const QPoint& position);
     void SwitchVersion(bool up);
+    void InspectVersions();
 };
 
 VOID_NAMESPACE_CLOSE

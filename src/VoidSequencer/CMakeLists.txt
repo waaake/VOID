@@ -24,6 +24,7 @@ set(SOURCES
     Widgets/STrackHeader.cpp
     Widgets/STrackHeaderWidget.cpp
     Widgets/SToolbar.cpp
+    Widgets/SVersionSwitcher.cpp
 )
 
 # Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
@@ -84,6 +85,7 @@ target_link_libraries(
     VoidQExtensions
     VoidTimeline
     VoidUndo
+    VoidViews
 )
 
 target_link_libraries(

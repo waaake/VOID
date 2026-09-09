@@ -59,15 +59,25 @@ void SequencerContextMenu::Build()
     m_ColorMenu->addAction(m_ColorItemAction);
     m_ColorMenu->addAction(m_ResetItemColorAction);
 
-    m_VersionMenu = new QMenu("Versioning", this);
+    m_VersionMenu = new QMenu("Version", this);
+    m_InspectVersionsAction = new QAction("Inspect Versions", m_VersionMenu);
+    m_InspectVersionsAction->setShortcut(QKeySequence(Qt::Key_V));
     m_VersionUpAction = new QAction("Version Up", m_VersionMenu);
     m_VersionUpAction->setShortcut(QKeySequence("Alt+Up"));
     m_VersionDownAction = new QAction("Version Down", m_VersionMenu);
     m_VersionDownAction->setShortcut(QKeySequence("Alt+Down"));
+    m_MaxVersionAction = new QAction("Max Version", m_VersionMenu);
+    m_MaxVersionAction->setShortcut(QKeySequence("Alt+Shift+Up"));
+    m_MinVersionAction = new QAction("Min Version", m_VersionMenu);
+    m_MinVersionAction->setShortcut(QKeySequence("Alt+Shift+Down"));
+    p->addAction(m_InspectVersionsAction);
     p->addAction(m_VersionUpAction);
     p->addAction(m_VersionDownAction);
+    m_VersionMenu->addAction(m_InspectVersionsAction);
     m_VersionMenu->addAction(m_VersionUpAction);
     m_VersionMenu->addAction(m_VersionDownAction);
+    m_VersionMenu->addAction(m_MaxVersionAction);
+    m_VersionMenu->addAction(m_MinVersionAction);
 
     m_EditModeMenu = new QMenu("Edit Mode", this);
     m_EditModeGroup = new QActionGroup(m_EditModeMenu);
@@ -119,6 +129,7 @@ void SequencerContextMenu::Connect()
     });
     connect(m_VersionUpAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(true); });
     connect(m_VersionDownAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(false); });
+    connect(m_InspectVersionsAction, &QAction::triggered, this, &SequencerContextMenu::versionInspectionRequested);
 }
 
 void SequencerContextMenu::Validate()
@@ -142,8 +153,11 @@ void SequencerContextMenu::Validate()
     m_ColorItemAction->setEnabled(itemSelection);
     m_ResetItemColorAction->setEnabled(itemSelection);
 
+    m_InspectVersionsAction->setEnabled(itemSelection);
     m_VersionUpAction->setEnabled(itemSelection);
     m_VersionDownAction->setEnabled(itemSelection);
+    m_MinVersionAction->setEnabled(itemSelection);
+    m_MaxVersionAction->setEnabled(itemSelection);
 
     m_NoOverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
     m_OverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::OVERWRITE);
