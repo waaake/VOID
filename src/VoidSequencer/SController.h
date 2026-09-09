@@ -66,6 +66,7 @@ public:
     void CreateEffect(const std::unordered_set<SharedPlaybackTrack>& tracks, const std::string& type);
     void CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type);
     void RemoveTimelineEffects(const std::unordered_set<Effect*>& effects);
+    void SwitchVersion(const std::unordered_set<SharedTrackItem>& items, bool up);
 
     STrack* TrackAt(const QPointF& position) const;
     STrack* TrackAt(int index) const;

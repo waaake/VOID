@@ -415,6 +415,25 @@ void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*
     stack->endMacro();
 }
 
+void SequencerController::SwitchVersion(const std::unordered_set<SharedTrackItem>& items, bool up)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    if (up)
+    {
+        stack->beginMacro("Version up TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new VersionUpTrackItemCommand(item));
+    }
+    else
+    {
+        stack->beginMacro("Version down TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new VersionDownTrackItemCommand(item));
+    }
+
+    stack->endMacro();
+}
+
 STrack* SequencerController::TrackAt(int index) const
 {
     if (STimelineScene* scene = dynamic_cast<STimelineScene*>(m_Scene))
