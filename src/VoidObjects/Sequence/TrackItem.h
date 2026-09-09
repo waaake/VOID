@@ -58,8 +58,8 @@ public:
     bool Linked() const { return (bool)m_Media; }
     void Unlink();
 
-    void VersionUp();
-    void VersionDown();
+    bool VersionUp();
+    bool VersionDown();
     void SetLatestAvailableVersion();
 
     std::size_t Index() const;
@@ -73,6 +73,8 @@ public:
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
     SequenceFrame InternalFrame(v_frame_t frame);
+
+    const ElementTokens& Tokens() const { return m_Media->Tokens(); }
 
     std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
     Effect* CreateEffect(const std::string& type);

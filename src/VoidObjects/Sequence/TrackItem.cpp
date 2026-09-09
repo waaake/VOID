@@ -118,11 +118,9 @@ TrackItem& TrackItem::operator=(TrackItem&& other) noexcept
 
 void TrackItem::SetMedia(const SharedMediaClip& media, v_frame_t offset)
 {
-    /* Update the underlying media and relevant offset */
     m_Media = media;
     m_Offset = offset;
 
-    /* Once the Media has been updated -> emit mediaChanged signal */
     emit mediaChanged();
 }
 
@@ -142,7 +140,7 @@ void TrackItem::Unlink()
     emit updated();
 }
 
-void TrackItem::VersionUp()
+bool TrackItem::VersionUp()
 {
     if (m_Media)
     {
@@ -157,12 +155,14 @@ void TrackItem::VersionUp()
             {
                 m_Media = clips[i - 1];
                 emit updated();
+                return true;
             }
         }
     }
+    return false;
 }
 
-void TrackItem::VersionDown()
+bool TrackItem::VersionDown()
 {
     if (m_Media)
     {
@@ -177,9 +177,11 @@ void TrackItem::VersionDown()
             {
                 m_Media = clips[i + 1];
                 emit updated();
+                return true;
             }
         }
     }
+    return false;
 }
 
 void TrackItem::SetLatestAvailableVersion()
