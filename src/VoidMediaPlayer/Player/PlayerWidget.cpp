@@ -44,6 +44,10 @@ PlayerWidget::PlayerWidget(TimelineController* timelineController, QWidget* pare
 
 PlayerWidget::~PlayerWidget()
 {
+    m_Renderer->deleteLater();
+    delete m_Renderer;
+    m_Renderer = nullptr;
+
     m_ActiveViewBuffer = nullptr;
 
     m_ViewBufferA->deleteLater();
