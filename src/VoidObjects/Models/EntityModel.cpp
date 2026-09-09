@@ -4,7 +4,6 @@
 /* Internal */
 #include "EntityModel.h"
 #include "VoidCore/VoidTools.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -80,6 +79,8 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Channels: return item->Channels();
             case MRoles::Snapshots: return 0;
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::MEDIA);
+            case MRoles::ElementName: return item->Tokens().name.c_str();
+            case MRoles::Version: return item->Tokens().vnum;
             default: return QVariant();
         }
     }
@@ -101,6 +102,8 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Channels: return sequence->Channels();
             case MRoles::Snapshots: return sequence->NumSnapshots();
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::SEQUENCE);
+            case MRoles::ElementName : return QVariant();
+            case MRoles::Version: return 0;
             default: return QVariant();
         }
     }
@@ -433,6 +436,37 @@ bool EntityProxyModel::lessThan(const QModelIndex& left, const QModelIndex& righ
 {
     QString ldata = sourceModel()->index(left.row(), 0, left.parent()).data(m_SortRole).toString();
     QString rdata = sourceModel()->index(right.row(), 0, right.parent()).data(m_SortRole).toString();
+
+    return ldata < rdata;
+}
+
+/// MediaVersionProxyModel
+
+MediaVersionProxyModel::MediaVersionProxyModel(QObject* parent)
+    : QSortFilterProxyModel(parent)
+    , m_Name()
+{
+    sort(0, Qt::DescendingOrder);
+}
+
+void MediaVersionProxyModel::SetElementName(const QString& name)
+{
+    m_Name = name;
+    invalidateFilter();
+}
+
+bool MediaVersionProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+{
+    QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
+    QString data = sourceIndex.data(static_cast<int>(EntityModel::MRoles::ElementName)).toString();
+
+    return data.contains(m_Name, Qt::CaseInsensitive);
+}
+
+bool MediaVersionProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
+{
+    int ldata = sourceModel()->index(left.row(), 0, left.parent()).data(static_cast<int>(EntityModel::MRoles::Version)).toInt();
+    int rdata = sourceModel()->index(right.row(), 0, right.parent()).data(static_cast<int>(EntityModel::MRoles::Version)).toInt();
 
     return ldata < rdata;
 }

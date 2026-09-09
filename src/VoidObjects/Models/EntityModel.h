@@ -37,7 +37,9 @@ public:
         Tags,
         Channels,
         Snapshots,
-        Type
+        Type,
+        ElementName,
+        Version
     };
 
 public:
@@ -138,6 +140,19 @@ private: /* Members */
     int m_SortRole;
 };
 
+class VOID_API MediaVersionProxyModel : public QSortFilterProxyModel
+{
+public:
+    explicit MediaVersionProxyModel(QObject* parent = nullptr);
+    void SetElementName(const QString& name);
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+
+private:
+    QString m_Name;
+};
 
 VOID_NAMESPACE_CLOSE
 
