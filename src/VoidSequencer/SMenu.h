@@ -32,6 +32,7 @@ signals:
     void colorChangeRequested(bool reset = false);
     void editModeChangeRequested(const SequencerController::EditMode&);
     void addEffectRequested(const std::string&);
+    void versionChangeRequested(bool up);
 
 private:
     QPoint m_ExecPosition;
@@ -48,6 +49,10 @@ private:
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;
     QAction* m_ResetItemColorAction;
+
+    QMenu* m_VersionMenu;
+    QAction* m_VersionUpAction;
+    QAction* m_VersionDownAction;
 
     QMenu* m_EditModeMenu;
     QAction* m_NoOverwriteAction;

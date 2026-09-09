@@ -273,6 +273,7 @@ void SequencerTimeline::Connect()
         }
     });
     connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
+    connect(m_Menu, &SequencerContextMenu::versionChangeRequested, this, &SequencerTimeline::SwitchVersion);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)
@@ -364,6 +365,13 @@ void SequencerTimeline::Paste(const QPoint& position)
         m_Context.Controller()->Paste(Sequence::Context::Get(track->Track(), frame));
     else
         m_Context.Controller()->Paste(Sequence::Context::Get(m_Context.Sequence()));
+}
+
+void SequencerTimeline::SwitchVersion(bool up)
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->SwitchVersion(sel->SelectedItems(), up);
 }
 
 VOID_NAMESPACE_CLOSE

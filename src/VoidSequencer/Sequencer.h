@@ -86,6 +86,7 @@ private: /* Methods */
     void Cut();
     void Copy();
     void Paste(const QPoint& position);
+    void SwitchVersion(bool up);
 };
 
 VOID_NAMESPACE_CLOSE

@@ -32,6 +32,7 @@ void SequencerContextMenu::Show(const QPoint& position)
 
 void SequencerContextMenu::Build()
 {
+    QWidget* p = parentWidget();
     m_NewMenu = new QMenu("New", this);
     m_AddVideoTrackAction = new QAction("Add Video Track", m_NewMenu);
     m_NewMenu->addAction(m_AddVideoTrackAction);
@@ -57,6 +58,16 @@ void SequencerContextMenu::Build()
     m_ResetItemColorAction = new QAction("Reset Trackitem Color", m_ColorMenu);
     m_ColorMenu->addAction(m_ColorItemAction);
     m_ColorMenu->addAction(m_ResetItemColorAction);
+
+    m_VersionMenu = new QMenu("Versioning", this);
+    m_VersionUpAction = new QAction("Version Up", m_VersionMenu);
+    m_VersionUpAction->setShortcut(QKeySequence("Alt+Up"));
+    m_VersionDownAction = new QAction("Version Down", m_VersionMenu);
+    m_VersionDownAction->setShortcut(QKeySequence("Alt+Down"));
+    p->addAction(m_VersionUpAction);
+    p->addAction(m_VersionDownAction);
+    m_VersionMenu->addAction(m_VersionUpAction);
+    m_VersionMenu->addAction(m_VersionDownAction);
 
     m_EditModeMenu = new QMenu("Edit Mode", this);
     m_EditModeGroup = new QActionGroup(m_EditModeMenu);
@@ -86,6 +97,7 @@ void SequencerContextMenu::Build()
     addMenu(m_EditMenu);
     addSeparator();
     addMenu(m_ColorMenu);
+    addMenu(m_VersionMenu);
     addSeparator();
     addMenu(m_EditModeMenu);
     addSeparator();
@@ -105,6 +117,8 @@ void SequencerContextMenu::Connect()
     {
         emit editModeChangeRequested(static_cast<SequencerController::EditMode>(action->data().toInt()));
     });
+    connect(m_VersionUpAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(true); });
+    connect(m_VersionDownAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(false); });
 }
 
 void SequencerContextMenu::Validate()
@@ -127,6 +141,9 @@ void SequencerContextMenu::Validate()
     m_RemoveSelectedAction->setEnabled(anySelection);
     m_ColorItemAction->setEnabled(itemSelection);
     m_ResetItemColorAction->setEnabled(itemSelection);
+
+    m_VersionUpAction->setEnabled(itemSelection);
+    m_VersionDownAction->setEnabled(itemSelection);
 
     m_NoOverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
     m_OverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::OVERWRITE);
