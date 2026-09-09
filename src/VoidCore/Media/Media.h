@@ -78,7 +78,7 @@ public:
     inline v_frame_t LastFrame() const { return m_LastFrame; }
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
-    ElementTokens Tokens() const { return m_Tokens; }
+    const ElementTokens& Tokens() const { return m_Tokens; }
 
     /**
      * Returns whether a given frame falls in the range of Media
