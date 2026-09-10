@@ -81,7 +81,7 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
         painter->drawText(
             boundingRect().adjusted(10, 0, -2, 0),
             Qt::AlignLeft | Qt::AlignTop,
-            tokens
+            tokens.HasVersion()
             ? QString("%1 (%2)").arg(m_Item->Name().c_str()).arg(tokens.version.c_str())
             : m_Item->Name().c_str()
         );
