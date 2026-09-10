@@ -48,7 +48,7 @@ public:
 
     STrackItem* ItemAt(int index) const;
     STrackItem* ItemAt(int index);
-    STrackItem* Item(const SharedTrackItem& item);
+    STrackItem* Item(const SharedTrackItem& item) const;
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
