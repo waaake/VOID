@@ -189,7 +189,7 @@ bool TrackItem::VersionDown()
     return false;
 }
 
-void TrackItem::SetLatestAvailableVersion()
+bool TrackItem::SetLatestAvailableVersion()
 {
     if (m_Media)
     {
@@ -199,10 +199,28 @@ void TrackItem::SetLatestAvailableVersion()
 
         if (clip.get() != m_Media.get())
         {
-            m_Media = clip;
-            emit updated();
+            ResetMedia(clip);
+            return true;
         }
     }
+    return false;
+}
+
+bool TrackItem::SetMinAvailableVersion()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+        const SharedMediaClip& clip = clips.back();
+
+        if (clip.get() != m_Media.get())
+        {
+            ResetMedia(clip);
+            return true;
+        }
+    }
+    return false;
 }
 
 std::size_t TrackItem::Index() const

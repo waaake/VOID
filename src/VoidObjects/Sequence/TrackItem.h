@@ -61,7 +61,8 @@ public:
 
     bool VersionUp();
     bool VersionDown();
-    void SetLatestAvailableVersion();
+    bool SetLatestAvailableVersion();
+    bool SetMinAvailableVersion();
 
     std::size_t Index() const;
 
