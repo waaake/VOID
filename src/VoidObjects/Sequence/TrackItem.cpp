@@ -124,6 +124,13 @@ void TrackItem::SetMedia(const SharedMediaClip& media, v_frame_t offset)
     emit mediaChanged();
 }
 
+void TrackItem::ResetMedia(const SharedMediaClip& media)
+{
+    // TODO: Check on offset and source in
+    m_Media = media;
+    emit updated();
+}
+
 void TrackItem::SetRange(v_frame_t start, v_frame_t end)
 {
     /*
@@ -153,8 +160,7 @@ bool TrackItem::VersionUp()
         {
             if (m_Media.get() == clips[i].get() && i != 0)
             {
-                m_Media = clips[i - 1];
-                emit updated();
+                ResetMedia(clips[i - 1]);
                 return true;
             }
         }
@@ -175,8 +181,7 @@ bool TrackItem::VersionDown()
         {
             if (m_Media.get() == clips[i].get() && (i + 1) < static_cast<int>(clips.size()))
             {
-                m_Media = clips[i + 1];
-                emit updated();
+                ResetMedia(clips[i + 1]);
                 return true;
             }
         }

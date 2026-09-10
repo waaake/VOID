@@ -53,6 +53,7 @@ public:
      * Offset: 1000
      */
     void SetMedia(const SharedMediaClip& media, v_frame_t offset = 0);
+    void ResetMedia(const SharedMediaClip& media);
     void SetRange(v_frame_t start, v_frame_t end);
 
     bool Linked() const { return (bool)m_Media; }
