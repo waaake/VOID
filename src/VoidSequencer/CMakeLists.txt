@@ -59,6 +59,7 @@ if (WIN32)
         ../VoidTimeline/Timeline.h
         ../VoidTimeline/TimelineController.h
         ../VoidTimeline/Timeslider.h
+        ../VoidViews/VersionView.h
     )
 endif()
 
