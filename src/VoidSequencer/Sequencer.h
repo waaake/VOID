@@ -89,6 +89,7 @@ private: /* Methods */
     void Copy();
     void Paste(const QPoint& position);
     void SwitchVersion(bool up);
+    void SwitchVersionExtremes(bool max);
     void InspectVersions();
 };
 

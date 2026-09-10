@@ -33,6 +33,7 @@ signals:
     void editModeChangeRequested(const SequencerController::EditMode&);
     void addEffectRequested(const std::string&);
     void versionChangeRequested(bool up);
+    void versionExtremesChangeRequested(bool max);
     void versionInspectionRequested();
 
 private:

@@ -129,6 +129,8 @@ void SequencerContextMenu::Connect()
     });
     connect(m_VersionUpAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(true); });
     connect(m_VersionDownAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(false); });
+    connect(m_MaxVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(true); });
+    connect(m_MinVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(false); });
     connect(m_InspectVersionsAction, &QAction::triggered, this, &SequencerContextMenu::versionInspectionRequested);
 }
 

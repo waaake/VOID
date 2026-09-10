@@ -283,6 +283,7 @@ void SequencerTimeline::Connect()
     });
     connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
     connect(m_Menu, &SequencerContextMenu::versionChangeRequested, this, &SequencerTimeline::SwitchVersion);
+    connect(m_Menu, &SequencerContextMenu::versionExtremesChangeRequested, this, &SequencerTimeline::SwitchVersionExtremes);
     connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
 }
 
@@ -382,6 +383,13 @@ void SequencerTimeline::SwitchVersion(bool up)
     const SSelectionModel* sel = m_Context.SelectionModel();
     if (sel->HasTrackItemSelection())
         m_Context.Controller()->SwitchVersion(sel->SelectedItems(), up);
+}
+
+void SequencerTimeline::SwitchVersionExtremes(bool max)
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->SwitchVersionExtremes(sel->SelectedItems(), max);
 }
 
 void SequencerTimeline::InspectVersions()
