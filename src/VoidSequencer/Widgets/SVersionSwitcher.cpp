@@ -13,7 +13,7 @@ SVersionSwitcher::SVersionSwitcher(SequencerContext* context, QWidget* parent)
 {
     Build();
     connect(m_View, &VersionView::versionChanged, this, &SVersionSwitcher::ResetMedia);
-    setFixedWidth(400);
+    setFixedWidth(350);
 }
 
 SVersionSwitcher::~SVersionSwitcher()
