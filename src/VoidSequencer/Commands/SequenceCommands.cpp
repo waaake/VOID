@@ -1047,4 +1047,41 @@ bool VersionDownTrackItemCommand::Redo()
     return context.trackItem->VersionDown();
 }
 
+/// ResetTrackItemMediaCommand
+
+ResetTrackItemMediaCommand::ResetTrackItemMediaCommand(const SharedTrackItem& item, const SharedMediaClip& media, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    Core::Project* project = item->Project();
+    m_PreviousRow = project->MediaRow(item->GetMedia());
+    m_RequestedRow = project->MediaRow(media);
+
+    setText("Update Media");
+}
+
+ResetTrackItemMediaCommand::ResetTrackItemMediaCommand(const SharedTrackItem& item, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    Core::Project* project = item->Project();
+    m_PreviousRow = project->MediaRow(item->GetMedia());
+    m_RequestedRow = index.row();
+
+    setText("Update Media");
+}
+
+void ResetTrackItemMediaCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_PreviousRow, 0));
+}
+
+bool ResetTrackItemMediaCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_RequestedRow, 0));
+    return true;
+}
+
 VOID_NAMESPACE_CLOSE

@@ -429,6 +429,20 @@ private:
     Sequence::Context m_ItemContext;
 };
 
+class ResetTrackItemMediaCommand : public VoidUndoCommand
+{
+public:
+    ResetTrackItemMediaCommand(const SharedTrackItem& item, const SharedMediaClip& media, QUndoCommand* parent = nullptr);
+    ResetTrackItemMediaCommand(const SharedTrackItem& item, const QModelIndex& index, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+    int m_RequestedRow;
+    int m_PreviousRow;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _SEQUENCE_COMMANDS_H
