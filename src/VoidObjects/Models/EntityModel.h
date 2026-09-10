@@ -39,6 +39,7 @@ public:
         Snapshots,
         Type,
         ElementName,
+        VersionName,
         Version
     };
 
