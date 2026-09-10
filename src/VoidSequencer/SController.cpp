@@ -415,6 +415,16 @@ void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*
     stack->endMacro();
 }
 
+void SequencerController::ResetMedia(const SharedTrackItem& item, const QModelIndex& index)
+{
+    _MediaBridge.PushCommand(new ResetTrackItemMediaCommand(item, index));
+}
+
+void SequencerController::ResetMedia(const SharedTrackItem& item, const SharedMediaClip& media)
+{
+    _MediaBridge.PushCommand(new ResetTrackItemMediaCommand(item, media));
+}
+
 void SequencerController::SwitchVersion(const std::unordered_set<SharedTrackItem>& items, bool up)
 {
     QUndoStack* stack = _MediaBridge.UndoStack();
