@@ -1026,6 +1026,28 @@ bool VersionUpTrackItemCommand::Redo()
     return context.trackItem->VersionUp();
 }
 
+/// MaxVersionTrackItemCommand
+
+MaxVersionTrackItemCommand::MaxVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    m_PreviousRow = item->Project()->MediaRow(item->GetMedia());
+    setText("Max Version TrackItem");
+}
+
+void MaxVersionTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_PreviousRow, 0));
+}
+
+bool MaxVersionTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->SetLatestAvailableVersion();
+}
+
 /// VersionDownTrackItemCommand
 
 VersionDownTrackItemCommand::VersionDownTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
@@ -1045,6 +1067,28 @@ bool VersionDownTrackItemCommand::Redo()
 {
     Sequence::ResolvedContext context = m_ItemContext.Resolve();
     return context.trackItem->VersionDown();
+}
+
+/// MinVersionTrackItemCommand
+
+MinVersionTrackItemCommand::MinVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    m_PreviousRow = item->Project()->MediaRow(item->GetMedia());
+    setText("Min Version TrackItem");
+}
+
+void MinVersionTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_PreviousRow, 0));
+}
+
+bool MinVersionTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->SetMinAvailableVersion();
 }
 
 /// ResetTrackItemMediaCommand

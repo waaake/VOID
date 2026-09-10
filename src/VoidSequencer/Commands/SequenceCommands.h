@@ -418,6 +418,18 @@ private:
     Sequence::Context m_ItemContext;
 };
 
+class MaxVersionTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit MaxVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+    int m_PreviousRow;
+};
+
 class VersionDownTrackItemCommand : public VoidUndoCommand
 {
 public:
@@ -427,6 +439,18 @@ public:
 
 private:
     Sequence::Context m_ItemContext;
+};
+
+class MinVersionTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit MinVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+    int m_PreviousRow;
 };
 
 class ResetTrackItemMediaCommand : public VoidUndoCommand
