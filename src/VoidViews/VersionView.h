@@ -25,7 +25,7 @@ public:
     void SetElementName(const QString& name);
 
 signals:
-    void versionChanged(const SharedMediaClip&);
+    void versionChanged(const QModelIndex&);
 
 private:
     MediaVersionProxyModel* m_Proxy;

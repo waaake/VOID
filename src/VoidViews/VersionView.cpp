@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "VersionView.h"
+#include "Delegates/VersionDelegate.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -11,6 +12,14 @@ VersionView::VersionView(QWidget* parent)
 {
     m_Proxy = new MediaVersionProxyModel(this);
     setModel(m_Proxy);
+    setItemDelegate(new MediaVersionDelegate(this));
+
+    connect(this, &QListView::clicked, this, [this](const QModelIndex& index) -> void
+    {
+        const QModelIndex source = m_Proxy->mapToSource(index);
+        if (source.isValid())
+            emit versionChanged(source);
+    });
 }
 
 VersionView::~VersionView()
