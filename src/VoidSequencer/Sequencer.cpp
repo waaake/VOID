@@ -14,6 +14,8 @@
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
 #include "VoidObjects/Sequence/Context.h"
 #include "VoidSequencer/Graphics/STrack.h"
+#include "VoidSequencer/Graphics/STrackItem.h"
+#include "VoidSequencer/STimelineScene.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -195,7 +197,7 @@ void SequencerTimeline::Build()
     m_View = new STimelineView(&m_Context);
     m_Ruler = new STimelineRuler(m_View, &m_Context);
 
-    m_VersionSwitcher = new SVersionSwitcher(this);
+    m_VersionSwitcher = new SVersionSwitcher(&m_Context, this);
 
     grid->addWidget(m_Ruler, 0, 1);
 
@@ -386,11 +388,17 @@ void SequencerTimeline::InspectVersions()
 {
     const SSelectionModel* sel = m_Context.SelectionModel();
     const std::unordered_set<SharedTrackItem>& items = sel->SelectedItems();
+
     if (items.size() == 1)
     {
-        const auto& item = *items.begin();
-        m_VersionSwitcher->SetElementName(item->Tokens().name.c_str());
-        m_VersionSwitcher->exec();
+        const SharedTrackItem& item = *items.begin();
+        
+        const STimelineScene* scene = m_View->TimelineScene();
+        const STrack* track = scene->TrackAt(item->Track()->Index());
+        const STrackItem* sitem = track->Item(item);
+
+        QPoint pos = mapToGlobal(m_View->mapFromScene(sitem->scenePos()));
+        m_VersionSwitcher->Exec(item, QPoint(pos.x() - 100, pos.y()));
     }
 }
 
