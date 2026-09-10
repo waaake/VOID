@@ -1079,6 +1079,7 @@ void ResetTrackItemMediaCommand::undo()
 
 bool ResetTrackItemMediaCommand::Redo()
 {
+    if (m_RequestedRow == m_PreviousRow) return false;
     Sequence::ResolvedContext context = m_ItemContext.Resolve();
     context.trackItem->ResetMedia(context.project->MediaAt(m_RequestedRow, 0));
     return true;
