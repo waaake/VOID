@@ -444,6 +444,25 @@ void SequencerController::SwitchVersion(const std::unordered_set<SharedTrackItem
     stack->endMacro();
 }
 
+void SequencerController::SwitchVersionExtremes(const std::unordered_set<SharedTrackItem>& items, bool max)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    if (max)
+    {
+        stack->beginMacro("Max Version TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new MaxVersionTrackItemCommand(item));
+    }
+    else
+    {
+        stack->beginMacro("Min Version TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new MinVersionTrackItemCommand(item));
+    }
+
+    stack->endMacro();
+}
+
 STrack* SequencerController::TrackAt(int index) const
 {
     if (STimelineScene* scene = dynamic_cast<STimelineScene*>(m_Scene))
