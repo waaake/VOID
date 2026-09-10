@@ -69,7 +69,6 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
      * --------------------------
      */
 
-    /* Base Rect */
     QRect rect = option.rect;
 
     /* Size of the Grid Item */
@@ -77,48 +76,44 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     // int height = rect.height();
 
     // Background
-    painter->fillRect(rect, option.palette.color(QPalette::Base).darker(
-        _ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150
-    ));
+    const QColor bg(option.palette.color(QPalette::Base).darker(_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150));
+    painter->fillRect(rect, bg);
 
-    /* Selected */
+    const QColor lighter1(bg.lighter(120));
+    const QColor lighter2(bg.lighter(140));
+
+    // Selected
     if (option.state & QStyle::State_Selected)
     {
-        /* Gradient */
+        // Gradient
         QLinearGradient gradient(rect.left(), rect.top(), rect.left() + 150, rect.top());
-        gradient.setColorAt(0, option.palette.color(QPalette::Base).darker(150));
+        gradient.setColorAt(0, bg);
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
 
         painter->save();
 
-        /* Draw the Background */
         painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
         painter->drawRect(rect);
+        painter->fillRect(QRect(rect.left() + (rect.width() - 3), rect.top(), 3, rect.height()), option.palette.color(QPalette::Highlight));
 
-        /* Draw the right indicator rect */
-        painter->fillRect(rect.left() + (rect.width() - 3), rect.top(), 3, rect.height(), option.palette.color(QPalette::Highlight));
         painter->restore();
     }
 
-    /* Side Bar */
-    painter->fillRect(rect.left(), rect.top(), ICON_SIZE + 6, rect.height(), option.palette.color(QPalette::Window).lighter(220));
-
+    // Side Bar
+    painter->fillRect(rect.left(), rect.top(), ICON_SIZE + 6, rect.height(), lighter1);
     const int left = rect.left() + ICON_SIZE + 10;
 
-    /* Thumbnail */
+    // Thumbnail
     const QRect thumbrect(left, rect.top() + 5, rect.width() - 30, rect.height() - 46);   // Rect of 120 x 100 * scale;
     QPixmap p = index.data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(rect.width() - 30, thumbrect.height(), Qt::KeepAspectRatio);
 
-    /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
     int x = left + ((rect.width() - 30) - scaled.width()) * 0.5;
     int y = thumbrect.top() + ((rect.height() - 46) - scaled.height()) * 0.5;
 
     m_TagX = rect.left() + 2;
     m_TagY = rect.top() + ICON_SIZE + 4;
-
-    /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
     const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
@@ -126,13 +121,13 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
         IconType::icon_volume_up,
-        audio ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        audio ? option.palette.color(QPalette::Text) : lighter2,
         ICON_SIZE
     ));
 
     painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
         IconType::icon_style,
-        tags ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        tags ? option.palette.color(QPalette::Text) : lighter2,
         ICON_SIZE
     ));
 
@@ -156,7 +151,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
         painter->fillRect(rect.left(), rect.bottom() - 1, (ICON_SIZE + 6), 2, QColor(255, 130, 0));
 
-    /* Name */
+    // Name
     const QRect namerect(left, thumbrect.bottom(), 90 * m_Scale, 20);
     painter->drawText(
         namerect,
@@ -164,7 +159,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
-    /* Extension */
+    // Extension
     const QRect extrect(namerect.right(), thumbrect.bottom(), 30 * m_Scale, 20);
     painter->drawText(
         extrect,
@@ -172,7 +167,7 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         index.data(static_cast<int>(EntityModel::MRoles::Extension)).toString()
     );
 
-    /* Frame range */
+    // Frame range
     const QRect rangerect(left, namerect.bottom(), 70 * m_Scale, 20);
     painter->drawText(
         rangerect,
@@ -180,12 +175,9 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
 
-    /* Framerate */
+    // Framerate
     painter->drawText(
-        rangerect.right(),
-        extrect.bottom(),
-        50 * m_Scale,
-        20,
+        QRect(rangerect.right(), extrect.bottom(), 50 * m_Scale, 20),
         Qt::AlignRight | Qt::AlignVCenter,
         index.data(static_cast<int>(EntityModel::MRoles::Framerate)).toString()
     );

@@ -45,12 +45,12 @@ bool BasicMediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item
         #else
         QPoint pos = mevent->pos();
         #endif
-        
+
         if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
 
-    return QStyledItemDelegate::editorEvent(event, item, option, index);    
+    return QStyledItemDelegate::editorEvent(event, item, option, index);
 }
 
 void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -63,45 +63,36 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
      */
 
     // Background
-    painter->fillRect(option.rect, option.palette.color(QPalette::Base).darker(
-        _ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150
-    ));
+    const QColor bg(option.palette.color(QPalette::Base).darker(_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150));
+    painter->fillRect(option.rect, bg);
 
-    /* Selected */
+    const QColor lighter1(bg.lighter(120));
+    const QColor lighter2(bg.lighter(140));
+
+    // Selected
     if (option.state & QStyle::State_Selected)
-    {   
-        /* Gradient */
+    {
+        // Gradient
         QLinearGradient gradient(0, 0, option.rect.width(), 0);
-        gradient.setColorAt(0, option.palette.color(QPalette::Base).darker(150));
+        gradient.setColorAt(0, bg);
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
 
         painter->save();
 
-        /* Draw the Background */
         painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
         painter->drawRect(option.rect);
 
-        /* Draw the right indicator rect */
         painter->fillRect(
-            option.rect.width() - 3,
-            option.rect.top(),
-            4,
-            option.rect.height(),
+            QRect(option.rect.width() - 3, option.rect.top(), 4, option.rect.height()),
             option.palette.color(QPalette::Highlight)
         );
 
         painter->restore();
     }
 
-    /* Side Bar */
-    painter->fillRect(
-        option.rect.left(),
-        option.rect.top(),
-        ICON_SIZE + 6,
-        option.rect.height(),
-        option.palette.color(QPalette::Window).lighter(220)
-    );
+    // Side Bar
+    painter->fillRect(QRect(option.rect.left(), option.rect.top(), ICON_SIZE + 6, option.rect.height()), lighter1);
 
     m_TagX = option.rect.left() + 2;
     m_TagY = option.rect.top() + ICON_SIZE + 4;
@@ -112,7 +103,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
             IconType::icon_volume_up,
             index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool()
             ? option.palette.color(QPalette::Text)
-            : option.palette.color(QPalette::Window).lighter(280),
+            : lighter2,
             ICON_SIZE
         )
     );
@@ -124,7 +115,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
             IconType::icon_style,
             index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool()
             ? option.palette.color(QPalette::Text)
-            : option.palette.color(QPalette::Window).lighter(280),
+            : lighter2,
             ICON_SIZE
         )
     );
@@ -159,10 +150,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     // Frame Range
     painter->drawText(
-        namerect.left(),
-        option.rect.top(),
-        option.rect.right() - 40,
-        option.rect.height(),
+        QRect(namerect.left(), option.rect.top(), option.rect.right() - 40, option.rect.height()),
         Qt::AlignRight | Qt::AlignVCenter,
         index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
@@ -210,7 +198,7 @@ bool MediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, con
         #else
         QPoint pos = mevent->pos();
         #endif
-        
+
         if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
             emit tagClicked(index, pos);
     }
@@ -221,7 +209,7 @@ bool MediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, con
 void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     /**
-     * The main Rect for the Item will be divided into 5 sub sections 
+     * The main Rect for the Item will be divided into 5 sub sections
      * -------------------------------------------------------------
      * |               |    Name                    |    Extension |
      * |   Thumbnail   |-------------------------------------------|
@@ -232,47 +220,42 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     // Base Rect
     QRect rect = option.rect;
     // Background
-    painter->fillRect(rect, option.palette.color(QPalette::Base).darker(
-        _ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150
-    ));
+    const QColor bg(option.palette.color(QPalette::Base).darker(_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150));
+    painter->fillRect(rect, bg);
+    const QColor lighter1(bg.lighter(120));
+    const QColor lighter2(bg.lighter(140));
 
-    /* Selected */
+    // Selected
     if (option.state & QStyle::State_Selected)
     {
-        /* Gradient */
+        // Gradient
         QLinearGradient gradient(0, 0, rect.width(), 0);
-        gradient.setColorAt(0, option.palette.color(QPalette::Base).darker(150));
+        gradient.setColorAt(0, bg);
         gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(150));
-        
+
         painter->save();
 
-        /* Draw the Background */
         painter->setBrush(gradient);
         painter->setPen(Qt::NoPen);
         painter->drawRect(rect);
-
-        /* Draw the right indicator rect */
-        painter->fillRect(rect.width() - 3, rect.top(), 4, rect.height(), option.palette.color(QPalette::Highlight));
+        painter->fillRect(QRect(rect.width() - 3, rect.top(), 4, rect.height()), option.palette.color(QPalette::Highlight));
 
         painter->restore();
     }
 
-    /* Side Bar */
-    painter->fillRect(rect.left(), rect.top(), ICON_SIZE + 6, rect.height(), option.palette.color(QPalette::Window).lighter(220));
+    // Side Bar
+    painter->fillRect(QRect(rect.left(), rect.top(), ICON_SIZE + 6, rect.height()), lighter1);
 
-    /* Thumbnail */
+    /// Thumbnail
     const QRect thumbrect(rect.left() + ICON_SIZE + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
     QPixmap p = index.data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
     QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
 
-    /* Calculate the point from which the image needs to start getting drawn as to keep it's aspect */
     const int x = thumbrect.left() + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
     const int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
 
     m_TagX = rect.left() + 2;
     m_TagY = rect.top() + ICON_SIZE + 4;
-
-    /* Draw the pixmap at the calculated coords */
     painter->drawPixmap(x, y, scaled);
 
     const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
@@ -297,13 +280,13 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
         IconType::icon_volume_up,
-        audio ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        audio ? option.palette.color(QPalette::Text) : lighter2,
         ICON_SIZE
     ));
 
     painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
         IconType::icon_style,
-        tags ? option.palette.color(QPalette::Text) : option.palette.color(QPalette::Window).lighter(280),
+        tags ? option.palette.color(QPalette::Text) : lighter2,
         ICON_SIZE
     ));
 
@@ -314,7 +297,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     const int halfheight = rect.height() * 0.5;
     const int namewidth = rect.width() - (thumbrect.width() + 90);
 
-    /* Name */
+    // Name
     const QRect namerect(thumbright, rect.top(), namewidth, halfheight);
     painter->drawText(
         namerect,
@@ -322,7 +305,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
     );
 
-    /* Extension */
+    // Extension
     const QRect extrect(namerect.right(), rect.top(), 60, halfheight);
     painter->drawText(
         extrect,
@@ -330,22 +313,16 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
         index.data(static_cast<int>(EntityModel::MRoles::Extension)).toString()
     );
 
-    /* Frame range */
+    // Frame range
     painter->drawText(
-        thumbright,
-        namerect.bottom(),
-        namewidth,
-        halfheight,
+        QRect(thumbright, namerect.bottom(), namewidth, halfheight),
         Qt::AlignLeft | Qt::AlignVCenter,
         index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
     );
 
-    /* Framerate */
+    // Framerate
     painter->drawText(
-        namerect.right(),
-        extrect.bottom(),
-        60,
-        halfheight,
+        QRect(namerect.right(), extrect.bottom(), 60,halfheight),
         Qt::AlignRight | Qt::AlignVCenter,
         index.data(static_cast<int>(EntityModel::MRoles::Framerate)).toString()
     );
