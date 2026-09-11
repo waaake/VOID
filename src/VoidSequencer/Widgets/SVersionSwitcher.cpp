@@ -47,7 +47,7 @@ void SVersionSwitcher::SetElementName(const QString& name)
 {
     m_View->SetElementName(name);
     int rows = m_View->RowCount();
-    setMinimumHeight((rows > 6 ? 360 : (rows * 60)) + 24);
+    setFixedHeight((rows > 6 ? 360 : (rows * 60)) + 24);
 }
 
 void SVersionSwitcher::ResetMedia(const QModelIndex& index)
