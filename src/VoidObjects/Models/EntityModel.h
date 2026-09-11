@@ -6,6 +6,7 @@
 
 /* STD */
 #include <vector>
+#include <unordered_set>
 
 /* Qt */
 #include <QAbstractItemModel>
@@ -37,7 +38,10 @@ public:
         Tags,
         Channels,
         Snapshots,
-        Type
+        Type,
+        ElementName,
+        VersionName,
+        Version
     };
 
 public:
@@ -94,6 +98,8 @@ public:
     const std::vector<SharedMediaClip> AllMedia() const { return m_Media; }
     const std::vector<SharedMediaClip>& MediaClips() const { return m_Media; }
     const std::vector<SharedPlaybackSequence>& Sequences() const { return m_Sequences; }
+    std::vector<SharedMediaClip> AvailableVersions(const std::string& name) const;
+    std::unordered_set<int> AvailableVersionNumbers(const std::string& name) const;
 
     void ReserveMedia(std::size_t size) { m_Media.reserve(size); }
     void ReserveSequences(std::size_t size) { m_Sequences.reserve(size); }
@@ -137,6 +143,19 @@ private: /* Members */
     int m_SortRole;
 };
 
+class VOID_API MediaVersionProxyModel : public QSortFilterProxyModel
+{
+public:
+    explicit MediaVersionProxyModel(QObject* parent = nullptr);
+    void SetElementName(const QString& name);
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+
+private:
+    QString m_Name;
+};
 
 VOID_NAMESPACE_CLOSE
 

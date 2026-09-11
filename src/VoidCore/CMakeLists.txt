@@ -22,6 +22,7 @@ set(SOURCES
     Media/Frame.cpp
     Media/Media.cpp
     Media/Renderer.cpp
+    Media/Tokens.cpp
 
     # Media Readers
     Readers/OIIOReader.cpp

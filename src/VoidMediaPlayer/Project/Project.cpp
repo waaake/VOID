@@ -10,6 +10,7 @@
 #include "VoidCore/Logging.h"
 #include "VoidCore/Profiler.h"
 #include "VoidMediaPlayer/Commands/MediaCommands.h"
+#include "VoidQExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -53,12 +54,17 @@ void Project::ImportDirectory(const std::vector<std::string>& directories, bool 
         ImportDirectory_(directory);
 }
 
+void Project::ImportVersions(const std::vector<SharedMediaClip>& clips)
+{
+    SetupProgressTask();
+    m_DirectoryImporter->ImportVersions(clips, 2);
+}
+
 void Project::ImportDirectoryP(const std::string& directory)
 {
     SetupProgressTask();
     m_DirectoryImporter->Import(directory, 5);
 }
-
 
 void Project::ImportDirectory_(const std::string& path)
 {
@@ -72,10 +78,10 @@ void Project::ImportDirectory_(const std::string& path)
             if (entry.is_regular_file())
             {
                 MEntry e(entry.path().string());
-    
+
                 /* Flag to control what happens with the entry */
                 bool new_entry = true;
-    
+
                 if (!e.SingleFile())
                 {
                     /**
@@ -97,7 +103,7 @@ void Project::ImportDirectory_(const std::string& path)
                         }
                     }
                 }
-    
+
                 /* Check if no entry in the MediaStruct adopted our newly created Media entry */
                 if (new_entry)
                     vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
@@ -132,7 +138,7 @@ Project* Project::FromDocument(const std::string& document)
 Project* Project::FromStream(std::istream& in)
 {
     const std::string name = ReadString(in);
-    
+
     int version;
     in.read(reinterpret_cast<char*>(&version), sizeof(version));
 
@@ -172,8 +178,7 @@ void Project::SetupImporter()
         m_UndoStack->beginMacro("Import Directory");
         m_ProgressTask->SetTaskType("Importing...");
     });
-    connect(m_DirectoryImporter, &DirectoryImporter::finishedImporting, this, [this]() -> void { m_UndoStack->endMacro(); });
-
+    connect(m_DirectoryImporter, &DirectoryImporter::finishedImporting, this, &Project::FinishImporting);
     connect(m_DirectoryImporter, &DirectoryImporter::mediaFound, this, [this](const QString& path) -> void
     {
         m_ProgressTask->SetCurrentTask(path.toStdString().c_str());
@@ -206,6 +211,18 @@ void Project::CancelImporting()
     if (m_DirectoryImporter)
         m_DirectoryImporter->Cancel();
     DeleteProgressTask();
+}
+
+void Project::FinishImporting(const ImportLog& log)
+{
+    m_UndoStack->endMacro();
+
+    if (log.type == ImportType::VERSIONS)
+    {
+        QString info("Found %1 new versions.");
+        InfoMessageBox box(info.arg(log.count));
+        box.exec();
+    }
 }
 
 VOID_NAMESPACE_CLOSE

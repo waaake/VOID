@@ -129,6 +129,15 @@ namespace Tools {
         return out;
     }
 
+    bool isnum(const std::string_view& text)
+    {
+        if (text.empty()) return false;
+        for (char c : text)
+            if (!std::isdigit(c)) return false;
+
+        return true;
+    }
+
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value)
     {

@@ -14,6 +14,8 @@
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
 #include "VoidObjects/Sequence/Context.h"
 #include "VoidSequencer/Graphics/STrack.h"
+#include "VoidSequencer/Graphics/STrackItem.h"
+#include "VoidSequencer/STimelineScene.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -45,6 +47,9 @@ SequencerTimeline::~SequencerTimeline()
     delete m_Ruler;
     m_Ruler = nullptr;
 
+    m_VersionSwitcher->deleteLater();
+    delete m_VersionSwitcher;
+    m_VersionSwitcher = nullptr;
 }
 
 void SequencerTimeline::ResetTabText()
@@ -61,6 +66,7 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
     m_Context.SetSequence(sequence);
     Connect(sequence.get());
     m_Context.Geometry()->SetSequence(sequence);
+    m_VersionSwitcher->ResetModel(sequence->Project()->DataModel());
 
     Refresh();
     ResetTabText();
@@ -73,6 +79,7 @@ void SequencerTimeline::ClearSequence()
 
     m_Context.SetSequence(nullptr);
     m_Context.Geometry()->ResetSequence();
+    m_VersionSwitcher->ResetModel(nullptr);
 
     m_TrackHeader->Clear();
     m_View->Clear();
@@ -190,6 +197,8 @@ void SequencerTimeline::Build()
     m_View = new STimelineView(&m_Context);
     m_Ruler = new STimelineRuler(m_View, &m_Context);
 
+    m_VersionSwitcher = new SVersionSwitcher(&m_Context, this);
+
     grid->addWidget(m_Ruler, 0, 1);
 
     grid->addWidget(m_TrackHeader, 1, 0);
@@ -273,6 +282,10 @@ void SequencerTimeline::Connect()
         }
     });
     connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
+    connect(m_Menu, &SequencerContextMenu::versionChangeRequested, this, &SequencerTimeline::SwitchVersion);
+    connect(m_Menu, &SequencerContextMenu::versionExtremesChangeRequested, this, &SequencerTimeline::SwitchVersionExtremes);
+    connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
+    connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)
@@ -364,6 +377,45 @@ void SequencerTimeline::Paste(const QPoint& position)
         m_Context.Controller()->Paste(Sequence::Context::Get(track->Track(), frame));
     else
         m_Context.Controller()->Paste(Sequence::Context::Get(m_Context.Sequence()));
+}
+
+void SequencerTimeline::SwitchVersion(bool up)
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->SwitchVersion(sel->SelectedItems(), up);
+}
+
+void SequencerTimeline::SwitchVersionExtremes(bool max)
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->SwitchVersionExtremes(sel->SelectedItems(), max);
+}
+
+void SequencerTimeline::InspectVersions()
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    const std::unordered_set<SharedTrackItem>& items = sel->SelectedItems();
+
+    if (items.size() == 1)
+    {
+        const SharedTrackItem& item = *items.begin();
+
+        const STimelineScene* scene = m_View->TimelineScene();
+        const STrack* track = scene->TrackAt(item->Track()->Index());
+        const STrackItem* sitem = track->Item(item);
+
+        QPoint pos = mapToGlobal(m_View->mapFromScene(sitem->scenePos()));
+        m_VersionSwitcher->Exec(item, QPoint(pos.x() - 100, pos.y()));
+    }
+}
+
+void SequencerTimeline::ScanVersions()
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->ScanVersions(sel->SelectedItems());
 }
 
 VOID_NAMESPACE_CLOSE

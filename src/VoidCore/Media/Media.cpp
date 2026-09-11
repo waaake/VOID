@@ -146,6 +146,7 @@ void Media::ProcessSequence()
     }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
+    m_Tokens = m_MediaStruct.Tokens();
 }
 
 void Media::ProcessMovie()
@@ -173,6 +174,7 @@ void Media::ProcessMovie()
     }
 
     m_Type = Media::Type::MOVIE;
+    m_Tokens = m_MediaStruct.Tokens();
 }
 
 void Media::Image(v_frame_t frame, FloatImage& image)

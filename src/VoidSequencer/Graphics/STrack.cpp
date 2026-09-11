@@ -202,7 +202,7 @@ STrackItem* STrack::ItemAt(int index)
     return nullptr;
 }
 
-STrackItem* STrack::Item(const SharedTrackItem& item)
+STrackItem* STrack::Item(const SharedTrackItem& item) const
 {
     if (m_Items.find(item.get()) == m_Items.end())
         return nullptr;

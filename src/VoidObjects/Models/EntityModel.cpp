@@ -4,7 +4,6 @@
 /* Internal */
 #include "EntityModel.h"
 #include "VoidCore/VoidTools.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -80,6 +79,9 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Channels: return item->Channels();
             case MRoles::Snapshots: return 0;
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::MEDIA);
+            case MRoles::ElementName: return item->Tokens().name.c_str();
+            case MRoles::VersionName: return item->Tokens().version.c_str();
+            case MRoles::Version: return item->Tokens().vnum;
             default: return QVariant();
         }
     }
@@ -101,6 +103,9 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Channels: return sequence->Channels();
             case MRoles::Snapshots: return sequence->NumSnapshots();
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::SEQUENCE);
+            case MRoles::ElementName: return QVariant();
+            case MRoles::VersionName: return QVariant();
+            case MRoles::Version: return 0;
             default: return QVariant();
         }
     }
@@ -257,18 +262,21 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
     if (row < static_cast<int>(m_Media.size()))
     {
         SharedMediaClip clip = m_Media.at(row);
-        m_Media.erase(std::remove(m_Media.begin(), m_Media.end(), clip));
+        m_Media.erase(m_Media.begin() + row);
 
-        /* Now Kill the clip */
         if (destroy)
             clip.get()->deleteLater();
+
+        endRemoveRows();
+        emit updated();
+        return;
     }
 
     unsigned int srow = row - static_cast<int>(m_Media.size());
     if (srow < static_cast<int>(m_Sequences.size()))
     {
         const SharedPlaybackSequence& sequence = m_Sequences.at(srow);
-        m_Sequences.erase(std::remove(m_Sequences.begin(), m_Sequences.end(), sequence));
+        m_Sequences.erase(m_Sequences.begin() + srow);
 
         if (destroy) sequence.get()->deleteLater();
     }
@@ -344,6 +352,37 @@ QModelIndex EntityModel::ShiftIndexDown(const QModelIndex& index)
     return createIndex(index.row() + 1, index.column());
 }
 
+std::vector<SharedMediaClip> EntityModel::AvailableVersions(const std::string& name) const
+{
+    std::vector<SharedMediaClip> clips;
+    for (auto& media : m_Media)
+    {
+        if (media->Tokens().Similar(name))
+            clips.push_back(media);
+    }
+
+    // Sort descending on the versions of the clips
+    std::sort(clips.begin(), clips.end(), [](const SharedMediaClip& _a, const SharedMediaClip& _b) -> bool
+    {
+        return _a->Tokens() > _b->Tokens();
+    });
+
+    return clips;
+}
+
+std::unordered_set<int> EntityModel::AvailableVersionNumbers(const std::string& name) const
+{
+    std::unordered_set<int> versions;
+    for (auto& media : m_Media)
+    {
+        const ElementTokens& tokens = media->Tokens();
+        if (tokens.Similar(name))
+            versions.insert(tokens.vnum);
+    }
+
+    return versions;
+}
+
 // void EntityModel::Update()
 // {
 //     if (m_Media.empty())
@@ -415,6 +454,37 @@ bool EntityProxyModel::lessThan(const QModelIndex& left, const QModelIndex& righ
 {
     QString ldata = sourceModel()->index(left.row(), 0, left.parent()).data(m_SortRole).toString();
     QString rdata = sourceModel()->index(right.row(), 0, right.parent()).data(m_SortRole).toString();
+
+    return ldata < rdata;
+}
+
+/// MediaVersionProxyModel
+
+MediaVersionProxyModel::MediaVersionProxyModel(QObject* parent)
+    : QSortFilterProxyModel(parent)
+    , m_Name()
+{
+    sort(0, Qt::DescendingOrder);
+}
+
+void MediaVersionProxyModel::SetElementName(const QString& name)
+{
+    m_Name = name;
+    invalidateFilter();
+}
+
+bool MediaVersionProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+{
+    QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
+    QString data = sourceIndex.data(static_cast<int>(EntityModel::MRoles::ElementName)).toString();
+
+    return data.contains(m_Name, Qt::CaseInsensitive);
+}
+
+bool MediaVersionProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
+{
+    int ldata = sourceModel()->index(left.row(), 0, left.parent()).data(static_cast<int>(EntityModel::MRoles::Version)).toInt();
+    int rdata = sourceModel()->index(right.row(), 0, right.parent()).data(static_cast<int>(EntityModel::MRoles::Version)).toInt();
 
     return ldata < rdata;
 }

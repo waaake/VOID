@@ -51,6 +51,15 @@ void DirectoryImporter::Import(const std::vector<std::string>& directories, int 
     m_Worker = std::async(std::launch::async, &DirectoryImporter::Process, this);
 }
 
+void DirectoryImporter::ImportVersions(const std::vector<SharedMediaClip>& media, int maxlevel)
+{
+    m_MaxLevel = maxlevel;
+    m_Cancelled.store(false);
+    m_Media = media;
+
+    m_Worker = std::async(std::launch::async, &DirectoryImporter::ProcessVersions, this);
+}
+
 void DirectoryImporter::Process()
 {
     std::vector<MediaStruct> media;
@@ -95,7 +104,49 @@ void DirectoryImporter::Process()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    emit finishedImporting();
+    emit finishedImporting({static_cast<int>(media.size()), count, ImportType::MEDIA, m_Cancelled});
+    emit finished();
+}
+
+void DirectoryImporter::ProcessVersions()
+{
+    std::vector<MediaStruct> media;
+    for (const SharedMediaClip& clip : m_Media)
+    {
+        const Frame* f = clip->InternalFrame(clip->FirstFrame());
+        const std::string directory = std::filesystem::path(f->Entry().Basepath()).parent_path().string();
+        const ElementTokens& tokens = f->Entry().Tokens();
+        Core::Project* project = clip->Project();
+
+        std::vector<MediaStruct> out = GetVersionedMedia(directory, tokens, project->AvailableVersionNumbers(tokens.name));
+
+        media.reserve(media.size() + out.size());
+        media.insert(media.end(), std::make_move_iterator(out.begin()), std::make_move_iterator(out.end()));
+    }
+
+    if (media.empty() || m_Cancelled.load())
+    {
+        emit finished();
+        return;
+    }
+
+    emit startedImporting();
+    emit maxCount(media.size());
+
+    int count = 0;
+    for (MediaStruct m : media)
+    {
+        if (m_Cancelled.load())
+            break;
+
+        emit progressUpdated(++count);
+        emit mediaFound(QString::fromStdString(m.FirstPath()));
+
+        // Add delay to allow user cancellations/interactions with the ui
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    emit finishedImporting({static_cast<int>(media.size()), count, ImportType::VERSIONS, m_Cancelled});
     emit finished();
 }
 
@@ -188,6 +239,86 @@ std::vector<MediaStruct> DirectoryImporter::GetMedia(const std::string& director
                 continue;
 
             /* Flag to control what happens with the entry */
+            bool new_entry = true;
+
+            /**
+             * Iterate over what we have in our vector currently
+             * i.e. the media structs to see if this entry belongs to any one of them
+             * if so, this gets added there, else we create a new media struct from it
+             */
+            for (MediaStruct& m : vec)
+            {
+                /**
+                 * The entry belongs to this Media Struct don't have to add it again
+                 * this search is going to be used to import media via the UndoQueue
+                 * which only needs path of a single media from it
+                 */
+                if (m.Validate(e))
+                {
+                    new_entry = false;
+                    break;
+                }
+            }
+
+            /* Check if no entry in the MediaStruct adopted our newly created Media entry */
+            if (new_entry)
+            {
+                vec.push_back(MediaStruct(e, type));
+            }
+        }
+    }
+    catch (const std::filesystem::filesystem_error& exc)
+    {
+        VOID_LOG_ERROR(exc.what());
+    }
+
+    return vec;
+}
+
+std::vector<MediaStruct>
+DirectoryImporter::GetVersionedMedia(const std::string& directory, const ElementTokens& entokens, const std::unordered_set<int>& existing, int level) const
+{
+    std::vector<MediaStruct> vec;
+    if (!entokens.HasVersion())
+        return vec;
+
+    try
+    {
+        for (std::filesystem::directory_entry entry : std::filesystem::directory_iterator(directory))
+        {
+            if (m_Cancelled.load())
+                return vec;
+
+            // Recurse through the directory if the level allows
+            if (entry.is_directory() && level <= m_MaxLevel)
+            {
+                // Get all media inside the directory
+                std::vector<MediaStruct> out = std::move(GetVersionedMedia(entry.path().string(), entokens, existing, level + 1));
+
+                vec.reserve(vec.size() + out.size());
+                vec.insert(vec.end(), std::make_move_iterator(out.begin()), std::make_move_iterator(out.end()));
+                continue;
+            }
+
+            MEntry e(entry.path().string());
+            MediaType type = MHelper::GetMediaType(e);
+
+            if (type == MediaType::NonMedia)
+                continue;
+
+            /**
+             * Ensure that we're only looking at entries which are similar to the existing one (i.e. having the same name)
+             * but if the entry is the same as the requestor, we ignore it
+             * also, we ignore any entry whose version number is already present in the project
+             */
+            ElementTokens tokens = e.Tokens();
+            if (tokens == entokens || !tokens.Similar(entokens))
+                continue;
+
+            if (existing.find(tokens.vnum) != existing.end())
+                continue;
+
+            // Flag to control what happens with the entry
             bool new_entry = true;
 
             /**

@@ -41,6 +41,7 @@ public:
     inline const std::string& Path() const { return m_Entry.Fullpath(); }
     inline const std::string& Name() const { return m_Entry.Name(); }
     inline const std::string& Extension() const { return m_Entry.Extension(); }
+    inline const MEntry& Entry() const { return m_Entry; }
     
     // Frame Attribs
     inline v_frame_t Framenumber() const { return m_Framenumber; }

@@ -53,10 +53,16 @@ public:
      * Offset: 1000
      */
     void SetMedia(const SharedMediaClip& media, v_frame_t offset = 0);
+    void ResetMedia(const SharedMediaClip& media);
     void SetRange(v_frame_t start, v_frame_t end);
 
     bool Linked() const { return (bool)m_Media; }
     void Unlink();
+
+    bool VersionUp();
+    bool VersionDown();
+    bool SetLatestAvailableVersion();
+    bool SetMinAvailableVersion();
 
     std::size_t Index() const;
 
@@ -69,6 +75,8 @@ public:
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
     SequenceFrame InternalFrame(v_frame_t frame);
+
+    const ElementTokens& Tokens() const { return m_Media->Tokens(); }
 
     std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
     Effect* CreateEffect(const std::string& type);

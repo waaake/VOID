@@ -37,6 +37,7 @@ public:
      * @return MFrameRange Visible frame range.
      */
     MFrameRange VisibleRange() const;
+    const STimelineScene* TimelineScene() const { return m_Scene; }
 
 signals:
     void sequenceCutRequested(v_frame_t);

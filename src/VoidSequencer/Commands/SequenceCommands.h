@@ -407,6 +407,66 @@ private:
     Sequence::Context m_ActedCtx;
 };
 
+class VersionUpTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit VersionUpTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+};
+
+class MaxVersionTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit MaxVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+    int m_PreviousRow;
+};
+
+class VersionDownTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit VersionDownTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+};
+
+class MinVersionTrackItemCommand : public VoidUndoCommand
+{
+public:
+    explicit MinVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+    int m_PreviousRow;
+};
+
+class ResetTrackItemMediaCommand : public VoidUndoCommand
+{
+public:
+    ResetTrackItemMediaCommand(const SharedTrackItem& item, const SharedMediaClip& media, QUndoCommand* parent = nullptr);
+    ResetTrackItemMediaCommand(const SharedTrackItem& item, const QModelIndex& index, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+    int m_RequestedRow;
+    int m_PreviousRow;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _SEQUENCE_COMMANDS_H

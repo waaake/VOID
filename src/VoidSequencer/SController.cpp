@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <algorithm>
+
 /* Internal */
 #include "SController.h"
 #include "STimelineScene.h"
@@ -410,6 +413,73 @@ void SequencerController::RemoveTimelineEffects(const std::unordered_set<Effect*
             stack->push(new DeleteTrackEffectCommand(effect));
         else
             stack->push(new DeleteTimelineEffectCommand(effect));
+    }
+
+    stack->endMacro();
+}
+
+void SequencerController::ResetMedia(const SharedTrackItem& item, const QModelIndex& index)
+{
+    _MediaBridge.PushCommand(new ResetTrackItemMediaCommand(item, index));
+}
+
+void SequencerController::ResetMedia(const SharedTrackItem& item, const SharedMediaClip& media)
+{
+    _MediaBridge.PushCommand(new ResetTrackItemMediaCommand(item, media));
+}
+
+void SequencerController::ScanVersions(const std::unordered_set<SharedTrackItem>& items)
+{
+    std::vector<SharedMediaClip> clips;
+    clips.resize(items.size());
+
+    std::transform(
+        items.begin(),
+        items.end(),
+        clips.begin(),
+        [](const SharedTrackItem& item) -> SharedMediaClip
+        {
+            return item->GetMedia();
+        }
+    );
+
+    Project* p = _MediaBridge.ActiveProject();
+    p->ImportVersions(clips);
+}
+
+void SequencerController::SwitchVersion(const std::unordered_set<SharedTrackItem>& items, bool up)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    if (up)
+    {
+        stack->beginMacro("Version up TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new VersionUpTrackItemCommand(item));
+    }
+    else
+    {
+        stack->beginMacro("Version down TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new VersionDownTrackItemCommand(item));
+    }
+
+    stack->endMacro();
+}
+
+void SequencerController::SwitchVersionExtremes(const std::unordered_set<SharedTrackItem>& items, bool max)
+{
+    QUndoStack* stack = _MediaBridge.UndoStack();
+    if (max)
+    {
+        stack->beginMacro("Max Version TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new MaxVersionTrackItemCommand(item));
+    }
+    else
+    {
+        stack->beginMacro("Min Version TrackItem(s)");
+        for (const SharedTrackItem& item : items)
+            stack->push(new MinVersionTrackItemCommand(item));
     }
 
     stack->endMacro();

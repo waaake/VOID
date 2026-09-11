@@ -32,6 +32,10 @@ signals:
     void colorChangeRequested(bool reset = false);
     void editModeChangeRequested(const SequencerController::EditMode&);
     void addEffectRequested(const std::string&);
+    void versionChangeRequested(bool up);
+    void versionExtremesChangeRequested(bool max);
+    void versionInspectionRequested();
+    void versionScanRequested();
 
 private:
     QPoint m_ExecPosition;
@@ -48,6 +52,14 @@ private:
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;
     QAction* m_ResetItemColorAction;
+
+    QMenu* m_VersionMenu;
+    QAction* m_ScanDirectoryAction;
+    QAction* m_InspectVersionsAction;
+    QAction* m_VersionUpAction;
+    QAction* m_VersionDownAction;
+    QAction* m_MaxVersionAction;
+    QAction* m_MinVersionAction;
 
     QMenu* m_EditModeMenu;
     QAction* m_NoOverwriteAction;

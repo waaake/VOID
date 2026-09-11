@@ -611,7 +611,8 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
     connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
     connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
-    connect(ptr, &PlaybackTrack::itemStateChanged, this, &PlaybackSequence::HandleItemStateChanged);
+    connect(ptr, &PlaybackTrack::itemStateChanged, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemUpdated, this, &PlaybackSequence::HandleItemUpdated);
 }
 
 void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
@@ -619,7 +620,7 @@ void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
     auto* ptr = track.get();
     connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
-    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
+    // connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
 }
 
 void PlaybackSequence::ResizeBuffer(std::size_t size)
@@ -678,7 +679,7 @@ void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
         UpdateBuffer(item->TimelineRange());
 }
 
-void PlaybackSequence::HandleItemStateChanged(const SharedTrackItem& item)
+void PlaybackSequence::HandleItemUpdated(const SharedTrackItem& item)
 {
     UpdateBuffer(item->TimelineRange());
 }

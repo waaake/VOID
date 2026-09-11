@@ -118,12 +118,17 @@ TrackItem& TrackItem::operator=(TrackItem&& other) noexcept
 
 void TrackItem::SetMedia(const SharedMediaClip& media, v_frame_t offset)
 {
-    /* Update the underlying media and relevant offset */
     m_Media = media;
     m_Offset = offset;
 
-    /* Once the Media has been updated -> emit mediaChanged signal */
     emit mediaChanged();
+}
+
+void TrackItem::ResetMedia(const SharedMediaClip& media)
+{
+    // TODO: Check on offset and source in
+    m_Media = media;
+    emit updated();
 }
 
 void TrackItem::SetRange(v_frame_t start, v_frame_t end)
@@ -140,6 +145,82 @@ void TrackItem::Unlink()
 {
     m_Media.reset();
     emit updated();
+}
+
+bool TrackItem::VersionUp()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+
+        // The clips are sorted in descending order and we're looking to get the current clip
+        // and go backwards to get a clip with just a version higher than current
+        for (int i = 0; i < static_cast<int>(clips.size()); ++i)
+        {
+            if (m_Media.get() == clips[i].get() && i != 0)
+            {
+                ResetMedia(clips[i - 1]);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool TrackItem::VersionDown()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+
+        // The clips are sorted in descending order and we're looking to get the current clip
+        // and go backwards to get a clip with just a version higher than current
+        for (int i = 0; i < static_cast<int>(clips.size()); ++i)
+        {
+            if (m_Media.get() == clips[i].get() && (i + 1) < static_cast<int>(clips.size()))
+            {
+                ResetMedia(clips[i + 1]);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool TrackItem::SetLatestAvailableVersion()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+        const SharedMediaClip& clip = clips.front();
+
+        if (clip.get() != m_Media.get())
+        {
+            ResetMedia(clip);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TrackItem::SetMinAvailableVersion()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+        const SharedMediaClip& clip = clips.back();
+
+        if (clip.get() != m_Media.get())
+        {
+            ResetMedia(clip);
+            return true;
+        }
+    }
+    return false;
 }
 
 std::size_t TrackItem::Index() const

@@ -144,7 +144,7 @@ void MEntry::Parse(const std::string& path)
     m_Basepath = filepath.parent_path().string();
     std::string filename = filepath.filename().string();
 
-    size_t lastDot = filename.find_last_of(".");
+    std::size_t lastDot = filename.find_last_of(".");
     std::string remaining = filename.substr(0, lastDot);
 
     m_Extension = filename.substr(lastDot + 1);
@@ -281,6 +281,29 @@ std::string MEntry::ResolvedPath(v_frame_t frame) const
 
     // The internals are not templated and we don't want to resolve to another frame directly
     return m_Path;
+}
+
+ElementTokens MEntry::Tokens() const
+{
+    /**
+     * A file path (or an element) can have version embedded within the name for e.g. bt01_002_0020_v001
+     * but sometimes it could only be mentioned in the path for e.g.
+     * /projects/rom/renders/lighting/rt_01_0350_0040/v005/rt_01_0350_0040.####.exr
+     * as a check, we'll start with the name first, if it's not found in the name, we'll check the path
+     * else No Version (unless we provide one to it, but that can be handled at the media level)
+     */
+    std::string_view name = m_Name;
+    std::size_t pos = name.rfind('_');
+    if (pos != std::string_view::npos && (pos + 1) < name.size())
+    {
+        if (name[pos + 1] == 'v' || name[pos + 1] == 'V')
+            return ElementTokens(m_Name.substr(0, pos), m_Name.substr(pos + 1));
+    }
+
+    std::filesystem::path p(m_Basepath);
+    std::string stem(p.stem().string());
+
+    return (stem[0] == 'v' || stem[0] == 'V') ? ElementTokens(m_Name, stem) : ElementTokens(m_Name);
 }
 
 /* }}} */

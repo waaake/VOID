@@ -66,6 +66,11 @@ public:
     void CreateEffect(const std::unordered_set<SharedPlaybackTrack>& tracks, const std::string& type);
     void CreateEffect(const std::unordered_set<SharedTrackItem>& items, const std::string& type);
     void RemoveTimelineEffects(const std::unordered_set<Effect*>& effects);
+    void ResetMedia(const SharedTrackItem& item, const QModelIndex& index);
+    void ResetMedia(const SharedTrackItem& item, const SharedMediaClip& media);
+    void ScanVersions(const std::unordered_set<SharedTrackItem>& items);
+    void SwitchVersion(const std::unordered_set<SharedTrackItem>& items, bool up);
+    void SwitchVersionExtremes(const std::unordered_set<SharedTrackItem>& items, bool max);
 
     STrack* TrackAt(const QPointF& position) const;
     STrack* TrackAt(int index) const;

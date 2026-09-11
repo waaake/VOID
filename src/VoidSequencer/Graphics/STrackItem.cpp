@@ -41,17 +41,17 @@ STrackItem::STrackItem(const SharedTrackItem& item, SequencerContext* context, Q
 
 STrackItem::~STrackItem()
 {
-    // m_Context->Controller()->RemoveFromScene(m_HeadHandle);
+    m_Context->Controller()->RemoveFromScene(m_HeadHandle);
     m_HeadHandle->deleteLater();
     delete m_HeadHandle;
     m_HeadHandle = nullptr;
 
-    // m_Context->Controller()->RemoveFromScene(m_TailHandle);
+    m_Context->Controller()->RemoveFromScene(m_TailHandle);
     m_TailHandle->deleteLater();
     delete m_TailHandle;
     m_TailHandle = nullptr;
 
-    // m_Context->Controller()->RemoveFromScene(m_DurationHandle);
+    m_Context->Controller()->RemoveFromScene(m_DurationHandle);
     m_DurationHandle->deleteLater();
     delete m_DurationHandle;
     m_DurationHandle = nullptr;
@@ -77,7 +77,14 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
         painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
 
         painter->setPen(option->palette.color(QPalette::Text));
-        painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+        const ElementTokens& tokens = m_Item->Tokens();
+        painter->drawText(
+            boundingRect().adjusted(10, 0, -2, 0),
+            Qt::AlignLeft | Qt::AlignTop,
+            tokens.HasVersion()
+            ? QString("%1 (%2)").arg(m_Item->Name().c_str()).arg(tokens.version.c_str())
+            : m_Item->Name().c_str()
+        );
 
         if (width < 40)
             return;
