@@ -62,6 +62,7 @@ void SequencerContextMenu::Build()
     m_VersionMenu = new QMenu("Version", this);
     m_InspectVersionsAction = new QAction("Inspect Versions", m_VersionMenu);
     m_InspectVersionsAction->setShortcut(QKeySequence(Qt::Key_V));
+    m_ScanDirectoryAction = new QAction("Scan Directory for Versions", m_VersionMenu);
     m_VersionUpAction = new QAction("Version Up", m_VersionMenu);
     m_VersionUpAction->setShortcut(QKeySequence("Alt+Up"));
     m_VersionDownAction = new QAction("Version Down", m_VersionMenu);
@@ -74,6 +75,7 @@ void SequencerContextMenu::Build()
     p->addAction(m_VersionUpAction);
     p->addAction(m_VersionDownAction);
     m_VersionMenu->addAction(m_InspectVersionsAction);
+    m_VersionMenu->addAction(m_ScanDirectoryAction);
     m_VersionMenu->addAction(m_VersionUpAction);
     m_VersionMenu->addAction(m_VersionDownAction);
     m_VersionMenu->addAction(m_MaxVersionAction);
@@ -132,6 +134,7 @@ void SequencerContextMenu::Connect()
     connect(m_MaxVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(true); });
     connect(m_MinVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(false); });
     connect(m_InspectVersionsAction, &QAction::triggered, this, &SequencerContextMenu::versionInspectionRequested);
+    connect(m_ScanDirectoryAction, &QAction::triggered, this, &SequencerContextMenu::versionScanRequested);
 }
 
 void SequencerContextMenu::Validate()
@@ -156,6 +159,7 @@ void SequencerContextMenu::Validate()
     m_ResetItemColorAction->setEnabled(itemSelection);
 
     m_InspectVersionsAction->setEnabled(itemSelection);
+    m_ScanDirectoryAction->setEnabled(itemSelection);
     m_VersionUpAction->setEnabled(itemSelection);
     m_VersionDownAction->setEnabled(itemSelection);
     m_MinVersionAction->setEnabled(itemSelection);

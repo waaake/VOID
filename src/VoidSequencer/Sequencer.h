@@ -91,6 +91,7 @@ private: /* Methods */
     void SwitchVersion(bool up);
     void SwitchVersionExtremes(bool max);
     void InspectVersions();
+    void ScanVersions();
 };
 
 VOID_NAMESPACE_CLOSE

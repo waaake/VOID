@@ -35,6 +35,7 @@ signals:
     void versionChangeRequested(bool up);
     void versionExtremesChangeRequested(bool max);
     void versionInspectionRequested();
+    void versionScanRequested();
 
 private:
     QPoint m_ExecPosition;
@@ -53,6 +54,7 @@ private:
     QAction* m_ResetItemColorAction;
 
     QMenu* m_VersionMenu;
+    QAction* m_ScanDirectoryAction;
     QAction* m_InspectVersionsAction;
     QAction* m_VersionUpAction;
     QAction* m_VersionDownAction;

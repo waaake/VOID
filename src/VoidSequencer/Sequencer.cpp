@@ -285,6 +285,7 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::versionChangeRequested, this, &SequencerTimeline::SwitchVersion);
     connect(m_Menu, &SequencerContextMenu::versionExtremesChangeRequested, this, &SequencerTimeline::SwitchVersionExtremes);
     connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
+    connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)
@@ -400,7 +401,7 @@ void SequencerTimeline::InspectVersions()
     if (items.size() == 1)
     {
         const SharedTrackItem& item = *items.begin();
-        
+
         const STimelineScene* scene = m_View->TimelineScene();
         const STrack* track = scene->TrackAt(item->Track()->Index());
         const STrackItem* sitem = track->Item(item);
@@ -408,6 +409,13 @@ void SequencerTimeline::InspectVersions()
         QPoint pos = mapToGlobal(m_View->mapFromScene(sitem->scenePos()));
         m_VersionSwitcher->Exec(item, QPoint(pos.x() - 100, pos.y()));
     }
+}
+
+void SequencerTimeline::ScanVersions()
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackItemSelection())
+        m_Context.Controller()->ScanVersions(sel->SelectedItems());
 }
 
 VOID_NAMESPACE_CLOSE
