@@ -33,6 +33,7 @@ public:
 
     void ImportDirectory(const std::string& directory, bool progressive = true);
     void ImportDirectory(const std::vector<std::string>& directories, bool progressive = true);
+    void ImportVersions(const std::vector<SharedMediaClip>& clips);
 
     /**
      * The serialized string for the project can be used to construct the project from it

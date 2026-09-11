@@ -53,12 +53,17 @@ void Project::ImportDirectory(const std::vector<std::string>& directories, bool 
         ImportDirectory_(directory);
 }
 
+void Project::ImportVersions(const std::vector<SharedMediaClip>& clips)
+{
+    SetupProgressTask();
+    m_DirectoryImporter->ImportVersions(clips, 2);
+}
+
 void Project::ImportDirectoryP(const std::string& directory)
 {
     SetupProgressTask();
     m_DirectoryImporter->Import(directory, 5);
 }
-
 
 void Project::ImportDirectory_(const std::string& path)
 {
@@ -72,10 +77,10 @@ void Project::ImportDirectory_(const std::string& path)
             if (entry.is_regular_file())
             {
                 MEntry e(entry.path().string());
-    
+
                 /* Flag to control what happens with the entry */
                 bool new_entry = true;
-    
+
                 if (!e.SingleFile())
                 {
                     /**
@@ -97,7 +102,7 @@ void Project::ImportDirectory_(const std::string& path)
                         }
                     }
                 }
-    
+
                 /* Check if no entry in the MediaStruct adopted our newly created Media entry */
                 if (new_entry)
                     vec.push_back(MediaStruct(e, MHelper::GetMediaType(e)));
@@ -132,7 +137,7 @@ Project* Project::FromDocument(const std::string& document)
 Project* Project::FromStream(std::istream& in)
 {
     const std::string name = ReadString(in);
-    
+
     int version;
     in.read(reinterpret_cast<char*>(&version), sizeof(version));
 
