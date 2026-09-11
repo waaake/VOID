@@ -68,6 +68,7 @@ public:
     void RemoveTimelineEffects(const std::unordered_set<Effect*>& effects);
     void ResetMedia(const SharedTrackItem& item, const QModelIndex& index);
     void ResetMedia(const SharedTrackItem& item, const SharedMediaClip& media);
+    void ScanVersions(const std::unordered_set<SharedTrackItem>& items);
     void SwitchVersion(const std::unordered_set<SharedTrackItem>& items, bool up);
     void SwitchVersionExtremes(const std::unordered_set<SharedTrackItem>& items, bool max);
 

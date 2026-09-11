@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <algorithm>
+
 /* Internal */
 #include "SController.h"
 #include "STimelineScene.h"
@@ -423,6 +426,25 @@ void SequencerController::ResetMedia(const SharedTrackItem& item, const QModelIn
 void SequencerController::ResetMedia(const SharedTrackItem& item, const SharedMediaClip& media)
 {
     _MediaBridge.PushCommand(new ResetTrackItemMediaCommand(item, media));
+}
+
+void SequencerController::ScanVersions(const std::unordered_set<SharedTrackItem>& items)
+{
+    std::vector<SharedMediaClip> clips;
+    clips.resize(items.size());
+
+    std::transform(
+        items.begin(),
+        items.end(),
+        clips.begin(),
+        [](const SharedTrackItem& item) -> SharedMediaClip
+        {
+            return item->GetMedia();
+        }
+    );
+
+    Project* p = _MediaBridge.ActiveProject();
+    p->ImportVersions(clips);
 }
 
 void SequencerController::SwitchVersion(const std::unordered_set<SharedTrackItem>& items, bool up)
