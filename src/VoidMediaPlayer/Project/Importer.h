@@ -20,6 +20,23 @@
 
 VOID_NAMESPACE_OPEN
 
+enum class ImportType : uint8_t
+{
+    MEDIA,
+    VERSIONS
+};
+
+struct ImportLog
+{
+    int max;
+    int count;
+    ImportType type;
+    bool cancelled;
+
+    ImportLog(int max, int count, const ImportType& type, bool cancelled = false)
+        : max(max), count(count), type(type), cancelled(cancelled) {}
+};
+
 class DirectoryImporter : public QObject
 {
     Q_OBJECT
@@ -38,7 +55,7 @@ signals:
     void mediaFound(const QString&);
 
     void startedImporting();
-    void finishedImporting();
+    void finishedImporting(const ImportLog&);
 
     void finished();
 

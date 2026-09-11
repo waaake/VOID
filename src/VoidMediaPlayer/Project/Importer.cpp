@@ -104,7 +104,7 @@ void DirectoryImporter::Process()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    emit finishedImporting();
+    emit finishedImporting({static_cast<int>(media.size()), count, ImportType::MEDIA, m_Cancelled});
     emit finished();
 }
 
@@ -146,7 +146,7 @@ void DirectoryImporter::ProcessVersions()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    emit finishedImporting();
+    emit finishedImporting({static_cast<int>(media.size()), count, ImportType::VERSIONS, m_Cancelled});
     emit finished();
 }
 
