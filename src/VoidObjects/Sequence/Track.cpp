@@ -41,6 +41,11 @@ int PlaybackTrack::EffectIndex(const Effect* const effect) const
     return it == m_Effects.end() ? -1 : it - m_Effects.begin();
 }
 
+SharedTrackItem PlaybackTrack::ItemInRange(v_frame_t start, v_frame_t end) const
+{
+    return (start > m_EndFrame) ? nullptr : m_Items.InRange(start, end);
+}
+
 Effect* PlaybackTrack::CreateEffect(const std::string& effect)
 {
     // Can only be created at the timeline level, if there are no current track items on it

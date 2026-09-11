@@ -75,7 +75,7 @@ void SPreviewTrackItem::CalculateBoundingBox()
 
 bool SPreviewTrackItem::CanDrop() const
 {
-    QPointF position = pos();
+    const QPointF position = pos();
     if (STrack* track = m_Context->Controller()->TrackAt(position))
     {
         if (const SharedPlaybackTrack ptrack = track->Track())
