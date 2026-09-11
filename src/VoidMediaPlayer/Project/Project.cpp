@@ -10,6 +10,7 @@
 #include "VoidCore/Logging.h"
 #include "VoidCore/Profiler.h"
 #include "VoidMediaPlayer/Commands/MediaCommands.h"
+#include "VoidQExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -177,8 +178,7 @@ void Project::SetupImporter()
         m_UndoStack->beginMacro("Import Directory");
         m_ProgressTask->SetTaskType("Importing...");
     });
-    connect(m_DirectoryImporter, &DirectoryImporter::finishedImporting, this, [this]() -> void { m_UndoStack->endMacro(); });
-
+    connect(m_DirectoryImporter, &DirectoryImporter::finishedImporting, this, &Project::FinishImporting);
     connect(m_DirectoryImporter, &DirectoryImporter::mediaFound, this, [this](const QString& path) -> void
     {
         m_ProgressTask->SetCurrentTask(path.toStdString().c_str());
@@ -211,6 +211,18 @@ void Project::CancelImporting()
     if (m_DirectoryImporter)
         m_DirectoryImporter->Cancel();
     DeleteProgressTask();
+}
+
+void Project::FinishImporting(const ImportLog& log)
+{
+    m_UndoStack->endMacro();
+
+    if (log.type == ImportType::VERSIONS)
+    {
+        QString info("Found %1 new versions.");
+        InfoMessageBox box(info.arg(log.count));
+        box.exec();
+    }
 }
 
 VOID_NAMESPACE_CLOSE

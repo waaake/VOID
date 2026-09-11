@@ -55,6 +55,7 @@ private: /* Methods */
     void SetupImporter();
     void DeleteImporter();
     void CancelImporting();
+    void FinishImporting(const ImportLog& log);
     /**
      * Imports Directory with progress and allowing users to cancel the operation
      */
