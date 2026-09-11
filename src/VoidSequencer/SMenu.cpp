@@ -62,7 +62,7 @@ void SequencerContextMenu::Build()
     m_VersionMenu = new QMenu("Version", this);
     m_InspectVersionsAction = new QAction("Inspect Versions", m_VersionMenu);
     m_InspectVersionsAction->setShortcut(QKeySequence(Qt::Key_V));
-    m_ScanDirectoryAction = new QAction("Scan Directory for Versions", m_VersionMenu);
+    m_ScanDirectoryAction = new QAction("Scan for Versions", m_VersionMenu);
     m_VersionUpAction = new QAction("Version Up", m_VersionMenu);
     m_VersionUpAction->setShortcut(QKeySequence("Alt+Up"));
     m_VersionDownAction = new QAction("Version Down", m_VersionMenu);
