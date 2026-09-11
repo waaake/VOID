@@ -262,18 +262,21 @@ void EntityModel::Remove(const QModelIndex& index, bool destroy)
     if (row < static_cast<int>(m_Media.size()))
     {
         SharedMediaClip clip = m_Media.at(row);
-        m_Media.erase(std::remove(m_Media.begin(), m_Media.end(), clip));
+        m_Media.erase(m_Media.begin() + row);
 
-        /* Now Kill the clip */
         if (destroy)
             clip.get()->deleteLater();
+
+        endRemoveRows();
+        emit updated();
+        return;
     }
 
     unsigned int srow = row - static_cast<int>(m_Media.size());
     if (srow < static_cast<int>(m_Sequences.size()))
     {
         const SharedPlaybackSequence& sequence = m_Sequences.at(srow);
-        m_Sequences.erase(std::remove(m_Sequences.begin(), m_Sequences.end(), sequence));
+        m_Sequences.erase(m_Sequences.begin() + srow);
 
         if (destroy) sequence.get()->deleteLater();
     }
