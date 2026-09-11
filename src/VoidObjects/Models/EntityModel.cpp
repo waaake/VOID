@@ -367,6 +367,19 @@ std::vector<SharedMediaClip> EntityModel::AvailableVersions(const std::string& n
     return clips;
 }
 
+std::unordered_set<int> EntityModel::AvailableVersionNumbers(const std::string& name) const
+{
+    std::unordered_set<int> versions;
+    for (auto& media : m_Media)
+    {
+        const ElementTokens& tokens = media->Tokens();
+        if (tokens.Similar(name))
+            versions.insert(tokens.vnum);
+    }
+
+    return versions;
+}
+
 // void EntityModel::Update()
 // {
 //     if (m_Media.empty())
