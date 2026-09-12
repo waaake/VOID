@@ -82,20 +82,20 @@ void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt
     f.readPixels(dw.min.y, dw.max.y);
 
     image->buffer.Resize(image->width * image->height * image->channels);
-    const std::size_t pixelcount = static_cast<std::size_t>(m_Image->width) * m_Image->height;
+    const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
     const Imf::Rgba* source = &pixels[0][0];
     unsigned char* im = image->buffer.Data();
 
-    for (std::size_t i = 0; i < pixelcount; ++i)
+    #pragma omp parallel for
+    for (int64_t i = 0; i < pixelcount; ++i)
     {
         const Imf::Rgba pixel = source[i];
+        const int index = i * 4;
 
-        im[0] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
-        im[1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
-        im[2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
-        im[3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
-
-        im += 4;
+        im[index + 0] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
+        im[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
+        im[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
+        im[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
     }
 }
 
@@ -134,20 +134,20 @@ void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& i
 
     image->buffer.Resize(image->width * image->height * image->channels);
 
-    const std::size_t pixelcount = static_cast<std::size_t>(image->width) * image->height;
+    const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
     const Imf::Rgba* source = &pixels[0][0];
     float* im = image->buffer.Data();
 
-    for (std::size_t i = 0; i < pixelcount; ++i)
+    #pragma omp parallel for
+    for (int64_t i = 0; i < pixelcount; ++i)
     {
         const Imf::Rgba pixel = source[i];
+        const int index = i * 4;
 
-        im[0] = pixel.r;
-        im[1] = pixel.g;
-        im[2] = pixel.b;
-        im[3] = pixel.a;
-
-        im += 4;
+        im[index + 0] = pixel.r;
+        im[index + 1] = pixel.g;
+        im[index + 2] = pixel.b;
+        im[index + 3] = pixel.a;
     }
 }
 
@@ -185,21 +185,21 @@ void OpenEXRReader::Read()
     f.readPixels(dw.min.y, dw.max.y);
 
     m_Image->buffer.Resize(m_Image->width * m_Image->height * m_Image->channels);
-    const std::size_t pixelcount = static_cast<std::size_t>(m_Image->width) * m_Image->height;
+    const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
 
     const Imf::Rgba* source = &pixels[0][0];
-    float* image = m_Image->buffer.Data();
+    float* im = m_Image->buffer.Data();
 
-    for (std::size_t i = 0; i < pixelcount; ++i)
+    #pragma omp parallel for
+    for (int64_t i = 0; i < pixelcount; ++i)
     {
         const Imf::Rgba pixel = source[i];
+        const int index = i * 4;
 
-        image[0] = pixel.r;
-        image[1] = pixel.g;
-        image[2] = pixel.b;
-        image[3] = pixel.a;
-
-        image += 4;
+        im[index + 0] = pixel.r;
+        im[index + 1] = pixel.g;
+        im[index + 2] = pixel.b;
+        im[index + 3] = pixel.a;
     }
 }
 
