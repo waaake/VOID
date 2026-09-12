@@ -2,12 +2,12 @@
 // Licensed under the MIT License
 
 /* STD */
-#include <memory>
 #include <algorithm>
+#include <execution>
+#include <memory>
 
 /* Internal */
 #include "FFmpegReader.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -17,7 +17,8 @@ VOID_NAMESPACE_OPEN
 // For now we allow 16 as something to test as well
 static constexpr std::size_t MAX_DECODERS = 16;
 
-/* FFmpegDecoder {{{ */
+/// FFmpegDecoder
+
 FFmpegDecoder::FFmpegDecoder()
     : m_Path("")
     , m_CurrentFrame(0)
@@ -66,7 +67,7 @@ FFmpegDecoder& FFmpegDecoder::Instance(const std::string& path)
 
 void FFmpegDecoder::Open()
 {
-    /* Allocate Frames with default values */
+    // Allocate Frames with default values
     m_Frame = av_frame_alloc();
     m_RGBFrame = av_frame_alloc();
     m_Packet = av_packet_alloc();
@@ -80,24 +81,22 @@ void FFmpegDecoder::Open()
     m_StreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
 
     m_CurrentFrame = 0;
-    if (m_StreamID < 0)
-        return;
+    if (m_StreamID < 0) return;
 
     m_Stream = m_FormatContext->streams[m_StreamID];
-
     AVCodecParameters* codecParams = m_Stream->codecpar;
 
     const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
     m_CodecContext = avcodec_alloc_context3(codec);
 
-    // if (m_CodecContext->pix_fmt == AV_PIX_FMT_RGBA)
-    //     m_Channels = 4;
+    if (m_CodecContext->pix_fmt == AV_PIX_FMT_RGBA)
+        m_Channels = 4;
 
-    /* Update the codec context based on the values from the codec params */
+    // Update the codec context based on the values from the codec params
     avcodec_parameters_to_context(m_CodecContext, codecParams);
     avcodec_open2(m_CodecContext, codec, nullptr);
 
-    /* Update the resolution information */
+    // Update the resolution information
     m_Width = m_CodecContext->width;
     m_Height = m_CodecContext->height;
 }
@@ -117,7 +116,7 @@ void FFmpegDecoder::Close()
     if (m_SwsContext) sws_free_context(&m_SwsContext);
     #endif
 
-    /* The read stream ID */
+    // The read stream ID
     m_StreamID = -1;
 }
 
@@ -131,7 +130,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
      */
     std::lock_guard<std::mutex> guard(m_Mutex);
 
-    /* A new movie is being read */
+    // A new movie is being read
     if (path != m_Path)
     {
         Close();
@@ -141,19 +140,16 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
 
     m_Buffer.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
     pixels.Resize(m_Buffer.Size());
-
     av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, m_Buffer.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
-
     m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
-    /* Now we start */
     bool found = false;
     int retryCount = 0;
 
     int distance = 0;
     bool seeked = false;
 
-    /* Retry seeking for 3 times before giving up */
+    // Retry seeking for 3 times before giving up
     while (!found && retryCount < 3)
     {
         /**
@@ -164,8 +160,8 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
          * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
          */
         distance = static_cast<int>(framenumber - m_CurrentFrame);
-        /* Decode the next frame and it returns back either a negative value or the decoded frame */
-        v_frame_t ret = DecodeNextFrame((distance < 10));
+        // Decode the next frame and it returns back either a negative value or the decoded frame
+        v_frame_t ret = DecodeNextFrame((distance < 2));
 
         /**
          * Then we check if the return value was greater than the requested frame
@@ -175,13 +171,11 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
          */
         if (ret > framenumber || ret == -1)
         {
-            /* Seek */
             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
-            /* Seek the closest keyframe before the framenumber */
+            // Seek the closest keyframe before the framenumber
             av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
             avcodec_flush_buffers(m_CodecContext);
 
-            /* Increment the retry count */
             retryCount++;
         }
         else if (ret == framenumber)
@@ -193,7 +187,6 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
         }
         else if (distance > 20 && !seeked)
         {
-            /* Seek */
             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
             /**
              * Seek the framenumber
@@ -219,7 +212,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
      */
     std::lock_guard<std::mutex> guard(m_Mutex);
 
-    /* A new movie is being read */
+    // A new movie is being read
     if (path != m_Path)
     {
         Close();
@@ -229,17 +222,15 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
 
     pixels.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
     av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
-
     m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
 
-    /* Now we start */
     bool found = false;
     int retryCount = 0;
 
     int distance = 0;
     bool seeked = false;
 
-    /* Retry seeking for 3 times before giving up */
+    // Retry seeking for 3 times before giving up
     while (!found && retryCount < 3)
     {
         /**
@@ -250,8 +241,8 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
          * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
          */
         distance = static_cast<int>(framenumber - m_CurrentFrame);
-        /* Decode the next frame and it returns back either a negative value or the decoded frame */
-        v_frame_t ret = DecodeNextFrame((distance < 10));
+        // Decode the next frame and it returns back either a negative value or the decoded frame
+        v_frame_t ret = DecodeNextFrame((distance < 2));
 
         /**
          * Then we check if the return value was greater than the requested frame
@@ -261,13 +252,11 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
          */
         if (ret > framenumber || ret == -1)
         {
-            /* Seek */
             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
-            /* Seek the closest keyframe before the framenumber */
+            // Seek the closest keyframe before the framenumber
             av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
             avcodec_flush_buffers(m_CodecContext);
 
-            /* Increment the retry count */
             retryCount++;
         }
         else if (ret == framenumber)
@@ -278,7 +267,6 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
         }
         else if (distance > 20 && !seeked)
         {
-            /* Seek */
             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
             /**
              * Seek the framenumber
@@ -296,7 +284,6 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
 
 v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
 {
-    /* Read the next frame from the packet */
     if (av_read_frame(m_FormatContext, m_Packet) < 0)
         return -1;
 
@@ -317,18 +304,17 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
 
 void FFmpegDecoder::FillBuffer(Buffer<float>& out)
 {
-    for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
-    {
-        std::size_t index = i * 3;
-        out[index] = Linear(m_Buffer[index] / 255.f);
-        out[index + 1] = Linear(m_Buffer[index + 1] / 255.f);
-        out[index + 2] = Linear(m_Buffer[index + 2] / 255.f);
-    }
+    std::transform(
+        std::execution::par,
+        m_Buffer._buf.begin(),
+        m_Buffer._buf.end(),
+        out._buf.begin(),
+        [](unsigned char _v) -> float { return Linear(_v / 255.f); }
+    );
 }
 
-/* }}} */
+/// FFmpegPixReader
 
-/* FFmpegPixReader {{{ */
 FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
     : VoidMPixReader(path, framenumber)
     , m_AChannels(0)
@@ -486,7 +472,5 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
     return m;
 }
-
-/* }}} */
 
 VOID_NAMESPACE_CLOSE
