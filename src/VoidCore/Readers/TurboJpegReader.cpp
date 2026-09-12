@@ -3,6 +3,7 @@
 
 /* STD */
 #include <algorithm>
+#include <execution>
 #include <fstream>
 
 /* TurboJPEG */
@@ -207,6 +208,7 @@ void TurboJpegReader::Read()
 
     tjDestroy(handle);
     std::transform(
+        std::execution::par,
         pixels.begin(),
         pixels.end(),
         m_Image->buffer._buf.begin(),
