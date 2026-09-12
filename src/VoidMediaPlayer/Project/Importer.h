@@ -28,13 +28,13 @@ enum class ImportType : uint8_t
 
 struct ImportLog
 {
-    int max;
+    int total;
     int count;
     ImportType type;
     bool cancelled;
 
-    ImportLog(int max, int count, const ImportType& type, bool cancelled = false)
-        : max(max), count(count), type(type), cancelled(cancelled) {}
+    ImportLog(int total, int count, const ImportType& type, bool cancelled = false)
+        : total(total), count(count), type(type), cancelled(cancelled) {}
 };
 
 class DirectoryImporter : public QObject
