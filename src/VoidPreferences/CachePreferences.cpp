@@ -1,21 +1,10 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-/* STD */
-#if defined(_WIN32)
-#include <windows.h>
-#else
-#include <unistd.h>
-#include <sys/types.h>
-#endif
-
-#if defined(__APPLE__)
-#include <sys/sysctl.h>
-#endif
-
 /* Internal */
 #include "CachePreferences.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/VoidTools.h"
 #include "VoidObjects/Preferences/Preferences.h"
 
 VOID_NAMESPACE_OPEN
@@ -89,10 +78,10 @@ A larger cache can improve performance by reducing the need to recompute or relo
 void CachePreferences::Setup()
 {
     // Max Values
-    unsigned int maxMem = static_cast<unsigned int>(TotalMemory() / 1024UL * 1024UL * 1024UL);
-    unsigned int maxThreads = ProcessorCount();
+    unsigned int maxMem = static_cast<unsigned int>(Tools::total_memory() / (1024UL * 1024UL * 1024UL));
+    unsigned int maxThreads = Tools::processor_count();
 
-    VOID_LOG_INFO("Maximum Memory Available: {0} GB", maxMem);
+    VOID_LOG_INFO("Maximum Memory Available: {0} GB --- {1}", maxMem, Tools::total_memory());
     VOID_LOG_INFO("Maximum Processor Based Threads: {0}", maxThreads);
 
     m_CacheBox->setMinimum(1);
@@ -104,48 +93,6 @@ void CachePreferences::Setup()
     // Default values
     m_CacheBox->setValue(1);
     m_ThreadsBox->setValue(maxThreads * 0.5);
-}
-
-size_t CachePreferences::TotalMemory()
-{
-    #if defined(_WIN32)
-    MEMORYSTATUSEX memStatus;
-    memStatus.dwLength = sizeof(memStatus);
-
-    GlobalMemoryStatusEx(&memStatus);
-
-    return static_cast<size_t>(memStatus.ullTotalPhys);
-    #elif defined(__APPLE__)
-    int64_t memory;
-    size_t size = sizeof(memory);
-
-    sysctlbyname("hw.memsize", &memory, &size, nullptr, 0);
-
-    return static_cast<size_t>(memory);
-    #elif defined(__linux__)
-    long pagesize = sysconf(_SC_PAGE_SIZE);
-    long pages = sysconf(_SC_PHYS_PAGES);
-
-    return static_cast<size_t>(pagesize) * static_cast<size_t>(pages);
-    #else
-    /* Unsupported */
-    return 0;
-    #endif
-}
-
-unsigned int CachePreferences::ProcessorCount()
-{
-    #if defined(_WIN32)
-    SYSTEM_INFO sysInfo;
-    GetSystemInfo(&sysInfo);
-
-    return sysInfo.dwNumberOfProcessors;
-    #elif defined(__APPLE__) || defined(__linux__)
-    return static_cast<unsigned int>(sysconf(_SC_NPROCESSORS_ONLN));
-    #else
-    /* Unsupported */
-    return 0;
-    #endif
 }
 
 VOID_NAMESPACE_CLOSE

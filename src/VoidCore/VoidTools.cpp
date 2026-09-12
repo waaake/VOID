@@ -11,6 +11,17 @@
 /* Internal */
 #include "VoidTools.h"
 
+#if defined(_VOID_PLATFORM_WINDOWS)
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/types.h>
+#endif
+
+#if defined(_VOID_PLATFORM_APPLE)
+#include <sys/sysctl.h>
+#endif
+
 VOID_NAMESPACE_OPEN
 
 namespace Tools {
@@ -20,6 +31,8 @@ namespace Tools {
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz"
         "0123456789+/";
+
+    static unsigned int s_ThreadCount = 0;
 
     std::string to_trimmed_string(double value, int precision)
     {
@@ -136,6 +149,57 @@ namespace Tools {
             if (!std::isdigit(c)) return false;
 
         return true;
+    }
+
+    size_t total_memory()
+    {
+        #if defined(_WIN32)
+        MEMORYSTATUSEX memStatus;
+        memStatus.dwLength = sizeof(memStatus);
+
+        GlobalMemoryStatusEx(&memStatus);
+
+        return static_cast<size_t>(memStatus.ullTotalPhys);
+        #elif defined(__APPLE__)
+        int64_t memory;
+        size_t size = sizeof(memory);
+
+        sysctlbyname("hw.memsize", &memory, &size, nullptr, 0);
+
+        return static_cast<size_t>(memory);
+        #elif defined(__linux__)
+        long pagesize = sysconf(_SC_PAGE_SIZE);
+        long pages = sysconf(_SC_PHYS_PAGES);
+
+        return static_cast<size_t>(pagesize) * static_cast<size_t>(pages);
+        #else
+        // Unsupported
+        return 0;
+        #endif
+    }
+
+    unsigned int processor_count()
+    {
+        #if defined(_WIN32)
+        SYSTEM_INFO sysInfo;
+        GetSystemInfo(&sysInfo);
+
+        return sysInfo.dwNumberOfProcessors;
+        #elif defined(__APPLE__) || defined(__linux__)
+        return static_cast<unsigned int>(sysconf(_SC_NPROCESSORS_ONLN));
+        #else
+        // Unsupported
+        return 0;
+        #endif
+    }
+
+    unsigned int thread_count()
+    {
+        if (s_ThreadCount)
+            return s_ThreadCount;
+
+        s_ThreadCount = processor_count();
+        return s_ThreadCount;
     }
 
     template <typename Ty>

@@ -29,6 +29,9 @@ namespace Tools {
     VOID_API std::string b64_encode(const std::string& binary);
     VOID_API std::string b64_decode(const std::string& encoded);
     VOID_API bool isnum(const std::string_view& text);
+    VOID_API size_t total_memory();
+    VOID_API unsigned int processor_count();
+    VOID_API unsigned int thread_count();
 
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value);
