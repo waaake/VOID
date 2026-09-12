@@ -27,6 +27,7 @@
 /* Internal */
 #include "OpenEXRReader.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/VoidTools.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -47,7 +48,7 @@ void OpenEXRReader::Clear()
 
 void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
-    Imf::RgbaInputFile f(path.c_str());
+    Imf::RgbaInputFile f(path.c_str(), Tools::thread_count());
     // Image Specs
     Imath::Box2i dw = f.dataWindow();
     image->width = (dw.max.x - dw.min.x) + 1;
@@ -81,19 +82,20 @@ void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt
     f.readPixels(dw.min.y, dw.max.y);
 
     image->buffer.Resize(image->width * image->height * image->channels);
+    const std::size_t pixelcount = static_cast<std::size_t>(m_Image->width) * m_Image->height;
+    const Imf::Rgba* source = &pixels[0][0];
+    unsigned char* im = image->buffer.Data();
 
-    for (int y = 0; y < image->height; y++)
+    for (std::size_t i = 0; i < pixelcount; ++i)
     {
-        for (int x = 0; x < image->width; x++)
-        {
-            const Imf::Rgba& pixel = pixels[y][x];
-            int index = (y * image->width + x) * image->channels;
+        const Imf::Rgba pixel = source[i];
 
-            image->buffer[index] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
-            image->buffer[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
-            image->buffer[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
-            image->buffer[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
-        }
+        im[0] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
+        im[1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
+        im[2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
+        im[3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
+
+        im += 4;
     }
 }
 
@@ -132,24 +134,26 @@ void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& i
 
     image->buffer.Resize(image->width * image->height * image->channels);
 
-    for (int y = 0; y < image->height; y++)
-    {
-        for (int x = 0; x < image->width; x++)
-        {
-            const Imf::Rgba& pixel = pixels[y][x];
-            int index = (y * image->width + x) * image->channels;
+    const std::size_t pixelcount = static_cast<std::size_t>(image->width) * image->height;
+    const Imf::Rgba* source = &pixels[0][0];
+    float* im = image->buffer.Data();
 
-            image->buffer[index] = pixel.r;
-            image->buffer[index + 1] = pixel.g;
-            image->buffer[index + 2] = pixel.b;
-            image->buffer[index + 3] = pixel.a;
-        }
+    for (std::size_t i = 0; i < pixelcount; ++i)
+    {
+        const Imf::Rgba pixel = source[i];
+
+        im[0] = pixel.r;
+        im[1] = pixel.g;
+        im[2] = pixel.b;
+        im[3] = pixel.a;
+
+        im += 4;
     }
 }
 
 void OpenEXRReader::Read()
 {
-    Imf::RgbaInputFile f(m_Path.c_str());
+    Imf::RgbaInputFile f(m_Path.c_str(), Tools::thread_count());
 
     // Image Specs
     Imath::Box2i dw = f.dataWindow();
@@ -181,19 +185,21 @@ void OpenEXRReader::Read()
     f.readPixels(dw.min.y, dw.max.y);
 
     m_Image->buffer.Resize(m_Image->width * m_Image->height * m_Image->channels);
+    const std::size_t pixelcount = static_cast<std::size_t>(m_Image->width) * m_Image->height;
 
-    for (int y = 0; y < m_Image->height; y++)
+    const Imf::Rgba* source = &pixels[0][0];
+    float* image = m_Image->buffer.Data();
+
+    for (std::size_t i = 0; i < pixelcount; ++i)
     {
-        for (int x = 0; x < m_Image->width; x++)
-        {
-            const Imf::Rgba& pixel = pixels[y][x];
-            int index = (y * m_Image->width + x) * m_Image->channels;
+        const Imf::Rgba pixel = source[i];
 
-            m_Image->buffer[index] = pixel.r;
-            m_Image->buffer[index + 1] = pixel.g;
-            m_Image->buffer[index + 2] = pixel.b;
-            m_Image->buffer[index + 3] = pixel.a;
-        }
+        image[0] = pixel.r;
+        image[1] = pixel.g;
+        image[2] = pixel.b;
+        image[3] = pixel.a;
+
+        image += 4;
     }
 }
 
