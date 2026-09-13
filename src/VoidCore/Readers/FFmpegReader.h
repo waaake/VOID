@@ -82,7 +82,7 @@ private: /* Methods */
      * Decodes the next frame from the movie container
      * returns back the frame number (converted from av time base to signed long)
      */
-    v_frame_t DecodeNextFrame(bool save = true);
+    v_frame_t DecodeNextFrame();
     void FillBuffer(Buffer<float>& out);
     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 };
