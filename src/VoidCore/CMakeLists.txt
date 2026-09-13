@@ -73,6 +73,7 @@ target_link_libraries(
     Python::Python
     ${TurboJPEG_LIBRARIES}
     OpenMP::OpenMP_CXX
+    TBB::tbb
 )
 
 # Mac for some reason needs this explicitly
