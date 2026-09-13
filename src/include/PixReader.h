@@ -131,6 +131,8 @@ public:
     inline std::string Framepath() const { return m_Path; }
     inline v_frame_t Framenumber() const { return m_Framenumber; }
 
+    std::size_t Size() const { return m_Image->Size(); }
+
 protected:
     std::string m_Path;
     v_frame_t m_Framenumber;

@@ -61,6 +61,8 @@ public:
     [[nodiscard]] inline int Channels() const { return m_Reader->Channels(); }
     inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
 
+    std::size_t Size() const { return sizeof(Frame) + m_Reader->Size(); }
+
     /* Frame Caches */
     void Cache();
     void Clear(bool dirty = true);

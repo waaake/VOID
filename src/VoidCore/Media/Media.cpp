@@ -204,4 +204,13 @@ void Media::SetDirty(bool dirty)
         frame.SetDirty(dirty);
 }
 
+std::size_t Media::Size() const
+{
+    std::size_t total = sizeof(Media);
+    for (const Frame& f : m_Frames)
+        total += f.Size();
+
+    return total;
+}
+
 VOID_NAMESPACE_CLOSE

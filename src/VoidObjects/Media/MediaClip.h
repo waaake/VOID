@@ -127,6 +127,8 @@ public:
      */
     const FloatImage Evaluate(v_frame_t frame);
 
+    std::size_t Size() const { return Media::Size() + sizeof(MediaClip); }
+
 signals: /* Signals defining any change that has happened */
     // /*
     //  * Emitted when a frame is cached

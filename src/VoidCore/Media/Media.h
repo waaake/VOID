@@ -123,6 +123,9 @@ public:
      */
     void ClearCache(bool dirty = true);
 
+    std::size_t Size() const;
+    std::size_t FrameSize(int frame) { return m_Frames[frame - m_FirstFrame].Size(); }
+
 protected: /* Members */
     MediaStruct m_MediaStruct;
     std::vector<Frame> m_Frames;
