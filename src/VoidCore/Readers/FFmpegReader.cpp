@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "FFmpegReader.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -146,23 +147,13 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
 
     bool found = false;
     int retryCount = 0;
-
-    int distance = 0;
     bool seeked = false;
 
     // Retry seeking for 3 times before giving up
     while (!found && retryCount < 3)
     {
-        /**
-         * Calculate the distance between the requested and the last frame which was read
-         * this helps us determine whether or not to save any data and also if we need to seek forwards in order
-         * to reach the frame quickly
-         * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
-         * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
-         */
-        distance = static_cast<int>(framenumber - m_CurrentFrame);
         // Decode the next frame and it returns back either a negative value or the decoded frame
-        v_frame_t ret = DecodeNextFrame((distance < 2));
+        v_frame_t ret = DecodeNextFrame();
 
         /**
          * Then we check if the return value was greater than the requested frame
@@ -226,23 +217,13 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
 
     bool found = false;
     int retryCount = 0;
-
-    int distance = 0;
     bool seeked = false;
 
     // Retry seeking for 3 times before giving up
     while (!found && retryCount < 3)
     {
-        /**
-         * Calculate the distance between the requested and the last frame which was read
-         * this helps us determine whether or not to save any data and also if we need to seek forwards in order
-         * to reach the frame quickly
-         * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
-         * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
-         */
-        distance = static_cast<int>(framenumber - m_CurrentFrame);
         // Decode the next frame and it returns back either a negative value or the decoded frame
-        v_frame_t ret = DecodeNextFrame((distance < 1));
+        v_frame_t ret = DecodeNextFrame();
 
         /**
          * Then we check if the return value was greater than the requested frame
@@ -282,7 +263,7 @@ bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffe
     return found;
 }
 
-v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
+v_frame_t FFmpegDecoder::DecodeNextFrame()
 {
     while (av_read_frame(m_FormatContext, m_Packet) >= 0)
     {
@@ -306,8 +287,7 @@ v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
                 return -3;
 
             m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
-            if (save)
-                sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+            sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
 
             return (v_frame_t)m_CurrentFrame;
         }
