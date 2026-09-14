@@ -52,6 +52,7 @@ target_link_libraries(
     VoidObjects
     PRIVATE
     Qt::Core
+    TBB::tbb
 
     # TODO: Check if MediaClip can be pushed without a thumbnail
     Qt::Gui
