@@ -8,7 +8,7 @@
 
 VOID_NAMESPACE_OPEN
 
-FloatImage SequenceFrame::Image()
+const FloatImage& SequenceFrame::Image()
 {
     if (image->Empty() && frame)
         frame->Image(image);
@@ -21,7 +21,7 @@ void SequenceFrame::Image(FloatImage& image)
     if (frame) frame->Image(image);
 }
 
-FloatImage SequenceFrame::Evaluate()
+const FloatImage& SequenceFrame::Evaluate()
 {
     // Evaluate and clean, unless the effect(s) are updated causing it to be dirty again...
     if (effect && dirty)

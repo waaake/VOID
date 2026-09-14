@@ -37,9 +37,9 @@ struct SequenceFrame
     bool Valid() const noexcept { return (bool)frame; }
     explicit operator bool() const noexcept { return (bool)frame; }
 
-    FloatImage Image();
+    const FloatImage& Image();
     void Image(FloatImage& image);
-    FloatImage Evaluate();
+    const FloatImage& Evaluate();
     void Clear();
     void SetDirty() { dirty = true; }
     void SetEffect(Effect* effect) { this->effect = effect; }
