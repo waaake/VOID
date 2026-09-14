@@ -20,7 +20,6 @@ class TrackItem;
 class VOID_API Effect : public VoidObject
 {
     Q_OBJECT
-
 public:
     enum class EffectType
     {
@@ -30,8 +29,8 @@ public:
     };
 
 public:
-    Effect(ImageOp* iop, const std::string& name, QObject* parent = nullptr);
-    Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, QObject* parent = nullptr);
+    Effect(ImageOp* iop, const std::string& name, Effect* parent = nullptr);
+    Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
     ~Effect();
 
     TrackItem* TimelineItem() const { return m_TrackItem; }
@@ -87,6 +86,11 @@ public:
     v_frame_t TimelineIn() const { return m_TimelineIn; }
     v_frame_t TimelineOut() const { return m_TimelineOut; }
 
+    v_frame_t EvaluatedFrame(v_frame_t in);
+    FloatImage Evaluate(v_frame_t frame);
+    void Evaluate(FloatImage& image, v_frame_t frame);
+    void Evaluate(FloatImage& image);
+
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const;
     void Serialize(std::ostream& out) const;
     void Deserialize(const rapidjson::Value& in);
@@ -101,6 +105,7 @@ signals:
 
 private:
     ImageOp* m_Operator;
+    Effect* m_Parent;
     TrackItem* m_TrackItem;
     PlaybackTrack* m_Track;
     std::string m_Name;
@@ -108,6 +113,9 @@ private:
     v_frame_t m_TimelineIn, m_TimelineOut;
     EffectType m_Type;
     bool m_Enabled;
+
+private:
+    void Evaluate_(FloatImage& image);
 };
 
 VOID_NAMESPACE_CLOSE
