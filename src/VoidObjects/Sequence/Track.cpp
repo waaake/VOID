@@ -117,7 +117,7 @@ Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::stri
     Effect* created = item->CreateEffect(effect);
     if (created)
     {
-        emit effectAdded(created);
+        emit itemEffectAdded(item, created);
         CalculateMaxEffects(item);
     }
     return created;
@@ -128,7 +128,7 @@ Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::stri
     Effect* created = item->CreateEffect(effect, name);
     if (created)
     {
-        emit effectAdded(created);
+        emit itemEffectAdded(item, created);
         CalculateMaxEffects(item);
     }
     return created;
@@ -649,16 +649,20 @@ void PlaybackTrack::CalculateMaxEffects()
 
 void PlaybackTrack::ConnectItem(const SharedTrackItem& item)
 {
-    connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
-    connect(item.get(), &TrackItem::stateChanged, this, [this, item]() -> void { emit itemStateChanged(item); });
-    connect(item.get(), &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
+    TrackItem* ti = item.get();
+    connect(ti, &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+    connect(ti, &TrackItem::stateChanged, this, [this, item]() -> void { emit itemStateChanged(item); });
+    connect(ti, &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
+    connect(ti, &TrackItem::effectUpdated, this, [this, item]() -> void { emit itemEffectUpdated(item); });
 }
 
 void PlaybackTrack::DisconnectItem(const SharedTrackItem& item)
 {
-    disconnect(item.get(), &TrackItem::updated, this, nullptr);
-    disconnect(item.get(), &TrackItem::stateChanged, this, nullptr);
-    disconnect(item.get(), &TrackItem::rangeChanged, this, nullptr);
+    TrackItem* ti = item.get();
+    disconnect(ti, &TrackItem::updated, this, nullptr);
+    disconnect(ti, &TrackItem::stateChanged, this, nullptr);
+    disconnect(ti, &TrackItem::rangeChanged, this, nullptr);
+    disconnect(ti, &TrackItem::effectUpdated, this, nullptr);
 }
 
 VOID_NAMESPACE_CLOSE

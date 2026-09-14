@@ -167,6 +167,8 @@ signals: /* Signals Denoting actions in the Track */
     void itemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void itemStateChanged(const SharedTrackItem& item);
     void itemRemoved();
+    void itemEffectAdded(const SharedTrackItem&, Effect*);
+    void itemEffectUpdated(const SharedTrackItem&);
 
     void cleared();
     void updated();
