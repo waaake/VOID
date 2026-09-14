@@ -219,7 +219,7 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
             d.image = m_Track->Image(frame);
             break;
         case PlayableComponent::Sequence:
-            d.image = m_Sequence->Image(frame);
+            d.image = m_Sequence->Evaluated(frame);
             break;
         default:
             if (m_Clip->Valid() && m_Clip->Contains(frame))
