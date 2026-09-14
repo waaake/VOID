@@ -83,3 +83,10 @@ endif()
 
 # Export symbols for windows
 target_compile_definitions(VoidCore PRIVATE VOID_LIB LOGGER_LIB)
+
+# Apple clang by default does not allow using std::execution::par
+# This however is set to be enabled with the _LIBCPP_HAS_EXPERIMENTAL_PSTL define
+# for now keeping it simple and going with sequential
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_definitions(VoidCore PRIVATE _DISABLE_PARALLEL_EXECUTION)
+endif()

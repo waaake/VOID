@@ -12,6 +12,12 @@
 
 VOID_NAMESPACE_OPEN
 
+#if defined(_DISABLE_PARALLEL_EXECUTION)
+#define _EXEC_POLICY
+#else
+#define _EXEC_POLICY std::execution::par,
+#endif
+
 // This governs how many parallel instances of the Decoder can exist at ones
 // allowing multiple streams of videos to be decoded for playback
 // we may want to allow configuring this later on depending on system specs
@@ -299,7 +305,7 @@ v_frame_t FFmpegDecoder::DecodeNextFrame()
 void FFmpegDecoder::FillBuffer(Buffer<float>& out)
 {
     std::transform(
-        std::execution::par,
+        _EXEC_POLICY
         m_Buffer._buf.begin(),
         m_Buffer._buf.end(),
         out._buf.begin(),
