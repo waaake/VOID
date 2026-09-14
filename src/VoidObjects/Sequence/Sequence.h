@@ -95,6 +95,7 @@ public:
     SharedMediaClip Media(v_frame_t frame);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
+    const FloatImage Evaluated(v_frame_t frame);
 
     void SaveSnapshot(const std::string& name, const std::string& description);
     void RemoveSnapshot(int index);
@@ -149,6 +150,8 @@ private: /* Methods */
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void HandleTrackStateChanged(const SharedPlaybackTrack& track);
     void HandleItemUpdated(const SharedTrackItem& item);
+    void HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect);
+    void HandleItemEffectUpdated(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE

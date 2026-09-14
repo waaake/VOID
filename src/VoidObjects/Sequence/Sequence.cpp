@@ -8,6 +8,7 @@
 /* Internal */
 #include "Sequence.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Effects/Effects.h"
 #include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
@@ -408,6 +409,15 @@ const FloatImage PlaybackSequence::Image(v_frame_t frame)
     return nullptr;
 }
 
+const FloatImage PlaybackSequence::Evaluated(v_frame_t frame)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+        return m_FrameBuffer[index].Evaluate();
+
+    return nullptr;
+}
+
 void PlaybackSequence::ClearCache()
 {
     for (SharedPlaybackTrack& track : m_VideoTracks)
@@ -613,6 +623,8 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
     connect(ptr, &PlaybackTrack::itemStateChanged, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemUpdated, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemEffectAdded, this, &PlaybackSequence::HandleItemEffectAdded);
+    connect(ptr, &PlaybackTrack::itemEffectUpdated, this, &PlaybackSequence::HandleItemEffectUpdated);
 }
 
 void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
@@ -682,6 +694,18 @@ void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
 void PlaybackSequence::HandleItemUpdated(const SharedTrackItem& item)
 {
     UpdateBuffer(item->TimelineRange());
+}
+
+void PlaybackSequence::HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect)
+{
+    for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
+        m_FrameBuffer[i - m_StartFrame].SetEffect(effect);
+}
+
+void PlaybackSequence::HandleItemEffectUpdated(const SharedTrackItem& item)
+{
+    for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
+        m_FrameBuffer[i - m_StartFrame].SetDirty();
 }
 
 VOID_NAMESPACE_CLOSE
