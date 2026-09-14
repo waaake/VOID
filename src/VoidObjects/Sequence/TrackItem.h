@@ -187,6 +187,7 @@ signals:
     void effectCreated(Effect*);
     void effectAboutToBeRemoved(Effect*);
     void stateChanged();
+    void effectUpdated();
 
 protected:
     std::vector<Effect*> m_Effects;

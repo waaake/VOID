@@ -256,6 +256,8 @@ Effect* TrackItem::CreateEffect(const std::string& type)
         // For every effect that gets updated, the media will be set dirty
         // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
         // SetDirty(true);
+
+        connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
         return effect;
     }
 
@@ -275,6 +277,7 @@ Effect* TrackItem::CreateEffect(const std::string& type, const std::string& name
         // For every effect that gets updated, the media will be set dirty
         // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
         // SetDirty(true);
+        connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
         return effect;
     }
 
@@ -284,6 +287,8 @@ Effect* TrackItem::CreateEffect(const std::string& type, const std::string& name
 void TrackItem::AddEffect(Effect* effect)
 {
     effect->SetTimelineItem(this);
+    connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+
     m_Effects.push_back(effect);
     emit effectCreated(effect);
 }
@@ -291,6 +296,8 @@ void TrackItem::AddEffect(Effect* effect)
 void TrackItem::InsertEffect(Effect* effect, int index)
 {
     effect->SetTimelineItem(this);
+    connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+
     m_Effects.insert(m_Effects.begin() + index, effect);
     emit effectCreated(effect);
 }
