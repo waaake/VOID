@@ -127,6 +127,8 @@ struct Image
         return (row >= height) ? ImageRow() : ImageRow(editable.Data(), row, width, channels, sizeof(_Ty));
     }
 
+    explicit operator bool() const noexcept { return !buffer.Empty(); }
+
     Image() {}
     static std::shared_ptr<Image<_Ty>> Create() { return std::make_shared<Image<_Ty>>(); }
 private:
