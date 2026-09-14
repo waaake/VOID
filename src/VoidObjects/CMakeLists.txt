@@ -25,6 +25,7 @@ set(SOURCES
     Preferences/Preferences.cpp
 
     Sequence/Context.cpp
+    Sequence/Frame.cpp
     Sequence/Sequence.cpp
     Sequence/SequenceView.cpp
     Sequence/Track.cpp
