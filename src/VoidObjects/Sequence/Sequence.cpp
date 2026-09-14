@@ -404,7 +404,10 @@ const FloatImage PlaybackSequence::Image(v_frame_t frame)
 
     std::size_t index = frame - m_StartFrame;
     if (index < m_FrameBuffer.size())
-        return m_FrameBuffer[index].Image();
+    {
+        const FloatImage& image = m_FrameBuffer[index].Image();
+        return image->Empty() ? nullptr : image;
+    }
 
     return nullptr;
 }
@@ -413,7 +416,10 @@ const FloatImage PlaybackSequence::Evaluated(v_frame_t frame)
 {
     std::size_t index = frame - m_StartFrame;
     if (index < m_FrameBuffer.size())
-        return m_FrameBuffer[index].Evaluate();
+    {
+        const FloatImage& image = m_FrameBuffer[index].Evaluate();
+        return image->Empty() ? nullptr : image;
+    }
 
     return nullptr;
 }
