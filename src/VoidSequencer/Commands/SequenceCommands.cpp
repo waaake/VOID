@@ -48,6 +48,73 @@ bool CreateTrackItemCommand::Redo()
     return false;
 }
 
+/// CreateTrackItemsCommand
+
+CreateTrackItemsCommand::CreateTrackItemsCommand(const std::vector<SharedMediaClip>& clips, const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Frame(frame)
+{
+    m_ItemIndexes.reserve(clips.size());
+    m_MediaIndexes.resize(clips.size());
+
+    Core::Project* project = track->Project();
+    std::transform(
+        clips.begin(),
+        clips.end(),
+        m_MediaIndexes.begin(),
+        [&](const SharedMediaClip& clip) -> int { return project->MediaRow(clip); }
+    );
+
+    setText("Add media to Track");
+}
+
+void CreateTrackItemsCommand::undo()
+{
+    Sequence::ResolvedContext ctx = m_TrackContext.Resolve();
+    if (ctx.track)
+    {
+        std::vector<SharedTrackItem> items(m_ItemIndexes.size());
+        std::transform(
+            m_ItemIndexes.begin(),
+            m_ItemIndexes.end(),
+            items.begin(),
+            [&](int& index) -> SharedTrackItem { return ctx.track->ItemAt(index); }
+        );
+
+        ctx.track->RemoveItems(items);
+    }
+}
+
+bool CreateTrackItemsCommand::Redo()
+{
+    Sequence::ResolvedContext ctx = m_TrackContext.Resolve();
+    if (ctx.track)
+    {
+        std::vector<SharedMediaClip> clips(m_MediaIndexes.size());
+
+        std::transform(
+            m_MediaIndexes.begin(),
+            m_MediaIndexes.end(),
+            clips.begin(),
+            [&](int& row) -> SharedMediaClip { return ctx.project->MediaAt(row, 0); }
+        );
+
+        std::vector<SharedTrackItem> items = ctx.track->AddMedia(clips, m_Frame);
+
+        std::transform(
+            items.begin(),
+            items.end(),
+            std::back_inserter(m_ItemIndexes),
+            [](const SharedTrackItem& item) -> int { return item->Index(); }
+        );
+
+        return (bool)items.size();
+    }
+
+    return false;
+}
+
 /// MoveTrackItemCommand
 
 MoveTrackItemCommand::MoveTrackItemCommand(const SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent)
