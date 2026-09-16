@@ -17,7 +17,7 @@ Effect::Effect(ImageOp* iop, const std::string& name, Effect* parent)
 }
 
 Effect::Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent)
-    : VoidObject(parent)
+    : VoidObject()
     , m_Operator(iop)
     , m_Parent(parent)
     , m_TrackItem(nullptr)
@@ -38,6 +38,12 @@ Effect::~Effect()
         delete m_Operator;
         m_Operator = nullptr;
     }
+}
+
+void Effect::ResetParent(Effect* effect)
+{
+    m_Parent = effect;
+    emit updated();
 }
 
 void Effect::SetTimelineItem(TrackItem* item)

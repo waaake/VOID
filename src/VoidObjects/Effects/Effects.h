@@ -33,6 +33,8 @@ public:
     Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
     ~Effect();
 
+    void ResetParent(Effect* effect);
+
     TrackItem* TimelineItem() const { return m_TrackItem; }
     void SetTimelineItem(TrackItem* item);
 
