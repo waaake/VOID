@@ -87,7 +87,7 @@ void STimelineView::dragEnterEvent(QDragEnterEvent* event)
 
 void STimelineView::dragMoveEvent(QDragMoveEvent* event)
 {
-    m_Scene->MoveDraggableItems(mapToScene(event->pos()));
+    m_Scene->MoveDraggableItems(mapToScene(event->pos()), viewport()->rect());
 }
 
 void STimelineView::dragLeaveEvent(QDragLeaveEvent* event)
