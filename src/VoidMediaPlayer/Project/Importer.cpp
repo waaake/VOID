@@ -15,6 +15,8 @@ DirectoryImporter::DirectoryImporter(QObject* parent)
 {
     // Have space for single directory import
     m_Directories.resize(1);
+
+    qRegisterMetaType<ImportLog>("ImportLog");
 }
 
 DirectoryImporter::DirectoryImporter(const std::string& directory, int maxLevel, QObject* parent)

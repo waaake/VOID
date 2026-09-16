@@ -33,6 +33,7 @@ struct ImportLog
     ImportType type;
     bool cancelled;
 
+    ImportLog() : ImportLog(0, 0, ImportType::MEDIA, true) {} 
     ImportLog(int total, int count, const ImportType& type, bool cancelled = false)
         : total(total), count(count), type(type), cancelled(cancelled) {}
 };
