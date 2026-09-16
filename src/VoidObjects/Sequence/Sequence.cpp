@@ -623,7 +623,8 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
     connect(ptr, &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
-    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleNewItem);
+    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
     connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
     connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
     connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
@@ -631,6 +632,7 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::itemUpdated, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemEffectAdded, this, &PlaybackSequence::HandleItemEffectAdded);
     connect(ptr, &PlaybackTrack::itemEffectUpdated, this, &PlaybackSequence::HandleItemEffectUpdated);
+    connect(ptr, &PlaybackTrack::updatedInRange, this, static_cast<void (PlaybackSequence::*)(const MFrameRange&)>(&PlaybackSequence::UpdateBuffer));
 }
 
 void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
@@ -666,10 +668,10 @@ void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
     VOID_LOG_INFO("Updated Buffer in range: {} - {}", range.startframe, range.endframe);
 }
 
-void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
-{
-    UpdateBuffer(item->TimelineRange());
-}
+// void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
+// {
+//     UpdateBuffer(item->TimelineRange());
+// }
 
 void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameRange& previous)
 {
@@ -700,6 +702,12 @@ void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
 void PlaybackSequence::HandleItemUpdated(const SharedTrackItem& item)
 {
     UpdateBuffer(item->TimelineRange());
+}
+
+void PlaybackSequence::HandleItemsUpdated(const std::vector<SharedTrackItem>& items)
+{
+    if (items.size())
+        UpdateBuffer(MFrameRange(items.front()->TimelineIn(), items.back()->TimelineOut()));
 }
 
 void PlaybackSequence::HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect)

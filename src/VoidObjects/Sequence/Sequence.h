@@ -145,11 +145,12 @@ private: /* Methods */
     void ResizeBuffer(std::size_t size);
     void UpdateBuffer();
     void UpdateBuffer(const MFrameRange& range);
-    void HandleNewItem(const SharedTrackItem& item);
+    // void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous);
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void HandleTrackStateChanged(const SharedPlaybackTrack& track);
     void HandleItemUpdated(const SharedTrackItem& item);
+    void HandleItemsUpdated(const std::vector<SharedTrackItem>& items);
     void HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect);
     void HandleItemEffectUpdated(const SharedTrackItem& item);
 };
