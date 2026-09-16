@@ -153,6 +153,7 @@ private: /* Methods */
     void HandleItemsUpdated(const std::vector<SharedTrackItem>& items);
     void HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect);
     void HandleItemEffectUpdated(const SharedTrackItem& item);
+    void HandleItemEffectChanged(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE

@@ -632,6 +632,7 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::itemUpdated, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemEffectAdded, this, &PlaybackSequence::HandleItemEffectAdded);
     connect(ptr, &PlaybackTrack::itemEffectUpdated, this, &PlaybackSequence::HandleItemEffectUpdated);
+    connect(ptr, &PlaybackTrack::itemEffectRemoved, this, &PlaybackSequence::HandleItemEffectChanged);
     connect(ptr, &PlaybackTrack::updatedInRange, this, static_cast<void (PlaybackSequence::*)(const MFrameRange&)>(&PlaybackSequence::UpdateBuffer));
 }
 
@@ -713,13 +714,22 @@ void PlaybackSequence::HandleItemsUpdated(const std::vector<SharedTrackItem>& it
 void PlaybackSequence::HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect)
 {
     for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
-        m_FrameBuffer[i - m_StartFrame].SetEffect(effect);
+    {
+        SequenceFrame& f = m_FrameBuffer[i - m_StartFrame];
+        f.SetEffect(effect);
+        f.SetDirty();
+    }
 }
 
 void PlaybackSequence::HandleItemEffectUpdated(const SharedTrackItem& item)
 {
     for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
         m_FrameBuffer[i - m_StartFrame].SetDirty();
+}
+
+void PlaybackSequence::HandleItemEffectChanged(const SharedTrackItem& item)
+{
+    HandleItemEffectAdded(item, item->LastEffect());
 }
 
 VOID_NAMESPACE_CLOSE
