@@ -202,6 +202,7 @@ signals:
     void rangeChanged(const MFrameRange& current, const MFrameRange& previous);
     void effectCreated(Effect*);
     void effectAboutToBeRemoved(Effect*);
+    void effectRemoved();
     void stateChanged();
     void effectUpdated();
 
@@ -224,6 +225,8 @@ protected:
 
 private:
     void ResetEffectsRange(const MFrameRange& updated);
+    // void ResetEffectsParentage();
+    void ResetEffectParentage(int index);
 };
 
 VOID_NAMESPACE_CLOSE
