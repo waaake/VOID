@@ -483,13 +483,15 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 {
     int effects = item->NumEffects();
+    const MFrameRange r = item->TimelineRange();
     emit itemAboutToBeRemoved(item);
     DisconnectItem(item);
     m_Items.Remove(item);
 
-    if (effects == m_MaxEffects)
+    if (effects && effects == m_MaxEffects)
         CalculateMaxEffects();
 
+    emit updatedInRange(r);
     emit itemRemoved();
     emit updated();
     ResetRange();
@@ -497,7 +499,11 @@ void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 
 void PlaybackTrack::RemoveItems(const std::vector<SharedTrackItem>& items)
 {
+    if (items.empty())
+        return;
+
     emit itemsAboutToBeRemoved(items);
+    const MFrameRange r(items.front()->TimelineIn(), items.back()->TimelineOut());
     for (const SharedTrackItem& item : items)
     {
         int effects = item->NumEffects();
@@ -508,6 +514,7 @@ void PlaybackTrack::RemoveItems(const std::vector<SharedTrackItem>& items)
             CalculateMaxEffects();
     }
 
+    emit updatedInRange(r);
     emit itemRemoved();
     emit updated();
     ResetRange();

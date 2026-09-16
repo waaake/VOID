@@ -176,6 +176,7 @@ signals: /* Signals Denoting actions in the Track */
 
     void cleared();
     void updated();
+    void updatedInRange(const MFrameRange&);
     void rangeChanged(int start, int end);
     void stateChanged();
     void effectAdded(Effect*);
