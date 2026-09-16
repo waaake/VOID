@@ -79,6 +79,7 @@ public:
      */
     SharedTrackItem AddMedia(const SharedMediaClip& media);
     SharedTrackItem AddMedia(const SharedMediaClip& media, v_frame_t frame);
+    std::vector<SharedTrackItem> AddMedia(const std::vector<SharedMediaClip>& media, v_frame_t frame);
     SharedMediaClip Media(v_frame_t frame);
 
     /* Clears the Playback Track */
@@ -145,6 +146,7 @@ public:
     // Removes the Track Item at the given frame
     // void RemoveItem(v_frame_t frame);
     void RemoveItem(const SharedTrackItem& item);
+    void RemoveItems(const std::vector<SharedTrackItem>& items);
 
     /**
      * The track's range is always defined by the track items in it
@@ -161,7 +163,9 @@ public:
 
 signals: /* Signals Denoting actions in the Track */
     void itemAdded(const SharedTrackItem&);
+    void itemsAdded(const std::vector<SharedTrackItem>&);
     void itemAboutToBeRemoved(const SharedTrackItem&);
+    void itemsAboutToBeRemoved(const std::vector<SharedTrackItem>&);
     void itemUpdated(const SharedTrackItem&);
     void itemMoved(const MFrameRange& current, const MFrameRange& previous);
     void itemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
