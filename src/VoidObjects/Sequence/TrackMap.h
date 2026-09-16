@@ -47,7 +47,7 @@ public:
     void Remove(const SharedTrackItem& item);
     void Remove(v_frame_t frame);
     void Clear() { m_Items.clear(); }
-    void Reserve(std::size_t reserve) { m_Items.reserve(reserve); }
+    void Reserve(std::size_t reserve) { m_Items.reserve(m_Items.size() + reserve); }
 
     std::size_t Size() const { return m_Items.size(); }
     SharedTrackItem AtIndex(std::size_t index) const { return m_Items.at(index); }
