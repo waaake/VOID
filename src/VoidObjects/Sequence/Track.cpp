@@ -717,6 +717,7 @@ void PlaybackTrack::ConnectItem(const SharedTrackItem& item)
     connect(ti, &TrackItem::stateChanged, this, [this, item]() -> void { emit itemStateChanged(item); });
     connect(ti, &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
     connect(ti, &TrackItem::effectUpdated, this, [this, item]() -> void { emit itemEffectUpdated(item); });
+    connect(ti, &TrackItem::effectRemoved, this, [this, item]() -> void { emit itemEffectRemoved(item); });
 }
 
 void PlaybackTrack::DisconnectItem(const SharedTrackItem& item)
@@ -726,6 +727,7 @@ void PlaybackTrack::DisconnectItem(const SharedTrackItem& item)
     disconnect(ti, &TrackItem::stateChanged, this, nullptr);
     disconnect(ti, &TrackItem::rangeChanged, this, nullptr);
     disconnect(ti, &TrackItem::effectUpdated, this, nullptr);
+    disconnect(ti, &TrackItem::effectRemoved, this, nullptr);
 }
 
 VOID_NAMESPACE_CLOSE

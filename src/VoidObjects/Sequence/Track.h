@@ -173,6 +173,7 @@ signals: /* Signals Denoting actions in the Track */
     void itemRemoved();
     void itemEffectAdded(const SharedTrackItem&, Effect*);
     void itemEffectUpdated(const SharedTrackItem&);
+    void itemEffectRemoved(const SharedTrackItem&);
 
     void cleared();
     void updated();
