@@ -238,7 +238,7 @@ SequenceFrame TrackItem::InternalFrame(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
     if (m_Media && m_Media->Contains(f))
-        return SequenceFrame(this, m_Media->InternalFrame(f));
+        return SequenceFrame(this, m_Media->InternalFrame(f), LastEffect());
 
     return SequenceFrame();
 }
@@ -446,7 +446,7 @@ void TrackItem::Move(v_frame_t frame)
 
     // emit rangeChanged(m_TimelineIn, m_TimelineOut);
     // emit rangeChanged(TimelineRange(), previous);
-    emit updated();
+    // emit updated(); // Either we use a different signal here or don't emit anything -- causes issues with sequence buffers
 }
 
 Core::Project* TrackItem::Project() const

@@ -93,6 +93,22 @@ public:
     const std::vector<Effect*>& Effects() const { return m_Effects; }
 
     /**
+     * @brief Returns the effect at the back of the (reverse stack) which was added at the very last
+     * Visually the effects are drawn first to last, so this one is the one at the top
+     *
+     * This one --->  [===== Effect 2 ======]  <--- This one
+     *                [===== Effect 1 ======]
+     *                [===== Effect 0 ======]
+     * """"""""""""""||"""""""""""""""""""""|  |""""""""""""""
+     *  Item 02      ||  Item 03            |  |  Item 04
+     *               ||                     |  |
+     * ______________||_____________________|  |______________
+     *
+     * @return Effect* Effect at the top.
+     */
+    Effect* LastEffect() const { return m_Effects.empty() ? nullptr : m_Effects.back(); }
+
+    /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.
      *
      * @param frame Frame number.
@@ -177,7 +193,7 @@ public:
     void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
     void Deserialize(std::istream& in) override;
-    
+
     const char* TypeName() const override { return "TrackItem"; }
 
 signals:
