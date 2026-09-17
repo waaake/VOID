@@ -34,6 +34,20 @@ private:
     Sequence::TrackType m_TrackType;
 };
 
+class CreateTrackItemsCommand : public VoidUndoCommand
+{
+public:
+    CreateTrackItemsCommand(const std::vector<SharedMediaClip>& clips, const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_TrackContext;
+    std::vector<int> m_ItemIndexes;
+    std::vector<int> m_MediaIndexes;
+    v_frame_t m_Frame;
+};
+
 class MoveTrackItemCommand : public VoidUndoCommand
 {
 public:

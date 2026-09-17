@@ -13,6 +13,13 @@
 #include "TurboJpegReader.h"
 #include "VoidCore/Logging.h"
 
+#if defined(_DISABLE_PARALLEL_EXECUTION)
+#define _EXEC_POLICY
+#else
+#define _EXEC_POLICY std::execution::par,
+#endif
+
+
 VOID_NAMESPACE_OPEN
 
 TurboJpegReader::TurboJpegReader(const std::string& path, v_frame_t framenumber)
@@ -208,7 +215,7 @@ void TurboJpegReader::Read()
 
     tjDestroy(handle);
     std::transform(
-        std::execution::par,
+        _EXEC_POLICY
         pixels.begin(),
         pixels.end(),
         m_Image->buffer._buf.begin(),

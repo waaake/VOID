@@ -250,8 +250,18 @@ void STrack::Connect()
     connect(ptr, &PlaybackTrack::updated, this, &STrack::UpdateItems);
     connect(ptr, &PlaybackTrack::stateChanged, this, &STrack::UpdateItems);
     connect(ptr, &PlaybackTrack::itemAdded, this, &STrack::AddItem);
+    connect(ptr, &PlaybackTrack::itemsAdded, this, [this](const std::vector<SharedTrackItem>& items) -> void
+    {
+        for (const SharedTrackItem& item : items)
+            AddItem(item);
+    });
     connect(ptr, &PlaybackTrack::cleared, this, &STrack::Clear);
     connect(ptr, &PlaybackTrack::itemAboutToBeRemoved, this, &STrack::RemoveItem);
+    connect(ptr, &PlaybackTrack::itemsAboutToBeRemoved, this, [this](const std::vector<SharedTrackItem>& items) -> void
+    {
+        for (const SharedTrackItem& item : items)
+            RemoveItem(item);
+    });
     connect(ptr, &PlaybackTrack::itemRemoved, this, &STrack::Update);
     connect(ptr, &PlaybackTrack::effectAdded, this, [this](Effect* effect) -> void
     {

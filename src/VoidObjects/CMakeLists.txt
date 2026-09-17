@@ -25,6 +25,7 @@ set(SOURCES
     Preferences/Preferences.cpp
 
     Sequence/Context.cpp
+    Sequence/Frame.cpp
     Sequence/Sequence.cpp
     Sequence/SequenceView.cpp
     Sequence/Track.cpp
@@ -51,6 +52,7 @@ target_link_libraries(
     VoidObjects
     PRIVATE
     Qt::Core
+    TBB::tbb
 
     # TODO: Check if MediaClip can be pushed without a thumbnail
     Qt::Gui

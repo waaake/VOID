@@ -20,10 +20,10 @@ class VOID_API EffectsBridge
 public:
     static EffectsBridge& Instance();
 
-    Effect* CreateEffect(const std::string& type);
-    Effect* CreateEffect(const std::string& type, const std::string& name);    
-    Effect* CreateEffect(const std::string& type, v_frame_t in, v_frame_t out);
-    Effect* CreateEffect(const std::string& type, const std::string& name, v_frame_t in, v_frame_t out);
+    Effect* CreateEffect(const std::string& type, Effect* parent = nullptr);
+    Effect* CreateEffect(const std::string& type, const std::string& name, Effect* parent = nullptr);
+    Effect* CreateEffect(const std::string& type, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
+    Effect* CreateEffect(const std::string& type, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
     Effect* Copy(const Effect* effect);
 
 private: /* Members */

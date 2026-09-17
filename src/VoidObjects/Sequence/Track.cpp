@@ -117,7 +117,7 @@ Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::stri
     Effect* created = item->CreateEffect(effect);
     if (created)
     {
-        emit effectAdded(created);
+        emit itemEffectAdded(item, created);
         CalculateMaxEffects(item);
     }
     return created;
@@ -128,7 +128,7 @@ Effect* PlaybackTrack::CreateEffect(const SharedTrackItem& item, const std::stri
     Effect* created = item->CreateEffect(effect, name);
     if (created)
     {
-        emit effectAdded(created);
+        emit itemEffectAdded(item, created);
         CalculateMaxEffects(item);
     }
     return created;
@@ -197,8 +197,8 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t 
 {
     int offset = media->FirstFrame() - frame;
 
-    // An item already exists in the range where this media was supposed to be added
-    if (m_Items.InRange(media->FirstFrame() - offset,media->LastFrame() - offset))
+    // An item already exists in the range where this media was supposed to be added -- only if we're adding in between
+    if ((frame < m_EndFrame) && m_Items.InRange(media->FirstFrame() - offset, media->LastFrame() - offset))
         return nullptr;
 
     SharedTrackItem item = std::make_shared<TrackItem>(
@@ -223,6 +223,44 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t 
         return item;
     }
     return nullptr;
+}
+
+std::vector<SharedTrackItem> PlaybackTrack::AddMedia(const std::vector<SharedMediaClip>& media, v_frame_t frame)
+{
+    std::vector<SharedTrackItem> items;
+    items.reserve(media.size());
+    m_Items.Reserve(media.size());
+    v_frame_t start = frame;
+
+    for (const SharedMediaClip& clip : media)
+    {
+        int offset = clip->FirstFrame() - start;
+        // An item already exists in the range where this media was supposed to be added -- only if we're adding in between
+        if ((start < m_EndFrame) && m_Items.InRange(clip->FirstFrame() - offset, clip->LastFrame() - offset))
+        {
+            start += clip->Duration();
+            continue;
+        }
+
+        SharedTrackItem item = std::make_shared<TrackItem>(
+                                            clip,
+                                            clip->FirstFrame() - offset,
+                                            clip->LastFrame() - offset,
+                                            offset,
+                                            this
+                                        );
+
+        m_Items.Add(item);
+        ConnectItem(item);
+        items.push_back(std::move(item));
+
+        start += clip->Duration();
+    }
+
+    // Once we're done with the full addition, reset the range if the last item has changed...
+    ResetRange();
+    emit itemsAdded(items);
+    return items;
 }
 
 SharedMediaClip PlaybackTrack::Media(v_frame_t frame)
@@ -445,13 +483,38 @@ bool PlaybackTrack::AddItem(const SharedTrackItem& item, v_frame_t frame)
 void PlaybackTrack::RemoveItem(const SharedTrackItem& item)
 {
     int effects = item->NumEffects();
+    const MFrameRange r = item->TimelineRange();
     emit itemAboutToBeRemoved(item);
     DisconnectItem(item);
     m_Items.Remove(item);
 
-    if (effects == m_MaxEffects)
+    if (effects && effects == m_MaxEffects)
         CalculateMaxEffects();
 
+    emit updatedInRange(r);
+    emit itemRemoved();
+    emit updated();
+    ResetRange();
+}
+
+void PlaybackTrack::RemoveItems(const std::vector<SharedTrackItem>& items)
+{
+    if (items.empty())
+        return;
+
+    emit itemsAboutToBeRemoved(items);
+    const MFrameRange r(items.front()->TimelineIn(), items.back()->TimelineOut());
+    for (const SharedTrackItem& item : items)
+    {
+        int effects = item->NumEffects();
+        DisconnectItem(item);
+        m_Items.Remove(item);
+
+        if (effects && effects == m_MaxEffects)
+            CalculateMaxEffects();
+    }
+
+    emit updatedInRange(r);
     emit itemRemoved();
     emit updated();
     ResetRange();
@@ -649,16 +712,22 @@ void PlaybackTrack::CalculateMaxEffects()
 
 void PlaybackTrack::ConnectItem(const SharedTrackItem& item)
 {
-    connect(item.get(), &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
-    connect(item.get(), &TrackItem::stateChanged, this, [this, item]() -> void { emit itemStateChanged(item); });
-    connect(item.get(), &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
+    TrackItem* ti = item.get();
+    connect(ti, &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
+    connect(ti, &TrackItem::stateChanged, this, [this, item]() -> void { emit itemStateChanged(item); });
+    connect(ti, &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
+    connect(ti, &TrackItem::effectUpdated, this, [this, item]() -> void { emit itemEffectUpdated(item); });
+    connect(ti, &TrackItem::effectRemoved, this, [this, item]() -> void { emit itemEffectRemoved(item); });
 }
 
 void PlaybackTrack::DisconnectItem(const SharedTrackItem& item)
 {
-    disconnect(item.get(), &TrackItem::updated, this, nullptr);
-    disconnect(item.get(), &TrackItem::stateChanged, this, nullptr);
-    disconnect(item.get(), &TrackItem::rangeChanged, this, nullptr);
+    TrackItem* ti = item.get();
+    disconnect(ti, &TrackItem::updated, this, nullptr);
+    disconnect(ti, &TrackItem::stateChanged, this, nullptr);
+    disconnect(ti, &TrackItem::rangeChanged, this, nullptr);
+    disconnect(ti, &TrackItem::effectUpdated, this, nullptr);
+    disconnect(ti, &TrackItem::effectRemoved, this, nullptr);
 }
 
 VOID_NAMESPACE_CLOSE

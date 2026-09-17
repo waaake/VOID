@@ -11,6 +11,7 @@
 #include "Graphics/STrack.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "Commands/SequenceCommands.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -107,8 +108,15 @@ void SequencerController::Paste(Sequence::Context&& context)
     }
 }
 
+void SequencerController::CreateTrackItems(const std::vector<SharedMediaClip>& media, const SharedPlaybackTrack& track, v_frame_t frame)
+{
+    Tools::VoidProfiler<std::chrono::duration<double>> p("SequencerController::CreateTrackItems");
+    _MediaBridge.PushCommand(new CreateTrackItemsCommand(media, track, frame));
+}
+
 void SequencerController::CreateTrackItems(const std::vector<std::pair<const SharedMediaClip, v_frame_t>>& media, const SharedPlaybackTrack& track)
 {
+    Tools::VoidProfiler<std::chrono::duration<double>> p("SequencerController::CreateTrackItems");
     QUndoStack* stack = _MediaBridge.UndoStack();
     stack->beginMacro("Add media to track");
 

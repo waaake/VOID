@@ -203,14 +203,19 @@ void STimelineScene::InitDraggableItems(const std::vector<SharedMediaClip>& medi
     }
 }
 
-void STimelineScene::MoveDraggableItems(const QPointF& position)
+void STimelineScene::MoveDraggableItems(const QPointF& position, const QRectF& bounds)
 {
     if (m_DraggedItems.empty()) return;
 
     int x = m_DraggedItems[0]->pos().x();
+    const double extreme = bounds.right();
+
     for (SPreviewTrackItem*& item : m_DraggedItems)
     {
         int offset = item->pos().x() - x;
+        if (offset > extreme)
+            break;
+
         item->UpdatePosition(offset + position.x(), position.y());
     }
 }
@@ -220,7 +225,6 @@ void STimelineScene::DestroyDraggableItems()
     for (SPreviewTrackItem*& item : m_DraggedItems)
     {
         removeItem(item);
-        item->deleteLater();
         delete item;
         item = nullptr;
     }
@@ -232,28 +236,24 @@ void STimelineScene::DropItems(const QPointF& position)
     STrack* track = m_Context->Controller()->TrackAt(position);
     if (track)
     {
-        std::vector<std::pair<const SharedMediaClip, v_frame_t>> media;
-        media.reserve(m_DraggedItems.size());
+        std::vector<SharedMediaClip> media(m_DraggedItems.size());
 
-        int offset = 0;
         v_frame_t frame = m_Context->Geometry()->SceneXToFrame(position.x());
-
-        for (SPreviewTrackItem*& item : m_DraggedItems)
-        {
-            media.emplace_back(
-                item->TrackItem()->GetMedia(),
-                frame + offset
-            );
-            offset += item->TrackItem()->Duration();
-
-            removeItem(item);
-            item->deleteLater();
-            delete item;
-            item = nullptr;
-        }
+        std::transform(
+            m_DraggedItems.begin(),
+            m_DraggedItems.end(),
+            media.begin(),
+            [](SPreviewTrackItem*& item) -> SharedMediaClip
+            {
+                SharedMediaClip clip = item->TrackItem()->GetMedia();
+                delete item;
+                item = nullptr;
+                return clip;
+            }
+        );
 
         m_DraggedItems.clear();
-        m_Context->Controller()->CreateTrackItems(media, track->Track());
+        m_Context->Controller()->CreateTrackItems(media, track->Track(), frame);
     }
     else
     {

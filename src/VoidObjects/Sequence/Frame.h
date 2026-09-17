@@ -11,6 +11,7 @@
 
 VOID_NAMESPACE_OPEN
 
+class Effect;
 class TrackItem;
 
 /**
@@ -21,19 +22,27 @@ class TrackItem;
  */
 struct SequenceFrame
 {
-    // Image image;
+    FloatImage image;
     TrackItem* item;
     Frame* frame;
+    // This effect is the top-most effect applied on the item
+    // Any effects below (in the visual stack) are parent (or grand-parents) to this effect
+    Effect* effect;
+    bool dirty;
 
-    SequenceFrame() : item(nullptr), frame(nullptr) {}
-    SequenceFrame(TrackItem* item, Frame* frame) : item(item), frame(frame) {}
+    SequenceFrame() : SequenceFrame(nullptr, nullptr) {}
+    SequenceFrame(TrackItem* item, Frame* frame, Effect* effect = nullptr)
+        : image(VOID_NAMESPACE::Image<float>::Create()), item(item), frame(frame), effect(effect), dirty(true) {}
 
     bool Valid() const noexcept { return (bool)frame; }
     explicit operator bool() const noexcept { return (bool)frame; }
 
-    FloatImage Image() { return frame ? frame->Image() : nullptr; }
-    void Image(FloatImage& image) { if (frame) frame->Image(image); }
-    void Clear() { if (frame) frame->Clear(false); }
+    const FloatImage& Image();
+    void Image(FloatImage& image);
+    const FloatImage& Evaluate();
+    void Clear();
+    void SetDirty() { dirty = true; }
+    void SetEffect(Effect* effect) { this->effect = effect; }
 };
 
 VOID_NAMESPACE_CLOSE

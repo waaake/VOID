@@ -8,6 +8,7 @@
 /* Internal */
 #include "Sequence.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Effects/Effects.h"
 #include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
@@ -403,7 +404,22 @@ const FloatImage PlaybackSequence::Image(v_frame_t frame)
 
     std::size_t index = frame - m_StartFrame;
     if (index < m_FrameBuffer.size())
-        return m_FrameBuffer[index].Image();
+    {
+        const FloatImage& image = m_FrameBuffer[index].Image();
+        return image->Empty() ? nullptr : image;
+    }
+
+    return nullptr;
+}
+
+const FloatImage PlaybackSequence::Evaluated(v_frame_t frame)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+    {
+        const FloatImage& image = m_FrameBuffer[index].Evaluate();
+        return image->Empty() ? nullptr : image;
+    }
 
     return nullptr;
 }
@@ -607,12 +623,17 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
     connect(ptr, &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
-    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleNewItem);
+    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
     connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
     connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
     connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
     connect(ptr, &PlaybackTrack::itemStateChanged, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemUpdated, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemEffectAdded, this, &PlaybackSequence::HandleItemEffectAdded);
+    connect(ptr, &PlaybackTrack::itemEffectUpdated, this, &PlaybackSequence::HandleItemEffectUpdated);
+    connect(ptr, &PlaybackTrack::itemEffectRemoved, this, &PlaybackSequence::HandleItemEffectChanged);
+    connect(ptr, &PlaybackTrack::updatedInRange, this, static_cast<void (PlaybackSequence::*)(const MFrameRange&)>(&PlaybackSequence::UpdateBuffer));
 }
 
 void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
@@ -648,10 +669,10 @@ void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
     VOID_LOG_INFO("Updated Buffer in range: {} - {}", range.startframe, range.endframe);
 }
 
-void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
-{
-    UpdateBuffer(item->TimelineRange());
-}
+// void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
+// {
+//     UpdateBuffer(item->TimelineRange());
+// }
 
 void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameRange& previous)
 {
@@ -682,6 +703,33 @@ void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
 void PlaybackSequence::HandleItemUpdated(const SharedTrackItem& item)
 {
     UpdateBuffer(item->TimelineRange());
+}
+
+void PlaybackSequence::HandleItemsUpdated(const std::vector<SharedTrackItem>& items)
+{
+    if (items.size())
+        UpdateBuffer(MFrameRange(items.front()->TimelineIn(), items.back()->TimelineOut()));
+}
+
+void PlaybackSequence::HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect)
+{
+    for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
+    {
+        SequenceFrame& f = m_FrameBuffer[i - m_StartFrame];
+        f.SetEffect(effect);
+        f.SetDirty();
+    }
+}
+
+void PlaybackSequence::HandleItemEffectUpdated(const SharedTrackItem& item)
+{
+    for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
+        m_FrameBuffer[i - m_StartFrame].SetDirty();
+}
+
+void PlaybackSequence::HandleItemEffectChanged(const SharedTrackItem& item)
+{
+    HandleItemEffectAdded(item, item->LastEffect());
 }
 
 VOID_NAMESPACE_CLOSE

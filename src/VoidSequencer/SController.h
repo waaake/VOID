@@ -53,6 +53,7 @@ public:
 
     void AddToScene(QGraphicsItem* item) { m_Scene->addItem(item); }
     void RemoveFromScene(QGraphicsItem* item) { m_Scene->removeItem(item); }
+    void CreateTrackItems(const std::vector<SharedMediaClip>& media, const SharedPlaybackTrack& track, v_frame_t frame);
     void CreateTrackItems(const std::vector<std::pair<const SharedMediaClip, v_frame_t>>& media, const SharedPlaybackTrack& track);
     void MoveItem(const SharedTrackItem& item, v_frame_t frame);
     void RippleMoveItem(const SharedTrackItem& item, v_frame_t frame);

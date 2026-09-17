@@ -23,6 +23,7 @@ public:
     Param* GetParam(const std::string& name);
     virtual bool Evaluate(ImageRow& row) = 0;
     virtual std::string Type() const = 0;
+    virtual v_frame_t Frame(v_frame_t in) { return in; }
 
     const std::vector<Param*>& Params() const { return m_Params; }
 

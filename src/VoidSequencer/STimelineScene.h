@@ -46,7 +46,7 @@ public:
 
     void SelectItems(const QRectF& rect);
     void InitDraggableItems(const std::vector<SharedMediaClip>& media);
-    void MoveDraggableItems(const QPointF& position);
+    void MoveDraggableItems(const QPointF& position, const QRectF& bounds);
     void DestroyDraggableItems();
     void DropItems(const QPointF& postion);
 

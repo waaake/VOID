@@ -1,20 +1,25 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* TBB */
+#include <tbb/parallel_for.h>
+
 #include "Effects.h"
+#include "VoidCore/Profiler.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 
 VOID_NAMESPACE_OPEN
 
-Effect::Effect(ImageOp* iop, const std::string& name, QObject* parent)
+Effect::Effect(ImageOp* iop, const std::string& name, Effect* parent)
     : Effect(iop, name, 0, 0, parent)
 {
 }
 
-Effect::Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, QObject* parent)
-    : VoidObject(parent)
+Effect::Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent)
+    : VoidObject()
     , m_Operator(iop)
+    , m_Parent(parent)
     , m_TrackItem(nullptr)
     , m_Track(nullptr)
     , m_Name(name)
@@ -33,6 +38,12 @@ Effect::~Effect()
         delete m_Operator;
         m_Operator = nullptr;
     }
+}
+
+void Effect::ResetParent(Effect* effect)
+{
+    m_Parent = effect;
+    emit updated();
 }
 
 void Effect::SetTimelineItem(TrackItem* item)
@@ -128,6 +139,61 @@ void Effect::SetTimelineRange(v_frame_t start, v_frame_t end)
     emit rangeChanged(m_TimelineIn, m_TimelineOut);
 }
 
+v_frame_t Effect::EvaluatedFrame(v_frame_t in)
+{
+    // In case we have an effect below in stack which gets applied first, need it's frame output
+    // for this effect to process onto
+    if (m_Parent)
+    {
+        v_frame_t f = m_Parent->EvaluatedFrame(in);
+        return m_Operator->Frame(f);
+    }
+
+    return m_Operator->Frame(in);
+}
+
+FloatImage Effect::Evaluate(v_frame_t frame)
+{
+    // If an operator overrides the frame like a frame hold or a timewarp
+    // This will get the frame which will be output from this effect
+    v_frame_t f = m_Operator->Frame(frame);
+
+    // Has a parent effect/node applied so we'll use that output to process this on top of
+    if (m_Parent)
+    {
+        FloatImage image = m_Parent->Evaluate(f);
+        Evaluate_(image);
+        return image;
+    }
+
+    // Else we fetch from the trackitem this is applied to...
+    FloatImage image = m_TrackItem->Image(f);
+    Evaluate_(image);
+    return image;
+}
+
+void Effect::Evaluate(FloatImage& image, v_frame_t frame)
+{
+    // If an operator overrides the frame like a frame hold or a timewarp
+    // This will get the frame which will be output from this effect
+    v_frame_t f = m_Operator->Frame(frame);
+
+    // Has a parent effect/node applied so we'll use that output to process this on top of
+    if (m_Parent)
+        m_Parent->Evaluate(image, f);
+
+    Evaluate_(image);
+}
+
+void Effect::Evaluate(FloatImage& image)
+{
+    // Has a parent effect/node applied so we'll use that output to process this on top of
+    if (m_Parent)
+        m_Parent->Evaluate(image);
+
+    Evaluate_(image);
+}
+
 void Effect::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
 {
     out.SetObject();
@@ -164,7 +230,7 @@ void Effect::Serialize(std::ostream& out) const
 {
     // Internal members
     WriteString(out, m_Name);
-    
+
     out.write(reinterpret_cast<const char*>(&m_Enabled), sizeof(m_Enabled));
     out.write(reinterpret_cast<const char*>(&m_Type), sizeof(m_Type));
     out.write(reinterpret_cast<const char*>(&m_TimelineIn), sizeof(m_TimelineIn));
@@ -241,6 +307,30 @@ void Effect::Deserialize(std::istream& in)
         in.read(reinterpret_cast<char*>(&v), sizeof(v));
         p->SetValue(v);
     }
+}
+
+void Effect::Evaluate_(FloatImage& image)
+{
+    if (!image || !m_Enabled) return;
+
+    VOID_LOG_INFO("Processing Effect: {0}", m_Name);
+    Tools::VoidProfiler<std::chrono::duration<double>> p("Effect::Evaluate_");
+
+    // #pragma omp parallel for
+    // for (int i = 0; i < image->height; ++i)
+    // {
+    //     ImageRow row = image->EditableRow(i);
+    //     m_Operator->Evaluate(row);
+    // }
+
+    tbb::parallel_for(tbb::blocked_range<int>(0, image->height), [&](const tbb::blocked_range<int>& r) -> void
+    {
+        for (int i = r.begin(); i != r.end(); ++i)
+        {
+            ImageRow row = image->EditableRow(i);
+            m_Operator->Evaluate(row);
+        }
+    });
 }
 
 VOID_NAMESPACE_CLOSE

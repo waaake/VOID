@@ -238,24 +238,20 @@ SequenceFrame TrackItem::InternalFrame(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
     if (m_Media && m_Media->Contains(f))
-        return SequenceFrame(this, m_Media->InternalFrame(f));
+        return SequenceFrame(this, m_Media->InternalFrame(f), LastEffect());
 
     return SequenceFrame();
 }
 
 Effect* TrackItem::CreateEffect(const std::string& type)
 {
-    if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut))
+    if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut, LastEffect()))
     {
         effect->SetTimelineItem(this);
-        // VOID_LOG_INFO("Effect Created -> {}", effect->Name());
         m_Effects.push_back(effect);
 
         emit effectCreated(effect);
-
-        // For every effect that gets updated, the media will be set dirty
-        // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
-        // SetDirty(true);
+        connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
         return effect;
     }
 
@@ -264,17 +260,13 @@ Effect* TrackItem::CreateEffect(const std::string& type)
 
 Effect* TrackItem::CreateEffect(const std::string& type, const std::string& name)
 {
-    if (Effect* effect = _EffectsBridge.CreateEffect(type, name, m_TimelineIn, m_TimelineOut))
+    if (Effect* effect = _EffectsBridge.CreateEffect(type, name, m_TimelineIn, m_TimelineOut, LastEffect()))
     {
         effect->SetTimelineItem(this);
-        // VOID_LOG_INFO("Effect Created -> {}", effect->Name());
         m_Effects.push_back(effect);
 
         emit effectCreated(effect);
-
-        // For every effect that gets updated, the media will be set dirty
-        // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
-        // SetDirty(true);
+        connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
         return effect;
     }
 
@@ -283,16 +275,28 @@ Effect* TrackItem::CreateEffect(const std::string& type, const std::string& name
 
 void TrackItem::AddEffect(Effect* effect)
 {
+    effect->ResetParent(LastEffect());
     effect->SetTimelineItem(this);
+    connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+
     m_Effects.push_back(effect);
     emit effectCreated(effect);
 }
 
 void TrackItem::InsertEffect(Effect* effect, int index)
 {
+    if (index != 0)
+        effect->ResetParent(m_Effects[index - 1]);
+
     effect->SetTimelineItem(this);
+    connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+
     m_Effects.insert(m_Effects.begin() + index, effect);
     emit effectCreated(effect);
+
+    // When an effect is inserted in the middle, we reset it's and the parentage of the one above it
+    // if such an effect exists...
+    ResetEffectParentage(index + 1);
 }
 
 bool TrackItem::RemoveEffect(const std::string& name)
@@ -309,6 +313,8 @@ bool TrackItem::RemoveEffect(const std::string& name)
             effect = nullptr;
 
             m_Effects.erase(m_Effects.begin() + i);
+            ResetEffectParentage(i);
+            emit effectRemoved();
             return true;
         }
     }
@@ -328,6 +334,8 @@ void TrackItem::RemoveEffect(int index, bool destroy)
     }
 
     m_Effects.erase(m_Effects.begin() + index);
+    ResetEffectParentage(index);
+    emit effectRemoved();
 }
 
 void TrackItem::ClearEffects()
@@ -341,6 +349,7 @@ void TrackItem::ClearEffects()
     }
 
     m_Effects.clear();
+    emit effectRemoved();
 }
 
 int TrackItem::EffectIndex(const Effect* const effect) const
@@ -439,7 +448,7 @@ void TrackItem::Move(v_frame_t frame)
 
     // emit rangeChanged(m_TimelineIn, m_TimelineOut);
     // emit rangeChanged(TimelineRange(), previous);
-    emit updated();
+    // emit updated(); // Either we use a different signal here or don't emit anything -- causes issues with sequence buffers
 }
 
 Core::Project* TrackItem::Project() const
@@ -538,14 +547,18 @@ void TrackItem::Deserialize(const rapidjson::Value& in)
 
     const rapidjson::Value::ConstArray effects = in["timeline_effects"].GetArray();
     m_Effects.reserve(effects.Size());
+
+    Effect* last = nullptr;
     for (unsigned int i = 0; i < static_cast<unsigned int>(effects.Size()); ++i)
     {
         std::string type = effects[i]["typename"].GetString();
-        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        if (Effect* effect = _EffectsBridge.CreateEffect(type, last))
         {
             effect->SetTimelineItem(this);
             effect->Deserialize(effects[i]["effect"]);
             m_Effects.push_back(effect);
+
+            last = effect;
         }
     }
 }
@@ -578,14 +591,17 @@ void TrackItem::Deserialize(std::istream& in)
     in.read(reinterpret_cast<char*>(&effectsCount), sizeof(effectsCount));
     m_Effects.reserve(effectsCount);
 
+    Effect* last = nullptr;
     for (int i = 0; i < effectsCount; ++i)
     {
         std::string type = ReadString(in);
-        if (Effect* effect = _EffectsBridge.CreateEffect(type))
+        if (Effect* effect = _EffectsBridge.CreateEffect(type, last))
         {
             effect->SetTimelineItem(this);
             effect->Deserialize(in);
             m_Effects.push_back(effect);
+
+            last = effect;
         }
     }
 }
@@ -594,6 +610,25 @@ void TrackItem::ResetEffectsRange(const MFrameRange& updated)
 {
     for (auto& effect : m_Effects)
         effect->SetTimelineRange(updated.startframe, updated.endframe);
+}
+
+// void TrackItem::ResetEffectsParentage()
+// {
+//     Effect* parent = nullptr;
+//     for (Effect* effect : m_Effects)
+//     {
+//         effect->ResetParent(parent);
+//         parent = effect;
+//     }
+// }
+
+void TrackItem::ResetEffectParentage(int index)
+{
+    if (index < static_cast<int>(m_Effects.size()))
+    {
+        Effect*& effect = m_Effects[index];
+        effect->ResetParent(index - 1 < 0 ? nullptr : m_Effects[index - 1]);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

@@ -113,7 +113,7 @@ void BindCore(py::module_& m)
 
     /* MediaClip */
     py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")
-        .def(py::init<const MediaStruct&>(), py::arg("media"))
+        .def(py::init<const MediaStruct&, Core::Project*>(), py::arg("media"), py::arg("project"))
 
         .def(py::init<const std::string&, const std::string&, const std::string&>(), py::arg("basepath"),
                                                                                 py::arg("name"), py::arg("extension"))
