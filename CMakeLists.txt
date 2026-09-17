@@ -75,7 +75,9 @@ else()
 endif()
 
 # Multiprocessing
-find_package(OpenMP REQUIRED)
+find_package(TBB REQUIRED)
+# Depending on tbb for multiprocessing ---
+# find_package(OpenMP REQUIRED)
 
 # GL
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
@@ -114,8 +116,6 @@ find_package(TurboJPEG REQUIRED)
 
 # Used for Logging
 find_package(spdlog REQUIRED)
-
-find_package(TBB REQUIRED)
 
 # Definitions
 # Enable Logging if we have spdlog present and we're on the debug build

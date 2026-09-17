@@ -3,20 +3,15 @@
 
 /* STD */
 #include <algorithm>
-#include <execution>
 #include <memory>
+
+/* TBB */
+#include <tbb/parallel_for.h>
 
 /* Internal */
 #include "FFmpegReader.h"
-#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
-
-#if defined(_DISABLE_PARALLEL_EXECUTION)
-#define _EXEC_POLICY
-#else
-#define _EXEC_POLICY std::execution::par,
-#endif
 
 // This governs how many parallel instances of the Decoder can exist at ones
 // allowing multiple streams of videos to be decoded for playback
@@ -304,13 +299,13 @@ v_frame_t FFmpegDecoder::DecodeNextFrame()
 
 void FFmpegDecoder::FillBuffer(Buffer<float>& out)
 {
-    std::transform(
-        _EXEC_POLICY
-        m_Buffer._buf.begin(),
-        m_Buffer._buf.end(),
-        out._buf.begin(),
-        [](unsigned char _v) -> float { return Linear(_v / 255.f); }
-    );
+    float* buffer = out.Data();
+    int64_t count = m_Width * m_Height * m_Channels;
+    tbb::parallel_for(tbb::blocked_range<int64_t>(0, count), [&](const tbb::blocked_range<int64_t>& r) -> void
+    {
+        for (int64_t i = r.begin(); i != r.end(); ++i)
+            buffer[i] = Linear(m_Buffer[i] / 255.f);
+    });
 }
 
 /// FFmpegPixReader
