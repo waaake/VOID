@@ -248,15 +248,9 @@ Effect* TrackItem::CreateEffect(const std::string& type)
     if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut, LastEffect()))
     {
         effect->SetTimelineItem(this);
-        // VOID_LOG_INFO("Effect Created -> {}", effect->Name());
         m_Effects.push_back(effect);
 
         emit effectCreated(effect);
-
-        // For every effect that gets updated, the media will be set dirty
-        // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
-        // SetDirty(true);
-
         connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
         return effect;
     }
@@ -269,14 +263,9 @@ Effect* TrackItem::CreateEffect(const std::string& type, const std::string& name
     if (Effect* effect = _EffectsBridge.CreateEffect(type, name, m_TimelineIn, m_TimelineOut, LastEffect()))
     {
         effect->SetTimelineItem(this);
-        // VOID_LOG_INFO("Effect Created -> {}", effect->Name());
         m_Effects.push_back(effect);
 
         emit effectCreated(effect);
-
-        // For every effect that gets updated, the media will be set dirty
-        // connect(effect, &Effect::updated, this, [this]() -> void { SetDirty(true); });
-        // SetDirty(true);
         connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
         return effect;
     }
@@ -304,6 +293,10 @@ void TrackItem::InsertEffect(Effect* effect, int index)
 
     m_Effects.insert(m_Effects.begin() + index, effect);
     emit effectCreated(effect);
+
+    // When an effect is inserted in the middle, we reset it's and the parentage of the one above it
+    // if such an effect exists...
+    ResetEffectParentage(index + 1);
 }
 
 bool TrackItem::RemoveEffect(const std::string& name)
