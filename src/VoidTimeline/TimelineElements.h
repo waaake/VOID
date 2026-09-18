@@ -103,6 +103,7 @@ class TimeEdit : public QLineEdit
 public:
 	explicit TimeEdit(QWidget* parent = nullptr);
 
+	void Set(const std::string& tc) { setText(tc.c_str()); }
 	void Set(const QString& t) { setText(t); }
 	void Set(int t) { setText(QString::number(t)); }
 
