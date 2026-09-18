@@ -37,6 +37,15 @@ public:
     Timekeeper& operator=(Timekeeper&&) = delete;
 
     /**
+     * @brief Sets the current Frame display mode
+     * 
+     * @param mode Requested Display mode for frames.
+     * 
+     */
+    void SetFrameDisplayMode(const FrameDisplayMode& mode) { m_FrameDisplay = mode; }
+    const FrameDisplayMode& DisplayMode() const { return m_FrameDisplay; }
+
+    /**
      * @brief Set the current framerate.
      * 
      * @param framerate Rate of playback from the active timeline.
