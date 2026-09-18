@@ -25,6 +25,7 @@ struct MFrameRange
     v_frame_t duration;
     double framerate;
 
+    constexpr MFrameRange() : MFrameRange(0, 1, 24.0) {}
     constexpr MFrameRange(v_frame_t start, v_frame_t end, double framerate = 24.0)
         : MFrameRange(start, end, (end - start) + 1, framerate) {}
     constexpr MFrameRange(v_frame_t start, v_frame_t end, v_frame_t duration, double framerate = 24.0)
