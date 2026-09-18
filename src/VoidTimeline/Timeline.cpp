@@ -302,8 +302,6 @@ void Timeline::SetRange(const int min, const int max)
 	m_Timeslider->setRange(min, max);
 	m_Timeslider->m_CachedFrames.reserve(max - min + 1);
 
-	// m_InTimeEdit->Set(min);
-	// m_OutTimeEdit->Set(max);
 	Timekeeper& t = Timekeeper::Instance();
 	t.SetRange(min, max);
 	m_InTimeEdit->Set(t.DisplayStart());
