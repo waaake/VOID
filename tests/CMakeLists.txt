@@ -3,14 +3,16 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/refs/tags/v1.18.0.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_executable(void_test
-    Timecode_tests.cpp
     FrameRange_tests.cpp
+    Timecode_tests.cpp
+    Timekeeper_tests.cpp
 )
 
 target_link_libraries(
