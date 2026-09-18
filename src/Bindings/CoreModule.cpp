@@ -12,6 +12,7 @@
 #include "Definition.h"
 #include "Operator.h"
 #include "FrameRange.h"
+#include "Timecode.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidCore/VoidTools.h"
 #include "VoidObjects/Effects/Effects.h"
@@ -55,6 +56,23 @@ void BindCore(py::module_& m)
         .def_readonly("endframe", &MFrameRange::endframe)
         .def_readonly("duration", &MFrameRange::duration)
         .def_readonly("framerate", &MFrameRange::framerate);
+
+    py::class_<Timecode>(m, "Timecode")
+        .def(py::init<v_frame_t, double, bool>(), py::arg("frame"), py::arg("framerate"), py::arg("dropframe") = false)
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const Timecode& tc = h.cast<const Timecode&>();
+            std::stringstream ss;
+            ss << "Timecode <" << tc.String() << " frames=" << tc.frames << " fps=" << tc.framerate << ">";
+            return ss.str();
+        })
+        // .def("__str__", &Timecode::String)
+        .def("string", &Timecode::String)
+        .def_readonly("frames", &Timecode::frames)
+        .def_readonly("framerate", &Timecode::framerate)
+        .def_readonly("fps", &Timecode::framerate)
+        .def("is_drop_frame", [](const Timecode& self) -> bool { return self.dropframe; })
+        .def_static("from_string", &Timecode::Get, py::arg("frame"), py::arg("framerate"), py::arg("dropframe") = false);
     
     py::class_<ElementTokens>(m, "ElementTokens")
         .def("__repr__", [](py::handle h) -> std::string
