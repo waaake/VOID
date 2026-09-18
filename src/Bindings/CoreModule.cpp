@@ -55,7 +55,10 @@ void BindCore(py::module_& m)
         .def_readonly("startframe", &MFrameRange::startframe)
         .def_readonly("endframe", &MFrameRange::endframe)
         .def_readonly("duration", &MFrameRange::duration)
-        .def_readonly("framerate", &MFrameRange::framerate);
+        .def_readonly("framerate", &MFrameRange::framerate)
+        .def("start_tc", &MFrameRange::StartTC, py::arg("dropframe") = false)
+        .def("end_tc", &MFrameRange::EndTC, py::arg("dropframe") = false)
+        .def("timecode", &MFrameRange::TC, py::arg("frame"), py::arg("dropframe") = false);
 
     py::class_<Timecode>(m, "Timecode")
         .def(py::init<v_frame_t, double, bool>(), py::arg("frame"), py::arg("framerate"), py::arg("dropframe") = false)
