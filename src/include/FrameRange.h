@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Timecode.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -24,9 +25,9 @@ struct MFrameRange
     v_frame_t duration;
     double framerate;
 
-    MFrameRange(v_frame_t start, v_frame_t end, double framerate = 24.0)
+    constexpr MFrameRange(v_frame_t start, v_frame_t end, double framerate = 24.0)
         : MFrameRange(start, end, (end - start) + 1, framerate) {}
-    MFrameRange(v_frame_t start, v_frame_t end, v_frame_t duration, double framerate = 24.0)
+    constexpr MFrameRange(v_frame_t start, v_frame_t end, v_frame_t duration, double framerate = 24.0)
         : startframe(start), endframe(end), duration(duration), framerate(framerate) {}
 
     bool Overlaps(const MFrameRange& other) const
@@ -60,6 +61,11 @@ struct MFrameRange
     {
         return _a < _b ? MFrameRange(_a, _b) : MFrameRange(_b, _a);
     }
+
+    // Timecode returns
+    std::string TC(v_frame_t frame, bool dropframe = false) const { return Timecode(frame, framerate, dropframe).String(); }
+    std::string StartTC(bool dropframe = false) const { return Timecode(startframe, framerate, dropframe).String(); }
+    std::string EndTC(bool dropframe = false) const { return Timecode(endframe, framerate, dropframe).String(); }
 };
 
 VOID_NAMESPACE_CLOSE

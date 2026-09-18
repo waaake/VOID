@@ -198,7 +198,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t 
     int offset = media->FirstFrame() - frame;
 
     // An item already exists in the range where this media was supposed to be added -- only if we're adding in between
-    if ((frame < m_EndFrame) && m_Items.InRange(media->FirstFrame() - offset, media->LastFrame() - offset))
+    if ((frame <= m_EndFrame) && m_Items.InRange(media->FirstFrame() - offset, media->LastFrame() - offset))
         return nullptr;
 
     SharedTrackItem item = std::make_shared<TrackItem>(
@@ -236,7 +236,7 @@ std::vector<SharedTrackItem> PlaybackTrack::AddMedia(const std::vector<SharedMed
     {
         int offset = clip->FirstFrame() - start;
         // An item already exists in the range where this media was supposed to be added -- only if we're adding in between
-        if ((start < m_EndFrame) && m_Items.InRange(clip->FirstFrame() - offset, clip->LastFrame() - offset))
+        if ((start <= m_EndFrame) && m_Items.InRange(clip->FirstFrame() - offset, clip->LastFrame() - offset))
         {
             start += clip->Duration();
             continue;

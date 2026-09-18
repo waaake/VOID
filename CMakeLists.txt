@@ -32,6 +32,7 @@ endif()
 # for now, let's have it enabled on compile if we need it or not, later this might change and we have a full frameless
 # or a framed window
 option(USE_FRAMED_WINDOW "Enable using Framed Window borders, which is native themed." OFF)
+option(BUILD_TESTS "Build test for Void Components." OFF)
 
 # Mac has it turned on by default unless we don't want it there as well
 if(APPLE)
@@ -125,3 +126,9 @@ endif()
 
 # Add the VOID Source
 add_subdirectory(src)
+
+# Add tests
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endif()
