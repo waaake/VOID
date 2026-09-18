@@ -60,7 +60,7 @@ std::string Timecode::String() const
         seconds = static_cast<int>(totalsecs % 60);
     }
 
-    char buf[12];
+    char buf[12] = {};
     char* ptr = buf;
     
     ptr = Write(ptr, hours);
