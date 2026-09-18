@@ -6,6 +6,7 @@
 DEBUG=false
 CLEAR=false
 BUILD_ONLY=false
+TEST=false
 NPROC=1
 
 if [ $(uname) = "Linux" ]; then
@@ -30,6 +31,10 @@ while [[ $# -gt 0 ]]; do
             BUILD_ONLY=true
             shift
             ;;
+        --test)
+            TEST=true
+            shift
+            ;;
         *)
             echo "Unknown Argument: $1"
             exit 1;
@@ -47,6 +52,11 @@ fi
 
 if [ "$BUILD_ONLY" == true ]; then
     cmake -S . -B _build -DCMAKE_BUILD_TYPE=debug -DCMAKE_VERBOSE_MAKEFILE=ON && make -C _build -j${NPROC}
+    exit 0
+fi
+
+if [ "$TEST" == true ]; then
+    cmake -S . -B _build -DBUILD_TESTS=ON && cmake --build _build --target void_test && make -C _build test
     exit 0
 fi
 
