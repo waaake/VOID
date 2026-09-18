@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Timecode.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -60,6 +61,11 @@ struct MFrameRange
     {
         return _a < _b ? MFrameRange(_a, _b) : MFrameRange(_b, _a);
     }
+
+    // Timecode returns
+    std::string TC(v_frame_t frame, bool dropframe = false) const { return Timecode(frame, framerate, dropframe).String(); }
+    std::string StartTC(bool dropframe = false) const { return Timecode(startframe, framerate, dropframe).String(); }
+    std::string EndTC(bool dropframe = false) const { return Timecode(endframe, framerate, dropframe).String(); }
 };
 
 VOID_NAMESPACE_CLOSE
