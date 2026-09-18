@@ -6,8 +6,15 @@
 
 /* Internal */
 #include "Definition.h"
+#include "FrameRange.h"
 
 VOID_NAMESPACE_OPEN
+
+enum class FrameDisplayMode
+{
+    TIMECODE,
+    FRAMES
+};
 
 /**
  * @brief As the name suggests, keeps time for the player.
@@ -34,8 +41,8 @@ public:
      * 
      * @param framerate Rate of playback from the active timeline.
      */
-    void SetFramerate(double framerate) { m_Framerate = framerate; }
-    double Framerate() const { return m_Framerate; }
+    void SetFramerate(double framerate) { m_Frange.framerate = framerate; }
+    double Framerate() const { return m_Frange.framerate; }
 
     /**
      * @brief Set the current framerate of the media that is being played
@@ -61,8 +68,8 @@ public:
      */
     void SetTime(double time) { m_CurrentTime = time; }
 
-    inline void SetStart(v_frame_t start) { m_Start = start; }
-    inline void SetEnd(v_frame_t end) { m_End = end; }
+    inline void SetStart(v_frame_t start) { m_Frange.startframe = start; }
+    inline void SetEnd(v_frame_t end) { m_Frange.endframe = end; }
     void SetRange(v_frame_t start, v_frame_t end);
 
     /**
@@ -71,11 +78,21 @@ public:
      */
     void Reset();
 
-    inline v_frame_t StartFrame() const { return m_Start; }
-    inline v_frame_t EndFrame() const { return m_End; }
+    inline v_frame_t StartFrame() const { return m_Frange.startframe; }
+    inline v_frame_t EndFrame() const { return m_Frange.endframe; }
     inline v_frame_t CurrentFrame() const { return m_CurrentFrame; }
 
     inline double CurrentTime() const { return m_CurrentTime; }
+
+    // Timecode
+    std::string StartTC(bool dropframe = false) const { return m_Frange.StartTC(dropframe); }
+    std::string EndTC(bool dropframe = false) const { return m_Frange.EndTC(dropframe); }
+    std::string TC(v_frame_t frame, bool dropframe = false) const { return m_Frange.TC(frame, dropframe); }
+
+    // Display
+    std::string DisplayStart() const;
+    std::string DisplayEnd() const;
+    std::string DisplayFrame(v_frame_t frame) const;
 
     /**
      * @brief Returns the Next Frame based on the current frame and also on the current time
@@ -102,13 +119,15 @@ public:
     v_frame_t PreviousFrame(int offset);
 
 private: /* Members */
-    v_frame_t m_Start, m_End, m_CurrentFrame;
+    MFrameRange m_Frange;
+    v_frame_t m_CurrentFrame;
     double m_CurrentTime;
-    double m_Framerate, m_Mediarate;
+    double m_Mediarate;
+    FrameDisplayMode m_FrameDisplay;
 
 private: /* Methods */
-    inline v_frame_t ConvertedTime() const { return static_cast<v_frame_t>(m_CurrentTime * m_Framerate); }
-    inline bool HasDifferentRate() const { return m_Mediarate != m_Framerate; }
+    inline v_frame_t ConvertedTime() const { return static_cast<v_frame_t>(m_CurrentTime * m_Frange.framerate); }
+    inline bool HasDifferentRate() const { return m_Mediarate != m_Frange.framerate; }
     v_frame_t NextFrame__();
     v_frame_t NextFrame__(int offset);
     v_frame_t PreviousFrame__();

@@ -6,17 +6,14 @@
 
 /* Internal */
 #include "Timekeeper.h"
-#include "Logging.h"
 
 VOID_NAMESPACE_OPEN
 
 Timekeeper::Timekeeper()
-    : m_Start(0)
-    , m_End(1)
-    , m_CurrentFrame(-1)
+    : m_CurrentFrame(-1)
     , m_CurrentTime(-1.0)
-    , m_Framerate(24.0)
     , m_Mediarate(24.0)
+    , m_FrameDisplay(FrameDisplayMode::FRAMES)
 {
 }
 
@@ -32,14 +29,14 @@ Timekeeper& Timekeeper::Instance()
 
 void Timekeeper::SetRange(v_frame_t start, v_frame_t end)
 {
-    m_Start = start;
-    m_End = end;
+    m_Frange.startframe = start;
+    m_Frange.endframe = end;
     Reset();
 }
 
 void Timekeeper::Reset()
 {
-    m_CurrentFrame = m_Start;
+    m_CurrentFrame = m_Frange.startframe;
     m_CurrentTime = -1.0;
 }
 
@@ -51,14 +48,25 @@ void Timekeeper::SetFrame(v_frame_t frame)
      * to seek to a given time in the slider
      */
     m_CurrentFrame = frame;
-    VOID_LOG_INFO("Setting Current Frame: {}", frame);
-
     if (m_CurrentTime >= 0)
-    {
-        m_CurrentTime = (double)m_CurrentFrame / m_Framerate;
-        VOID_LOG_INFO("Setting Current Time: {}s", m_CurrentTime);
-    }
+        m_CurrentTime = (double)m_CurrentFrame / m_Frange.framerate;
 }
+
+std::string Timekeeper::DisplayStart() const
+{
+    return m_FrameDisplay == FrameDisplayMode::FRAMES ? std::to_string(m_Frange.startframe) : m_Frange.StartTC();
+}
+
+std::string Timekeeper::DisplayEnd() const
+{
+    return m_FrameDisplay == FrameDisplayMode::FRAMES ? std::to_string(m_Frange.endframe) : m_Frange.EndTC();
+}
+
+std::string Timekeeper::DisplayFrame(v_frame_t frame) const
+{
+    return m_FrameDisplay == FrameDisplayMode::FRAMES ? std::to_string(frame) : Timecode(frame, m_Mediarate).String();
+}
+
 
 v_frame_t Timekeeper::NextFrame()
 {
@@ -84,8 +92,8 @@ v_frame_t Timekeeper::NextFrame()
         // Catch up to it slowly
         m_CurrentFrame += std::abs(distance) / 2;
 
-        if (m_CurrentFrame > m_End)
-            m_CurrentFrame = m_Start;
+        if (m_CurrentFrame > m_Frange.endframe)
+            m_CurrentFrame = m_Frange.startframe;
 
         return m_CurrentFrame;
     }
@@ -119,8 +127,8 @@ v_frame_t Timekeeper::NextFrame(int offset)
         // Catch up to it slowly
         m_CurrentFrame += std::abs(distance) / 2;
 
-        if (m_CurrentFrame > m_End)
-            m_CurrentFrame = m_Start;
+        if (m_CurrentFrame > m_Frange.endframe)
+            m_CurrentFrame = m_Frange.startframe;
 
         return m_CurrentFrame;
     }
@@ -154,8 +162,8 @@ v_frame_t Timekeeper::PreviousFrame()
         // Catch up to it slowly
         m_CurrentFrame += std::abs(distance) / 2;
 
-        if (m_CurrentFrame < m_Start)
-            m_CurrentFrame = m_End;
+        if (m_CurrentFrame < m_Frange.startframe)
+            m_CurrentFrame = m_Frange.endframe;
 
         return m_CurrentFrame;
     }
@@ -189,8 +197,8 @@ v_frame_t Timekeeper::PreviousFrame(int offset)
         // Catch up to it slowly
         m_CurrentFrame += std::abs(distance) / 2;
 
-        if (m_CurrentFrame < m_Start)
-            m_CurrentFrame = m_End;
+        if (m_CurrentFrame < m_Frange.startframe)
+            m_CurrentFrame = m_Frange.endframe;
 
         return m_CurrentFrame;
     }
@@ -202,8 +210,8 @@ v_frame_t Timekeeper::PreviousFrame(int offset)
 
 v_frame_t Timekeeper::NextFrame__()
 {
-    if (m_CurrentFrame >= m_End)
-        m_CurrentFrame = m_Start;
+    if (m_CurrentFrame >= m_Frange.endframe)
+        m_CurrentFrame = m_Frange.startframe;
     else
         m_CurrentFrame++;
     return m_CurrentFrame;
@@ -211,8 +219,8 @@ v_frame_t Timekeeper::NextFrame__()
 
 v_frame_t Timekeeper::NextFrame__(int offset)
 {
-    if (m_CurrentFrame + offset > m_End)
-        m_CurrentFrame = m_CurrentFrame == m_End ? m_Start : m_End;
+    if (m_CurrentFrame + offset > m_Frange.endframe)
+        m_CurrentFrame = m_CurrentFrame == m_Frange.endframe ? m_Frange.startframe : m_Frange.endframe;
     else
         m_CurrentFrame += offset;
 
@@ -221,8 +229,8 @@ v_frame_t Timekeeper::NextFrame__(int offset)
 
 v_frame_t Timekeeper::PreviousFrame__()
 {
-    if (m_CurrentFrame <= m_Start)
-        m_CurrentFrame = m_End;
+    if (m_CurrentFrame <= m_Frange.startframe)
+        m_CurrentFrame = m_Frange.endframe;
     else
         m_CurrentFrame--;
     return m_CurrentFrame;
@@ -230,8 +238,8 @@ v_frame_t Timekeeper::PreviousFrame__()
 
 v_frame_t Timekeeper::PreviousFrame__(int offset)
 {
-    if (m_CurrentFrame - offset < m_Start)
-        m_CurrentFrame = m_CurrentFrame == m_Start ? m_End : m_Start;
+    if (m_CurrentFrame - offset < m_Frange.startframe)
+        m_CurrentFrame = m_CurrentFrame == m_Frange.startframe ? m_Frange.endframe : m_Frange.startframe;
     else
         m_CurrentFrame -= offset;
     return m_CurrentFrame;
