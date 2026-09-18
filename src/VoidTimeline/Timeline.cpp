@@ -221,10 +221,11 @@ void Timeline::Setup()
 	m_OutTimeEdit->setFixedWidth(TIME_DISPLAY_WIDTH);
 
 	m_TimeDisplay->setReadOnly(true);
-	m_InTimeEdit->Set(m_Timeslider->minimum());
-	m_OutTimeEdit->Set(m_Timeslider->maximum());
-
-	Timekeeper::Instance().SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
+	
+	Timekeeper& t = Timekeeper::Instance();
+	t.SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
+	m_InTimeEdit->Set(t.DisplayStart());
+	m_OutTimeEdit->Set(t.DisplayEnd());
 }
 
 void Timeline::StartPlayback()
@@ -272,7 +273,7 @@ void Timeline::TimerPlaybackLoop()
 
 void Timeline::SetFrame(const int frame)
 {
-	m_TimeDisplay->setText(std::to_string(frame).c_str());
+	m_TimeDisplay->Set(Timekeeper::Instance().DisplayFrame(frame));
 	m_Timeslider->setValue(frame);
 
 	Timekeeper::Instance().SetFrame(frame);
@@ -281,7 +282,7 @@ void Timeline::SetFrame(const int frame)
 void Timeline::TimeUpdated(const int time)
 {
 	emit timeChanged(time);
-	m_TimeDisplay->setText(std::to_string(time).c_str());
+	m_TimeDisplay->Set(Timekeeper::Instance().DisplayFrame(time));
 }
 
 void Timeline::SetInFrame(int frame)
@@ -296,16 +297,17 @@ void Timeline::SetOutFrame(int frame)
 
 void Timeline::SetRange(const int min, const int max)
 {
-	/* Reset any user defined range for the timeslider */
 	ResetRange();
 
-	/* Update timeslider range */
 	m_Timeslider->setRange(min, max);
 	m_Timeslider->m_CachedFrames.reserve(max - min + 1);
 
-	m_InTimeEdit->Set(min);
-	m_OutTimeEdit->Set(max);
-	Timekeeper::Instance().SetRange(min, max);
+	// m_InTimeEdit->Set(min);
+	// m_OutTimeEdit->Set(max);
+	Timekeeper& t = Timekeeper::Instance();
+	t.SetRange(min, max);
+	m_InTimeEdit->Set(t.DisplayStart());
+	m_OutTimeEdit->Set(t.DisplayEnd());
 }
 
 void Timeline::ResetRange()
@@ -335,30 +337,30 @@ void Timeline::Clear()
 
 void Timeline::SetUserFirstframe(int frame)
 {
-	/* Check if the end frame is lesser than the provided start frame */
+	// Check if the end frame is lesser than the provided start frame
 	if (m_Timeslider->m_UserEndframe && (frame > m_Timeslider->m_UserEndframe))
 	{
-		/* If so -> Reset the end frame */
+		// If so -> Reset the end frame
 		m_Timeslider->m_UserEndframe = 0;
 		Timekeeper::Instance().SetEnd(m_Timeslider->maximum());
 	}
 
-	/* Update the first user frame on the timeslider */
+	// Update the first user frame on the timeslider
 	m_Timeslider->SetUserFirstframe(frame);
 	Timekeeper::Instance().SetStart(frame);
 }
 
 void Timeline::SetUserEndframe(int frame)
 {
-	/* Check if the start frame is greater than the provided end frame */
+	// Check if the start frame is greater than the provided end frame
 	if (m_Timeslider->m_UserStartframe && (frame < m_Timeslider->m_UserStartframe))
 	{
-		/* If so -> Reset the start frame */
+		// If so -> Reset the start frame
 		m_Timeslider->m_UserStartframe = 0;
 		Timekeeper::Instance().SetStart(m_Timeslider->minimum());
 	}
 
-	/* Update the last user frame on the timeslider */
+	// Update the last user frame on the timeslider
 	m_Timeslider->SetUserEndframe(frame);
 	Timekeeper::Instance().SetEnd(frame);
 }
