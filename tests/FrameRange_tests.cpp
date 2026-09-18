@@ -49,4 +49,14 @@ TEST(FrameRangeTest, Diff)
     EXPECT_EQ(r1.TailDiff(r2), MFrameRange(150, 240));
 }
 
+TEST(FrameRangeTest, Timecode)
+{
+    MFrameRange r(4, 54);
+
+    EXPECT_EQ(r.StartTC(), "00:00:00:04");
+    EXPECT_EQ(r.EndTC(), "00:00:02:06");
+
+    EXPECT_EQ(r.TC(48), "00:00:02:00");
+}
+
 VOID_NAMESPACE_CLOSE
