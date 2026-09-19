@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "QDefinition.h"
+#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -23,7 +24,6 @@ class VOID_API Timeslider : public QSlider
 	Q_OBJECT
 public:
 	Timeslider(Qt::Orientation orientation, QWidget *parent = nullptr);
-
 	virtual ~Timeslider();
 
 	/**
@@ -85,13 +85,7 @@ private: /* Methods */
 	int TickCount(int duration) const;
 
 private: /* Members */
-	bool m_Focussed;
-	int m_HovXPos;
-	int m_HoveredFrame;
-
-	/* Stores any frame that have been marked as Cached for the timeslider */
 	std::vector<int> m_CachedFrames;
-	/* Stores any frame that has been annotated */
 	std::vector<int> m_AnnotatedFrames;
 
 	/**
@@ -109,12 +103,14 @@ private: /* Members */
 	 * And when the playback happens, it happens over the user specified range i.e. 30 - 60
 	 */
 
-	/* The User set Minimum Frame for playback */
+	const Timekeeper& m_Timekeeper;
+	bool m_Focussed;
+	int m_HovXPos;
+	int m_HoveredFrame;
+
 	int m_UserStartframe;
-	/* The User set Maximum Frame for playback */
 	int m_UserEndframe;
 
-	/* Friends */
 	friend class Timeline;
 };
 
