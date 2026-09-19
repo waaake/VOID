@@ -119,11 +119,10 @@ void VLine::paintEvent(QPaintEvent* event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.fillRect(rect(), palette().color(QPalette::Window).darker(150));
+    painter.setPen(QPen(palette().color(QPalette::Dark), 1));
+    painter.drawLine(width() - 1, 0, width() - 1, height());
     painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 1));
-
-    painter.drawLine(0, 0, 0, height());
-    painter.drawLine(width() - 1, 0, width(), height());
+    painter.drawLine(width(), 0, width(), height());
 }
 
 /* }}} */
