@@ -10,7 +10,7 @@
 
 VOID_NAMESPACE_OPEN
 
-enum class FrameDisplayMode
+enum class VOID_API FrameDisplayMode
 {
     FRAMES,
     TIMECODE

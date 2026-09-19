@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-struct Timecode
+struct VOID_API Timecode
 {
     v_frame_t frames = 0;
     double framerate = 24.0;
