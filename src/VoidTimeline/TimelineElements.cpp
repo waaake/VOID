@@ -2,11 +2,14 @@
 // Licensed under the MIT License
 
 /* Qt */
+#include <QAbstractItemView>
 #include <QAction>
+#include <QLineEdit>
 #include <QMenu>
 #include <QPalette>
+#include <QStandardItemModel>
+#include <QStyledItemDelegate>
 #include <QValidator>
-#include <QLineEdit>
 
 /* Internal */
 #include "TimelineElements.h"
@@ -199,6 +202,57 @@ void TimeEdit::Setup()
     setFont(f);
 
 	setFocusPolicy(Qt::ClickFocus);
+}
+
+/// FrameDisplayModeBox
+
+class DescriptiveItemDelegate : public QStyledItemDelegate
+{
+public:
+	explicit DescriptiveItemDelegate(QObject* parent = nullptr) : QStyledItemDelegate(parent) {}
+	void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const override
+	{
+		QStyledItemDelegate::initStyleOption(option, index);
+
+		const QString description = index.data(Qt::UserRole + 1010).toString();
+		if (description.isEmpty()) return;
+		option->text = QString("%1 (%2)").arg(index.data(Qt::DisplayRole).toString(), description);
+	}
+
+	QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+	{
+		QSize size = QStyledItemDelegate::sizeHint(option, index);
+		return QSize(140, 24);
+	}
+};
+
+FrameDisplayModeBox::FrameDisplayModeBox(QWidget* parent)
+	: ControlCombo(parent)
+{
+	Setup();
+}
+
+void FrameDisplayModeBox::Setup()
+{
+	QStandardItemModel* model = new QStandardItemModel(this);
+	QStandardItem* i1 = new QStandardItem("TF");
+	i1->setData("Timeline Frames", Qt::UserRole + 1010);
+	model->appendRow(i1);
+
+	QStandardItem* i2 = new QStandardItem("TC");
+	i2->setData("Timecode", Qt::UserRole + 1010);
+	model->appendRow(i2);
+
+	setModel(model);
+	setItemDelegate(new DescriptiveItemDelegate(this));
+
+	// Need the same width on the Popup for it to cover the contents
+	view()->setMinimumWidth(140);
+
+	connect(this, &QComboBox::currentIndexChanged, this, [this](int index) -> void
+	{
+		emit frameDisplayChanged(static_cast<FrameDisplayMode>(index));
+	});
 }
 
 VOID_NAMESPACE_CLOSE
