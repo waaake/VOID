@@ -130,6 +130,7 @@ private: /* Members */
 	Timeslider* m_Timeslider;
 	TimeEdit* m_TimeDisplay;
 	FramerateBox* m_FramerateBox;
+	FrameDisplayModeBox* m_TimeDisplayController;
 
 	TimeEdit* m_InTimeEdit;
 	TimeEdit* m_OutTimeEdit;
@@ -137,6 +138,8 @@ private: /* Members */
 	QDoubleValidator* m_DoubleValidator;
 	QTimer m_PlayTimer;
 	QElapsedTimer m_ElapsedTimer;
+
+	Timekeeper& m_Timekeeper;
 
 	std::future<void> m_Worker;
 	std::atomic<bool> m_Playing;
@@ -150,6 +153,7 @@ protected: /* Methods */
 	void Connect();
 	void Setup();
 	void TimeUpdated(const int time);
+	void FrameDisplayUpdated(const FrameDisplayMode& mode);
 	void PlayForwards();
 	void PlayBackwards();
 	void Replay();

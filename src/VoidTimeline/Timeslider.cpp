@@ -29,6 +29,7 @@ VOID_NAMESPACE_OPEN
 
 Timeslider::Timeslider(Qt::Orientation orientation, QWidget *parent)
 	: QSlider(orientation, parent)
+	, m_Timekeeper(Timekeeper::Instance())
 	, m_Focussed(false)
 	, m_HovXPos(0)
 	, m_HoveredFrame(0)
@@ -52,11 +53,8 @@ void Timeslider::leaveEvent(QEvent* event)
 {
 	m_Focussed = false;
 
-	/* Update the Hovered details */
 	m_HoveredFrame = -1;
 	m_HovXPos = -1;
-
-	/* Trigger a repaint */
 	update();
 }
 
@@ -87,10 +85,8 @@ void Timeslider::mousePressEvent(QMouseEvent* event)
 	// User clicked on the current position calls for a seek in the playable timeline
 	emit seeked(value);
 
-	/* Allow dragging behaviour */
+	// Allow dragging behaviour
 	QSlider::mousePressEvent(event);
-
-	/* Repaint */
 	update();
 }
 
@@ -98,17 +94,11 @@ void Timeslider::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (m_HovXPos != -1)
 	{
-		/* Focus Back on the Timeslider */
 		m_Focussed = true;
-
-		/* Update the hovered information */
 		UpdateHovered(event->pos().x());
 	}
 
-	/* Default Behaviour */
 	QSlider::mouseReleaseEvent(event);
-
-	/* Repaint */
 	update();
 }
 
@@ -117,12 +107,17 @@ void Timeslider::paintEvent(QPaintEvent* event)
 	QPainter painter(this);
 
 	int startpos = 0, endpos = 0;
-	const float uwidth = float(width()) / (maximum() - minimum());
+	const int minval = minimum();
+	const int maxval = maximum();
+
+	const int diff = maxval - minval;
+
+	const float uwidth = float(width()) / diff;
 	const float halfuwidth = uwidth * 0.5f;
 
 	// const int hpos = width() * (value() - minimum()) / std::max((maximum() - minimum()), 1);
-	const int step = std::max((maximum() - minimum() + 1) / TickCount(maximum() - minimum() + 1), 1);
-	const float rec_range = 1.f / (maximum() - minimum() + 1);
+	const int step = std::max((diff + 1) / TickCount(diff + 1), 1);
+	const float rec_range = 1.f / (diff + 1);
 
 	painter.setPen(QColor(30, 30, 30));
 	painter.setBrush(QBrush(QColor(30, 30, 30)));
@@ -138,74 +133,100 @@ void Timeslider::paintEvent(QPaintEvent* event)
 
 	if (m_UserStartframe)
 	{
-		startpos = (m_UserStartframe - minimum()) * uwidth;
+		startpos = (m_UserStartframe - minval) * uwidth;
 		r.setLeft(startpos);
 	}
 
 	if (m_UserEndframe)
 	{
-		endpos = (m_UserEndframe - minimum()) * uwidth;
+		endpos = (m_UserEndframe - minval) * uwidth;
 		r.setRight(endpos);
 	}
 
 	painter.fillRect(r, palette().color(QPalette::Dark).lighter(120));
 	painter.setBrush(palette().color(QPalette::Highlight));
-	painter.drawRect(
+	painter.drawRect(QRect(
 		// Handle pos - half of the width of the handle
-		width() * (value() - minimum()) / std::max((maximum() - minimum()), 1) - std::max(uwidth, 4.0f) * 0.5f,
+		width() * (value() - minval) / std::max((diff), 1) - std::max(uwidth, 4.0f) * 0.5f,
 		0,
 		std::max(uwidth, 4.0f),
 		height()
-	);
+	));
 
-	for (int i = minimum(), count = 0; i <= maximum(); i += step, ++count)
+	for (int i = minval, count = 0; i <= maxval; i += step, ++count)
 	{
 		painter.setPen(QPen(Qt::gray, 1));
 		painter.drawLine(
-			width() * (i - minimum()) * rec_range, height() - ((count % 5) == 0 ? 15 : 10),
-			width() * (i - minimum()) * rec_range, height()
+			width() * (i - minval) * rec_range, height() - ((count % 5) == 0 ? 15 : 10),
+			width() * (i - minval) * rec_range, height()
 		);
 	}
 
 	for (int frame : m_CachedFrames)
 	{
 		painter.setPen(QPen(SL_CACHE_COLOR, 3));
-		painter.drawLine((frame - minimum()) * uwidth, 0, (frame - minimum()) * uwidth + uwidth, 0);
+		painter.drawLine((frame - minval) * uwidth, 0, (frame - minval) * uwidth + uwidth, 0);
 	}
 
 	for (int frame : m_AnnotatedFrames)
 	{
 		painter.setPen(QPen(SL_ANNOTATED_COLOR, 3));
-		painter.drawLine((frame - minimum()) * uwidth - halfuwidth, 6, (frame - minimum()) * uwidth + halfuwidth, 6);
+		painter.drawLine((frame - minval) * uwidth - halfuwidth, 6, (frame - minval) * uwidth + halfuwidth, 6);
 	}
 
 	if (startpos)
 	{
 		painter.setPen(QPen(QColor(200, 75, 60), 2));
 		painter.drawLine(startpos, 0, startpos, height());
-		painter.drawText(0, 0, startpos - 4, height() * 0.5f, Qt::AlignRight | Qt::AlignBottom, QString::number(m_UserStartframe));
+		painter.drawText(
+			QRect(0, 0, startpos - 4, height()),
+			Qt::AlignRight | Qt::AlignTop,
+			m_Timekeeper.DisplayFrame(m_UserStartframe).c_str()
+		);
 	}
 
 	if (endpos)
 	{
 		painter.setPen(QPen(QColor(200, 75, 60), 2));
 		painter.drawLine(endpos, 0, endpos, height());
-		painter.drawText(endpos + 4, 0, rect().width(), height() * 0.5f, Qt::AlignLeft | Qt::AlignBottom, QString::number(m_UserEndframe));
+		painter.drawText(
+			QRect(endpos + 4, 0, rect().width(), height()),
+			Qt::AlignLeft | Qt::AlignTop,
+			m_Timekeeper.DisplayFrame(m_UserEndframe).c_str()
+		);
 	}
 
 	if (m_Focussed)
 	{
 		painter.setPen(SL_FRAME_COLOR);
-		painter.drawText(m_HovXPos - halfuwidth, height() * 0.5f, QString::number(m_HoveredFrame));
+		r = rect();
+		QFlags<Qt::AlignmentFlag> f = Qt::AlignTop;
+		if (m_HoveredFrame < minval + (maxval - minval) * 0.2)
+		{
+			f = Qt::AlignTop | Qt::AlignLeft;
+			r.setLeft(m_HovXPos);
+		}
+		else if (m_HoveredFrame > minval + (maxval - minval) * 0.8)
+		{
+			f = Qt::AlignTop | Qt::AlignRight;
+			r.setRight(m_HovXPos);
+		}
+		else
+		{
+			f = Qt::AlignTop | Qt::AlignHCenter;
+			r.setLeft(m_HovXPos - 100);
+			r.setRight(m_HovXPos + 100);
+		}
+
+		painter.drawText(r, f, m_Timekeeper.DisplayFrame(m_HoveredFrame).c_str());
 	}
 }
 
 void Timeslider::UpdateHovered(int xpos)
 {
-	/* Set the Hovered position based on the x position of the event click */
+	// Set the Hovered position based on the x position of the event click
 	m_HovXPos = xpos;
-
-	/* Fetch the slider value based on the position */
+	// Fetch the slider value based on the position
 	m_HoveredFrame = QStyle::sliderValueFromPosition(
 						minimum(),
 						maximum(),

@@ -12,7 +12,9 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidCore/Timekeeper.h"
 #include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/ComboBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -39,7 +41,6 @@ struct LoopState
 class LoopTypeButton : public QPushButton
 {
 	Q_OBJECT
-
 public:
 	LoopTypeButton(QWidget* parent = nullptr);
 	~LoopTypeButton();
@@ -103,6 +104,7 @@ class TimeEdit : public QLineEdit
 public:
 	explicit TimeEdit(QWidget* parent = nullptr);
 
+	void Set(const std::string& tc) { setText(tc.c_str()); }
 	void Set(const QString& t) { setText(t); }
 	void Set(int t) { setText(QString::number(t)); }
 
@@ -110,6 +112,19 @@ public:
 
 signals:
 	void frameEdited(int);
+
+private:
+	void Setup();
+};
+
+class FrameDisplayModeBox : public ControlCombo
+{
+	Q_OBJECT
+public:
+	explicit FrameDisplayModeBox(QWidget* parent = nullptr);
+
+signals:
+	void frameDisplayChanged(const FrameDisplayMode&);
 
 private:
 	void Setup();

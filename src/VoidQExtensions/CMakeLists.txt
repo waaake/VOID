@@ -1,4 +1,5 @@
 set(SOURCES
+    ComboBox.cpp
     Delegates.cpp
     Dialog.cpp
     Frame.cpp

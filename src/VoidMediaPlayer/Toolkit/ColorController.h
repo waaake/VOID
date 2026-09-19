@@ -10,14 +10,13 @@
 /* Internal */
 #include "ControlScroller.h"
 #include "Definition.h"
-// #include ""
+#include "VoidQExtensions/ComboBox.h"
 
 VOID_NAMESPACE_OPEN
 
 class ColorController : public ControlCombo
 {
     Q_OBJECT
-
 public:
     ColorController(QWidget* parent = nullptr);
     ~ColorController();
@@ -29,7 +28,6 @@ public:
     inline std::string Display() const { return currentText().toStdString(); }
 
 signals:
-    /* Emitted when the current text on the Controller is changed */
     void colorDisplayChanged(const std::string&);
 
 private: /* Methods */
@@ -38,10 +36,6 @@ private: /* Methods */
      * Sets up the Default config to be used
      */
     void InitColorProcessor();
-
-    /**
-     * Setup the current Display values on the Controller
-     */
     void Setup();
 };
 
