@@ -12,8 +12,8 @@ VOID_NAMESPACE_OPEN
 
 enum class FrameDisplayMode
 {
-    TIMECODE,
-    FRAMES
+    FRAMES,
+    TIMECODE
 };
 
 /**
