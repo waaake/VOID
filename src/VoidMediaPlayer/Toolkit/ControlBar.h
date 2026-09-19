@@ -17,6 +17,7 @@
 #include "Definition.h"
 #include "ViewerController.h"
 #include "VoidQExtensions/PushButton.h"
+#include "VoidQExtensions/ComboBox.h"
 
 VOID_NAMESPACE_OPEN
 

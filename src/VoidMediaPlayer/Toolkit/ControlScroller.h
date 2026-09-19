@@ -21,15 +21,6 @@
 
 VOID_NAMESPACE_OPEN
 
-class ControlCombo : public QComboBox
-{
-public:
-    ControlCombo(QWidget* parent = nullptr);
-
-protected:
-    void paintEvent(QPaintEvent* event) override;
-};
-
 class ControlSpinner : public QDoubleSpinBox
 {
 public:
