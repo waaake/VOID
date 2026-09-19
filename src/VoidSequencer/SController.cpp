@@ -493,6 +493,29 @@ void SequencerController::SwitchVersionExtremes(const std::unordered_set<SharedT
     stack->endMacro();
 }
 
+void SequencerController::ResetTimelineInOut(const SharedTrackItem& item)
+{
+    m_TimelineController->SetUserFirstframe(item->TimelineIn());
+    m_TimelineController->SetUserEndframe(item->TimelineOut());
+}
+
+void SequencerController::ResetTimelineInOut(const std::unordered_set<SharedTrackItem>& items)
+{
+    if (items.empty()) return;
+
+    const SharedTrackItem& first = *items.begin();
+    v_frame_t start = first->TimelineIn(), end = first->TimelineOut();
+
+    for (const SharedTrackItem& item : items)
+    {
+        start = std::min(item->TimelineIn(), start);
+        end = std::max(item->TimelineOut(), end);
+    }
+
+    m_TimelineController->SetUserFirstframe(start);
+    m_TimelineController->SetUserEndframe(end);    
+}
+
 STrack* SequencerController::TrackAt(int index) const
 {
     if (STimelineScene* scene = dynamic_cast<STimelineScene*>(m_Scene))
