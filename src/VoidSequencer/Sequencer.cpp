@@ -286,6 +286,7 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::versionExtremesChangeRequested, this, &SequencerTimeline::SwitchVersionExtremes);
     connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
     connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
+    connect(m_Menu, &SequencerContextMenu::inOutSetRequested, this, &SequencerTimeline::ResetInOut);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)
@@ -416,6 +417,15 @@ void SequencerTimeline::ScanVersions()
     const SSelectionModel* sel = m_Context.SelectionModel();
     if (sel->HasTrackItemSelection())
         m_Context.Controller()->ScanVersions(sel->SelectedItems());
+}
+
+void SequencerTimeline::ResetInOut(bool selection)
+{
+    if (selection)
+        return m_Context.Controller()->ResetTimelineInOut(m_Context.SelectionModel()->SelectedItems());
+    
+    if (const SharedTrackItem& item = m_Context.Sequence()->GetTrackItem(m_Context.TimeController()->Frame()))
+        m_Context.Controller()->ResetTimelineInOut(item);
 }
 
 VOID_NAMESPACE_CLOSE

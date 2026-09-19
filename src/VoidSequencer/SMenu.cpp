@@ -52,6 +52,17 @@ void SequencerContextMenu::Build()
     m_EditMenu->addSeparator();
     m_EditMenu->addAction(m_RemoveSelectedAction);
 
+    m_MarkMenu = new QMenu("Mark", this);
+    m_MarkSelectionAction = new QAction("Mark Selection as Timeline in/out", m_MarkMenu);
+    m_MarkSelectionAction->setShortcut(QKeySequence("Alt+U"));
+    m_MarkCurrentAction = new QAction("Mark Current Clip as Timeline in/out", m_MarkMenu);
+    m_MarkCurrentAction->setShortcut(Qt::Key_U);
+
+    p->addAction(m_MarkSelectionAction);
+    p->addAction(m_MarkCurrentAction);
+    m_MarkMenu->addAction(m_MarkSelectionAction);
+    m_MarkMenu->addAction(m_MarkCurrentAction);
+
     m_ColorMenu = new QMenu("Color", this);
 
     m_ColorItemAction = new QAction("Set Trackitem Color...", m_ColorMenu);
@@ -107,6 +118,7 @@ void SequencerContextMenu::Build()
 
     addMenu(m_NewMenu);
     addMenu(m_EditMenu);
+    addMenu(m_MarkMenu);
     addSeparator();
     addMenu(m_ColorMenu);
     addMenu(m_VersionMenu);
@@ -135,24 +147,25 @@ void SequencerContextMenu::Connect()
     connect(m_MinVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(false); });
     connect(m_InspectVersionsAction, &QAction::triggered, this, &SequencerContextMenu::versionInspectionRequested);
     connect(m_ScanDirectoryAction, &QAction::triggered, this, &SequencerContextMenu::versionScanRequested);
+    connect(m_MarkSelectionAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(true); });
+    connect(m_MarkCurrentAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(false); });
 }
 
 void SequencerContextMenu::Validate()
 {
     const SSelectionModel* sel = m_Context->SelectionModel();
     const SequencerController* controller = m_Context->Controller();
-    const bool hasSequence = m_Context->HasActiveSequence();
-    const bool anySelection = hasSequence && sel->HasAnySelection();
-    const bool itemSelection = hasSequence && sel->HasTrackItemSelection();
-    const bool trackSelection = hasSequence && sel->HasTrackSelection();
+    const bool anySelection = sel->HasAnySelection();
+    const bool itemSelection = sel->HasTrackItemSelection();
+    const bool trackSelection = sel->HasTrackSelection();
 
-    m_NewMenu->setEnabled(hasSequence);
-    m_EditMenu->setEnabled(hasSequence);
-    m_ColorMenu->setEnabled(hasSequence);
+    setEnabled(m_Context->HasActiveSequence());
 
     m_CutAction->setEnabled(anySelection);
     m_CopyAction->setEnabled(anySelection);
-    m_PasteAction->setEnabled(controller->ValidClipboard() && hasSequence);
+    m_PasteAction->setEnabled(controller->ValidClipboard());
+
+    m_MarkSelectionAction->setEnabled(itemSelection);
 
     m_RemoveSelectedAction->setEnabled(anySelection);
     m_ColorItemAction->setEnabled(itemSelection);

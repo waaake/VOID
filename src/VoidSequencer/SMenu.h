@@ -36,6 +36,7 @@ signals:
     void versionExtremesChangeRequested(bool max);
     void versionInspectionRequested();
     void versionScanRequested();
+    void inOutSetRequested(bool selection = false);
 
 private:
     QPoint m_ExecPosition;
@@ -48,6 +49,10 @@ private:
     QAction* m_CopyAction;
     QAction* m_PasteAction;
     QAction* m_RemoveSelectedAction;
+
+    QMenu* m_MarkMenu;
+    QAction* m_MarkSelectionAction;
+    QAction* m_MarkCurrentAction;
 
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;
