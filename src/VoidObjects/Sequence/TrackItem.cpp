@@ -449,6 +449,7 @@ void TrackItem::Move(v_frame_t frame)
     // emit rangeChanged(m_TimelineIn, m_TimelineOut);
     // emit rangeChanged(TimelineRange(), previous);
     // emit updated(); // Either we use a different signal here or don't emit anything -- causes issues with sequence buffers
+    emit moved();
 }
 
 Core::Project* TrackItem::Project() const
