@@ -37,6 +37,7 @@ signals:
     void versionInspectionRequested();
     void versionScanRequested();
     void inOutSetRequested(bool selection = false);
+    void razorRequested(bool sequence = false);
 
 private:
     QPoint m_ExecPosition;
@@ -71,6 +72,10 @@ private:
     QAction* m_OverwriteAction;
     QAction* m_RippleAction;
     QActionGroup* m_EditModeGroup;
+
+    QMenu* m_EditorialMenu;
+    QAction* m_RazorAction;
+    QAction* m_RazorAllAction;
 
     QMenu* m_EffectsMenu;
 

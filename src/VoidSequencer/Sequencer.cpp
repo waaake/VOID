@@ -287,6 +287,7 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
     connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
     connect(m_Menu, &SequencerContextMenu::inOutSetRequested, this, &SequencerTimeline::ResetInOut);
+    connect(m_Menu, &SequencerContextMenu::razorRequested, this, &SequencerTimeline::Razor);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)
@@ -426,6 +427,16 @@ void SequencerTimeline::ResetInOut(bool selection)
     
     if (const SharedTrackItem& item = m_Context.Sequence()->GetTrackItem(m_Context.TimeController()->Frame()))
         m_Context.Controller()->ResetTimelineInOut(item);
+}
+
+void SequencerTimeline::Razor(bool sequence)
+{
+    const v_frame_t frame = m_Context.TimeController()->Frame();
+    if (sequence)
+        return m_Context.Controller()->RazorAt(m_Context.Sequence(), frame);
+
+    if (const SharedTrackItem& item = m_Context.Sequence()->GetTrackItem(frame))
+        m_Context.Controller()->RazorAt(item->Track(), frame);
 }
 
 VOID_NAMESPACE_CLOSE

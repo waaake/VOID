@@ -33,10 +33,13 @@ void SequencerContextMenu::Show(const QPoint& position)
 void SequencerContextMenu::Build()
 {
     QWidget* p = parentWidget();
+
+    /// New Menu
     m_NewMenu = new QMenu("New", this);
     m_AddVideoTrackAction = new QAction("Add Video Track", m_NewMenu);
     m_NewMenu->addAction(m_AddVideoTrackAction);
 
+    /// Edit Menu
     m_EditMenu = new QMenu("Edit", this);
     m_CutAction = new QAction("Cut", m_EditMenu);
     m_CutAction->setShortcut(QKeySequence::Cut);
@@ -52,6 +55,7 @@ void SequencerContextMenu::Build()
     m_EditMenu->addSeparator();
     m_EditMenu->addAction(m_RemoveSelectedAction);
 
+    /// Mark Menu
     m_MarkMenu = new QMenu("Mark", this);
     m_MarkSelectionAction = new QAction("Mark Selection as Timeline in/out", m_MarkMenu);
     m_MarkSelectionAction->setShortcut(QKeySequence("Alt+U"));
@@ -63,6 +67,7 @@ void SequencerContextMenu::Build()
     m_MarkMenu->addAction(m_MarkSelectionAction);
     m_MarkMenu->addAction(m_MarkCurrentAction);
 
+    /// Color Items Menu
     m_ColorMenu = new QMenu("Color", this);
 
     m_ColorItemAction = new QAction("Set Trackitem Color...", m_ColorMenu);
@@ -70,6 +75,7 @@ void SequencerContextMenu::Build()
     m_ColorMenu->addAction(m_ColorItemAction);
     m_ColorMenu->addAction(m_ResetItemColorAction);
 
+    /// Version Menu
     m_VersionMenu = new QMenu("Version", this);
     m_InspectVersionsAction = new QAction("Inspect Versions", m_VersionMenu);
     m_InspectVersionsAction->setShortcut(QKeySequence(Qt::Key_V));
@@ -92,6 +98,7 @@ void SequencerContextMenu::Build()
     m_VersionMenu->addAction(m_MaxVersionAction);
     m_VersionMenu->addAction(m_MinVersionAction);
 
+    /// Edit Mode Settings Menu
     m_EditModeMenu = new QMenu("Edit Mode", this);
     m_EditModeGroup = new QActionGroup(m_EditModeMenu);
 
@@ -114,6 +121,19 @@ void SequencerContextMenu::Build()
     m_EditModeMenu->addAction(m_OverwriteAction);
     m_EditModeMenu->addAction(m_RippleAction);
 
+    /// Editorial Menu
+    m_EditorialMenu = new QMenu("Editorial", this);
+    m_RazorAction = new QAction("Razor", m_EditorialMenu);
+    m_RazorAction->setShortcut(QKeySequence(Qt::Key_C));
+    m_RazorAllAction = new QAction("Razor All", m_EditorialMenu);
+    m_RazorAllAction->setShortcut(QKeySequence("Shift+C"));
+
+    p->addAction(m_RazorAction);
+    p->addAction(m_RazorAllAction);
+    m_EditorialMenu->addAction(m_RazorAction);
+    m_EditorialMenu->addAction(m_RazorAllAction);
+
+    /// Effects Menu
     m_EffectsMenu = new QMenu("Timeline Effects", this);
 
     addMenu(m_NewMenu);
@@ -123,6 +143,7 @@ void SequencerContextMenu::Build()
     addMenu(m_ColorMenu);
     addMenu(m_VersionMenu);
     addSeparator();
+    addMenu(m_EditorialMenu);
     addMenu(m_EditModeMenu);
     addSeparator();
     addMenu(m_EffectsMenu);
@@ -149,6 +170,8 @@ void SequencerContextMenu::Connect()
     connect(m_ScanDirectoryAction, &QAction::triggered, this, &SequencerContextMenu::versionScanRequested);
     connect(m_MarkSelectionAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(true); });
     connect(m_MarkCurrentAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(false); });
+    connect(m_RazorAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(false); });
+    connect(m_RazorAllAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(true); });
 }
 
 void SequencerContextMenu::Validate()

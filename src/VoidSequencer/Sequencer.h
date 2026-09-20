@@ -93,6 +93,7 @@ private: /* Methods */
     void InspectVersions();
     void ScanVersions();
     void ResetInOut(bool selection = false);
+    void Razor(bool sequence = false);
 };
 
 VOID_NAMESPACE_CLOSE
