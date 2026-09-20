@@ -605,6 +605,11 @@ void SequencerController::RazorAt(const SharedPlaybackSequence& sequence, v_fram
     _MediaBridge.PushCommand(new RazorSequenceCommand(sequence, frame));
 }
 
+void SequencerController::RazorAt(const PlaybackTrack* track, v_frame_t frame)
+{
+    _MediaBridge.PushCommand(new RazorTrackCommand(track, frame));
+}
+
 void SequencerController::RazorAt(const SharedPlaybackTrack& track, v_frame_t frame)
 {
     _MediaBridge.PushCommand(new RazorTrackCommand(track, frame));

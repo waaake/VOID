@@ -90,6 +90,7 @@ public:
     void ToggleItemState(const std::unordered_set<Effect*>& effects);
 
     void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);
+    void RazorAt(const PlaybackTrack* track, v_frame_t frame);
     void RazorAt(const SharedPlaybackTrack& track, v_frame_t frame);
     void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
     void OffsetItemSource(const SharedTrackItem& item, int offset);
