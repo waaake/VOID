@@ -287,6 +287,7 @@ class RazorTrackCommand : public VoidUndoCommand
 {
 public:
     RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent = nullptr);
+    RazorTrackCommand(const PlaybackTrack* track, v_frame_t frame, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
