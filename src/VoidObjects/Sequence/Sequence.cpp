@@ -469,6 +469,19 @@ bool PlaybackSequence::RestoreSnapshot(int index)
     return false;
 }
 
+std::vector<SharedTrackItem> PlaybackSequence::VideoTrackItems() const
+{
+    std::vector<SharedTrackItem> items;
+    for (const SharedPlaybackTrack& track : m_VideoTracks)
+    {
+        const std::vector<SharedTrackItem>& items_ = track->Items();
+        items.reserve(items.size() + items_.size());
+        items.insert(items.end(), items_.begin(), items_.end());
+    }
+
+    return items;
+}
+
 void PlaybackSequence::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
 {
     out.SetObject();

@@ -103,6 +103,7 @@ public:
     int NumSnapshots() const { return static_cast<int>(m_Snapshots.size()); }
     const std::vector<Snapshot>& Snapshots() const { return m_Snapshots; }
     std::vector<Snapshot>& Snapshots() { return m_Snapshots; }
+    std::vector<SharedTrackItem> VideoTrackItems() const;
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;
