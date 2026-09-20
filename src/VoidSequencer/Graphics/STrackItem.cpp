@@ -404,6 +404,7 @@ void STrackItem::Connect()
     connect(ptr, &TrackItem::updated, this, &STrackItem::Update);
     connect(ptr, &TrackItem::stateChanged, this, &STrackItem::Update);
     connect(ptr, &TrackItem::rangeChanged, this, &STrackItem::Update);
+    connect(ptr, &TrackItem::moved, this, &STrackItem::Update);
     connect(ptr, &TrackItem::effectCreated, this, static_cast<void (STrackItem::*)(Effect*)>(&STrackItem::AddEffect));
     connect(ptr, &TrackItem::effectAboutToBeRemoved, this, &STrackItem::RemoveEffect);
 }
