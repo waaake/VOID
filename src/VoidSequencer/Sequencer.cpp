@@ -63,6 +63,7 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
     if (m_Context.HasActiveSequence())
         Disconnect(m_Context.Sequence().get());
 
+    m_View->ResetScroll();
     m_Context.SetSequence(sequence);
     Connect(sequence.get());
     m_Context.Geometry()->SetSequence(sequence);
@@ -298,6 +299,10 @@ void SequencerTimeline::Connect(PlaybackSequence* sequence)
     connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     connect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
     connect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
+    connect(sequence->Project(), &Core::Project::sequenceAboutToBeRemoved, this, [this](const SharedPlaybackSequence& sequence) -> void
+    {
+        if (sequence.get() == m_Context.Sequence().get()) ClearSequence();
+    });
 }
 
 void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
@@ -308,6 +313,7 @@ void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
     disconnect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     disconnect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
     disconnect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
+    disconnect(sequence->Project(), &Core::Project::sequenceAboutToBeRemoved, this, nullptr);
 }
 
 void SequencerTimeline::CreateEffect(const std::string& type)
