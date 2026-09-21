@@ -30,6 +30,7 @@ public:
     void Refresh();
     void Clear();
     void Focus();
+    void ResetScroll();
 
     /**
      * @brief The range which is currently visible in the View.

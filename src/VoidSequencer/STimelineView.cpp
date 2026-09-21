@@ -65,6 +65,11 @@ void STimelineView::Focus()
     selected.empty() ? centerOn(0, 0) : centerOn(selected[0]);
 }
 
+void STimelineView::ResetScroll()
+{
+    centerOn(0, 0);
+}
+
 MFrameRange STimelineView::VisibleRange() const
 {
     QRect viewrect = viewport()->rect();
@@ -192,7 +197,6 @@ void STimelineView::leaveEvent(QEvent* event)
 void STimelineView::drawForeground(QPainter* painter, const QRectF& rect)
 {
     QGraphicsView::drawForeground(painter, rect);
-
     if (m_Marquee.active)
     {
         QColor color = palette().color(QPalette::Highlight);
@@ -209,6 +213,9 @@ void STimelineView::Build()
 {
     m_Scene = new STimelineScene(m_Context, this);
     setScene(m_Scene);
+    /// TODO: check why do we need to set this explicitly
+    /// Without this, the view is always at the center of the width (even height)
+    centerOn(0, 0);
 
     m_Scene->AddPlayhead();
 }
