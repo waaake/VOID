@@ -29,7 +29,6 @@ public:
     void RemoveTrack(const SharedPlaybackTrack& track);
     void Refresh();
     void Clear();
-    void Focus();
     void ResetScroll();
 
     /**
@@ -38,6 +37,7 @@ public:
      * @return MFrameRange Visible frame range.
      */
     MFrameRange VisibleRange() const;
+    void FocusOnRange(v_frame_t start, v_frame_t end, int y = 0);
     const STimelineScene* TimelineScene() const { return m_Scene; }
 
 signals:

@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStyle>
+#include <QScrollBar>
 
 /* Internal */
 #include "SContext.h"
@@ -59,12 +60,6 @@ void STimelineView::Clear()
     m_Scene->Clear();
 }
 
-void STimelineView::Focus()
-{
-    const auto& selected = m_Scene->selectedItems();
-    selected.empty() ? centerOn(0, 0) : centerOn(selected[0]);
-}
-
 void STimelineView::ResetScroll()
 {
     centerOn(0, 0);
@@ -78,6 +73,18 @@ MFrameRange STimelineView::VisibleRange() const
         m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topLeft()).x()),
         m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topRight()).x() + style()->pixelMetric(QStyle::PM_ScrollBarExtent))
     );
+}
+
+void STimelineView::FocusOnRange(v_frame_t start, v_frame_t end, int y)
+{
+    STimelineGeometry* geo = m_Context->Geometry();
+    // Width number of pixels are available to fit the start and the end
+    geo->SetPixelsPerFrame((float)viewport()->width() / (end - start + 1));
+    Refresh();
+
+    QPoint mapped(mapFromScene(QPointF(geo->FrameToSceneX(start), y)));
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + mapped.x());
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + mapped.y());
 }
 
 void STimelineView::dragEnterEvent(QDragEnterEvent* event)
