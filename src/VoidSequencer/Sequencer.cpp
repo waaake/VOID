@@ -19,6 +19,8 @@
 
 VOID_NAMESPACE_OPEN
 
+#define _FIT_PADDING 20
+
 SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* parent)
     : QWidget(parent)
 {
@@ -148,6 +150,55 @@ void SequencerTimeline::Refresh()
         AddTrack(track);
 }
 
+void SequencerTimeline::FitAll()
+{
+    if (SharedPlaybackSequence sequence = m_Context.Sequence())
+    {
+        v_frame_t start = sequence->StartFrame();
+        v_frame_t end = sequence->EndFrame();
+
+        // Only update the fit, if we're not fitting currently, if we're currently fitting then should be okay
+        if ((end - start + 1) > m_View->VisibleRange().duration)
+        {
+            m_View->FocusOnRange(start, end + _FIT_PADDING);
+            m_Ruler->Update();
+        }
+    }
+}
+
+void SequencerTimeline::FitSelected()
+{
+    const std::unordered_set<SharedTrackItem>& items = m_Context.SelectionModel()->SelectedItems();
+    if (items.empty())
+        return;
+
+    std::vector<SharedTrackItem> vecitems(items.size());
+    std::transform(
+        items.begin(),
+        items.end(),
+        vecitems.begin(),
+        [](const SharedTrackItem& item) -> SharedTrackItem { return item; }
+    );
+    std::sort(vecitems.begin(), vecitems.end(), [](const SharedTrackItem& _a, const SharedTrackItem& _b) -> bool
+    {
+        return _a->TimelineIn() < _b->TimelineIn();
+    });
+
+    PlaybackTrack* track = vecitems.front()->Track();
+    m_View->FocusOnRange(
+        vecitems.front()->TimelineIn() - _FIT_PADDING,
+        vecitems.back()->TimelineOut() + _FIT_PADDING,
+        m_Context.Geometry()->TrackRect(track->Index()).y()
+    );
+    m_Ruler->Update();
+}
+
+void SequencerTimeline::ResetFit()
+{
+    SetHorizontalScale((float)m_HZoomSlider->value() / 10);
+    m_View->ResetScroll();
+}
+
 void SequencerTimeline::Clear()
 {
     m_TrackHeader->Clear();
@@ -165,9 +216,6 @@ void SequencerTimeline::Build()
 
     m_PasteShortcut = new QShortcut(QKeySequence::Paste, this);
     m_PasteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
-    m_FitShortcut->setContext(Qt::WidgetWithChildrenShortcut);
 
     m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
     m_DeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
@@ -243,7 +291,7 @@ void SequencerTimeline::Connect()
     connect(m_CutShortcut, &QShortcut::activated, this, &SequencerTimeline::Cut);
     connect(m_CopyShortcut, &QShortcut::activated, this, &SequencerTimeline::Copy);
     connect(m_PasteShortcut, &QShortcut::activated, this, [this]() -> void { Paste(QCursor::pos()); });
-    connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
+    // connect(m_FitShortcut, &QShortcut::activated, this, &SequencerTimeline::FitAll);
     connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
     connect(m_RippleDeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::RippleDeleteSelected);
     connect(m_ToggleStateShortcut, &QShortcut::activated, this, &SequencerTimeline::ToggleItemState);
@@ -289,6 +337,11 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
     connect(m_Menu, &SequencerContextMenu::inOutSetRequested, this, &SequencerTimeline::ResetInOut);
     connect(m_Menu, &SequencerContextMenu::razorRequested, this, &SequencerTimeline::Razor);
+
+    /// Fit
+    connect(m_Menu, &SequencerContextMenu::fitAllRequested, this, &SequencerTimeline::FitAll);
+    connect(m_Menu, &SequencerContextMenu::fitSelectedRequested, this, &SequencerTimeline::FitSelected);
+    connect(m_Menu, &SequencerContextMenu::resetFitRequested, this, &SequencerTimeline::ResetFit);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)

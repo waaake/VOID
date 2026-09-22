@@ -55,6 +55,24 @@ void SequencerContextMenu::Build()
     m_EditMenu->addSeparator();
     m_EditMenu->addAction(m_RemoveSelectedAction);
 
+    /// View Menu
+    m_ViewMenu = new QMenu("View", this);
+    m_FitAllAction = new QAction("Fit All", m_ViewMenu);
+    m_FitAllAction->setShortcut(QKeySequence("Alt+F"));
+    m_FitAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_FitSelectedAction = new QAction("Fit Selected", m_ViewMenu);
+    m_FitSelectedAction->setShortcut(QKeySequence("Alt+Shift+F"));
+    m_FitSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_ResetFitAction = new QAction("Reset", m_ViewMenu);
+    m_ResetFitAction->setShortcut(Qt::Key_H);
+
+    p->addAction(m_FitAllAction);
+    p->addAction(m_FitSelectedAction);
+    p->addAction(m_ResetFitAction);
+    m_ViewMenu->addAction(m_FitAllAction);
+    m_ViewMenu->addAction(m_FitSelectedAction);
+    m_ViewMenu->addAction(m_ResetFitAction);
+
     /// Mark Menu
     m_MarkMenu = new QMenu("Mark", this);
     m_MarkSelectionAction = new QAction("Mark Selection as Timeline in/out", m_MarkMenu);
@@ -138,6 +156,8 @@ void SequencerContextMenu::Build()
 
     addMenu(m_NewMenu);
     addMenu(m_EditMenu);
+    addSeparator();
+    addMenu(m_ViewMenu);
     addMenu(m_MarkMenu);
     addSeparator();
     addMenu(m_ColorMenu);
@@ -151,25 +171,43 @@ void SequencerContextMenu::Build()
 
 void SequencerContextMenu::Connect()
 {
+    /// New
     connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
+
+    /// Edit
     connect(m_CutAction, &QAction::triggered, this, &SequencerContextMenu::cutSelectionRequested);
     connect(m_CopyAction, &QAction::triggered, this, &SequencerContextMenu::copySelectionRequested);
     connect(m_PasteAction, &QAction::triggered, this, [this]() -> void { emit pasteRequested(m_ExecPosition); });
     connect(m_RemoveSelectedAction, &QAction::triggered, this, &SequencerContextMenu::deleteSelectionRequested);
-    connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
-    connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
-    connect(m_EditModeGroup, &QActionGroup::triggered, this, [this](QAction* action) -> void
-    {
-        emit editModeChangeRequested(static_cast<SequencerController::EditMode>(action->data().toInt()));
-    });
+
+    /// View
+    connect(m_FitAllAction, &QAction::triggered, this, &SequencerContextMenu::fitAllRequested);
+    connect(m_FitSelectedAction, &QAction::triggered, this, &SequencerContextMenu::fitSelectedRequested);
+    connect(m_ResetFitAction, &QAction::triggered, this, &SequencerContextMenu::resetFitRequested);
+
+    /// Mark
+    connect(m_MarkSelectionAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(true); });
+    connect(m_MarkCurrentAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(false); });
+
+    /// Version
     connect(m_VersionUpAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(true); });
     connect(m_VersionDownAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(false); });
     connect(m_MaxVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(true); });
     connect(m_MinVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(false); });
     connect(m_InspectVersionsAction, &QAction::triggered, this, &SequencerContextMenu::versionInspectionRequested);
     connect(m_ScanDirectoryAction, &QAction::triggered, this, &SequencerContextMenu::versionScanRequested);
-    connect(m_MarkSelectionAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(true); });
-    connect(m_MarkCurrentAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(false); });
+
+    /// Color
+    connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
+    connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
+
+    /// Edit Mode
+    connect(m_EditModeGroup, &QActionGroup::triggered, this, [this](QAction* action) -> void
+    {
+        emit editModeChangeRequested(static_cast<SequencerController::EditMode>(action->data().toInt()));
+    });
+
+    /// Editorial
     connect(m_RazorAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(false); });
     connect(m_RazorAllAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(true); });
 }

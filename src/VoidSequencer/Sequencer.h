@@ -50,6 +50,9 @@ public:
 
     void SetHorizontalScale(float factor);
     void Refresh();
+    void FitAll();
+    void FitSelected();
+    void ResetFit();
 
 signals:
     void editEffectRequested(Effect*);
@@ -67,7 +70,6 @@ private:
     QShortcut* m_CutShortcut;
     QShortcut* m_CopyShortcut;
     QShortcut* m_PasteShortcut;
-    QShortcut* m_FitShortcut;
     QShortcut* m_DeleteShortcut;
     QShortcut* m_RippleDeleteShortcut;
     QShortcut* m_ToggleStateShortcut;

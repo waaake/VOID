@@ -38,6 +38,9 @@ signals:
     void versionScanRequested();
     void inOutSetRequested(bool selection = false);
     void razorRequested(bool sequence = false);
+    void fitAllRequested();
+    void fitSelectedRequested();
+    void resetFitRequested();
 
 private:
     QPoint m_ExecPosition;
@@ -50,6 +53,11 @@ private:
     QAction* m_CopyAction;
     QAction* m_PasteAction;
     QAction* m_RemoveSelectedAction;
+
+    QMenu* m_ViewMenu;
+    QAction* m_FitAllAction;
+    QAction* m_FitSelectedAction;
+    QAction* m_ResetFitAction;
 
     QMenu* m_MarkMenu;
     QAction* m_MarkSelectionAction;
