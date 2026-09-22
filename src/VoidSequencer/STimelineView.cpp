@@ -67,11 +67,12 @@ void STimelineView::ResetScroll()
 
 MFrameRange STimelineView::VisibleRange() const
 {
-    QRect viewrect = viewport()->rect();
+    const QRect r = viewport()->rect();
+    const STimelineGeometry* geo = m_Context->Geometry();
 
     return MFrameRange(
-        m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topLeft()).x()),
-        m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topRight()).x() + style()->pixelMetric(QStyle::PM_ScrollBarExtent))
+        geo->SceneXToFrame(mapToScene(r.left(), 0).x()),
+        geo->SceneXToFrame(mapToScene(QPoint(r.right() + style()->pixelMetric(QStyle::PM_ScrollBarExtent), 0)).x())
     );
 }
 
