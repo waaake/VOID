@@ -54,6 +54,9 @@ public:
     void FitSelected();
     void ResetFit();
 
+protected:
+    void wheelEvent(QWheelEvent* event) override;
+
 signals:
     void editEffectRequested(Effect*);
 

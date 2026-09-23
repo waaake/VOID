@@ -6,6 +6,7 @@
 #include <QCursor>
 #include <QScrollBar>
 #include <QStyle>
+#include <QWheelEvent>
 
 /* Internal */
 #include "Sequencer.h"
@@ -197,6 +198,19 @@ void SequencerTimeline::ResetFit()
 {
     SetHorizontalScale((float)m_HZoomSlider->value() / 10);
     m_View->ResetScroll();
+}
+
+void SequencerTimeline::wheelEvent(QWheelEvent* event)
+{
+    QWidget::wheelEvent(event);
+    if (event->modifiers() & Qt::ControlModifier)
+    {
+        const int value = m_HZoomSlider->value();
+        if (event->angleDelta().y() > 0)
+            m_HZoomSlider->setValue(value + (value > 40 ? 3 : 1));
+        else
+            m_HZoomSlider->setValue(value - (value > 40 ? 3 : 1));
+    }
 }
 
 void SequencerTimeline::Clear()
