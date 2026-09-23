@@ -17,6 +17,7 @@ VOID_NAMESPACE_OPEN
 
 STimelineRuler::STimelineRuler(STimelineView* view, SequencerContext* context, QWidget* parent)
     : QWidget(parent)
+    , m_Timekeeper(Timekeeper::Instance())
     , m_View(view)
     , m_Context(context)
 {
@@ -31,21 +32,32 @@ void STimelineRuler::paintEvent(QPaintEvent* event)
     painter.setRenderHint(QPainter::Antialiasing);
     painter.fillRect(rect(), palette().color(QPalette::Dark).lighter(120));
 
-    // painter.setPen(palette().color(QPalette::Text));
     painter.setPen(QPen(Qt::gray, 1));
     MFrameRange visible = m_View->VisibleRange();
 
-    float uwidth = (float)width() / visible.duration;
+    const int frameInterval = TimeDisplayInterval(m_Context->Geometry()->PixelsPerFrame());
+    const float uwidth = (float)width() / visible.duration;
     for (int frame = visible.startframe; frame <= visible.endframe; ++frame)
     {
-        if (frame % Sequencer::RulerMajorTickInterval == 0)
+        if (frame % frameInterval == 0)
         {
-            float x = (frame - visible.startframe) * uwidth;
+            const int offset = (frame == visible.startframe ? 0 : 100);
+            const float x = (frame - visible.startframe) * uwidth;
+            const QFlags<Qt::AlignmentFlag> f = (frame == visible.startframe ? Qt::AlignTop | Qt::AlignLeft : Qt::AlignTop | Qt::AlignHCenter);
+
+            QRect r(x - offset, 0, 200, height());
+
+            painter.drawText(r, f, m_Timekeeper.DisplayFrame(frame).c_str());
+            painter.drawLine(x, height() - 14, x, height() - 2);
+        }
+        else if (frame % Sequencer::RulerMajorTickInterval == 0)
+        {
+            const float x = (frame - visible.startframe) * uwidth;
             painter.drawLine(x, height() - 10, x, height() - 2);
         }
         else if (frame % Sequencer::RulerMinorTickInterval == 0)
         {
-            float x = (frame - visible.startframe) * uwidth;
+            const float x = (frame - visible.startframe) * uwidth;
             painter.drawLine(x, height() - 6, x, height() - 2);
         }
     }
@@ -94,6 +106,24 @@ void STimelineRuler::mouseReleaseEvent(QMouseEvent* event)
 {
     QWidget::mouseReleaseEvent(event);
     m_Pressed = false;
+}
+
+int STimelineRuler::TimeDisplayInterval(const double pixelsPerFrame) const
+{
+    if (pixelsPerFrame > 8.0)
+        return 50;
+    else if (pixelsPerFrame > 4.0)
+        return 100;
+    else if (pixelsPerFrame > 2.0)
+        return 200;
+    else if (pixelsPerFrame > 1.0)
+        return 400;
+    else if (pixelsPerFrame > 0.25)
+        return 800;
+    else if (pixelsPerFrame > 0.15)
+        return 1600;
+    else
+        return 3200;
 }
 
 VOID_NAMESPACE_CLOSE

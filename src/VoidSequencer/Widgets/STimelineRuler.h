@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -28,9 +29,13 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
+    const Timekeeper& m_Timekeeper;
     STimelineView* m_View;
     SequencerContext* m_Context;
     bool m_Pressed;
+
+private: /* Methods */
+    int TimeDisplayInterval(const double pixelsPerFrame) const;
 };
 
 VOID_NAMESPACE_CLOSE
