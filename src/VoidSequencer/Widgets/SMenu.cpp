@@ -58,10 +58,10 @@ void SequencerContextMenu::Build()
     /// View Menu
     m_ViewMenu = new QMenu("View", this);
     m_FitAllAction = new QAction("Fit All", m_ViewMenu);
-    m_FitAllAction->setShortcut(QKeySequence("Alt+F"));
+    m_FitAllAction->setShortcut(Qt::Key_F);
     m_FitAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     m_FitSelectedAction = new QAction("Fit Selected", m_ViewMenu);
-    m_FitSelectedAction->setShortcut(QKeySequence("Alt+Shift+F"));
+    m_FitSelectedAction->setShortcut(QKeySequence("Shift+F"));
     m_FitSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     m_ResetFitAction = new QAction("Reset", m_ViewMenu);
     m_ResetFitAction->setShortcut(Qt::Key_H);
