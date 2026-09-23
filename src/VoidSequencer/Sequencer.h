@@ -13,27 +13,17 @@
 /* Internal */
 #include "Definition.h"
 #include "Descriptors.h"
-#include "SContext.h"
-#include "SMenu.h"
-#include "STimelineGeometry.h"
-#include "STimelineView.h"
 #include "VoidObjects/Sequence/Sequence.h"
-#include "Widgets/STimelineRuler.h"
-#include "Widgets/STrackHeaderWidget.h"
-#include "Widgets/SToolbar.h"
-#include "Widgets/SVersionSwitcher.h"
+#include "VoidSequencer/Widgets/SequencerWidget.h"
 
 VOID_NAMESPACE_OPEN
 
-class VOID_API SequencerTimeline : public QWidget
+class VOID_API SequencerTimeline : public SequencerWidget
 {
     Q_OBJECT
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
     ~SequencerTimeline();
-
-    inline QSize sizeHint() const override { return QSize(640, 300); }
-    void ResetTabText();
 
     void SetSequence(const SharedPlaybackSequence& sequence);
     void ClearSequence();
@@ -54,34 +44,10 @@ public:
     void FitSelected();
     void ResetFit();
 
-protected:
-    void wheelEvent(QWheelEvent* event) override;
-
 signals:
     void editEffectRequested(Effect*);
 
-private:
-    QHBoxLayout* m_Layout;
-    QSlider* m_HZoomSlider;
-    SToolbar* m_Toolbar;
-    STimelineRuler* m_Ruler;
-    STrackHeaderWidget* m_TrackHeader;
-    STimelineView* m_View;
-    SVersionSwitcher* m_VersionSwitcher;
-    SequencerContextMenu* m_Menu;
-
-    QShortcut* m_CutShortcut;
-    QShortcut* m_CopyShortcut;
-    QShortcut* m_PasteShortcut;
-    QShortcut* m_DeleteShortcut;
-    QShortcut* m_RippleDeleteShortcut;
-    QShortcut* m_ToggleStateShortcut;
-
-    SequencerContext m_Context;
-
 private: /* Methods */
-    void Clear();
-    void Build();
     void Connect();
     void Connect(PlaybackSequence* sequence);
     void Disconnect(PlaybackSequence* sequence);

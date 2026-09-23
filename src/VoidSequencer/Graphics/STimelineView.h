@@ -10,7 +10,7 @@
 /* Internal */
 #include "QDefinition.h"
 #include "FrameRange.h"
-#include "SDragContext.h"
+#include "VoidSequencer/SDragContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN

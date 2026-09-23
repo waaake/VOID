@@ -10,8 +10,8 @@
 #include "STimelineRuler.h"
 #include "VoidCore/Logging.h"
 #include "VoidSequencer/Descriptors.h"
-#include "VoidSequencer/STimelineView.h"
 #include "VoidSequencer/SContext.h"
+#include "VoidSequencer/Graphics/STimelineView.h"
 
 VOID_NAMESPACE_OPEN
 

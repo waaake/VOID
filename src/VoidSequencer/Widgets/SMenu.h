@@ -11,7 +11,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "SContext.h"
+#include "VoidSequencer/SContext.h"
 
 VOID_NAMESPACE_OPEN
 

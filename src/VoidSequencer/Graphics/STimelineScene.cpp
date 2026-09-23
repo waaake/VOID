@@ -11,12 +11,12 @@
 
 /* Internal */
 #include "STimelineScene.h"
-#include "Graphics/SPlayheadItem.h"
-#include "Graphics/SPreviewTrackItem.h"
-#include "Graphics/SRazorItem.h"
-#include "Graphics/STrack.h"
-#include "Graphics/STrackItem.h"
-#include "Graphics/STimelineEffect.h"
+#include "SPlayheadItem.h"
+#include "SPreviewTrackItem.h"
+#include "SRazorItem.h"
+#include "STrack.h"
+#include "STrackItem.h"
+#include "STimelineEffect.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
