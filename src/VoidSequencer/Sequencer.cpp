@@ -132,7 +132,7 @@ void SequencerTimeline::FitAll()
         // Only update the fit, if we're not fitting currently, if we're currently fitting then should be okay
         if ((end - start + 1) > m_View->VisibleRange().duration)
         {
-            m_View->FocusOnRange(start, end + _FIT_PADDING);
+            m_View->FocusOn(start, end + _FIT_PADDING);
             m_Ruler->Update();
         }
     }
@@ -157,7 +157,7 @@ void SequencerTimeline::FitSelected()
     });
 
     PlaybackTrack* track = vecitems.front()->Track();
-    m_View->FocusOnRange(
+    m_View->FocusOn(
         vecitems.front()->TimelineIn() - _FIT_PADDING,
         vecitems.back()->TimelineOut() + _FIT_PADDING,
         m_Context.Geometry()->TrackRect(track->Index()).y()

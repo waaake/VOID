@@ -76,7 +76,14 @@ MFrameRange STimelineView::VisibleRange() const
     );
 }
 
-void STimelineView::FocusOnRange(v_frame_t start, v_frame_t end, int y)
+void STimelineView::FocusOn(v_frame_t frame)
+{
+    STimelineGeometry* geo = m_Context->Geometry();
+    QPoint mapped(mapFromScene(QPointF(geo->FrameToSceneX(frame), 0)));
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + mapped.x());
+}
+
+void STimelineView::FocusOn(v_frame_t start, v_frame_t end, int y)
 {
     STimelineGeometry* geo = m_Context->Geometry();
     // Width number of pixels are available to fit the start and the end

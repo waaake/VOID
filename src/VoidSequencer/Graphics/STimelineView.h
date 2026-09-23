@@ -37,7 +37,8 @@ public:
      * @return MFrameRange Visible frame range.
      */
     MFrameRange VisibleRange() const;
-    void FocusOnRange(v_frame_t start, v_frame_t end, int y = 0);
+    void FocusOn(v_frame_t frame);
+    void FocusOn(v_frame_t start, v_frame_t end, int y = 0);
     const STimelineScene* TimelineScene() const { return m_Scene; }
 
 signals:
