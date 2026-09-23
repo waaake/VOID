@@ -55,15 +55,15 @@ public:
         bool singlefile = false
     );
 
-    ~MEntry();
+    // ~MEntry();
 
-    /* Move */
-    MEntry(MEntry&& other) noexcept;
-    MEntry& operator=(MEntry&& other) noexcept;
+    // /* Move */
+    // MEntry(MEntry&& other) noexcept;
+    // MEntry& operator=(MEntry&& other) noexcept;
 
-    /* Copy */
-    MEntry(const MEntry& other);
-    MEntry& operator=(const MEntry& other);
+    // /* Copy */
+    // MEntry(const MEntry& other);
+    // MEntry& operator=(const MEntry& other);
 
     /**
      * Getters describing the Entry
@@ -243,16 +243,16 @@ public:
             const std::vector<v_frame_t>& missing
     );
 
-    ~MediaStruct();
+    // ~MediaStruct();
 
-    /**
-     * Move and Copy
-     */
-    MediaStruct(const MediaStruct& other);
-    MediaStruct(MediaStruct&& other) noexcept;
+    // /**
+    //  * Move and Copy
+    //  */
+    // MediaStruct(const MediaStruct& other);
+    // MediaStruct(MediaStruct&& other) noexcept;
 
-    MediaStruct operator=(MediaStruct&& other) noexcept;
-    MediaStruct operator=(const MediaStruct& other);
+    // MediaStruct operator=(MediaStruct&& other) noexcept;
+    // MediaStruct operator=(const MediaStruct& other);
 
     /**
      * (Re)Initializes the MediaStruct
