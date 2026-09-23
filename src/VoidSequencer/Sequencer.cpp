@@ -107,9 +107,12 @@ void SequencerTimeline::TrimItemTail(const SharedTrackItem& item, int handle)
 
 void SequencerTimeline::SetHorizontalScale(float factor)
 {
+    const MFrameRange r = m_View->VisibleRange();
     m_Context.Geometry()->SetPixelsPerFrame(factor);
-    m_View->Refresh();
     m_Ruler->Update();
+
+    m_View->Refresh();
+    m_View->FocusOn(r.startframe);
 }
 
 void SequencerTimeline::Refresh()
