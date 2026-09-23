@@ -61,6 +61,10 @@ PlayerWidget::~PlayerWidget()
 
 void PlayerWidget::Connect()
 {
+    /// Shortcuts
+    connect(m_FitShortcut, &QShortcut::activated, this, &PlayerWidget::ZoomToFit);
+    connect(m_EditFramerateShortcut, &QShortcut::activated, m_TimelineController, &TimelineController::EditFramerate);
+
     // TimelineController
     connect(m_TimelineController, &TimelineController::fullscreenRequested, this, &PlayerWidget::SetRendererFullscreen);
 
@@ -145,12 +149,19 @@ void PlayerWidget::RemoveMedia(const SharedMediaClip& media)
 void PlayerWidget::SetFromPreferences()
 {
     VOID_LOG_INFO("Player Preferences Updated.");
-    /* Reset the Missing Frame Hanlder */
     SetMissingFrameHandler(VoidPreferences::Instance().GetMissingFrameHandler());
 }
 
 void PlayerWidget::Build()
 {
+    /// TODO: These need to be part of the context menu for the player/viewer
+    /// Till we have that in place, adding these as shortcuts instead
+    m_FitShortcut = new QShortcut(Qt::Key_F, this);
+    m_FitShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
+    m_EditFramerateShortcut = new QShortcut(QKeySequence("Shift+F"), this);
+    m_EditFramerateShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+
     /* Base layout for the widget */
     QVBoxLayout* layout = new QVBoxLayout(this);
 
