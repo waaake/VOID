@@ -26,6 +26,8 @@ STimelineView::STimelineView(SequencerContext* context, QWidget* parent)
 {
     Build();
     Setup();
+
+    connect(m_Context->Controller(), &SequencerController::frameChanged, this, &STimelineView::FrameChanged, Qt::DirectConnection);
 }
 
 STimelineView::~STimelineView()
@@ -253,6 +255,19 @@ void STimelineView::Setup()
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     setAcceptDrops(true);
+}
+
+void STimelineView::FrameChanged(v_frame_t frame)
+{
+    const QRect r(viewport()->rect());
+
+    m_Scene->UpdatePlayhead(frame);
+    const QPoint x(mapFromScene(QPoint(m_Scene->PlayheadX(), 0)));
+    if (r.contains(x))
+        return;
+
+    const int delta = x.x() > r.right() ? (r.width() / 3) : -(r.width() / 3);
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + delta);
 }
 
 VOID_NAMESPACE_CLOSE

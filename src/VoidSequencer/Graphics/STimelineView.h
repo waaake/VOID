@@ -64,6 +64,7 @@ private:
 private: /* Methods */
     void Build();
     void Setup();
+    void FrameChanged(v_frame_t frame);
 };
 
 VOID_NAMESPACE_CLOSE
