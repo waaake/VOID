@@ -16,6 +16,7 @@ public:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
     void Update() override;
+    void Update(v_frame_t frame);
 };
 
 VOID_NAMESPACE_CLOSE
