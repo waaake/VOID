@@ -63,11 +63,7 @@ std::string Timecode::String() const
     char buf[13] = {};
     char* ptr = buf;
 
-    if (negative)
-    {
-        buf[0] = '-';
-        ptr++;
-    }
+    if (negative) *ptr++ = '-';
 
     ptr = Write(ptr, hours);
     *ptr++ = ':';
