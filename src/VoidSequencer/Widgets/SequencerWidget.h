@@ -45,13 +45,6 @@ protected:
     SVersionSwitcher* m_VersionSwitcher;
     SequencerContextMenu* m_Menu;
 
-    QShortcut* m_CutShortcut;
-    QShortcut* m_CopyShortcut;
-    QShortcut* m_PasteShortcut;
-    QShortcut* m_DeleteShortcut;
-    QShortcut* m_RippleDeleteShortcut;
-    QShortcut* m_ToggleStateShortcut;
-
     SequencerContext m_Context;
 
 protected: /* Methods */

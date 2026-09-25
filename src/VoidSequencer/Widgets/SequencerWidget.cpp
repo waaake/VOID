@@ -20,6 +20,7 @@ SequencerWidget::SequencerWidget(TimelineController* controller, QWidget* parent
 {
     m_Context.Controller()->SetTimeController(controller);
     setContextMenuPolicy(Qt::CustomContextMenu);
+    setFocusPolicy(Qt::WheelFocus);
 
     Build();
 }
@@ -75,24 +76,6 @@ void SequencerWidget::Clear()
 
 void SequencerWidget::Build()
 {
-    m_CutShortcut = new QShortcut(QKeySequence::Cut, this);
-    m_CutShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_CopyShortcut = new QShortcut(QKeySequence::Copy, this);
-    m_CopyShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_PasteShortcut = new QShortcut(QKeySequence::Paste, this);
-    m_PasteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
-    m_DeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_RippleDeleteShortcut = new QShortcut(QKeySequence("Ctrl+Backspace"), this);
-    m_RippleDeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_ToggleStateShortcut = new QShortcut(QKeySequence(Qt::Key_D), this);
-    m_ToggleStateShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
     m_Menu = new SequencerContextMenu(&m_Context, this);
 
     m_Layout = new QHBoxLayout(this);

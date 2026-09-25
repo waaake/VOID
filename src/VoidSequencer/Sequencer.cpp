@@ -195,14 +195,6 @@ void SequencerTimeline::Connect()
     // Controller
     connect(m_Context.Controller(), &SequencerController::editEffectRequested, this, &SequencerTimeline::editEffectRequested);
 
-    connect(m_CutShortcut, &QShortcut::activated, this, &SequencerTimeline::Cut);
-    connect(m_CopyShortcut, &QShortcut::activated, this, &SequencerTimeline::Copy);
-    connect(m_PasteShortcut, &QShortcut::activated, this, [this]() -> void { Paste(QCursor::pos()); });
-    // connect(m_FitShortcut, &QShortcut::activated, this, &SequencerTimeline::FitAll);
-    connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
-    connect(m_RippleDeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::RippleDeleteSelected);
-    connect(m_ToggleStateShortcut, &QShortcut::activated, this, &SequencerTimeline::ToggleItemState);
-
     connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
     {
         SetHorizontalScale((float)value / 10);
@@ -242,7 +234,13 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::versionExtremesChangeRequested, this, &SequencerTimeline::SwitchVersionExtremes);
     connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
     connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
+
+    /// Mark
     connect(m_Menu, &SequencerContextMenu::inOutSetRequested, this, &SequencerTimeline::ResetInOut);
+
+    /// Editorial
+    connect(m_Menu, &SequencerContextMenu::disableRequested, this, &SequencerTimeline::ToggleItemState);
+    connect(m_Menu, &SequencerContextMenu::rippleDeleteRequested, this, &SequencerTimeline::RippleDeleteSelected);
     connect(m_Menu, &SequencerContextMenu::razorRequested, this, &SequencerTimeline::Razor);
 
     /// Fit
