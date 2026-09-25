@@ -26,6 +26,13 @@ void SPlayheadItem::Update()
     update();
 }
 
+void SPlayheadItem::Update(v_frame_t frame)
+{
+    prepareGeometryChange();
+    setPos(m_Context->Geometry()->FrameToSceneX(frame), 0.0);
+    update();
+}
+
 void SPlayheadItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     painter->setPen(QPen(option->palette.color(QPalette::Highlight), 1));

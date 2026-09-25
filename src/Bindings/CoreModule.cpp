@@ -252,7 +252,8 @@ void BindCore(py::module_& m)
         .def("video_tracks", &PlaybackSequence::VideoTracks, py::return_value_policy::reference)
         .def("audio_tracks", &PlaybackSequence::AudioTracks, py::return_value_policy::reference)
         .def("save_snapshot", &PlaybackSequence::SaveSnapshot, py::arg("name"), py::arg("description"))
-        .def("restore_snapshot", &PlaybackSequence::RestoreSnapshot, py::arg("index"));
+        .def("restore_snapshot", &PlaybackSequence::RestoreSnapshot, py::arg("index"))
+        .def("video_track_items", &PlaybackSequence::VideoTrackItems, py::return_value_policy::reference_internal);
 
     py::enum_<Sequence::TrackType>(m, "TrackType")
         .value("VIDEO", Sequence::TrackType::VIDEO)

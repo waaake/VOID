@@ -11,12 +11,12 @@
 
 /* Internal */
 #include "STimelineScene.h"
-#include "Graphics/SPlayheadItem.h"
-#include "Graphics/SPreviewTrackItem.h"
-#include "Graphics/SRazorItem.h"
-#include "Graphics/STrack.h"
-#include "Graphics/STrackItem.h"
-#include "Graphics/STimelineEffect.h"
+#include "SPlayheadItem.h"
+#include "SPreviewTrackItem.h"
+#include "SRazorItem.h"
+#include "STrack.h"
+#include "STrackItem.h"
+#include "STimelineEffect.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -39,9 +39,7 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
 {
     // Can now be accessed directly by any other sub-component within the sequencer
     m_Context->Controller()->SetScene(this);
-
     setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
-    connect(m_Context->Controller(), &SequencerController::frameChanged, this, &STimelineScene::UpdatePlayhead, Qt::DirectConnection);
 }
 
 STimelineScene::~STimelineScene()
@@ -126,9 +124,9 @@ void STimelineScene::AddPlayhead()
     addItem(m_Playhead);
 }
 
-void STimelineScene::UpdatePlayhead()
+void STimelineScene::UpdatePlayhead(v_frame_t frame)
 {
-    m_Playhead->Update();
+    m_Playhead->Update(frame);
 }
 
 void STimelineScene::Update()
@@ -259,6 +257,11 @@ void STimelineScene::DropItems(const QPointF& position)
     {
         DestroyDraggableItems();
     }
+}
+
+int STimelineScene::PlayheadX() const
+{
+    return m_Playhead->x();
 }
 
 void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)

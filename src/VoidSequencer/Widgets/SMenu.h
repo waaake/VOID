@@ -11,7 +11,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "SContext.h"
+#include "VoidSequencer/SContext.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -20,22 +20,43 @@ class SequencerContextMenu : public QMenu
     Q_OBJECT
 public:
     SequencerContextMenu(SequencerContext* context, QWidget* parent = nullptr);
-    // ~SequencerContextMenu()
     void Show(const QPoint& position);
 
 signals:
+    /// Edit
     void cutSelectionRequested();
     void copySelectionRequested();
     void pasteRequested(const QPoint&);
     void createTrackRequested();
     void deleteSelectionRequested();
+
+    /// Color
     void colorChangeRequested(bool reset = false);
-    void editModeChangeRequested(const SequencerController::EditMode&);
-    void addEffectRequested(const std::string&);
+
+    /// View
+    void fitAllRequested();
+    void fitSelectedRequested();
+    void resetFitRequested();
+
+    /// Mark
+    void inOutSetRequested(bool selection = false);
+
+    /// Version
     void versionChangeRequested(bool up);
     void versionExtremesChangeRequested(bool max);
     void versionInspectionRequested();
     void versionScanRequested();
+
+    /// Edit Mode
+    void editModeChangeRequested(const SequencerController::EditMode&);
+
+    /// Editorial
+    void disableRequested();
+    void razorRequested(bool sequence = false);
+    void rippleDeleteRequested();
+
+    /// Effects
+    void addEffectRequested(const std::string&);
 
 private:
     QPoint m_ExecPosition;
@@ -48,6 +69,15 @@ private:
     QAction* m_CopyAction;
     QAction* m_PasteAction;
     QAction* m_RemoveSelectedAction;
+
+    QMenu* m_ViewMenu;
+    QAction* m_FitAllAction;
+    QAction* m_FitSelectedAction;
+    QAction* m_ResetFitAction;
+
+    QMenu* m_MarkMenu;
+    QAction* m_MarkSelectionAction;
+    QAction* m_MarkCurrentAction;
 
     QMenu* m_ColorMenu;
     QAction* m_ColorItemAction;
@@ -66,6 +96,12 @@ private:
     QAction* m_OverwriteAction;
     QAction* m_RippleAction;
     QActionGroup* m_EditModeGroup;
+
+    QMenu* m_EditorialMenu;
+    QAction* m_DisableAction;
+    QAction* m_RippleDeleteAction;
+    QAction* m_RazorAction;
+    QAction* m_RazorAllAction;
 
     QMenu* m_EffectsMenu;
 

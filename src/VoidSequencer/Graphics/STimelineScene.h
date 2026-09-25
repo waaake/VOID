@@ -12,8 +12,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "Descriptors.h"
-#include "SContext.h"
+#include "VoidSequencer/Descriptors.h"
+#include "VoidSequencer/SContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
@@ -38,7 +38,7 @@ public:
     void SetRazorX(int x);
     void ToggleRazorhead(bool visible);
     void AddPlayhead();
-    void UpdatePlayhead();
+    void UpdatePlayhead(v_frame_t frame);
     void Update();
     void UpdateItems();
     STrack* TrackAt(int index) const;
@@ -49,6 +49,8 @@ public:
     void MoveDraggableItems(const QPointF& position, const QRectF& bounds);
     void DestroyDraggableItems();
     void DropItems(const QPointF& postion);
+
+    int PlayheadX() const;
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;

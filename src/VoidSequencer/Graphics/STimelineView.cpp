@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStyle>
+#include <QScrollBar>
 
 /* Internal */
 #include "SContext.h"
@@ -25,6 +26,8 @@ STimelineView::STimelineView(SequencerContext* context, QWidget* parent)
 {
     Build();
     Setup();
+
+    connect(m_Context->Controller(), &SequencerController::frameChanged, this, &STimelineView::FrameChanged, Qt::DirectConnection);
 }
 
 STimelineView::~STimelineView()
@@ -59,20 +62,39 @@ void STimelineView::Clear()
     m_Scene->Clear();
 }
 
-void STimelineView::Focus()
+void STimelineView::ResetScroll()
 {
-    const auto& selected = m_Scene->selectedItems();
-    selected.empty() ? centerOn(0, 0) : centerOn(selected[0]);
+    centerOn(0, 0);
 }
 
 MFrameRange STimelineView::VisibleRange() const
 {
-    QRect viewrect = viewport()->rect();
+    const QRect r = viewport()->rect();
+    const STimelineGeometry* geo = m_Context->Geometry();
 
     return MFrameRange(
-        m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topLeft()).x()),
-        m_Context->Geometry()->SceneXToFrame(mapToScene(viewrect.topRight()).x() + style()->pixelMetric(QStyle::PM_ScrollBarExtent))
+        geo->SceneXToFrame(mapToScene(r.left(), 0).x()),
+        geo->SceneXToFrame(mapToScene(QPoint(r.right() + style()->pixelMetric(QStyle::PM_ScrollBarExtent), 0)).x())
     );
+}
+
+void STimelineView::FocusOn(v_frame_t frame)
+{
+    STimelineGeometry* geo = m_Context->Geometry();
+    QPoint mapped(mapFromScene(QPointF(geo->FrameToSceneX(frame), 0)));
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + mapped.x());
+}
+
+void STimelineView::FocusOn(v_frame_t start, v_frame_t end, int y)
+{
+    STimelineGeometry* geo = m_Context->Geometry();
+    // Width number of pixels are available to fit the start and the end
+    geo->SetPixelsPerFrame((float)viewport()->width() / (end - start + 1));
+    Refresh();
+
+    QPoint mapped(mapFromScene(QPointF(geo->FrameToSceneX(start), y)));
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + mapped.x());
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + mapped.y());
 }
 
 void STimelineView::dragEnterEvent(QDragEnterEvent* event)
@@ -192,7 +214,6 @@ void STimelineView::leaveEvent(QEvent* event)
 void STimelineView::drawForeground(QPainter* painter, const QRectF& rect)
 {
     QGraphicsView::drawForeground(painter, rect);
-
     if (m_Marquee.active)
     {
         QColor color = palette().color(QPalette::Highlight);
@@ -209,6 +230,9 @@ void STimelineView::Build()
 {
     m_Scene = new STimelineScene(m_Context, this);
     setScene(m_Scene);
+    /// TODO: check why do we need to set this explicitly
+    /// Without this, the view is always at the center of the width (even height)
+    centerOn(0, 0);
 
     m_Scene->AddPlayhead();
 }
@@ -231,6 +255,19 @@ void STimelineView::Setup()
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     setAcceptDrops(true);
+}
+
+void STimelineView::FrameChanged(v_frame_t frame)
+{
+    const QRect r(viewport()->rect());
+
+    m_Scene->UpdatePlayhead(frame);
+    const QPoint x(mapFromScene(QPoint(m_Scene->PlayheadX(), 0)));
+    if (r.contains(x))
+        return;
+
+    const int delta = x.x() > r.right() ? (r.width() / 3) : -(r.width() / 3);
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + delta);
 }
 
 VOID_NAMESPACE_CLOSE

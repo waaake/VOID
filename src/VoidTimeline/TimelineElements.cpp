@@ -249,7 +249,7 @@ void FrameDisplayModeBox::Setup()
 	// Need the same width on the Popup for it to cover the contents
 	view()->setMinimumWidth(140);
 
-	connect(this, &QComboBox::currentIndexChanged, this, [this](int index) -> void
+	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int index) -> void
 	{
 		emit frameDisplayChanged(static_cast<FrameDisplayMode>(index));
 	});

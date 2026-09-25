@@ -154,11 +154,13 @@ void ControlBar::Build()
 
     /* Add to Left Controls */
     m_LeftLayout->addWidget(m_ChannelModeController);
+    m_LeftLayout->addWidget(new VLine(this));
     m_LeftLayout->addWidget(m_ExposureSpinner);
     m_LeftLayout->addWidget(new VLine(this));
     m_LeftLayout->addWidget(m_GammaSpinner);
     m_LeftLayout->addWidget(new VLine(this));
     m_LeftLayout->addWidget(m_GainSpinner);
+    m_LeftLayout->addWidget(new VLine(this));
 
     /* And a spacer at the end */
     m_LeftLayout->addStretch(1);
@@ -169,6 +171,7 @@ void ControlBar::Build()
     m_RightLayout->addStretch(1);
     m_RightLayout->addWidget(m_ColorDisplayController);
     m_RightLayout->addWidget(m_Zoomer);
+    m_RightLayout->addWidget(new VLine(this));
     m_RightLayout->addWidget(m_AnnotationButton);
 
     /* Add the left side controls */

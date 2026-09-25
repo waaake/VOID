@@ -1,25 +1,26 @@
 set(SOURCES
     Sequencer.cpp
     SController.cpp
-    SMenu.cpp
-    STimelineScene.cpp
-    STimelineView.cpp
     STimelineGeometry.cpp
-
+    
     Commands/SequenceCommands.cpp
-
+    
     Graphics/SHandleItem.cpp
     Graphics/SPlayheadItem.cpp
     Graphics/SPreviewTrackItem.cpp
     Graphics/SRazorItem.cpp
     Graphics/STimelineEffect.cpp
     Graphics/STimelineItem.cpp
+    Graphics/STimelineScene.cpp
+    Graphics/STimelineView.cpp
     Graphics/STrack.cpp
     Graphics/STrackItem.cpp
-
+    
     Models/SSelectionModel.cpp
     Models/SHoverModel.cpp
-
+    
+    Widgets/SequencerWidget.cpp
+    Widgets/SMenu.cpp
     Widgets/STimelineRuler.cpp
     Widgets/STrackHeader.cpp
     Widgets/STrackHeaderWidget.cpp

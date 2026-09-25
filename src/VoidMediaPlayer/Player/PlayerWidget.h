@@ -7,6 +7,7 @@
 /* Qt */
 #include <QLayout>
 #include <QWidget>
+#include <QShortcut>
 
 /* Internal */
 #include "QDefinition.h"
@@ -112,6 +113,9 @@ protected:  /* Methods */
     
 protected:  /* Members */
     QVBoxLayout* m_RendererLayout;
+
+    QShortcut* m_FitShortcut;
+    QShortcut* m_EditFramerateShortcut;
 
     PlayerOverlay* m_Overlay;
     VoidRenderer* m_Renderer;

@@ -205,6 +205,7 @@ signals:
     void effectRemoved();
     void stateChanged();
     void effectUpdated();
+    void moved();
 
 protected:
     std::vector<Effect*> m_Effects;

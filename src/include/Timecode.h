@@ -12,18 +12,24 @@
 
 VOID_NAMESPACE_OPEN
 
-struct Timecode
+struct VOID_API Timecode
 {
     v_frame_t frames = 0;
     double framerate = 24.0;
     bool dropframe = false;
+    bool negative = false;
 
     constexpr Timecode() = default;
     constexpr Timecode(v_frame_t frames, double framerate = 24.0, bool dropframe = false)
-        : frames(frames), framerate(framerate), dropframe(dropframe) {}
+        : frames(Absolute(frames)), framerate(framerate), dropframe(dropframe), negative(frames < 0) {}
 
     std::string String() const;
     static Timecode Get(const std::string_view& tc, double framerate, bool dropframe = false);
+
+protected:
+    constexpr Timecode(v_frame_t frames, double framerate, bool dropframe, bool negative)
+        : frames(frames), framerate(framerate), dropframe(dropframe), negative(negative) {}
+    static constexpr v_frame_t Absolute(v_frame_t frames) { return frames < 0 ? -frames : frames; }
 };
 
 VOID_NAMESPACE_CLOSE

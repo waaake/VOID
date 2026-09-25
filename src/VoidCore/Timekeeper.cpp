@@ -67,7 +67,6 @@ std::string Timekeeper::DisplayFrame(v_frame_t frame) const
     return m_FrameDisplay == FrameDisplayMode::FRAMES ? std::to_string(frame) : Timecode(frame, m_Mediarate).String();
 }
 
-
 v_frame_t Timekeeper::NextFrame()
 {
     /**

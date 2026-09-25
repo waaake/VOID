@@ -51,4 +51,16 @@ TEST(TimecodeTest, DropFrames)
     EXPECT_EQ(tc3.frames, 1797);
 }
 
+TEST(TimecodeTest, Negative)
+{
+    Timecode tc1(-1001, 24, false);
+    EXPECT_EQ(tc1.String(), "-00:00:41:17");
+    EXPECT_EQ(tc1.frames, 1001);
+    EXPECT_TRUE(tc1.negative);
+
+    Timecode tc2 = Timecode::Get("-00:00:41:17", 24, false);
+    EXPECT_EQ(tc2.frames, 1001);
+    EXPECT_TRUE(tc2.negative);
+}
+
 VOID_NAMESPACE_CLOSE

@@ -11,6 +11,7 @@ if (WIN32)
         ../VoidBridge/Engine.h
         ../VoidObjects/Core/Task.h
         ../VoidQExtensions/PushButton.h
+        ../VoidQExtensions/Frame.h
     )
 endif()
 

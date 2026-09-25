@@ -15,6 +15,7 @@
 #include "VoidBridge/Engine.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Tooltip.h"
+#include "VoidQExtensions/Frame.h"
 
 static constexpr int BUTTON_WIDTH = 30;
 static constexpr int SMALL_BUTTON_WIDTH = 20;
@@ -121,7 +122,11 @@ void Timeline::Build()
 
 	m_LeftLayout->addWidget(m_FramerateBox);
 	m_LeftLayout->addWidget(m_TimeDisplayController);
-	
+
+	VLine* line = new VLine(this);
+	line->setFixedHeight(18);
+	m_LeftLayout->addWidget(line);
+
 	/* Spacer */
 	m_LeftLayout->addStretch(1);
 
@@ -229,7 +234,7 @@ void Timeline::Setup()
 	m_OutTimeEdit->setFixedWidth(TIME_DISPLAY_WIDTH);
 
 	m_TimeDisplay->setReadOnly(true);
-	
+
 	m_Timekeeper.SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
 	m_InTimeEdit->Set(m_Timekeeper.DisplayStart());
 	m_OutTimeEdit->Set(m_Timekeeper.DisplayEnd());
@@ -497,7 +502,7 @@ void Timeline::PlayPreviousFrame()
 		{
 			case LoopType::PlayOnce: return Stop();
 			case LoopType::PingPong: return PlayForwards();
-			case LoopType::LoopInfinitely: emit mediaFinished(PlayState::BACKWARDS);	
+			case LoopType::LoopInfinitely: emit mediaFinished(PlayState::BACKWARDS);
 		}
 	}
 }

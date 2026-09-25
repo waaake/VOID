@@ -717,6 +717,12 @@ bool CreateTrackEffectCommand::Redo()
 /// RazorTrackCommand
 
 RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : RazorTrackCommand(track.get(), frame, parent)
+{
+    setText("Razor Item");
+}
+
+RazorTrackCommand::RazorTrackCommand(const PlaybackTrack* track, v_frame_t frame, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(track->Sequence())
     , m_TrackIndex(track->Index())

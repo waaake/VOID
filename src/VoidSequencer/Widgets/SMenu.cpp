@@ -16,12 +16,6 @@ SequencerContextMenu::SequencerContextMenu(SequencerContext* context, QWidget* p
     Connect();
 }
 
-// SequencerContextMenu::~SequencerContextMenu()
-// {
-//     m_ColorItemAction->deleteLater();
-//     delete
-// }
-
 void SequencerContextMenu::Show(const QPoint& position)
 {
     m_ExecPosition = position;
@@ -33,10 +27,13 @@ void SequencerContextMenu::Show(const QPoint& position)
 void SequencerContextMenu::Build()
 {
     QWidget* p = parentWidget();
+
+    /// New Menu
     m_NewMenu = new QMenu("New", this);
     m_AddVideoTrackAction = new QAction("Add Video Track", m_NewMenu);
     m_NewMenu->addAction(m_AddVideoTrackAction);
 
+    /// Edit Menu
     m_EditMenu = new QMenu("Edit", this);
     m_CutAction = new QAction("Cut", m_EditMenu);
     m_CutAction->setShortcut(QKeySequence::Cut);
@@ -46,12 +43,49 @@ void SequencerContextMenu::Build()
     m_PasteAction->setShortcut(QKeySequence::Paste);
 
     m_RemoveSelectedAction = new QAction("Delete Selected", m_EditMenu);
+    m_RemoveSelectedAction->setShortcut(Qt::Key_Backspace);
+
+    p->addAction(m_CutAction);
+    p->addAction(m_CopyAction);
+    p->addAction(m_PasteAction);
+    p->addAction(m_RemoveSelectedAction);
     m_EditMenu->addAction(m_CutAction);
     m_EditMenu->addAction(m_CopyAction);
     m_EditMenu->addAction(m_PasteAction);
     m_EditMenu->addSeparator();
     m_EditMenu->addAction(m_RemoveSelectedAction);
 
+    /// View Menu
+    m_ViewMenu = new QMenu("View", this);
+    m_FitAllAction = new QAction("Fit All", m_ViewMenu);
+    m_FitAllAction->setShortcut(Qt::Key_F);
+    m_FitAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_FitSelectedAction = new QAction("Fit Selected", m_ViewMenu);
+    m_FitSelectedAction->setShortcut(QKeySequence("Shift+F"));
+    m_FitSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_ResetFitAction = new QAction("Reset", m_ViewMenu);
+    m_ResetFitAction->setShortcut(Qt::Key_H);
+
+    p->addAction(m_FitAllAction);
+    p->addAction(m_FitSelectedAction);
+    p->addAction(m_ResetFitAction);
+    m_ViewMenu->addAction(m_FitAllAction);
+    m_ViewMenu->addAction(m_FitSelectedAction);
+    m_ViewMenu->addAction(m_ResetFitAction);
+
+    /// Mark Menu
+    m_MarkMenu = new QMenu("Mark", this);
+    m_MarkSelectionAction = new QAction("Mark Selection as Timeline in/out", m_MarkMenu);
+    m_MarkSelectionAction->setShortcut(QKeySequence("Alt+U"));
+    m_MarkCurrentAction = new QAction("Mark Current Clip as Timeline in/out", m_MarkMenu);
+    m_MarkCurrentAction->setShortcut(Qt::Key_U);
+
+    p->addAction(m_MarkSelectionAction);
+    p->addAction(m_MarkCurrentAction);
+    m_MarkMenu->addAction(m_MarkSelectionAction);
+    m_MarkMenu->addAction(m_MarkCurrentAction);
+
+    /// Color Items Menu
     m_ColorMenu = new QMenu("Color", this);
 
     m_ColorItemAction = new QAction("Set Trackitem Color...", m_ColorMenu);
@@ -59,6 +93,7 @@ void SequencerContextMenu::Build()
     m_ColorMenu->addAction(m_ColorItemAction);
     m_ColorMenu->addAction(m_ResetItemColorAction);
 
+    /// Version Menu
     m_VersionMenu = new QMenu("Version", this);
     m_InspectVersionsAction = new QAction("Inspect Versions", m_VersionMenu);
     m_InspectVersionsAction->setShortcut(QKeySequence(Qt::Key_V));
@@ -81,6 +116,7 @@ void SequencerContextMenu::Build()
     m_VersionMenu->addAction(m_MaxVersionAction);
     m_VersionMenu->addAction(m_MinVersionAction);
 
+    /// Edit Mode Settings Menu
     m_EditModeMenu = new QMenu("Edit Mode", this);
     m_EditModeGroup = new QActionGroup(m_EditModeMenu);
 
@@ -103,14 +139,40 @@ void SequencerContextMenu::Build()
     m_EditModeMenu->addAction(m_OverwriteAction);
     m_EditModeMenu->addAction(m_RippleAction);
 
+    /// Editorial Menu
+    m_EditorialMenu = new QMenu("Editorial", this);
+    m_DisableAction = new QAction("Disable Items", m_EditorialMenu);
+    m_DisableAction->setShortcut(Qt::Key_D);
+    m_RippleDeleteAction = new QAction("Ripple Delete Items", m_EditorialMenu);
+    m_RippleDeleteAction->setShortcut(QKeySequence("Shift+Backspace"));
+    m_RazorAction = new QAction("Razor", m_EditorialMenu);
+    m_RazorAction->setShortcut(QKeySequence(Qt::Key_C));
+    m_RazorAllAction = new QAction("Razor All", m_EditorialMenu);
+    m_RazorAllAction->setShortcut(QKeySequence("Shift+C"));
+
+    p->addAction(m_DisableAction);
+    p->addAction(m_RippleDeleteAction);
+    p->addAction(m_RazorAction);
+    p->addAction(m_RazorAllAction);
+    m_EditorialMenu->addAction(m_DisableAction);
+    m_EditorialMenu->addAction(m_RippleDeleteAction);
+    m_EditorialMenu->addSeparator();
+    m_EditorialMenu->addAction(m_RazorAction);
+    m_EditorialMenu->addAction(m_RazorAllAction);
+
+    /// Effects Menu
     m_EffectsMenu = new QMenu("Timeline Effects", this);
 
     addMenu(m_NewMenu);
     addMenu(m_EditMenu);
     addSeparator();
+    addMenu(m_ViewMenu);
+    addMenu(m_MarkMenu);
+    addSeparator();
     addMenu(m_ColorMenu);
     addMenu(m_VersionMenu);
     addSeparator();
+    addMenu(m_EditorialMenu);
     addMenu(m_EditModeMenu);
     addSeparator();
     addMenu(m_EffectsMenu);
@@ -118,46 +180,73 @@ void SequencerContextMenu::Build()
 
 void SequencerContextMenu::Connect()
 {
+    /// New
     connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
+
+    /// Edit
     connect(m_CutAction, &QAction::triggered, this, &SequencerContextMenu::cutSelectionRequested);
     connect(m_CopyAction, &QAction::triggered, this, &SequencerContextMenu::copySelectionRequested);
     connect(m_PasteAction, &QAction::triggered, this, [this]() -> void { emit pasteRequested(m_ExecPosition); });
     connect(m_RemoveSelectedAction, &QAction::triggered, this, &SequencerContextMenu::deleteSelectionRequested);
-    connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
-    connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
-    connect(m_EditModeGroup, &QActionGroup::triggered, this, [this](QAction* action) -> void
-    {
-        emit editModeChangeRequested(static_cast<SequencerController::EditMode>(action->data().toInt()));
-    });
+
+    /// View
+    connect(m_FitAllAction, &QAction::triggered, this, &SequencerContextMenu::fitAllRequested);
+    connect(m_FitSelectedAction, &QAction::triggered, this, &SequencerContextMenu::fitSelectedRequested);
+    connect(m_ResetFitAction, &QAction::triggered, this, &SequencerContextMenu::resetFitRequested);
+
+    /// Mark
+    connect(m_MarkSelectionAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(true); });
+    connect(m_MarkCurrentAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(false); });
+
+    /// Version
     connect(m_VersionUpAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(true); });
     connect(m_VersionDownAction, &QAction::triggered, this, [this]() -> void { emit versionChangeRequested(false); });
     connect(m_MaxVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(true); });
     connect(m_MinVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(false); });
     connect(m_InspectVersionsAction, &QAction::triggered, this, &SequencerContextMenu::versionInspectionRequested);
     connect(m_ScanDirectoryAction, &QAction::triggered, this, &SequencerContextMenu::versionScanRequested);
+
+    /// Color
+    connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
+    connect(m_ResetItemColorAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(true); });
+
+    /// Edit Mode
+    connect(m_EditModeGroup, &QActionGroup::triggered, this, [this](QAction* action) -> void
+    {
+        emit editModeChangeRequested(static_cast<SequencerController::EditMode>(action->data().toInt()));
+    });
+
+    /// Editorial
+    connect(m_DisableAction, &QAction::triggered, this, &SequencerContextMenu::disableRequested);
+    connect(m_RippleDeleteAction, &QAction::triggered, this, &SequencerContextMenu::rippleDeleteRequested); 
+    connect(m_RazorAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(false); });
+    connect(m_RazorAllAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(true); });
 }
 
 void SequencerContextMenu::Validate()
 {
     const SSelectionModel* sel = m_Context->SelectionModel();
     const SequencerController* controller = m_Context->Controller();
-    const bool hasSequence = m_Context->HasActiveSequence();
-    const bool anySelection = hasSequence && sel->HasAnySelection();
-    const bool itemSelection = hasSequence && sel->HasTrackItemSelection();
-    const bool trackSelection = hasSequence && sel->HasTrackSelection();
+    const bool anySelection = sel->HasAnySelection();
+    const bool itemSelection = sel->HasTrackItemSelection();
+    const bool trackSelection = sel->HasTrackSelection();
 
-    m_NewMenu->setEnabled(hasSequence);
-    m_EditMenu->setEnabled(hasSequence);
-    m_ColorMenu->setEnabled(hasSequence);
+    setEnabled(m_Context->HasActiveSequence());
 
+    /// Edit
     m_CutAction->setEnabled(anySelection);
     m_CopyAction->setEnabled(anySelection);
-    m_PasteAction->setEnabled(controller->ValidClipboard() && hasSequence);
-
+    m_PasteAction->setEnabled(controller->ValidClipboard());
     m_RemoveSelectedAction->setEnabled(anySelection);
+
+    /// Mark
+    m_MarkSelectionAction->setEnabled(itemSelection);
+
+    /// Color
     m_ColorItemAction->setEnabled(itemSelection);
     m_ResetItemColorAction->setEnabled(itemSelection);
 
+    /// Version
     m_InspectVersionsAction->setEnabled(itemSelection);
     m_ScanDirectoryAction->setEnabled(itemSelection);
     m_VersionUpAction->setEnabled(itemSelection);
@@ -165,10 +254,16 @@ void SequencerContextMenu::Validate()
     m_MinVersionAction->setEnabled(itemSelection);
     m_MaxVersionAction->setEnabled(itemSelection);
 
+    /// Edit Mode
     m_NoOverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
     m_OverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::OVERWRITE);
     m_RippleAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::RIPPLE);
 
+    /// Editorial
+    m_DisableAction->setEnabled(anySelection);
+    m_RippleDeleteAction->setEnabled(itemSelection || trackSelection);
+
+    /// Effects
     m_EffectsMenu->setEnabled(itemSelection || trackSelection);
 }
 

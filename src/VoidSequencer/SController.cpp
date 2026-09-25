@@ -6,12 +6,11 @@
 
 /* Internal */
 #include "SController.h"
-#include "STimelineScene.h"
 #include "VoidCore/Logging.h"
 #include "Graphics/STrack.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "Commands/SequenceCommands.h"
-#include "VoidCore/Profiler.h"
+#include "VoidSequencer/Graphics/STimelineScene.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -110,13 +109,11 @@ void SequencerController::Paste(Sequence::Context&& context)
 
 void SequencerController::CreateTrackItems(const std::vector<SharedMediaClip>& media, const SharedPlaybackTrack& track, v_frame_t frame)
 {
-    Tools::VoidProfiler<std::chrono::duration<double>> p("SequencerController::CreateTrackItems");
     _MediaBridge.PushCommand(new CreateTrackItemsCommand(media, track, frame));
 }
 
 void SequencerController::CreateTrackItems(const std::vector<std::pair<const SharedMediaClip, v_frame_t>>& media, const SharedPlaybackTrack& track)
 {
-    Tools::VoidProfiler<std::chrono::duration<double>> p("SequencerController::CreateTrackItems");
     QUndoStack* stack = _MediaBridge.UndoStack();
     stack->beginMacro("Add media to track");
 
@@ -493,6 +490,29 @@ void SequencerController::SwitchVersionExtremes(const std::unordered_set<SharedT
     stack->endMacro();
 }
 
+void SequencerController::ResetTimelineInOut(const SharedTrackItem& item)
+{
+    m_TimelineController->SetUserFirstframe(item->TimelineIn());
+    m_TimelineController->SetUserEndframe(item->TimelineOut());
+}
+
+void SequencerController::ResetTimelineInOut(const std::unordered_set<SharedTrackItem>& items)
+{
+    if (items.empty()) return;
+
+    const SharedTrackItem& first = *items.begin();
+    v_frame_t start = first->TimelineIn(), end = first->TimelineOut();
+
+    for (const SharedTrackItem& item : items)
+    {
+        start = std::min(item->TimelineIn(), start);
+        end = std::max(item->TimelineOut(), end);
+    }
+
+    m_TimelineController->SetUserFirstframe(start);
+    m_TimelineController->SetUserEndframe(end);    
+}
+
 STrack* SequencerController::TrackAt(int index) const
 {
     if (STimelineScene* scene = dynamic_cast<STimelineScene*>(m_Scene))
@@ -580,6 +600,11 @@ void SequencerController::ToggleItemState(const std::unordered_set<Effect*>& eff
 void SequencerController::RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame)
 {
     _MediaBridge.PushCommand(new RazorSequenceCommand(sequence, frame));
+}
+
+void SequencerController::RazorAt(const PlaybackTrack* track, v_frame_t frame)
+{
+    _MediaBridge.PushCommand(new RazorTrackCommand(track, frame));
 }
 
 void SequencerController::RazorAt(const SharedPlaybackTrack& track, v_frame_t frame)

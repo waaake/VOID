@@ -98,7 +98,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     QAction* setInFrameAction = menuSystem->AddAction(playbackMenu, "Set In Frame", QKeySequence(Qt::Key_BracketLeft));
     QAction* setOutFrameAction = menuSystem->AddAction(playbackMenu, "Set Out Frame", QKeySequence(Qt::Key_BracketRight));
     QAction* resetRangeAction = menuSystem->AddAction(playbackMenu, "Reset In/Out Frames", QKeySequence(Qt::Key_Backslash));
-    QAction* editRateAction = menuSystem->AddAction(playbackMenu, "Edit Framerate", QKeySequence("Shift+F"));
+    QAction* editRateAction = menuSystem->AddAction(playbackMenu, "Edit Framerate");
 
     /* -------------------------------- */
     playbackMenu->addSeparator();
@@ -139,7 +139,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
 
     QAction* zoomInAction = menuSystem->AddAction(viewerMenu, "Zoom In", QKeySequence(Qt::Key_Plus));
     QAction* zoomOutAction = menuSystem->AddAction(viewerMenu, "Zoom Out", QKeySequence(Qt::Key_Minus));
-    QAction* zoomToFitAction = menuSystem->AddAction(viewerMenu, "Zoom to Fit", QKeySequence(Qt::Key_F));
+    QAction* zoomToFitAction = menuSystem->AddAction(viewerMenu, "Zoom to Fit");
     QAction* fullscreenAction = menuSystem->AddAction(viewerMenu, "Show Fullscreen", QKeySequence("Ctrl+F"));
     QAction* exitFullscreenAction = menuSystem->AddAction(viewerMenu, "Exit Fullscreen");
 

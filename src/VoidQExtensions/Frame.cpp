@@ -9,13 +9,12 @@
 
 VOID_NAMESPACE_OPEN
 
+/// SplitSectionSelector
+
 SplitSectionSelector::SplitSectionSelector(QWidget* parent)
     : QPushButton(parent)
 {
-    /* Setup Menu */
     m_Menu = new QMenu(this);
-
-    /* Radio Group with only one selection at a time */
     m_RadioGroup = new QActionGroup(m_Menu);
     m_RadioGroup->setExclusive(true);
 
@@ -30,7 +29,6 @@ SplitSectionSelector::~SplitSectionSelector()
      * the pointer to that action will get removed internally when the menu is deleted
      */
     m_RadioActions.clear();
-
     m_Menu->deleteLater();
 }
 
@@ -41,15 +39,11 @@ void SplitSectionSelector::AddPrimaryItems(const QStringList& texts)
         QString text = texts[i];
         QAction* action = new QAction(text, m_Menu);
 
-        /* Any Item selection would trigger a signal to invoke that the Primary Item has been selected */
         connect(action, &QAction::triggered, this, [=]() { PrimaryItemSelected(text, i); });
-
-        /* Add to the Menu */
         m_Menu->addAction(action);
+        if (i) continue;
 
-        /* Default Text on the Frame */
-        if (!i) // will only run for the first index
-            setText(text);
+        setText(text);
     }
 }
 
@@ -68,13 +62,8 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
         action->setObjectName(QString::number(i));
         action->setActionGroup(m_RadioGroup);
 
-        /* Any Item selection would trigger a signal to invoke that the Radio Item has been selected */
         connect(action, &QAction::triggered, this, [=]() { RadioItemSelected(text, i); });
-
-        /* Add to the Menu */
         m_Menu->addAction(action);
-
-        /* Store them in the Vector */
         m_RadioActions.push_back(action);
     }
 }
@@ -106,7 +95,7 @@ void SplitSectionSelector::RadioItemSelected(const QString& text, const int inde
     emit radioIndexChanged(index);
 }
 
-/* VLine {{{ */
+/// VLine
 
 VLine::VLine(QWidget* parent)
     : QWidget(parent)
@@ -119,14 +108,11 @@ void VLine::paintEvent(QPaintEvent* event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.fillRect(rect(), palette().color(QPalette::Window).darker(150));
-    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 1));
-
-    painter.drawLine(0, 0, 0, height());
-    painter.drawLine(width() - 1, 0, width(), height());
+    painter.setPen(QPen(palette().color(QPalette::Dark).darker(200), 2));
+    painter.drawLine(width() - 1, 0, width() - 1, height());
+    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 2));
+    painter.drawLine(width(), 0, width(), height());
 }
-
-/* }}} */
 
 /// BaseWidget
 

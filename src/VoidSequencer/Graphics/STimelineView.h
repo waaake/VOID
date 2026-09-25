@@ -10,7 +10,7 @@
 /* Internal */
 #include "QDefinition.h"
 #include "FrameRange.h"
-#include "SDragContext.h"
+#include "VoidSequencer/SDragContext.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
@@ -29,7 +29,7 @@ public:
     void RemoveTrack(const SharedPlaybackTrack& track);
     void Refresh();
     void Clear();
-    void Focus();
+    void ResetScroll();
 
     /**
      * @brief The range which is currently visible in the View.
@@ -37,6 +37,8 @@ public:
      * @return MFrameRange Visible frame range.
      */
     MFrameRange VisibleRange() const;
+    void FocusOn(v_frame_t frame);
+    void FocusOn(v_frame_t start, v_frame_t end, int y = 0);
     const STimelineScene* TimelineScene() const { return m_Scene; }
 
 signals:
@@ -62,6 +64,7 @@ private:
 private: /* Methods */
     void Build();
     void Setup();
+    void FrameChanged(v_frame_t frame);
 };
 
 VOID_NAMESPACE_CLOSE

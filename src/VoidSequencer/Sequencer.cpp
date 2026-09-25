@@ -6,6 +6,7 @@
 #include <QCursor>
 #include <QScrollBar>
 #include <QStyle>
+#include <QWheelEvent>
 
 /* Internal */
 #include "Sequencer.h"
@@ -15,47 +16,20 @@
 #include "VoidObjects/Sequence/Context.h"
 #include "VoidSequencer/Graphics/STrack.h"
 #include "VoidSequencer/Graphics/STrackItem.h"
-#include "VoidSequencer/STimelineScene.h"
+#include "VoidSequencer/Graphics/STimelineScene.h"
 
 VOID_NAMESPACE_OPEN
 
-SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* parent)
-    : QWidget(parent)
-{
-    m_Context.Controller()->SetTimeController(controller);
-    setContextMenuPolicy(Qt::CustomContextMenu);
+#define _FIT_PADDING 20
 
-    Build();
+SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* parent)
+    : SequencerWidget(controller, parent)
+{
     Connect();
 }
 
 SequencerTimeline::~SequencerTimeline()
 {
-    m_Toolbar->deleteLater();
-    delete m_Toolbar;
-    m_Toolbar = nullptr;
-
-    m_TrackHeader->deleteLater();
-    delete m_TrackHeader;
-    m_TrackHeader = nullptr;
-
-    m_View->deleteLater();
-    delete m_View;
-    m_View = nullptr;
-
-    m_Ruler->deleteLater();
-    delete m_Ruler;
-    m_Ruler = nullptr;
-
-    m_VersionSwitcher->deleteLater();
-    delete m_VersionSwitcher;
-    m_VersionSwitcher = nullptr;
-}
-
-void SequencerTimeline::ResetTabText()
-{
-    if (DockPanel* panel = dynamic_cast<DockPanel*>(parent()))
-        panel->SetTabText(m_Context.HasActiveSequence() ? m_Context.Sequence()->Name().c_str() : "Sequencer");
 }
 
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
@@ -63,6 +37,7 @@ void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
     if (m_Context.HasActiveSequence())
         Disconnect(m_Context.Sequence().get());
 
+    m_View->ResetScroll();
     m_Context.SetSequence(sequence);
     Connect(sequence.get());
     m_Context.Geometry()->SetSequence(sequence);
@@ -132,9 +107,12 @@ void SequencerTimeline::TrimItemTail(const SharedTrackItem& item, int handle)
 
 void SequencerTimeline::SetHorizontalScale(float factor)
 {
+    const MFrameRange r = m_View->VisibleRange();
     m_Context.Geometry()->SetPixelsPerFrame(factor);
-    m_View->Refresh();
     m_Ruler->Update();
+
+    m_View->Refresh();
+    m_View->FocusOn(r.startframe);
 }
 
 void SequencerTimeline::Refresh()
@@ -147,75 +125,53 @@ void SequencerTimeline::Refresh()
         AddTrack(track);
 }
 
-void SequencerTimeline::Clear()
+void SequencerTimeline::FitAll()
 {
-    m_TrackHeader->Clear();
-    m_View->Clear();
-    m_View->AddPlayhead();
+    if (SharedPlaybackSequence sequence = m_Context.Sequence())
+    {
+        v_frame_t start = sequence->StartFrame();
+        v_frame_t end = sequence->EndFrame();
+
+        // Only update the fit, if we're not fitting currently, if we're currently fitting then should be okay
+        if ((end - start + 1) > m_View->VisibleRange().duration)
+        {
+            m_View->FocusOn(start, end + _FIT_PADDING);
+            m_Ruler->Update();
+        }
+    }
 }
 
-void SequencerTimeline::Build()
+void SequencerTimeline::FitSelected()
 {
-    m_CutShortcut = new QShortcut(QKeySequence::Cut, this);
-    m_CutShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    const std::unordered_set<SharedTrackItem>& items = m_Context.SelectionModel()->SelectedItems();
+    if (items.empty())
+        return;
 
-    m_CopyShortcut = new QShortcut(QKeySequence::Copy, this);
-    m_CopyShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    std::vector<SharedTrackItem> vecitems(items.size());
+    std::transform(
+        items.begin(),
+        items.end(),
+        vecitems.begin(),
+        [](const SharedTrackItem& item) -> SharedTrackItem { return item; }
+    );
+    std::sort(vecitems.begin(), vecitems.end(), [](const SharedTrackItem& _a, const SharedTrackItem& _b) -> bool
+    {
+        return _a->TimelineIn() < _b->TimelineIn();
+    });
 
-    m_PasteShortcut = new QShortcut(QKeySequence::Paste, this);
-    m_PasteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    PlaybackTrack* track = vecitems.front()->Track();
+    m_View->FocusOn(
+        vecitems.front()->TimelineIn() - _FIT_PADDING,
+        vecitems.back()->TimelineOut() + _FIT_PADDING,
+        m_Context.Geometry()->TrackRect(track->Index()).y()
+    );
+    m_Ruler->Update();
+}
 
-    m_FitShortcut = new QShortcut(QKeySequence("Alt+F"), this);
-    m_FitShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_DeleteShortcut = new QShortcut(QKeySequence(Qt::Key_Backspace), this);
-    m_DeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_RippleDeleteShortcut = new QShortcut(QKeySequence("Ctrl+Backspace"), this);
-    m_RippleDeleteShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_ToggleStateShortcut = new QShortcut(QKeySequence(Qt::Key_D), this);
-    m_ToggleStateShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
-    m_Menu = new SequencerContextMenu(&m_Context, this);
-
-    m_Layout = new QHBoxLayout(this);
-
-    QGridLayout* grid = new QGridLayout();
-    grid->setSpacing(0);
-    grid->setContentsMargins(0, 0, 0, 0);
-
-    m_Toolbar = new SToolbar;
-    m_TrackHeader = new STrackHeaderWidget(&m_Context);
-
-    m_HZoomSlider = new QSlider(Qt::Horizontal, this);
-    m_HZoomSlider->setFixedHeight(style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2);
-    m_HZoomSlider->setMinimum(1);
-    m_HZoomSlider->setMaximum(200);
-    m_HZoomSlider->setValue(m_Context.Geometry()->PixelsPerFrame() * 10);
-
-    m_View = new STimelineView(&m_Context);
-    m_Ruler = new STimelineRuler(m_View, &m_Context);
-
-    m_VersionSwitcher = new SVersionSwitcher(&m_Context, this);
-
-    grid->addWidget(m_Ruler, 0, 1);
-
-    grid->addWidget(m_TrackHeader, 1, 0);
-    grid->addWidget(m_HZoomSlider, 2, 0);
-    grid->addWidget(m_View, 1, 1, 2, 1);
-
-    grid->setColumnMinimumWidth(0, Sequencer::TrackHeaderWidth);
-    grid->setRowMinimumHeight(0, Sequencer::RulerHeight);
-
-    grid->setColumnStretch(1, 1);
-    grid->setRowStretch(1, 1);
-
-    m_Layout->setSpacing(0);
-    m_Layout->setContentsMargins(0, 0, 0, 0);
-
-    m_Layout->addWidget(m_Toolbar);
-    m_Layout->addLayout(grid);
+void SequencerTimeline::ResetFit()
+{
+    SetHorizontalScale((float)m_HZoomSlider->value() / 10);
+    m_View->ResetScroll();
 }
 
 void SequencerTimeline::Connect()
@@ -238,14 +194,6 @@ void SequencerTimeline::Connect()
 
     // Controller
     connect(m_Context.Controller(), &SequencerController::editEffectRequested, this, &SequencerTimeline::editEffectRequested);
-
-    connect(m_CutShortcut, &QShortcut::activated, this, &SequencerTimeline::Cut);
-    connect(m_CopyShortcut, &QShortcut::activated, this, &SequencerTimeline::Copy);
-    connect(m_PasteShortcut, &QShortcut::activated, this, [this]() -> void { Paste(QCursor::pos()); });
-    connect(m_FitShortcut, &QShortcut::activated, m_View, &STimelineView::Focus);
-    connect(m_DeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::DeleteSelected);
-    connect(m_RippleDeleteShortcut, &QShortcut::activated, this, &SequencerTimeline::RippleDeleteSelected);
-    connect(m_ToggleStateShortcut, &QShortcut::activated, this, &SequencerTimeline::ToggleItemState);
 
     connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
     {
@@ -286,6 +234,19 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::versionExtremesChangeRequested, this, &SequencerTimeline::SwitchVersionExtremes);
     connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
     connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
+
+    /// Mark
+    connect(m_Menu, &SequencerContextMenu::inOutSetRequested, this, &SequencerTimeline::ResetInOut);
+
+    /// Editorial
+    connect(m_Menu, &SequencerContextMenu::disableRequested, this, &SequencerTimeline::ToggleItemState);
+    connect(m_Menu, &SequencerContextMenu::rippleDeleteRequested, this, &SequencerTimeline::RippleDeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::razorRequested, this, &SequencerTimeline::Razor);
+
+    /// Fit
+    connect(m_Menu, &SequencerContextMenu::fitAllRequested, this, &SequencerTimeline::FitAll);
+    connect(m_Menu, &SequencerContextMenu::fitSelectedRequested, this, &SequencerTimeline::FitSelected);
+    connect(m_Menu, &SequencerContextMenu::resetFitRequested, this, &SequencerTimeline::ResetFit);
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)
@@ -296,6 +257,10 @@ void SequencerTimeline::Connect(PlaybackSequence* sequence)
     connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     connect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
     connect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
+    connect(sequence->Project(), &Core::Project::sequenceAboutToBeRemoved, this, [this](const SharedPlaybackSequence& sequence) -> void
+    {
+        if (sequence.get() == m_Context.Sequence().get()) ClearSequence();
+    });
 }
 
 void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
@@ -306,6 +271,7 @@ void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
     disconnect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     disconnect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
     disconnect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
+    disconnect(sequence->Project(), &Core::Project::sequenceAboutToBeRemoved, this, nullptr);
 }
 
 void SequencerTimeline::CreateEffect(const std::string& type)
@@ -416,6 +382,25 @@ void SequencerTimeline::ScanVersions()
     const SSelectionModel* sel = m_Context.SelectionModel();
     if (sel->HasTrackItemSelection())
         m_Context.Controller()->ScanVersions(sel->SelectedItems());
+}
+
+void SequencerTimeline::ResetInOut(bool selection)
+{
+    if (selection)
+        return m_Context.Controller()->ResetTimelineInOut(m_Context.SelectionModel()->SelectedItems());
+    
+    if (const SharedTrackItem& item = m_Context.Sequence()->GetTrackItem(m_Context.TimeController()->Frame()))
+        m_Context.Controller()->ResetTimelineInOut(item);
+}
+
+void SequencerTimeline::Razor(bool sequence)
+{
+    const v_frame_t frame = m_Context.TimeController()->Frame();
+    if (sequence)
+        return m_Context.Controller()->RazorAt(m_Context.Sequence(), frame);
+
+    if (const SharedTrackItem& item = m_Context.Sequence()->GetTrackItem(frame))
+        m_Context.Controller()->RazorAt(item->Track(), frame);
 }
 
 VOID_NAMESPACE_CLOSE

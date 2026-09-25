@@ -73,67 +73,67 @@ MEntry::MEntry(const std::string& basepath, const std::string& name, const std::
     m_Path = path.string();
 }
 
-MEntry::~MEntry()
-{
-}
+// MEntry::~MEntry()
+// {
+// }
 
-MEntry::MEntry(MEntry&& other) noexcept
-    : m_Path(std::move(other.m_Path))
-    , m_Basepath(std::move(other.m_Basepath))
-    , m_Name(std::move(other.m_Name))
-    , m_Extension(std::move(other.m_Extension))
-    , m_FramePadding(other.m_FramePadding)
-    , m_Framenumber(other.m_Framenumber)
-    , m_SingleFile(other.m_SingleFile)
-    , m_Templated(other.m_Templated)
-{
-}
+// MEntry::MEntry(MEntry&& other) noexcept
+//     : m_Path(std::move(other.m_Path))
+//     , m_Basepath(std::move(other.m_Basepath))
+//     , m_Name(std::move(other.m_Name))
+//     , m_Extension(std::move(other.m_Extension))
+//     , m_FramePadding(other.m_FramePadding)
+//     , m_Framenumber(other.m_Framenumber)
+//     , m_SingleFile(other.m_SingleFile)
+//     , m_Templated(other.m_Templated)
+// {
+// }
 
-MEntry& MEntry::operator=(MEntry&& other) noexcept
-{
-    if (&other == this)
-        return *this;
+// MEntry& MEntry::operator=(MEntry&& other) noexcept
+// {
+//     if (&other == this)
+//         return *this;
     
-    m_Path = std::move(other.m_Path);
-    m_Basepath = std::move(other.m_Basepath);
-    m_Name = std::move(other.m_Name);
-    m_Extension = std::move(other.m_Extension);
-    m_FramePadding = other.m_FramePadding;
-    m_Framenumber = other.m_Framenumber;
-    m_SingleFile = other.m_SingleFile;
-    m_Templated = other.m_Templated;
+//     m_Path = std::move(other.m_Path);
+//     m_Basepath = std::move(other.m_Basepath);
+//     m_Name = std::move(other.m_Name);
+//     m_Extension = std::move(other.m_Extension);
+//     m_FramePadding = other.m_FramePadding;
+//     m_Framenumber = other.m_Framenumber;
+//     m_SingleFile = other.m_SingleFile;
+//     m_Templated = other.m_Templated;
 
-    return *this;
-}
+//     return *this;
+// }
 
-MEntry::MEntry(const MEntry& other)
-    : m_Path(other.m_Path)
-    , m_Basepath(other.m_Basepath)
-    , m_Name(other.m_Name)
-    , m_Extension(other.m_Extension)
-    , m_FramePadding(other.m_FramePadding)
-    , m_Framenumber(other.m_Framenumber)
-    , m_SingleFile(other.m_SingleFile)
-    , m_Templated(other.m_Templated)
-{
-}
+// MEntry::MEntry(const MEntry& other)
+//     : m_Path(other.m_Path)
+//     , m_Basepath(other.m_Basepath)
+//     , m_Name(other.m_Name)
+//     , m_Extension(other.m_Extension)
+//     , m_FramePadding(other.m_FramePadding)
+//     , m_Framenumber(other.m_Framenumber)
+//     , m_SingleFile(other.m_SingleFile)
+//     , m_Templated(other.m_Templated)
+// {
+// }
 
-MEntry& MEntry::operator=(const MEntry& other)
-{
-    if (&other == this)
-        return *this;
+// MEntry& MEntry::operator=(const MEntry& other)
+// {
+//     if (&other == this)
+//         return *this;
 
-    m_Path = other.m_Path;
-    m_Basepath = other.m_Basepath;
-    m_Name = other.m_Name;
-    m_Extension = other.m_Extension;
-    m_FramePadding = other.m_FramePadding;
-    m_Framenumber = other.m_Framenumber;
-    m_SingleFile = other.m_SingleFile;
-    m_Templated = other.m_Templated;
+//     m_Path = other.m_Path;
+//     m_Basepath = other.m_Basepath;
+//     m_Name = other.m_Name;
+//     m_Extension = other.m_Extension;
+//     m_FramePadding = other.m_FramePadding;
+//     m_Framenumber = other.m_Framenumber;
+//     m_SingleFile = other.m_SingleFile;
+//     m_Templated = other.m_Templated;
 
-    return *this;
-}
+//     return *this;
+// }
 
 void MEntry::Parse(const std::string& path)
 {
@@ -320,9 +320,9 @@ MediaStruct::MediaStruct(const MEntry& entry, const MediaType& type)
     Reset(entry, type);
 }
 
-MediaStruct::~MediaStruct()
-{
-}
+// MediaStruct::~MediaStruct()
+// {
+// }
 
 MediaStruct::MediaStruct(const std::string& basepath, const std::string& name, const std::string& extension)
 {
@@ -387,63 +387,63 @@ MediaStruct::MediaStruct(const std::string& basepath,
     m_MediaType = MediaType::Image;
 }
 
-MediaStruct::MediaStruct(const MediaStruct& other)
-{
-    /* Update the Media Type */
-    m_MediaType = other.m_MediaType;
+// MediaStruct::MediaStruct(const MediaStruct& other)
+// {
+//     /* Update the Media Type */
+//     m_MediaType = other.m_MediaType;
 
-    /* Clear Existing Frames */
-    m_Frames.clear();
-    m_Frames.reserve(other.m_Frames.size());
+//     /* Clear Existing Frames */
+//     m_Frames.clear();
+//     m_Frames.reserve(other.m_Frames.size());
 
-    for (v_frame_t frame: other.m_Frames)
-        m_Frames.emplace_back(frame);
+//     for (v_frame_t frame: other.m_Frames)
+//         m_Frames.emplace_back(frame);
 
-    m_Entries = other.m_Entries;
-}
+//     m_Entries = other.m_Entries;
+// }
 
-MediaStruct::MediaStruct(MediaStruct&& other) noexcept
-    : m_MediaType(other.m_MediaType)
-{
-    std::swap(m_Frames, other.m_Frames);
-    std::swap(m_Entries, other.m_Entries);
-}
+// MediaStruct::MediaStruct(MediaStruct&& other) noexcept
+//     : m_MediaType(other.m_MediaType)
+// {
+//     std::swap(m_Frames, other.m_Frames);
+//     std::swap(m_Entries, other.m_Entries);
+// }
 
-MediaStruct MediaStruct::operator=(const MediaStruct& other)
-{
-    /* Talking about the same entity */
-    if (this == &other)
-        return *this;
+// MediaStruct MediaStruct::operator=(const MediaStruct& other)
+// {
+//     /* Talking about the same entity */
+//     if (this == &other)
+//         return *this;
 
-    /* Update the Media Type */
-    m_MediaType = other.m_MediaType;
-    m_Frames.clear();
+//     /* Update the Media Type */
+//     m_MediaType = other.m_MediaType;
+//     m_Frames.clear();
 
-    m_Frames.reserve(other.m_Frames.size());
-    for (v_frame_t frame: other.m_Frames)
-        m_Frames.emplace_back(frame);
+//     m_Frames.reserve(other.m_Frames.size());
+//     for (v_frame_t frame: other.m_Frames)
+//         m_Frames.emplace_back(frame);
 
-    m_Entries = other.m_Entries;
+//     m_Entries = other.m_Entries;
 
-    return *this;
-}
+//     return *this;
+// }
 
-MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
-{
-    if (&other == this)
-        return *this;
+// MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
+// {
+//     if (&other == this)
+//         return *this;
 
-    /* Clear Contents */
-    Clear();
+//     /* Clear Contents */
+//     Clear();
 
-    m_MediaType = other.m_MediaType;
+//     m_MediaType = other.m_MediaType;
 
-    /* Swap the contents of the provided Struct with ours */
-    std::swap(m_Frames, other.m_Frames);
-    std::swap(m_Entries, other.m_Entries);
+//     /* Swap the contents of the provided Struct with ours */
+//     std::swap(m_Frames, other.m_Frames);
+//     std::swap(m_Entries, other.m_Entries);
 
-    return *this;
-}
+//     return *this;
+// }
 
 MFrameRange MediaStruct::Framerange() const
 {

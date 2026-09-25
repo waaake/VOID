@@ -60,9 +60,11 @@ std::string Timecode::String() const
         seconds = static_cast<int>(totalsecs % 60);
     }
 
-    char buf[12] = {};
+    char buf[13] = {};
     char* ptr = buf;
-    
+
+    if (negative) *ptr++ = '-';
+
     ptr = Write(ptr, hours);
     *ptr++ = ':';
     ptr = Write(ptr, minutes);
@@ -80,10 +82,19 @@ Timecode Timecode::Get(const std::string_view& tc, double framerate, bool dropfr
     if (tc.length() < 11) return Timecode(0, framerate, dropframe);
 
     const char* data = tc.data();
-    int h = Parse(data);
-    int m = Parse(data + 3);
-    int s = Parse(data + 6);
-    int f = Parse(data + 9);
+    int start = 0;
+    bool negative = false;
+    /// Negative timecode
+    if (tc[0] == '-')
+    {   
+        negative = true;
+        ++start;
+    }
+
+    int h = Parse(data + start);
+    int m = Parse(data + 3 + start);
+    int s = Parse(data + 6 + start);
+    int f = Parse(data + 9 + start);
 
     int64_t total = 0;
 
@@ -106,7 +117,7 @@ Timecode Timecode::Get(const std::string_view& tc, double framerate, bool dropfr
         total = (static_cast<int64_t>(framerate) * totalSecs) + f;
     }
 
-    return Timecode(total, framerate, dropframe);
+    return Timecode(total, framerate, dropframe, negative);
 }
 
 VOID_NAMESPACE_CLOSE
