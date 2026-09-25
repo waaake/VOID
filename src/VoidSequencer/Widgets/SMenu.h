@@ -20,27 +20,43 @@ class SequencerContextMenu : public QMenu
     Q_OBJECT
 public:
     SequencerContextMenu(SequencerContext* context, QWidget* parent = nullptr);
-    // ~SequencerContextMenu()
     void Show(const QPoint& position);
 
 signals:
+    /// Edit
     void cutSelectionRequested();
     void copySelectionRequested();
     void pasteRequested(const QPoint&);
     void createTrackRequested();
     void deleteSelectionRequested();
+
+    /// Color
     void colorChangeRequested(bool reset = false);
-    void editModeChangeRequested(const SequencerController::EditMode&);
-    void addEffectRequested(const std::string&);
+
+    /// View
+    void fitAllRequested();
+    void fitSelectedRequested();
+    void resetFitRequested();
+
+    /// Mark
+    void inOutSetRequested(bool selection = false);
+
+    /// Version
     void versionChangeRequested(bool up);
     void versionExtremesChangeRequested(bool max);
     void versionInspectionRequested();
     void versionScanRequested();
-    void inOutSetRequested(bool selection = false);
+
+    /// Edit Mode
+    void editModeChangeRequested(const SequencerController::EditMode&);
+
+    /// Editorial
+    void disableRequested();
     void razorRequested(bool sequence = false);
-    void fitAllRequested();
-    void fitSelectedRequested();
-    void resetFitRequested();
+    void rippleDeleteRequested();
+
+    /// Effects
+    void addEffectRequested(const std::string&);
 
 private:
     QPoint m_ExecPosition;
@@ -82,6 +98,8 @@ private:
     QActionGroup* m_EditModeGroup;
 
     QMenu* m_EditorialMenu;
+    QAction* m_DisableAction;
+    QAction* m_RippleDeleteAction;
     QAction* m_RazorAction;
     QAction* m_RazorAllAction;
 

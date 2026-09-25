@@ -16,12 +16,6 @@ SequencerContextMenu::SequencerContextMenu(SequencerContext* context, QWidget* p
     Connect();
 }
 
-// SequencerContextMenu::~SequencerContextMenu()
-// {
-//     m_ColorItemAction->deleteLater();
-//     delete
-// }
-
 void SequencerContextMenu::Show(const QPoint& position)
 {
     m_ExecPosition = position;
@@ -49,6 +43,12 @@ void SequencerContextMenu::Build()
     m_PasteAction->setShortcut(QKeySequence::Paste);
 
     m_RemoveSelectedAction = new QAction("Delete Selected", m_EditMenu);
+    m_RemoveSelectedAction->setShortcut(Qt::Key_Backspace);
+
+    p->addAction(m_CutAction);
+    p->addAction(m_CopyAction);
+    p->addAction(m_PasteAction);
+    p->addAction(m_RemoveSelectedAction);
     m_EditMenu->addAction(m_CutAction);
     m_EditMenu->addAction(m_CopyAction);
     m_EditMenu->addAction(m_PasteAction);
@@ -141,13 +141,22 @@ void SequencerContextMenu::Build()
 
     /// Editorial Menu
     m_EditorialMenu = new QMenu("Editorial", this);
+    m_DisableAction = new QAction("Disable Items", m_EditorialMenu);
+    m_DisableAction->setShortcut(Qt::Key_D);
+    m_RippleDeleteAction = new QAction("Ripple Delete Items", m_EditorialMenu);
+    m_RippleDeleteAction->setShortcut(QKeySequence("Shift+Backspace"));
     m_RazorAction = new QAction("Razor", m_EditorialMenu);
     m_RazorAction->setShortcut(QKeySequence(Qt::Key_C));
     m_RazorAllAction = new QAction("Razor All", m_EditorialMenu);
     m_RazorAllAction->setShortcut(QKeySequence("Shift+C"));
 
+    p->addAction(m_DisableAction);
+    p->addAction(m_RippleDeleteAction);
     p->addAction(m_RazorAction);
     p->addAction(m_RazorAllAction);
+    m_EditorialMenu->addAction(m_DisableAction);
+    m_EditorialMenu->addAction(m_RippleDeleteAction);
+    m_EditorialMenu->addSeparator();
     m_EditorialMenu->addAction(m_RazorAction);
     m_EditorialMenu->addAction(m_RazorAllAction);
 
@@ -208,6 +217,8 @@ void SequencerContextMenu::Connect()
     });
 
     /// Editorial
+    connect(m_DisableAction, &QAction::triggered, this, &SequencerContextMenu::disableRequested);
+    connect(m_RippleDeleteAction, &QAction::triggered, this, &SequencerContextMenu::rippleDeleteRequested); 
     connect(m_RazorAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(false); });
     connect(m_RazorAllAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(true); });
 }
@@ -222,16 +233,20 @@ void SequencerContextMenu::Validate()
 
     setEnabled(m_Context->HasActiveSequence());
 
+    /// Edit
     m_CutAction->setEnabled(anySelection);
     m_CopyAction->setEnabled(anySelection);
     m_PasteAction->setEnabled(controller->ValidClipboard());
+    m_RemoveSelectedAction->setEnabled(anySelection);
 
+    /// Mark
     m_MarkSelectionAction->setEnabled(itemSelection);
 
-    m_RemoveSelectedAction->setEnabled(anySelection);
+    /// Color
     m_ColorItemAction->setEnabled(itemSelection);
     m_ResetItemColorAction->setEnabled(itemSelection);
 
+    /// Version
     m_InspectVersionsAction->setEnabled(itemSelection);
     m_ScanDirectoryAction->setEnabled(itemSelection);
     m_VersionUpAction->setEnabled(itemSelection);
@@ -239,10 +254,16 @@ void SequencerContextMenu::Validate()
     m_MinVersionAction->setEnabled(itemSelection);
     m_MaxVersionAction->setEnabled(itemSelection);
 
+    /// Edit Mode
     m_NoOverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);
     m_OverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::OVERWRITE);
     m_RippleAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::RIPPLE);
 
+    /// Editorial
+    m_DisableAction->setEnabled(anySelection);
+    m_RippleDeleteAction->setEnabled(itemSelection || trackSelection);
+
+    /// Effects
     m_EffectsMenu->setEnabled(itemSelection || trackSelection);
 }
 
