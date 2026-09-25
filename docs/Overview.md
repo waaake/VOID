@@ -1,7 +1,6 @@
-# [<img src="../images/VOID_Logo_Full.svg" width="745"/>](../images/VoidPlayerBasic.png)
+# [<img align=right src="../images/VOID_Logo_Full.svg" width="545"/>](../images/VoidPlayerBasic.png)
 
 ### A quick overview of VOID's interface and capabilities.
----
 
 ## Project & Media Organization
 
