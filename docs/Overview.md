@@ -1,4 +1,4 @@
-# ![VOID](../images/VOID_Logo_900x200.png)
+# [<img src="../images/VOID_Logo_Full.svg" width="745"/>](../images/VoidPlayerBasic.png)
 
 ### A quick overview of VOID's interface and capabilities.
 ---

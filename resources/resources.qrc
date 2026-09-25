@@ -3,6 +3,8 @@
     <!-- Resources -->
     <qresource prefix="/resources">
         <file>../images/VOID_Logo.svg</file>
+        <file>../images/VOID_Logo_Full.svg</file>
+        <file>../images/VOID_Logo_Full.png</file>
         <file>../images/VOID_Logo_900x200.png</file>
         <file>../icons/icon_add.svg</file>
         <file>../icons/icon_adjust.svg</file>

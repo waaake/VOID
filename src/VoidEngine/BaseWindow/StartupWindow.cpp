@@ -76,7 +76,7 @@ void StartupWindow::Build()
     QHBoxLayout* labelLayout = new QHBoxLayout(labelWidget);
 
     QLabel* voidLabel = new QLabel;
-    QImage logo(":resources/images/VOID_Logo_900x200.png");
+    QImage logo(":resources/images/VOID_Logo_Full.png");
     voidLabel->setPixmap(QPixmap::fromImage(logo.scaledToWidth(150, Qt::SmoothTransformation)));
 
     labelLayout->addWidget(voidLabel);

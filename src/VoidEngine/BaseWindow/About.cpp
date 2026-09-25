@@ -31,32 +31,29 @@ AboutVoid::AboutVoid(QWidget* parent)
 
 AboutVoid::~AboutVoid()
 {
-    /* Delete the main layout at last*/
     m_Layout->deleteLater();
     delete m_Layout;
 }
 
 void AboutVoid::Build()
 {
-    /* Base Layout */
     m_Layout = new QVBoxLayout(this);
 
     QHBoxLayout* buttonLayout = new QHBoxLayout;
     QGridLayout* detailsLayout = new QGridLayout;
 
-    /* VOID Logo */
+    // VOID Logo
     m_VoidLabel = new QLabel;
-    QImage logo(":resources/images/VOID_Logo_900x200.png");
+    QImage logo(":resources/images/VOID_Logo_Full.png");
     m_VoidLabel->setPixmap(QPixmap::fromImage(logo.scaledToWidth(400, Qt::SmoothTransformation)));
 
-    /* --------------------------------------------- */
+    // ---------------------------------------------
     m_LogoSeparator = new QFrame;
     m_LogoSeparator->setFrameShape(QFrame::HLine);
     m_LogoSeparator->setFrameShadow(QFrame::Raised);
     m_LogoSeparator->setLineWidth(2);
     m_LogoSeparator->setMidLineWidth(3);
 
-    /* Description */
     m_About = new QLabel("About VOID");
 
     QFont f;
@@ -69,13 +66,10 @@ void AboutVoid::Build()
     m_Description->setWordWrap(true);
     m_Description->setMaximumWidth(600);
 
-    /* Details */
-    /* Font for header labels */
     QFont header;
     header.setPixelSize(12);
     header.setBold(true);
 
-    /* Details */
     m_AuthorHeader = new QLabel("Author: ");
     m_AuthorHeader->setFont(header);
     m_Author = new QLabel(AUTHOR);
@@ -107,30 +101,26 @@ void AboutVoid::Build()
     detailsLayout->addWidget(m_GithubHeader, 3, 0, Qt::AlignLeft);
     detailsLayout->addWidget(new QLabel(GITHUB, this), 3, 1);
 
-    /* --------------------------------------------- */
+    // ---------------------------------------------
     m_ButtonSeparator = new QFrame;
     m_ButtonSeparator->setFrameShape(QFrame::HLine);
     m_ButtonSeparator->setFrameShadow(QFrame::Raised);
     m_ButtonSeparator->setLineWidth(2);
     m_ButtonSeparator->setMidLineWidth(3);
 
-    /* Buttons */
     m_OkButton = new QPushButton("&Close");
 
     buttonLayout->addStretch(1);
     buttonLayout->addWidget(m_OkButton);
 
-    /* Add to the Layout */
     m_Layout->addWidget(m_VoidLabel);
     m_Layout->addWidget(m_LogoSeparator);
     m_Layout->addWidget(m_About);
     m_Layout->addWidget(m_Description);
 
-    /* Spacing */
+    /// Spacing
     m_Layout->addStretch(1);
     m_Layout->addLayout(detailsLayout);
-
-    /* Spacing */
     m_Layout->addStretch(1);
     m_Layout->addWidget(m_ButtonSeparator);
     m_Layout->addLayout(buttonLayout);

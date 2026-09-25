@@ -1,4 +1,4 @@
-# ![VOID](images/VOID_Logo_900x200.png)
+# [<img src="images/VOID_Logo_Full.svg" width="745"/>](../images/VoidPlayerBasic.png)
 VOID is a player, a growing review system.
 
 This project is a media player designed for playback and management of visual media files.
