@@ -134,6 +134,8 @@ if (QT_MAJOR_VERSION EQUAL 6)
         FILES
             # Icons
             ../images/VOID_Logo.svg
+            ../images/VOID_Logo_Full.svg
+            ../images/VOID_Logo_Full.png
             ../images/VOID_Logo_900x200.png
             ../icons/icon_add.svg
             ../icons/icon_adjust.svg
