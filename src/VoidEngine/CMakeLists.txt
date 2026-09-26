@@ -96,6 +96,7 @@ target_link_libraries(
     VoidRenderer
     VoidScriptEditor
     VoidSequencer
+    VoidSpreadsheet
     VoidTimeline
     VoidToolbox
     VoidUndo

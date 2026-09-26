@@ -53,6 +53,9 @@ add_subdirectory(VoidScriptEditor)
 # Sequence timeline view
 add_subdirectory(VoidSequencer)
 
+# Sequencer Spreadsheet view
+add_subdirectory(VoidSpreadsheet)
+
 # Player Timeslider
 add_subdirectory(VoidTimeline)
 
@@ -205,6 +208,7 @@ install(TARGETS
     VoidRenderer
     VoidScriptEditor
     VoidSequencer
+    VoidSpreadsheet
     VoidTimeline
     VoidToolbox
     VoidEngine
