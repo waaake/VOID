@@ -124,7 +124,6 @@ private: /* Methods */
 
 class VOID_API EntityProxyModel : public QSortFilterProxyModel
 {
-    Q_OBJECT
 public:
     explicit EntityProxyModel(QObject* parent = nullptr);
 
