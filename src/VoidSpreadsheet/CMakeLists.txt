@@ -3,7 +3,11 @@ set(SOURCES
     Spreadsheet.cpp
     SpreadsheetWidget.cpp
 
+    Delegates/ColorBoxDelegate.cpp
+    Delegates/StatusDelegate.cpp
+
     Models/Spreadsheet.cpp
+
     Views/Spreadsheet.cpp
 )
 
