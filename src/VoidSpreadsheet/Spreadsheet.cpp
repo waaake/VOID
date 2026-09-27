@@ -41,7 +41,7 @@ void Spreadsheet::Setup()
     });
 
     /// View
-    connect(m_Sheet, &SpreadsheetTable::itemSelected, this, [this](const SharedTrackItem& item) -> void
+    connect(m_Sheet, &SpreadsheetTable::itemSelectionChanged, this, [this]() -> void
     {
         m_Context->SelectionModel()->Select(m_Sheet->SelectedItems());
     });
