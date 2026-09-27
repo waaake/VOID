@@ -11,6 +11,7 @@ VOID_NAMESPACE_OPEN
 
 SequenceItemsModel::SequenceItemsModel(QObject* parent)
     : QAbstractItemModel(parent)
+    , m_Timekeeper(Timekeeper::Instance())
 {
 }
 
@@ -32,25 +33,38 @@ int SequenceItemsModel::rowCount(const QModelIndex& parent) const
 
 int SequenceItemsModel::columnCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : 9;
+    return parent.isValid() ? 0 : 11;
 }
 
 QVariant SequenceItemsModel::data(const QModelIndex& index, int role) const
 {
-    if (index.isValid() && index.row() < static_cast<int>(m_Items.size()) && role == Qt::DisplayRole)
+    if (index.isValid() && index.row() < static_cast<int>(m_Items.size()))
     {
         const SharedTrackItem& item = m_Items[index.row()];
-        switch (index.column())
+        if (role == Qt::DisplayRole)
         {
-            case 0: return index.row();
-            case 1: return item->Name().c_str();
-            case 2: return item->Track()->Name().c_str();
-            case 3: return static_cast<int>(item->SourceIn());
-            case 4: return static_cast<int>(item->SourceOut());
-            case 5: return static_cast<int>(item->TimelineIn());
-            case 6: return static_cast<int>(item->TimelineOut());
-            case 7: return QString("-");
-            case 8: return 0;
+            switch (index.column())
+            {
+                case 0  : return index.row();
+                case 1  : return QVariant();
+                case 2  : return item->Name().c_str();
+                case 3  : return QVariant();
+                case 4  : return item->Track()->Name().c_str();
+                case 5  : return m_Timekeeper.DisplayFrame(item->SourceIn()).c_str();
+                case 6  : return m_Timekeeper.DisplayFrame(item->SourceOut()).c_str();
+                case 7  : return m_Timekeeper.DisplayFrame(item->TimelineIn()).c_str();
+                case 8  : return m_Timekeeper.DisplayFrame(item->TimelineOut()).c_str();
+                case 9  : return item->Version().c_str();
+                case 10 : return item->NumAvailableVersions();
+            }
+        }
+        else if (role == static_cast<int>(Roles::Color))
+        {
+            return QVariant(item->Color());
+        }
+        else if (role == static_cast<int>(Roles::Status))
+        {
+            return item->Linked();
         }
     }
 
@@ -68,15 +82,17 @@ QVariant SequenceItemsModel::headerData(int section, Qt::Orientation orientation
     {
         switch (section)
         {
-            case 0: return "Index";
-            case 1: return "Name";
-            case 2: return "Track";
-            case 3: return "Src In";
-            case 4: return "Src Out";
-            case 5: return "Dst In";
-            case 6: return "Dst Out";
-            case 7: return "Version";
-            case 8: return "Num Versions";
+            case 0  : return "Index";
+            case 1  : return "Status";
+            case 2  : return "Name";
+            case 3  : return "Color";
+            case 4  : return "Track";
+            case 5  : return "Src In";
+            case 6  : return "Src Out";
+            case 7  : return "Dst In";
+            case 8  : return "Dst Out";
+            case 9  : return "Version";
+            case 10 : return "Num Versions";
         }
     }
     return QVariant();
@@ -127,17 +143,20 @@ bool SequenceItemsProxyModel::lessThan(const QModelIndex& left, const QModelInde
 
     switch (column)
     {
-        case 0:
-        case 1:
-        case 2:
+        case 2  :
+        case 4  :
+        case 5  :
+        case 6  :
+        case 7  :
+        case 8  :
+        case 9  :
             return ldata.toString() < rdata.toString();
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
+        case 0  :
+        case 10 :
             return ldata.toInt() < rdata.toInt();
+        case 1  :
+        case 3  :
+            return QSortFilterProxyModel::lessThan(left, right);
     }
 
     return false;

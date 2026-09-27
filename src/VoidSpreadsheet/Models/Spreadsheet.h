@@ -11,25 +11,14 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidObjects/Sequence/Sequence.h"
+#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
 class SequenceItemsModel : public QAbstractItemModel
 {
-// public:
-//     enum class Roles
-//     {
-//         Event,
-//         Name,
-//         Track,
-//         SrcIn,
-//         SrcOut,
-//         DstIn,
-//         DstOut,
-//         Version,
-//         NumVersions,
-//         Status,
-//     };
+public:
+    enum class Roles { Color = Qt::UserRole + 1001, Status };
 public:
     explicit SequenceItemsModel(QObject* parent = nullptr);
 
@@ -50,6 +39,7 @@ public:
 private:
     std::vector<SharedTrackItem> m_Items;
     SharedPlaybackSequence m_Sequence;
+    const Timekeeper& m_Timekeeper;
 
 private:
     void Reset();
