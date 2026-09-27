@@ -302,7 +302,10 @@ const FloatImage PlaybackTrack::Image(v_frame_t frame)
 void PlaybackTrack::ClearCache()
 {
     for (SharedTrackItem& item: m_Items)
-        item->GetMedia()->ClearCache();
+    {
+        if (item->Linked())
+            item->GetMedia()->ClearCache();
+    }
 }
 
 void PlaybackTrack::ClearCache(v_frame_t frame)
