@@ -154,16 +154,46 @@ void VoidBase::drawControl(ControlElement element, const QStyleOption* option, Q
             painter->fillRect(tab->rect.adjusted(0, 0, 0, -2), tabColor);
 
             // Text
-            QRect textRect = subElementRect(SE_TabBarTabText, tab, widget);
-            QColor textColor = tab->state & State_Selected ? option->palette.color(QPalette::WindowText) : option->palette.color(QPalette::WindowText).darker(150);
-            painter->setPen(textColor);
-            painter->drawText(textRect, Qt::AlignCenter, tab->text);
+            painter->setPen(tab->state & State_Selected ? option->palette.color(QPalette::WindowText) : option->palette.color(QPalette::WindowText).darker(150));
+            painter->drawText(subElementRect(SE_TabBarTabText, tab, widget), Qt::AlignCenter, tab->text);
 
             // /* Outer Border */
             // painter->setPen(QPen(Qt::black, 1));
             // painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
 
             painter->restore();
+            break;
+        }
+
+        case CE_Header:
+        {
+            const QStyleOptionHeader* header = qstyleoption_cast<const QStyleOptionHeader*>(option);
+            if (!header) break;
+
+            painter->save();
+
+            /// Base
+            painter->setPen(QPen(Qt::black));
+            painter->setBrush(option->palette.color(QPalette::Dark).lighter(120));
+            painter->drawRect(header->rect);
+
+            /// Text
+            painter->setPen(option->palette.color(QPalette::WindowText));
+            painter->drawText(subElementRect(SE_HeaderLabel, header, widget), Qt::AlignCenter, header->text);
+            painter->restore();
+
+            /// Sort indicator
+            if (header->sortIndicator != QStyleOptionHeader::None)
+            {
+                QStyleOption arrow;
+                arrow.initFrom(widget);
+                arrow.palette = header->palette;
+
+                arrow.rect = subElementRect(SE_HeaderArrow, header, widget);
+                QStyle::PrimitiveElement primitive = header->sortIndicator == QStyleOptionHeader::SortUp ? PE_IndicatorArrowUp : PE_IndicatorArrowDown;
+
+                drawPrimitive(primitive, &arrow, painter, widget);
+            }
             break;
         }
         // case CE_ShapedFrame:
@@ -220,12 +250,12 @@ void VoidDark::polish(QPalette& palette)
 {
     palette.setColor(QPalette::Window, QColor(40, 40, 40));
     palette.setColor(QPalette::WindowText, QColor(190, 190, 190));
-    palette.setColor(QPalette::Base, QColor(43, 43, 43));
-    palette.setColor(QPalette::AlternateBase, QColor(30, 30, 30));
+    palette.setColor(QPalette::Base, QColor(48, 48, 48));
+    palette.setColor(QPalette::AlternateBase, QColor(62, 62, 62));
     palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
     palette.setColor(QPalette::ToolTipText, Qt::black);
     palette.setColor(QPalette::Text, QColor(190, 190, 190));
-    palette.setColor(QPalette::Button, QColor(48, 48, 48));
+    palette.setColor(QPalette::Button, QColor(54, 54, 54));
     palette.setColor(QPalette::ButtonText, QColor(190, 190, 190));
     palette.setColor(QPalette::BrightText, Qt::red);
     palette.setColor(QPalette::Link, QColor(42, 130, 218));
@@ -350,19 +380,22 @@ void VoidGray::polish(QPalette& palette)
     palette.setColor(QPalette::Window, QColor(57, 57, 57));
     palette.setColor(QPalette::Base, QColor(66, 66, 66));
     palette.setColor(QPalette::AlternateBase, QColor(51, 51, 51));
+    palette.setColor(QPalette::Mid, QColor(35, 35, 35));
     palette.setColor(QPalette::Dark, QColor(35, 35, 35));
-    palette.setColor(QPalette::Light, QColor(80, 80, 80));
-    palette.setColor(QPalette::Midlight, QColor(70, 70, 70));
+    palette.setColor(QPalette::Light, QColor(50, 50, 50));
+    palette.setColor(QPalette::Midlight, QColor(40, 40, 40));
+    palette.setColor(QPalette::Shadow, Qt::black);
 
     palette.setColor(QPalette::WindowText, QColor(190, 190, 190));
     palette.setColor(QPalette::Text, QColor(220, 220, 220));
     palette.setColor(QPalette::ButtonText, QColor(210, 210, 210));
     palette.setColor(QPalette::BrightText, QColor(255, 255, 255));
-    palette.setColor(QPalette::ToolTipText, QColor(230, 230, 230));
+    palette.setColor(QPalette::ToolTipText, Qt::black);
+    palette.setColor(QPalette::PlaceholderText, QColor(150, 150, 150));
     palette.setColor(QPalette::Disabled, QPalette::Text, QColor(140, 140, 140));
 
-    palette.setColor(QPalette::Button, QColor(91, 91, 91));
-    palette.setColor(QPalette::ToolTipBase, QColor(60, 60, 60));
+    palette.setColor(QPalette::Button, QColor(75, 75, 75));
+    palette.setColor(QPalette::ToolTipBase, QColor(250, 250, 200));
 
     palette.setColor(QPalette::Link, QColor(90, 150, 250));
     palette.setColor(QPalette::Highlight, QColor(255, 152, 20));
