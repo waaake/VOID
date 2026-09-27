@@ -46,6 +46,7 @@ public:
 
     std::vector<SharedMediaClip> AvailableVersions(const std::string& name) const { return m_Media->AvailableVersions(name); }
     std::unordered_set<int> AvailableVersionNumbers(const std::string& name) const { return m_Media->AvailableVersionNumbers(name); }
+    int NumAvailableVersions(const std::string& name) const { return m_Media->NumAvailableVersions(name); }
     const std::vector<SharedMediaClip>& MediaClips() const { return m_Media->MediaClips(); }
     const std::vector<SharedPlaybackSequence>& Sequences() const { return m_Media->Sequences(); }
     bool AddMedia(MediaStruct&& mstruct);
