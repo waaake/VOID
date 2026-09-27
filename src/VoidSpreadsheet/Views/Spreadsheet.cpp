@@ -66,12 +66,18 @@ void SpreadsheetTable::Setup()
     m_Proxy->setSourceModel(m_Model);
     setModel(m_Proxy);
 
+    /// Attribs
     setAlternatingRowColors(true);
     setShowGrid(false);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSortingEnabled(true);
     verticalHeader()->setDefaultSectionSize(20);
-    horizontalHeader()->setMinimumHeight(26);
+
+    QHeaderView* header = horizontalHeader();
+    header->setMinimumHeight(26);
+
+    /// Column setup
+    header->setStretchLastSection(true);
 
     /// Custom Delegates
     setItemDelegateForColumn(1, new LinkStatusDelegate(this));
