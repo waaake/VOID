@@ -25,6 +25,10 @@ public:
 
 signals:
     void itemSelected(const SharedTrackItem&);
+    void itemSelectionChanged();
+
+protected:
+    void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
 
 private:
     SequenceItemsModel* m_Model;

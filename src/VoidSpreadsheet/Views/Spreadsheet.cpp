@@ -1,8 +1,13 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QHeaderView>
+
 /* Internal */
 #include "Spreadsheet.h"
+#include "VoidSpreadsheet/Delegates/ColorBoxDelegate.h"
+#include "VoidSpreadsheet/Delegates/StatusDelegate.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -33,7 +38,7 @@ std::vector<SharedTrackItem> SpreadsheetTable::SelectedItems() const
     std::vector<SharedTrackItem> items;
     const QModelIndexList selected = selectedIndexes();
     items.resize(selected.size());
-    // for (const QModelIndex& index : )
+
     std::transform(
         selected.begin(),
         selected.end(),
@@ -47,6 +52,12 @@ std::vector<SharedTrackItem> SpreadsheetTable::SelectedItems() const
     return items;
 }
 
+void SpreadsheetTable::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+{
+    QTableView::selectionChanged(selected, deselected);
+    emit itemSelectionChanged();
+}
+
 void SpreadsheetTable::Setup()
 {
     m_Model = new SequenceItemsModel;
@@ -58,11 +69,13 @@ void SpreadsheetTable::Setup()
     setAlternatingRowColors(true);
     setShowGrid(false);
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    setSortingEnabled(true);
+    verticalHeader()->setDefaultSectionSize(20);
+    horizontalHeader()->setMinimumHeight(26);
 
-    // connect(this, &QTableView::clicked, this, [this](const QModelIndex& index) -> void
-    // {
-    //     emit itemSelected(m_Model->Item(m_Proxy->mapToSource(index)));
-    // });
+    /// Custom Delegates
+    setItemDelegateForColumn(1, new LinkStatusDelegate(this));
+    setItemDelegateForColumn(3, new ColorBoxDelegate(this));
 }
 
 VOID_NAMESPACE_CLOSE
