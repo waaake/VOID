@@ -101,11 +101,11 @@ QVariant SequenceItemsModel::headerData(int section, Qt::Orientation orientation
 void SequenceItemsModel::ResetSequence(const SharedPlaybackSequence& sequence)
 {
     if (m_Sequence)
-        disconnect(m_Sequence.get(), &PlaybackSequence::updated, this, nullptr);
+        Disconnect(m_Sequence.get());
 
     m_Sequence = sequence;
     Reset();
-    connect(m_Sequence.get(), &PlaybackSequence::updated, this, &SequenceItemsModel::Reset);
+    Connect(m_Sequence.get());
 }
 
 SharedTrackItem SequenceItemsModel::Item(const QModelIndex& index) const
@@ -120,6 +120,27 @@ void SequenceItemsModel::Reset()
     beginResetModel();
     m_Items = m_Sequence->VideoTrackItems();
     endResetModel();
+}
+
+void SequenceItemsModel::UpdateItem(const SharedTrackItem& item)
+{
+    auto it = std::find(m_Items.begin(), m_Items.end(), item);
+    if (it == m_Items.end()) return;
+
+    int row = static_cast<int>(std::distance(m_Items.begin(), it));
+    emit dataChanged(index(row, 0), index(row, columnCount()));
+}
+
+void SequenceItemsModel::Connect(PlaybackSequence* sequence)
+{
+    connect(sequence, &PlaybackSequence::internalUpdated, this, &SequenceItemsModel::Reset);
+    connect(sequence, &PlaybackSequence::itemUpdated, this, &SequenceItemsModel::UpdateItem);
+}
+
+void SequenceItemsModel::Disconnect(PlaybackSequence* sequence)
+{
+    disconnect(sequence, &PlaybackSequence::internalUpdated, this, nullptr);
+    disconnect(sequence, &PlaybackSequence::itemUpdated, this, nullptr);
 }
 
 /// SequenceItemsProxyModel

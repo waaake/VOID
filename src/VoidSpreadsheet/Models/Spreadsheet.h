@@ -43,6 +43,9 @@ private:
 
 private:
     void Reset();
+    void UpdateItem(const SharedTrackItem& item);
+    void Connect(PlaybackSequence* sequence);
+    void Disconnect(PlaybackSequence* sequence);
 };
 
 class SequenceItemsProxyModel : public QSortFilterProxyModel
