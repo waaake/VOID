@@ -418,7 +418,7 @@ bool PlaybackTrack::MoveItem(const SharedTrackItem& item, v_frame_t frame)
     if (m_Items.Move(item, frame))
     {
         ResetRange();
-        emit itemMoved(item->TimelineRange(), old);
+        emit itemMoved(item->TimelineRange(), old, item);
         return true;
     }
 
@@ -431,7 +431,7 @@ bool PlaybackTrack::OffsetItem(const SharedTrackItem& item, int offset)
     if (m_Items.Offset(item, offset))
     {
         ResetRange();
-        emit itemMoved(item->TimelineRange(), old);
+        emit itemMoved(item->TimelineRange(), old, item);
         return true;
     }
 
@@ -692,6 +692,8 @@ void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
      */
     m_Duration = (end - start) + static_cast<int>(inclusive); // inclusive is bool so will be casted 0 or 1
     emit rangeChanged(m_StartFrame, m_EndFrame);
+
+    VOID_LOG_INFO("RRRRR: {0} - {1}", m_StartFrame, m_EndFrame);
 }
 
 
@@ -718,7 +720,10 @@ void PlaybackTrack::ConnectItem(const SharedTrackItem& item)
     TrackItem* ti = item.get();
     connect(ti, &TrackItem::updated, this, [this, item]() -> void { emit itemUpdated(item); });
     connect(ti, &TrackItem::stateChanged, this, [this, item]() -> void { emit itemStateChanged(item); });
-    connect(ti, &TrackItem::rangeChanged, this, &PlaybackTrack::itemRangeChanged);
+    connect(ti, &TrackItem::rangeChanged, this, [this, item](const MFrameRange& updated, const MFrameRange& previous) -> void
+    {
+        emit itemRangeChanged(updated, previous, item);
+    });
     connect(ti, &TrackItem::effectUpdated, this, [this, item]() -> void { emit itemEffectUpdated(item); });
     connect(ti, &TrackItem::effectRemoved, this, [this, item]() -> void { emit itemEffectRemoved(item); });
 }
