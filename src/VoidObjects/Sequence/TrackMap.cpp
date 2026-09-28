@@ -146,6 +146,18 @@ bool TrackMap::Move(const SharedTrackItem& item, int frame)
     }
 
     item->Move(frame);
+
+    /// This is slightly more expensive than initially thought
+    /// Every move should also update the vector such that the moved track item now is at
+    /// an index in which it's range sits correctly as the rest
+
+    // To make things a bit better, we try to sort only the range from current item's placement
+    // to the point where we have a track item just higher than it
+    // We already know the item that's just lesser than the current item's 
+
+    /// Should not be a case where we can't find the item as we just sorted that :D
+    auto cit = std::find(m_Items.begin(), m_Items.end(), item);
+    Sort(static_cast<int>(cit - m_Items.begin()), static_cast<int>(it - m_Items.begin()));
     return true;
 }
 
@@ -171,6 +183,32 @@ bool TrackMap::Offset(const SharedTrackItem& item, int offset)
 
     item->Offset(offset);
     return true;
+}
+
+void TrackMap::Sort()
+{
+    std::sort(m_Items.begin(), m_Items.end(), [](const SharedTrackItem& _a, const SharedTrackItem& _b) -> bool
+    {
+        return _a->TimelineIn() < _b->TimelineIn();
+    });
+}
+
+void TrackMap::Sort(int start, int end)
+{
+    /// +1 incremented on the end to include the last element
+    if (end < start)
+    {
+        std::sort(m_Items.begin() + end, m_Items.begin() + start + 1, [](const SharedTrackItem& _a, const SharedTrackItem& _b) -> bool
+        {
+            return _a->TimelineIn() < _b->TimelineIn();
+        });
+        return;
+    }
+
+    std::sort(m_Items.begin() + start, m_Items.begin() + end + 1, [](const SharedTrackItem& _a, const SharedTrackItem& _b) -> bool
+    {
+        return _a->TimelineIn() < _b->TimelineIn();
+    });
 }
 
 VOID_NAMESPACE_CLOSE

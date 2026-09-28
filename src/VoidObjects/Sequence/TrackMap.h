@@ -30,6 +30,7 @@ typedef std::shared_ptr<PlaybackTrack> SharedPlaybackTrack;
  * Insertion at the end O(1)
  * Insertion in between O(log n)
  * Accessing an item is O(log n)
+ * Moving an item is O(k log k) where k is known at the time of sorting calculated from the end - start index receiving the change
  * 
  */
 class VOID_API TrackMap
@@ -75,6 +76,10 @@ public:
 
 private:
     std::vector<SharedTrackItem> m_Items;
+
+private:
+    void Sort();
+    void Sort(int start, int end);
 };
 
 VOID_NAMESPACE_CLOSE
