@@ -21,6 +21,7 @@ TrackItem::TrackItem(QObject* parent)
     , m_TimelineOut(0)
     , m_SourceIn(0)
     , m_SourceOut(0)
+    , m_NumVersions(-1)
     , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
@@ -38,6 +39,7 @@ TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t en
     , m_TimelineOut(end)
     , m_SourceIn(media->FirstFrame())
     , m_SourceOut(media->LastFrame())
+    , m_NumVersions(-1)
     , m_Enabled(true)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
@@ -61,7 +63,6 @@ TrackItem::TrackItem(const TrackItem& other)
     , m_SourceOut(other.m_SourceOut)
     , m_Enabled(other.m_Enabled)
 {
-
 }
 
 TrackItem& TrackItem::operator=(const TrackItem& other)
@@ -145,6 +146,25 @@ void TrackItem::Unlink()
 {
     m_Media.reset();
     emit updated();
+}
+
+std::string TrackItem::Version() const
+{
+    return m_Media ? m_Media->Tokens().version : "";
+}
+
+int TrackItem::NumAvailableVersions()
+{
+    if (m_Media)
+    {
+        if (m_NumVersions < 0)
+        {
+            const ElementTokens& tokens = m_Media->Tokens();
+            m_NumVersions = Project()->NumAvailableVersions(tokens.name);
+        }
+        return m_NumVersions;
+    }
+    return 0;
 }
 
 bool TrackItem::VersionUp()

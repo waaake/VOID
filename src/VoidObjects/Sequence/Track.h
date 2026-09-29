@@ -167,8 +167,8 @@ signals: /* Signals Denoting actions in the Track */
     void itemAboutToBeRemoved(const SharedTrackItem&);
     void itemsAboutToBeRemoved(const std::vector<SharedTrackItem>&);
     void itemUpdated(const SharedTrackItem&);
-    void itemMoved(const MFrameRange& current, const MFrameRange& previous);
-    void itemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
+    void itemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
+    void itemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
     void itemStateChanged(const SharedTrackItem& item);
     void itemRemoved();
     void itemEffectAdded(const SharedTrackItem&, Effect*);

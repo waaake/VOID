@@ -118,6 +118,9 @@ signals: /* Signals denoting actions in the seqeuence */
     void trackRemoved();
     void cleared();
     // void updated();
+    void internalUpdated();
+    void itemUpdated(const SharedTrackItem&);
+    void itemsUpdated(const std::vector<SharedTrackItem>&);
     void nameChanged();
     void rangeChanged(int start, int end);
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);
@@ -147,8 +150,8 @@ private: /* Methods */
     void UpdateBuffer();
     void UpdateBuffer(const MFrameRange& range);
     // void HandleNewItem(const SharedTrackItem& item);
-    void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous);
-    void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous);
+    void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
+    void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
     void HandleTrackStateChanged(const SharedPlaybackTrack& track);
     void HandleItemUpdated(const SharedTrackItem& item);
     void HandleItemsUpdated(const std::vector<SharedTrackItem>& items);

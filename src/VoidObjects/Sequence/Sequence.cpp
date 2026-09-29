@@ -687,7 +687,7 @@ void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
 //     UpdateBuffer(item->TimelineRange());
 // }
 
-void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameRange& previous)
+void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item)
 {
     // Item was moved slightly i.e offsetted
     if (current.Overlaps(previous))
@@ -699,29 +699,38 @@ void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameR
         UpdateBuffer(previous);
         UpdateBuffer(current);
     }
+
+    emit itemUpdated(item);
 }
 
-void PlaybackSequence::HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous)
+void PlaybackSequence::HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item)
 {
     UpdateBuffer(current.HeadDiff(previous));
     UpdateBuffer(current.TailDiff(previous));
+
+    emit itemUpdated(item);
 }
 
 void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
 {
     for (const SharedTrackItem& item : track->Items())
         UpdateBuffer(item->TimelineRange());
+
+    emit itemsUpdated(track->Items());
 }
 
 void PlaybackSequence::HandleItemUpdated(const SharedTrackItem& item)
 {
     UpdateBuffer(item->TimelineRange());
+    emit internalUpdated();
 }
 
 void PlaybackSequence::HandleItemsUpdated(const std::vector<SharedTrackItem>& items)
 {
     if (items.size())
         UpdateBuffer(MFrameRange(items.front()->TimelineIn(), items.back()->TimelineOut()));
+    
+    emit internalUpdated();
 }
 
 void PlaybackSequence::HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect)

@@ -28,6 +28,7 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence);
     void ClearSequence();
     SharedPlaybackSequence ActiveSequence() const { return m_Context.Sequence(); }
+    SequencerContext* Context() { return &m_Context; }
 
     void AddTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);

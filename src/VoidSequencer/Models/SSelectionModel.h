@@ -19,7 +19,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class SSelectionModel : public QObject
+class VOID_API SSelectionModel : public QObject
 {
     Q_OBJECT
 public:

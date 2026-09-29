@@ -24,6 +24,7 @@
 #include "VoidMediaPlayer/Media/MediaQueue.h"
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
 #include "VoidSequencer/Sequencer.h"
+#include "VoidSpreadsheet/Spreadsheet.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -54,6 +55,7 @@ enum class Component
     MediaQueue,
     TaskQueue,
     Sequencer,
+    Spreadsheet
 };
 
 class WorkspaceManager : public MainWindow
@@ -85,6 +87,7 @@ private: /* Members */
     MediaQueue* m_MediaQueue;
     TaskView* m_TaskQueue;
     SequencerTimeline* m_Sequencer;
+    Spreadsheet* m_Spreadsheet;
 
     QShortcut* m_DeleteShortcut;
     Workspace m_Current;

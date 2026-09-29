@@ -135,6 +135,9 @@ void MoveTrackItemCommand::undo()
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
         track->MoveItem(item, m_Previous);
+
+        // Since the item has been moved, based on the new frame, the index may or may not be the same
+        m_ItemIndex = item->Index();
     }
 }
 
@@ -143,7 +146,13 @@ bool MoveTrackItemCommand::Redo()
     if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         SharedTrackItem item = track->ItemAt(m_ItemIndex);
-        return track->MoveItem(item, m_Requested);
+        if (track->MoveItem(item, m_Requested))
+        {
+            // Since the item has been moved, based on the new frame, the index may or may not be the same
+            // Best to query the internal item index again so that the undo works correctly
+            m_ItemIndex = item->Index();
+            return true;
+        }
     }
 
     return false;

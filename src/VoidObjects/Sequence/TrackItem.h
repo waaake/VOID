@@ -59,6 +59,9 @@ public:
     bool Linked() const { return (bool)m_Media; }
     void Unlink();
 
+    std::string Version() const;
+    int NumAvailableVersions();
+
     bool VersionUp();
     bool VersionDown();
     bool SetLatestAvailableVersion();
@@ -146,8 +149,8 @@ public:
     void SetSourceIn(v_frame_t frame);
     void SetSourceOut(v_frame_t frame);
 
-    v_frame_t HeadHandle() const { return m_SourceIn - m_Media->FirstFrame(); }
-    v_frame_t TailHandle() const { return m_Media->LastFrame() - (m_SourceIn + (m_TimelineOut - m_TimelineIn)); }
+    v_frame_t HeadHandle() const { return m_Media ? m_SourceIn - m_Media->FirstFrame() : 0; }
+    v_frame_t TailHandle() const { return m_Media ? m_Media->LastFrame() - (m_SourceIn + (m_TimelineOut - m_TimelineIn)) : 0; }
 
     void TrimHead(int handle);
     void TrimTail(int handle);
@@ -222,6 +225,7 @@ protected:
     v_frame_t m_SourceIn;
     v_frame_t m_SourceOut;
 
+    int m_NumVersions;
     bool m_Enabled;
 
 private:

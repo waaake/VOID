@@ -41,6 +41,7 @@ WorkspaceManager::~WorkspaceManager()
     m_MediaQueue->deleteLater();
     m_TaskQueue->deleteLater();
     m_Sequencer->deleteLater();
+    m_Spreadsheet->deleteLater();
 }
 
 void WorkspaceManager::QueueTask(Task* task)
@@ -80,6 +81,8 @@ void WorkspaceManager::Init()
 
     // Sequencer
     m_Sequencer = new SequencerTimeline(_PlayerBridge.TimeController());
+    m_Spreadsheet = new Spreadsheet;
+    m_Spreadsheet->SetContext(m_Sequencer->Context());
 
     manager.RegisterDock(m_MediaLister, "Media View");
     manager.RegisterDock(_PlayerBridge.ActivePlayer(), "Viewer");
@@ -90,6 +93,7 @@ void WorkspaceManager::Init()
     manager.RegisterDock(m_MediaQueue, "Media Queue");
     manager.RegisterDock(m_TaskQueue, "Task Queue");
     manager.RegisterDock(m_Sequencer, "Sequencer");
+    manager.RegisterDock(m_Spreadsheet, "Spreadsheet");
 
     // Docker
     m_Splitter = new DockSplitter(Qt::Horizontal, this);
@@ -170,7 +174,12 @@ void WorkspaceManager::Switch(const Workspace& workspace)
         //     m_Splitter->AddPane(static_cast<int>(Component::Properties));
         //     break;
         case Workspace::EDITING:
-            m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
+            // m_Splitter->AddPane(static_cast<int>(Component::MediaLister));
+            m_Splitter->AddSplitPane(
+                static_cast<int>(Component::MediaLister),
+                static_cast<int>(Component::Spreadsheet),
+                Qt::Vertical
+            );
             m_Splitter->AddSplitPane(
                 static_cast<int>(Component::Viewer),
                 static_cast<int>(Component::Sequencer),

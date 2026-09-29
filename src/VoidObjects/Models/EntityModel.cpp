@@ -383,6 +383,18 @@ std::unordered_set<int> EntityModel::AvailableVersionNumbers(const std::string& 
     return versions;
 }
 
+int EntityModel::NumAvailableVersions(const std::string& name) const
+{
+    int available = 0;
+    for (auto& media : m_Media)
+    {
+        if (media->Tokens().Similar(name))
+            ++available;
+    }
+
+    return available;
+}
+
 // void EntityModel::Update()
 // {
 //     if (m_Media.empty())

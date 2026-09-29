@@ -100,6 +100,7 @@ public:
     const std::vector<SharedPlaybackSequence>& Sequences() const { return m_Sequences; }
     std::vector<SharedMediaClip> AvailableVersions(const std::string& name) const;
     std::unordered_set<int> AvailableVersionNumbers(const std::string& name) const;
+    int NumAvailableVersions(const std::string& name) const;
 
     void ReserveMedia(std::size_t size) { m_Media.reserve(size); }
     void ReserveSequences(std::size_t size) { m_Sequences.reserve(size); }
@@ -124,7 +125,6 @@ private: /* Methods */
 
 class VOID_API EntityProxyModel : public QSortFilterProxyModel
 {
-    Q_OBJECT
 public:
     explicit EntityProxyModel(QObject* parent = nullptr);
 
