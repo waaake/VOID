@@ -55,6 +55,7 @@ if (WIN32)
         ../VoidRenderer/Renderer.h
         ../VoidRenderer/VoidRenderer.h
         ../VoidSequencer/Sequencer.h
+        ../VoidSequencer/Models/SSelectionModel.h
         ../VoidToolbox/Editor/Properties.h
         ../VoidTimeline/Timeline.h
         ../VoidTimeline/TimelineController.h
