@@ -230,6 +230,11 @@ void SequencerController::CreateAudioTrack(const SharedPlaybackSequence& sequenc
     _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::TrackType::AUDIO));
 }
 
+void SequencerController::CreateTrack(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type)
+{
+    _MediaBridge.PushCommand(new CreateTrackCommand(sequence, type));
+}
+
 void SequencerController::RemoveTracks(const std::unordered_set<SharedPlaybackTrack>& tracks)
 {
     QUndoStack* stack = _MediaBridge.UndoStack();
