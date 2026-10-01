@@ -30,7 +30,9 @@ void SequencerContextMenu::Build()
 
     /// New Menu
     m_NewMenu = new QMenu("New", this);
+    m_AddAudioTrackAction = new QAction("Add Audio Track", m_NewMenu);
     m_AddVideoTrackAction = new QAction("Add Video Track", m_NewMenu);
+    m_NewMenu->addAction(m_AddAudioTrackAction);
     m_NewMenu->addAction(m_AddVideoTrackAction);
 
     /// Edit Menu
@@ -181,7 +183,14 @@ void SequencerContextMenu::Build()
 void SequencerContextMenu::Connect()
 {
     /// New
-    connect(m_AddVideoTrackAction, &QAction::triggered, this, &SequencerContextMenu::createTrackRequested);
+    connect(m_AddVideoTrackAction, &QAction::triggered, this, [this]() -> void
+    {
+        emit createTrackRequested(Sequence::TrackType::VIDEO);
+    });
+    connect(m_AddAudioTrackAction, &QAction::triggered, this, [this]() -> void
+    {
+        emit createTrackRequested(Sequence::TrackType::AUDIO);
+    });
 
     /// Edit
     connect(m_CutAction, &QAction::triggered, this, &SequencerContextMenu::cutSelectionRequested);
@@ -218,7 +227,7 @@ void SequencerContextMenu::Connect()
 
     /// Editorial
     connect(m_DisableAction, &QAction::triggered, this, &SequencerContextMenu::disableRequested);
-    connect(m_RippleDeleteAction, &QAction::triggered, this, &SequencerContextMenu::rippleDeleteRequested); 
+    connect(m_RippleDeleteAction, &QAction::triggered, this, &SequencerContextMenu::rippleDeleteRequested);
     connect(m_RazorAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(false); });
     connect(m_RazorAllAction, &QAction::triggered, this, [this]() -> void { emit razorRequested(true); });
 }
