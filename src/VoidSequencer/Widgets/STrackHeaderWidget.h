@@ -17,6 +17,7 @@
 VOID_NAMESPACE_OPEN
 
 class SequencerContext;
+class BaseWidget;
 
 class STrackHeaderWidget : public QWidget, public IWidget
 {
@@ -25,7 +26,7 @@ public:
     explicit STrackHeaderWidget(SequencerContext* context, QWidget* parent = nullptr);
 
     void DeleteSelected() override;
-    void AddTrack(const SharedPlaybackTrack& track);
+    void AddTrack(const SharedPlaybackTrack& track, const QPoint& position);
     void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
 
@@ -36,6 +37,7 @@ signals:
     void deleteSelectionRequested();
 
 private:
+    BaseWidget* m_ContentArea;
     QVBoxLayout* m_Layout;
     QVBoxLayout* m_ScrollLayout;
     QScrollArea* m_ScrollArea;
