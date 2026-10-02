@@ -56,7 +56,7 @@ void SequencerTimeline::ClearSequence()
     m_Context.Geometry()->ResetSequence();
     m_VersionSwitcher->ResetModel(nullptr);
 
-    m_TrackHeader->Clear();
+    m_Header->Clear();
     m_View->Clear();
     m_View->AddPlayhead();
 
@@ -65,14 +65,25 @@ void SequencerTimeline::ClearSequence()
 
 void SequencerTimeline::AddTrack(const SharedPlaybackTrack& track)
 {
-    m_View->AddTrack(track);
-    m_TrackHeader->AddTrack(track);
+    track->Type() == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+}
+
+void SequencerTimeline::AddVideoTrack(const SharedPlaybackTrack& track)
+{
+    m_View->AddVideoTrack(track);
+    m_Header->AddVideoTrack(track);
+}
+
+void SequencerTimeline::AddAudioTrack(const SharedPlaybackTrack& track)
+{
+    m_View->AddAudioTrack(track);
+    m_Header->AddAudioTrack(track);
 }
 
 void SequencerTimeline::RemoveTrack(const SharedPlaybackTrack& track)
 {
-    m_TrackHeader->RemoveTrack(track);
     m_View->RemoveTrack(track);
+    m_Header->RemoveTrack(track);
 }
 
 void SequencerTimeline::RazorAt(v_frame_t frame)
@@ -117,12 +128,12 @@ void SequencerTimeline::SetHorizontalScale(float factor)
 
 void SequencerTimeline::Refresh()
 {
-    m_TrackHeader->Clear();
+    m_Header->Clear();
     m_View->Clear();
     m_View->AddPlayhead();
 
     for (const SharedPlaybackTrack& track : m_Context.Sequence()->VideoTracks())
-        AddTrack(track);
+        AddVideoTrack(track);
 }
 
 void SequencerTimeline::FitAll()
@@ -177,7 +188,7 @@ void SequencerTimeline::ResetFit()
 void SequencerTimeline::Connect()
 {
     // Sub-Components
-    connect(m_TrackHeader, &STrackHeaderWidget::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
+    // connect(m_TrackHeader, &STrackHeaderWidget::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
 
     // PlayerBridge
     connect(&_PlayerBridge, &PlayerBridge::playComponentUpdated, this, [this](const PlayerBuffer::PlayableComponent& component) -> void
@@ -204,13 +215,13 @@ void SequencerTimeline::Connect()
     {
         m_Menu->Show(mapToGlobal(position));
     });
-    connect(m_View->verticalScrollBar(), &QScrollBar::valueChanged, m_TrackHeader, &STrackHeaderWidget::SetScroll);
+    connect(m_View->verticalScrollBar(), &QScrollBar::valueChanged, m_Header, &SHeaderView::SetScroll);
     connect(m_View, &STimelineView::sequenceCutRequested, this, static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt));
 
     // Menu
-    connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this]() -> void
+    connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this](const Sequence::TrackType& type) -> void
     {
-        m_Context.Controller()->CreateVideoTrack(m_Context.Sequence());
+        m_Context.Controller()->CreateTrack(m_Context.Sequence(), type);
     });
     connect(m_Menu, &SequencerContextMenu::cutSelectionRequested, this, &SequencerTimeline::Cut);
     connect(m_Menu, &SequencerContextMenu::copySelectionRequested, this, &SequencerTimeline::Copy);
@@ -313,7 +324,7 @@ void SequencerTimeline::ToggleItemState()
 
 void SequencerTimeline::UpdateAll()
 {
-    m_TrackHeader->Update();
+    m_Header->Refresh();
     m_View->Refresh();
 }
 

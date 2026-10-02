@@ -31,6 +31,8 @@ public:
     SequencerContext* Context() { return &m_Context; }
 
     void AddTrack(const SharedPlaybackTrack& track);
+    void AddVideoTrack(const SharedPlaybackTrack& track);
+    void AddAudioTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);
     void RazorAt(v_frame_t frame);
     void RazorAt(const SharedPlaybackSequence& sequence, v_frame_t frame);

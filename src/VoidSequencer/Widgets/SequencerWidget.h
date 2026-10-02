@@ -14,12 +14,12 @@
 #include "Definition.h"
 #include "SMenu.h"
 #include "STimelineRuler.h"
-#include "STrackHeaderWidget.h"
 #include "SToolbar.h"
 #include "SVersionSwitcher.h"
 #include "VoidSequencer/SContext.h"
 #include "VoidSequencer/STimelineGeometry.h"
 #include "VoidSequencer/Graphics/STimelineView.h"
+#include "VoidSequencer/Graphics/SHeaderView.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -40,8 +40,8 @@ protected:
     QSlider* m_HZoomSlider;
     SToolbar* m_Toolbar;
     STimelineRuler* m_Ruler;
-    STrackHeaderWidget* m_TrackHeader;
     STimelineView* m_View;
+    SHeaderView* m_Header;
     SVersionSwitcher* m_VersionSwitcher;
     SequencerContextMenu* m_Menu;
 
