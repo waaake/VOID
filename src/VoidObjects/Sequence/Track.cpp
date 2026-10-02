@@ -692,8 +692,6 @@ void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
      */
     m_Duration = (end - start) + static_cast<int>(inclusive); // inclusive is bool so will be casted 0 or 1
     emit rangeChanged(m_StartFrame, m_EndFrame);
-
-    VOID_LOG_INFO("RRRRR: {0} - {1}", m_StartFrame, m_EndFrame);
 }
 
 
