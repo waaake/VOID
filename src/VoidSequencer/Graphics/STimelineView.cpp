@@ -42,9 +42,14 @@ void STimelineView::AddPlayhead()
     m_Scene->AddPlayhead();
 }
 
-void STimelineView::AddTrack(const SharedPlaybackTrack& track)
+void STimelineView::AddVideoTrack(const SharedPlaybackTrack& track)
 {
-    m_Scene->AddTrack(track);
+    m_Scene->AddVideoTrack(track);
+}
+
+void STimelineView::AddAudioTrack(const SharedPlaybackTrack& track)
+{
+    m_Scene->AddAudioTrack(track);
 }
 
 void STimelineView::RemoveTrack(const SharedPlaybackTrack& track)
