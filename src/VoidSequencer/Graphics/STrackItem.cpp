@@ -69,7 +69,6 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     if (m_Item->Linked())
     {
         const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
-
         painter->setPen(QPen(itemcol, 1));
         painter->setBrush(Background(option));
         painter->drawRect(boundingRect());
@@ -86,10 +85,8 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
             : m_Item->Name().c_str()
         );
 
-        if (width < 40)
-            return;
-
-        if (SharedMediaClip media = m_Item->GetMedia())
+        const SharedMediaClip media = m_Item->GetMedia();
+        if (media && (width > 40 && m_Item->Type() == Sequence::Type::VIDEO))
         {
             QPixmap thumbnail = media->Thumbnail();
             QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
