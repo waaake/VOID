@@ -15,21 +15,20 @@ VOID_NAMESPACE_OPEN
 SPlayheadItem::SPlayheadItem(SequencerContext* context, QGraphicsItem* item)
     : STimelineItem(context, item)
 {
-    m_BoundingRect = QRectF(-1, 0, 2, Sequencer::SceneHeight);
+    m_BoundingRect = QRectF(-1, 0, 2, Sequencer::SceneHeight * 2);
+    setPos(m_Context->Geometry()->FrameToSceneX(m_Context->Controller()->CurrentFrame()), -Sequencer::SceneHeight);
     setZValue(Sequencer::ZPlayheadItem);
 }
 
 void SPlayheadItem::Update()
 {
-    prepareGeometryChange();
-    setPos(m_Context->Geometry()->FrameToSceneX(m_Context->Controller()->CurrentFrame()), 0.0);
+    setPos(m_Context->Geometry()->FrameToSceneX(m_Context->Controller()->CurrentFrame()), -Sequencer::SceneHeight);
     update();
 }
 
 void SPlayheadItem::Update(v_frame_t frame)
 {
-    prepareGeometryChange();
-    setPos(m_Context->Geometry()->FrameToSceneX(frame), 0.0);
+    setPos(m_Context->Geometry()->FrameToSceneX(frame), -Sequencer::SceneHeight);
     update();
 }
 
