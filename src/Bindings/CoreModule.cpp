@@ -232,7 +232,7 @@ void BindCore(py::module_& m)
         .def("has_media", &PlaybackSequence::HasMedia)
         .def(
             "create_track",
-            static_cast<SharedPlaybackTrack (PlaybackSequence::*)(const Sequence::TrackType&)>(&PlaybackSequence::CreateTrack),
+            static_cast<SharedPlaybackTrack (PlaybackSequence::*)(const Sequence::Type&)>(&PlaybackSequence::CreateTrack),
             py::arg("type"),
             py::return_value_policy::reference
         )
@@ -243,7 +243,7 @@ void BindCore(py::module_& m)
         )
         .def(
             "remove_track",
-            static_cast<void (PlaybackSequence::*)(int, const Sequence::TrackType&)>(&PlaybackSequence::RemoveTrack),
+            static_cast<void (PlaybackSequence::*)(int, const Sequence::Type&)>(&PlaybackSequence::RemoveTrack),
             py::arg("index"),
             py::arg("type")
         )
@@ -255,9 +255,9 @@ void BindCore(py::module_& m)
         .def("restore_snapshot", &PlaybackSequence::RestoreSnapshot, py::arg("index"))
         .def("video_track_items", &PlaybackSequence::VideoTrackItems, py::return_value_policy::reference_internal);
 
-    py::enum_<Sequence::TrackType>(m, "TrackType")
-        .value("VIDEO", Sequence::TrackType::VIDEO)
-        .value("AUDIO", Sequence::TrackType::AUDIO)
+    py::enum_<Sequence::Type>(m, "Type")
+        .value("VIDEO", Sequence::Type::VIDEO)
+        .value("AUDIO", Sequence::Type::AUDIO)
         .export_values();
 
     py::class_<PlaybackTrack, SharedPlaybackTrack>(m, "PlaybackTrack")

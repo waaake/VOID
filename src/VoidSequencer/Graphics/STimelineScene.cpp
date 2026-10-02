@@ -67,7 +67,7 @@ void STimelineScene::AddAudioTrack(const SharedPlaybackTrack& track)
 
 void STimelineScene::RemoveTrack(const SharedPlaybackTrack& track)
 {
-    track->Type() == Sequence::TrackType::VIDEO ? RemoveVideoTrack(track) : RemoveAudioTrack(track);
+    track->Type() == Sequence::Type::VIDEO ? RemoveVideoTrack(track) : RemoveAudioTrack(track);
 }
 
 void STimelineScene::Clear()

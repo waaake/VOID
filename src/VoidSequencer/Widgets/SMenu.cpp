@@ -185,11 +185,11 @@ void SequencerContextMenu::Connect()
     /// New
     connect(m_AddVideoTrackAction, &QAction::triggered, this, [this]() -> void
     {
-        emit createTrackRequested(Sequence::TrackType::VIDEO);
+        emit createTrackRequested(Sequence::Type::VIDEO);
     });
     connect(m_AddAudioTrackAction, &QAction::triggered, this, [this]() -> void
     {
-        emit createTrackRequested(Sequence::TrackType::AUDIO);
+        emit createTrackRequested(Sequence::Type::AUDIO);
     });
 
     /// Edit

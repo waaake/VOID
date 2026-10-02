@@ -110,7 +110,7 @@ void STrackHeaderItem::Resize(int index)
         0,
         0,
         Sequencer::TrackHeaderWidth,
-        m_Track->Type() == Sequence::TrackType::VIDEO
+        m_Track->Type() == Sequence::Type::VIDEO
             ? m_Context->Geometry()->VideoTrackHeight(index)
             : m_Context->Geometry()->AudioTrackHeight(index)
     );
@@ -125,7 +125,7 @@ QColor STrackHeaderItem::Background(const QPalette& palette) const
     if (m_Context->SelectionModel()->IsSelected(m_Track))
         return palette.color(QPalette::Highlight).darker(150);
     
-    return m_Track->Type() == Sequence::TrackType::VIDEO ? palette.color(QPalette::Dark) : QColor(45, 55, 45);
+    return m_Track->Type() == Sequence::Type::VIDEO ? palette.color(QPalette::Dark) : QColor(45, 55, 45);
 }
 
 VOID_NAMESPACE_CLOSE

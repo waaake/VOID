@@ -31,7 +31,7 @@ private:
     PlaybackSequence* m_Sequence;
     v_frame_t m_Frame;
     int m_TrackIndex, m_MediaIndex, m_ItemIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class CreateTrackItemsCommand : public VoidUndoCommand
@@ -59,7 +59,7 @@ private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex, m_ItemIndex;
     v_frame_t m_Requested, m_Previous;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class MoveItemToTrackCommand : public VoidUndoCommand
@@ -74,7 +74,7 @@ private:
     v_frame_t m_PreviousFrame, m_RequestedFrame;
     int m_PreviousTrackIndex, m_RequestedTrackIndex;
     int m_PreviousItemIndex, m_MovedItemIndex;
-    Sequence::TrackType m_Type;
+    Sequence::Type m_Type;
 };
 
 class OffsetItemCommand : public VoidUndoCommand
@@ -88,7 +88,7 @@ private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex, m_ItemIndex;
     int m_Offset;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class SetTrackItemColorCommand : public VoidUndoCommand
@@ -104,7 +104,7 @@ private:
     QColor m_Previous;
     PlaybackSequence* m_Sequence;
     int m_TrackIndex, m_ItemIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
     bool m_Reset;
 };
 
@@ -118,7 +118,7 @@ public:
 private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class ToggleTrackStateCommand : public VoidUndoCommand
@@ -131,7 +131,7 @@ public:
 private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class ToggleTrackItemStateCommand : public VoidUndoCommand
@@ -145,7 +145,7 @@ private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_ItemIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class ToggleTimelineEffectCommand : public VoidUndoCommand
@@ -160,7 +160,7 @@ private:
     int m_TrackIndex;
     int m_ItemIndex;
     int m_EffectIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class ToggleTrackEffectCommand : public VoidUndoCommand
@@ -174,19 +174,19 @@ private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_EffectIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class CreateTrackCommand : public VoidUndoCommand
 {
 public:
-    CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent = nullptr);
+    CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::Type& type, QUndoCommand* parent = nullptr);
     void undo() override;
     bool Redo() override;
 
 private:
     std::weak_ptr<PlaybackSequence> m_Sequence;
-    Sequence::TrackType m_Type;
+    Sequence::Type m_Type;
     int m_Index;
 };
 
@@ -200,7 +200,7 @@ public:
 private:
     std::string m_TrackData;
     PlaybackSequence* m_Sequence;
-    Sequence::TrackType m_Type;
+    Sequence::Type m_Type;
     int m_TrackIndex;
 };
 
@@ -216,7 +216,7 @@ private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_ItemIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class DeleteTimelineEffectCommand : public VoidUndoCommand
@@ -232,7 +232,7 @@ private:
     int m_TrackIndex;
     int m_ItemIndex;
     int m_EffectIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class DeleteTrackEffectCommand : public VoidUndoCommand
@@ -247,7 +247,7 @@ private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_EffectIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class CreateTimelineEffectCommand : public VoidUndoCommand
@@ -264,7 +264,7 @@ private:
     int m_TrackIndex;
     int m_ItemIndex;
     int m_EffectIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class CreateTrackEffectCommand : public VoidUndoCommand
@@ -280,7 +280,7 @@ private:
     PlaybackSequence* m_Sequence;
     int m_TrackIndex;
     int m_EffectIndex;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
 };
 
 class RazorTrackCommand : public VoidUndoCommand
@@ -293,7 +293,7 @@ public:
 
 private:
     PlaybackSequence* m_Sequence;
-    Sequence::TrackType m_Type;
+    Sequence::Type m_Type;
     int m_TrackIndex;
     v_frame_t m_Frame;
 };
@@ -319,7 +319,7 @@ public:
 
 private:
     PlaybackSequence* m_Sequence;
-    Sequence::TrackType m_Type;
+    Sequence::Type m_Type;
     int m_TrackIndex;
     v_frame_t m_Frame;
 };
@@ -333,7 +333,7 @@ public:
 
 private:
     PlaybackSequence* m_Sequence;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
     int m_TrackIndex;
     int m_ItemIndex;
     int m_Offset;
@@ -349,7 +349,7 @@ public:
 
 private:
     PlaybackSequence* m_Sequence;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
     int m_TrackIndex;
     int m_ItemIndex;
     int m_Handle;
@@ -364,7 +364,7 @@ public:
 
 private:
     PlaybackSequence* m_Sequence;
-    Sequence::TrackType m_TrackType;
+    Sequence::Type m_TrackType;
     int m_TrackIndex;
     int m_ItemIndex;
     int m_Handle;

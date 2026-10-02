@@ -24,7 +24,7 @@ public:
 
 signals:
     /// New
-    void createTrackRequested(const Sequence::TrackType&);
+    void createTrackRequested(const Sequence::Type&);
 
     /// Edit
     void cutSelectionRequested();

@@ -40,18 +40,18 @@ struct VOID_API Context
     int trackitemIdx { -1 };
     int effectIdx { -1 };
     v_frame_t frame { 0 };
-    TrackType trackType { TrackType::VIDEO };
+    Sequence::Type trackType { Sequence::Type::VIDEO };
     Context()
         : type(Type::SEQUENCE), project(nullptr), sequenceIdx(-1) {}
     Context(Core::Project* p, int seq)
         : type(Type::SEQUENCE), project(p), sequenceIdx(seq) {}
-    Context(Core::Project* p, int seq, int track, const TrackType& ty, v_frame_t frame = 0)
+    Context(Core::Project* p, int seq, int track, const Sequence::Type& ty, v_frame_t frame = 0)
         : type(Type::TRACK), project(p), sequenceIdx(seq), trackIdx(track), trackType(ty), frame(frame) {}
-    Context(Core::Project* p, int seq, int track, const TrackType& ty, int trackitem, v_frame_t frame = 0)
+    Context(Core::Project* p, int seq, int track, const Sequence::Type& ty, int trackitem, v_frame_t frame = 0)
         : type(Type::TRACK_ITEM), project(p), sequenceIdx(seq), trackIdx(track), trackitemIdx(trackitem), frame(frame), trackType(ty) {}
     Context(Core::Project* p, int seq, int track, int effect, v_frame_t frame = 0)
-        : type(Type::TRACK_EFFECT), project(p), sequenceIdx(seq), trackIdx(track), effectIdx(effect), frame(frame), trackType(TrackType::VIDEO) {}
-    Context(Core::Project* p, int seq, int track, const TrackType& ty, int trackitem, int effect, v_frame_t frame = 0)
+        : type(Type::TRACK_EFFECT), project(p), sequenceIdx(seq), trackIdx(track), effectIdx(effect), frame(frame), trackType(Sequence::Type::VIDEO) {}
+    Context(Core::Project* p, int seq, int track, const Sequence::Type& ty, int trackitem, int effect, v_frame_t frame = 0)
         : type(Type::EFFECT), project(p), sequenceIdx(seq), trackIdx(track), trackitemIdx(trackitem), effectIdx(effect), frame(frame), trackType(ty) {}
     ResolvedContext Resolve() const;
     ResolvedContext Resolve(const Type& type) const;
@@ -76,7 +76,7 @@ struct VOID_API ResolvedContext
     SharedTrackItem trackItem { nullptr };
     Effect* effect { nullptr };
     v_frame_t frame;
-    TrackType tracktype;
+    Sequence::Type tracktype;
     Context::Type type;
 };
 

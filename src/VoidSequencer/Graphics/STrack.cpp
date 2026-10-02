@@ -29,7 +29,7 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
         0,
         0,
         Sequencer::SceneWidth,
-        m_Track->Type() == Sequence::TrackType::VIDEO
+        m_Track->Type() == Sequence::Type::VIDEO
             ? m_Context->Geometry()->VideoTrackHeight(index)
             : m_Context->Geometry()->AudioTrackHeight(index)
     );
@@ -73,7 +73,7 @@ void STrack::Update()
         0,
         0,
         Sequencer::SceneWidth,
-        m_Track->Type() == Sequence::TrackType::VIDEO
+        m_Track->Type() == Sequence::Type::VIDEO
             ? m_Context->Geometry()->VideoTrackHeight(index)
             : m_Context->Geometry()->AudioTrackHeight(index)
     );

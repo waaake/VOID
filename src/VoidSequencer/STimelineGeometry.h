@@ -22,7 +22,7 @@ public:
     QRectF TrackRect(int index) const;
     QRectF TrackHeaderRect(int index) const;
 
-    int TrackTop(int index, const Sequence::TrackType& type);
+    int TrackTop(int index, const Sequence::Type& type);
     int AudioTrackTop(int index);
     int VideoTrackTop(int index);
 

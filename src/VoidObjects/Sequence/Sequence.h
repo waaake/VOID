@@ -50,16 +50,16 @@ public:
     void ClearCache();
     void ClearCache(v_frame_t frame);
 
-    SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type);
-    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type);
-    SharedPlaybackTrack CreateTrack(const Sequence::TrackType& type, int index);
-    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::TrackType& type, int index);
+    SharedPlaybackTrack CreateTrack(const Sequence::Type& type);
+    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::Type& type);
+    SharedPlaybackTrack CreateTrack(const Sequence::Type& type, int index);
+    SharedPlaybackTrack CreateTrack(const std::string& name, const Sequence::Type& type, int index);
     void AddVideoTrack(const SharedPlaybackTrack& track);
     void AddAudioTrack(const SharedPlaybackTrack& track);
     void AddVideoTrack(const SharedPlaybackTrack& track, int index);
     void AddAudioTrack(const SharedPlaybackTrack& track, int index);
     void RemoveTrack(const SharedPlaybackTrack& track);
-    void RemoveTrack(int index, const Sequence::TrackType& type);
+    void RemoveTrack(int index, const Sequence::Type& type);
 
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
@@ -73,7 +73,7 @@ public:
 
     const SharedPlaybackTrack& VideoTrackAt(std::size_t index) const { return m_VideoTracks.at(index); }
     const SharedPlaybackTrack& AudioTrackAt(std::size_t index) const { return m_AudioTracks.at(index); }
-    const SharedPlaybackTrack& TrackAt(std::size_t index, const Sequence::TrackType& type) const;
+    const SharedPlaybackTrack& TrackAt(std::size_t index, const Sequence::Type& type) const;
     const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
     const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
 

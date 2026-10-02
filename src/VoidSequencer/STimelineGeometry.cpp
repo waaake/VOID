@@ -34,9 +34,9 @@ QRectF STimelineGeometry::TrackHeaderRect(int index) const
     return QRect(0, y, Sequencer::TrackHeaderWidth, VideoTrackHeight(index));
 }
 
-int STimelineGeometry::TrackTop(int index, const Sequence::TrackType& type)
+int STimelineGeometry::TrackTop(int index, const Sequence::Type& type)
 {
-    return type == Sequence::TrackType::AUDIO ? AudioTrackTop(index) : VideoTrackTop(index);
+    return type == Sequence::Type::AUDIO ? AudioTrackTop(index) : VideoTrackTop(index);
 }
 
 int STimelineGeometry::AudioTrackTop(int index)

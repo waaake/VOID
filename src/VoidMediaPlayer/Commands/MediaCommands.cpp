@@ -100,7 +100,7 @@ void AddSequenceCommand::undo()
 bool AddSequenceCommand::Redo()
 {
     SharedPlaybackSequence sequence = std::make_shared<PlaybackSequence>(m_Project);
-    sequence->CreateTrack(Sequence::TrackType::VIDEO);
+    sequence->CreateTrack(Sequence::Type::VIDEO);
     m_Project->Add(sequence);
     return true;
 }

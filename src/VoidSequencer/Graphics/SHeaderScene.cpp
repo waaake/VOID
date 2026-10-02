@@ -48,7 +48,7 @@ void SHeaderScene::AddAudioTrack(const SharedPlaybackTrack& track)
 
 void SHeaderScene::RemoveTrack(const SharedPlaybackTrack& track)
 {
-    track->Type() == Sequence::TrackType::VIDEO ? RemoveVideoTrack(track) : RemoveAudioTrack(track);
+    track->Type() == Sequence::Type::VIDEO ? RemoveVideoTrack(track) : RemoveAudioTrack(track);
 }
 
 void SHeaderScene::Clear()

@@ -65,7 +65,7 @@ void SequencerTimeline::ClearSequence()
 
 void SequencerTimeline::AddTrack(const SharedPlaybackTrack& track)
 {
-    track->Type() == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    track->Type() == Sequence::Type::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
 }
 
 void SequencerTimeline::AddVideoTrack(const SharedPlaybackTrack& track)
@@ -219,7 +219,7 @@ void SequencerTimeline::Connect()
     connect(m_View, &STimelineView::sequenceCutRequested, this, static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt));
 
     // Menu
-    connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this](const Sequence::TrackType& type) -> void
+    connect(m_Menu, &SequencerContextMenu::createTrackRequested, this, [this](const Sequence::Type& type) -> void
     {
         m_Context.Controller()->CreateTrack(m_Context.Sequence(), type);
     });

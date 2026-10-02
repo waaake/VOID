@@ -222,15 +222,15 @@ STrack* SequencerController::TrackAt(const QPointF& position) const
 
 void SequencerController::CreateVideoTrack(const SharedPlaybackSequence& sequence)
 {
-    _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::TrackType::VIDEO));
+    _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::Type::VIDEO));
 }
 
 void SequencerController::CreateAudioTrack(const SharedPlaybackSequence& sequence)
 {
-    _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::TrackType::AUDIO));
+    _MediaBridge.PushCommand(new CreateTrackCommand(sequence, Sequence::Type::AUDIO));
 }
 
-void SequencerController::CreateTrack(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type)
+void SequencerController::CreateTrack(const SharedPlaybackSequence& sequence, const Sequence::Type& type)
 {
     _MediaBridge.PushCommand(new CreateTrackCommand(sequence, type));
 }
@@ -263,8 +263,8 @@ void SequencerController::RemoveTrackItems(const std::unordered_set<SharedTrackI
     //     PlaybackTrack* _atrack = _a->Track();
     //     PlaybackTrack* _btrack = _b->Track();
 
-    //     int _atrackidx = _atrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_atrack) : sequence->AudioTrackIndex(_atrack);
-    //     int _btrackidx = _btrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_btrack) : sequence->AudioTrackIndex(_btrack);
+    //     int _atrackidx = _atrack->Type() == Sequence::Type::VIDEO ? sequence->VideoTrackIndex(_atrack) : sequence->AudioTrackIndex(_atrack);
+    //     int _btrackidx = _btrack->Type() == Sequence::Type::VIDEO ? sequence->VideoTrackIndex(_btrack) : sequence->AudioTrackIndex(_btrack);
 
     //     // Sort ascending based on the track index -- item _b belongs to a different track than _a
     //     if (_atrackidx != _btrackidx)
@@ -300,8 +300,8 @@ void SequencerController::RippleRemoveTrackItems(const std::unordered_set<Shared
     //     PlaybackTrack* _atrack = _a->Track();
     //     PlaybackTrack* _btrack = _b->Track();
 
-    //     int _atrackidx = _atrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_atrack) : sequence->AudioTrackIndex(_atrack);
-    //     int _btrackidx = _btrack->Type() == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(_btrack) : sequence->AudioTrackIndex(_btrack);
+    //     int _atrackidx = _atrack->Type() == Sequence::Type::VIDEO ? sequence->VideoTrackIndex(_atrack) : sequence->AudioTrackIndex(_atrack);
+    //     int _btrackidx = _btrack->Type() == Sequence::Type::VIDEO ? sequence->VideoTrackIndex(_btrack) : sequence->AudioTrackIndex(_btrack);
 
     //     // Sort ascending based on the track index -- item _b belongs to a different track than _a
     //     if (_atrackidx != _btrackidx)

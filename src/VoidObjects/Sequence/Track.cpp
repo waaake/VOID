@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
+PlaybackTrack::PlaybackTrack(const Sequence::Type& type, QObject* parent)
     : VoidObject()
     , m_Sequence(reinterpret_cast<PlaybackSequence*>(parent))
     , m_Recent(nullptr)
@@ -351,7 +351,7 @@ Core::Project* PlaybackTrack::Project() const
 int PlaybackTrack::Index() const
 {
     if (const auto& sequence = Sequence())
-        return m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(this) : sequence->AudioTrackIndex(this);
+        return m_Type == Sequence::Type::VIDEO ? sequence->VideoTrackIndex(this) : sequence->AudioTrackIndex(this);
     return -1;
 }
 
@@ -604,7 +604,7 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
     m_Visible = in["visible"].GetInt();
     m_Enabled = in["enabled"].GetInt();
     m_Locked = in["locked"].GetInt();
-    m_Type = static_cast<Sequence::TrackType>(in["track_type"].GetInt());
+    m_Type = static_cast<Sequence::Type>(in["track_type"].GetInt());
 
     const rapidjson::Value::ConstArray trackitems = in["TrackItems"].GetArray();
     m_Items.Reserve(trackitems.Size());
