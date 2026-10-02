@@ -172,6 +172,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
                                         media->FirstFrame() - offset,
                                         media->LastFrame() - offset,
                                         offset,
+                                        m_Type,
                                         this
                                     );
 
@@ -206,6 +207,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t 
                                         media->FirstFrame() - offset,
                                         media->LastFrame() - offset,
                                         offset,
+                                        m_Type,
                                         this
                                     );
 
@@ -247,6 +249,7 @@ std::vector<SharedTrackItem> PlaybackTrack::AddMedia(const std::vector<SharedMed
                                             clip->FirstFrame() - offset,
                                             clip->LastFrame() - offset,
                                             offset,
+                                            m_Type,
                                             this
                                         );
 
@@ -369,7 +372,7 @@ bool PlaybackTrack::RazorAt(v_frame_t frame)
         SharedMediaClip media = item->GetMedia();
         int offset = item->SourceOut() - frame + 1;
 
-        SharedTrackItem nitem = std::make_shared<TrackItem>(media, frame + 1, out, offset, this);
+        SharedTrackItem nitem = std::make_shared<TrackItem>(media, frame + 1, out, offset, m_Type, this);
         nitem->SetSourceIn(item->SourceOut() + 1);
 
         // The requested and the frame where the other item starts
@@ -611,7 +614,7 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
 
     for (unsigned int i = 0; i < trackitems.Size(); ++i)
     {
-        SharedTrackItem item = std::make_shared<TrackItem>(this);
+        SharedTrackItem item = std::make_shared<TrackItem>(m_Type, this);
         item->Deserialize(trackitems[i]);
         AddItem(item);
     }
@@ -646,7 +649,7 @@ void PlaybackTrack::Deserialize(std::istream& in)
 
     for (int i = 0; i < itemCount; ++i)
     {
-        SharedTrackItem item = std::make_shared<TrackItem>(this);
+        SharedTrackItem item = std::make_shared<TrackItem>(m_Type, this);
         item->Deserialize(in);
         AddItem(item);
     }

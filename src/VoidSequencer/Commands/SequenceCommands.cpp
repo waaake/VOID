@@ -525,7 +525,7 @@ void DeleteTrackItemCommand::undo()
     if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         std::istringstream is(m_ItemData, std::ios::binary);
-        SharedTrackItem item = std::make_shared<TrackItem>(track.get());
+        SharedTrackItem item = std::make_shared<TrackItem>(m_TrackType, track.get());
         item->Deserialize(is);
         track->AddItem(item);
     }
