@@ -20,6 +20,7 @@ inline constexpr int TrackSpacing = 2;
 inline constexpr int TrackHeaderWidth = 180;
 inline constexpr int SceneWidth = 20000;
 inline constexpr int SceneHeight = 4000;
+inline constexpr int MinSectionHeight = 200;
 
 inline constexpr double PixelsPerFrame = 2.0;
 

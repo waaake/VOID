@@ -22,12 +22,22 @@ public:
     QRectF TrackRect(int index) const;
     QRectF TrackHeaderRect(int index) const;
 
+    int TrackTop(int index, const Sequence::TrackType& type);
+    int AudioTrackTop(int index);
+    int VideoTrackTop(int index);
+
     int TimelineTop() const { return Sequencer::RulerHeight; }
     // int ContentLeft() const { return Sequencer::TrackHeaderWidth; }
     int ContentLeft() const { return 0; }
     
     int VideoTrackHeight(int index) const;
     int AudioTrackHeight(int index) const;
+
+    int VideoTracksHeight() const;
+    int AudioTracksHeight() const;
+
+    int VideoSectionHeight() const;
+    int AudioSectionHeight() const;
 
     double FrameToX(v_frame_t frame) const { return frame * m_PixelsPerFrame; }
     v_frame_t XToFrame(double x) const { return static_cast<v_frame_t>(x / m_PixelsPerFrame); }
