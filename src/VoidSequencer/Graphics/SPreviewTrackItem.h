@@ -27,7 +27,8 @@ private:
 
 private: /* Methods */
     void CalculateBoundingBox();
-    bool CanDrop() const;
+    // bool CanDrop() const;
+    QColor Color() const;
 };
 
 VOID_NAMESPACE_CLOSE
