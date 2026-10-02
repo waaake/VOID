@@ -30,7 +30,8 @@ public:
     STimelineScene(SequencerContext* context, QObject* parent = nullptr);
     ~STimelineScene();
 
-    void AddTrack(const SharedPlaybackTrack& track);
+    void AddVideoTrack(const SharedPlaybackTrack& track);
+    void AddAudioTrack(const SharedPlaybackTrack& track);
     void RemoveTrack(const SharedPlaybackTrack& track);
     void Clear();
 
@@ -57,7 +58,8 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
 private:
-    std::vector<STrack*> m_Tracks;
+    std::vector<STrack*> m_VTracks;
+    std::vector<STrack*> m_ATracks;
     SequencerContext* m_Context;
     SPlayheadItem* m_Playhead;
     SRazorItem* m_Razorhead;
@@ -66,7 +68,9 @@ private:
     std::vector<SPreviewTrackItem*> m_DraggedItems;
 
 private:
-    int SceneHeight() const;
+    void RemoveVideoTrack(const SharedPlaybackTrack& track);
+    void RemoveAudioTrack(const SharedPlaybackTrack& track);
+    void ResizeScene();
 };
 
 VOID_NAMESPACE_CLOSE

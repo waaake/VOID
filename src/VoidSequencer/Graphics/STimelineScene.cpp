@@ -39,7 +39,7 @@ STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
 {
     // Can now be accessed directly by any other sub-component within the sequencer
     m_Context->Controller()->SetScene(this);
-    setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
+    ResizeScene();
 }
 
 STimelineScene::~STimelineScene()
@@ -47,42 +47,46 @@ STimelineScene::~STimelineScene()
     Clear();
 }
 
-void STimelineScene::AddTrack(const SharedPlaybackTrack& track)
+void STimelineScene::AddVideoTrack(const SharedPlaybackTrack& track)
 {
     STrack* strack = new STrack(track, m_Context);
-    m_Tracks.push_back(strack);
+    m_VTracks.push_back(strack);
     addItem(strack);
 
-    Update();
+    ResizeScene();
+}
+
+void STimelineScene::AddAudioTrack(const SharedPlaybackTrack& track)
+{
+    STrack* strack = new STrack(track, m_Context);
+    m_ATracks.push_back(strack);
+    addItem(strack);
+
+    ResizeScene();
 }
 
 void STimelineScene::RemoveTrack(const SharedPlaybackTrack& track)
 {
-    auto _pred = [track](const STrack* t) -> bool { return track.get() == t->Track().get(); };
-    auto it = std::find_if(m_Tracks.begin(), m_Tracks.end(), _pred);
-
-    if (it == m_Tracks.end())
-        return;
-
-    STrack*& strack = *it;
-    removeItem(strack);
-
-    strack->deleteLater();
-    delete strack;
-    strack = nullptr;
-
-    m_Tracks.erase(it);
+    track->Type() == Sequence::TrackType::VIDEO ? RemoveVideoTrack(track) : RemoveAudioTrack(track);
 }
 
 void STimelineScene::Clear()
 {
-    for (auto& track : m_Tracks)
+    for (auto& track : m_VTracks)
     {
         track->deleteLater();
         delete track;
         track = nullptr;
     }
-    m_Tracks.clear();
+    m_VTracks.clear();
+
+    for (auto& track : m_ATracks)
+    {
+        track->deleteLater();
+        delete track;
+        track = nullptr;
+    }
+    m_ATracks.clear();
 
     if (m_Playhead)
     {
@@ -131,30 +135,36 @@ void STimelineScene::UpdatePlayhead(v_frame_t frame)
 
 void STimelineScene::Update()
 {
-    setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
+    ResizeScene();
 }
 
 void STimelineScene::UpdateItems()
 {
-    setSceneRect(0, 0, Sequencer::SceneWidth, SceneHeight());
+    // ResizeScene();
     m_Playhead->Update();
 
-    for (STrack* track : m_Tracks)
+    for (STrack* track : m_VTracks)
     {
         track->Update();
         track->UpdateItems();
         track->UpdateEffects();
     }
+
+    for (STrack* track : m_ATracks)
+    {
+        track->Update();
+        track->UpdateItems();
+    }
 }
 
 STrack* STimelineScene::TrackAt(int index) const
 {
-    return m_Tracks.at(index);
+    return m_VTracks.at(index);
 }
 
 STrack*& STimelineScene::TrackAt(int index)
 {
-    return m_Tracks.at(index);
+    return m_VTracks.at(index);
 }
 
 void STimelineScene::SelectItems(const QRectF& rect)
@@ -277,9 +287,46 @@ void STimelineScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
     QGraphicsScene::mousePressEvent(event);
 }
 
-int STimelineScene::SceneHeight() const
+void STimelineScene::RemoveVideoTrack(const SharedPlaybackTrack& track)
 {
-    return Sequencer::RulerHeight + m_Tracks.size() * (Sequencer::TrackHeight + Sequencer::TrackSpacing);
+    auto _pred = [track](const STrack* t) -> bool { return track.get() == t->Track().get(); };
+    auto it = std::find_if(m_VTracks.begin(), m_VTracks.end(), _pred);
+    if (it == m_VTracks.end())
+        return;
+
+    STrack*& strack = *it;
+    removeItem(strack);
+
+    strack->deleteLater();
+    delete strack;
+    strack = nullptr;
+
+    m_VTracks.erase(it);
+}
+
+void STimelineScene::RemoveAudioTrack(const SharedPlaybackTrack& track)
+{
+    auto _pred = [track](const STrack* t) -> bool { return track.get() == t->Track().get(); };
+    auto it = std::find_if(m_ATracks.begin(), m_ATracks.end(), _pred);
+    if (it == m_ATracks.end())
+        return;
+
+    STrack*& strack = *it;
+    removeItem(strack);
+
+    strack->deleteLater();
+    delete strack;
+    strack = nullptr;
+
+    m_ATracks.erase(it);
+}
+
+void STimelineScene::ResizeScene()
+{
+    const auto* geo = m_Context->Geometry();
+    int vh = geo->VideoSectionHeight();
+    int ah = geo->AudioSectionHeight();
+    setSceneRect(0, -vh, Sequencer::TrackHeaderWidth, vh + ah);
 }
 
 VOID_NAMESPACE_CLOSE
