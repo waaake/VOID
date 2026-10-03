@@ -328,23 +328,20 @@ SharedPlaybackTrack PlaybackSequence::ActiveVideoTrack() const
             return *it;
     }
 
-    /* None of the tracks of the sequence are active or there are no tracks at all */
+    // None of the tracks of the sequence are active or there are no tracks at all
     return nullptr;
 }
 
 SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
 {
-    // if (m_Recent && m_Recent->InRange(frame))
-        // return m_Recent;
-
-    for (auto& track : m_VideoTracks)
+    for (auto it = m_VideoTracks.rbegin(); it != m_VideoTracks.rend(); ++it)
     {
-        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        const SharedPlaybackTrack& track = *it;
         if (track->IsEmpty() || !track->Enabled())
             continue;
-
-        if ((m_Recent = track->GetTrackItem(frame)))
-            return m_Recent;
+        
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item;
     }
 
     return nullptr;
@@ -352,17 +349,14 @@ SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
 
 SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
 {
-    // if (m_Recent && m_Recent->InRange(frame))
-        // return m_Recent->GetMedia();
-
-    for (auto& track : m_VideoTracks)
+    for (auto it = m_VideoTracks.rbegin(); it != m_VideoTracks.rend(); ++it)
     {
-        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        const SharedPlaybackTrack& track = *it;
         if (track->IsEmpty() || !track->Enabled())
             continue;
-
-        if ((m_Recent = track->GetTrackItem(frame)))
-            return m_Recent->GetMedia();
+        
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item->GetMedia();
     }
 
     return nullptr;
