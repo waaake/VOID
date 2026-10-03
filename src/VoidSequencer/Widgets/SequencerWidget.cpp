@@ -31,13 +31,13 @@ SequencerWidget::~SequencerWidget()
     delete m_Toolbar;
     m_Toolbar = nullptr;
 
-    m_TrackHeader->deleteLater();
-    delete m_TrackHeader;
-    m_TrackHeader = nullptr;
-
     m_View->deleteLater();
     delete m_View;
     m_View = nullptr;
+
+    m_Header->deleteLater();
+    delete m_Header;
+    m_Header = nullptr;
 
     m_Ruler->deleteLater();
     delete m_Ruler;
@@ -69,7 +69,7 @@ void SequencerWidget::wheelEvent(QWheelEvent* event)
 
 void SequencerWidget::Clear()
 {
-    m_TrackHeader->Clear();
+    m_Header->Clear();
     m_View->Clear();
     m_View->AddPlayhead();
 }
@@ -85,14 +85,13 @@ void SequencerWidget::Build()
     grid->setContentsMargins(0, 0, 0, 0);
 
     m_Toolbar = new SToolbar;
-    m_TrackHeader = new STrackHeaderWidget(&m_Context);
-
     m_HZoomSlider = new QSlider(Qt::Horizontal, this);
-    m_HZoomSlider->setFixedHeight(style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2);
+    m_HZoomSlider->setFixedHeight(style()->pixelMetric(QStyle::PM_ScrollBarExtent));
     m_HZoomSlider->setMinimum(1);
     m_HZoomSlider->setMaximum(200);
     m_HZoomSlider->setValue(m_Context.Geometry()->PixelsPerFrame() * 10);
 
+    m_Header = new SHeaderView(&m_Context);
     m_View = new STimelineView(&m_Context);
     m_Ruler = new STimelineRuler(m_View, &m_Context);
 
@@ -100,7 +99,7 @@ void SequencerWidget::Build()
 
     grid->addWidget(m_Ruler, 0, 1);
 
-    grid->addWidget(m_TrackHeader, 1, 0);
+    grid->addWidget(m_Header, 1, 0);
     grid->addWidget(m_HZoomSlider, 2, 0);
     grid->addWidget(m_View, 1, 1, 2, 1);
 

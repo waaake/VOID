@@ -27,10 +27,10 @@ class VOID_API PlaybackTrack : public VoidObject
 {
     Q_OBJECT
 public:
-    explicit PlaybackTrack(const Sequence::TrackType& type, QObject* parent = nullptr);
+    explicit PlaybackTrack(const Sequence::Type& type, QObject* parent = nullptr);
     virtual ~PlaybackTrack();
 
-    const Sequence::TrackType& Type() const { return m_Type; }
+    const Sequence::Type& Type() const { return m_Type; }
 
     void SetName(const std::string& name) { m_Name = name; }
     void SetName(std::string&& name) { m_Name = std::move(name); }
@@ -199,7 +199,7 @@ protected: /* Members */
     bool m_Visible;
     bool m_Enabled;
     bool m_Locked;
-    Sequence::TrackType m_Type;
+    Sequence::Type m_Type;
 
 protected: /* Methods */
     void ResetRange();

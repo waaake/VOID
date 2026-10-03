@@ -29,11 +29,11 @@ STrack::STrack(const SharedPlaybackTrack& track, SequencerContext* context, QGra
         0,
         0,
         Sequencer::SceneWidth,
-        m_Track->Type() == Sequence::TrackType::VIDEO
+        m_Track->Type() == Sequence::Type::VIDEO
             ? m_Context->Geometry()->VideoTrackHeight(index)
             : m_Context->Geometry()->AudioTrackHeight(index)
     );
-    setPos(0, context->Geometry()->TrackRect(index).top());
+    setPos(0, context->Geometry()->TrackTop(index, track->Type()));
 
     BuildItems();
     AddEffects();
@@ -67,13 +67,13 @@ void STrack::Update()
 {
     prepareGeometryChange();
     int index = m_Track->Index();
-    setPos(0, m_Context->Geometry()->TrackRect(index).top());
+    setPos(0, m_Context->Geometry()->TrackTop(index, m_Track->Type()));
     
     m_BoundingRect = QRectF(
         0,
         0,
         Sequencer::SceneWidth,
-        m_Track->Type() == Sequence::TrackType::VIDEO
+        m_Track->Type() == Sequence::Type::VIDEO
             ? m_Context->Geometry()->VideoTrackHeight(index)
             : m_Context->Geometry()->AudioTrackHeight(index)
     );

@@ -2,9 +2,9 @@ set(SOURCES
     Sequencer.cpp
     SController.cpp
     STimelineGeometry.cpp
-    
+
     Commands/SequenceCommands.cpp
-    
+
     Graphics/SHandleItem.cpp
     Graphics/SPlayheadItem.cpp
     Graphics/SPreviewTrackItem.cpp
@@ -15,15 +15,18 @@ set(SOURCES
     Graphics/STimelineView.cpp
     Graphics/STrack.cpp
     Graphics/STrackItem.cpp
-    
+    Graphics/STrackHeader.cpp
+    Graphics/SHeaderScene.cpp
+    Graphics/SHeaderView.cpp
+
     Models/SSelectionModel.cpp
     Models/SHoverModel.cpp
-    
+
     Widgets/SequencerWidget.cpp
     Widgets/SMenu.cpp
     Widgets/STimelineRuler.cpp
-    Widgets/STrackHeader.cpp
-    Widgets/STrackHeaderWidget.cpp
+    # Widgets/STrackHeader.cpp
+    # Widgets/STrackHeaderWidget.cpp
     Widgets/SToolbar.cpp
     Widgets/SVersionSwitcher.cpp
 )

@@ -23,11 +23,13 @@ public:
     void Show(const QPoint& position);
 
 signals:
+    /// New
+    void createTrackRequested(const Sequence::Type&);
+
     /// Edit
     void cutSelectionRequested();
     void copySelectionRequested();
     void pasteRequested(const QPoint&);
-    void createTrackRequested();
     void deleteSelectionRequested();
 
     /// Color
@@ -61,9 +63,11 @@ signals:
 private:
     QPoint m_ExecPosition;
     SequencerContext* m_Context;
-    QAction* m_AddVideoTrackAction;
 
     QMenu* m_NewMenu;
+    QAction* m_AddVideoTrackAction;
+    QAction* m_AddAudioTrackAction;
+
     QMenu* m_EditMenu;
     QAction* m_CutAction;
     QAction* m_CopyAction;

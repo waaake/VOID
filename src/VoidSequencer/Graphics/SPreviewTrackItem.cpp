@@ -10,6 +10,9 @@
 
 VOID_NAMESPACE_OPEN
 
+#define _UNDROPPABLE_COLOR QColor(220, 40, 50)
+#define _AUDIO_ITEM_COLOR QColor(100, 116, 101)
+
 SPreviewTrackItem::SPreviewTrackItem(const SharedTrackItem& item, SequencerContext* context, QGraphicsItem* parent)
     : STimelineItem(context, parent)
     , m_Item(item)
@@ -25,8 +28,7 @@ void SPreviewTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 {
     painter->setRenderHint(QPainter::Antialiasing);
     const int width = boundingRect().width();
-
-    const QColor color = CanDrop() ? m_Item->Color() : QColor(220, 40, 50);
+    const QColor color = Color();
 
     painter->setPen(QPen(color, 1));
     painter->setBrush(color.darker(250));
@@ -36,20 +38,6 @@ void SPreviewTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     painter->setPen(option->palette.color(QPalette::Text));
     painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
-
-    if (width < 40)
-        return;
-
-    QPixmap thumbnail = m_Item->GetMedia()->Thumbnail();
-    QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
-
-    QSizeF size = thumbnail.size();
-    size.scale(thumbRect.size(), Qt::KeepAspectRatio);
-
-    QRectF drawRect(thumbRect.x(), thumbRect.y(), size.width(), size.height());
-    drawRect.moveCenter(thumbRect.center());
-
-    painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
 }
 
 void SPreviewTrackItem::Update()
@@ -73,7 +61,22 @@ void SPreviewTrackItem::CalculateBoundingBox()
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
 }
 
-bool SPreviewTrackItem::CanDrop() const
+// bool SPreviewTrackItem::CanDrop() const
+// {
+//     const QPointF position = pos();
+//     if (STrack* track = m_Context->Controller()->TrackAt(position))
+//     {
+//         if (const SharedPlaybackTrack ptrack = track->Track())
+//         {
+//             v_frame_t start = m_Context->Geometry()->SceneXToFrame(position.x());
+//             return !ptrack->ItemInRange(start, start + m_Item->Duration() - 1);
+//         }
+//     }
+
+//     return false;
+// }
+
+QColor SPreviewTrackItem::Color() const
 {
     const QPointF position = pos();
     if (STrack* track = m_Context->Controller()->TrackAt(position))
@@ -81,11 +84,13 @@ bool SPreviewTrackItem::CanDrop() const
         if (const SharedPlaybackTrack ptrack = track->Track())
         {
             v_frame_t start = m_Context->Geometry()->SceneXToFrame(position.x());
-            return !ptrack->ItemInRange(start, start + m_Item->Duration() - 1);
+            if (ptrack->ItemInRange(start, start + m_Item->Duration() - 1))
+                return _UNDROPPABLE_COLOR;
+            return ptrack->Type() == Sequence::Type::VIDEO ? m_Item->Color() : _AUDIO_ITEM_COLOR;
         }
     }
 
-    return false;
+    return _UNDROPPABLE_COLOR;
 }
 
 VOID_NAMESPACE_CLOSE

@@ -25,6 +25,12 @@ enum class TrackType
     AUDIO
 };
 
+enum class Type
+{
+    VIDEO,
+    AUDIO
+};
+
 } // namespace Sequence
 
 VOID_NAMESPACE_CLOSE

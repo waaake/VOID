@@ -12,7 +12,7 @@
 
 VOID_NAMESPACE_OPEN
 
-PlaybackTrack::PlaybackTrack(const Sequence::TrackType& type, QObject* parent)
+PlaybackTrack::PlaybackTrack(const Sequence::Type& type, QObject* parent)
     : VoidObject()
     , m_Sequence(reinterpret_cast<PlaybackSequence*>(parent))
     , m_Recent(nullptr)
@@ -172,6 +172,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media)
                                         media->FirstFrame() - offset,
                                         media->LastFrame() - offset,
                                         offset,
+                                        m_Type,
                                         this
                                     );
 
@@ -206,6 +207,7 @@ SharedTrackItem PlaybackTrack::AddMedia(const SharedMediaClip& media, v_frame_t 
                                         media->FirstFrame() - offset,
                                         media->LastFrame() - offset,
                                         offset,
+                                        m_Type,
                                         this
                                     );
 
@@ -247,6 +249,7 @@ std::vector<SharedTrackItem> PlaybackTrack::AddMedia(const std::vector<SharedMed
                                             clip->FirstFrame() - offset,
                                             clip->LastFrame() - offset,
                                             offset,
+                                            m_Type,
                                             this
                                         );
 
@@ -351,7 +354,7 @@ Core::Project* PlaybackTrack::Project() const
 int PlaybackTrack::Index() const
 {
     if (const auto& sequence = Sequence())
-        return m_Type == Sequence::TrackType::VIDEO ? sequence->VideoTrackIndex(this) : sequence->AudioTrackIndex(this);
+        return m_Type == Sequence::Type::VIDEO ? sequence->VideoTrackIndex(this) : sequence->AudioTrackIndex(this);
     return -1;
 }
 
@@ -369,7 +372,7 @@ bool PlaybackTrack::RazorAt(v_frame_t frame)
         SharedMediaClip media = item->GetMedia();
         int offset = item->SourceOut() - frame + 1;
 
-        SharedTrackItem nitem = std::make_shared<TrackItem>(media, frame + 1, out, offset, this);
+        SharedTrackItem nitem = std::make_shared<TrackItem>(media, frame + 1, out, offset, m_Type, this);
         nitem->SetSourceIn(item->SourceOut() + 1);
 
         // The requested and the frame where the other item starts
@@ -604,14 +607,14 @@ void PlaybackTrack::Deserialize(const rapidjson::Value& in)
     m_Visible = in["visible"].GetInt();
     m_Enabled = in["enabled"].GetInt();
     m_Locked = in["locked"].GetInt();
-    m_Type = static_cast<Sequence::TrackType>(in["track_type"].GetInt());
+    m_Type = static_cast<Sequence::Type>(in["track_type"].GetInt());
 
     const rapidjson::Value::ConstArray trackitems = in["TrackItems"].GetArray();
     m_Items.Reserve(trackitems.Size());
 
     for (unsigned int i = 0; i < trackitems.Size(); ++i)
     {
-        SharedTrackItem item = std::make_shared<TrackItem>(this);
+        SharedTrackItem item = std::make_shared<TrackItem>(m_Type, this);
         item->Deserialize(trackitems[i]);
         AddItem(item);
     }
@@ -646,7 +649,7 @@ void PlaybackTrack::Deserialize(std::istream& in)
 
     for (int i = 0; i < itemCount; ++i)
     {
-        SharedTrackItem item = std::make_shared<TrackItem>(this);
+        SharedTrackItem item = std::make_shared<TrackItem>(m_Type, this);
         item->Deserialize(in);
         AddItem(item);
     }
@@ -692,8 +695,6 @@ void PlaybackTrack::SetRange(int start, int end, const bool inclusive)
      */
     m_Duration = (end - start) + static_cast<int>(inclusive); // inclusive is bool so will be casted 0 or 1
     emit rangeChanged(m_StartFrame, m_EndFrame);
-
-    VOID_LOG_INFO("RRRRR: {0} - {1}", m_StartFrame, m_EndFrame);
 }
 
 

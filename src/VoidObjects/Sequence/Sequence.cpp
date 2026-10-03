@@ -68,35 +68,35 @@ QPixmap PlaybackSequence::Thumbnail()
     return m_Recent ? m_Recent->Thumbnail() : DefaultThumbnail();
 }
 
-SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type)
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::Type& type)
 {
     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
-    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
     return track;
 }
 
-SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::TrackType& type)
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::Type& type)
 {
     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
     track->SetName(name);
 
-    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
     return track;
 }
 
-SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::TrackType& type, int index)
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::Type& type, int index)
 {
     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
-    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
     return track;
 }
 
-SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::TrackType& type, int index)
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::Type& type, int index)
 {
     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
     track->SetName(name);
 
-    type == Sequence::TrackType::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
     return track;
 }
 
@@ -212,7 +212,7 @@ void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
 {
     emit trackAboutToBeRemoved(track);
     auto _pred = [track] (const SharedPlaybackTrack& t) -> bool { return track.get() == t.get(); };
-    if (track->Type() == Sequence::TrackType::VIDEO)
+    if (track->Type() == Sequence::Type::VIDEO)
         m_VideoTracks.erase(std::remove_if(m_VideoTracks.begin(), m_VideoTracks.end(), _pred), m_VideoTracks.end());
     else
         m_AudioTracks.erase(std::remove_if(m_AudioTracks.begin(), m_AudioTracks.end(), _pred), m_AudioTracks.end());
@@ -220,9 +220,9 @@ void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
     emit trackRemoved();
 }
 
-void PlaybackSequence::RemoveTrack(int index, const Sequence::TrackType& type)
+void PlaybackSequence::RemoveTrack(int index, const Sequence::Type& type)
 {
-    if (type == Sequence::TrackType::VIDEO)
+    if (type == Sequence::Type::VIDEO)
     {
         const SharedPlaybackTrack& track = m_VideoTracks[index];
         emit trackAboutToBeRemoved(track);
@@ -262,9 +262,9 @@ void PlaybackSequence::UpdateRange(int start, int end)
     ResizeBuffer(m_EndFrame - m_StartFrame + 1);
 }
 
-const SharedPlaybackTrack& PlaybackSequence::TrackAt(std::size_t index, const Sequence::TrackType& type) const
+const SharedPlaybackTrack& PlaybackSequence::TrackAt(std::size_t index, const Sequence::Type& type) const
 {
-    return type == Sequence::TrackType::VIDEO ? m_VideoTracks.at(index) : m_AudioTracks.at(index);
+    return type == Sequence::Type::VIDEO ? m_VideoTracks.at(index) : m_AudioTracks.at(index);
 }
 
 int PlaybackSequence::VideoTrackIndex(const PlaybackTrack* track) const
@@ -283,7 +283,7 @@ int PlaybackSequence::AudioTrackIndex(const PlaybackTrack* track) const
 
 int PlaybackSequence::TrackIndex(const PlaybackTrack* track) const
 {
-    return track->Type() == Sequence::TrackType::VIDEO ? VideoTrackIndex(track) : AudioTrackIndex(track);
+    return track->Type() == Sequence::Type::VIDEO ? VideoTrackIndex(track) : AudioTrackIndex(track);
 }
 
 int PlaybackSequence::Index() const
@@ -328,23 +328,20 @@ SharedPlaybackTrack PlaybackSequence::ActiveVideoTrack() const
             return *it;
     }
 
-    /* None of the tracks of the sequence are active or there are no tracks at all */
+    // None of the tracks of the sequence are active or there are no tracks at all
     return nullptr;
 }
 
 SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
 {
-    // if (m_Recent && m_Recent->InRange(frame))
-        // return m_Recent;
-
-    for (auto& track : m_VideoTracks)
+    for (auto it = m_VideoTracks.rbegin(); it != m_VideoTracks.rend(); ++it)
     {
-        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        const SharedPlaybackTrack& track = *it;
         if (track->IsEmpty() || !track->Enabled())
             continue;
-
-        if ((m_Recent = track->GetTrackItem(frame)))
-            return m_Recent;
+        
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item;
     }
 
     return nullptr;
@@ -352,17 +349,14 @@ SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
 
 SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
 {
-    // if (m_Recent && m_Recent->InRange(frame))
-        // return m_Recent->GetMedia();
-
-    for (auto& track : m_VideoTracks)
+    for (auto it = m_VideoTracks.rbegin(); it != m_VideoTracks.rend(); ++it)
     {
-        // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+        const SharedPlaybackTrack& track = *it;
         if (track->IsEmpty() || !track->Enabled())
             continue;
-
-        if ((m_Recent = track->GetTrackItem(frame)))
-            return m_Recent->GetMedia();
+        
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item->GetMedia();
     }
 
     return nullptr;
@@ -567,7 +561,7 @@ void PlaybackSequence::Deserialize(const rapidjson::Value& in)
 
     for (unsigned int i = 0; i < vtracks.Size(); ++i)
     {
-        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO, this);
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::VIDEO, this);
         track->Deserialize(vtracks[i]);
         AddVideoTrack(track);
     }
@@ -577,7 +571,7 @@ void PlaybackSequence::Deserialize(const rapidjson::Value& in)
 
     for (int i = 0; i < atracks.Size(); ++i)
     {
-        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::AUDIO, this);
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::AUDIO, this);
         track->Deserialize(atracks[i]);
         AddAudioTrack(track);
     }
@@ -604,7 +598,7 @@ void PlaybackSequence::Deserialize(std::istream& in)
 
     for (int i = 0; i < vcount; ++i)
     {
-        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::VIDEO, this);
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::VIDEO, this);
         track->Deserialize(in);
         AddVideoTrack(track);
     }
@@ -615,7 +609,7 @@ void PlaybackSequence::Deserialize(std::istream& in)
 
     for (int i = 0; i < acount; ++i)
     {
-        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::TrackType::AUDIO, this);
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::AUDIO, this);
         track->Deserialize(in);
         AddAudioTrack(track);
     }

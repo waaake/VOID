@@ -9,7 +9,7 @@ VOID_NAMESPACE_OPEN
 PlayerBuffer::PlayerBuffer(QObject* parent)
     : QObject(parent)
     , m_Sequence(std::make_shared<PlaybackSequence>())
-    , m_Track(m_Sequence->CreateTrack(Sequence::TrackType::VIDEO))
+    , m_Track(m_Sequence->CreateTrack(Sequence::Type::VIDEO))
     , m_Clip(std::make_shared<MediaClip>())
     , m_Playlist(nullptr)
     , m_Startframe(0)

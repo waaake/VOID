@@ -14,6 +14,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Internal/Descriptors.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Frame.h"
 #include "VoidObjects/VoidObject.h"
@@ -31,8 +32,15 @@ class VOID_API TrackItem : public VoidObject
 {
     Q_OBJECT
 public:
-    TrackItem(QObject* parent = nullptr);
-    TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset = 0, QObject* parent = nullptr);
+    TrackItem(const Sequence::Type& type = Sequence::Type::VIDEO, QObject* parent = nullptr);
+    TrackItem(
+        const SharedMediaClip& media,
+        v_frame_t start,
+        v_frame_t end,
+        v_frame_t offset = 0,
+        const Sequence::Type& type = Sequence::Type::VIDEO,
+        QObject* parent = nullptr
+    );
 
     virtual ~TrackItem();
 
@@ -41,6 +49,8 @@ public:
 
     TrackItem(TrackItem&& other) noexcept;
     TrackItem& operator=(TrackItem&& other) noexcept;
+
+    const Sequence::Type& Type() const { return m_Type; }
 
     /**
      * Update the media on the track item
@@ -227,6 +237,8 @@ protected:
 
     int m_NumVersions;
     bool m_Enabled;
+
+    Sequence::Type m_Type;
 
 private:
     void ResetEffectsRange(const MFrameRange& updated);

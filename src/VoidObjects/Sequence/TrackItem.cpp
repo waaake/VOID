@@ -10,7 +10,7 @@
 
 VOID_NAMESPACE_OPEN
 
-TrackItem::TrackItem(QObject* parent)
+TrackItem::TrackItem(const Sequence::Type& type, QObject* parent)
     : VoidObject()
     , m_Media(nullptr)
     , m_Track(reinterpret_cast<PlaybackTrack*>(parent))
@@ -23,17 +23,18 @@ TrackItem::TrackItem(QObject* parent)
     , m_SourceOut(0)
     , m_NumVersions(-1)
     , m_Enabled(true)
+    , m_Type(type)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
     connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
-TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
+TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, const Sequence::Type& type, QObject* parent)
     : VoidObject()
     , m_Media(media)
     , m_Track(reinterpret_cast<PlaybackTrack*>(parent))
     , m_Name(media->Name())
-    , m_Color(media->Color())
+    , m_Color(type == Sequence::Type::VIDEO ? media->Color() : QColor(100, 116, 101))
     , m_Offset(offset)
     , m_TimelineIn(start)
     , m_TimelineOut(end)
@@ -41,6 +42,7 @@ TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t en
     , m_SourceOut(media->LastFrame())
     , m_NumVersions(-1)
     , m_Enabled(true)
+    , m_Type(type)
 {
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
     connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);

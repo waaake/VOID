@@ -46,6 +46,7 @@ public:
     void UpdateItem(const SharedTrackItem& item);
     void UpdateItems();
 
+    Sequence::Type TrackType() const { return m_Track->Type(); }
     STrackItem* ItemAt(int index) const;
     STrackItem* ItemAt(int index);
     STrackItem* Item(const SharedTrackItem& item) const;

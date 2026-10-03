@@ -69,7 +69,6 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     if (m_Item->Linked())
     {
         const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
-
         painter->setPen(QPen(itemcol, 1));
         painter->setBrush(Background(option));
         painter->drawRect(boundingRect());
@@ -86,10 +85,8 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
             : m_Item->Name().c_str()
         );
 
-        if (width < 40)
-            return;
-
-        if (SharedMediaClip media = m_Item->GetMedia())
+        const SharedMediaClip media = m_Item->GetMedia();
+        if (media && (width > 40 && m_Item->Type() == Sequence::Type::VIDEO))
         {
             QPixmap thumbnail = media->Thumbnail();
             QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
@@ -323,25 +320,27 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         m_Drag.active = false;
 
         v_frame_t frame = m_Context->Geometry()->SceneXToFrame(scenePos().x());
-        STrack* track = m_Context->Controller()->TrackAt(scenePos());
+        STrack* target = m_Context->Controller()->TrackAt(scenePos());
         STrack* current = Track();
+        if (target)
+        {
+            if (target->Locked() || target->IsEffectsTrack() || target->TrackType() != current->TrackType())
+            {
+                Update();
+                return;
+            }
 
-        if (track && (track->Locked() || track->IsEffectsTrack()))
-        {
-            Update();
-            return;
+            if (target == current)
+            {
+                m_Context->Controller()->MoveItem(m_Item, frame);
+            }
+            else
+            {
+                if (m_Context->Controller()->MoveItem(current->Track(), m_Item, target->Index(), frame))
+                    return;
+            }
         }
-
-        // Move the track item to the new track
-        if (track && track != current)
-        {
-            m_Context->Controller()->MoveItem(current->Track(), m_Item, track->Index(), frame);
-        }
-        else
-        {
-            m_Context->Controller()->MoveItem(m_Item, frame);
-            Update();
-        }
+        Update();
     }
 
     if (m_SlipContext.active)

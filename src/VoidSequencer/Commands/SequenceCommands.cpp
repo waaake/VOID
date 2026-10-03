@@ -447,13 +447,13 @@ bool ToggleTrackEffectCommand::Redo()
 
 /// CreateTrackCommand
 
-CreateTrackCommand::CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::TrackType& type, QUndoCommand* parent)
+CreateTrackCommand::CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::Type& type, QUndoCommand* parent)
     : VoidUndoCommand(parent)
     , m_Sequence(sequence)
     , m_Type(type)
-    , m_Index(type == Sequence::TrackType::VIDEO ? sequence->NumVideoTracks() : sequence->NumAudioTracks())
+    , m_Index(type == Sequence::Type::VIDEO ? sequence->NumVideoTracks() : sequence->NumAudioTracks())
 {
-    setText(type == Sequence::TrackType::VIDEO ? "Create Video Track" : "Create Audio Track");
+    setText(type == Sequence::Type::VIDEO ? "Create Video Track" : "Create Audio Track");
 }
 
 void CreateTrackCommand::undo()
@@ -487,7 +487,7 @@ void DeleteTrackCommand::undo()
     std::istringstream is(m_TrackData, std::ios::binary);
     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(m_Type, m_Sequence);
     track->Deserialize(is);
-    m_Type == Sequence::TrackType::VIDEO ? m_Sequence->AddVideoTrack(track, m_TrackIndex) : m_Sequence->AddAudioTrack(track, m_TrackIndex);
+    m_Type == Sequence::Type::VIDEO ? m_Sequence->AddVideoTrack(track, m_TrackIndex) : m_Sequence->AddAudioTrack(track, m_TrackIndex);
 }
 
 bool DeleteTrackCommand::Redo()
@@ -525,7 +525,7 @@ void DeleteTrackItemCommand::undo()
     if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
     {
         std::istringstream is(m_ItemData, std::ios::binary);
-        SharedTrackItem item = std::make_shared<TrackItem>(track.get());
+        SharedTrackItem item = std::make_shared<TrackItem>(m_TrackType, track.get());
         item->Deserialize(is);
         track->AddItem(item);
     }
@@ -554,7 +554,7 @@ DeleteTimelineEffectCommand::DeleteTimelineEffectCommand(Effect* effect, QUndoCo
     const PlaybackTrack* const track = effect->TimelineItem()->Track();
     const TrackItem* const item = effect->TimelineItem();
     m_TrackType = track->Type();
-    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_TrackIndex = m_TrackType == Sequence::Type::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
     m_ItemIndex = track->ItemIndex(item);
     m_EffectIndex = item->EffectIndex(effect);
 
@@ -600,7 +600,7 @@ DeleteTrackEffectCommand::DeleteTrackEffectCommand(Effect* effect, QUndoCommand*
 {
     const PlaybackTrack* const track = effect->Track();
     m_TrackType = track->Type();
-    m_TrackIndex = m_TrackType == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_TrackIndex = m_TrackType == Sequence::Type::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
     m_EffectIndex = track->EffectIndex(effect);
     m_EffectType = effect->Type();
 
@@ -799,13 +799,13 @@ MergeCutCommand::MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t fra
 
 void MergeCutCommand::undo()
 {
-    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    SharedPlaybackTrack track = m_Type == Sequence::Type::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
     track->RazorAt(m_Frame);
 }
 
 bool MergeCutCommand::Redo()
 {
-    SharedPlaybackTrack track = m_Type == Sequence::TrackType::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    SharedPlaybackTrack track = m_Type == Sequence::Type::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
     return track ? track->MergeCut(m_Frame) : false;
 }
 
@@ -1025,7 +1025,7 @@ void CutPasteTrackCommand::undo()
 
     SharedPlaybackTrack track = acted.track;
     acted.sequence->RemoveTrack(track);
-    acted.tracktype == Sequence::TrackType::VIDEO
+    acted.tracktype == Sequence::Type::VIDEO
                     ? rsource.sequence->AddVideoTrack(track, m_SourceCtx.trackIdx)
                     : rsource.sequence->AddAudioTrack(track, m_SourceCtx.trackIdx);
 }
@@ -1040,7 +1040,7 @@ bool CutPasteTrackCommand::Redo()
 
         SharedPlaybackTrack track = rsource.track;
         rsource.sequence->RemoveTrack(track);
-        rsource.tracktype == Sequence::TrackType::VIDEO ? rdest.sequence->AddVideoTrack(track) : rdest.sequence->AddAudioTrack(track);
+        rsource.tracktype == Sequence::Type::VIDEO ? rdest.sequence->AddVideoTrack(track) : rdest.sequence->AddAudioTrack(track);
         m_ActedCtx = Sequence::Context::Get(track);
 
         return true;
@@ -1078,7 +1078,7 @@ bool CopyPasteTrackCommand::Redo()
         std::istringstream is(os.str(), std::ios::binary);
         SharedPlaybackTrack copied = std::make_shared<PlaybackTrack>(rsource.tracktype, rdest.sequence.get());
         // rdest.sequence->Add
-        rsource.tracktype == Sequence::TrackType::VIDEO ? rdest.sequence->AddVideoTrack(copied) : rdest.sequence->AddAudioTrack(copied);
+        rsource.tracktype == Sequence::Type::VIDEO ? rdest.sequence->AddVideoTrack(copied) : rdest.sequence->AddAudioTrack(copied);
         copied->Deserialize(is);
 
         m_ActedCtx = Sequence::Context::Get(copied);

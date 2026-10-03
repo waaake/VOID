@@ -55,12 +55,13 @@ public:
     void RemoveFromScene(QGraphicsItem* item) { m_Scene->removeItem(item); }
     void CreateTrackItems(const std::vector<SharedMediaClip>& media, const SharedPlaybackTrack& track, v_frame_t frame);
     void CreateTrackItems(const std::vector<std::pair<const SharedMediaClip, v_frame_t>>& media, const SharedPlaybackTrack& track);
-    void MoveItem(const SharedTrackItem& item, v_frame_t frame);
-    void RippleMoveItem(const SharedTrackItem& item, v_frame_t frame);
-    void MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
-    void RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
+    bool MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    bool RippleMoveItem(const SharedTrackItem& item, v_frame_t frame);
+    bool MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
+    bool RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame);
     void CreateVideoTrack(const SharedPlaybackSequence& sequence);
     void CreateAudioTrack(const SharedPlaybackSequence& sequence);
+    void CreateTrack(const SharedPlaybackSequence& sequence, const Sequence::Type& type);
     void RemoveTracks(const std::unordered_set<SharedPlaybackTrack>& tracks);
     void RemoveTrackItems(const std::unordered_set<SharedTrackItem>& items);
     void RippleRemoveTrackItems(const std::unordered_set<SharedTrackItem>& items);
