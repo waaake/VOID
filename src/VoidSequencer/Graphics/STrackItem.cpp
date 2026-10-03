@@ -320,25 +320,27 @@ void STrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         m_Drag.active = false;
 
         v_frame_t frame = m_Context->Geometry()->SceneXToFrame(scenePos().x());
-        STrack* track = m_Context->Controller()->TrackAt(scenePos());
+        STrack* target = m_Context->Controller()->TrackAt(scenePos());
         STrack* current = Track();
+        if (target)
+        {
+            if (target->Locked() || target->IsEffectsTrack() || target->TrackType() != current->TrackType())
+            {
+                Update();
+                return;
+            }
 
-        if (track && (track->Locked() || track->IsEffectsTrack()))
-        {
-            Update();
-            return;
+            if (target == current)
+            {
+                m_Context->Controller()->MoveItem(m_Item, frame);
+            }
+            else
+            {
+                if (m_Context->Controller()->MoveItem(current->Track(), m_Item, target->Index(), frame))
+                    return;
+            }
         }
-
-        // Move the track item to the new track
-        if (track && track != current)
-        {
-            m_Context->Controller()->MoveItem(current->Track(), m_Item, track->Index(), frame);
-        }
-        else
-        {
-            m_Context->Controller()->MoveItem(m_Item, frame);
-            Update();
-        }
+        Update();
     }
 
     if (m_SlipContext.active)
