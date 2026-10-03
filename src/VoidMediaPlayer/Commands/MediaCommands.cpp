@@ -101,6 +101,7 @@ bool AddSequenceCommand::Redo()
 {
     SharedPlaybackSequence sequence = std::make_shared<PlaybackSequence>(m_Project);
     sequence->CreateTrack(Sequence::Type::VIDEO);
+    sequence->CreateTrack(Sequence::Type::AUDIO);
     m_Project->Add(sequence);
     return true;
 }
