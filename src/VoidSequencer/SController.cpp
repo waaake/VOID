@@ -169,7 +169,6 @@ bool SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
     MoveTrackItemCommand* command = new MoveTrackItemCommand(item, frame);
     stack->push(command);
     stack->endMacro();
-
     return command->Status();
 }
 
@@ -180,8 +179,6 @@ bool SequencerController::MoveItem(const SharedPlaybackTrack& track, const Share
 
     MoveItemToTrackCommand* command = new MoveItemToTrackCommand(track, item, trackIndex, frame);
     _MediaBridge.PushCommand(command);
-
-    VOID_LOG_INFO("Command is obsolete: {0}", command->isObsolete());
     return command->Status();
 }
 
