@@ -18,9 +18,8 @@ void VoidUndoCommand::redo()
      * this means that the command failed to execute and cannot be undone or redone again
      * marking this as obsolete so that this stays out of the undo stack
      */
-    bool status = Redo();
-
-    setObsolete(!status);
+    m_Status = Redo();
+    setObsolete(!m_Status);
 }
 
 VOID_NAMESPACE_CLOSE
