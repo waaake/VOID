@@ -134,6 +134,9 @@ void SequencerTimeline::Refresh()
 
     for (const SharedPlaybackTrack& track : m_Context.Sequence()->VideoTracks())
         AddVideoTrack(track);
+
+    for (const SharedPlaybackTrack& track : m_Context.Sequence()->AudioTracks())
+        AddAudioTrack(track);
 }
 
 void SequencerTimeline::FitAll()
