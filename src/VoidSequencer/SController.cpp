@@ -123,21 +123,22 @@ void SequencerController::CreateTrackItems(const std::vector<std::pair<const Sha
     stack->endMacro();
 }
 
-void SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
+bool SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     if (m_EditMode == EditMode::RIPPLE)
         return RippleMoveItem(item, frame);
 
     // Item was dragged and returned back to the same position
-    if (item->TimelineIn() == frame)
-        return;
+    if (item->TimelineIn() == frame) return false;
 
-    _MediaBridge.PushCommand(new MoveTrackItemCommand(item, frame));
+    MoveTrackItemCommand* command = new MoveTrackItemCommand(item, frame);
+    _MediaBridge.PushCommand(command);
+    return command->Status();
 }
 
-void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t frame)
+bool SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
-    if (item->TimelineIn() == frame) return;
+    if (item->TimelineIn() == frame) return false;
 
     QUndoStack* stack = _MediaBridge.UndoStack();
 
@@ -165,44 +166,61 @@ void SequencerController::RippleMoveItem(const SharedTrackItem& item, v_frame_t 
         }
     }
 
-    stack->push(new MoveTrackItemCommand(item, frame));
+    MoveTrackItemCommand* command = new MoveTrackItemCommand(item, frame);
+    stack->push(command);
     stack->endMacro();
+
+    return command->Status();
 }
 
-void SequencerController::MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
+bool SequencerController::MoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
 {
     if (m_EditMode == EditMode::RIPPLE)
         return RippleMoveItem(track, item, trackIndex, frame);
 
-    _MediaBridge.PushCommand(new MoveItemToTrackCommand(track, item, trackIndex, frame));
+    MoveItemToTrackCommand* command = new MoveItemToTrackCommand(track, item, trackIndex, frame);
+    _MediaBridge.PushCommand(command);
+
+    VOID_LOG_INFO("Command is obsolete: {0}", command->isObsolete());
+    return command->Status();
 }
 
-void SequencerController::RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
+bool SequencerController::RippleMoveItem(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame)
 {
     QUndoStack* stack = _MediaBridge.UndoStack();
 
     stack->beginMacro("Move TrackItem");
 
     int index = track->ItemIndex(item);
-    stack->push(new MoveItemToTrackCommand(track, item, trackIndex, frame));
+    MoveItemToTrackCommand* command = new MoveItemToTrackCommand(track, item, trackIndex, frame);
+    stack->push(command);
 
-    std::size_t max = track->NumItems();
-    // Last Item --- Nothing else to offset/move
-    if (index >= max)
-        return stack->endMacro();
-
-    // Since we're moving item to a different track, we need to check the item before this index and it's timelineOut to fill in the gap
-    SharedTrackItem next = track->ItemAt(index);
-    v_frame_t lastFrame = index == 0 ? track->StartFrame() : track->ItemAt(index - 1)->TimelineOut() + 1;
-    int offset = lastFrame - next->TimelineIn();
-
-    for (int i = index; i < static_cast<int>(max); ++i)
+    if (command->Status())
     {
-        const SharedTrackItem& trackitem = track->ItemAt(i);
-        stack->push(new OffsetItemCommand(trackitem, offset));
+        std::size_t max = track->NumItems();
+        // Last Item --- Nothing else to offset/move
+        if (index >= max)
+        {
+            stack->endMacro();
+            return true;
+        }
+    
+        // Since we're moving item to a different track, we need to check the item before this index and it's timelineOut to fill in the gap
+        SharedTrackItem next = track->ItemAt(index);
+        v_frame_t lastFrame = index == 0 ? track->StartFrame() : track->ItemAt(index - 1)->TimelineOut() + 1;
+        int offset = lastFrame - next->TimelineIn();
+    
+        for (int i = index; i < static_cast<int>(max); ++i)
+        {
+            const SharedTrackItem& trackitem = track->ItemAt(i);
+            stack->push(new OffsetItemCommand(trackitem, offset));
+        }
+    
+        stack->endMacro();
+        return true;
     }
 
-    stack->endMacro();
+    return false;
 }
 
 STrack* SequencerController::TrackAt(const QPointF& position) const
