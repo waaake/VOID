@@ -56,6 +56,9 @@ void STrackHeaderItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
             ? IconForge::GetPixmap(IconType::icon_lock, p.color(QPalette::Highlight).darker(100), 14)
             : IconForge::GetPixmap(IconType::icon_lock_open, p.color(QPalette::Text).darker(100), 14)
     );
+
+    if (m_Track->HasTags())
+        painter->drawPixmap(TagRect().topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
 }
 
 void STrackHeaderItem::Update()
@@ -118,6 +121,7 @@ void STrackHeaderItem::Resize(int index)
     m_LockRect = QRect(margin, (m_BoundingRect.height() - iconSize) * 0.5, iconSize, iconSize);
     m_StateRect = QRect(m_LockRect.right() + spacing, (m_BoundingRect.height() - iconSize) * 0.5, iconSize, iconSize);
     m_NameRect = QRect(m_StateRect.right() + spacing, 0, m_BoundingRect.width() - (m_StateRect.right() + spacing + margin), m_BoundingRect.height());
+    m_TagRect = QRect(m_BoundingRect.right() - (iconSize + spacing + margin), m_LockRect.bottom(), iconSize, iconSize);
 }
 
 QColor STrackHeaderItem::Background(const QPalette& palette) const

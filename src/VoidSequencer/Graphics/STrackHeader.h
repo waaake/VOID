@@ -26,6 +26,7 @@ public:
     void Update() override;
 
     QRect NameRect() const { return m_NameRect; }
+    QRect TagRect() const { return m_TagRect; }
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
@@ -36,6 +37,7 @@ private:
     QRect m_NameRect;
     QRect m_StateRect;
     QRect m_LockRect;
+    QRect m_TagRect;
 
 private: /* Methods */
     void Connect();
