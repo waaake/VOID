@@ -35,6 +35,7 @@ public:
     void UpdateItems();
     STrackHeaderItem* TrackAt(int index) const;
     STrackHeaderItem*& TrackAt(int index);
+    STrackHeaderItem* Header(const SharedPlaybackTrack& track) const;
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -46,6 +47,8 @@ private:
     SequencerContext* m_Context;
 
 private:
+    STrackHeaderItem* VideoHeader(const SharedPlaybackTrack& track) const;
+    STrackHeaderItem* AudioHeader(const SharedPlaybackTrack& track) const;
     void RemoveVideoTrack(const SharedPlaybackTrack& track);
     void RemoveAudioTrack(const SharedPlaybackTrack& track);
     void ResizeScene();
