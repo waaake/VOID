@@ -31,6 +31,7 @@ signals:
     void copySelectionRequested();
     void pasteRequested(const QPoint&);
     void deleteSelectionRequested();
+    void renameRequested();
 
     /// Color
     void colorChangeRequested(bool reset = false);
@@ -73,6 +74,7 @@ private:
     QAction* m_CopyAction;
     QAction* m_PasteAction;
     QAction* m_RemoveSelectedAction;
+    QAction* m_RenameTrackAction;
 
     QMenu* m_ViewMenu;
     QAction* m_FitAllAction;

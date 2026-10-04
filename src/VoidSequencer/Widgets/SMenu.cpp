@@ -46,6 +46,7 @@ void SequencerContextMenu::Build()
 
     m_RemoveSelectedAction = new QAction("Delete Selected", m_EditMenu);
     m_RemoveSelectedAction->setShortcut(Qt::Key_Backspace);
+    m_RenameTrackAction = new QAction("Rename Track(s)", m_EditMenu);
 
     p->addAction(m_CutAction);
     p->addAction(m_CopyAction);
@@ -56,6 +57,8 @@ void SequencerContextMenu::Build()
     m_EditMenu->addAction(m_PasteAction);
     m_EditMenu->addSeparator();
     m_EditMenu->addAction(m_RemoveSelectedAction);
+    m_EditMenu->addSeparator();
+    m_EditMenu->addAction(m_RenameTrackAction);
 
     /// View Menu
     m_ViewMenu = new QMenu("View", this);
@@ -197,6 +200,7 @@ void SequencerContextMenu::Connect()
     connect(m_CopyAction, &QAction::triggered, this, &SequencerContextMenu::copySelectionRequested);
     connect(m_PasteAction, &QAction::triggered, this, [this]() -> void { emit pasteRequested(m_ExecPosition); });
     connect(m_RemoveSelectedAction, &QAction::triggered, this, &SequencerContextMenu::deleteSelectionRequested);
+    connect(m_RenameTrackAction, &QAction::triggered, this, &SequencerContextMenu::renameRequested);
 
     /// View
     connect(m_FitAllAction, &QAction::triggered, this, &SequencerContextMenu::fitAllRequested);
@@ -247,6 +251,7 @@ void SequencerContextMenu::Validate()
     m_CopyAction->setEnabled(anySelection);
     m_PasteAction->setEnabled(controller->ValidClipboard());
     m_RemoveSelectedAction->setEnabled(anySelection);
+    m_RenameTrackAction->setEnabled(trackSelection);
 
     /// Mark
     m_MarkSelectionAction->setEnabled(itemSelection);
