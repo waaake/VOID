@@ -18,8 +18,6 @@ constexpr int iconSize = 18;
 constexpr int spacing = 10;
 constexpr int nameWidth = 90;
 
-// https://doc.qt.io/qt-6/qgraphicsproxywidget.html -- we need the lineedit over the label when editing the name of the track
-
 STrackHeaderItem::STrackHeaderItem(const SharedPlaybackTrack& track, SequencerContext* context, QGraphicsItem* parent)
     : STimelineItem(context, parent)
     , m_Track(track)
@@ -42,7 +40,8 @@ void STrackHeaderItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     painter->drawRect(boundingRect().adjusted(1, 0, -1, 0));
 
     painter->setPen(p.color(QPalette::Text));
-    painter->drawText(NameRect(), Qt::AlignVCenter | Qt::AlignRight, m_Track->Name().c_str());
+    QFontMetrics fm(painter->font());
+    painter->drawText(NameRect(), Qt::AlignVCenter | Qt::AlignRight, fm.elidedText(m_Track->Name().c_str(), Qt::ElideMiddle, NameRect().width()));
 
     painter->drawPixmap(
         StateRect().topLeft(),
@@ -100,6 +99,7 @@ void STrackHeaderItem::Connect()
     auto* ptr = m_Track.get();
     connect(ptr, &PlaybackTrack::maxEffectsChanged, this, &STrackHeaderItem::Update);
     connect(ptr, &PlaybackTrack::updated, this, [this]() -> void { update(); });
+    connect(ptr, &PlaybackTrack::attribUpdated, this, [this]() -> void { update(); });
     connect(ptr, &PlaybackTrack::stateChanged, this, [this]() -> void { update(); });
     connect(m_Context->SelectionModel(), &SSelectionModel::trackSelectionChanged, this, [this]() { update(); });
 }

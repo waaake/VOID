@@ -25,6 +25,8 @@ public:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     void Update() override;
 
+    QRect NameRect() const { return m_NameRect; }
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
 
@@ -39,7 +41,6 @@ private: /* Methods */
     void Connect();
     QRect LockRect() const { return m_LockRect; }
     QRect StateRect() const { return m_StateRect; }
-    QRect NameRect() const { return m_NameRect; }
     void Resize(int index);
     QColor Background(const QPalette& palette) const;
 };
