@@ -96,6 +96,11 @@ STrackHeaderItem*& SHeaderScene::TrackAt(int index)
     return m_VTracks.at(index);
 }
 
+STrackHeaderItem* SHeaderScene::Header(const SharedPlaybackTrack& track) const
+{
+    return track->Type() == Sequence::Type::VIDEO ? VideoHeader(track) : AudioHeader(track);
+}
+
 void SHeaderScene::drawBackground(QPainter* painter, const QRectF& rect)
 {
     painter->fillRect(rect, palette().color(QPalette::Base));
@@ -107,6 +112,20 @@ void SHeaderScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
         m_Context->SelectionModel()->Clear();
 
     QGraphicsScene::mousePressEvent(event);
+}
+
+STrackHeaderItem* SHeaderScene::VideoHeader(const SharedPlaybackTrack& track) const
+{
+    auto _pred = [track](const STrackHeaderItem* t) -> bool { return track.get() == t->Track().get(); };
+    auto it = std::find_if(m_VTracks.begin(), m_VTracks.end(), _pred);
+    return it == m_VTracks.end() ? nullptr : *it;
+}
+
+STrackHeaderItem* SHeaderScene::AudioHeader(const SharedPlaybackTrack& track) const
+{
+    auto _pred = [track](const STrackHeaderItem* t) -> bool { return track.get() == t->Track().get(); };
+    auto it = std::find_if(m_ATracks.begin(), m_ATracks.end(), _pred);
+    return it == m_ATracks.end() ? nullptr : *it;
 }
 
 void SHeaderScene::RemoveVideoTrack(const SharedPlaybackTrack& track)

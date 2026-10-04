@@ -24,6 +24,7 @@ set(SOURCES
 
     Widgets/SequencerWidget.cpp
     Widgets/SMenu.cpp
+    Widgets/SNameEditor.cpp
     Widgets/STimelineRuler.cpp
     # Widgets/STrackHeader.cpp
     # Widgets/STrackHeaderWidget.cpp

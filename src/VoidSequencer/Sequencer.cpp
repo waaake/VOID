@@ -230,6 +230,7 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::copySelectionRequested, this, &SequencerTimeline::Copy);
     connect(m_Menu, &SequencerContextMenu::pasteRequested, this, &SequencerTimeline::Paste);
     connect(m_Menu, &SequencerContextMenu::deleteSelectionRequested, this, &SequencerTimeline::DeleteSelected);
+    connect(m_Menu, &SequencerContextMenu::renameRequested, m_Header, &SHeaderView::EditTrackName);
     connect(m_Menu, &SequencerContextMenu::editModeChangeRequested, m_Context.Controller(), &SequencerController::SetEditMode);
     connect(m_Menu, &SequencerContextMenu::colorChangeRequested, this, [this](bool reset) -> void
     {

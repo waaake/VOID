@@ -17,6 +17,7 @@ VOID_NAMESPACE_OPEN
 // class STimelineScene;
 class SHeaderScene;
 class SequencerContext;
+class SNameEditor;
 
 class SHeaderView : public QGraphicsView
 {
@@ -33,13 +34,19 @@ public:
     void ResetScroll();
     void SetScroll(int value);
 
+    void EditTrackName();
+
 private:
     SequencerContext* m_Context;
     SHeaderScene* m_Scene;
 
+    SNameEditor* m_NameEditor;
+
 private: /* Methods */
     void Build();
     void Setup();
+    void AcceptEdit(const QString& text);
+    void EditCancelled();
 };
 
 VOID_NAMESPACE_CLOSE

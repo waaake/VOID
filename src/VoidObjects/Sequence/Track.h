@@ -32,8 +32,8 @@ public:
 
     const Sequence::Type& Type() const { return m_Type; }
 
-    void SetName(const std::string& name) { m_Name = name; }
-    void SetName(std::string&& name) { m_Name = std::move(name); }
+    void SetName(const std::string& name) { m_Name = name; emit attribUpdated(); }
+    void SetName(std::string&& name) { m_Name = std::move(name); emit attribUpdated(); }
     const std::string& Name() const { return m_Name; }
 
     // /* Set a color for the Track */
@@ -184,6 +184,7 @@ signals: /* Signals Denoting actions in the Track */
     void effectAboutToBeRemoved(Effect*);
     void effectRemoved();
     void maxEffectsChanged();
+    void attribUpdated();
 
 protected: /* Members */
     TrackMap m_Items;
