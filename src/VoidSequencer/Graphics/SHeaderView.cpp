@@ -84,6 +84,11 @@ void SHeaderView::EditTrackName()
     }
 }
 
+STrackHeaderItem* SHeaderView::Header(const SharedPlaybackTrack& track) const
+{
+    return m_Scene->Header(track);
+}
+
 void SHeaderView::SetScroll(int value)
 {
     verticalScrollBar()->setValue(value);

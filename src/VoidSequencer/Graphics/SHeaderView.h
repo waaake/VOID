@@ -33,8 +33,9 @@ public:
     void Clear();
     void ResetScroll();
     void SetScroll(int value);
-
+    
     void EditTrackName();
+    STrackHeaderItem* Header(const SharedPlaybackTrack& track) const;
 
 private:
     SequencerContext* m_Context;

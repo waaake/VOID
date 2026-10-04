@@ -16,6 +16,7 @@
 #include "VoidObjects/Sequence/Context.h"
 #include "VoidSequencer/Graphics/STrack.h"
 #include "VoidSequencer/Graphics/STrackItem.h"
+#include "VoidSequencer/Graphics/STrackHeader.h"
 #include "VoidSequencer/Graphics/STimelineScene.h"
 
 VOID_NAMESPACE_OPEN
@@ -416,6 +417,17 @@ void SequencerTimeline::Razor(bool sequence)
 
     if (const SharedTrackItem& item = m_Context.Sequence()->GetTrackItem(frame))
         m_Context.Controller()->RazorAt(item->Track(), frame);
+}
+
+void SequencerTimeline::AddTag()
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackSelection())
+    {
+        std::unordered_set<SharedPlaybackTrack> tracks = sel->SelectedTracks();
+        STrackHeaderItem* header = m_Header->Header(*tracks.begin());
+        
+    }
 }
 
 VOID_NAMESPACE_CLOSE

@@ -68,6 +68,7 @@ private: /* Methods */
     void ScanVersions();
     void ResetInOut(bool selection = false);
     void Razor(bool sequence = false);
+    void AddTag();
 };
 
 VOID_NAMESPACE_CLOSE
