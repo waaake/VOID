@@ -160,7 +160,9 @@ public:
 
     Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
     Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+    int NumTags() const { return m_TagModel->rowCount(); }
     bool HasTags() const { return m_TagModel->HasTags(); }
+    inline TagModel* TagsModel() const { return m_TagModel; }
     void ClearTags();
 
     /**
