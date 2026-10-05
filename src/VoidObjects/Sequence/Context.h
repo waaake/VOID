@@ -59,6 +59,7 @@ struct VOID_API Context
     static Context Get(const Effect* effect);
     static Context Get(const SharedTrackItem& item);
     static Context Get(const SharedPlaybackTrack& track, v_frame_t frame = 0);
+    static Context Get(const PlaybackTrack* track, v_frame_t frame = 0);
     static Context Get(const SharedPlaybackSequence& sequence);
 };
 

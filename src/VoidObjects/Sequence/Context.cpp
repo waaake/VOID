@@ -51,6 +51,11 @@ Context Context::Get(const SharedPlaybackTrack& track, v_frame_t frame)
     return Context(track->Project(), track->Sequence()->Index(), track->Index(), track->Type(), frame);
 }
 
+Context Context::Get(const PlaybackTrack* track, v_frame_t frame)
+{
+    return Context(track->Project(), track->Sequence()->Index(), track->Index(), track->Type(), frame);
+}
+
 Context Context::Get(const SharedPlaybackSequence& sequence)
 {
     return Context(sequence->Project(), sequence->Index());
