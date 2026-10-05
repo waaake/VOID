@@ -9,12 +9,13 @@
 
 /* Internal */
 #include "Definition.h"
+#include "VoidObjects/Effects/Bridge.h"
+#include "VoidObjects/Media/Tag.h"
 #include "VoidObjects/Project/Project.h"
 #include "VoidObjects/Sequence/Context.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 #include "VoidObjects/Sequence/Sequence.h"
-#include "VoidObjects/Effects/Bridge.h"
 #include "VoidUndo/VoidCommand.h"
 
 VOID_NAMESPACE_OPEN
@@ -480,6 +481,21 @@ private:
     Sequence::Context m_ItemContext;
     int m_RequestedRow;
     int m_PreviousRow;
+};
+
+class AddTagCommand : public VoidUndoCommand
+{
+public:
+    AddTagCommand(const SharedPlaybackTrack& track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent = nullptr);
+    AddTagCommand(PlaybackTrack* track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_TrackContext;
+    std::string m_Tag;
+    TagMetaStruct m_Metadata;
+    int m_TagIndex;
 };
 
 VOID_NAMESPACE_CLOSE

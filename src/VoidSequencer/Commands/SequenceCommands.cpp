@@ -1211,4 +1211,39 @@ bool ResetTrackItemMediaCommand::Redo()
     return true;
 }
 
+/// AddTagCommand
+
+AddTagCommand::AddTagCommand(const SharedPlaybackTrack& track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand()
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(track->NumTags())
+{
+    setText("Add Tag");
+}
+
+AddTagCommand::AddTagCommand(PlaybackTrack* track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand()
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(track->NumTags())
+{
+    setText("Add Tag");
+}
+
+void AddTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    context.track->RemoveTag(m_TagIndex);
+}
+
+bool AddTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    VOID_LOG_INFO("Adding tag: {0}", m_Tag);
+    return context.track->AddTag(m_Tag, m_Metadata);
+}
+
 VOID_NAMESPACE_CLOSE
