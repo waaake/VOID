@@ -533,6 +533,26 @@ void SequencerController::ResetTimelineInOut(const std::unordered_set<SharedTrac
     m_TimelineController->SetUserEndframe(end);    
 }
 
+void SequencerController::AddTag(const SharedPlaybackTrack& track, const std::string& name) const
+{
+    _MediaBridge.PushCommand(new AddTagCommand(track, name, {}));
+}
+
+void SequencerController::AddTag(const SharedPlaybackTrack& track, const std::string& name, const TagMetaStruct& metadata) const
+{
+    _MediaBridge.PushCommand(new AddTagCommand(track, name, metadata));
+}
+
+void SequencerController::AddTag(PlaybackTrack* track, const std::string& name) const
+{
+    _MediaBridge.PushCommand(new AddTagCommand(track, name, {}));
+}
+
+void SequencerController::AddTag(PlaybackTrack* track, const std::string& name, const TagMetaStruct& metadata) const
+{
+    _MediaBridge.PushCommand(new AddTagCommand(track, name, metadata));
+}
+
 STrack* SequencerController::TrackAt(int index) const
 {
     if (STimelineScene* scene = dynamic_cast<STimelineScene*>(m_Scene))
