@@ -326,7 +326,7 @@ void STimelineScene::ResizeScene()
     const auto* geo = m_Context->Geometry();
     int vh = geo->VideoSectionHeight();
     int ah = geo->AudioSectionHeight();
-    setSceneRect(0, -vh, Sequencer::TrackHeaderWidth, vh + ah);
+    setSceneRect(0, -vh, Sequencer::SceneWidth, vh + ah);
 }
 
 VOID_NAMESPACE_CLOSE
