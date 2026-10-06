@@ -30,6 +30,7 @@ set(SOURCES
     # Widgets/STrackHeaderWidget.cpp
     Widgets/SToolbar.cpp
     Widgets/SVersionSwitcher.cpp
+    Widgets/TagWidget.cpp
 )
 
 # Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
