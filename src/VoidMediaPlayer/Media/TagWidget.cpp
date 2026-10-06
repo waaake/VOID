@@ -13,114 +13,17 @@
 
 VOID_NAMESPACE_OPEN
 
-/* Tag Base {{{ */
+/// MediaTagWidget
 
-TagBase::TagBase(QWidget* parent)
-    : QWidget(parent)
-{
-    Build();
-    Setup();
-}
-
-TagBase::~TagBase()
-{
-    m_Layout->deleteLater();
-    delete m_Layout;
-    m_Layout = nullptr;
-}
-
-void TagBase::Reset()
-{
-    m_NameEdit->clear();
-}
-
-void TagBase::Build()
-{
-    m_Layout = new QGridLayout(this);
-
-    m_NameEdit = new QLineEdit;
-    m_DataTree = new QTreeView;
-
-    m_Layout->addWidget(new QLabel("Name:", this), 0, 0, 1, 1);
-    m_Layout->addWidget(m_NameEdit, 0, 1, 1, 2);
-    m_Layout->addWidget(new QLabel("Data:", this), 1, 0, 1, 1);
-    m_Layout->addWidget(m_DataTree, 1, 1, 7, 2);
-
-    m_Layout->setContentsMargins(0, 0, 0, 0);
-}
-
-void TagBase::Setup()
-{
-    m_DataTree->setAlternatingRowColors(true);
-}
-
-/* }}} */
-
-/* Tag Widget {{{ */
-
-TagWidget::TagWidget(const QModelIndex& index, QWidget* parent)
-    : TranslucentDialog(parent)
+MediaTagWidget::MediaTagWidget(const QModelIndex& index, QWidget* parent)
+    : TagWidget(parent)
     , m_MediaIndex(index)
     , m_Metadata(new TagMetadataModel)
 {
-    Build();
-    Setup();
-    Connect();
-}
-
-TagWidget::~TagWidget()
-{
-    m_Layout->deleteLater();
-    delete m_Layout;
-    m_Layout = nullptr;
-
-    if (m_Metadata)
-    {
-        m_Metadata->deleteLater();
-        delete m_Metadata;
-        m_Metadata = nullptr;
-    }
-}
-
-void TagWidget::MoveTo(const QPoint& position)
-{
-    if (position.y() > (QGuiApplication::primaryScreen()->geometry().height() * 0.5))
-        move({position.x(), position.y() - sizeHint().height()});
-    else
-        move(position);
-}
-
-void TagWidget::showEvent(QShowEvent* event)
-{
-    TranslucentDialog::showEvent(event);
-    m_TagBase->m_NameEdit->setFocus();
-}
-
-void TagWidget::Build()
-{
-    m_Layout = new QVBoxLayout(this);
-
-    QGridLayout* internalLayout = new QGridLayout;
-    m_TagBase = new TagBase(this);
-
-    m_AcceptButton = new QPushButton("Ok");
-
-    internalLayout->addWidget(m_TagBase, 0, 0, 4, 3);
-    internalLayout->addWidget(m_AcceptButton, 4, 2, 1, 1);
-
-    m_Layout->addLayout(internalLayout);
-}
-
-void TagWidget::Setup()
-{
-    m_TagBase->m_DataTree->setModel(m_Metadata);
-}
-
-void TagWidget::Connect()
-{
+    m_TagBase->SetModel(m_Metadata);
     connect(m_AcceptButton, &QPushButton::clicked, this, [this]()
     {
-        const QString name = m_TagBase->m_NameEdit->text();
+        const QString name = m_TagBase->Name();
         if (name.isEmpty())
             return;
 
@@ -132,61 +35,31 @@ void TagWidget::Connect()
     });
 }
 
-/* }}} */
+MediaTagWidget::~MediaTagWidget()
+{
+    if (m_Metadata)
+    {
+        m_Metadata->deleteLater();
+        delete m_Metadata;
+        m_Metadata = nullptr;
+    }
+}
 
-/* Tag Editor {{{ */
+/// MediaTagEditor
 
-TagEditor::TagEditor(const SharedMediaClip& clip, const QModelIndex& index, QWidget* parent)
-    : TranslucentDialog(parent)
+MediaTagEditor::MediaTagEditor(const SharedMediaClip& clip, const QModelIndex& index, QWidget* parent)
+    : TagEditor(parent)
     , m_Media(clip)
     , m_Index(index)
 {
-    Build();
     Setup();
-    Connect();
 }
 
-TagEditor::~TagEditor()
-{
-    m_Layout->deleteLater();
-    delete m_Layout;
-    m_Layout = nullptr;
-}
-
-void TagEditor::MoveTo(const QPoint& position)
-{
-    if (position.y() > (QGuiApplication::primaryScreen()->geometry().height() * 0.5))
-        move({position.x(), position.y() - sizeHint().height()});
-    else
-        move(position);
-}
-
-void TagEditor::Build()
-{
-    m_Layout = new QVBoxLayout(this);
-
-    QHBoxLayout* internalLayout = new QHBoxLayout;
-    QHBoxLayout* buttonLayout = new QHBoxLayout;
-
-    m_TagList = new QListView(this);
-    m_TagBase = new TagBase(this);
-    m_RemoveButton = new QPushButton;
-    m_RemoveButton->setIcon(IconForge::GetIcon(IconType::icon_remove, _DARK_COLOR(QPalette::Text, 100)));
-    m_RemoveButton->setFixedWidth(36);
-
-    buttonLayout->addWidget(m_RemoveButton);
-    buttonLayout->addStretch(1);
-
-    internalLayout->addWidget(m_TagList);
-    internalLayout->addWidget(m_TagBase);
-
-    m_Layout->addLayout(internalLayout);
-    m_Layout->addLayout(buttonLayout);
-}
-
-void TagEditor::Setup()
+void MediaTagEditor::Setup()
 {
     m_TagList->setFixedWidth(140);
+    connect(m_RemoveButton, &QPushButton::clicked, this, &MediaTagEditor::RemoveSelected);
+
     if (SharedMediaClip media = m_Media.lock())
     {
         if (media->HasTags())
@@ -198,13 +71,7 @@ void TagEditor::Setup()
     }
 }
 
-void TagEditor::Connect()
-{
-    connect(m_TagList, &QListView::clicked, this, &TagEditor::TagSelected);
-    connect(m_RemoveButton, &QPushButton::clicked, this, &TagEditor::RemoveSelected);
-}
-
-void TagEditor::RemoveSelected()
+void MediaTagEditor::RemoveSelected()
 {
     const QModelIndex& index = m_TagList->currentIndex();
     if (index.isValid())
@@ -213,18 +80,5 @@ void TagEditor::RemoveSelected()
         TagSelected(m_TagList->currentIndex());
     }
 }
-
-void TagEditor::TagSelected(const QModelIndex& index)
-{
-    index.isValid() ? SetCurrentTag(static_cast<Tag*>(index.internalPointer())) : m_TagBase->Reset();
-}
-
-void TagEditor::SetCurrentTag(const Tag* tag)
-{
-    m_TagBase->m_NameEdit->setText(tag->Name().c_str());
-    m_TagBase->m_DataTree->setModel(tag->MetadataModel());
-}
-
-/* }}} */
 
 VOID_NAMESPACE_CLOSE

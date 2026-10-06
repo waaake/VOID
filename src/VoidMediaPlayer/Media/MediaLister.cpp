@@ -519,7 +519,7 @@ void VoidMediaLister::AddTagToSelected()
     QModelIndex current = m_MediaView->currentIndex();
     if (current.isValid())
     {
-        TagWidget t(current, this);
+        MediaTagWidget t(current, this);
         t.MoveTo(m_MediaView->mapToGlobal(m_MediaView->visualRect(current).center()));
         t.exec();
     }
@@ -530,7 +530,7 @@ void VoidMediaLister::EditSelectedTags(const QModelIndex& index, const QPoint& p
     SharedMediaClip clip = _MediaBridge.MediaAt(index);
     if (clip->HasTags())
     {
-        TagEditor t(clip, index, this);
+        MediaTagEditor t(clip, index, this);
         t.MoveTo(m_MediaView->mapToGlobal(position));
         t.exec();
     }
