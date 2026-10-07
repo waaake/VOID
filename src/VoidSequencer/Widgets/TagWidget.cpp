@@ -32,6 +32,12 @@ EntityTagWidget::~EntityTagWidget()
     }
 }
 
+void EntityTagWidget::Set(const SharedTrackItem& item)
+{
+    m_Entity = item.get();
+    m_Type = EntityTagWidget::Type::TRACK_ITEM;
+}
+
 void EntityTagWidget::Set(const SharedPlaybackTrack& track)
 {
     m_Entity = track.get();
@@ -45,23 +51,14 @@ void EntityTagWidget::AddTag()
         return;
 
     SequencerController* controller = m_Context->Controller();
-    // if (m_Metadata->IsValid())
-    // {
-    //     if (m_Type == EntityTagWidget::Type::TRACK)
-    //     {
-    //         controller->AddTag(static_cast<PlaybackTrack*>(m_Entity), name.toStdString(), m_Metadata->Metadata());
-    //     }
-    // }
-    // else
-    // {
-    //     if (m_Type == EntityTagWidget::Type::TRACK)
-    //     {
-    //         controller->AddTag(static_cast<PlaybackTrack*>(m_Entity), name.toStdString());
-    //     }
-    // }
-    if (m_Type == EntityTagWidget::Type::TRACK)
+    switch (m_Type)
     {
-        controller->AddTag(static_cast<PlaybackTrack*>(m_Entity), name.toStdString(), m_Metadata->Metadata());
+        case EntityTagWidget::Type::TRACK:
+            controller->AddTag(static_cast<PlaybackTrack*>(m_Entity), name.toStdString(), m_Metadata->Metadata());
+            break;
+        case EntityTagWidget::Type::TRACK_ITEM:
+            controller->AddTag(static_cast<TrackItem*>(m_Entity), name.toStdString(), m_Metadata->Metadata());
+            break;
     }
 
     accept();
@@ -73,8 +70,19 @@ EntityTagEditor::EntityTagEditor(SequencerContext* context, QWidget* parent)
     : TagEditor(parent)
     , m_Context(context)
 {
-    m_TagList->setFixedWidth(140);
     connect(m_RemoveButton, &QPushButton::clicked, this, &EntityTagEditor::RemoveSelected);
+}
+
+void EntityTagEditor::Set(const SharedTrackItem& item)
+{
+    m_Entity = item.get();
+    m_Type = EntityTagEditor::Type::TRACK_ITEM;
+
+    if (item->HasTags())
+    {
+        SetModel(item->TagsModel());
+        ResetTag();
+    }
 }
 
 void EntityTagEditor::Set(const SharedPlaybackTrack& track)
@@ -84,31 +92,28 @@ void EntityTagEditor::Set(const SharedPlaybackTrack& track)
 
     if (track->HasTags())
     {
-        m_TagList->setModel(track->TagsModel());
-        m_TagList->setCurrentIndex(m_TagList->model()->index(0, 0));
-        TagSelected(m_TagList->currentIndex());
+        SetModel(track->TagsModel());
+        ResetTag();
     }
 }
 
 void EntityTagEditor::RemoveSelected()
 {
-    // const QModelIndex& index = m_TagList->currentIndex();
-    // if (index.isValid())
-    // {
-    //     _MediaBridge.RemoveTag(m_Index, index);
-    //     TagSelected(m_TagList->currentIndex());
-    // }
+    const QModelIndex& index = CurrentTagIndex();
+    if (index.isValid())
+    {
+        SequencerController* controller = m_Context->Controller();
+        switch (m_Type)
+        {
+            case EntityTagEditor::Type::TRACK:
+                controller->RemoveTag(static_cast<PlaybackTrack*>(m_Entity), index);
+                break;
+            case EntityTagEditor::Type::TRACK_ITEM:
+                controller->RemoveTag(static_cast<TrackItem*>(m_Entity), index);
+                break;
+        }
+        SetCurrentTag(CurrentTagIndex());
+    }
 }
-
-// void EntityTagEditor::TagSelected(const QModelIndex& index)
-// {
-//     index.isValid() ? SetCurrentTag(static_cast<Tag*>(index.internalPointer())) : m_TagBase->Reset();
-// }
-
-// void EntityTagEditor::SetCurrentTag(const Tag* tag)
-// {
-//     m_TagBase->ResetName(tag->Name().c_str());
-//     m_TagBase->ResetModel(tag->MetadataModel());
-// }
 
 VOID_NAMESPACE_CLOSE

@@ -27,9 +27,8 @@ public:
     EntityTagWidget(SequencerContext* context, QWidget* parent = nullptr);
     ~EntityTagWidget();
 
-    // void Set(const SharedTrackItem& item);
+    void Set(const SharedTrackItem& item);
     void Set(const SharedPlaybackTrack& track);
-    // void Set(const SharedPlaybackSequence& sequence);
 
 private: /* Members */
     VoidObject* m_Entity;
@@ -53,9 +52,8 @@ class EntityTagEditor : public TagEditor
 public:
     EntityTagEditor(SequencerContext* context, QWidget* parent = nullptr);
 
-    // void Set(const SharedTrackItem& item);
+    void Set(const SharedTrackItem& item);
     void Set(const SharedPlaybackTrack& track);
-    // void Set(const SharedPlaybackSequence& sequence);
 
 private: /* Members */
     VoidObject* m_Entity;
