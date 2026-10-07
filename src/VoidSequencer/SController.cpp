@@ -543,6 +543,16 @@ void SequencerController::AddTag(const SharedPlaybackTrack& track, const std::st
     _MediaBridge.PushCommand(new AddTagCommand(track, name, metadata));
 }
 
+void SequencerController::AddTag(const SharedTrackItem& item, const std::string& name) const
+{
+    _MediaBridge.PushCommand(new AddTrackItemTagCommand(item, name, {}));
+}
+
+void SequencerController::AddTag(const SharedTrackItem& item, const std::string& name, const TagMetaStruct& metadata) const
+{
+    _MediaBridge.PushCommand(new AddTrackItemTagCommand(item, name, metadata));
+}
+
 void SequencerController::AddTag(PlaybackTrack* track, const std::string& name) const
 {
     _MediaBridge.PushCommand(new AddTagCommand(track, name, {}));
@@ -551,6 +561,36 @@ void SequencerController::AddTag(PlaybackTrack* track, const std::string& name) 
 void SequencerController::AddTag(PlaybackTrack* track, const std::string& name, const TagMetaStruct& metadata) const
 {
     _MediaBridge.PushCommand(new AddTagCommand(track, name, metadata));
+}
+
+void SequencerController::AddTag(TrackItem* item, const std::string& name) const
+{
+    _MediaBridge.PushCommand(new AddTrackItemTagCommand(item, name, {}));
+}
+
+void SequencerController::AddTag(TrackItem* item, const std::string& name, const TagMetaStruct& metadata) const
+{
+    _MediaBridge.PushCommand(new AddTrackItemTagCommand(item, name, metadata));
+}
+
+void SequencerController::RemoveTag(const SharedPlaybackTrack& track, const QModelIndex& index) const
+{
+    _MediaBridge.PushCommand(new RemoveTrackTagCommand(track, index));
+}
+
+void SequencerController::RemoveTag(PlaybackTrack* track, const QModelIndex& index) const
+{
+    _MediaBridge.PushCommand(new RemoveTrackTagCommand(track, index));
+}
+
+void SequencerController::RemoveTag(const SharedTrackItem& item, const QModelIndex& index) const
+{
+    _MediaBridge.PushCommand(new RemoveTrackItemTagCommand(item, index));
+}
+
+void SequencerController::RemoveTag(TrackItem* item, const QModelIndex& index) const
+{
+    _MediaBridge.PushCommand(new RemoveTrackItemTagCommand(item, index));
 }
 
 STrack* SequencerController::TrackAt(int index) const

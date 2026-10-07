@@ -78,8 +78,16 @@ public:
     void ResetTimelineInOut(const std::unordered_set<SharedTrackItem>& items);
     void AddTag(const SharedPlaybackTrack& track, const std::string& name) const;
     void AddTag(const SharedPlaybackTrack& track, const std::string& name, const TagMetaStruct& metadata) const;
+    void AddTag(const SharedTrackItem& item, const std::string& name) const;
+    void AddTag(const SharedTrackItem& item, const std::string& name, const TagMetaStruct& metadata) const;
     void AddTag(PlaybackTrack* track, const std::string& name) const;
     void AddTag(PlaybackTrack* track, const std::string& name, const TagMetaStruct& metadata) const;
+    void AddTag(TrackItem* item, const std::string& name) const;
+    void AddTag(TrackItem* item, const std::string& name, const TagMetaStruct& metadata) const;
+    void RemoveTag(const SharedPlaybackTrack& track, const QModelIndex& index) const;
+    void RemoveTag(PlaybackTrack* track, const QModelIndex& index) const;
+    void RemoveTag(const SharedTrackItem& item, const QModelIndex& index) const;
+    void RemoveTag(TrackItem* item, const QModelIndex& index) const;
 
     STrack* TrackAt(const QPointF& position) const;
     STrack* TrackAt(int index) const;
@@ -110,11 +118,13 @@ public:
 
     void EditEffect(Effect* effect) { emit editEffectRequested(effect); }
     void EditTags(const SharedPlaybackTrack& track) { emit editTagsRequested(track); }
+    void EditTags(const SharedTrackItem& item) { emit editTagsRequested(item); }
 
 signals:
     void frameChanged(v_frame_t);
     void editEffectRequested(Effect*);
     void editTagsRequested(const SharedPlaybackTrack&);
+    void editTagsRequested(const SharedTrackItem&);
 
 private:
     Clipboard<SharedTrackItem> m_TrackItemClipboard;
