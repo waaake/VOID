@@ -14,7 +14,7 @@
 
 VOID_NAMESPACE_OPEN
 
-// class STimelineScene;
+class STrackHeaderItem;
 class SHeaderScene;
 class SequencerContext;
 class SNameEditor;
@@ -36,6 +36,7 @@ public:
     
     void EditTrackName();
     STrackHeaderItem* Header(const SharedPlaybackTrack& track) const;
+    QPoint TagPos(const SharedPlaybackTrack& track) const;
 
 private:
     SequencerContext* m_Context;

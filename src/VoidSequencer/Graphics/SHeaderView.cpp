@@ -89,6 +89,13 @@ STrackHeaderItem* SHeaderView::Header(const SharedPlaybackTrack& track) const
     return m_Scene->Header(track);
 }
 
+QPoint SHeaderView::TagPos(const SharedPlaybackTrack& track) const
+{
+    STrackHeaderItem* header = m_Scene->Header(track);
+    const QPoint pos = mapFromScene(header->mapToScene(header->boundingRect().bottomRight()));
+    return QPoint(pos.x() + Sequencer::EntityIconSize, pos.y() + Sequencer::EntityIconSize);
+}
+
 void SHeaderView::SetScroll(int value)
 {
     verticalScrollBar()->setValue(value);
