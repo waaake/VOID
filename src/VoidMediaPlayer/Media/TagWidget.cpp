@@ -57,27 +57,24 @@ MediaTagEditor::MediaTagEditor(const SharedMediaClip& clip, const QModelIndex& i
 
 void MediaTagEditor::Setup()
 {
-    m_TagList->setFixedWidth(140);
     connect(m_RemoveButton, &QPushButton::clicked, this, &MediaTagEditor::RemoveSelected);
-
     if (SharedMediaClip media = m_Media.lock())
     {
         if (media->HasTags())
         {
-            m_TagList->setModel(media->TagsModel());
-            m_TagList->setCurrentIndex(m_TagList->model()->index(0, 0));
-            TagSelected(m_TagList->currentIndex());
+            SetModel(media->TagsModel());
+            ResetTag();
         }
     }
 }
 
 void MediaTagEditor::RemoveSelected()
 {
-    const QModelIndex& index = m_TagList->currentIndex();
+    const QModelIndex& index = CurrentTagIndex();
     if (index.isValid())
     {
         _MediaBridge.RemoveTag(m_Index, index);
-        TagSelected(m_TagList->currentIndex());
+        SetCurrentTag(CurrentTagIndex());
     }
 }
 
