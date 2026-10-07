@@ -18,6 +18,7 @@
 #include "VoidSequencer/Graphics/STrackItem.h"
 #include "VoidSequencer/Graphics/STrackHeader.h"
 #include "VoidSequencer/Graphics/STimelineScene.h"
+#include "VoidSequencer/Widgets/TagWidget.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -29,9 +30,9 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
     Connect();
 }
 
-SequencerTimeline::~SequencerTimeline()
-{
-}
+// SequencerTimeline::~SequencerTimeline()
+// {
+// }
 
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
@@ -207,8 +208,20 @@ void SequencerTimeline::Connect()
     connect(m_Toolbar, &SToolbar::reset, this, &SequencerTimeline::Refresh);
     connect(m_Toolbar, &SToolbar::actionSwitched, this, [this](const SequencerAction& action) -> void { m_Context.SetAction(action); });
 
-    // Controller
+    // Controller0
     connect(m_Context.Controller(), &SequencerController::editEffectRequested, this, &SequencerTimeline::editEffectRequested);
+    connect(
+        m_Context.Controller(),
+        static_cast<void (SequencerController::*)(const SharedPlaybackTrack&)>(&SequencerController::editTagsRequested),
+        this,
+        static_cast<void (SequencerTimeline::*)(const SharedPlaybackTrack&)>(&SequencerTimeline::EditTags)
+    );
+    connect(
+        m_Context.Controller(),
+        static_cast<void (SequencerController::*)(const SharedTrackItem&)>(&SequencerController::editTagsRequested),
+        this,
+        static_cast<void (SequencerTimeline::*)(const SharedTrackItem&)>(&SequencerTimeline::EditTags)
+    );
 
     connect(m_HZoomSlider, &QSlider::valueChanged, this, [this](int value) -> void
     {
@@ -246,10 +259,16 @@ void SequencerTimeline::Connect()
         }
     });
     connect(m_Menu, &SequencerContextMenu::addEffectRequested, this, &SequencerTimeline::CreateEffect);
+
+    /// Version
     connect(m_Menu, &SequencerContextMenu::versionChangeRequested, this, &SequencerTimeline::SwitchVersion);
     connect(m_Menu, &SequencerContextMenu::versionExtremesChangeRequested, this, &SequencerTimeline::SwitchVersionExtremes);
     connect(m_Menu, &SequencerContextMenu::versionInspectionRequested, this, &SequencerTimeline::InspectVersions);
     connect(m_Menu, &SequencerContextMenu::versionScanRequested, this, &SequencerTimeline::ScanVersions);
+
+    /// Tags
+    connect(m_Menu, &SequencerContextMenu::addTagRequested, this, &SequencerTimeline::AddTag);
+    connect(m_Menu, &SequencerContextMenu::editTagsRequested, this, static_cast<void (SequencerTimeline::*)()>(&SequencerTimeline::EditTags));
 
     /// Mark
     connect(m_Menu, &SequencerContextMenu::inOutSetRequested, this, &SequencerTimeline::ResetInOut);
@@ -425,9 +444,54 @@ void SequencerTimeline::AddTag()
     if (sel->HasTrackSelection())
     {
         std::unordered_set<SharedPlaybackTrack> tracks = sel->SelectedTracks();
-        STrackHeaderItem* header = m_Header->Header(*tracks.begin());
-        
+        const SharedPlaybackTrack& track = *tracks.begin();
+
+        EntityTagWidget t(&m_Context, this);
+        t.Set(track);
+        t.MoveTo(mapToGlobal(m_Header->TagPos(track)));
+        t.exec();
     }
+    else if (sel->HasTrackItemSelection())
+    {
+        std::unordered_set<SharedTrackItem> items = sel->SelectedItems();
+        const SharedTrackItem& item = *items.begin();
+
+        EntityTagWidget t(&m_Context, this);
+        t.Set(item);
+        t.MoveTo(mapToGlobal(m_View->TagPos(item)));
+        t.exec();   
+    }
+}
+
+void SequencerTimeline::EditTags()
+{
+    const SSelectionModel* sel = m_Context.SelectionModel();
+    if (sel->HasTrackSelection())
+    {
+        std::unordered_set<SharedPlaybackTrack> tracks = sel->SelectedTracks();
+        EditTags(*tracks.begin());
+    }
+    else if (sel->HasTrackItemSelection())
+    {
+        std::unordered_set<SharedTrackItem> items = sel->SelectedItems();
+        EditTags(*items.begin());
+    }
+}
+
+void SequencerTimeline::EditTags(const SharedPlaybackTrack& track)
+{
+    EntityTagEditor t(&m_Context, this);
+    t.Set(track);
+    t.MoveTo(mapToGlobal(m_Header->TagPos(track)));
+    t.exec();
+}
+
+void SequencerTimeline::EditTags(const SharedTrackItem& item)
+{
+    EntityTagEditor t(&m_Context, this);
+    t.Set(item);
+    t.MoveTo(mapToGlobal(m_View->TagPos(item)));
+    t.exec();
 }
 
 VOID_NAMESPACE_CLOSE

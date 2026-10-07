@@ -23,7 +23,7 @@ class VOID_API SequencerTimeline : public SequencerWidget
     Q_OBJECT
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
-    ~SequencerTimeline();
+    // ~SequencerTimeline();
 
     void SetSequence(const SharedPlaybackSequence& sequence);
     void ClearSequence();
@@ -69,6 +69,9 @@ private: /* Methods */
     void ResetInOut(bool selection = false);
     void Razor(bool sequence = false);
     void AddTag();
+    void EditTags();
+    void EditTags(const SharedPlaybackTrack& track);
+    void EditTags(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE
