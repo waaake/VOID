@@ -21,6 +21,7 @@ VOID_NAMESPACE_OPEN
 class SPlayheadItem;
 class SRazorItem;
 class STrack;
+class STrackItem;
 class SPreviewTrackItem;
 
 class STimelineScene : public QGraphicsScene
@@ -52,6 +53,7 @@ public:
     void DropItems(const QPointF& postion);
 
     int PlayheadX() const;
+    STrackItem* Item(const SharedTrackItem& item) const;
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;

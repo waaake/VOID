@@ -274,6 +274,26 @@ int STimelineScene::PlayheadX() const
     return m_Playhead->x();
 }
 
+STrackItem* STimelineScene::Item(const SharedTrackItem& item) const
+{
+    const PlaybackTrack* track = item->Track();
+    auto _pred = [track](const STrack* t) -> bool { return track == t->Track().get(); };
+    if (track->Type() == Sequence::Type::VIDEO)
+    {
+        auto it = std::find_if(m_VTracks.begin(), m_VTracks.end(), _pred);
+        if (it == m_VTracks.end()) return nullptr;
+        STrack* strack = *it;
+
+        return strack->Item(item);
+    }
+
+    auto it = std::find_if(m_ATracks.begin(), m_ATracks.end(), _pred);
+    if (it == m_ATracks.end()) return nullptr;
+    STrack* strack = *it;
+
+    return strack->Item(item);
+}
+
 void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
 {
     painter->fillRect(rect, palette().color(QPalette::Base));
