@@ -11,22 +11,8 @@
 VOID_NAMESPACE_OPEN
 
 TrackItem::TrackItem(const Sequence::Type& type, QObject* parent)
-    : VoidObject()
-    , m_Media(nullptr)
-    , m_Track(reinterpret_cast<PlaybackTrack*>(parent))
-    , m_Name("")
-    , m_Color(90, 110, 60)
-    , m_Offset(0)
-    , m_TimelineIn(0)
-    , m_TimelineOut(0)
-    , m_SourceIn(0)
-    , m_SourceOut(0)
-    , m_NumVersions(-1)
-    , m_Enabled(true)
-    , m_Type(type)
+    : TrackItem(nullptr, 0, 0, 0, type, parent)
 {
-    VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
-    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, const Sequence::Type& type, QObject* parent)
@@ -44,12 +30,16 @@ TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t en
     , m_Enabled(true)
     , m_Type(type)
 {
+    m_TagModel = new TagModel;
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
     connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::~TrackItem()
 {
+    m_TagModel->deleteLater();
+    delete m_TagModel;
+    m_TagModel = nullptr;
 }
 
 TrackItem::TrackItem(const TrackItem& other)
@@ -483,6 +473,74 @@ void TrackItem::SetColor(const QColor& color)
 {
     m_Color = color;
     emit updated();
+}
+
+bool TrackItem::AddTag(const std::string& name)
+{
+    if (m_TagModel->AddTag(name))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool TrackItem::AddTag(const std::string& name, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->AddTag(name, metadata))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool TrackItem::InsertTag(const std::string& name, int index)
+{
+    if (m_TagModel->InsertTag(name, index))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool TrackItem::InsertTag(const std::string& name, int index, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->InsertTag(name, index, metadata))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+void TrackItem::InsertTag(Tag* tag, int index)
+{
+    m_TagModel->InsertTag(tag, index);
+    emit tagsUpdated();
+}
+
+void TrackItem::RemoveTag(const QModelIndex& index)
+{
+    m_TagModel->RemoveTag(index);
+    emit tagsUpdated();
+}
+
+void TrackItem::RemoveTag(int row)
+{
+    m_TagModel->RemoveTag(row);
+    emit tagsUpdated();
+}
+
+void TrackItem::ClearTags()
+{
+    m_TagModel->ClearAll();
+    emit tagsUpdated();
 }
 
 void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const

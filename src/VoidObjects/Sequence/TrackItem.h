@@ -18,6 +18,7 @@
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Frame.h"
 #include "VoidObjects/VoidObject.h"
+#include "VoidObjects/Models/TagModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -202,6 +203,22 @@ public:
     void ResetColor() { if (m_Media) SetColor(m_Media->Color()); }
     void SetColor(const QColor& color);
 
+    /// Tags
+    bool AddTag(const std::string& name);
+    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
+    bool InsertTag(const std::string& name, int index);
+    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
+    void InsertTag(Tag* tag, int index);
+    void RemoveTag(const QModelIndex& index);
+    void RemoveTag(int row);
+
+    Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
+    Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+    int NumTags() const { return m_TagModel->rowCount(); }
+    bool HasTags() const { return m_TagModel->HasTags(); }
+    inline TagModel* TagsModel() const { return m_TagModel; }
+    void ClearTags();
+
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;
     void Deserialize(const rapidjson::Value& in) override;
@@ -219,6 +236,7 @@ signals:
     void stateChanged();
     void effectUpdated();
     void moved();
+    void tagsUpdated();
 
 protected:
     std::vector<Effect*> m_Effects;
@@ -226,6 +244,8 @@ protected:
     PlaybackTrack* m_Track;
     std::string m_Name;
     QColor m_Color;
+
+    TagModel* m_TagModel;
 
     v_frame_t m_Offset;
 
