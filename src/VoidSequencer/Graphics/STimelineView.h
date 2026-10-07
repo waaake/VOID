@@ -41,6 +41,7 @@ public:
     void FocusOn(v_frame_t frame);
     void FocusOn(v_frame_t start, v_frame_t end, int y = 0);
     const STimelineScene* TimelineScene() const { return m_Scene; }
+    QPoint TagPos(const SharedTrackItem& item) const;
 
 signals:
     void sequenceCutRequested(v_frame_t);
