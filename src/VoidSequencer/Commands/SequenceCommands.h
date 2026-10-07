@@ -498,6 +498,49 @@ private:
     int m_TagIndex;
 };
 
+class AddTrackItemTagCommand : public VoidUndoCommand
+{
+public:
+    AddTrackItemTagCommand(const SharedTrackItem& trackitem, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent = nullptr);
+    AddTrackItemTagCommand(TrackItem* trackitem, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_ItemContext;
+    std::string m_Tag;
+    TagMetaStruct m_Metadata;
+    int m_TagIndex;
+};
+
+class RemoveTrackTagCommand : public VoidUndoCommand
+{
+public:
+    RemoveTrackTagCommand(const SharedPlaybackTrack& track, const QModelIndex& index, QUndoCommand* parent = nullptr);
+    RemoveTrackTagCommand(PlaybackTrack* track, const QModelIndex& index, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_TagData;
+    Sequence::Context m_TrackContext;
+    QModelIndex m_TagIndex;
+};
+
+class RemoveTrackItemTagCommand : public VoidUndoCommand
+{
+public:
+    RemoveTrackItemTagCommand(const SharedTrackItem& item, const QModelIndex& index, QUndoCommand* parent = nullptr);
+    RemoveTrackItemTagCommand(TrackItem* item, const QModelIndex& index, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    std::string m_TagData;
+    Sequence::Context m_ItemContext;
+    QModelIndex m_TagIndex;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _SEQUENCE_COMMANDS_H
