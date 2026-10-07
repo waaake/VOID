@@ -71,8 +71,11 @@ public:
     void MoveTo(const QPoint& position);
 
 protected:
-    void TagSelected(const QModelIndex& index);
+    inline void SetModel(QAbstractItemModel* model) { m_TagList->setModel(model); }
+    inline QModelIndex CurrentTagIndex() const { return m_TagList->currentIndex(); }
+    void SetCurrentTag(const QModelIndex& index);
     void SetCurrentTag(const Tag* tag);
+    void ResetTag();
 
 protected:
     QVBoxLayout* m_Layout;

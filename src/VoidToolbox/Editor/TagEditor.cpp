@@ -71,10 +71,18 @@ TagWidget::~TagWidget()
 
 void TagWidget::MoveTo(const QPoint& position)
 {
-    if (position.y() > (QGuiApplication::primaryScreen()->geometry().height() * 0.5))
-        move({position.x(), position.y() - sizeHint().height()});
-    else
-        move(position);
+    QScreen* screen = QGuiApplication::screenAt(position);
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+
+    const QRect bounds = screen->availableGeometry();
+    const QSize size = sizeHint();
+
+    // position based on the screen geometry
+    move(
+        std::max(bounds.left(), std::min(position.x(), bounds.right() - size.width())),
+        std::max(bounds.top(), std::min(position.y(), bounds.bottom() - size.height()))
+    );
 }
 
 void TagWidget::showEvent(QShowEvent* event)
@@ -107,7 +115,7 @@ TagEditor::TagEditor(QWidget* parent)
 
     // Setup
     m_TagList->setFixedWidth(140);
-    connect(m_TagList, &QListView::clicked, this, &TagEditor::TagSelected);
+    connect(m_TagList, &QListView::clicked, this, static_cast<void (TagEditor::*)(const QModelIndex&)>(&TagEditor::SetCurrentTag));
 }
 
 TagEditor::~TagEditor()
@@ -119,13 +127,21 @@ TagEditor::~TagEditor()
 
 void TagEditor::MoveTo(const QPoint& position)
 {
-    if (position.y() > (QGuiApplication::primaryScreen()->geometry().height() * 0.5))
-        move({position.x(), position.y() - sizeHint().height()});
-    else
-        move(position);
+    QScreen* screen = QGuiApplication::screenAt(position);
+    if (!screen)
+        screen = QGuiApplication::primaryScreen();
+
+    const QRect bounds = screen->availableGeometry();
+    const QSize size = sizeHint();
+
+    // position based on the screen geometry
+    move(
+        std::max(bounds.left(), std::min(position.x(), bounds.right() - size.width())),
+        std::max(bounds.top(), std::min(position.y(), bounds.bottom() - size.height()))
+    );
 }
 
-void TagEditor::TagSelected(const QModelIndex& index)
+void TagEditor::SetCurrentTag(const QModelIndex& index)
 {
     index.isValid() ? SetCurrentTag(static_cast<Tag*>(index.internalPointer())) : m_TagBase->Clear();
 }
@@ -134,6 +150,12 @@ void TagEditor::SetCurrentTag(const Tag* tag)
 {
     m_TagBase->SetName(tag->Name().c_str());
     m_TagBase->SetModel(tag->MetadataModel());
+}
+
+void TagEditor::ResetTag()
+{
+    m_TagList->setCurrentIndex(m_TagList->model()->index(0, 0));
+    SetCurrentTag(m_TagList->currentIndex());
 }
 
 void TagEditor::Build()
