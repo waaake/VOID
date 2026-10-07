@@ -1211,4 +1211,168 @@ bool ResetTrackItemMediaCommand::Redo()
     return true;
 }
 
+/// AddTagCommand
+
+AddTagCommand::AddTagCommand(const SharedPlaybackTrack& track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(track->NumTags())
+{
+    setText("Add Tag");
+}
+
+AddTagCommand::AddTagCommand(PlaybackTrack* track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(track->NumTags())
+{
+    setText("Add Tag");
+}
+
+void AddTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    context.track->RemoveTag(m_TagIndex);
+}
+
+bool AddTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    return context.track->AddTag(m_Tag, m_Metadata);
+}
+
+/// AddTrackItemTagCommand
+
+AddTrackItemTagCommand::AddTrackItemTagCommand(const SharedTrackItem& trackitem, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(trackitem))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(trackitem->NumTags())
+{
+    setText("Add Tag");
+}
+
+AddTrackItemTagCommand::AddTrackItemTagCommand(TrackItem* trackitem, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(trackitem))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(trackitem->NumTags())
+{
+    setText("Add Tag");
+}
+
+void AddTrackItemTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->RemoveTag(m_TagIndex);
+}
+
+bool AddTrackItemTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->AddTag(m_Tag, m_Metadata);
+}
+
+/// RemoveTrackTagCommand
+
+RemoveTrackTagCommand::RemoveTrackTagCommand(const SharedPlaybackTrack& track, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+RemoveTrackTagCommand::RemoveTrackTagCommand(PlaybackTrack* track, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+void RemoveTrackTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    std::istringstream in(m_TagData, std::ios::binary);
+    Tag* tag = new Tag("t");
+    tag->Deserialize(in);
+
+    context.track->InsertTag(tag, m_TagIndex.row());
+}
+
+bool RemoveTrackTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    if (Tag* tag = context.track->TagAt(m_TagIndex))
+    {
+        std::ostringstream os(std::ios::binary);
+        tag->Serialize(os);
+
+        m_TagData = os.str();
+
+        // We're going to Remove the same tag here, so Tag* tag will be a dangling pointer to something
+        // which gets deleted after this call, make sure we don't have a case for that
+        tag = nullptr;
+        context.track->RemoveTag(m_TagIndex);
+
+        return true;
+    }
+    return false;
+}
+
+/// RemoveTrackItemTagCommand
+
+RemoveTrackItemTagCommand::RemoveTrackItemTagCommand(const SharedTrackItem& item, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+RemoveTrackItemTagCommand::RemoveTrackItemTagCommand(TrackItem* item, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+void RemoveTrackItemTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    std::istringstream in(m_TagData, std::ios::binary);
+    Tag* tag = new Tag("t");
+    tag->Deserialize(in);
+
+    context.trackItem->InsertTag(tag, m_TagIndex.row());
+}
+
+bool RemoveTrackItemTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    if (Tag* tag = context.trackItem->TagAt(m_TagIndex))
+    {
+        std::ostringstream os(std::ios::binary);
+        tag->Serialize(os);
+
+        m_TagData = os.str();
+
+        // We're going to Remove the same tag here, so Tag* tag will be a dangling pointer to something
+        // which gets deleted after this call, make sure we don't have a case for that
+        tag = nullptr;
+        context.trackItem->RemoveTag(m_TagIndex);
+
+        return true;
+    }
+    return false;
+}
+
 VOID_NAMESPACE_CLOSE

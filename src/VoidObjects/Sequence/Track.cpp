@@ -28,11 +28,16 @@ PlaybackTrack::PlaybackTrack(const Sequence::Type& type, QObject* parent)
     // , m_Color(130, 110, 190)    /* Default Purple */
 {
     VOID_LOG_INFO("Track Created: {0}", Vuid());
+
+    m_TagModel = new TagModel;
     connect(this, &PlaybackTrack::updated, this, [this]() -> void { m_Recent.reset(); });
 }
 
 PlaybackTrack::~PlaybackTrack()
 {
+    m_TagModel->deleteLater();
+    delete m_TagModel;
+    m_TagModel = nullptr;
 }
 
 int PlaybackTrack::EffectIndex(const Effect* const effect) const
@@ -524,6 +529,74 @@ void PlaybackTrack::RemoveItems(const std::vector<SharedTrackItem>& items)
     emit itemRemoved();
     emit updated();
     ResetRange();
+}
+
+bool PlaybackTrack::AddTag(const std::string& name)
+{
+    if (m_TagModel->AddTag(name))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool PlaybackTrack::AddTag(const std::string& name, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->AddTag(name, metadata))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool PlaybackTrack::InsertTag(const std::string& name, int index)
+{
+    if (m_TagModel->InsertTag(name, index))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool PlaybackTrack::InsertTag(const std::string& name, int index, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->InsertTag(name, index, metadata))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+void PlaybackTrack::InsertTag(Tag* tag, int index)
+{
+    m_TagModel->InsertTag(tag, index);
+    emit tagsUpdated();
+}
+
+void PlaybackTrack::RemoveTag(const QModelIndex& index)
+{
+    m_TagModel->RemoveTag(index);
+    emit tagsUpdated();
+}
+
+void PlaybackTrack::RemoveTag(int row)
+{
+    m_TagModel->RemoveTag(row);
+    emit tagsUpdated();
+}
+
+void PlaybackTrack::ClearTags()
+{
+    m_TagModel->ClearAll();
+    emit tagsUpdated();
 }
 
 void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const

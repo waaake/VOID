@@ -11,6 +11,7 @@
 #include "STrack.h"
 #include "STimelineEffect.h"
 #include "VoidSequencer/SContext.h"
+#include "VoidIconForge/IconForge.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -64,21 +65,25 @@ STrack* STrackItem::Track() const
 
 void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
+    const QPalette& p = option->palette;
     painter->setRenderHint(QPainter::Antialiasing);
-    const int width = boundingRect().width();
+
+    const QRectF brect = boundingRect();
+    const int width = brect.width();
+
     if (m_Item->Linked())
     {
         const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
         painter->setPen(QPen(itemcol, 1));
         painter->setBrush(Background(option));
-        painter->drawRect(boundingRect());
+        painter->drawRect(brect);
 
         painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
 
-        painter->setPen(option->palette.color(QPalette::Text));
+        painter->setPen(p.color(QPalette::Text));
         const ElementTokens& tokens = m_Item->Tokens();
         painter->drawText(
-            boundingRect().adjusted(10, 0, -2, 0),
+            brect.adjusted(10, 0, -2, 0),
             Qt::AlignLeft | Qt::AlignTop,
             tokens.HasVersion()
             ? QString("%1 (%2)").arg(m_Item->Name().c_str()).arg(tokens.version.c_str())
@@ -102,9 +107,9 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
         if (m_SlipContext.active)
         {
-            painter->setPen(option->palette.color(QPalette::Highlight));
+            painter->setPen(p.color(QPalette::Highlight));
             painter->drawText(
-                boundingRect(),
+                brect,
                 Qt::AlignCenter,
                 m_SlipContext.offset > 0 ? QString("+%1").arg(m_SlipContext.offset) : (QString::number(m_SlipContext.offset))
             );
@@ -112,7 +117,7 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
         if (m_Context->Action() == SequencerAction::TRIM && m_Context->HoverModel()->IsHovered(m_Item) && !m_TrimContext.active)
         {
-            painter->setPen(QPen(option->palette.color(QPalette::Highlight), 2));
+            painter->setPen(QPen(p.color(QPalette::Highlight), 2));
             painter->drawLine(m_HeadTrimRect.right(), 8, m_HeadTrimRect.right(), m_HeadTrimRect.height() - 8);
             painter->drawLine(m_TailTrimRect.left(), 8, m_TailTrimRect.left(), m_TailTrimRect.height() - 8);
         }
@@ -121,25 +126,28 @@ void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     {
         QColor itemcol(160, 70, 50);
         painter->setPen(QPen(itemcol.darker(200), 1));
-        painter->setBrush(m_Context->SelectionModel()->IsSelected(m_Item) ? option->palette.color(QPalette::Highlight).darker(180) : itemcol);
-        painter->drawRect(boundingRect());
+        painter->setBrush(m_Context->SelectionModel()->IsSelected(m_Item) ? p.color(QPalette::Highlight).darker(180) : itemcol);
+        painter->drawRect(brect);
 
         const QRect trect(6, Sequencer::TrackItemHeight - 30, 40, 20);
         if (width > trect.right())
         {
             painter->fillRect(trect, itemcol.darker(180));
 
-            painter->setPen(option->palette.color(QPalette::Text));
+            painter->setPen(p.color(QPalette::Text));
             painter->drawText(trect, Qt::AlignCenter, "OFF");
-            painter->drawText(boundingRect().adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+            painter->drawText(brect.adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
         }
     }
 
-    painter->setPen(QPen(option->palette.color(QPalette::Highlight), 2));
+    if (m_Item->HasTags() && (width > 40))
+        painter->drawPixmap(m_TagRect.topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
+
+    painter->setPen(QPen(p.color(QPalette::Highlight), 2));
     if (Track()->IsRazored(m_Item->TimelineIn()))
-        painter->drawLine(boundingRect().left() + 4, 4, boundingRect().left() + 4, boundingRect().bottom() - 4);
+        painter->drawLine(brect.left() + 4, 4, brect.left() + 4, brect.bottom() - 4);
     if (Track()->IsRazored(m_Item->TimelineOut()))
-        painter->drawLine(boundingRect().right() - 4, 4, boundingRect().right() - 4, boundingRect().bottom() - 4);
+        painter->drawLine(brect.right() - 4, 4, brect.right() - 4, brect.bottom() - 4);
 }
 
 void STrackItem::Update()
@@ -196,6 +204,9 @@ void STrackItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
     {
         if (m_Context->Action() == SequencerAction::NONE)
         {
+            if (m_Item->HasTags() && m_TagRect.contains(event->pos()))
+                m_Context->Controller()->EditTags(m_Item);
+
             if (event->modifiers() & Qt::ControlModifier)
                 m_Context->SelectionModel()->Toggle(m_Item);
             else
@@ -400,7 +411,8 @@ void STrackItem::Connect()
 {
     auto* ptr = m_Item.get();
     connect(m_Context->SelectionModel(), &SSelectionModel::selectionChanged, this, [this]() { update(); });
-    connect(ptr, &TrackItem::updated, this, &STrackItem::Update);
+    connect(ptr, &TrackItem::updated, this, [this]() { update(); });
+    connect(ptr, &TrackItem::tagsUpdated, this, &STrackItem::Update);
     connect(ptr, &TrackItem::stateChanged, this, &STrackItem::Update);
     connect(ptr, &TrackItem::rangeChanged, this, &STrackItem::Update);
     connect(ptr, &TrackItem::moved, this, &STrackItem::Update);
@@ -413,6 +425,13 @@ void STrackItem::CalculateBoundingRect()
     const double width = m_Context->Geometry()->FrameToSceneX(m_Item->TimelineOut() + 1) - m_Context->Geometry()->FrameToSceneX(m_Item->TimelineIn());
     m_BoundingRect = QRectF(0, 0, width, Sequencer::TrackItemHeight - 4);
 
+    m_TagRect = QRect(
+        m_BoundingRect.right() - (Sequencer::EntityIconSize + Sequencer::EntityMargin),
+        m_BoundingRect.top() + Sequencer::EntitySpacing,
+        Sequencer::EntityIconSize,
+        Sequencer::EntityIconSize
+    );
+    
     m_HeadTrimRect = QRectF(m_BoundingRect.topLeft(), QPointF(std::min(m_BoundingRect.topLeft().x() + 10, width), m_BoundingRect.height()));
     m_TailTrimRect = QRectF(QPointF(std::max(m_BoundingRect.topRight().x() - 10, m_BoundingRect.left()), m_BoundingRect.top()), m_BoundingRect.bottomRight());
 }

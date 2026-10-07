@@ -50,6 +50,10 @@ signals:
     void versionInspectionRequested();
     void versionScanRequested();
 
+    /// Tags
+    void addTagRequested();
+    void editTagsRequested();
+
     /// Edit Mode
     void editModeChangeRequested(const SequencerController::EditMode&);
 
@@ -96,6 +100,10 @@ private:
     QAction* m_VersionDownAction;
     QAction* m_MaxVersionAction;
     QAction* m_MinVersionAction;
+
+    QMenu* m_TagsMenu;
+    QAction* m_AddTagAction;
+    QAction* m_EditTagsAction;
 
     QMenu* m_EditModeMenu;
     QAction* m_NoOverwriteAction;

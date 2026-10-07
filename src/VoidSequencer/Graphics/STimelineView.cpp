@@ -102,6 +102,14 @@ void STimelineView::FocusOn(v_frame_t start, v_frame_t end, int y)
     verticalScrollBar()->setValue(verticalScrollBar()->value() + mapped.y());
 }
 
+QPoint STimelineView::TagPos(const SharedTrackItem& item) const
+{
+    STrackItem* sitem = m_Scene->Item(item);
+    const QRectF brect = sitem->boundingRect();
+    const QPoint pos = mapFromScene(sitem->mapToScene(brect.topRight()));
+    return QPoint(pos.x() + brect.width(), pos.y() + (2 * Sequencer::EntityIconSize));
+}
+
 void STimelineView::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasFormat(MimeTypes::MediaItem))

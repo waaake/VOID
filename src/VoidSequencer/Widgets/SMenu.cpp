@@ -121,6 +121,13 @@ void SequencerContextMenu::Build()
     m_VersionMenu->addAction(m_MaxVersionAction);
     m_VersionMenu->addAction(m_MinVersionAction);
 
+    /// Tags Menu
+    m_TagsMenu = new QMenu("Tags", this);
+    m_AddTagAction = new QAction("Add Tag", m_TagsMenu);
+    m_EditTagsAction = new QAction("Edit Tag(s)", m_TagsMenu);
+    m_TagsMenu->addAction(m_AddTagAction);
+    m_TagsMenu->addAction(m_EditTagsAction);
+
     /// Edit Mode Settings Menu
     m_EditModeMenu = new QMenu("Edit Mode", this);
     m_EditModeGroup = new QActionGroup(m_EditModeMenu);
@@ -175,7 +182,9 @@ void SequencerContextMenu::Build()
     addMenu(m_MarkMenu);
     addSeparator();
     addMenu(m_ColorMenu);
+    addSeparator();
     addMenu(m_VersionMenu);
+    addMenu(m_TagsMenu);
     addSeparator();
     addMenu(m_EditorialMenu);
     addMenu(m_EditModeMenu);
@@ -218,6 +227,10 @@ void SequencerContextMenu::Connect()
     connect(m_MinVersionAction, &QAction::triggered, this, [this]() -> void { emit versionExtremesChangeRequested(false); });
     connect(m_InspectVersionsAction, &QAction::triggered, this, &SequencerContextMenu::versionInspectionRequested);
     connect(m_ScanDirectoryAction, &QAction::triggered, this, &SequencerContextMenu::versionScanRequested);
+
+    /// Tags
+    connect(m_AddTagAction, &QAction::triggered, this, &SequencerContextMenu::addTagRequested);
+    connect(m_EditTagsAction, &QAction::triggered, this, &SequencerContextMenu::editTagsRequested);
 
     /// Color
     connect(m_ColorItemAction, &QAction::triggered, this, [this]() -> void { emit colorChangeRequested(false); });
@@ -267,6 +280,10 @@ void SequencerContextMenu::Validate()
     m_VersionDownAction->setEnabled(itemSelection);
     m_MinVersionAction->setEnabled(itemSelection);
     m_MaxVersionAction->setEnabled(itemSelection);
+
+    /// Tags
+    m_AddTagAction->setEnabled(itemSelection || trackSelection);
+    m_EditTagsAction->setEnabled(itemSelection || trackSelection);
 
     /// Edit Mode
     m_NoOverwriteAction->setChecked(controller->GetEditMode() == SequencerController::EditMode::NO_OVERWRITE);

@@ -41,6 +41,10 @@ inline constexpr int ZPlayheadItem = 10000;
 inline constexpr int DragTravelDistance = 10;
 inline constexpr int SlipTravelDistance = 4;
 
+inline constexpr int EntityMargin = 8;
+inline constexpr int EntityIconSize = 18;
+inline constexpr int EntitySpacing = 10;
+
 }; // namespace Sequencer
 
 VOID_NAMESPACE_CLOSE

@@ -17,6 +17,7 @@
 #include "TrackItem.h"
 #include "Internal/Descriptors.h"
 #include "VoidObjects/VoidObject.h"
+#include "VoidObjects/Models/TagModel.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -148,6 +149,22 @@ public:
     void RemoveItem(const SharedTrackItem& item);
     void RemoveItems(const std::vector<SharedTrackItem>& items);
 
+    /// Tags
+    bool AddTag(const std::string& name);
+    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
+    bool InsertTag(const std::string& name, int index);
+    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
+    void InsertTag(Tag* tag, int index);
+    void RemoveTag(const QModelIndex& index);
+    void RemoveTag(int row);
+
+    Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
+    Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+    int NumTags() const { return m_TagModel->rowCount(); }
+    bool HasTags() const { return m_TagModel->HasTags(); }
+    inline TagModel* TagsModel() const { return m_TagModel; }
+    void ClearTags();
+
     /**
      * The track's range is always defined by the track items in it
      * The only thing which can/should be changed of a track is the starting frame
@@ -184,6 +201,7 @@ signals: /* Signals Denoting actions in the Track */
     void effectAboutToBeRemoved(Effect*);
     void effectRemoved();
     void maxEffectsChanged();
+    void tagsUpdated();
     void attribUpdated();
 
 protected: /* Members */
@@ -194,6 +212,8 @@ protected: /* Members */
     PlaybackSequence* m_Sequence;
     SharedTrackItem m_Recent;
     std::string m_Name;
+    TagModel* m_TagModel;
+
     int m_StartFrame, m_EndFrame;
     int m_Duration;
     int m_MaxEffects;

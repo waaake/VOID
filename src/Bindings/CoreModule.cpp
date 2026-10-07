@@ -312,7 +312,9 @@ void BindCore(py::module_& m)
             },
             py::arg("effect")
         )
-        .def("clear_effects", &PlaybackTrack::ClearEffects);
+        .def("clear_effects", &PlaybackTrack::ClearEffects)
+        .def("add_tag", static_cast<bool (PlaybackTrack::*)(const std::string&)>(&PlaybackTrack::AddTag), py::arg("name"))
+        .def("remove_tag", static_cast<void (PlaybackTrack::*)(int)>(&PlaybackTrack::RemoveTag), py::arg("index"));
 
     py::class_<TrackItem, SharedTrackItem>(m, "TrackItem")
         .def("__repr__", [](py::handle h) -> std::string
@@ -339,6 +341,8 @@ void BindCore(py::module_& m)
         .def("trim_tail", &TrackItem::TrimTail, py::arg("handle"))
         .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference)
         .def("unlink", &TrackItem::Unlink)
+        .def("add_tag", static_cast<bool (TrackItem::*)(const std::string&)>(&TrackItem::AddTag), py::arg("name"))
+        .def("remove_tag", static_cast<void (TrackItem::*)(int)>(&TrackItem::RemoveTag), py::arg("index"))
         .def("version_up", &TrackItem::VersionUp)
         .def("version_down", &TrackItem::VersionDown)
         .def("update_to_latest_version", &TrackItem::SetLatestAvailableVersion);
