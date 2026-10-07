@@ -41,6 +41,8 @@ public:
     void AddEffects();
     void RemoveEffect(Effect* effect);
 
+    QRectF TagRect() const { return m_TagRect; }
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
@@ -54,6 +56,7 @@ private:
     SSlipClipContext m_SlipContext;
     SItemTrimContext m_TrimContext;
     QRectF m_HeadTrimRect, m_TailTrimRect;
+    QRectF m_TagRect;
     SharedTrackItem m_Item;
     SHandleItem *m_HeadHandle, *m_TailHandle, *m_DurationHandle;
 
