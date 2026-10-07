@@ -79,6 +79,10 @@ void STrackHeaderItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
         {
             m_Context->Controller()->ToggleTrackLock(m_Track);
         }
+        else if (TagRect().contains(event->pos().toPoint()) && m_Track->HasTags())
+        {
+            m_Context->Controller()->EditTags(m_Track);
+        }
         else if (StateRect().contains(event->pos().toPoint()))
         {
             m_Context->Controller()->ToggleTrackState(m_Track);
@@ -104,6 +108,7 @@ void STrackHeaderItem::Connect()
     connect(ptr, &PlaybackTrack::updated, this, [this]() -> void { update(); });
     connect(ptr, &PlaybackTrack::attribUpdated, this, [this]() -> void { update(); });
     connect(ptr, &PlaybackTrack::stateChanged, this, [this]() -> void { update(); });
+    connect(ptr, &PlaybackTrack::tagsUpdated, this, [this]() -> void { update(); });
     connect(m_Context->SelectionModel(), &SSelectionModel::trackSelectionChanged, this, [this]() { update(); });
 }
 
