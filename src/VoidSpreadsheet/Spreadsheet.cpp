@@ -45,6 +45,13 @@ void Spreadsheet::Setup()
     {
         m_Context->SelectionModel()->Select(m_Sheet->SelectedItems());
     });
+    connect(this, &SpreadsheetWidget::updateReferenceMedia, this, &Spreadsheet::SetReferenceMedia);
+}
+
+void Spreadsheet::SetReferenceMedia(const SharedMediaClip& media)
+{
+    if (SharedPlaybackSequence sequence = m_Context->Sequence())
+        m_Context->Controller()->SetReferenceMedia(media, sequence);
 }
 
 VOID_NAMESPACE_CLOSE
