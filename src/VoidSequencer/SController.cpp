@@ -123,6 +123,13 @@ void SequencerController::CreateTrackItems(const std::vector<std::pair<const Sha
     stack->endMacro();
 }
 
+bool SequencerController::SetReferenceMedia(const SharedMediaClip& media, const SharedPlaybackSequence& sequence)
+{
+    SetReferenceMediaCommand* command = new SetReferenceMediaCommand(media, sequence);
+    _MediaBridge.PushCommand(command);
+    return command->Status();
+}
+
 bool SequencerController::MoveItem(const SharedTrackItem& item, v_frame_t frame)
 {
     if (m_EditMode == EditMode::RIPPLE)

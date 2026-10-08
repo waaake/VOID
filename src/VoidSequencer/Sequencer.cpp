@@ -30,9 +30,9 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
     Connect();
 }
 
-// SequencerTimeline::~SequencerTimeline()
-// {
-// }
+SequencerTimeline::~SequencerTimeline()
+{
+}
 
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {
@@ -116,6 +116,19 @@ void SequencerTimeline::TrimItemHead(const SharedTrackItem& item, int handle)
 void SequencerTimeline::TrimItemTail(const SharedTrackItem& item, int handle)
 {
     m_Context.Controller()->TrimItemTail(item, handle);
+}
+
+bool SequencerTimeline::SetReferenceMedia(const SharedMediaClip& media)
+{
+    if (m_Context.Sequence())
+        return m_Context.Controller()->SetReferenceMedia(media, m_Context.Sequence());
+
+    return false;
+}
+
+bool SequencerTimeline::SetReferenceMedia(const SharedMediaClip& media, const SharedPlaybackSequence& sequence)
+{
+    return m_Context.Controller()->SetReferenceMedia(media, sequence);
 }
 
 void SequencerTimeline::SetHorizontalScale(float factor)

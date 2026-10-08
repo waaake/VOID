@@ -68,7 +68,7 @@ void STrack::Update()
     prepareGeometryChange();
     int index = m_Track->Index();
     setPos(0, m_Context->Geometry()->TrackTop(index, m_Track->Type()));
-    
+
     m_BoundingRect = QRectF(
         0,
         0,
@@ -115,7 +115,7 @@ void STrack::RemoveEffect(Effect* effect)
 {
     if (m_Effects.find(effect) == m_Effects.end())
         return;
-    
+
     STimelineEffect*& teffect = m_Effects[effect];
     teffect->setVisible(false);
     teffect->setParent(nullptr);
@@ -247,6 +247,9 @@ void STrack::BuildItems()
 void STrack::Connect()
 {
     auto* ptr = m_Track.get();
+    auto* seqptr = m_Track->Sequence();
+
+    connect(seqptr, &PlaybackSequence::tracksReordered, this, &STrack::Update);
     connect(ptr, &PlaybackTrack::updated, this, &STrack::UpdateItems);
     connect(ptr, &PlaybackTrack::stateChanged, this, &STrack::UpdateItems);
     connect(ptr, &PlaybackTrack::itemAdded, this, &STrack::AddItem);

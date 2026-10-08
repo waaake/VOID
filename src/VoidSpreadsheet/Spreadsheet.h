@@ -26,6 +26,7 @@ private:
 
 private:
     void Setup();
+    void SetReferenceMedia(const SharedMediaClip& media);
 };
 
 VOID_NAMESPACE_CLOSE

@@ -3,6 +3,8 @@
 
 /* STD */
 #include <sstream>
+#include <string>
+#include <unordered_map>
 
 /* Pybind11 */
 #include <pybind11/pybind11.h>
@@ -21,6 +23,7 @@
 #include "VoidObjects/Sequence/Sequence.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidObjects/Media/Tag.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -215,6 +218,19 @@ void BindCore(py::module_& m)
         .def("get_value", &Effect::Value, py::return_value_policy::reference)
         .def("set_value", &Effect::SetValue, py::arg("param"), py::arg("value"));
 
+    py::class_<Tag>(m, "Tag")
+        .def("name", &Tag::Name)
+        .def("set_name", &Tag::SetName, py::arg("name"))
+        .def("add_metadata", &Tag::AddMetadata, py::arg("key"), py::arg("value"))
+        .def("metadata", [](const Tag* self) -> std::unordered_map<std::string, std::string>
+        {
+            const std::vector<std::pair<std::string, std::string>> metadata = self->Metadata();
+            std::unordered_map<std::string, std::string> map;
+            map.reserve(metadata.size());
+            map.insert(metadata.begin(), metadata.end());
+            return map;
+        });
+
     py::class_<PlaybackSequence, SharedPlaybackSequence>(m, "PlaybackSequence")
         .def(py::init())
         .def("__repr__", [](py::handle h) -> std::string
@@ -274,6 +290,7 @@ void BindCore(py::module_& m)
         .def("end_frame", &PlaybackTrack::EndFrame)
         .def("set_enabled", &PlaybackTrack::SetEnabled, py::arg("enabled"))
         .def("enabled", &PlaybackTrack::Enabled)
+        .def("is_reference", &PlaybackTrack::IsReference)
         .def("add_item",
             static_cast<SharedTrackItem (PlaybackTrack::*)(const SharedMediaClip&)>(&PlaybackTrack::AddMedia),
             py::arg("media"),
@@ -314,7 +331,8 @@ void BindCore(py::module_& m)
         )
         .def("clear_effects", &PlaybackTrack::ClearEffects)
         .def("add_tag", static_cast<bool (PlaybackTrack::*)(const std::string&)>(&PlaybackTrack::AddTag), py::arg("name"))
-        .def("remove_tag", static_cast<void (PlaybackTrack::*)(int)>(&PlaybackTrack::RemoveTag), py::arg("index"));
+        .def("remove_tag", static_cast<void (PlaybackTrack::*)(int)>(&PlaybackTrack::RemoveTag), py::arg("index"))
+        .def("get_tag", &PlaybackTrack::GetTag, py::arg("name"), py::return_value_policy::reference_internal);
 
     py::class_<TrackItem, SharedTrackItem>(m, "TrackItem")
         .def("__repr__", [](py::handle h) -> std::string
@@ -343,6 +361,7 @@ void BindCore(py::module_& m)
         .def("unlink", &TrackItem::Unlink)
         .def("add_tag", static_cast<bool (TrackItem::*)(const std::string&)>(&TrackItem::AddTag), py::arg("name"))
         .def("remove_tag", static_cast<void (TrackItem::*)(int)>(&TrackItem::RemoveTag), py::arg("index"))
+        .def("get_tag", &TrackItem::GetTag, py::arg("name"), py::return_value_policy::reference_internal)
         .def("version_up", &TrackItem::VersionUp)
         .def("version_down", &TrackItem::VersionDown)
         .def("update_to_latest_version", &TrackItem::SetLatestAvailableVersion);

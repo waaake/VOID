@@ -65,7 +65,7 @@ void STrackHeaderItem::Update()
 {
     prepareGeometryChange();
     int index = m_Track->Index();
-    setPos(0, m_Context->Geometry()->TrackRect(index).top());
+    setPos(0, m_Context->Geometry()->TrackTop(index, m_Track->Type()));
     Resize(index);
 
     update();
@@ -104,6 +104,9 @@ void STrackHeaderItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 void STrackHeaderItem::Connect()
 {
     auto* ptr = m_Track.get();
+    auto* seqptr = m_Track->Sequence();
+
+    connect(seqptr, &PlaybackSequence::tracksReordered, this, &STrackHeaderItem::Update);
     connect(ptr, &PlaybackTrack::maxEffectsChanged, this, &STrackHeaderItem::Update);
     connect(ptr, &PlaybackTrack::updated, this, [this]() -> void { update(); });
     connect(ptr, &PlaybackTrack::attribUpdated, this, [this]() -> void { update(); });
@@ -133,7 +136,7 @@ QColor STrackHeaderItem::Background(const QPalette& palette) const
 {
     if (m_Context->SelectionModel()->IsSelected(m_Track))
         return palette.color(QPalette::Highlight).darker(150);
-    
+
     return m_Track->Type() == Sequence::Type::VIDEO ? palette.color(QPalette::Dark) : QColor(45, 55, 45);
 }
 

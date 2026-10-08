@@ -216,7 +216,8 @@ public:
     Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
     int NumTags() const { return m_TagModel->rowCount(); }
     bool HasTags() const { return m_TagModel->HasTags(); }
-    inline TagModel* TagsModel() const { return m_TagModel; }
+    TagModel* TagsModel() const { return m_TagModel; }
+    Tag* GetTag(const std::string& name) const { return m_TagModel->GetTag(name); }
     void ClearTags();
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;

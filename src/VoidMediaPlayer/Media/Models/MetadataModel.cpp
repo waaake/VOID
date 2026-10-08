@@ -21,7 +21,7 @@ void MetadataModel::SetMetadata(const SharedMediaClip& media)
     // Custom Tags metadata
     for (const Tag* tag : media->Tags())
     {
-        for (const auto& [key, value] : tag->Metdata())
+        for (const auto& [key, value] : tag->Metadata())
         {
             // Key
             std::string key_;

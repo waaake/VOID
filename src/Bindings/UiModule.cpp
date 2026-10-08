@@ -120,7 +120,16 @@ void BindUi(py::module_& m)
         .def("razor_at", static_cast<void (SequencerTimeline::*)(const SharedPlaybackTrack&, v_frame_t)>(&SequencerTimeline::RazorAt), py::arg("track"), py::arg("frame"))
         .def("merge_cut", &SequencerTimeline::MergeCut, py::arg("track"), py::arg("frame"))
         .def("trim_item_head", &SequencerTimeline::TrimItemHead, py::arg("item"), py::arg("handle"))
-        .def("trim_item_tail", &SequencerTimeline::TrimItemTail, py::arg("item"), py::arg("handle"));
+        .def("trim_item_tail", &SequencerTimeline::TrimItemTail, py::arg("item"), py::arg("handle"))
+        .def("set_reference_media",
+            static_cast<bool (SequencerTimeline::*)(const SharedMediaClip&)>(&SequencerTimeline::SetReferenceMedia),
+            py::arg("media")
+        )
+        .def("set_reference_media",
+            static_cast<bool (SequencerTimeline::*)(const SharedMediaClip&, const SharedPlaybackSequence&)>(&SequencerTimeline::SetReferenceMedia),
+            py::arg("media"),
+            py::arg("sequence")
+        );
     
     /* Menu System */
     py::class_<MenuSystem>(m, "MenuSystem")

@@ -21,6 +21,8 @@ if (WIN32)
     list(APPEND SOURCES
         ../VoidObjects/Effects/Effects.h
         ../VoidObjects/Core/Task.h
+        ../VoidObjects/Media/Tag.h
+        ../VoidObjects/Models/TagMetadataModel.h
         ../VoidQExtensions/Frame.h
         ../VoidQExtensions/LineEdit.h
         ../VoidQExtensions/PushButton.h

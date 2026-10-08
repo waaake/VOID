@@ -52,6 +52,7 @@ public:
     void RemoveTag(int row);
     Tag* TagAt(const QModelIndex& index) const;
     Tag* TagAt(int row) const;
+    Tag* GetTag(const std::string& name) const;
     void ClearAll();
 
     inline bool HasTags() const { return !m_Tags.empty(); }

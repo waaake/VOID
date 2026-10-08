@@ -1375,4 +1375,56 @@ bool RemoveTrackItemTagCommand::Redo()
     return false;
 }
 
+/// SetReferenceMediaCommand
+
+SetReferenceMediaCommand::SetReferenceMediaCommand(const SharedMediaClip& media, const SharedPlaybackSequence& sequence, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Context(Sequence::Context::Get(sequence))
+    , m_Project(media->Project())
+    , m_MediaIndex(m_Project->MediaRow(media))
+{
+    setText("Set Reference Media");
+}
+
+void SetReferenceMediaCommand::undo()
+{
+    Sequence::ResolvedContext context = m_Context.Resolve();
+    if (SharedPlaybackTrack refvideo = context.sequence->ReferenceVideoTrack())
+        context.sequence->RemoveTrack(refvideo);
+
+    if (SharedPlaybackTrack refaudio = context.sequence->ReferenceAudioTrack())
+        context.sequence->RemoveTrack(refaudio);
+}
+
+bool SetReferenceMediaCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_Context.Resolve();
+    const SharedMediaClip& media = m_Project->MediaAt(m_MediaIndex, 0);
+
+    if (!media) return false;
+
+    SharedPlaybackTrack refvideo = context.sequence->ReferenceVideoTrack();
+    if (!refvideo)
+    {
+        refvideo = context.sequence->CreateTrack(Sequence::Type::VIDEO, 0);
+        refvideo->SetName("Reference");
+        refvideo->AddTag("Reference");
+    }
+    refvideo->SetMedia(media);
+
+    if (media->HasAudio())
+    {
+        SharedPlaybackTrack refaudio = context.sequence->ReferenceAudioTrack();
+        if (!refaudio)
+        {
+            refaudio = context.sequence->CreateTrack(Sequence::Type::AUDIO, 0);
+            refaudio->SetName("Reference");
+            refaudio->AddTag("Reference");
+        }
+        refaudio->SetMedia(media);
+    }
+
+    return true;
+}
+
 VOID_NAMESPACE_CLOSE

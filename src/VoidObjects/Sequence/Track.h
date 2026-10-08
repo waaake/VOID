@@ -115,12 +115,14 @@ public:
     [[nodiscard]] inline bool Active() const { return m_Visible && m_Enabled; }
 
     inline bool Visible() const { return m_Visible; }
-    
+
     bool Locked() const { return m_Locked; }
     void Lock(bool lock) { m_Locked = lock; emit updated(); }
 
     void SetEnabled(bool enable) { m_Enabled = enable; emit stateChanged(); }
     inline bool Enabled() const { return m_Enabled; }
+
+    bool IsReference() const;
 
     /**
      * From the track, return the track item which is present at a given frame in the timeline
@@ -160,6 +162,7 @@ public:
 
     Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
     Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+    Tag* GetTag(const std::string& name) const { return m_TagModel->GetTag(name); }
     int NumTags() const { return m_TagModel->rowCount(); }
     bool HasTags() const { return m_TagModel->HasTags(); }
     inline TagModel* TagsModel() const { return m_TagModel; }
