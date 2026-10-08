@@ -33,8 +33,7 @@ SharedMediaClip ProjectBridge::OpenMedia()
         return nullptr;
     }
 
-    m_Bridge.AddMedia(mediaBrowser.GetSelectedFile());
-    return m_Bridge.LastMedia();
+    return m_Bridge.AddMedia(mediaBrowser.GetSelectedFile()) ? m_Bridge.LastMedia() : nullptr;
 }
 
 SharedMediaClip ProjectBridge::OpenMedia(const std::string& path)
