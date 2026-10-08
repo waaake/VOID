@@ -25,8 +25,8 @@ void SpreadsheetWidget::Build()
     m_Layout = new QVBoxLayout(this);
 
     QHBoxLayout* boxlayout = new QHBoxLayout;
-    m_MatchMediaBtn = new QPushButton("Match Media");
-    m_SetRefMediaBtn = new QPushButton("Set Reference Media");
+    m_MatchMediaBtn = new MediaDropButton("Match Media");
+    m_SetRefMediaBtn = new MediaDropButton("Set Reference Media");
 
     boxlayout->addWidget(m_MatchMediaBtn);
     boxlayout->addWidget(m_SetRefMediaBtn);
@@ -40,7 +40,13 @@ void SpreadsheetWidget::Build()
 
 void SpreadsheetWidget::Setup()
 {
+    connect(m_SetRefMediaBtn, &MediaDropButton::mediaDropped, this, &SpreadsheetWidget::SetReferenceMedia);
+}
 
+void SpreadsheetWidget::SetReferenceMedia(const std::vector<SharedMediaClip>& media)
+{
+    if (media.empty()) return;
+    emit updateReferenceMedia(media[0]);
 }
 
 VOID_NAMESPACE_CLOSE

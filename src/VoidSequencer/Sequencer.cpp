@@ -30,9 +30,9 @@ SequencerTimeline::SequencerTimeline(TimelineController* controller, QWidget* pa
     Connect();
 }
 
-// SequencerTimeline::~SequencerTimeline()
-// {
-// }
+SequencerTimeline::~SequencerTimeline()
+{
+}
 
 void SequencerTimeline::SetSequence(const SharedPlaybackSequence& sequence)
 {

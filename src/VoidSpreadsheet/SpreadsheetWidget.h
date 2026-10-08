@@ -7,10 +7,10 @@
 /* Qt */
 #include <QWidget>
 #include <QLayout>
-#include <QPushButton>
 
 /* Internal */
 #include "Definition.h"
+#include "VoidSpreadsheet/PushButton.h"
 #include "VoidSpreadsheet/Views/Spreadsheet.h"
 
 VOID_NAMESPACE_OPEN
@@ -24,17 +24,21 @@ public:
 
     inline QSize sizeHint() const override { return QSize(300, 300); }
 
+signals:
+    void updateReferenceMedia(const SharedMediaClip&);
+
 protected:
     QVBoxLayout* m_Layout;
 
-    QPushButton* m_MatchMediaBtn;
-    QPushButton* m_SetRefMediaBtn;
+    MediaDropButton* m_MatchMediaBtn;
+    MediaDropButton* m_SetRefMediaBtn;
 
     SpreadsheetTable* m_Sheet;
 
 private:
     void Build();
     void Setup();
+    void SetReferenceMedia(const std::vector<SharedMediaClip>& media);
 };
 
 VOID_NAMESPACE_CLOSE
