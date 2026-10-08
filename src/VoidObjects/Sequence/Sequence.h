@@ -73,6 +73,8 @@ public:
 
     const SharedPlaybackTrack& VideoTrackAt(std::size_t index) const { return m_VideoTracks.at(index); }
     const SharedPlaybackTrack& AudioTrackAt(std::size_t index) const { return m_AudioTracks.at(index); }
+    SharedPlaybackTrack ReferenceVideoTrack() const;
+    SharedPlaybackTrack ReferenceAudioTrack() const;
     const SharedPlaybackTrack& TrackAt(std::size_t index, const Sequence::Type& type) const;
     const std::vector<SharedPlaybackTrack>& VideoTracks() const { return m_VideoTracks; }
     const std::vector<SharedPlaybackTrack>& AudioTracks() const { return m_AudioTracks; }
@@ -114,6 +116,7 @@ public:
 
 signals: /* Signals denoting actions in the seqeuence */
     void trackAdded(const SharedPlaybackTrack& track);
+    void tracksReordered();
     void trackAboutToBeRemoved(const SharedPlaybackTrack& track);
     void trackRemoved();
     void cleared();

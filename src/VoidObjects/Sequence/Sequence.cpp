@@ -179,6 +179,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
     emit trackAdded(track);
+    emit tracksReordered();
 }
 
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index)
@@ -206,6 +207,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
     emit trackAdded(track);
+    emit tracksReordered();
 }
 
 void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
@@ -218,6 +220,7 @@ void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
         m_AudioTracks.erase(std::remove_if(m_AudioTracks.begin(), m_AudioTracks.end(), _pred), m_AudioTracks.end());
     
     emit trackRemoved();
+    emit tracksReordered();
 }
 
 void PlaybackSequence::RemoveTrack(int index, const Sequence::Type& type)
@@ -236,6 +239,7 @@ void PlaybackSequence::RemoveTrack(int index, const Sequence::Type& type)
     }
 
     emit trackRemoved();
+    emit tracksReordered();
 }
 
 void PlaybackSequence::UpdateRange(int start, int end)
@@ -260,6 +264,24 @@ void PlaybackSequence::UpdateRange(int start, int end)
 
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
     ResizeBuffer(m_EndFrame - m_StartFrame + 1);
+}
+
+SharedPlaybackTrack PlaybackSequence::ReferenceVideoTrack() const
+{
+    for (const auto& track : m_VideoTracks)
+        if (track->IsReference())
+            return track;
+
+    return nullptr;
+}
+
+SharedPlaybackTrack PlaybackSequence::ReferenceAudioTrack() const
+{
+    for (const auto& track : m_AudioTracks)
+        if (track->IsReference())
+            return track;
+
+    return nullptr;
 }
 
 const SharedPlaybackTrack& PlaybackSequence::TrackAt(std::size_t index, const Sequence::Type& type) const
