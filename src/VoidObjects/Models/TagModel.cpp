@@ -145,6 +145,15 @@ Tag* TagModel::TagAt(const QModelIndex& index) const
     return index.isValid() && index.row() < static_cast<int>(m_Tags.size()) ? m_Tags[index.row()] : nullptr;
 }
 
+Tag* TagModel::GetTag(const std::string& name) const
+{
+    auto it = std::find_if(m_Tags.begin(), m_Tags.end(), [name](const Tag* tag) -> bool
+    {
+        return tag->Name() == name;
+    });
+    return it == m_Tags.end() ? nullptr : *it;
+}
+
 Tag* TagModel::TagAt(int row) const
 {
     return row < static_cast<int>(m_Tags.size()) ? m_Tags[row] : nullptr;
