@@ -3,6 +3,8 @@
 
 /* STD */
 #include <sstream>
+#include <string>
+#include <unordered_map>
 
 /* Pybind11 */
 #include <pybind11/pybind11.h>
@@ -218,7 +220,16 @@ void BindCore(py::module_& m)
 
     py::class_<Tag>(m, "Tag")
         .def("name", &Tag::Name)
-        .def("set_name", &Tag::SetName, py::arg("name"));
+        .def("set_name", &Tag::SetName, py::arg("name"))
+        .def("add_metadata", &Tag::AddMetadata, py::arg("key"), py::arg("value"))
+        .def("metadata", [](const Tag* self) -> std::unordered_map<std::string, std::string>
+        {
+            const std::vector<std::pair<std::string, std::string>> metadata = self->Metadata();
+            std::unordered_map<std::string, std::string> map;
+            map.reserve(metadata.size());
+            map.insert(metadata.begin(), metadata.end());
+            return map;
+        });
 
     py::class_<PlaybackSequence, SharedPlaybackSequence>(m, "PlaybackSequence")
         .def(py::init())
