@@ -40,6 +40,8 @@ public:
     void MergeCut(const SharedPlaybackTrack& track, v_frame_t frame);
     void TrimItemHead(const SharedTrackItem& item, int handle);
     void TrimItemTail(const SharedTrackItem& item, int handle);
+    bool SetReferenceMedia(const SharedMediaClip& media);
+    bool SetReferenceMedia(const SharedMediaClip& media, const SharedPlaybackSequence& sequence);
 
     void SetHorizontalScale(float factor);
     void Refresh();
