@@ -3,6 +3,9 @@
 
 /* Internal */
 #include "SpreadsheetWidget.h"
+#include "VoidCore/Logging.h"
+#include "VoidMediaBrowser/Browser.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -40,7 +43,21 @@ void SpreadsheetWidget::Build()
 
 void SpreadsheetWidget::Setup()
 {
+    connect(m_SetRefMediaBtn, &MediaDropButton::clicked, this, &SpreadsheetWidget::ImportReferenceMedia);
     connect(m_SetRefMediaBtn, &MediaDropButton::mediaDropped, this, &SpreadsheetWidget::SetReferenceMedia);
+}
+
+void SpreadsheetWidget::ImportReferenceMedia()
+{
+    MediaBrowser mediaBrowser;
+    if (!mediaBrowser.Browse())
+    {
+        VOID_LOG_INFO("User Cancelled Loading Reference Media");
+        return;
+    }
+
+    if (_MediaBridge.AddMedia(mediaBrowser.GetSelectedFile()))
+        emit updateReferenceMedia(_MediaBridge.LastMedia());
 }
 
 void SpreadsheetWidget::SetReferenceMedia(const std::vector<SharedMediaClip>& media)

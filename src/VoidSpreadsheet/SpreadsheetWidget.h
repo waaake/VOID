@@ -38,6 +38,7 @@ protected:
 private:
     void Build();
     void Setup();
+    void ImportReferenceMedia();
     void SetReferenceMedia(const std::vector<SharedMediaClip>& media);
 };
 

@@ -66,6 +66,7 @@ target_link_libraries(
     VoidCore
     VoidObjects
     VoidSequencer
+    VoidMediaBrowser
     VoidMediaPlayer
 )
 
