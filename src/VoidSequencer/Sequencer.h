@@ -23,7 +23,7 @@ class VOID_API SequencerTimeline : public SequencerWidget
     Q_OBJECT
 public:
     explicit SequencerTimeline(TimelineController* controller, QWidget* parent = nullptr);
-    // ~SequencerTimeline();
+    ~SequencerTimeline();
 
     void SetSequence(const SharedPlaybackSequence& sequence);
     void ClearSequence();
