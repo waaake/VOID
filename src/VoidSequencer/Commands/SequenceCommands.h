@@ -541,6 +541,19 @@ private:
     QModelIndex m_TagIndex;
 };
 
+class SetReferenceMediaCommand : public VoidUndoCommand
+{
+public:
+    SetReferenceMediaCommand(const SharedMediaClip& media, const SharedPlaybackSequence& sequence, QUndoCommand* parent = nullptr);
+    void undo() override;
+    bool Redo() override;
+
+private:
+    Sequence::Context m_Context;
+    Core::Project* m_Project;
+    int m_MediaIndex;
+};
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _SEQUENCE_COMMANDS_H
