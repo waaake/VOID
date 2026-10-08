@@ -43,7 +43,7 @@ signals:
     // For a bunch of media is set to be played
     void playlistChanged(const std::vector<SharedMediaClip>&);
     void mediaDropped(const std::string&);
-    // When a Media is inspected of its Metdata
+    // When a Media is inspected of its Metadata
     void metadataInspected(const SharedMediaClip&);
     void effectsEdited(const SharedMediaClip&);
 

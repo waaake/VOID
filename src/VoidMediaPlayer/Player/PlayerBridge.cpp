@@ -103,7 +103,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     /* -------------------------------- */
     playbackMenu->addSeparator();
 
-    QAction* inspectMetdataAction = menuSystem->AddAction(playbackMenu, "Inspect Metadata", QKeySequence(Qt::Key_I));
+    QAction* inspectMetadataAction = menuSystem->AddAction(playbackMenu, "Inspect Metadata", QKeySequence(Qt::Key_I));
 
     connect(enableCacheAction, &QAction::triggered, this, &PlayerBridge::ResumeCache);
     connect(disableCacheAction, &QAction::triggered, this, &PlayerBridge::DisableCache);
@@ -124,7 +124,7 @@ void PlayerBridge::InitMenu(MenuSystem* menuSystem)
     connect(resetRangeAction, &QAction::triggered, this, &PlayerBridge::ResetRange);
     connect(editRateAction, &QAction::triggered, this, &PlayerBridge::EditFramerate);
 
-    connect(inspectMetdataAction, &QAction::triggered, this, &PlayerBridge::InspectCurrentMetadata);
+    connect(inspectMetadataAction, &QAction::triggered, this, &PlayerBridge::InspectCurrentMetadata);
     /* }}} */
 
     /* Viewer Contols Menu {{{ */

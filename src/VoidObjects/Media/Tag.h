@@ -26,7 +26,8 @@ public:
     void SetName(const std::string& name) { m_Name = name; }
     
     const std::string& Name() const { return m_Name; }
-    const std::vector<std::pair<std::string, std::string>>& Metdata() const { return m_Metadata->Metadata(); }
+    const std::vector<std::pair<std::string, std::string>>& Metadata() const { return m_Metadata->Metadata(); }
+    void AddMetadata(const std::string& key, const std::string& value) { m_Metadata->Add(key, value); }
     TagMetadataModel* MetadataModel() const { return m_Metadata; }
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;

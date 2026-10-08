@@ -76,4 +76,12 @@ Qt::ItemFlags TagMetadataModel::flags(const QModelIndex& index) const
     return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
 }
 
+void TagMetadataModel::Add(const std::string& key, const std::string& value)
+{
+    int row = rowCount();
+    beginInsertRows(QModelIndex(), row, row);
+    m_Metadata.emplace_back(key, value);
+    endInsertRows();
+}
+
 VOID_NAMESPACE_CLOSE

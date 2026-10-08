@@ -39,6 +39,7 @@ public:
     const TagMetaStruct& Metadata() const { return m_Metadata; }
     void Set(const TagMetaStruct& metadata) { m_Metadata = metadata; }
     void Set(TagMetaStruct&& metadata) { std::swap(m_Metadata, metadata); }
+    void Add(const std::string& key, const std::string& value);
 
 private:
     TagMetaStruct m_Metadata;
