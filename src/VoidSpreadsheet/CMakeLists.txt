@@ -1,5 +1,6 @@
 set(SOURCES
 
+    PushButton.cpp
     Spreadsheet.cpp
     SpreadsheetWidget.cpp
 
@@ -20,6 +21,7 @@ if (WIN32)
         ../VoidMediaPlayer/Player/PlayerWidget.h
         ../VoidMediaPlayer/Project/Project.h
         ../VoidMediaPlayer/Player/ViewerBuffer.h
+        ../VoidMediaPlayer/Media/MediaBridge.h
         ../VoidMenuSystem/MenuSystem.h
         ../VoidObjects/Core/Entity.h
         ../VoidObjects/Effects/Effects.h
