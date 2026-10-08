@@ -119,9 +119,11 @@ void MBridge::SetActiveProject(Project* project)
     m_Projects->Refresh();
 }
 
-void MBridge::AddMedia(const std::string& filepath)
+bool MBridge::AddMedia(const std::string& filepath)
 {
-    PushCommand(new MediaImportCommand(m_Project, filepath));
+    MediaImportCommand* command = new MediaImportCommand(m_Project, filepath);
+    PushCommand(command);
+    return command->Status();
 }
 
 void MBridge::RemoveEntity(const QModelIndex& index)

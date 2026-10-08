@@ -55,7 +55,7 @@ public:
     MBridge(MBridge&&) = delete;
     MBridge& operator=(MBridge&&) = delete;
 
-    void AddMedia(const std::string& filepath);
+    bool AddMedia(const std::string& filepath);
     void RemoveEntity(const QModelIndex& index);
     void RemoveEntity(const std::vector<QModelIndex>& indexes);
 
