@@ -341,6 +341,11 @@ v_frame_t PlaybackTrack::GetSnapFrame(v_frame_t frame, const SharedTrackItem& tr
     return -1;
 }
 
+bool PlaybackTrack::IsReference() const
+{
+    return m_Name == "Reference" && GetTag("Reference");
+}
+
 SharedTrackItem PlaybackTrack::GetTrackItem(v_frame_t frame)
 {
     if (m_Recent && m_Recent->InTimelineRange(frame))
