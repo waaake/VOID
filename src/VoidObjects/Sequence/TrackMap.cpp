@@ -6,6 +6,7 @@
 
 /* Internal */
 #include "TrackMap.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -82,47 +83,90 @@ void TrackMap::Remove(v_frame_t frame)
 
 std::size_t TrackMap::ItemIndex(const SharedTrackItem& item) const
 {
-    auto it = std::find_if(m_Items.begin(), m_Items.end(), [item](const SharedTrackItem& _i) { return item.get() == _i.get(); });
-    return (it == m_Items.end()) ? std::string::npos : static_cast<std::size_t>(it - m_Items.begin());
+    /// The internal items are all arranged in ascending order of the timeline in, so we can run binary search as opposed to linear
+    v_frame_t start = item->TimelineIn();
+
+    int low = 0;
+    int high = static_cast<int>(m_Items.size()) - 1;
+
+    while (low <= high)
+    {
+        const int mid = low + (high - low) / 2;
+        if (m_Items[mid]->TimelineIn() < start)
+            low = mid + 1;
+        else if (m_Items[mid]->TimelineIn() > start)
+            high = mid - 1;
+        else
+            return mid;
+    }
+
+    return std::string::npos;
 }
 
 std::size_t TrackMap::ItemIndex(const TrackItem* item) const
 {
-    auto it = std::find_if(m_Items.begin(), m_Items.end(), [item](const SharedTrackItem& _i) { return item == _i.get(); });
-    return (it == m_Items.end()) ? std::string::npos : static_cast<std::size_t>(it - m_Items.begin());
+    /// The internal items are all arranged in ascending order of the timeline in, so we can run binary search as opposed to linear
+    v_frame_t start = item->TimelineIn();
+
+    int low = 0;
+    int high = static_cast<int>(m_Items.size()) - 1;
+
+    while (low <= high)
+    {
+        const int mid = low + (high - low) / 2;
+        if (m_Items[mid]->TimelineIn() < start)
+            low = mid + 1;
+        else if (m_Items[mid]->TimelineIn() > start)
+            high = mid - 1;
+        else
+            return mid;
+    }
+
+    return std::string::npos;
 }
 
 SharedTrackItem TrackMap::At(const int frame) const
 {
-    // Returns the iter to the first item whose timeline in is higher than the requested O(log n)
-    auto it = std::lower_bound(
-        m_Items.begin(),
-        m_Items.end(),
-        frame,
-        [](const SharedTrackItem& _i, v_frame_t _f)
-        {
-            return _i->TimelineIn() <= _f;
-        }
-    );
+    int low = 0;
+    int high = static_cast<int>(m_Items.size()) - 1;
 
-    if (it == m_Items.begin())
-        return nullptr;
+    while (low <= high)
+    {
+        const int mid = low + (high - low) / 2;
+        const SharedTrackItem& item = m_Items[mid];
+        const MFrameRange range = item->TimelineRange();
+        if (range.Contains(frame))
+            return item;
+        else if (range.endframe < frame)
+            low = mid + 1;
+        else if (range.startframe > frame)
+            high = mid - 1;
+    }
 
-    SharedTrackItem item = *(--it);
-    return (item->InTimelineRange(frame)) ? item : nullptr;
+    return nullptr;
 }
 
 SharedTrackItem TrackMap::InRange(v_frame_t start, v_frame_t end) const
 {
-    int step = std::max(1, (int)(end - start) / 10);
-    for (int i = start; i < end; i += step)
+    int low = 0;
+    int high = static_cast<int>(m_Items.size()) - 1;
+
+    const MFrameRange source(start, end);
+    while (low <= high)
     {
-        if (SharedTrackItem item = At(i))
+        const int mid = low + (high - low) / 2;
+        const SharedTrackItem& item = m_Items[mid];
+        const MFrameRange range = item->TimelineRange();
+
+        if (source.Covers(range) || source.Overlaps(range) || range.Covers(source))
             return item;
+        else if (range.endframe < start)
+            low = mid + 1;
+        else if (range.startframe > end)
+            high = mid - 1;
     }
 
-    // Ensures that we check the last frame always
-    return At(end);
+    return nullptr;
 }
 
 bool TrackMap::Move(const SharedTrackItem& item, int frame)
