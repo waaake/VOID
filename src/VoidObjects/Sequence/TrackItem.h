@@ -70,6 +70,8 @@ public:
     bool Linked() const { return (bool)m_Media; }
     void Unlink();
 
+    std::string Path() const { return m_Path; }
+
     std::string Version() const;
     int NumAvailableVersions();
 
@@ -241,9 +243,10 @@ signals:
 
 protected:
     std::vector<Effect*> m_Effects;
+    std::string m_Name;
+    std::string m_Path;
     SharedMediaClip m_Media;
     PlaybackTrack* m_Track;
-    std::string m_Name;
     QColor m_Color;
 
     TagModel* m_TagModel;
