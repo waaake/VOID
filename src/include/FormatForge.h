@@ -12,6 +12,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "ConformRule.h"
 #include "PixReader.h"
 #include "PixWriter.h"
 #include "Operator.h"
@@ -85,6 +86,7 @@ public:
     bool Register(const FormatRegistry<MPixForge>& registry);
     bool Register(const IOpRegistry& registry);
     bool Register(const WriterRegistry& registry);
+    bool Register(ConformRule* rule);
 
     /* Unregister all of the loaded plugins */
     void UnregisterPlugins();
@@ -100,6 +102,7 @@ public:
     std::unique_ptr<ImageOp> GetImageOp(const std::string& name) const;
     std::unique_ptr<PixWriter> GetImageWriter(const std::string& extension, const EncodeSpec& spec) const;
     std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const;
+    std::vector<ConformRule*> ConformRules() const { return m_ConformRules; }
 
     inline bool IsMovie(const std::string& extension) const { return m_MovieForger.find(extension) != m_MovieForger.end(); }
     inline bool IsImage(const std::string& extension) const { return m_ImageForger.find(extension) != m_ImageForger.end(); }
@@ -114,6 +117,7 @@ private: /* Members */
     std::unordered_map<std::string, IOpForge> m_IOpForger;
     std::unordered_map<std::string, PixWriterForge> m_ImageWriters;
     std::unordered_map<std::string, PixWriterForge> m_MovieWriters;
+    std::vector<ConformRule*> m_ConformRules;
 
 private: /* Methods */
     void RegisterImageReader(const std::string& extension, PixForge forger);

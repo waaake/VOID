@@ -58,12 +58,26 @@ bool Forge::Register(const WriterRegistry& registry)
     return true;
 }
 
+bool Forge::Register(ConformRule* rule)
+{
+    m_ConformRules.push_back(rule);
+    return true;
+}
+
 void Forge::UnregisterPlugins()
 {
     /* Clear All of underlying structs */
     m_ImageForger.clear();
     m_MovieForger.clear();
     m_IOpForger.clear();
+
+    for (ConformRule*& rule : m_ConformRules)
+    {
+        delete rule;
+        rule = nullptr;
+    }
+
+    m_ConformRules.clear();
 
     VOID_LOG_INFO("Unregistered All Plugins.");
 }
