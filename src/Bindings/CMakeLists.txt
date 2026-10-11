@@ -4,6 +4,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Sources
 set(SOURCES
     Module.cpp
+    Bases.cpp
     CoreModule.cpp
     UiModule.cpp
 )

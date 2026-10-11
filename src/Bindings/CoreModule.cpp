@@ -12,6 +12,8 @@
 
 /* Internal */
 #include "Definition.h"
+#include "ConformRule.h"
+#include "FormatForge.h"
 #include "Operator.h"
 #include "FrameRange.h"
 #include "Timecode.h"
@@ -39,6 +41,12 @@ void BindCore(py::module_& m)
     // {
     //     VOID_LOG_INFO("test");
     // });
+
+    /// Plugin Registration
+    m.def("register_conform_rule", [](ConformRule* rule) -> bool
+    {
+        return Forge::Instance().Register(rule);
+    });
 
     py::class_<MFrameRange>(m, "MFrameRange")
         .def(py::init<v_frame_t, v_frame_t, double>(), py::arg("start"), py::arg("end"), py::arg("framerate") = 24.0)
