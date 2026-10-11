@@ -11,9 +11,10 @@
 #include "Definition.h"
 #include "Importer.h"
 #include "VoidObjects/Project/Project.h"
-#include "VoidQExtensions/ProgressTask.h"
 
 VOID_NAMESPACE_OPEN
+
+class ProgressTask;
 
 /**
  * A Project is essentially, just the store for Media and Media entities or collection
