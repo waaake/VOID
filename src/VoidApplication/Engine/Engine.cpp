@@ -16,6 +16,7 @@
 #include "VoidCore/Readers/Registration.h"
 #include "VoidCore/Operators/Registration.h"
 #include "VoidCore/Writers/Registration.h"
+#include "VoidConformer/Rules/Registration.h"
 
 #include "VoidCore/Profiler.h"
 #include "VoidObjects/Core/Threads.h"
@@ -147,6 +148,8 @@ void VoidEngine::PostInit()
     RegisterOperators();
     // Register Media Writers
     RegisterWriters();
+    // Rules
+    RegisterConformRules();
 
     /* Register Any other Media plugins that are found in the way */
     // ReaderPluginLoader::Instance().LoadExternals();
