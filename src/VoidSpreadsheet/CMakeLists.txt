@@ -30,6 +30,7 @@ if (WIN32)
         ../VoidObjects/Media/MediaClip.h
         ../VoidObjects/Models/EntityModel.h
         ../VoidObjects/Models/PlaylistModel.h
+        ../VoidObjects/Models/ProjectModel.h
         ../VoidObjects/Models/TagModel.h
         ../VoidObjects/Models/TagMetadataModel.h
         ../VoidObjects/Playlist/Playlist.h

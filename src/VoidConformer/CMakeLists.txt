@@ -7,6 +7,26 @@ set(SOURCES
     Conformer.cpp
 )
 
+# Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
+if (WIN32)
+    list(APPEND SOURCES
+        ../VoidObjects/Effects/Effects.h
+        ../VoidObjects/Core/Entity.h
+        ../VoidObjects/Media/Tag.h
+        ../VoidObjects/Media/MediaClip.h
+        ../VoidObjects/Models/EntityModel.h
+        ../VoidObjects/Models/PlaylistModel.h
+        ../VoidObjects/Models/TagModel.h
+        ../VoidObjects/Models/TagMetadataModel.h
+        ../VoidObjects/Playlist/Playlist.h
+        ../VoidObjects/Project/Project.h
+        ../VoidObjects/Sequence/Sequence.h
+        ../VoidObjects/Sequence/Track.h
+        ../VoidObjects/Sequence/TrackItem.h
+        ../VoidQExtensions/ProgressTask.h
+    )
+endif()
+
 add_library(
     VoidConformer
     SHARED
@@ -25,6 +45,8 @@ target_link_libraries(
     PUBLIC
     VoidCore
     VoidObjects
+    VoidUndo
+    VoidMediaPlayer
 )
 
 target_link_libraries(
