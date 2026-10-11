@@ -10,7 +10,7 @@
 
 VOID_NAMESPACE_OPEN
 
-class FilenameRule : public ConformRule
+class VOID_API FilenameRule : public ConformRule
 {
 public:
     FilenameRule() = default;
