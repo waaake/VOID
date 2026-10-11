@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "Definition.h"
-#include "SpreadsheetWidget.h"
+#include "Widgets/SpreadsheetWidget.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -26,6 +26,7 @@ private:
 
 private:
     void Setup();
+    void Conform(const std::vector<SharedMediaClip>& clips);
     void SetReferenceMedia(const SharedMediaClip& media);
 };
 
