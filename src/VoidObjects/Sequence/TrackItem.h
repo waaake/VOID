@@ -158,6 +158,7 @@ public:
 
     v_frame_t SourceIn() const { return m_SourceIn; }
     v_frame_t SourceOut() const { return m_SourceOut; }
+    MFrameRange SourceRange() const { return MFrameRange(m_SourceIn, m_SourceOut); }
 
     void SetSourceIn(v_frame_t frame);
     void SetSourceOut(v_frame_t frame);
