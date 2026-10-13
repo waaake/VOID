@@ -4,7 +4,9 @@
 /* Internal */
 #include "Definition.h"
 #include "FormatForge.h"
+
 #include "Filename.h"
+#include "Fullpath.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -15,6 +17,7 @@ namespace Internal {
         Forge& forge = Forge::Instance();
 
         forge.Register(new FilenameRule());
+        forge.Register(new FullpathRule());
         return true;
     }
     
