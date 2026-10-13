@@ -27,11 +27,12 @@ public:
 private:
     std::vector<SharedMediaClip> m_Sources;
     std::vector<SharedTrackItem> m_Candidates;
+    std::unordered_map<SharedTrackItem, std::unordered_map<std::string, std::string>> m_MetadataStore;
     Project* m_Project;
 
 private:
     std::unordered_map<std::string, std::string> Metadata(const SharedMediaClip& media) const;
-    std::unordered_map<std::string, std::string> Metadata(const SharedTrackItem& item) const;
+    const std::unordered_map<std::string, std::string>& Metadata(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE
