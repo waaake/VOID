@@ -25,6 +25,7 @@ struct VOID_API Timecode
 
     std::string String() const;
     static Timecode Get(const std::string_view& tc, double framerate, bool dropframe = false);
+    static std::string ToString(v_frame_t frames, double framerate = 24.0, bool dropframe = false);
 
 protected:
     constexpr Timecode(v_frame_t frames, double framerate, bool dropframe, bool negative)
