@@ -33,11 +33,14 @@ std::unordered_set<SharedTrackItem> Conformer::Conform(const ConformOptions& opt
         const std::unordered_map<std::string, std::string> sourceMetadata = Metadata(source);
         for (const SharedTrackItem& candidate : m_Candidates)
         {
+            // The candidate already has media linked on it and reconforming on existing is not set
+            if (candidate->Linked() && !options.reconform)
+                continue;
+
             if (linked.find(candidate) != linked.end())
                 continue;
 
-            const std::unordered_map<std::string, std::string> candidateMetadata = Metadata(candidate);
-
+            const std::unordered_map<std::string, std::string>& candidateMetadata = Metadata(candidate);
             /// Check for the timecode match first, if we can't match the timecode rule, we cannot proceed further
             /// This validates whether the source can be linked to the
             if (!tcrule.Match(sourceMetadata, candidateMetadata))
