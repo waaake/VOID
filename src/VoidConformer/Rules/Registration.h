@@ -7,6 +7,8 @@
 
 #include "Filename.h"
 #include "Fullpath.h"
+#include "PartialName.h"
+#include "FileHead.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -18,6 +20,8 @@ namespace Internal {
 
         forge.Register(new FilenameRule());
         forge.Register(new FullpathRule());
+        forge.Register(new PartialNameRule());
+        forge.Register(new FileHeadRule());
         return true;
     }
     

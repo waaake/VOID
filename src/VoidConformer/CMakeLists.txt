@@ -1,7 +1,9 @@
 set(SOURCES
 
+    Rules/FileHead.cpp
     Rules/Filename.cpp
     Rules/Fullpath.cpp
+    Rules/PartialName.cpp
     Rules/Timecode.cpp
 
     Commands/ConformCommands.cpp

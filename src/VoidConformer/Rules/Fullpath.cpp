@@ -1,9 +1,6 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-/* STD */
-#include <filesystem>
-
 /* Internal */
 #include "Fullpath.h"
 
