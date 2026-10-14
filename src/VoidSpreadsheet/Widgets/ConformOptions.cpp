@@ -51,6 +51,13 @@ ConformOptions ConformOptionsDialog::Options() const
 
     for (const auto& cb : cbs)
     {
+        /// For some reason, the findChildren call above yields qcheckboxes as well
+        // making the TcMatchCheckBox and ReconfomCheckBox as a valid entity here
+        // this causes the rules to push a rule in an invalid state which can't be detected safely
+        // and leads to a crash -- for now keeping this here, need to investigate this behaviour in qt6
+        if (cb == m_TcMatchCheckBox || cb == m_ReconformCheckBox)
+            continue;
+
         if (cb->isChecked())
             rules.push_back(cb->Rule());
     }
