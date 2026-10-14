@@ -45,6 +45,7 @@ void SpreadsheetWidget::Setup()
 {
     connect(m_SetRefMediaBtn, &MediaDropButton::clicked, this, &SpreadsheetWidget::ImportReferenceMedia);
     connect(m_SetRefMediaBtn, &MediaDropButton::mediaDropped, this, &SpreadsheetWidget::SetReferenceMedia);
+    connect(m_MatchMediaBtn, &MediaDropButton::mediaDropped, this, &SpreadsheetWidget::conformMedia);
 }
 
 void SpreadsheetWidget::ImportReferenceMedia()

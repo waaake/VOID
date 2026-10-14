@@ -120,4 +120,10 @@ Timecode Timecode::Get(const std::string_view& tc, double framerate, bool dropfr
     return Timecode(total, framerate, dropframe, negative);
 }
 
+std::string Timecode::ToString(v_frame_t frame, double framerate, bool dropframe)
+{
+    Timecode tc(frame, framerate, dropframe);
+    return tc.String();
+}
+
 VOID_NAMESPACE_CLOSE

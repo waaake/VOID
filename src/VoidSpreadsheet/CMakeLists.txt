@@ -1,8 +1,6 @@
 set(SOURCES
 
-    PushButton.cpp
     Spreadsheet.cpp
-    SpreadsheetWidget.cpp
 
     Delegates/ColorBoxDelegate.cpp
     Delegates/StatusDelegate.cpp
@@ -10,6 +8,10 @@ set(SOURCES
     Models/Spreadsheet.cpp
 
     Views/Spreadsheet.cpp
+ 
+    Widgets/ConformOptions.cpp
+    Widgets/PushButton.cpp
+    Widgets/SpreadsheetWidget.cpp
 )
 
 # Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations
@@ -28,6 +30,7 @@ if (WIN32)
         ../VoidObjects/Media/MediaClip.h
         ../VoidObjects/Models/EntityModel.h
         ../VoidObjects/Models/PlaylistModel.h
+        ../VoidObjects/Models/ProjectModel.h
         ../VoidObjects/Models/TagModel.h
         ../VoidObjects/Models/TagMetadataModel.h
         ../VoidObjects/Playlist/Playlist.h
@@ -63,6 +66,7 @@ target_include_directories(
 target_link_libraries(
     VoidSpreadsheet
     PUBLIC
+    VoidConformer
     VoidCore
     VoidObjects
     VoidSequencer

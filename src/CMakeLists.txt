@@ -14,6 +14,9 @@ add_subdirectory(VoidBridge)
 # Build Core Library
 add_subdirectory(VoidCore)
 
+# Conform Library
+add_subdirectory(VoidConformer)
+
 # Dock widgets and docking ability
 add_subdirectory(VoidDocker)
 
@@ -115,6 +118,7 @@ target_link_libraries(
     VOID
     PRIVATE
     VoidCore
+    VoidConformer
     VoidObjects
     VoidEngine
     Qt::Widgets
@@ -196,6 +200,7 @@ install(TARGETS
     VoidAudio
     VoidBridge
     VoidCore
+    VoidConformer
     VoidDocker
     VoidExporter
     VoidIconForge

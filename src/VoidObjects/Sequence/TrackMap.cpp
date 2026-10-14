@@ -6,7 +6,6 @@
 
 /* Internal */
 #include "TrackMap.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 

@@ -11,6 +11,7 @@
 #include "VoidCore/Profiler.h"
 #include "VoidMediaPlayer/Commands/MediaCommands.h"
 #include "VoidQExtensions/MessageBox.h"
+#include "VoidQExtensions/ProgressTask.h"
 
 VOID_NAMESPACE_OPEN
 

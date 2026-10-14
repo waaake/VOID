@@ -10,8 +10,8 @@
 
 /* Internal */
 #include "Definition.h"
-#include "VoidSpreadsheet/PushButton.h"
 #include "VoidSpreadsheet/Views/Spreadsheet.h"
+#include "VoidSpreadsheet/Widgets/PushButton.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -25,6 +25,7 @@ public:
     inline QSize sizeHint() const override { return QSize(300, 300); }
 
 signals:
+    void conformMedia(const std::vector<SharedMediaClip>&);
     void updateReferenceMedia(const SharedMediaClip&);
 
 protected:

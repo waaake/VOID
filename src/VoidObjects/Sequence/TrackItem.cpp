@@ -11,15 +11,30 @@
 VOID_NAMESPACE_OPEN
 
 TrackItem::TrackItem(const Sequence::Type& type, QObject* parent)
-    : TrackItem(nullptr, 0, 0, 0, type, parent)
+    : VoidObject()
+    , m_Media(nullptr)
+    , m_Track(nullptr)
+    , m_Color(QColor(100, 116, 101))
+    , m_Offset(0)
+    , m_TimelineIn(0)
+    , m_TimelineOut(0)
+    , m_SourceIn(0)
+    , m_SourceOut(0)
+    , m_NumVersions(-1)
+    , m_Enabled(true)
+    , m_Type(type)
 {
+    m_TagModel = new TagModel;
+    VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
+    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, const Sequence::Type& type, QObject* parent)
     : VoidObject()
+    , m_Name(media->Name())
+    , m_Path(media->Path())
     , m_Media(media)
     , m_Track(reinterpret_cast<PlaybackTrack*>(parent))
-    , m_Name(media->Name())
     , m_Color(type == Sequence::Type::VIDEO ? media->Color() : QColor(100, 116, 101))
     , m_Offset(offset)
     , m_TimelineIn(start)
@@ -113,6 +128,7 @@ void TrackItem::SetMedia(const SharedMediaClip& media, v_frame_t offset)
 {
     m_Media = media;
     m_Offset = offset;
+    m_Path = media->Path();
 
     emit mediaChanged();
 }
@@ -121,6 +137,8 @@ void TrackItem::ResetMedia(const SharedMediaClip& media)
 {
     // TODO: Check on offset and source in
     m_Media = media;
+    m_Path = media->Path();
+
     emit updated();
 }
 

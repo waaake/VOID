@@ -3,8 +3,13 @@
 
 /* Internal */
 #include "Spreadsheet.h"
+#include "FormatForge.h"
+#include "VoidConformer/Conformer.h"
 #include "VoidSequencer/SContext.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
 #include "VoidMediaPlayer/Player/PlayerBridge.h"
+#include "VoidSpreadsheet/Widgets/ConformOptions.h"
+#include "VoidQExtensions/MessageBox.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -45,7 +50,26 @@ void Spreadsheet::Setup()
     {
         m_Context->SelectionModel()->Select(m_Sheet->SelectedItems());
     });
+    connect(this, &SpreadsheetWidget::conformMedia, this, &Spreadsheet::Conform);
     connect(this, &SpreadsheetWidget::updateReferenceMedia, this, &Spreadsheet::SetReferenceMedia);
+}
+
+void Spreadsheet::Conform(const std::vector<SharedMediaClip>& clips)
+{
+    if (const SharedPlaybackSequence& sequence = m_Context->Sequence())
+    {
+        ConformOptionsDialog opts(this);
+        if (!opts.exec()) return;
+
+        const std::vector<SharedTrackItem> items = sequence->VideoTrackItems();
+
+        Conformer conformer(clips, items, _MediaBridge.ActiveProject());
+        std::unordered_set<SharedTrackItem> linked = conformer.Conform(opts.Options());
+
+        QString text("Reconnected %1/%2 clips");
+        InfoMessageBox ibox(text.arg(static_cast<int>(linked.size())).arg(static_cast<int>(items.size())));
+        ibox.exec();
+    }
 }
 
 void Spreadsheet::SetReferenceMedia(const SharedMediaClip& media)
