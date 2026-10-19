@@ -70,9 +70,8 @@ void FFmpegStream::FlushBuffers()
     avcodec_flush_buffers(m_CodecContext);
 }
 
-bool FFmpegStream::Decode(std::vector<uint8_t>& buffer)
+bool FFmpegStream::Decode(DecodedFrame& out)
 {
-    buffer.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Frame->width, m_Frame->height, 1));
     m_Scaler = sws_getCachedContext(
             m_Scaler,
             m_Frame->width,
@@ -89,8 +88,12 @@ bool FFmpegStream::Decode(std::vector<uint8_t>& buffer)
 
     if (!m_Scaler) return false;
 
+    out.framenumber = m_CurrentFrame;
+    out.pts = m_Frame->pts;
+    out.buffer.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Frame->width, m_Frame->height, 1));
+
     int linesizes[4] = { 3 * m_Frame->width, 0, 0, 0 };
-    uint8_t* planes[4] = { buffer.data(), nullptr, nullptr, nullptr };
+    uint8_t* planes[4] = { out.buffer.data(), nullptr, nullptr, nullptr };
 
     sws_scale(m_Scaler, m_Frame->data, m_Frame->linesize, 0, m_Frame->height, planes, linesizes);
     return true;

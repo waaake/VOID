@@ -22,6 +22,13 @@ extern "C" {
 
 VOID_NAMESPACE_OPEN
 
+struct DecodedFrame
+{
+    int64_t pts = -1;
+    int64_t framenumber = -1;
+    std::vector<uint8_t> buffer;
+};
+
 class FFmpegStream
 {
 public:
@@ -43,7 +50,7 @@ public:
     int64_t ReceiveFrame();
     void FlushBuffers();
 
-    bool Decode(std::vector<uint8_t>& buffer);
+    bool Decode(DecodedFrame& out);
 
 private:
     std::string m_SourcePath;
