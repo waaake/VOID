@@ -33,8 +33,8 @@ public:
 
     // bool Decode(const std::string& path, v_frame_t framenumber, Buffer<float>& pixels);
 
-    bool Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& pixels);
-    bool Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& pixels);
+    bool Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& pixels, TimeFrame& timeframe);
+    bool Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& pixels, TimeFrame& timeframe);
 
 private:
     // struct CacheEntry
@@ -63,13 +63,15 @@ private:
     bool Open(const std::string& path);
     void Close();
     void ResetCache();
-    int64_t DecodeAndStoreNext();
-    void PullVideoBuffer(FFmpegStream* stream);
+    int64_t DecodeAndStoreNext(FFmpegStream* stream);
+    void StoreBuffer(FFmpegStream* stream);
+    void StoreVideoBuffer(FFmpegStream* stream);
+    void StoreAudioBuffer(FFmpegStream* stream);
 
     // bool HasVideoCached(v_frame_t frame) const { return m_Cache.find(frame) != m_Cache.end(); }
     // std::vector<unsigned char> FreeFromVideoCache(v_frame_t framenumber);
-    bool TryFromCache(v_frame_t framenumber, std::vector<unsigned char>& out, int preferred = -1);
-    bool TryFromCache(v_frame_t framenumber, std::vector<float>& out, int preferred = -1);
+    bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred = -1);
+    bool TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred = -1);
 
     void TrySeek(v_frame_t framenumber, FFmpegStream* stream);
 

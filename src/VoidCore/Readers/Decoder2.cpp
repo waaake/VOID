@@ -12,6 +12,7 @@
 /* Internal */
 #include "Decoder2.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -41,7 +42,7 @@ FFmpegDecoder2& FFmpegDecoder2::Instance(const std::string& path)
 
         if (!decoder)
             decoder = std::make_unique<FFmpegDecoder2>();
-        
+
         // Update the internal states and buffers if it's a different path
         decoder->Setup(path);
         s_decoders[path] = std::move(decoder);
@@ -73,9 +74,11 @@ bool FFmpegDecoder2::Setup(const std::string& path)
     return true;
 }
 
-bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& buffer)
+bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe)
 {
-    if (TryFromCache(framenumber, buffer))
+    // Tools::VoidProfiler<std::chrono::milliseconds> p("FFmpegDecoder2::DecodeFrame");
+
+    if (TryCached(framenumber, buffer, timeframe))
         return true;
 
     /// If we want to decode backwards
@@ -92,39 +95,39 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
 
     while (m_LastDecoded < framenumber)
     {
-        int ret = DecodeAndStoreNext();
+        int ret = DecodeAndStoreNext(m_VideoStream);
         if (ret == AVERROR_EOF)
             break;
-        
+
         if (ret < 0)
             return false;
     }
 
     // Check now if we have frame
-    if (TryFromCache(framenumber, buffer, m_LastCacheIndex))
+    if (TryCached(framenumber, buffer, timeframe, m_LastCacheIndex))
         return true;
 
     /// Could not decode the requested frame
-    return false;    
+    return false;
 }
 
-bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& buffer)
+bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe)
 {
-    if (TryFromCache(framenumber, buffer))
+    if (TryCached(framenumber, buffer, timeframe))
         return true;
 
     while (m_LastDecoded < framenumber)
     {
-        int ret = DecodeAndStoreNext();
+        int ret = DecodeAndStoreNext(m_VideoStream);
         if (ret == AVERROR_EOF)
             break;
-        
+
         if (ret < 0)
             return false;
     }
 
     // Check now if we have frame with a preferred index
-    if (TryFromCache(framenumber, buffer, m_LastCacheIndex))
+    if (TryCached(framenumber, buffer, timeframe, m_LastCacheIndex))
         return true;
 
     /// Could not decode the requested frame
@@ -172,12 +175,12 @@ void FFmpegDecoder2::ResetCache()
     }
 }
 
-int64_t FFmpegDecoder2::DecodeAndStoreNext()
+int64_t FFmpegDecoder2::DecodeAndStoreNext(FFmpegStream* stream)
 {
     // Has some more frames that can be decoded from the last packet received
-    if (m_VideoStream->ReceiveFrame() == 0)
+    if (stream->ReceiveFrame() == 0)
     {
-        PullVideoBuffer(m_VideoStream);
+        StoreBuffer(stream);
         return 0;
     }
 
@@ -185,20 +188,20 @@ int64_t FFmpegDecoder2::DecodeAndStoreNext()
     if (ret == AVERROR_EOF)
     {
         // We're at the end of file -- flush to get the delayed frames till ffmpeg can provide them
-        m_VideoStream->SendFlushPacket();
-        while (m_VideoStream->ReceiveFrame() == 0)
-            PullVideoBuffer(m_VideoStream);
+        stream->SendFlushPacket();
+        while (stream->ReceiveFrame() == 0)
+            StoreBuffer(stream);
 
         av_packet_unref(m_Packet);
         return AVERROR_EOF;
     }
     else if (ret == 0)
     {
-        if (m_Packet->stream_index == m_VideoStream->Index())
+        if (m_Packet->stream_index == stream->Index())
         {
-            ret = m_VideoStream->SendPacket(m_Packet);
-            if (ret == 0 && m_VideoStream->ReceiveFrame() == 0)
-                PullVideoBuffer(m_VideoStream);
+            ret = stream->SendPacket(m_Packet);
+            if (ret == 0 && stream->ReceiveFrame() == 0)
+                StoreBuffer(stream);
         }
         else
         {
@@ -214,7 +217,15 @@ int64_t FFmpegDecoder2::DecodeAndStoreNext()
     return ret;
 }
 
-void FFmpegDecoder2::PullVideoBuffer(FFmpegStream* stream)
+void FFmpegDecoder2::StoreBuffer(FFmpegStream* stream)
+{
+    if (stream->Type() == AVMEDIA_TYPE_VIDEO)
+        StoreVideoBuffer(stream);
+    else if (stream->Type() == AVMEDIA_TYPE_AUDIO)
+        StoreAudioBuffer(stream);
+}
+
+void FFmpegDecoder2::StoreVideoBuffer(FFmpegStream* stream)
 {
     DecodedFrame& frame = m_Cache[m_CacheIndex];
     // std::vector<unsigned char> buffer;
@@ -237,6 +248,29 @@ void FFmpegDecoder2::PullVideoBuffer(FFmpegStream* stream)
     }
 }
 
+void FFmpegDecoder2::StoreAudioBuffer(FFmpegStream* stream)
+{
+    // DecodedFrame& frame = m_Cache[m_CacheIndex];
+    // // std::vector<unsigned char> buffer;
+    // if (stream->Decode(frame))
+    // {
+    //     // VOID_LOG_INFO("Buffer size: {}", buffer.size());
+    //     // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, buffer, stream->CurrentFrame());
+    //     // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, frame);
+    //     // m_Cache[m_CacheIndex] = std::move(frame);
+
+    //     // m_Cache[stream->CurrentFrame()] = std::move(buffer);
+    //     // VOID_LOG_INFO("Pulled buffer for {}", stream->CurrentFrame());
+    //     // VOID_LOG_INFO("Buffer size ++ : {}", m_Cache[m_CacheIndex].buffer.size());
+
+    //     m_LastCacheIndex = m_CacheIndex.load();
+    //     m_CacheIndex = (m_CacheIndex + 1) % MAX_CACHED_FRAMES;
+    //     m_LastDecoded = frame.framenumber;
+
+    //     VOID_LOG_INFO("Last Decoded Frame: {0}", m_LastDecoded);
+    // }
+}
+
 // std::vector<unsigned char> FFmpegDecoder2::FreeFromVideoCache(v_frame_t frame)
 // {
 //     std::vector<unsigned char> buffer = m_Cache.at(frame);
@@ -244,16 +278,18 @@ void FFmpegDecoder2::PullVideoBuffer(FFmpegStream* stream)
 //     return buffer;
 // }
 
-bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<unsigned char>& out, int preferred)
+bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred)
 {
     if (preferred > -1)
     {
         DecodedFrame& frame = m_Cache[preferred];
         if (frame.framenumber == framenumber)
         {
-            // out = entry.buffer;
-            out.resize(frame.buffer.size());
-            std::memcpy(out.data(), frame.buffer.data(), frame.buffer.size());
+            out = frame.buffer;
+
+            timeframe.duration = frame.duration;
+            timeframe.pts = frame.pts;
+            timeframe.timebase = frame.timebase;
             return true;
         }
     }
@@ -262,9 +298,11 @@ bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<unsigned ch
     {
         if (entry.framenumber == framenumber)
         {
-            // out = entry.buffer;
-            out.resize(entry.buffer.size());
-            std::memcpy(out.data(), entry.buffer.data(), entry.buffer.size());
+            out = entry.buffer;
+
+            timeframe.duration = entry.duration;
+            timeframe.pts = entry.pts;
+            timeframe.timebase = entry.timebase;
             return true;
         }
     }
@@ -272,7 +310,7 @@ bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<unsigned ch
     return false;
 }
 
-bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<float>& out, int preferred)
+bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred)
 {
     if (preferred > -1)
     {
@@ -280,6 +318,9 @@ bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<float>& out
         if (frame.framenumber == framenumber)
         {
             FillBuffer(frame.buffer, out);
+            timeframe.duration = frame.duration;
+            timeframe.pts = frame.pts;
+            timeframe.timebase = frame.timebase;
             return true;
         }
     }
@@ -289,6 +330,9 @@ bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<float>& out
         if (entry.framenumber == framenumber)
         {
             FillBuffer(entry.buffer, out);
+            timeframe.duration = entry.duration;
+            timeframe.pts = entry.pts;
+            timeframe.timebase = entry.timebase;
             return true;
         }
     }
