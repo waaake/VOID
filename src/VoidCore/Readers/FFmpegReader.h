@@ -10,8 +10,7 @@
 #include <unordered_map>
 
 /* FFMpeg */
-extern "C" 
-{
+extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
 #include <libavcodec/avcodec.h>
@@ -23,6 +22,7 @@ extern "C"
 #include "Definition.h"
 #include "Decoder.h"
 #include "PixReader.h"
+#include "DecDefs.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -106,6 +106,7 @@ public:
     int Samplerate() const override { return m_Samplerate; }
 
 private: /* Members */
+    TimeFrame m_Timeframe;
     int m_AChannels;
     int m_Samplerate;
 

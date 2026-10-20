@@ -344,8 +344,9 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
     //     m_Image->channels = image->channels;
     //     m_Image->format = VOID_GL_RGB;
     // }
+
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
-    if (decoder.Decode(path, frame, image->buffer._buf))
+    if (decoder.Decode(path, frame, image->buffer._buf, m_Timeframe))
     {
         VOID_LOG_INFO("H: {}, W: {}, C: {}", decoder.Width(), decoder.Height(), decoder.Channels());
         VOID_LOG_INFO("Buf Size: {0}", image->buffer._buf.size());
@@ -428,7 +429,7 @@ void FFmpegPixReader::Read()
     // }
     VOID_LOG_INFO("USING DECODER 2");
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer._buf))
+    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer._buf, m_Timeframe))
     {
         m_Image->width = decoder.Width();
         m_Image->height = decoder.Height();
