@@ -29,40 +29,49 @@ public:
     int Height() const { return m_VideoStream->Height(); }
     int Channels() const { return m_VideoStream->Channels(); }
 
+    bool Setup(const std::string& path);
+
     // bool Decode(const std::string& path, v_frame_t framenumber, Buffer<float>& pixels);
 
     bool Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& pixels);
     bool Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& pixels);
 
 private:
-    struct CacheEntry
-    {
-        std::vector<unsigned char> buffer;
-        v_frame_t frame;
-        CacheEntry() : frame(-1) {}
-        CacheEntry(std::vector<unsigned char>& buffer, v_frame_t frame)
-            : buffer(std::move(buffer)), frame(frame) {}
-    };
+    // struct CacheEntry
+    // {
+    //     std::vector<unsigned char> buffer;
+    //     v_frame_t frame;
+    //     CacheEntry() : frame(-1) {}
+    //     CacheEntry(std::vector<unsigned char>& buffer, v_frame_t frame)
+    //         : buffer(std::move(buffer)), frame(frame) {}
+    // };
 
     // std::unordered_map<v_frame_t, std::vector<unsigned char>> m_Cache;
-    std::vector<CacheEntry> m_Cache;
+    std::vector<DecodedFrame> m_Cache;
     std::string m_Path;
+    std::atomic<int> m_LastCacheIndex = 0;
     std::atomic<int> m_CacheIndex = 0;
 
     AVFormatContext* m_Format   = nullptr;
     AVPacket* m_Packet          = nullptr;
     FFmpegStream* m_VideoStream = nullptr;
 
+    int64_t m_LastDecoded       = -1;
+    bool m_Backwards            = false;
+
 private:
     bool Open(const std::string& path);
     void Close();
+    void ResetCache();
     int64_t DecodeAndStoreNext();
     void PullVideoBuffer(FFmpegStream* stream);
 
     // bool HasVideoCached(v_frame_t frame) const { return m_Cache.find(frame) != m_Cache.end(); }
     // std::vector<unsigned char> FreeFromVideoCache(v_frame_t framenumber);
-    bool TryFromCache(v_frame_t framenumber, std::vector<unsigned char>& out);
-    bool TryFromCache(v_frame_t framenumber, std::vector<float>& out);
+    bool TryFromCache(v_frame_t framenumber, std::vector<unsigned char>& out, int preferred = -1);
+    bool TryFromCache(v_frame_t framenumber, std::vector<float>& out, int preferred = -1);
+
+    void TrySeek(v_frame_t framenumber, FFmpegStream* stream);
 
     void FillBuffer(const std::vector<unsigned char>& in, std::vector<float>& out);
     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }

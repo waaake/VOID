@@ -39,7 +39,12 @@ FFmpegDecoder2& FFmpegDecoder2::Instance(const std::string& path)
             s_decoders.erase(iter);
         }
 
-        s_decoders[path] = decoder == nullptr ? std::make_unique<FFmpegDecoder2>() : std::move(decoder);
+        if (!decoder)
+            decoder = std::make_unique<FFmpegDecoder2>();
+        
+        // Update the internal states and buffers if it's a different path
+        decoder->Setup(path);
+        s_decoders[path] = std::move(decoder);
         s_head = (s_head + 1) % MAX_DECODERS;
     }
 
@@ -56,7 +61,7 @@ FFmpegDecoder2::~FFmpegDecoder2()
     Close();
 }
 
-bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& buffer)
+bool FFmpegDecoder2::Setup(const std::string& path)
 {
     if (path != m_Path)
     {
@@ -65,10 +70,27 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
             return false;
     }
 
+    return true;
+}
+
+bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& buffer)
+{
     if (TryFromCache(framenumber, buffer))
         return true;
 
-    while (m_VideoStream->CurrentFrame() < framenumber)
+    /// If we want to decode backwards
+    m_Backwards = (m_LastDecoded - framenumber) > 0;
+
+    // When a previous frame than the current frame is requested, we want to seek backwars by a bit
+    // this allows the decoder to try decoding all those frames to catch up to the requested number
+    // when it does that, we will have the requested and previous n i.e. MAX_CACHED_FRAMES number of
+    // frames cached already and that allows us to quickly go back to previous n frames without re-requesting so much
+    if (m_Backwards)
+        TrySeek(framenumber - MAX_CACHED_FRAMES, m_VideoStream);
+    // else if (framenumber - m_LastDecoded > MAX_CACHED_FRAMES) // else if the requested frame is too far ahead, we want to seek
+    //     TrySeek(framenumber - 1, m_VideoStream);
+
+    while (m_LastDecoded < framenumber)
     {
         int ret = DecodeAndStoreNext();
         if (ret == AVERROR_EOF)
@@ -79,7 +101,7 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
     }
 
     // Check now if we have frame
-    if (TryFromCache(framenumber, buffer))
+    if (TryFromCache(framenumber, buffer, m_LastCacheIndex))
         return true;
 
     /// Could not decode the requested frame
@@ -88,17 +110,10 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
 
 bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& buffer)
 {
-    if (path != m_Path)
-    {
-        Close();
-        if (!Open(path))
-            return false;
-    }
-
     if (TryFromCache(framenumber, buffer))
         return true;
 
-    while (m_VideoStream->CurrentFrame() < framenumber)
+    while (m_LastDecoded < framenumber)
     {
         int ret = DecodeAndStoreNext();
         if (ret == AVERROR_EOF)
@@ -108,8 +123,8 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
             return false;
     }
 
-    // Check now if we have frame
-    if (TryFromCache(framenumber, buffer))
+    // Check now if we have frame with a preferred index
+    if (TryFromCache(framenumber, buffer, m_LastCacheIndex))
         return true;
 
     /// Could not decode the requested frame
@@ -144,6 +159,17 @@ void FFmpegDecoder2::Close()
 
     if (m_Packet) av_packet_free(&m_Packet);
     if (m_Format) avformat_close_input(&m_Format);
+
+    ResetCache();
+}
+
+void FFmpegDecoder2::ResetCache()
+{
+    for (DecodedFrame frame : m_Cache)
+    {
+        frame.pts = -1;
+        frame.framenumber = -1;
+    }
 }
 
 int64_t FFmpegDecoder2::DecodeAndStoreNext()
@@ -190,17 +216,24 @@ int64_t FFmpegDecoder2::DecodeAndStoreNext()
 
 void FFmpegDecoder2::PullVideoBuffer(FFmpegStream* stream)
 {
-    std::vector<unsigned char> buffer;
-    if (stream->Decode(buffer))
+    DecodedFrame& frame = m_Cache[m_CacheIndex];
+    // std::vector<unsigned char> buffer;
+    if (stream->Decode(frame))
     {
-        VOID_LOG_INFO("Buffer size: {}", buffer.size());
-        m_Cache.emplace(m_Cache.begin() + m_CacheIndex, buffer, stream->CurrentFrame());
+        // VOID_LOG_INFO("Buffer size: {}", buffer.size());
+        // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, buffer, stream->CurrentFrame());
+        // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, frame);
+        // m_Cache[m_CacheIndex] = std::move(frame);
 
         // m_Cache[stream->CurrentFrame()] = std::move(buffer);
-        VOID_LOG_INFO("Pulled buffer for {}", stream->CurrentFrame());
-        VOID_LOG_INFO("Buffer size ++ : {}", m_Cache[m_CacheIndex].buffer.size());
+        // VOID_LOG_INFO("Pulled buffer for {}", stream->CurrentFrame());
+        // VOID_LOG_INFO("Buffer size ++ : {}", m_Cache[m_CacheIndex].buffer.size());
 
+        m_LastCacheIndex = m_CacheIndex.load();
         m_CacheIndex = (m_CacheIndex + 1) % MAX_CACHED_FRAMES;
+        m_LastDecoded = frame.framenumber;
+
+        VOID_LOG_INFO("Last Decoded Frame: {0}", m_LastDecoded);
     }
 }
 
@@ -211,11 +244,23 @@ void FFmpegDecoder2::PullVideoBuffer(FFmpegStream* stream)
 //     return buffer;
 // }
 
-bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<unsigned char>& out)
+bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<unsigned char>& out, int preferred)
 {
-    for (const CacheEntry& entry : m_Cache)
+    if (preferred > -1)
     {
-        if (entry.frame == framenumber)
+        DecodedFrame& frame = m_Cache[preferred];
+        if (frame.framenumber == framenumber)
+        {
+            // out = entry.buffer;
+            out.resize(frame.buffer.size());
+            std::memcpy(out.data(), frame.buffer.data(), frame.buffer.size());
+            return true;
+        }
+    }
+
+    for (const DecodedFrame& entry : m_Cache)
+    {
+        if (entry.framenumber == framenumber)
         {
             // out = entry.buffer;
             out.resize(entry.buffer.size());
@@ -227,11 +272,21 @@ bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<unsigned ch
     return false;
 }
 
-bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<float>& out)
+bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<float>& out, int preferred)
 {
-    for (const CacheEntry& entry : m_Cache)
+    if (preferred > -1)
     {
-        if (entry.frame == framenumber)
+        DecodedFrame& frame = m_Cache[preferred];
+        if (frame.framenumber == framenumber)
+        {
+            FillBuffer(frame.buffer, out);
+            return true;
+        }
+    }
+
+    for (const DecodedFrame& entry : m_Cache)
+    {
+        if (entry.framenumber == framenumber)
         {
             FillBuffer(entry.buffer, out);
             return true;
@@ -241,6 +296,15 @@ bool FFmpegDecoder2::TryFromCache(v_frame_t framenumber, std::vector<float>& out
     return false;
 }
 
+void FFmpegDecoder2::TrySeek(v_frame_t frame, FFmpegStream* stream)
+{
+    int64_t timestamp = stream->FrameToPts(frame);
+    stream->FlushBuffers();
+    av_seek_frame(m_Format, stream->Index(), timestamp, AVSEEK_FLAG_BACKWARD);
+    VOID_LOG_INFO("TrySeek::Frame:{}::PTS:{}", frame, timestamp);
+
+    m_LastDecoded = -1;
+}
 
 void FFmpegDecoder2::FillBuffer(const std::vector<unsigned char>& in, std::vector<float>& out)
 {
