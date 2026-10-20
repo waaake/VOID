@@ -19,15 +19,9 @@ extern "C" {
 
 /* Internal */
 #include "Definition.h"
+#include "DecDefs.h"
 
 VOID_NAMESPACE_OPEN
-
-struct DecodedFrame
-{
-    int64_t pts = -1;
-    int64_t framenumber = -1;
-    std::vector<uint8_t> buffer;
-};
 
 class FFmpegStream
 {

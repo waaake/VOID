@@ -23,6 +23,16 @@ FFmpegStream::FFmpegStream(AVFormatContext* format, AVStream* stream, int index,
     m_Frame->width = m_Stream->codecpar->width;
     m_Frame->height = m_Stream->codecpar->height;
     m_Frame->format = m_CodecContext->pix_fmt;
+
+    // int thread_count = 6;
+    // if (codec->capabilities & AV_CODEC_CAP_SLICE_THREADS) {
+    //     m_CodecContext->thread_count = thread_count;
+    //     m_CodecContext->thread_type  = FF_THREAD_SLICE;
+    // }
+    // if (codec->capabilities & AV_CODEC_CAP_FRAME_THREADS) {
+    //     m_CodecContext->thread_count = thread_count;
+    //     m_CodecContext->thread_type |= FF_THREAD_FRAME;
+    // }
 }
 
 FFmpegStream::~FFmpegStream()
@@ -90,6 +100,8 @@ bool FFmpegStream::Decode(DecodedFrame& out)
 
     out.framenumber = m_CurrentFrame;
     out.pts = m_Frame->pts;
+    out.duration = m_Frame->duration;
+    out.timebase = m_Frame->time_base;
     out.buffer.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Frame->width, m_Frame->height, 1));
 
     int linesizes[4] = { 3 * m_Frame->width, 0, 0, 0 };
