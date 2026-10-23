@@ -96,6 +96,7 @@ public:
 
     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
     void Read() override;
+    bool Read(SharedFrameAudio& buffer) const override;
     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
     void Clear() override { m_Image->Clear(); }
 

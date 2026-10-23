@@ -346,7 +346,7 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
     // }
 
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
-    if (decoder.Decode(path, frame, image->buffer._buf, m_Timeframe))
+    if (decoder.Decode(frame, image->buffer._buf, m_Timeframe))
     {
         VOID_LOG_INFO("H: {}, W: {}, C: {}", decoder.Width(), decoder.Height(), decoder.Channels());
         VOID_LOG_INFO("Buf Size: {0}", image->buffer._buf.size());
@@ -361,6 +361,11 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
         m_Image->height = image->height;
         m_Image->channels = image->channels;
         m_Image->format = VOID_GL_RGB;
+
+        SharedFrameAudio buffer = std::make_shared<FrameAudio>();
+        decoder.Decode(4, m_Timeframe, buffer);
+
+        VOID_LOG_INFO("Buffer size: {0}", buffer->samples.size());
     }
 }
 
@@ -429,7 +434,7 @@ void FFmpegPixReader::Read()
     // }
     VOID_LOG_INFO("USING DECODER 2");
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer._buf, m_Timeframe))
+    if (decoder.Decode(m_Framenumber, m_Image->buffer._buf, m_Timeframe))
     {
         m_Image->width = decoder.Width();
         m_Image->height = decoder.Height();
@@ -437,7 +442,16 @@ void FFmpegPixReader::Read()
 
         m_Image->format = VOID_GL_RGB;
         m_Image->type = VOID_GL_FLOAT;
+
+        VOID_LOG_WARN("TimeFrame -- num: {}, pts: {}, duration: {}", m_Framenumber, m_Timeframe.pts, m_Timeframe.duration);
     }
+}
+
+bool FFmpegPixReader::Read(SharedFrameAudio& buffer) const
+{
+    VOID_LOG_INFO("Decoding Audio using Decode2");
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+    return decoder.Decode(m_Framenumber, m_Timeframe, buffer);
 }
 
 const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
