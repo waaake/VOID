@@ -12,6 +12,7 @@
 /* Internal */
 #include "Definition.h"
 #include "FrameRange.h"
+#include "Audio.h"
 #include "Image.h"
 
 VOID_NAMESPACE_OPEN
@@ -84,6 +85,11 @@ public:
      */
     virtual void Read(const std::string& path, v_frame_t frame, FloatImage& image) = 0;
     virtual void Read() = 0;
+
+    /// @brief Buffers the audio for the Frame onto the provided FrameAudio pointer.
+    /// @param buffer Shared pointer for the Frame Audio to be updated.
+    /// @return true if the buffer was filled and usable, else false.
+    virtual bool Read(SharedFrameAudio& buffer) const { return false; }
 
     /**
      * Retrieve the input colorspace of the media file
