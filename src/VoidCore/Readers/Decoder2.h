@@ -33,8 +33,9 @@ public:
 
     // bool Decode(const std::string& path, v_frame_t framenumber, Buffer<float>& pixels);
 
-    bool Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& pixels, TimeFrame& timeframe);
-    bool Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& pixels, TimeFrame& timeframe);
+    bool Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe);
+    bool Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe);
+    bool Decode(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
 private:
     // struct CacheEntry
@@ -47,7 +48,9 @@ private:
     // };
 
     // std::unordered_map<v_frame_t, std::vector<unsigned char>> m_Cache;
-    std::vector<DecodedFrame> m_Cache;
+    std::vector<DecodedFrame> m_VideoCache;
+    std::vector<AudioBuffer> m_AudioBuffer;
+    // std::unordered_map<v_frame_t, AudioBuffer> m_AudioBuffer;
     std::string m_Path;
     std::atomic<int> m_LastCacheIndex = 0;
     std::atomic<int> m_CacheIndex = 0;
@@ -55,8 +58,10 @@ private:
     AVFormatContext* m_Format   = nullptr;
     AVPacket* m_Packet          = nullptr;
     FFmpegStream* m_VideoStream = nullptr;
+    FFmpegStream* m_AudioStream = nullptr;
 
     int64_t m_LastDecoded       = -1;
+    int64_t m_LastAudioPTS      = -1;
     bool m_Backwards            = false;
 
 private:
@@ -72,6 +77,9 @@ private:
     // std::vector<unsigned char> FreeFromVideoCache(v_frame_t framenumber);
     bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred = -1);
     bool TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred = -1);
+    bool TryCached(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
+
+    bool ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
     void TrySeek(v_frame_t framenumber, FFmpegStream* stream);
 

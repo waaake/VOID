@@ -54,7 +54,7 @@ FFmpegDecoder2& FFmpegDecoder2::Instance(const std::string& path)
 
 FFmpegDecoder2::FFmpegDecoder2()
 {
-    m_Cache.resize(MAX_CACHED_FRAMES);
+    m_VideoCache.resize(MAX_CACHED_FRAMES);
 }
 
 FFmpegDecoder2::~FFmpegDecoder2()
@@ -74,7 +74,7 @@ bool FFmpegDecoder2::Setup(const std::string& path)
     return true;
 }
 
-bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe)
+bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe)
 {
     // Tools::VoidProfiler<std::chrono::milliseconds> p("FFmpegDecoder2::DecodeFrame");
 
@@ -89,9 +89,9 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
     // when it does that, we will have the requested and previous n i.e. MAX_CACHED_FRAMES number of
     // frames cached already and that allows us to quickly go back to previous n frames without re-requesting so much
     if (m_Backwards)
-        TrySeek(framenumber - MAX_CACHED_FRAMES, m_VideoStream);
-    // else if (framenumber - m_LastDecoded > MAX_CACHED_FRAMES) // else if the requested frame is too far ahead, we want to seek
-    //     TrySeek(framenumber - 1, m_VideoStream);
+        TrySeek(std::max(framenumber - (v_frame_t)MAX_CACHED_FRAMES, (v_frame_t)0), m_VideoStream);
+    else if (framenumber - m_LastDecoded > MAX_CACHED_FRAMES) // else if the requested frame is too far ahead, we want to seek
+        TrySeek(framenumber - 1, m_VideoStream);
 
     while (m_LastDecoded < framenumber)
     {
@@ -111,7 +111,7 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
     return false;
 }
 
-bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe)
+bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe)
 {
     if (TryCached(framenumber, buffer, timeframe))
         return true;
@@ -134,6 +134,27 @@ bool FFmpegDecoder2::Decode(const std::string& path, v_frame_t framenumber, std:
     return false;
 }
 
+bool FFmpegDecoder2::Decode(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer)
+{
+    if (!m_AudioStream) return false;
+
+    while (m_LastAudioPTS < (timeframe.pts + timeframe.duration))
+    {
+        int ret = DecodeAndStoreNext(m_AudioStream);
+        if (ret == AVERROR_EOF)
+            break;
+
+        if (ret < 0)
+            return false;
+    }
+
+    if (TryCached(framenumber, timeframe, buffer))
+        return true;
+
+    /// Could not decode the requested frame
+    return false;
+}
+
 bool FFmpegDecoder2::Open(const std::string& path)
 {
     if (avformat_open_input(&m_Format, path.c_str(), nullptr, nullptr) > 0)
@@ -146,6 +167,26 @@ bool FFmpegDecoder2::Open(const std::string& path)
     if (index < 0) return false;
 
     m_VideoStream = new FFmpegStream(m_Format, m_Format->streams[index], index, path);
+    if (!m_VideoStream->Setup()) return false;
+
+    index = av_find_best_stream(m_Format, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
+    if (index > -1) // Has audio
+    {
+        VOID_LOG_INFO("Found Audio in container, Index: {}", index);
+        /// has audio, try to create and setup the audio stream and resampler
+        /// if anything fails, then we reset the Audio stream and that makes the decoder behaves
+        /// as if the container did not had any audio at all
+        /// tbh, not so sure about returning false from here if we're not able to init audio stream
+        m_AudioStream = new FFmpegStream(m_Format, m_Format->streams[index], index, path);
+        if (!m_AudioStream->Setup())
+        {
+            delete m_AudioStream;
+            m_AudioStream = nullptr;
+
+            VOID_LOG_WARN("Unable to initialize Audio stream for the container. Check error log.");
+        }
+    }
+
     m_Packet = av_packet_alloc();
 
     m_Path = path;
@@ -159,6 +200,11 @@ void FFmpegDecoder2::Close()
         delete m_VideoStream;
         m_VideoStream = nullptr;
     }
+    if (m_AudioStream)
+    {
+        delete m_AudioStream;
+        m_AudioStream = nullptr;
+    }
 
     if (m_Packet) av_packet_free(&m_Packet);
     if (m_Format) avformat_close_input(&m_Format);
@@ -168,7 +214,7 @@ void FFmpegDecoder2::Close()
 
 void FFmpegDecoder2::ResetCache()
 {
-    for (DecodedFrame frame : m_Cache)
+    for (DecodedFrame frame : m_VideoCache)
     {
         frame.pts = -1;
         frame.framenumber = -1;
@@ -227,7 +273,7 @@ void FFmpegDecoder2::StoreBuffer(FFmpegStream* stream)
 
 void FFmpegDecoder2::StoreVideoBuffer(FFmpegStream* stream)
 {
-    DecodedFrame& frame = m_Cache[m_CacheIndex];
+    DecodedFrame& frame = m_VideoCache[m_CacheIndex];
     // std::vector<unsigned char> buffer;
     if (stream->Decode(frame))
     {
@@ -269,6 +315,17 @@ void FFmpegDecoder2::StoreAudioBuffer(FFmpegStream* stream)
 
     //     VOID_LOG_INFO("Last Decoded Frame: {0}", m_LastDecoded);
     // }
+    AudioBuffer buffer;
+    if (stream->Decode(buffer))
+    {
+        // VOID_LOG_INFO("Decoded Audio Buffer --- ");
+        // VOID_LOG_INFO("PTS: {0}, Samplerate: {1}, Channels: {2}, Sample Count: {3}", buffer.pts, buffer.samplerate, buffer.channels, buffer.sampleCount);
+
+        m_AudioBuffer.push_back(std::move(buffer));
+        m_LastAudioPTS = stream->CurrentAudioSample();
+
+        // VOID_LOG_INFO("Current Audio Frame: {}", m_LastAudioPTS);
+    }
 }
 
 // std::vector<unsigned char> FFmpegDecoder2::FreeFromVideoCache(v_frame_t frame)
@@ -282,7 +339,7 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>
 {
     if (preferred > -1)
     {
-        DecodedFrame& frame = m_Cache[preferred];
+        DecodedFrame& frame = m_VideoCache[preferred];
         if (frame.framenumber == framenumber)
         {
             out = frame.buffer;
@@ -294,7 +351,7 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>
         }
     }
 
-    for (const DecodedFrame& entry : m_Cache)
+    for (const DecodedFrame& entry : m_VideoCache)
     {
         if (entry.framenumber == framenumber)
         {
@@ -314,7 +371,7 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, T
 {
     if (preferred > -1)
     {
-        DecodedFrame& frame = m_Cache[preferred];
+        DecodedFrame& frame = m_VideoCache[preferred];
         if (frame.framenumber == framenumber)
         {
             FillBuffer(frame.buffer, out);
@@ -325,7 +382,7 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, T
         }
     }
 
-    for (const DecodedFrame& entry : m_Cache)
+    for (const DecodedFrame& entry : m_VideoCache)
     {
         if (entry.framenumber == framenumber)
         {
@@ -340,11 +397,109 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, T
     return false;
 }
 
+bool FFmpegDecoder2::TryCached(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer)
+{
+    return ConvertAudio(framenumber, timeframe, buffer);
+}
+
+bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer)
+{
+    // Microseconds
+    VOID_LOG_INFO("FNum: {}, PTS: {}, Duration: {} --- Tbase: {}/{}", framenumber, timeframe.pts, timeframe.duration, timeframe.timebase.num, timeframe.timebase.den);
+
+    // const int64_t frameStart = av_rescale_q(timeframe.pts, timeframe.timebase, AV_TIME_BASE_Q);
+    // const int64_t frameEnd = av_rescale_q(timeframe.pts + timeframe.duration, timeframe.timebase, AV_TIME_BASE_Q);
+    const int64_t frameStart = timeframe.pts;
+    const int64_t frameEnd = timeframe.pts + timeframe.duration;
+
+    int index = 0;
+    buffer->samplecount = frameEnd - frameStart;
+
+    // Any missing audio in the buffer is set to 0 and remains silent
+    buffer->samples.assign(static_cast<std::size_t>(buffer->samplecount * 2), 0.f);
+
+    while (index < static_cast<int>(m_AudioBuffer.size()))
+    {
+        const AudioBuffer& audio = m_AudioBuffer[index];
+
+        // const AVRational timebase{1, audio.samplerate};
+        // const int64_t audioStart = av_rescale_q(audio.pts, timebase, AV_TIME_BASE_Q);
+        // const int64_t audioEnd = av_rescale_q(audio.pts + audio.sampleCount, timebase, AV_TIME_BASE_Q);
+
+        const int64_t audioStart = audio.pts;
+        const int64_t audioEnd = audio.pts + audio.sampleCount;
+
+        VOID_LOG_INFO("FTS: {}, FTE: {}, ATS: {}, ATE: {}", frameStart, frameEnd, audioStart, audioEnd);
+
+        if (audioEnd > frameStart)
+            break;
+
+        index++;
+    }
+
+    for (int i = index; i < static_cast<int>(m_AudioBuffer.size()); ++i)
+    {
+        const AudioBuffer& audio = m_AudioBuffer[i];
+
+        // const AVRational timebase{1, audio.samplerate};
+        // const int64_t audioStart = av_rescale_q(audio.pts, timebase, AV_TIME_BASE_Q);
+        // const int64_t audioEnd = av_rescale_q(audio.pts + audio.sampleCount, timebase, AV_TIME_BASE_Q);
+        const int64_t audioStart = audio.pts;
+        const int64_t audioEnd = audio.pts + audio.sampleCount;
+
+        if (audioStart >= frameEnd)
+            break;
+        
+        const int64_t overlapStart = std::max(frameStart, audioStart);
+        const int64_t overlapEnd = std::min(frameEnd, audioEnd);
+
+        if (overlapStart >= overlapEnd)
+            continue;
+
+        const int64_t srcSample = overlapStart - audioStart;
+        const int64_t dstSample = overlapStart - frameStart;
+        const int64_t count = overlapEnd - overlapStart;
+
+        // VOID_LOG_INFO("COUNT: {0}", count);
+
+        const std::size_t srcIndex = static_cast<std::size_t>(srcSample) * audio.channels;
+        const std::size_t dstIndex = static_cast<std::size_t>(dstSample) * audio.channels;
+
+        const std::size_t valueCount = static_cast<std::size_t>(count) * audio.channels;
+
+        buffer->channels = audio.channels;
+        buffer->samplerate = audio.samplerate;
+
+        // VOID_LOG_INFO("Src Idx: {}, ValueCount")
+        // VOID_LOG_INFO("Dest Size: {}, Source Audio Size: {}", buffer->samples.size(), audio.samples.size());
+        if (srcIndex + valueCount > audio.samples.size() || dstIndex + valueCount > buffer->samples.size())
+            return false;
+
+        VOID_LOG_INFO("Copying {} samples from source, index: {}, to destination, index: {}", valueCount, srcIndex, dstIndex);
+        std::copy_n(audio.samples.data() + srcIndex, valueCount, buffer->samples.data() + dstIndex);
+    }
+
+    return true;
+}
+
 void FFmpegDecoder2::TrySeek(v_frame_t frame, FFmpegStream* stream)
 {
     int64_t timestamp = stream->FrameToPts(frame);
-    stream->FlushBuffers();
+
+    // AVStream* stream = m_Format->streams[index];
+    // const int result = av_seek_frame(m_Format, index, timestamp, AVSEEK_FLAG_BACKWARD);
+    // if (result < 0)
+    //     return false;
+
+    // av_packet_unref(m_Packet);
+    // av_frame_unref(m_Frame);
+    // // av_frame_un
+    // avcodec_flush_buffers(m_CodecContext);
+
     av_seek_frame(m_Format, stream->Index(), timestamp, AVSEEK_FLAG_BACKWARD);
+    av_packet_unref(m_Packet);
+    stream->FlushBuffers();
+
     VOID_LOG_INFO("TrySeek::Frame:{}::PTS:{}", frame, timestamp);
 
     m_LastDecoded = -1;
