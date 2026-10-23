@@ -19,6 +19,7 @@ extern "C" {
 
 /* Internal */
 #include "Definition.h"
+#include "Audio.h"
 #include "DecDefs.h"
 
 VOID_NAMESPACE_OPEN
@@ -29,6 +30,9 @@ public:
     FFmpegStream(AVFormatContext* format, AVStream* stream, int index, const std::string& path);
     ~FFmpegStream();
 
+    bool Setup();
+
+    int64_t CurrentAudioSample() { return m_CurrentAudioSample; }
     int64_t CurrentFrame() { return m_CurrentFrame; }
     int64_t FrameToPts(v_frame_t frame) const;
 
@@ -45,6 +49,7 @@ public:
     void FlushBuffers();
 
     bool Decode(DecodedFrame& out);
+    bool Decode(AudioBuffer& out);
 
 private:
     std::string m_SourcePath;
@@ -53,11 +58,19 @@ private:
     AVStream* m_Stream;
     AVCodecContext* m_CodecContext;
     SwsContext* m_Scaler;
+    SwrContext* m_Resampler;
     AVFrame* m_Frame;
 
     int m_Index;
     int64_t m_CurrentFrame;
+    int64_t m_CurrentAudioSample;
+
+private:
+    bool SetupResampler();
+    std::size_t ResampleAudio(AVFrame* frame, AudioBuffer& buffer, int offset, int samplerate) const;
 };
+
+void AVLogError(int errnum);
 
 VOID_NAMESPACE_CLOSE
 

@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "FFmpegStream.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -12,17 +13,21 @@ FFmpegStream::FFmpegStream(AVFormatContext* format, AVStream* stream, int index,
     , m_Stream(stream)
     , m_Index(index)
     , m_CurrentFrame(-1)
+    , m_CurrentAudioSample(-1)
+    , m_Scaler(nullptr)
+    , m_Resampler(nullptr)
 {
-    m_Frame = av_frame_alloc();
-    const AVCodec* codec = avcodec_find_decoder(m_Stream->codecpar->codec_id);
-    m_CodecContext = avcodec_alloc_context3(codec);
+    // Setup();
+    // m_Frame = av_frame_alloc();
+    // const AVCodec* codec = avcodec_find_decoder(m_Stream->codecpar->codec_id);
+    // m_CodecContext = avcodec_alloc_context3(codec);
 
-    avcodec_parameters_to_context(m_CodecContext, m_Stream->codecpar);
-    avcodec_open2(m_CodecContext, codec, nullptr);
+    // avcodec_parameters_to_context(m_CodecContext, m_Stream->codecpar);
+    // avcodec_open2(m_CodecContext, codec, nullptr);
 
-    m_Frame->width = m_Stream->codecpar->width;
-    m_Frame->height = m_Stream->codecpar->height;
-    m_Frame->format = m_CodecContext->pix_fmt;
+    // m_Frame->width = m_Stream->codecpar->width;
+    // m_Frame->height = m_Stream->codecpar->height;
+    // m_Frame->format = m_CodecContext->pix_fmt;
 
     // int thread_count = 6;
     // if (codec->capabilities & AV_CODEC_CAP_SLICE_THREADS) {
@@ -39,7 +44,38 @@ FFmpegStream::~FFmpegStream()
 {
     if (m_Frame) av_frame_free(&m_Frame);
     if (m_CodecContext) avcodec_free_context(&m_CodecContext);
+    #if LIBSWSCALE_VERSION_MAJOR < 9
+    if (m_Scaler) sws_freeContext(m_Scaler);
+    m_Scaler = nullptr;
+    #else
     if (m_Scaler) sws_free_context(&m_Scaler);
+    #endif
+    if (m_Resampler) swr_free(&m_Resampler);
+}
+
+bool FFmpegStream::Setup()
+{
+    m_Frame = av_frame_alloc();
+    const AVCodec* codec = avcodec_find_decoder(m_Stream->codecpar->codec_id);
+    m_CodecContext = avcodec_alloc_context3(codec);
+
+    avcodec_parameters_to_context(m_CodecContext, m_Stream->codecpar);
+    avcodec_open2(m_CodecContext, codec, nullptr);
+
+    if (codec->type == AVMEDIA_TYPE_VIDEO)
+    {
+        m_Frame->width = m_Stream->codecpar->width;
+        m_Frame->height = m_Stream->codecpar->height;
+        m_Frame->format = m_CodecContext->pix_fmt;
+
+        return true;
+    }
+    else if (codec->type == AVMEDIA_TYPE_AUDIO)
+    {
+        return SetupResampler();
+    }
+
+    return false;
 }
 
 // int64_t FFmpegStream::CurrentFrame()
@@ -101,7 +137,8 @@ bool FFmpegStream::Decode(DecodedFrame& out)
     out.framenumber = m_CurrentFrame;
     out.pts = m_Frame->pts;
     out.duration = m_Frame->duration;
-    out.timebase = m_Frame->time_base;
+    out.timebase = m_Stream->time_base;
+    // VOID_LOG_INFO("CTX TImebase: {0}/{1}", m_Stream->time_base.num, m_Stream->time_base.den);
     out.buffer.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Frame->width, m_Frame->height, 1));
 
     int linesizes[4] = { 3 * m_Frame->width, 0, 0, 0 };
@@ -109,6 +146,126 @@ bool FFmpegStream::Decode(DecodedFrame& out)
 
     sws_scale(m_Scaler, m_Frame->data, m_Frame->linesize, 0, m_Frame->height, planes, linesizes);
     return true;
+}
+
+bool FFmpegStream::Decode(AudioBuffer& out)
+{
+    if (!m_Resampler || m_Frame->nb_samples <= 0)
+        return false;
+
+    // VOID_LOG_INFO("Frame Timebase: {0}/{1}", m_Frame->time_base.num, m_Frame->time_base.den);
+    // VOID_LOG_INFO("Codec Timebase: {0}/{1}", m_CodecContext->time_base.num, m_CodecContext->time_base.den);
+    out.pts = m_Frame->pts;
+    out.samplerate = m_Frame->sample_rate;
+    out.channels = 2; //m_Frame->ch_layout.nb_channels;
+
+    // // Account for any samples buffered inside the resampler
+    // const int samplecount = static_cast<int>(
+    //     av_rescale_rnd(
+    //         swr_get_delay(m_Resampler, m_Frame->sample_rate) + m_Frame->nb_samples,
+    //         m_Frame->sample_rate,
+    //         m_Frame->sample_rate,
+    //         AV_ROUND_UP
+    //     )
+    // );
+
+    // out.samples.resize(samplecount);
+    // uint8_t* dest[1] = { reinterpret_cast<uint8_t*>(out.samples.data()) };
+
+    // const int converted = swr_convert(m_Resampler, dest, samplecount, m_Frame->extended_data, m_Frame->nb_samples);
+    // // coversion failed to the requested format and the buffer is not usable
+    // if (converted < 0)
+    // {
+    //     out.Reset();
+    //     return false;
+    // }
+
+    // // Remove unused capacity from the samples in the out buffer
+    // // out.samples.resize(static_cast<std::size_t>(converted) * out.channels);
+    // return true;
+
+    std::size_t ret = ResampleAudio(m_Frame, out, -1, m_Frame->sample_rate);
+    if (ret == std::string::npos)
+        return false;
+
+    if (m_CurrentAudioSample == -1)
+        m_CurrentAudioSample = (m_Frame->pts * m_Frame->sample_rate * m_Stream->time_base.num) / m_Stream->time_base.den;
+    
+    m_CurrentAudioSample += m_Frame->nb_samples;
+    VOID_LOG_INFO("Current Audio Sample... {}", m_CurrentAudioSample);
+
+    return true;
+}
+
+bool FFmpegStream::SetupResampler()
+{
+    AVChannelLayout layout = AV_CHANNEL_LAYOUT_STEREO;
+    int ret = swr_alloc_set_opts2(
+        &m_Resampler,
+        &layout,
+        AV_SAMPLE_FMT_FLT,
+        48000,
+        &m_CodecContext->ch_layout,
+        m_CodecContext->sample_fmt,
+        m_CodecContext->sample_rate,
+        0,
+        nullptr
+    );
+
+    av_channel_layout_uninit(&layout);
+    if (ret < 0 || !m_Resampler)
+        return false;
+
+    ret = swr_init(m_Resampler);
+    if (ret < 0)
+    {
+        AVLogError(ret);
+        return false;
+    }
+
+    return true;
+}
+
+std::size_t FFmpegStream::ResampleAudio(AVFrame* frame, AudioBuffer& buffer, int offset, int samplerate) const
+{
+    const int wanted = frame->nb_samples * samplerate / frame->sample_rate;
+
+    const uint8_t** in = (const uint8_t**)frame->extended_data;
+    int outcount = wanted + 256;
+    int targetSize = av_samples_get_buffer_size(nullptr, /*target channels*/2, outcount, AV_SAMPLE_FMT_FLT, 0);
+
+    if (targetSize < 0)
+        return std::string::npos;
+
+    uint8_t* out;
+    if (offset == -1)
+    {
+        buffer.samples.resize(targetSize);
+        out = (uint8_t*)(buffer.samples.data() + buffer.sampleCount * 2 * 2);
+    }
+    else
+    {
+        if (targetSize + offset > buffer.samples.size())
+            return std::string::npos;
+
+        out = (uint8_t*)(buffer.samples.data() + offset);
+    }
+
+    int converted = swr_convert(m_Resampler, &out, outcount, in, frame->nb_samples);
+    if (converted < 0)
+        return std::string::npos;
+
+    if (offset == -1)
+        buffer.sampleCount += converted;
+
+    return converted * 2 * av_get_bytes_per_sample(AV_SAMPLE_FMT_FLT);
+}
+
+void AVLogError(int errnum)
+{
+    char buf[4096];
+    av_strerror(errnum, buf, sizeof(buf));
+    VOID_LOG_ERROR("AVError: Error code: {} - {}", errnum, buf);
 }
 
 VOID_NAMESPACE_CLOSE
