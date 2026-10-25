@@ -13,6 +13,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Audio.h"
 #include "Frame.h"
 #include "Track.h"
 #include "VoidObjects/Core/Entity.h"
@@ -94,6 +95,7 @@ public:
      */
     SharedPlaybackTrack ActiveVideoTrack() const;
     SharedTrackItem GetTrackItem(const int frame);
+    SharedTrackItem AudioTrackItem(const int frame);
     SharedMediaClip Media(v_frame_t frame);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
@@ -130,6 +132,7 @@ signals: /* Signals denoting actions in the seqeuence */
 
 protected: /* Members */
     std::vector<SequenceFrame> m_FrameBuffer;
+    std::vector<SharedFrameAudio> m_AudioBuffer;
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
     std::vector<Snapshot> m_Snapshots;
@@ -146,12 +149,15 @@ private: /* Methods */
      * This method checks the current start and end frame and then evaluates the min and max of
      * start and end frames respectively to ensure the range of the sequence is not messed up
      */
-    void UpdateRange(int start, int end);
+    void UpdateRange(int start, int end, const Sequence::Type& type = Sequence::Type::VIDEO);
     void ConnectVideoTrack(const SharedPlaybackTrack& track);
     void ConnectAudioTrack(const SharedPlaybackTrack& track);
     void ResizeBuffer(std::size_t size);
     void UpdateBuffer();
-    void UpdateBuffer(const MFrameRange& range);
+    void UpdateBuffer(const MFrameRange& range, const Sequence::Type& type);
+    void UpdateVideoBuffer(const MFrameRange& range);
+    void UpdateAudioBuffer(const MFrameRange& range);
+    void ResizeAudioBuffer(std::size_t size);
     // void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
