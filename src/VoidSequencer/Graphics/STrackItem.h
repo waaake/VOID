@@ -32,7 +32,6 @@ public:
     bool Selected() const { return m_Context->SelectionModel()->IsSelected(m_Item); }
 
     STrack* Track() const;
-    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
     void Update() override;
     void UpdateItems();
 
@@ -51,7 +50,7 @@ protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent* event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
 
-private:
+protected:
     std::unordered_map<Effect*, STimelineEffect*> m_Effects;
     SSlipClipContext m_SlipContext;
     SItemTrimContext m_TrimContext;
@@ -60,6 +59,9 @@ private:
     SharedTrackItem m_Item;
     SHandleItem *m_HeadHandle, *m_TailHandle, *m_DurationHandle;
 
+protected:
+    QColor Background(const QStyleOptionGraphicsItem* option) const;
+
 private: /* Methods */
     void Connect();
     void CalculateBoundingRect();
@@ -67,7 +69,28 @@ private: /* Methods */
     void AdjustEffectsWidth(double width);
     int YPos() const;
     void ToggleHandles(int head = 0, int tail = 0, int duration = 0, bool visible = false);
-    QColor Background(const QStyleOptionGraphicsItem* option) const;
+};
+
+class SVideoTrackItem : public STrackItem
+{
+public:
+    using STrackItem::STrackItem;
+
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+};
+
+class SAudioTrackItem : public STrackItem
+{
+public:
+    using STrackItem::STrackItem;
+
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+
+private:
+    std::vector<std::pair<float, float>> m_AudioPeaks;
+
+private:
+    void DrawAudioPeaks(QPainter* painter, const QColor& color, const QRectF& rect);
 };
 
 VOID_NAMESPACE_CLOSE
