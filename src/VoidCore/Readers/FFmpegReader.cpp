@@ -447,10 +447,18 @@ void FFmpegPixReader::Read()
     }
 }
 
-bool FFmpegPixReader::Read(SharedFrameAudio& buffer) const
+bool FFmpegPixReader::Read(SharedFrameAudio& buffer)
 {
     VOID_LOG_INFO("Decoding Audio using Decode2");
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+
+    // VOID_LOG_WARN("TIMESTAMP : FF:{0} {1} {2}", m_Framenumber, m_Timeframe.pts, m_Timeframe.duration);
+    // Ensure we have Valid video frame timestamp before reading audio
+    if (m_Timeframe.Invalid())
+        decoder.FetchTimestamp(m_Framenumber, m_Timeframe);
+
+    VOID_LOG_WARN("TIMESTAMP - A: FF:{0} {1} {2}", m_Framenumber, m_Timeframe.pts, m_Timeframe.duration);
+    // return false;
     return decoder.Decode(m_Framenumber, m_Timeframe, buffer);
 }
 
