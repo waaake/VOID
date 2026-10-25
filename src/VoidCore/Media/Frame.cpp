@@ -92,6 +92,11 @@ const FloatImage& Frame::Image()
     return m_Reader->FrameImage();
 }
 
+bool Frame::Audio(SharedFrameAudio& buffer)
+{
+    return m_Reader->Read(buffer);
+}
+
 void Frame::Thumbnail(UInt8Image& image)
 {
     /**
