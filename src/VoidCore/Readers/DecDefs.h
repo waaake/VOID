@@ -25,9 +25,13 @@ struct DecodedFrame
 
 struct TimeFrame
 {
-    int64_t pts;
-    int64_t duration;
+    int64_t pts = -1;
+    int64_t duration = -1;
     AVRational timebase;
+
+    inline explicit operator bool() const { return Valid(); }
+    bool Valid() const { return pts > -1; }
+    bool Invalid() const { return pts < 0; }
 };
 
 VOID_NAMESPACE_CLOSE
