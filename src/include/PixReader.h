@@ -89,7 +89,7 @@ public:
     /// @brief Buffers the audio for the Frame onto the provided FrameAudio pointer.
     /// @param buffer Shared pointer for the Frame Audio to be updated.
     /// @return true if the buffer was filled and usable, else false.
-    virtual bool Read(SharedFrameAudio& buffer) const { return false; }
+    virtual bool Read(SharedFrameAudio& buffer) { return false; }
 
     /**
      * Retrieve the input colorspace of the media file
