@@ -408,6 +408,40 @@ const FloatImage TrackItem::Image(v_frame_t frame)
     return nullptr;
 }
 
+bool TrackItem::Audio(v_frame_t frame, SharedFrameAudio& buffer)
+{
+    v_frame_t f = frame + m_Offset;
+    if (m_Media && m_Media->Contains(f))
+        return m_Media->Audio(f, buffer);
+    
+    return false;
+}
+
+std::vector<std::pair<float, float>> TrackItem::AudioPeaks()
+{
+    auto _getPeak = [](const SharedFrameAudio& audio) -> std::pair<float, float>
+    {
+        if (audio->samples.empty())
+            return { 0.f, 0.f };
+
+        const auto& [minIt, maxIt] = std::minmax_element(audio->samples.begin(), audio->samples.end());
+        return { *minIt, *maxIt };
+    };
+
+    std::vector<std::pair<float, float>> out;
+    out.resize(m_Media->Duration());
+
+    const v_frame_t start = m_Media->FirstFrame();
+    SharedFrameAudio buffer = std::make_shared<FrameAudio>();
+    for (v_frame_t i = start; i <= m_Media->LastFrame(); ++i)
+    {
+        m_Media->Audio(i, buffer);
+        out[i - start] = std::move(_getPeak(buffer));
+    }
+
+    return out;
+}
+
 void TrackItem::ClearCache(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
