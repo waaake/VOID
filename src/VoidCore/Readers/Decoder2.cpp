@@ -74,6 +74,41 @@ bool FFmpegDecoder2::Setup(const std::string& path)
     return true;
 }
 
+bool FFmpegDecoder2::FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe)
+{
+    if (TryCached(framenumber, timeframe))
+        return true;
+
+    /// If we want to decode backwards
+    m_Backwards = (m_LastDecoded - framenumber) > 0;
+
+    // When a previous frame than the current frame is requested, we want to seek backwars by a bit
+    // this allows the decoder to try decoding all those frames to catch up to the requested number
+    // when it does that, we will have the requested and previous n i.e. MAX_CACHED_FRAMES number of
+    // frames cached already and that allows us to quickly go back to previous n frames without re-requesting so much
+    if (m_Backwards)
+        TrySeek(std::max(framenumber - (v_frame_t)MAX_CACHED_FRAMES, (v_frame_t)0), m_VideoStream);
+    else if (framenumber - m_LastDecoded > MAX_CACHED_FRAMES) // else if the requested frame is too far ahead, we want to seek
+        TrySeek(framenumber - 1, m_VideoStream);
+
+    while (m_LastDecoded < framenumber)
+    {
+        int ret = DecodeAndStoreNext(m_VideoStream);
+        if (ret == AVERROR_EOF)
+            break;
+
+        if (ret < 0)
+            return false;
+    }
+
+    // Check now if we have frame
+    if (TryCached(framenumber, timeframe, m_LastCacheIndex))
+        return true;
+
+    /// Could not decode the requested frame
+    return false;
+}
+
 bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe)
 {
     // Tools::VoidProfiler<std::chrono::milliseconds> p("FFmpegDecoder2::DecodeFrame");
@@ -334,6 +369,34 @@ void FFmpegDecoder2::StoreAudioBuffer(FFmpegStream* stream)
 //     // m_Cache.erase(frame);
 //     return buffer;
 // }
+
+bool FFmpegDecoder2::TryCached(v_frame_t framenumber, TimeFrame& timeframe, int preferred)
+{
+    if (preferred > -1)
+    {
+        DecodedFrame& frame = m_VideoCache[preferred];
+        if (frame.framenumber == framenumber)
+        {
+            timeframe.duration = frame.duration;
+            timeframe.pts = frame.pts;
+            timeframe.timebase = frame.timebase;
+            return true;
+        }
+    }
+
+    for (const DecodedFrame& entry : m_VideoCache)
+    {
+        if (entry.framenumber == framenumber)
+        {
+            timeframe.duration = entry.duration;
+            timeframe.pts = entry.pts;
+            timeframe.timebase = entry.timebase;
+            return true;
+        }
+    }
+
+    return false;
+}
 
 bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred)
 {

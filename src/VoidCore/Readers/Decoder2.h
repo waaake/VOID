@@ -33,6 +33,7 @@ public:
 
     // bool Decode(const std::string& path, v_frame_t framenumber, Buffer<float>& pixels);
 
+    bool FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe);
     bool Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe);
     bool Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe);
     bool Decode(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
@@ -75,6 +76,7 @@ private:
 
     // bool HasVideoCached(v_frame_t frame) const { return m_Cache.find(frame) != m_Cache.end(); }
     // std::vector<unsigned char> FreeFromVideoCache(v_frame_t framenumber);
+    bool TryCached(v_frame_t framenumber, TimeFrame& timeframe, int preferred = -1);
     bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred = -1);
     bool TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred = -1);
     bool TryCached(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
