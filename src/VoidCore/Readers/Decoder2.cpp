@@ -207,7 +207,6 @@ bool FFmpegDecoder2::Open(const std::string& path)
     index = av_find_best_stream(m_Format, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
     if (index > -1) // Has audio
     {
-        VOID_LOG_INFO("Found Audio in container, Index: {}", index);
         /// has audio, try to create and setup the audio stream and resampler
         /// if anything fails, then we reset the Audio stream and that makes the decoder behaves
         /// as if the container did not had any audio at all
@@ -292,7 +291,7 @@ int64_t FFmpegDecoder2::DecodeAndStoreNext(FFmpegStream* stream)
     else
     {
         av_packet_unref(m_Packet);
-        VOID_LOG_INFO("Could not decode, errcode: {}", ret);
+        AVLogError(ret);
     }
 
     return ret;
@@ -309,66 +308,23 @@ void FFmpegDecoder2::StoreBuffer(FFmpegStream* stream)
 void FFmpegDecoder2::StoreVideoBuffer(FFmpegStream* stream)
 {
     DecodedFrame& frame = m_VideoCache[m_CacheIndex];
-    // std::vector<unsigned char> buffer;
     if (stream->Decode(frame))
     {
-        // VOID_LOG_INFO("Buffer size: {}", buffer.size());
-        // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, buffer, stream->CurrentFrame());
-        // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, frame);
-        // m_Cache[m_CacheIndex] = std::move(frame);
-
-        // m_Cache[stream->CurrentFrame()] = std::move(buffer);
-        // VOID_LOG_INFO("Pulled buffer for {}", stream->CurrentFrame());
-        // VOID_LOG_INFO("Buffer size ++ : {}", m_Cache[m_CacheIndex].buffer.size());
-
         m_LastCacheIndex = m_CacheIndex.load();
         m_CacheIndex = (m_CacheIndex + 1) % MAX_CACHED_FRAMES;
         m_LastDecoded = frame.framenumber;
-
-        VOID_LOG_INFO("Last Decoded Frame: {0}", m_LastDecoded);
     }
 }
 
 void FFmpegDecoder2::StoreAudioBuffer(FFmpegStream* stream)
 {
-    // DecodedFrame& frame = m_Cache[m_CacheIndex];
-    // // std::vector<unsigned char> buffer;
-    // if (stream->Decode(frame))
-    // {
-    //     // VOID_LOG_INFO("Buffer size: {}", buffer.size());
-    //     // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, buffer, stream->CurrentFrame());
-    //     // m_Cache.emplace(m_Cache.begin() + m_CacheIndex, frame);
-    //     // m_Cache[m_CacheIndex] = std::move(frame);
-
-    //     // m_Cache[stream->CurrentFrame()] = std::move(buffer);
-    //     // VOID_LOG_INFO("Pulled buffer for {}", stream->CurrentFrame());
-    //     // VOID_LOG_INFO("Buffer size ++ : {}", m_Cache[m_CacheIndex].buffer.size());
-
-    //     m_LastCacheIndex = m_CacheIndex.load();
-    //     m_CacheIndex = (m_CacheIndex + 1) % MAX_CACHED_FRAMES;
-    //     m_LastDecoded = frame.framenumber;
-
-    //     VOID_LOG_INFO("Last Decoded Frame: {0}", m_LastDecoded);
-    // }
     AudioBuffer buffer;
     if (stream->Decode(buffer))
     {
-        // VOID_LOG_INFO("Decoded Audio Buffer --- ");
-        // VOID_LOG_INFO("PTS: {0}, Samplerate: {1}, Channels: {2}, Sample Count: {3}", buffer.pts, buffer.samplerate, buffer.channels, buffer.sampleCount);
-
         m_AudioBuffer.push_back(std::move(buffer));
         m_LastAudioPTS = stream->CurrentAudioSample();
-
-        // VOID_LOG_INFO("Current Audio Frame: {}", m_LastAudioPTS);
     }
 }
-
-// std::vector<unsigned char> FFmpegDecoder2::FreeFromVideoCache(v_frame_t frame)
-// {
-//     std::vector<unsigned char> buffer = m_Cache.at(frame);
-//     // m_Cache.erase(frame);
-//     return buffer;
-// }
 
 bool FFmpegDecoder2::TryCached(v_frame_t framenumber, TimeFrame& timeframe, int preferred)
 {
@@ -467,11 +423,6 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, const TimeFrame& timeframe
 
 bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer)
 {
-    // Microseconds
-    VOID_LOG_INFO("FNum: {}, PTS: {}, Duration: {} --- Tbase: {}/{}", framenumber, timeframe.pts, timeframe.duration, timeframe.timebase.num, timeframe.timebase.den);
-
-    // const int64_t frameStart = av_rescale_q(timeframe.pts, timeframe.timebase, AV_TIME_BASE_Q);
-    // const int64_t frameEnd = av_rescale_q(timeframe.pts + timeframe.duration, timeframe.timebase, AV_TIME_BASE_Q);
     const int64_t frameStart = timeframe.pts;
     const int64_t frameEnd = timeframe.pts + timeframe.duration;
 
@@ -484,15 +435,8 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
     while (index < static_cast<int>(m_AudioBuffer.size()))
     {
         const AudioBuffer& audio = m_AudioBuffer[index];
-
-        // const AVRational timebase{1, audio.samplerate};
-        // const int64_t audioStart = av_rescale_q(audio.pts, timebase, AV_TIME_BASE_Q);
-        // const int64_t audioEnd = av_rescale_q(audio.pts + audio.sampleCount, timebase, AV_TIME_BASE_Q);
-
         const int64_t audioStart = audio.pts;
         const int64_t audioEnd = audio.pts + audio.sampleCount;
-
-        VOID_LOG_INFO("FTS: {}, FTE: {}, ATS: {}, ATE: {}", frameStart, frameEnd, audioStart, audioEnd);
 
         if (audioEnd > frameStart)
             break;
@@ -504,9 +448,6 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
     {
         const AudioBuffer& audio = m_AudioBuffer[i];
 
-        // const AVRational timebase{1, audio.samplerate};
-        // const int64_t audioStart = av_rescale_q(audio.pts, timebase, AV_TIME_BASE_Q);
-        // const int64_t audioEnd = av_rescale_q(audio.pts + audio.sampleCount, timebase, AV_TIME_BASE_Q);
         const int64_t audioStart = audio.pts;
         const int64_t audioEnd = audio.pts + audio.sampleCount;
 
@@ -523,8 +464,6 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
         const int64_t dstSample = overlapStart - frameStart;
         const int64_t count = overlapEnd - overlapStart;
 
-        // VOID_LOG_INFO("COUNT: {0}", count);
-
         const std::size_t srcIndex = static_cast<std::size_t>(srcSample) * audio.channels;
         const std::size_t dstIndex = static_cast<std::size_t>(dstSample) * audio.channels;
 
@@ -533,12 +472,9 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
         buffer->channels = audio.channels;
         buffer->samplerate = audio.samplerate;
 
-        // VOID_LOG_INFO("Src Idx: {}, ValueCount")
-        // VOID_LOG_INFO("Dest Size: {}, Source Audio Size: {}", buffer->samples.size(), audio.samples.size());
         if (srcIndex + valueCount > audio.samples.size() || dstIndex + valueCount > buffer->samples.size())
             return false;
 
-        VOID_LOG_INFO("Copying {} samples from source, index: {}, to destination, index: {}", valueCount, srcIndex, dstIndex);
         std::copy_n(audio.samples.data() + srcIndex, valueCount, buffer->samples.data() + dstIndex);
     }
 
@@ -549,21 +485,9 @@ void FFmpegDecoder2::TrySeek(v_frame_t frame, FFmpegStream* stream)
 {
     int64_t timestamp = stream->FrameToPts(frame);
 
-    // AVStream* stream = m_Format->streams[index];
-    // const int result = av_seek_frame(m_Format, index, timestamp, AVSEEK_FLAG_BACKWARD);
-    // if (result < 0)
-    //     return false;
-
-    // av_packet_unref(m_Packet);
-    // av_frame_unref(m_Frame);
-    // // av_frame_un
-    // avcodec_flush_buffers(m_CodecContext);
-
     av_seek_frame(m_Format, stream->Index(), timestamp, AVSEEK_FLAG_BACKWARD);
     av_packet_unref(m_Packet);
     stream->FlushBuffers();
-
-    VOID_LOG_INFO("TrySeek::Frame:{}::PTS:{}", frame, timestamp);
 
     m_LastDecoded = -1;
 }
