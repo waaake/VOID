@@ -17,27 +17,6 @@ FFmpegStream::FFmpegStream(AVFormatContext* format, AVStream* stream, int index,
     , m_Scaler(nullptr)
     , m_Resampler(nullptr)
 {
-    // Setup();
-    // m_Frame = av_frame_alloc();
-    // const AVCodec* codec = avcodec_find_decoder(m_Stream->codecpar->codec_id);
-    // m_CodecContext = avcodec_alloc_context3(codec);
-
-    // avcodec_parameters_to_context(m_CodecContext, m_Stream->codecpar);
-    // avcodec_open2(m_CodecContext, codec, nullptr);
-
-    // m_Frame->width = m_Stream->codecpar->width;
-    // m_Frame->height = m_Stream->codecpar->height;
-    // m_Frame->format = m_CodecContext->pix_fmt;
-
-    // int thread_count = 6;
-    // if (codec->capabilities & AV_CODEC_CAP_SLICE_THREADS) {
-    //     m_CodecContext->thread_count = thread_count;
-    //     m_CodecContext->thread_type  = FF_THREAD_SLICE;
-    // }
-    // if (codec->capabilities & AV_CODEC_CAP_FRAME_THREADS) {
-    //     m_CodecContext->thread_count = thread_count;
-    //     m_CodecContext->thread_type |= FF_THREAD_FRAME;
-    // }
 }
 
 FFmpegStream::~FFmpegStream()
@@ -77,12 +56,6 @@ bool FFmpegStream::Setup()
 
     return false;
 }
-
-// int64_t FFmpegStream::CurrentFrame()
-// {
-//     // return (m_Frame->best_effort_timestamp * m_Stream->time_base.num) / m_Stream->time_base.den;
-//     return m_CurrentFrame;
-// }
 
 int64_t FFmpegStream::FrameToPts(v_frame_t frame) const
 {
@@ -138,7 +111,6 @@ bool FFmpegStream::Decode(DecodedFrame& out)
     out.pts = m_Frame->pts;
     out.duration = m_Frame->duration;
     out.timebase = m_Stream->time_base;
-    // VOID_LOG_INFO("CTX TImebase: {0}/{1}", m_Stream->time_base.num, m_Stream->time_base.den);
     out.buffer.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Frame->width, m_Frame->height, 1));
 
     int linesizes[4] = { 3 * m_Frame->width, 0, 0, 0 };
@@ -153,37 +125,6 @@ bool FFmpegStream::Decode(AudioBuffer& out)
     if (!m_Resampler || m_Frame->nb_samples <= 0)
         return false;
 
-    // VOID_LOG_INFO("Frame Timebase: {0}/{1}", m_Frame->time_base.num, m_Frame->time_base.den);
-    // VOID_LOG_INFO("Codec Timebase: {0}/{1}", m_CodecContext->time_base.num, m_CodecContext->time_base.den);
-    out.pts = m_Frame->pts;
-    out.samplerate = m_Frame->sample_rate;
-    out.channels = 2; //m_Frame->ch_layout.nb_channels;
-
-    // // Account for any samples buffered inside the resampler
-    // const int samplecount = static_cast<int>(
-    //     av_rescale_rnd(
-    //         swr_get_delay(m_Resampler, m_Frame->sample_rate) + m_Frame->nb_samples,
-    //         m_Frame->sample_rate,
-    //         m_Frame->sample_rate,
-    //         AV_ROUND_UP
-    //     )
-    // );
-
-    // out.samples.resize(samplecount);
-    // uint8_t* dest[1] = { reinterpret_cast<uint8_t*>(out.samples.data()) };
-
-    // const int converted = swr_convert(m_Resampler, dest, samplecount, m_Frame->extended_data, m_Frame->nb_samples);
-    // // coversion failed to the requested format and the buffer is not usable
-    // if (converted < 0)
-    // {
-    //     out.Reset();
-    //     return false;
-    // }
-
-    // // Remove unused capacity from the samples in the out buffer
-    // // out.samples.resize(static_cast<std::size_t>(converted) * out.channels);
-    // return true;
-
     std::size_t ret = ResampleAudio(m_Frame, out, -1, m_Frame->sample_rate);
     if (ret == std::string::npos)
         return false;
@@ -192,7 +133,6 @@ bool FFmpegStream::Decode(AudioBuffer& out)
         m_CurrentAudioSample = (m_Frame->pts * m_Frame->sample_rate * m_Stream->time_base.num) / m_Stream->time_base.den;
     
     m_CurrentAudioSample += m_Frame->nb_samples;
-    VOID_LOG_INFO("Current Audio Sample... {}", m_CurrentAudioSample);
 
     return true;
 }
@@ -257,6 +197,10 @@ std::size_t FFmpegStream::ResampleAudio(AVFrame* frame, AudioBuffer& buffer, int
 
     if (offset == -1)
         buffer.sampleCount += converted;
+
+    buffer.pts = m_Frame->pts;
+    buffer.samplerate = m_Frame->sample_rate;
+    buffer.channels = 2; //m_Frame->ch_layout.nb_channels;
 
     return converted * 2 * av_get_bytes_per_sample(AV_SAMPLE_FMT_FLT);
 }
