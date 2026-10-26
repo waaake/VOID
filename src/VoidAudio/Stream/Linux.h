@@ -22,6 +22,7 @@ public:
     bool Start();
     void Stop();
     bool WriteSamples(const unsigned char* data, std::size_t size, int samples);
+    bool WriteSamples(const void* data, std::size_t bytes, int samples);
     void SeekTo(double time) { }
 
     double CurrentTime() const { return 0.0; }

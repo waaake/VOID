@@ -77,4 +77,19 @@ bool AudioStream::WriteSamples(const unsigned char* data, std::size_t size, int 
     return true;
 }
 
+bool AudioStream::WriteSamples(const void* data, std::size_t bytes, int samples)
+{
+    if (!m_Stream)
+        return false;
+
+    int error;
+    if (pa_simple_write(m_Stream, data, bytes, &error) < 0)
+    {
+        VOID_LOG_INFO("Unable to write samples: {0}", pa_strerror(error));
+        return false;
+    }
+
+    return true;
+}
+
 VOID_NAMESPACE_CLOSE
