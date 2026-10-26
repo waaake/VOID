@@ -1,5 +1,6 @@
 set(SOURCES
     Core/Decoder.cpp
+    Core/Player.cpp
 )
 
 if (WIN32)
