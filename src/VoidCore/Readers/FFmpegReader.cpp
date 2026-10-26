@@ -329,22 +329,6 @@ FFmpegPixReader::~FFmpegPixReader()
 
 void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
-    // FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
-    // if (decoder.Decode(path, frame, image->buffer))
-    // {
-    //     image->width = decoder.Width();
-    //     image->height = decoder.Height();
-    //     image->channels = decoder.Channels();
-
-    //     image->format = VOID_GL_RGB;
-
-    //     // Underlying image specifications
-    //     m_Image->width = image->width;
-    //     m_Image->height = image->height;
-    //     m_Image->channels = image->channels;
-    //     m_Image->format = VOID_GL_RGB;
-    // }
-
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
     if (decoder.Decode(frame, image->buffer._buf, m_Timeframe))
     {
@@ -361,11 +345,6 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
         m_Image->height = image->height;
         m_Image->channels = image->channels;
         m_Image->format = VOID_GL_RGB;
-
-        SharedFrameAudio buffer = std::make_shared<FrameAudio>();
-        decoder.Decode(4, m_Timeframe, buffer);
-
-        VOID_LOG_INFO("Buffer size: {0}", buffer->samples.size());
     }
 }
 
@@ -408,8 +387,8 @@ MFrameRange FFmpegPixReader::Framerange()
 
 void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
 {
-    FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
-    if (decoder.Decode(path, frame, image->buffer))
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+    if (decoder.Decode(m_Framenumber, image->buffer._buf, m_Timeframe))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -422,17 +401,6 @@ void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage&
 
 void FFmpegPixReader::Read()
 {
-    // FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
-    // if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer))
-    // {
-    //     m_Image->width = decoder.Width();
-    //     m_Image->height = decoder.Height();
-    //     m_Image->channels = decoder.Channels();
-
-    //     m_Image->format = VOID_GL_RGB;
-    //     m_Image->type = VOID_GL_FLOAT;
-    // }
-    VOID_LOG_INFO("USING DECODER 2");
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
     if (decoder.Decode(m_Framenumber, m_Image->buffer._buf, m_Timeframe))
     {
@@ -442,23 +410,16 @@ void FFmpegPixReader::Read()
 
         m_Image->format = VOID_GL_RGB;
         m_Image->type = VOID_GL_FLOAT;
-
-        VOID_LOG_WARN("TimeFrame -- num: {}, pts: {}, duration: {}", m_Framenumber, m_Timeframe.pts, m_Timeframe.duration);
     }
 }
 
 bool FFmpegPixReader::Read(SharedFrameAudio& buffer)
 {
-    VOID_LOG_INFO("Decoding Audio using Decode2");
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-
-    // VOID_LOG_WARN("TIMESTAMP : FF:{0} {1} {2}", m_Framenumber, m_Timeframe.pts, m_Timeframe.duration);
     // Ensure we have Valid video frame timestamp before reading audio
     if (m_Timeframe.Invalid())
         decoder.FetchTimestamp(m_Framenumber, m_Timeframe);
 
-    VOID_LOG_WARN("TIMESTAMP - A: FF:{0} {1} {2}", m_Framenumber, m_Timeframe.pts, m_Timeframe.duration);
-    // return false;
     return decoder.Decode(m_Framenumber, m_Timeframe, buffer);
 }
 
