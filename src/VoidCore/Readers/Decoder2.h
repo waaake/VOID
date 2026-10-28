@@ -4,7 +4,6 @@
 /* STD */
 #include <atomic>
 #include <vector>
-// #include <unordered_map>
 
 /* Internal */
 #include "Definition.h"
@@ -31,27 +30,16 @@ public:
 
     bool Setup(const std::string& path);
 
-    // bool Decode(const std::string& path, v_frame_t framenumber, Buffer<float>& pixels);
-
+    bool ComputeTimestamp(v_frame_t framenumber, TimeFrame& timeframe) const;
     bool FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe);
     bool Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe);
     bool Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe);
     bool Decode(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
 private:
-    // struct CacheEntry
-    // {
-    //     std::vector<unsigned char> buffer;
-    //     v_frame_t frame;
-    //     CacheEntry() : frame(-1) {}
-    //     CacheEntry(std::vector<unsigned char>& buffer, v_frame_t frame)
-    //         : buffer(std::move(buffer)), frame(frame) {}
-    // };
-
-    // std::unordered_map<v_frame_t, std::vector<unsigned char>> m_Cache;
     std::vector<DecodedFrame> m_VideoCache;
     std::vector<AudioBuffer> m_AudioBuffer;
-    // std::unordered_map<v_frame_t, AudioBuffer> m_AudioBuffer;
+
     std::string m_Path;
     std::atomic<int> m_LastCacheIndex = 0;
     std::atomic<int> m_CacheIndex = 0;
@@ -64,6 +52,7 @@ private:
     int64_t m_LastDecoded       = -1;
     int64_t m_LastAudioPTS      = -1;
     bool m_Backwards            = false;
+    int m_LastIndex             = -1;
 
 private:
     bool Open(const std::string& path);
@@ -74,15 +63,12 @@ private:
     void StoreVideoBuffer(FFmpegStream* stream);
     void StoreAudioBuffer(FFmpegStream* stream);
 
-    // bool HasVideoCached(v_frame_t frame) const { return m_Cache.find(frame) != m_Cache.end(); }
-    // std::vector<unsigned char> FreeFromVideoCache(v_frame_t framenumber);
     bool TryCached(v_frame_t framenumber, TimeFrame& timeframe, int preferred = -1);
     bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred = -1);
     bool TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred = -1);
     bool TryCached(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
     bool ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
-
     void TrySeek(v_frame_t framenumber, FFmpegStream* stream);
 
     void FillBuffer(const std::vector<unsigned char>& in, std::vector<float>& out);

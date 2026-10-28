@@ -12,7 +12,6 @@
 /* Internal */
 #include "Decoder2.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -74,6 +73,17 @@ bool FFmpegDecoder2::Setup(const std::string& path)
     return true;
 }
 
+bool FFmpegDecoder2::ComputeTimestamp(v_frame_t framenumber, TimeFrame& timeframe) const
+{
+    if (!m_VideoStream) return false;
+
+    timeframe.timebase = m_VideoStream->StreamTimebase();
+    timeframe.duration = av_rescale_q(1, av_inv_q(m_VideoStream->Framerate()), timeframe.timebase);
+    timeframe.pts = framenumber * timeframe.duration;
+
+    return true;
+}
+
 bool FFmpegDecoder2::FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe)
 {
     if (TryCached(framenumber, timeframe))
@@ -111,8 +121,6 @@ bool FFmpegDecoder2::FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe)
 
 bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe)
 {
-    // Tools::VoidProfiler<std::chrono::milliseconds> p("FFmpegDecoder2::DecodeFrame");
-
     if (TryCached(framenumber, buffer, timeframe))
         return true;
 
@@ -127,7 +135,10 @@ bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, T
         TrySeek(std::max(framenumber - (v_frame_t)MAX_CACHED_FRAMES, (v_frame_t)0), m_VideoStream);
     else if (framenumber - m_LastDecoded > MAX_CACHED_FRAMES) // else if the requested frame is too far ahead, we want to seek
         TrySeek(framenumber - 1, m_VideoStream);
+    else if (m_LastIndex != m_VideoStream->Index()) // If we were decoding audio before this, ensure we seek to somewhere before the requested frame
+        TrySeek(framenumber, m_VideoStream);
 
+    m_LastIndex = m_VideoStream->Index();
     while (m_LastDecoded < framenumber)
     {
         int ret = DecodeAndStoreNext(m_VideoStream);
@@ -173,7 +184,12 @@ bool FFmpegDecoder2::Decode(v_frame_t framenumber, const TimeFrame& timeframe, S
 {
     if (!m_AudioStream) return false;
 
-    while (m_LastAudioPTS < (timeframe.pts + timeframe.duration))
+    /// If we were decoding video before this, ensure we seek to somewhere before the requested frame
+    if (m_LastIndex != m_AudioStream->Index())
+        TrySeek(framenumber, m_AudioStream);
+
+    m_LastIndex = m_AudioStream->Index();
+    while (m_LastAudioPTS < FFmpegStream::ToAudioSamplePosition(timeframe.pts + timeframe.duration, timeframe.timebase))
     {
         int ret = DecodeAndStoreNext(m_AudioStream);
         if (ret == AVERROR_EOF)
@@ -423,8 +439,8 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, const TimeFrame& timeframe
 
 bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer)
 {
-    const int64_t frameStart = timeframe.pts;
-    const int64_t frameEnd = timeframe.pts + timeframe.duration;
+    const int64_t frameStart = FFmpegStream::ToAudioSamplePosition(timeframe.pts, timeframe.timebase);
+    const int64_t frameEnd = FFmpegStream::ToAudioSamplePosition(timeframe.pts + timeframe.duration, timeframe.timebase);
 
     int index = 0;
     buffer->samplecount = frameEnd - frameStart;
@@ -432,6 +448,8 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
     // Any missing audio in the buffer is set to 0 and remains silent
     buffer->samples.assign(static_cast<std::size_t>(buffer->samplecount * 2), 0.f);
 
+    /// Fetch what index of the audio buffers we have that can provide the starting sample for the audio
+    /// in the required video frame determined by the start pts
     while (index < static_cast<int>(m_AudioBuffer.size()))
     {
         const AudioBuffer& audio = m_AudioBuffer[index];
@@ -453,7 +471,7 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
 
         if (audioStart >= frameEnd)
             break;
-        
+
         const int64_t overlapStart = std::max(frameStart, audioStart);
         const int64_t overlapEnd = std::min(frameEnd, audioEnd);
 
@@ -475,7 +493,8 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
         if (srcIndex + valueCount > audio.samples.size() || dstIndex + valueCount > buffer->samples.size())
             return false;
 
-        std::copy_n(audio.samples.data() + srcIndex, valueCount, buffer->samples.data() + dstIndex);
+        // VOID_LOG_INFO("Copying {} samples from source buffer index: {} to destination index: {} --- for frame: {}", valueCount, srcIndex, dstIndex, framenumber);
+        audio.CopySamples(valueCount, srcIndex, buffer->samples.data() + dstIndex);
     }
 
     return true;
