@@ -101,10 +101,9 @@ bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, in
     return true;
 }
 
-bool AudioStream::WriteSamples(const float* buffer, std::size_t size, int samples)
+bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples)
 {
     UINT32 inframes = samples / m_Wfx->nChannels;
-
     UINT32 framesAvailable = AvailableFrames();
     if (framesAvailable > 0)
     {
