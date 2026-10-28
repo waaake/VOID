@@ -23,6 +23,7 @@ public:
     bool Start();
     void Stop();
     bool WriteSamples(const unsigned char* buffer, std::size_t size, int samples);
+    bool WriteSamples(const float* buffer, std::size_t size, int samples);
     void SeekTo(double time) {}
 
     double CurrentTime() const { return 0.0; }
