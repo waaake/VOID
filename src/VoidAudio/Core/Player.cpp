@@ -44,10 +44,10 @@ void AudioPlayer::Stop()
 void AudioPlayer::Play(const SharedFrameAudio& buffer)
 {
     // VOID_LOG_INFO("Writing {} bytes with {} samplecount", buffer->Bytes(), buffer->samplecount);
-    #if defined(_VOID_PLATFORM_APPLE)
-    m_AudioStream->WriteSamples(buffer->Data(), buffer->Size(), buffer->samplecount);
-    #else
+    #if defined(_VOID_PLATFORM_LINUX)
     m_AudioStream->WriteSamples(buffer->Data(), buffer->Bytes(), buffer->samplecount);
+    #else
+    m_AudioStream->WriteSamples(buffer->Data(), buffer->Size(), buffer->samplecount);
     #endif
 }
 
