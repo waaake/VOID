@@ -7,6 +7,7 @@
 /* Qt */
 #include <QCoreApplication>
 #include <QDataStream>
+#include <QIODevice>
 
 /* Internal */
 #include "MediaBridge.h"
