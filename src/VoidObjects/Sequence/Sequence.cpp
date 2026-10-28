@@ -242,7 +242,7 @@ void PlaybackSequence::RemoveTrack(int index, const Sequence::Type& type)
     emit tracksReordered();
 }
 
-void PlaybackSequence::UpdateRange(int start, int end, const Sequence::Type& type)
+void PlaybackSequence::UpdateRange(int start, int end)
 {
     /**
      * Inorder to update the range on the sequence, we need to see
@@ -263,10 +263,7 @@ void PlaybackSequence::UpdateRange(int start, int end, const Sequence::Type& typ
     }
 
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
-    if (type == Sequence::Type::VIDEO)
-        ResizeBuffer(m_EndFrame - m_StartFrame + 1);
-    else
-        ResizeAudioBuffer(m_EndFrame - m_StartFrame + 1);
+    ResizeBuffer(m_EndFrame - m_StartFrame + 1);
 }
 
 SharedPlaybackTrack PlaybackSequence::ReferenceVideoTrack() const
@@ -457,6 +454,26 @@ const FloatImage PlaybackSequence::Evaluated(v_frame_t frame)
 
     return nullptr;
 }
+
+const SharedFrameAudio PlaybackSequence::Audio(v_frame_t frame)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_AudioBuffer.size())
+        return m_AudioBuffer[index];
+
+    return nullptr;
+}
+
+// bool PlaybackSequence::FrameBuffer(v_frame_t frame, BufferData& data)
+// {
+//     std::size_t index = frame - m_StartFrame;
+//     if (index < m_FrameBuffer.size())
+//     {
+//         const FloatImage& image = m_FrameBuffer[index].Evaluate();
+//         data.
+//     }
+//     return false;
+// }
 
 void PlaybackSequence::ClearCache()
 {
@@ -667,10 +684,7 @@ void PlaybackSequence::Deserialize(std::istream& in)
 void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
 {
     auto* ptr = track.get();
-    connect(ptr, &PlaybackTrack::rangeChanged, this, [this](int start, int end) -> void
-    {
-        UpdateRange(start, end, Sequence::Type::VIDEO);
-    });
+    connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
     connect(ptr, &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
     connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
@@ -689,10 +703,7 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
 {
     auto* ptr = track.get();
-    connect(ptr, &PlaybackTrack::rangeChanged, this, [this](int start, int end) -> void
-    {
-        UpdateRange(start, end, Sequence::Type::AUDIO);
-    });
+    connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
     connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
@@ -704,14 +715,15 @@ void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
 void PlaybackSequence::ResizeBuffer(std::size_t size)
 {
     m_FrameBuffer.resize(size);
-    VOID_LOG_INFO("Resized to: {}", size);
+    m_AudioBuffer.resize(size);
+    VOID_LOG_INFO("Resized buffers to: {}", size);
 }
 
-void PlaybackSequence::ResizeAudioBuffer(std::size_t size)
-{
-    m_AudioBuffer.resize(size);
-    VOID_LOG_INFO("Resized audio buffer to: {}", size);
-}
+// void PlaybackSequence::ResizeAudioBuffer(std::size_t size)
+// {
+//     m_AudioBuffer.resize(size);
+//     VOID_LOG_INFO("Resized audio buffer to: {}", size);
+// }
 
 void PlaybackSequence::UpdateBuffer()
 {

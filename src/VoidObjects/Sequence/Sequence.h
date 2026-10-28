@@ -100,6 +100,8 @@ public:
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
     const FloatImage Evaluated(v_frame_t frame);
+    const SharedFrameAudio Audio(v_frame_t frame);
+    // bool FrameBuffer(v_frame_t frame, BufferData& data);
 
     void SaveSnapshot(const std::string& name, const std::string& description);
     void RemoveSnapshot(int index);
@@ -149,7 +151,7 @@ private: /* Methods */
      * This method checks the current start and end frame and then evaluates the min and max of
      * start and end frames respectively to ensure the range of the sequence is not messed up
      */
-    void UpdateRange(int start, int end, const Sequence::Type& type = Sequence::Type::VIDEO);
+    void UpdateRange(int start, int end);
     void ConnectVideoTrack(const SharedPlaybackTrack& track);
     void ConnectAudioTrack(const SharedPlaybackTrack& track);
     void ResizeBuffer(std::size_t size);
@@ -157,7 +159,7 @@ private: /* Methods */
     void UpdateBuffer(const MFrameRange& range, const Sequence::Type& type);
     void UpdateVideoBuffer(const MFrameRange& range);
     void UpdateAudioBuffer(const MFrameRange& range);
-    void ResizeAudioBuffer(std::size_t size);
+    // void ResizeAudioBuffer(std::size_t size);
     // void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
