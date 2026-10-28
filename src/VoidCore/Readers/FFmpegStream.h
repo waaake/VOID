@@ -6,7 +6,6 @@
 
 /* STD */
 #include <string>
-#include <vector>
 
 /* FFmpeg */
 extern "C" {
@@ -36,6 +35,9 @@ public:
     int64_t CurrentFrame() { return m_CurrentFrame; }
     int64_t FrameToPts(v_frame_t frame) const;
 
+    AVRational StreamTimebase() const { return m_Stream->time_base; }
+    AVRational Framerate() const { return m_Stream->avg_frame_rate; }
+
     AVMediaType Type() const { return m_CodecContext->codec->type; }
     int Index() const { return m_Index; }
 
@@ -51,6 +53,19 @@ public:
     bool Decode(DecodedFrame& out);
     bool Decode(AudioBuffer& out);
 
+    static int64_t OutputSamplerate() { return s_OutputSamplerate; }
+    static int OutputChannels() { return s_OutputChannels; }
+    static AVRational AudioTimebase() { return s_AudioTimeBase; }
+    
+    /// @brief Converts the video presentation timestamp into audio sample units
+    /// as the both most likely will have different time bases
+    /// this is mathematically equal to 
+    /// new PTS = old PTS x (old time base / new time base)
+    /// @param pts Video presentation timestamp.
+    /// @param sourcetimebase Video timebase.
+    /// @return Converted audio sample units.
+    static int64_t ToAudioSamplePosition(int64_t pts, const AVRational& sourcetimebase);
+
 private:
     std::string m_SourcePath;
 
@@ -64,6 +79,11 @@ private:
     int m_Index;
     int64_t m_CurrentFrame;
     int64_t m_CurrentAudioSample;
+
+    /// @brief Audio Out params
+    static constexpr int64_t s_OutputSamplerate = 48000;
+    static constexpr int s_OutputChannels       = 2;
+    static constexpr AVRational s_AudioTimeBase = AVRational{1, 48000};
 
 private:
     bool SetupResampler();

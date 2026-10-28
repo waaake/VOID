@@ -137,6 +137,11 @@ bool FFmpegStream::Decode(AudioBuffer& out)
     return true;
 }
 
+int64_t FFmpegStream::ToAudioSamplePosition(int64_t pts, const AVRational& sourcetimebase)
+{
+    return av_rescale_q(pts, sourcetimebase, s_AudioTimeBase);
+}
+
 bool FFmpegStream::SetupResampler()
 {
     AVChannelLayout layout = AV_CHANNEL_LAYOUT_STEREO;
@@ -144,7 +149,7 @@ bool FFmpegStream::SetupResampler()
         &m_Resampler,
         &layout,
         AV_SAMPLE_FMT_FLT,
-        48000,
+        s_OutputSamplerate,
         &m_CodecContext->ch_layout,
         m_CodecContext->sample_fmt,
         m_CodecContext->sample_rate,
@@ -172,7 +177,7 @@ std::size_t FFmpegStream::ResampleAudio(AVFrame* frame, AudioBuffer& buffer, int
 
     const uint8_t** in = (const uint8_t**)frame->extended_data;
     int outcount = wanted + 256;
-    int targetSize = av_samples_get_buffer_size(nullptr, /*target channels*/2, outcount, AV_SAMPLE_FMT_FLT, 0);
+    int targetSize = av_samples_get_buffer_size(nullptr, s_OutputChannels, outcount, AV_SAMPLE_FMT_FLT, 0);
 
     if (targetSize < 0)
         return std::string::npos;
@@ -197,12 +202,12 @@ std::size_t FFmpegStream::ResampleAudio(AVFrame* frame, AudioBuffer& buffer, int
 
     if (offset == -1)
         buffer.sampleCount += converted;
-
+    
     buffer.pts = m_Frame->pts;
     buffer.samplerate = m_Frame->sample_rate;
-    buffer.channels = 2; //m_Frame->ch_layout.nb_channels;
+    buffer.channels = s_OutputChannels; //m_Frame->ch_layout.nb_channels;
 
-    return converted * 2 * av_get_bytes_per_sample(AV_SAMPLE_FMT_FLT);
+    return converted * s_OutputChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_FLT);
 }
 
 void AVLogError(int errnum)
