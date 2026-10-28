@@ -332,8 +332,6 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
     if (decoder.Decode(frame, image->buffer._buf, m_Timeframe))
     {
-        VOID_LOG_INFO("H: {}, W: {}, C: {}", decoder.Width(), decoder.Height(), decoder.Channels());
-        VOID_LOG_INFO("Buf Size: {0}", image->buffer._buf.size());
         image->width = decoder.Width();
         image->height = decoder.Height();
         image->channels = decoder.Channels();
@@ -418,7 +416,7 @@ bool FFmpegPixReader::Read(SharedFrameAudio& buffer)
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
     // Ensure we have Valid video frame timestamp before reading audio
     if (m_Timeframe.Invalid())
-        decoder.FetchTimestamp(m_Framenumber, m_Timeframe);
+        decoder.ComputeTimestamp(m_Framenumber, m_Timeframe);
 
     return decoder.Decode(m_Framenumber, m_Timeframe, buffer);
 }
