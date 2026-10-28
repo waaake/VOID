@@ -26,6 +26,7 @@ public:
     bool Start();
     void Stop();
     bool WriteSamples(const unsigned char* buffer, std::size_t size, int samples);
+    bool WriteSamples(const void* buffer, std::size_t size, int samples);
     void SeekTo(double time);
 
     double CurrentTime() const { return m_Time; }
@@ -37,6 +38,7 @@ private:
     AudioUnit m_AudioUnit;
     AudioStreamBasicDescription m_Format;
     std::vector<unsigned char> m_Samples;
+    std::vector<float> m_FloatSamples;
     std::mutex m_Mutex;
 
     std::condition_variable m_Cond;   

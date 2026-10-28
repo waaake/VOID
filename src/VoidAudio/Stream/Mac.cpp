@@ -23,8 +23,8 @@ AudioStream::AudioStream(int samplerate, int channels)
     std::memset(&m_Format, 0, sizeof(m_Format));
     m_Format.mSampleRate = samplerate;
     m_Format.mFormatID = kAudioFormatLinearPCM;
-    m_Format.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    m_Format.mBitsPerChannel = 16;
+    m_Format.mFormatFlags = kAudioFormatFlagsNativeFloatPacked; // kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked;
+    m_Format.mBitsPerChannel = 32;
     m_Format.mChannelsPerFrame = channels;
     m_Format.mFramesPerPacket = 1;
     m_Format.mBytesPerFrame = (m_Format.mBitsPerChannel / 8) * channels;
@@ -52,7 +52,7 @@ bool AudioStream::Start()
     AudioComponent component = AudioComponentFindNext(nullptr, &desc);
     if (!component)
         return false;
-    
+
     if (AudioComponentInstanceNew(component, &m_AudioUnit) != noErr)
         return false;
     
@@ -113,10 +113,16 @@ bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, in
     return true;
 }
 
+bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples)
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_FloatSamples.insert(m_FloatSamples.end(), buffer, buffer + size);
+    return true;
+}
+
 void AudioStream::SeekTo(double time)
 {
     m_SessionTime = time;
-
     if (m_AudioUnit)
     {
         AudioOutputUnitStop(m_AudioUnit);
@@ -134,36 +140,63 @@ void AudioStream::SeekTo(double time)
 
 OSStatus AudioStream::RenderCallback(void* inRefCon, AudioUnitRenderActionFlags* ioActionFlags, const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData)
 {
+    // AudioStream* self = static_cast<AudioStream*>(inRefCon);
+
+    // VOID_LOG_INFO("inTimestamp: {0}, inBusNumber: {1}, inNumberFrames: {2}, seconds: {3}", inTimeStamp->mSampleTime, inBusNumber, inNumberFrames, inTimeStamp->mSampleTime / self->m_Samplerate);
+
+    // std::lock_guard<std::mutex> lock(self->m_Mutex);
+    // UInt32 bytesRequested = inNumberFrames * self->m_Channels * 2;
+    // UInt32 bytesAvailable = static_cast<UInt32>(self->m_Samples.size());
+
+    // UInt32 bytesToCopy = std::min(bytesRequested, bytesAvailable);
+
+    // VOID_LOG_INFO("Requested: {0}, Available: {1}, ToCopy: {2}", bytesRequested, bytesAvailable, bytesToCopy);
+
+    // if (bytesToCopy > 0)
+    // {
+    //     std::memcpy(ioData->mBuffers[0].mData, self->m_Samples.data(), bytesToCopy);
+    //     ioData->mBuffers[0].mDataByteSize = bytesToCopy;
+
+    //     self->m_Samples.erase(self->m_Samples.begin(), self->m_Samples.begin() + bytesToCopy);
+    // }
+    // // else
+    // // {
+    // //     std::memset(ioData->mBuffers[0].mData, 0, bytesRequested);
+    // //     ioData->mBuffers[0].mDataByteSize = bytesRequested;
+    // // }
+
+    // // if (self->m_Samples.size() < bytesRequested)
+    // // self->m_Cond.notify_all();
+
+    // self->m_PlaybackTime = inTimeStamp->mSampleTime / self->m_Samplerate;
+    // Timekeeper::Instance().SetTime(self->m_SessionTime + self->m_PlaybackTime);
+    // return noErr;
+
     AudioStream* self = static_cast<AudioStream*>(inRefCon);
 
-    VOID_LOG_INFO("inTimestamp: {0}, inBusNumber: {1}, inNumberFrames: {2}, seconds: {3}", inTimeStamp->mSampleTime, inBusNumber, inNumberFrames, inTimeStamp->mSampleTime / self->m_Samplerate);
-
     std::lock_guard<std::mutex> lock(self->m_Mutex);
-    UInt32 bytesRequested = inNumberFrames * self->m_Channels * 2;
-    UInt32 bytesAvailable = static_cast<UInt32>(self->m_Samples.size());
+    // UInt32 bytesRequested = inNumberFrames * self->channels_ * 2;
+    // UInt32 bytesAvailable = static_cast<UInt32>(self->samples_.size());
+    const std::size_t samplesRequested = static_cast<std::size_t>(inNumberFrames) * self->m_Channels;
+    const std::size_t samplesAvailable = self->m_FloatSamples.size();
 
-    UInt32 bytesToCopy = std::min(bytesRequested, bytesAvailable);
+    const std::size_t samplesToCopy = std::min(samplesRequested, samplesAvailable);
 
-    VOID_LOG_INFO("Requested: {0}, Available: {1}, ToCopy: {2}", bytesRequested, bytesAvailable, bytesToCopy);
+    // UInt32 bytesToCopy = std::min(bytesRequested, bytesAvailable);
+    const std::size_t bytesToCopy = samplesToCopy * sizeof(float);
 
     if (bytesToCopy > 0)
     {
-        std::memcpy(ioData->mBuffers[0].mData, self->m_Samples.data(), bytesToCopy);
-        ioData->mBuffers[0].mDataByteSize = bytesToCopy;
+        std::memcpy(ioData->mBuffers[0].mData, self->m_FloatSamples.data(), bytesToCopy);
+        ioData->mBuffers[0].mDataByteSize = static_cast<UInt32>(bytesToCopy);
 
-        self->m_Samples.erase(self->m_Samples.begin(), self->m_Samples.begin() + bytesToCopy);
+        self->m_FloatSamples.erase(self->m_FloatSamples.begin(), self->m_FloatSamples.begin() + bytesToCopy);
     }
-    // else
-    // {
-    //     std::memset(ioData->mBuffers[0].mData, 0, bytesRequested);
-    //     ioData->mBuffers[0].mDataByteSize = bytesRequested;
-    // }
+    else
+    {
+        ioData->mBuffers[0].mDataByteSize = 0;
+    }
 
-    // if (self->m_Samples.size() < bytesRequested)
-    // self->m_Cond.notify_all();
-
-    self->m_PlaybackTime = inTimeStamp->mSampleTime / self->m_Samplerate;
-    Timekeeper::Instance().SetTime(self->m_SessionTime + self->m_PlaybackTime);
     return noErr;
 }
 
