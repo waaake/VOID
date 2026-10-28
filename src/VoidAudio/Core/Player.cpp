@@ -13,12 +13,22 @@
 #endif
 
 #include "VoidCore/Logging.h"
+#include "Internal/Descriptors.h"
 
 VOID_NAMESPACE_OPEN
 
 AudioPlayer::AudioPlayer()
 {
-    m_AudioStream = new AudioStream(48000, 2, PA_SAMPLE_FLOAT32);
+    #if defined(_VOID_PLATFORM_LINUX)
+    m_AudioStream = new AudioStream(Audio::OutSamplerate, Audio::OutChannels, PA_SAMPLE_FLOAT32);
+    #else
+    m_AudioStream = new AudioStream(Audio::OutSamplerate, Audio::OutChannels);
+    #endif // _VOID_PLATFORM_LINUX
+}
+
+AudioPlayer::~AudioPlayer()
+{
+    Stop();
 }
 
 bool AudioPlayer::Start()
