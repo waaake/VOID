@@ -540,7 +540,7 @@ void SAudioTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* o
 
         if (width > 40)
         {
-            DrawAudioPeaks(painter, itemcol, brect);
+            // DrawAudioPeaks(painter, itemcol, brect);
 
             painter->setPen(p.color(QPalette::Text));
             const ElementTokens& tokens = m_Item->Tokens();
@@ -612,20 +612,16 @@ void SAudioTrackItem::DrawAudioPeaks(QPainter* painter, const QColor& color, con
 
     const double baselineY = rect.bottom() - 4;
     const double centerY = rect.center().y();
-    const double scale = rect.height() * 2;
+    const double scale = rect.height() * 0.6;
 
     painter->setPen(QPen(color, 2));
 
     for (v_frame_t i = start; i <= m_Item->TimelineOut(); ++i)
     {
         std::pair<float, float> p = m_AudioPeaks[i - start];
-        // const double top = centerY - p.second * scale;
-        // const double bottom = centerY - p.first * scale;
         const float magnitude = std::max(std::abs(p.first), std::abs(p.second));
         const double top = baselineY - magnitude * scale;
 
-        // painter->fillRect(QRect(x, centerY - p.second * scale, dx, 40), color);
-        // painter->drawLine(QPointF(x, top), QPointF(x, bottom));
         painter->drawLine(QPointF(x, top), QPointF(x, baselineY));
 
         // Increment the x by the amount of pixels we have per frame
