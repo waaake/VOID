@@ -8,6 +8,7 @@
 /* Internal */
 #include "Player.h"
 #include "Internal/Descriptors.h"
+#include "VoidAudio/Core/Player.h"
 #include "VoidBridge/Engine.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidCore/Media/Renderer.h"
@@ -24,10 +25,14 @@ Player::Player(TimelineController* timelineController, QWidget* parent)
     : PlayerWidget(timelineController, parent)
 {
     Connect();
+    m_AudioPlayer = new AudioPlayer;
+    m_AudioPlayer->Start();
 }
 
 Player::~Player()
 {
+    delete m_AudioPlayer;
+    m_AudioPlayer = nullptr;
 }
 
 void Player::SetMedia(const SharedMediaClip& media)
@@ -321,6 +326,8 @@ void Player::Render(int frame)
     BufferData data = m_ActiveViewBuffer->MData(frame);
     if (data)
         m_Renderer->Render(data.image, data.annotation);
+    if (data.audio)
+        m_AudioPlayer->Play(data.audio);
 }
 
 // void Player::SetSequenceFrame(int frame)

@@ -12,6 +12,7 @@ VOID_NAMESPACE_OPEN
 
 // Forward decl
 class ExportAnnotatedFramesTask;
+class AudioPlayer;
 
 class VOID_API Player : public PlayerWidget
 {
@@ -82,6 +83,7 @@ protected:
 
 private: /* Members */
     AudioDecoder m_AudioDecoder;
+    AudioPlayer* m_AudioPlayer;
 
 private: /* Methods */
     void Render(int frame);
