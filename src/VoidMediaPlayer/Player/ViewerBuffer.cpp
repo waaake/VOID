@@ -220,6 +220,7 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
             break;
         case PlayableComponent::Sequence:
             d.image = m_Sequence->Evaluated(frame);
+            d.audio = m_Sequence->Audio(frame);
             break;
         default:
             if (m_Clip->Valid() && m_Clip->Contains(frame))
