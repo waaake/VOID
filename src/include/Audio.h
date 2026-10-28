@@ -86,6 +86,7 @@ struct FrameAudio
     std::vector<float> samples;
 
     std::size_t Bytes() const { return samples.size() * sizeof(float); }
+    std::size_t Size() const { return samples.size(); }
     const void* Data() const { return samples.data(); }
 };
 
