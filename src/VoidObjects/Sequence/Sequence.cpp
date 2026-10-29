@@ -464,16 +464,19 @@ const SharedFrameAudio PlaybackSequence::Audio(v_frame_t frame)
     return nullptr;
 }
 
-// bool PlaybackSequence::FrameBuffer(v_frame_t frame, BufferData& data)
-// {
-//     std::size_t index = frame - m_StartFrame;
-//     if (index < m_FrameBuffer.size())
-//     {
-//         const FloatImage& image = m_FrameBuffer[index].Evaluate();
-//         data.
-//     }
-//     return false;
-// }
+bool PlaybackSequence::FrameBuffer(v_frame_t frame, MediaDesc::RenderBuffer& data)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+    {
+        const FloatImage& image = m_FrameBuffer[index].Evaluate();
+        data.image = image->Empty() ? nullptr : image;
+        data.audio = m_AudioBuffer[index];
+
+        return true;
+    }
+    return false;
+}
 
 void PlaybackSequence::ClearCache()
 {

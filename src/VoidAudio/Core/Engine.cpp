@@ -48,12 +48,15 @@ void AudioEngine::SetVolume(float volume)
 
 void AudioEngine::Play(const SharedFrameAudio& buffer)
 {
-    // VOID_LOG_INFO("Writing {} bytes with {} samplecount", buffer->Bytes(), buffer->samplecount);
-    #if defined(_VOID_PLATFORM_LINUX)
-    m_AudioStream->WriteSamples(buffer->Data(), buffer->Bytes(), buffer->samplecount);
-    #else
-    m_AudioStream->WriteSamples(buffer->Data(), buffer->Size(), buffer->samplecount);
-    #endif
+    if (buffer)
+    {
+        // VOID_LOG_INFO("Writing {} bytes with {} samplecount", buffer->Bytes(), buffer->samplecount);
+        #if defined(_VOID_PLATFORM_LINUX)
+        m_AudioStream->WriteSamples(buffer->Data(), buffer->Bytes(), buffer->samplecount);
+        #else
+        m_AudioStream->WriteSamples(buffer->Data(), buffer->Size(), buffer->samplecount);
+        #endif
+    }
 }
 
 VOID_NAMESPACE_CLOSE

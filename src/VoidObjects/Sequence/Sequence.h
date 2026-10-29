@@ -18,6 +18,7 @@
 #include "Track.h"
 #include "VoidObjects/Core/Entity.h"
 #include "VoidObjects/Core/Snapshot.h"
+#include "VoidObjects/Media/Descriptors.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -101,7 +102,7 @@ public:
     const FloatImage Image(v_frame_t frame);
     const FloatImage Evaluated(v_frame_t frame);
     const SharedFrameAudio Audio(v_frame_t frame);
-    // bool FrameBuffer(v_frame_t frame, BufferData& data);
+    bool FrameBuffer(v_frame_t frame, MediaDesc::RenderBuffer& data);
 
     void SaveSnapshot(const std::string& name, const std::string& description);
     void RemoveSnapshot(int index);
