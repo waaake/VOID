@@ -41,9 +41,12 @@ private:
     std::vector<float> m_FloatSamples;
     std::mutex m_Mutex;
 
-    std::condition_variable m_Cond;   
+    std::condition_variable m_Cond;
+
+    float m_Volume;
 
 private:
+    void ApplyVolume(const float* source, float* dest, std::size_t count);
     static OSStatus RenderCallback(void* inRefCon, AudioUnitRenderActionFlags* ioActionFlags, const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData);
 };
 

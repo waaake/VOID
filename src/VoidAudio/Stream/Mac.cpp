@@ -19,6 +19,7 @@ AudioStream::AudioStream(int samplerate, int channels)
     , m_PlaybackTime(0.0)
     , m_SessionTime(0.0)
     , m_AudioUnit(nullptr)
+    , m_Volume(0.1f)
 {
     std::memset(&m_Format, 0, sizeof(m_Format));
     m_Format.mSampleRate = samplerate;
@@ -117,8 +118,14 @@ bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    const float* fltbuf = static_cast<const float*>(buffer);
-    m_FloatSamples.insert(m_FloatSamples.end(), fltbuf, fltbuf + size);
+    // const float* fltbuf = static_cast<const float*>(buffer);
+
+    // m_FloatSamples.insert(m_FloatSamples.end(), fltbuf, fltbuf + size);
+    // float* internal = m_FloatSamples.data() + m_FloatSamples.size();
+    std::size_t offset = m_FloatSamples.size();
+    m_FloatSamples.resize(m_FloatSamples.size() + size);
+
+    ApplyVolume(static_cast<const float*>(buffer), m_FloatSamples.data() + offset, size);
     return true;
 }
 
@@ -140,25 +147,30 @@ void AudioStream::SeekTo(double time)
     }
 }
 
+void AudioStream::ApplyVolume(const float* source, float* dest, std::size_t count)
+{
+    for (std::size_t i = 0; i < count; ++i)
+        dest[i] = source[i] * m_Volume;
+}
+
 OSStatus AudioStream::RenderCallback(void* inRefCon, AudioUnitRenderActionFlags* ioActionFlags, const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData)
 {
     AudioStream* self = static_cast<AudioStream*>(inRefCon);
     AudioBuffer* output = &ioData->mBuffers[0];
 
     const std::size_t samplesRequested = static_cast<std::size_t>(inNumberFrames) * self->m_Channels;
-    const std::size_t requestedBytes = samplesRequested * sizeof(float);
+    // const std::size_t requestedBytes = samplesRequested * sizeof(float);
 
-    std::memset(output->mData, 0, requestedBytes);
+    std::memset(output->mData, 0, samplesRequested * sizeof(float));
 
     {
         std::lock_guard<std::mutex> lock(self->m_Mutex);
-
         const std::size_t samplesToCopy = std::min(samplesRequested, self->m_FloatSamples.size());
-        const std::size_t bytesToCopy = samplesToCopy * sizeof(float);
+        // const std::size_t bytesToCopy = samplesToCopy * sizeof(float);
     
-        if (bytesToCopy > 0)
+        if (samplesToCopy > 0)
         {
-            std::memcpy(output->mData, self->m_FloatSamples.data(), bytesToCopy);
+            std::memcpy(output->mData, self->m_FloatSamples.data(), samplesToCopy * sizeof(float));
             self->m_FloatSamples.erase(self->m_FloatSamples.begin(), self->m_FloatSamples.begin() + samplesToCopy);
         }
     }
