@@ -13,14 +13,15 @@
 VOID_NAMESPACE_OPEN
 
 AudioStream::AudioStream(int samplerate, int channels)
-    : m_Samplerate(samplerate)
-    , m_Channels(channels)
-    , m_Enumerator(nullptr)
+    : m_Enumerator(nullptr)
     , m_Device(nullptr)
     , m_AudioClient(nullptr)
     , m_AudioRenderClient(nullptr)
     , m_Wfx(nullptr)
     , m_BufferCount(0)
+    , m_Samplerate(samplerate)
+    , m_Channels(channels)
+    , m_Volume(1.f)
 {
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
@@ -54,14 +55,6 @@ bool AudioStream::Start()
 void AudioStream::Stop()
 {
     m_AudioClient->Stop();
-}
-
-double AudioStream::Latency() const
-{
-    REFERENCE_TIME latency;
-    m_AudioClient->GetStreamLatency(&latency);
-
-    return latency / 10000.0; // nanoseconds to ms
 }
 
 bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
@@ -103,8 +96,10 @@ bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, in
 
 bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples)
 {
-    UINT32 inframes = size / m_Wfx->nChannels;
+    // UINT32 inframes = size / m_Wfx->nChannels;
+    UINT32 inframes = static_cast<UINT32>(samples);
     UINT32 framesAvailable = AvailableFrames();
+
     if (framesAvailable > 0)
     {
         BYTE* data;
@@ -116,11 +111,23 @@ bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples
         }
 
         UINT32 frames = (framesAvailable < inframes) ? framesAvailable : inframes;
-
         /// Based on how many frames can be pushed into the buffer for playback
-        const std::size_t bytes = static_cast<std::size_t>(frames) * m_Wfx->nChannels * sizeof(float);
-        if (bytes > 0)
-            std::memcpy(data, buffer, bytes);
+        const std::size_t count = static_cast<std::size_t>(frames) * m_Wfx->nChannels;
+        if (count > 0)
+        {
+            if (m_Volume == 1.f)
+            {
+                std::memcpy(data, buffer, count * sizeof(float));
+            }
+            else
+            {
+                const float* src = static_cast<const float*>(buffer);
+                float* dest = reinterpret_cast<float*>(data);
+
+                for (std::size_t i = 0; i < count; ++i)
+                    dest[i] = src[i] * m_Volume;
+            }
+        }
 
         hr = m_AudioRenderClient->ReleaseBuffer(frames, 0);
         if (FAILED(hr))
@@ -131,6 +138,19 @@ bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples
     }
 
     return true;
+}
+
+void AudioStream::SetVolume(float volume)
+{
+    m_Volume = (volume < 0.f) ? 0.f : ((volume > 1.f) ? 1.f : volume);
+}
+
+double AudioStream::Latency() const
+{
+    REFERENCE_TIME latency;
+    m_AudioClient->GetStreamLatency(&latency);
+
+    return latency / 10000.0; // nanoseconds to ms
 }
 
 UINT32 AudioStream::AvailableFrames()

@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <algorithm>
+
 /* Internal */
 #include "Linux.h"
 #include "VoidCore/Logging.h"
@@ -9,6 +12,7 @@ VOID_NAMESPACE_OPEN
 
 AudioStream::AudioStream(int samplerate, int channels, pa_sample_format_t format)
     : m_Stream(nullptr)
+    , m_Volume(1.f)
 {
     m_SampleSpec.format = format;
     m_SampleSpec.rate = samplerate;
@@ -16,7 +20,6 @@ AudioStream::AudioStream(int samplerate, int channels, pa_sample_format_t format
 
     VOID_LOG_INFO("New Audio Stream with {0} channels @ {1} bps", channels, samplerate);
 }
-
 
 AudioStream::~AudioStream()
 {
@@ -82,14 +85,30 @@ bool AudioStream::WriteSamples(const void* data, std::size_t bytes, int samples)
     if (!m_Stream)
         return false;
 
+    std::size_t count = bytes / sizeof(float);
+    m_InternalBuffer.resize(count);
+    Process(static_cast<const float*>(data), m_InternalBuffer.data(), count);
+
     int error;
-    if (pa_simple_write(m_Stream, data, bytes, &error) < 0)
+    // if (pa_simple_write(m_Stream, data, bytes, &error) < 0)
+    if (pa_simple_write(m_Stream, static_cast<void*>(m_InternalBuffer.data()), bytes, &error) < 0)
     {
         VOID_LOG_INFO("Unable to write samples: {0}", pa_strerror(error));
         return false;
     }
 
     return true;
+}
+
+void AudioStream::SetVolume(float volume)
+{
+    m_Volume = std::clamp(volume, 0.f, 1.f);
+}
+
+void AudioStream::Process(const float* source, float* buffer, std::size_t count)
+{
+    for (std::size_t i = 0; i < count; ++i)
+        buffer[i] = source[i] * m_Volume;
 }
 
 VOID_NAMESPACE_CLOSE

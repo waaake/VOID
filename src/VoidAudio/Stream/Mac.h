@@ -29,6 +29,7 @@ public:
     bool WriteSamples(const void* buffer, std::size_t size, int samples);
     void SeekTo(double time);
 
+    void SetVolume(float volume);
     double CurrentTime() const { return m_Time; }
     double Latency() const;
 

@@ -26,18 +26,20 @@ public:
     bool WriteSamples(const void* buffer, std::size_t size, int samples);
     void SeekTo(double time) {}
 
+    void SetVolume(float volume);
     double CurrentTime() const { return 0.0; }
     double Latency() const;
 
 private:
-    int m_Samplerate, m_Channels;
-
     IMMDeviceEnumerator* m_Enumerator;
     IMMDevice* m_Device;
     IAudioClient* m_AudioClient;
     IAudioRenderClient* m_AudioRenderClient;
     WAVEFORMATEX* m_Wfx;
     UINT32 m_BufferCount;
+
+    int m_Samplerate, m_Channels;
+    float m_Volume;
 
 private:
     UINT32 AvailableFrames();

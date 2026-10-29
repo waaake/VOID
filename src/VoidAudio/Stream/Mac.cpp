@@ -89,11 +89,6 @@ void AudioStream::Stop()
     }
 }
 
-double AudioStream::Latency() const
-{
-    return 0.0;
-}
-
 bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
 {
     {
@@ -145,6 +140,16 @@ void AudioStream::SeekTo(double time)
 
         Start();
     }
+}
+
+void AudioStream::SetVolume(float volume)
+{
+    m_Volume = std::clamp(volume, 0.f, 1.f);
+}
+
+double AudioStream::Latency() const
+{
+    return 0.0;
 }
 
 void AudioStream::ApplyVolume(const float* source, float* dest, std::size_t count)
