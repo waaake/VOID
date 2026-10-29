@@ -12,12 +12,11 @@ VOID_NAMESPACE_OPEN
 
 // Forward decl
 class ExportAnnotatedFramesTask;
-class AudioPlayer;
+class AudioEngine;
 
 class VOID_API Player : public PlayerWidget
 {
     Q_OBJECT
-
 public:
     Player(TimelineController* controller, QWidget* parent = nullptr);
     ~Player();
@@ -43,6 +42,8 @@ public:
     void SetPlaylist(Playlist* playlist);
     void SetGrid(Playlist* playlist);
     void ResetPlaylistMedia();
+
+    void SetVolume(float volume);
 
     void RenderCurrentFrame();
     void RenderAnnotatedFrames();
@@ -83,7 +84,7 @@ protected:
 
 private: /* Members */
     AudioDecoder m_AudioDecoder;
-    AudioPlayer* m_AudioPlayer;
+    AudioEngine* m_AudioEngine;
 
 private: /* Methods */
     void Render(int frame);
