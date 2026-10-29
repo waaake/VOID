@@ -20,7 +20,6 @@ extern "C" {
 
 /* Internal */
 #include "Definition.h"
-#include "Decoder.h"
 #include "PixReader.h"
 #include "DecDefs.h"
 

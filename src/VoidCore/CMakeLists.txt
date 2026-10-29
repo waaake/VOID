@@ -26,7 +26,7 @@ set(SOURCES
     Media/Tokens.cpp
 
     # Media Readers
-    Readers/Decoder.cpp
+    # Readers/Decoder.cpp
     Readers/Decoder2.cpp
     Readers/FFmpegStream.cpp
     Readers/OIIOReader.cpp

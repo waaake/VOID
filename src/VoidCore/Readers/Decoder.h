@@ -10,8 +10,7 @@
 #include <unordered_map>
 
 /* FFMpeg */
-extern "C" 
-{
+extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
 #include <libavcodec/avcodec.h>
@@ -61,14 +60,14 @@ private: /* Members */
     int m_Width, m_Height, m_Channels;
 
     /* FFMPEG Contexts */
-    AVFormatContext* m_Format;
+    AVFormatContext* m_FormatContext;
     AVCodecContext* m_CodecContext;
     AVFrame* m_Frame;
     AVFrame* m_RGBFrame;
     AVPacket* m_Packet;
-    SwsContext* m_Scaler;
+    SwsContext* m_SwsContext;
     AVStream* m_Stream;
-    int m_VideoStreamIndex;
+    int m_StreamID;
 
     Buffer<unsigned char> m_Buffer;
 
@@ -84,10 +83,6 @@ private: /* Methods */
      */
     v_frame_t DecodeNextFrame();
     void FillBuffer(Buffer<float>& out);
-    bool SeekStream(int index, int64_t timestamp);
-    void OutputVideoFrame();
-    int DecodePacket(AVCodecContext* dec, const AVPacket* packet);
-
     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 };
 
