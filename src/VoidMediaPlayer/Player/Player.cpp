@@ -323,11 +323,9 @@ void Player::ClearCache()
 
 void Player::Render(int frame)
 {
-    BufferData data = m_ActiveViewBuffer->MData(frame);
-    if (data)
-        m_Renderer->Render(data.image, data.annotation);
-    if (data.audio)
-        m_AudioEngine->Play(data.audio);
+    MediaDesc::RenderBuffer buffer = m_ActiveViewBuffer->RenderData(frame);
+    m_Renderer->Render(buffer.image, buffer.annotation);
+    m_AudioEngine->Play(buffer.audio);
 }
 
 // void Player::SetSequenceFrame(int frame)
