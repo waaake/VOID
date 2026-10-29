@@ -12,15 +12,16 @@ VOID_NAMESPACE_OPEN
 
 class AudioStream;
 
-class VOID_API AudioPlayer
+class VOID_API AudioEngine
 {
 public:
-    AudioPlayer();
-    ~AudioPlayer();
+    AudioEngine();
+    ~AudioEngine();
 
     bool Start();
     void Stop();
 
+    void SetVolume(float volume);
     void Play(const SharedFrameAudio& buffer);
 
 private:

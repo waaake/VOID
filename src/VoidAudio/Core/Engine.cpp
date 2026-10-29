@@ -2,7 +2,7 @@
 // Licensed under the MIT License
 
 /* Internal */
-#include "Player.h"
+#include "Engine.h"
 
 #if defined(_VOID_PLATFORM_WINDOWS)
 #include "VoidAudio/Stream/Win.h"
@@ -17,7 +17,7 @@
 
 VOID_NAMESPACE_OPEN
 
-AudioPlayer::AudioPlayer()
+AudioEngine::AudioEngine()
 {
     #if defined(_VOID_PLATFORM_LINUX)
     m_AudioStream = new AudioStream(Audio::OutSamplerate, Audio::OutChannels, PA_SAMPLE_FLOAT32);
@@ -26,22 +26,27 @@ AudioPlayer::AudioPlayer()
     #endif // _VOID_PLATFORM_LINUX
 }
 
-AudioPlayer::~AudioPlayer()
+AudioEngine::~AudioEngine()
 {
     Stop();
 }
 
-bool AudioPlayer::Start()
+bool AudioEngine::Start()
 {
     return m_AudioStream->Start();
 }
 
-void AudioPlayer::Stop()
+void AudioEngine::Stop()
 {
     m_AudioStream->Stop();
 }
 
-void AudioPlayer::Play(const SharedFrameAudio& buffer)
+void AudioEngine::SetVolume(float volume)
+{
+    m_AudioStream->SetVolume(volume);
+}
+
+void AudioEngine::Play(const SharedFrameAudio& buffer)
 {
     // VOID_LOG_INFO("Writing {} bytes with {} samplecount", buffer->Bytes(), buffer->samplecount);
     #if defined(_VOID_PLATFORM_LINUX)
