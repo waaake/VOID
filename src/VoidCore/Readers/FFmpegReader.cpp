@@ -413,7 +413,7 @@ void FFmpegPixReader::Read()
 
 bool FFmpegPixReader::Read(SharedFrameAudio& buffer)
 {
-    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+    AudioDecoder& decoder = AudioDecoder::Instance(m_Path);
     // Ensure we have Valid video frame timestamp before reading audio
     if (m_Timeframe.Invalid())
         decoder.ComputeTimestamp(m_Framenumber, m_Timeframe);
