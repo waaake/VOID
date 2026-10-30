@@ -70,6 +70,8 @@ void SequencerContextMenu::Build()
     m_FitSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     m_ResetFitAction = new QAction("Reset", m_ViewMenu);
     m_ResetFitAction->setShortcut(Qt::Key_H);
+    m_WaveformsDisplayAction = new QAction("Audio Waveforms", m_ViewMenu);
+    m_WaveformsDisplayAction->setCheckable(true);
 
     p->addAction(m_FitAllAction);
     p->addAction(m_FitSelectedAction);
@@ -77,6 +79,8 @@ void SequencerContextMenu::Build()
     m_ViewMenu->addAction(m_FitAllAction);
     m_ViewMenu->addAction(m_FitSelectedAction);
     m_ViewMenu->addAction(m_ResetFitAction);
+    m_ViewMenu->addSeparator();
+    m_ViewMenu->addAction(m_WaveformsDisplayAction);
 
     /// Mark Menu
     m_MarkMenu = new QMenu("Mark", this);
@@ -215,6 +219,7 @@ void SequencerContextMenu::Connect()
     connect(m_FitAllAction, &QAction::triggered, this, &SequencerContextMenu::fitAllRequested);
     connect(m_FitSelectedAction, &QAction::triggered, this, &SequencerContextMenu::fitSelectedRequested);
     connect(m_ResetFitAction, &QAction::triggered, this, &SequencerContextMenu::resetFitRequested);
+    connect(m_WaveformsDisplayAction, &QAction::triggered, this, &SequencerContextMenu::waveformDisplayChangeRequested);
 
     /// Mark
     connect(m_MarkSelectionAction, &QAction::triggered, this, [this]() -> void { emit inOutSetRequested(true); });
