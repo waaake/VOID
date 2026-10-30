@@ -528,7 +528,6 @@ void SAudioTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* o
 
     const QRectF brect = boundingRect();
     const int width = brect.width();
-
     if (m_Item->Linked())
     {
         const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
@@ -536,11 +535,12 @@ void SAudioTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* o
         painter->setBrush(Background(option));
         painter->drawRect(brect);
 
-        // painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
-
         if (width > 40)
         {
-            // DrawAudioPeaks(painter, itemcol, brect);
+            if (m_Context->DisplayAudioWaveforms())
+                DrawAudioPeaks(painter, itemcol, brect);
+            else
+                painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
 
             painter->setPen(p.color(QPalette::Text));
             const ElementTokens& tokens = m_Item->Tokens();
