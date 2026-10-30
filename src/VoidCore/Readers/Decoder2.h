@@ -75,4 +75,44 @@ private:
     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 };
 
+class AudioDecoder
+{
+public:
+    AudioDecoder() = default;
+    ~AudioDecoder();
+
+    AudioDecoder(const AudioDecoder&) = delete;
+    AudioDecoder& operator=(const AudioDecoder&) = delete;
+    AudioDecoder(AudioBuffer&&) = delete;
+    AudioDecoder& operator=(AudioDecoder&&) = delete;
+
+    static AudioDecoder& Instance(const std::string& path);
+
+    bool Setup(const std::string& path);
+    bool ComputeTimestamp(v_frame_t framenumber, TimeFrame& timeframe) const;
+    bool Decode(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
+
+private:
+    std::vector<AudioBuffer> m_Buffer;
+    std::string m_Path;
+
+    AVFormatContext* m_Format   = nullptr;
+    AVPacket* m_Packet          = nullptr;
+    FFmpegStream* m_VideoStream = nullptr;
+    FFmpegStream* m_AudioStream = nullptr;
+
+    int64_t m_LastAudioPTS      = -1;
+    bool m_Backwards            = false;
+
+private:
+    bool Open(const std::string& path);
+    bool Failed();
+    void Close();
+    void ResetCache();
+
+    int64_t DecodeAndStoreNext(FFmpegStream* stream);
+    void StoreBuffer(FFmpegStream* stream);
+    bool ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
+};
+
 VOID_NAMESPACE_CLOSE
