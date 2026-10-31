@@ -37,6 +37,7 @@ void AudioStreamBuffer::Cache()
         if (!buffer)
             buffer = std::make_shared<FrameAudio>();
 
+        buffer->Reset();
         m_Media->Audio(i, buffer);
         VOID_LOG_INFO("Buffering audio for frame... {}", i);
     }
