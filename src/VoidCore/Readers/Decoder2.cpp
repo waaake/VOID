@@ -137,8 +137,8 @@ bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, T
         TrySeek(std::max(framenumber - (v_frame_t)MAX_CACHED_FRAMES, (v_frame_t)0), m_VideoStream);
     else if (framenumber - m_LastDecoded > MAX_CACHED_FRAMES) // else if the requested frame is too far ahead, we want to seek
         TrySeek(framenumber - 1, m_VideoStream);
-    else if (m_LastIndex != m_VideoStream->Index()) // If we were decoding audio before this, ensure we seek to somewhere before the requested frame
-        TrySeek(framenumber, m_VideoStream);
+    // else if (m_LastIndex != m_VideoStream->Index()) // If we were decoding audio before this, ensure we seek to somewhere before the requested frame
+    //     TrySeek(framenumber, m_VideoStream);
 
     m_LastIndex = m_VideoStream->Index();
     while (m_LastDecoded < framenumber)
@@ -258,9 +258,15 @@ void FFmpegDecoder2::Close()
         m_AudioStream = nullptr;
     }
 
-    if (m_Packet) av_packet_free(&m_Packet);
+    if (m_Packet)
+    {
+        av_packet_unref(m_Packet);
+        av_packet_free(&m_Packet);
+    }
     if (m_Format) avformat_close_input(&m_Format);
 
+    m_LastDecoded = -1;
+    m_LastAudioPTS = -1;
     ResetCache();
 }
 
@@ -637,15 +643,20 @@ void AudioDecoder::Close()
         m_AudioStream = nullptr;
     }
 
-    if (m_Packet) av_packet_free(&m_Packet);
+    if (m_Packet)
+    {
+        av_packet_unref(m_Packet);
+        av_packet_free(&m_Packet);
+    }
     if (m_Format) avformat_close_input(&m_Format);
 
+    m_LastAudioPTS = -1;
     ResetCache();
 }
 
 void AudioDecoder::ResetCache()
 {
-    m_Buffer.resize(0);
+    m_Buffer.clear();
     m_Buffer.shrink_to_fit();
 }
 
