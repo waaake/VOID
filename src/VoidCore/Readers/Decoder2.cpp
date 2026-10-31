@@ -450,26 +450,32 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
     // Any missing audio in the buffer is set to 0 and remains silent
     buffer->samples.assign(static_cast<std::size_t>(buffer->samplecount * 2), 0.f);
 
+    buffer->channels = m_AudioStream->OutputChannels();
+    buffer->samplerate = m_AudioStream->OutputSamplerate();
+
     /// Fetch what index of the audio buffers we have that can provide the starting sample for the audio
     /// in the required video frame determined by the start pts
-    while (index < static_cast<int>(m_AudioBuffer.size()))
-    {
-        const AudioBuffer& audio = m_AudioBuffer[index];
-        const int64_t audioStart = audio.pts;
-        const int64_t audioEnd = audio.pts + audio.sampleCount;
+    // while (index < static_cast<int>(m_AudioBuffer.size()))
+    // {
+    //     const AudioBuffer& audio = m_AudioBuffer[index];
+    //     const int64_t audioStart = audio.pts;
+    //     const int64_t audioEnd = audio.pts + audio.sampleCount;
 
-        if (audioEnd > frameStart)
-            break;
+    //     if (audioEnd > frameStart)
+    //         break;
 
-        index++;
-    }
+    //     index++;
+    // }
 
-    for (int i = index; i < static_cast<int>(m_AudioBuffer.size()); ++i)
+    for (int i = 0; i < static_cast<int>(m_AudioBuffer.size()); ++i)
     {
         const AudioBuffer& audio = m_AudioBuffer[i];
 
         const int64_t audioStart = audio.pts;
         const int64_t audioEnd = audio.pts + audio.sampleCount;
+
+        if (audioEnd < frameStart)
+            continue;
 
         if (audioStart >= frameEnd)
             break;
@@ -489,8 +495,8 @@ bool FFmpegDecoder2::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefr
 
         const std::size_t valueCount = static_cast<std::size_t>(count) * audio.channels;
 
-        buffer->channels = audio.channels;
-        buffer->samplerate = audio.samplerate;
+        // buffer->channels = audio.channels;
+        // buffer->samplerate = audio.samplerate;
 
         if (srcIndex + valueCount > audio.samples.size() || dstIndex + valueCount > buffer->samples.size())
             return false;
@@ -703,22 +709,25 @@ bool AudioDecoder::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefram
     int index = 0;
     buffer->samplecount = frameEnd - frameStart;
 
+    buffer->channels = m_AudioStream->OutputChannels();
+    buffer->samplerate = m_AudioStream->OutputSamplerate();
+
     // Any missing audio in the buffer is set to 0 and remains silent
     buffer->samples.assign(static_cast<std::size_t>(buffer->samplecount * 2), 0.f);
 
-    /// Fetch what index of the audio buffers we have that can provide the starting sample for the audio
-    /// in the required video frame determined by the start pts
-    while (index < static_cast<int>(m_Buffer.size()))
-    {
-        const AudioBuffer& audio = m_Buffer[index];
-        const int64_t audioStart = audio.pts;
-        const int64_t audioEnd = audio.pts + audio.sampleCount;
+    // /// Fetch what index of the audio buffers we have that can provide the starting sample for the audio
+    // /// in the required video frame determined by the start pts
+    // while (index < static_cast<int>(m_Buffer.size()))
+    // {
+    //     const AudioBuffer& audio = m_Buffer[index];
+    //     const int64_t audioStart = audio.pts;
+    //     const int64_t audioEnd = audio.pts + audio.sampleCount;
 
-        if (audioEnd > frameStart)
-            break;
+    //     if (audioEnd > frameStart)
+    //         break;
 
-        index++;
-    }
+    //     index++;
+    // }
 
     for (int i = index; i < static_cast<int>(m_Buffer.size()); ++i)
     {
@@ -726,6 +735,9 @@ bool AudioDecoder::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefram
 
         const int64_t audioStart = audio.pts;
         const int64_t audioEnd = audio.pts + audio.sampleCount;
+
+        if (audioEnd < frameStart)
+            continue;
 
         if (audioStart >= frameEnd)
             break;
@@ -745,8 +757,8 @@ bool AudioDecoder::ConvertAudio(v_frame_t framenumber, const TimeFrame& timefram
 
         const std::size_t valueCount = static_cast<std::size_t>(count) * audio.channels;
 
-        buffer->channels = audio.channels;
-        buffer->samplerate = audio.samplerate;
+        // buffer->channels = audio.channels;
+        // buffer->samplerate = audio.samplerate;
 
         if (srcIndex + valueCount > audio.samples.size() || dstIndex + valueCount > buffer->samples.size())
             return false;
