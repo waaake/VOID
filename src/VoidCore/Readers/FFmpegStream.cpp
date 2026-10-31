@@ -125,8 +125,7 @@ bool FFmpegStream::Decode(AudioBuffer& out)
     if (!m_Resampler || m_Frame->nb_samples <= 0)
         return false;
 
-    std::size_t ret = ResampleAudio(m_Frame, out, -1, m_Frame->sample_rate);
-    if (ret == std::string::npos)
+    if (!ResampleAudio(out))
         return false;
 
     if (m_CurrentAudioSample == -1)
@@ -149,7 +148,7 @@ bool FFmpegStream::SetupResampler()
         &m_Resampler,
         &layout,
         AV_SAMPLE_FMT_FLT,
-        s_OutputSamplerate,
+        Audio::OutSamplerate,
         &m_CodecContext->ch_layout,
         m_CodecContext->sample_fmt,
         m_CodecContext->sample_rate,
@@ -171,43 +170,34 @@ bool FFmpegStream::SetupResampler()
     return true;
 }
 
-std::size_t FFmpegStream::ResampleAudio(AVFrame* frame, AudioBuffer& buffer, int offset, int samplerate) const
+bool FFmpegStream::ResampleAudio(AudioBuffer& buffer) const
 {
-    const int wanted = frame->nb_samples * samplerate / frame->sample_rate;
+    // get the number of delay samples the input will have after the current output
+    const int64_t delay = swr_get_delay(m_Resampler, m_Frame->sample_rate);
+    int outcount = av_rescale_rnd(delay + m_Frame->nb_samples, Audio::OutSamplerate, m_Frame->sample_rate, AV_ROUND_UP);
 
-    const uint8_t** in = (const uint8_t**)frame->extended_data;
-    int outcount = wanted + 256;
-    int targetSize = av_samples_get_buffer_size(nullptr, s_OutputChannels, outcount, AV_SAMPLE_FMT_FLT, 0);
-
+    int targetSize = av_samples_get_buffer_size(nullptr, Audio::OutChannels, outcount, AV_SAMPLE_FMT_FLT, 0);
     if (targetSize < 0)
-        return std::string::npos;
+        return false;
 
-    uint8_t* out;
-    if (offset == -1)
-    {
-        buffer.samples.resize(targetSize);
-        out = (uint8_t*)(buffer.samples.data() + buffer.sampleCount * 2 * 2);
-    }
-    else
-    {
-        if (targetSize + offset > buffer.samples.size())
-            return std::string::npos;
+    /// Extend the buffer, if it has preexisting data on it
+    std::size_t offset = buffer.samples.size();
+    buffer.samples.resize(offset + targetSize);
+    uint8_t* out = (uint8_t*)(buffer.samples.data() + offset);
 
-        out = (uint8_t*)(buffer.samples.data() + offset);
-    }
-
-    int converted = swr_convert(m_Resampler, &out, outcount, in, frame->nb_samples);
+    int converted = swr_convert(m_Resampler, &out, outcount, (const uint8_t**)m_Frame->extended_data, m_Frame->nb_samples);
     if (converted < 0)
-        return std::string::npos;
+        return false;
 
-    if (offset == -1)
-        buffer.sampleCount += converted;
-    
-    buffer.pts = m_Frame->pts;
-    buffer.samplerate = m_Frame->sample_rate;
-    buffer.channels = s_OutputChannels; //m_Frame->ch_layout.nb_channels;
+    buffer.sampleCount += converted;
 
-    return converted * s_OutputChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_FLT);
+    // Figure out where the resampled pts now belongs in time
+    buffer.pts = av_rescale_q(m_Frame->pts, m_Stream->time_base, s_AudioTimeBase);
+    // worth storing the original samplerate and channels somewhere? not sure if its needed though?
+    buffer.samplerate =  Audio::OutSamplerate; // m_Frame->sample_rate;
+    buffer.channels = Audio::OutChannels; // m_Frame->ch_layout.nb_channels;
+
+    return true;
 }
 
 void AVLogError(int errnum)

@@ -20,6 +20,7 @@ extern "C" {
 #include "Definition.h"
 #include "Audio.h"
 #include "DecDefs.h"
+#include "Internal/Descriptors.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -53,8 +54,8 @@ public:
     bool Decode(DecodedFrame& out);
     bool Decode(AudioBuffer& out);
 
-    static int64_t OutputSamplerate() { return s_OutputSamplerate; }
-    static int OutputChannels() { return s_OutputChannels; }
+    static int64_t OutputSamplerate() { return Audio::OutSamplerate; }
+    static int OutputChannels() { return Audio::OutChannels; }
     static AVRational AudioTimebase() { return s_AudioTimeBase; }
     
     /// @brief Converts the video presentation timestamp into audio sample units
@@ -81,13 +82,11 @@ private:
     int64_t m_CurrentAudioSample;
 
     /// @brief Audio Out params
-    static constexpr int64_t s_OutputSamplerate = 48000;
-    static constexpr int s_OutputChannels       = 2;
-    static constexpr AVRational s_AudioTimeBase = AVRational{1, 48000};
+    static constexpr AVRational s_AudioTimeBase = AVRational{1, Audio::OutSamplerate};
 
 private:
     bool SetupResampler();
-    std::size_t ResampleAudio(AVFrame* frame, AudioBuffer& buffer, int offset, int samplerate) const;
+    bool ResampleAudio(AudioBuffer& buffer) const;
 };
 
 void AVLogError(int errnum);
