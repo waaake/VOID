@@ -120,7 +120,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
@@ -147,7 +147,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
@@ -174,7 +174,7 @@ void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
@@ -202,7 +202,7 @@ void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
@@ -218,7 +218,7 @@ void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
         m_VideoTracks.erase(std::remove_if(m_VideoTracks.begin(), m_VideoTracks.end(), _pred), m_VideoTracks.end());
     else
         m_AudioTracks.erase(std::remove_if(m_AudioTracks.begin(), m_AudioTracks.end(), _pred), m_AudioTracks.end());
-    
+
     emit trackRemoved();
     emit tracksReordered();
 }
@@ -248,7 +248,7 @@ void PlaybackSequence::UpdateRange(int start, int end)
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided start) gets set as the start frame
      * and the maximum frame (existing or the provided end) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     if (HasMedia())
@@ -361,7 +361,22 @@ SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
         const SharedPlaybackTrack& track = *it;
         if (track->IsEmpty() || !track->Enabled())
             continue;
-        
+
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item;
+    }
+
+    return nullptr;
+}
+
+SharedTrackItem PlaybackSequence::AudioTrackItem(const int frame)
+{
+    for (auto it = m_AudioTracks.begin(); it != m_AudioTracks.end(); ++it)
+    {
+        const SharedPlaybackTrack& track = *it;
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
         if (const SharedTrackItem& item = track->GetTrackItem(frame))
             return item;
     }
@@ -376,7 +391,7 @@ SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
         const SharedPlaybackTrack& track = *it;
         if (track->IsEmpty() || !track->Enabled())
             continue;
-        
+
         if (const SharedTrackItem& item = track->GetTrackItem(frame))
             return item->GetMedia();
     }
@@ -438,6 +453,29 @@ const FloatImage PlaybackSequence::Evaluated(v_frame_t frame)
     }
 
     return nullptr;
+}
+
+const SharedFrameAudio PlaybackSequence::Audio(v_frame_t frame)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_AudioBuffer.size())
+        return m_AudioBuffer[index];
+
+    return nullptr;
+}
+
+bool PlaybackSequence::FrameBuffer(v_frame_t frame, MediaDesc::RenderBuffer& data)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+    {
+        const FloatImage& image = m_FrameBuffer[index].Evaluate();
+        data.image = image->Empty() ? nullptr : image;
+        data.audio = m_AudioBuffer[index];
+
+        return true;
+    }
+    return false;
 }
 
 void PlaybackSequence::ClearCache()
@@ -662,7 +700,7 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::itemEffectAdded, this, &PlaybackSequence::HandleItemEffectAdded);
     connect(ptr, &PlaybackTrack::itemEffectUpdated, this, &PlaybackSequence::HandleItemEffectUpdated);
     connect(ptr, &PlaybackTrack::itemEffectRemoved, this, &PlaybackSequence::HandleItemEffectChanged);
-    connect(ptr, &PlaybackTrack::updatedInRange, this, static_cast<void (PlaybackSequence::*)(const MFrameRange&)>(&PlaybackSequence::UpdateBuffer));
+    connect(ptr, &PlaybackTrack::updatedInRange, this, &PlaybackSequence::UpdateVideoBuffer);
 }
 
 void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
@@ -670,22 +708,47 @@ void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
     auto* ptr = track.get();
     connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
+    connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
+    connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
     // connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
 }
 
 void PlaybackSequence::ResizeBuffer(std::size_t size)
 {
     m_FrameBuffer.resize(size);
-    VOID_LOG_INFO("Resized to: {}", size);
+    m_AudioBuffer.resize(size);
+    VOID_LOG_INFO("Resized buffers to: {}", size);
 }
+
+// void PlaybackSequence::ResizeAudioBuffer(std::size_t size)
+// {
+//     m_AudioBuffer.resize(size);
+//     VOID_LOG_INFO("Resized audio buffer to: {}", size);
+// }
 
 void PlaybackSequence::UpdateBuffer()
 {
     ResizeBuffer(m_EndFrame - m_StartFrame + 1);
-    UpdateBuffer(FrameRange());
+    UpdateBuffer(FrameRange(), Sequence::Type::VIDEO);
 }
 
-void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
+void PlaybackSequence::UpdateBuffer(const MFrameRange& range, const Sequence::Type& type)
+{
+    // for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
+    // {
+    //     SharedTrackItem item = GetTrackItem(i);
+    //     if (item && item->Enabled())
+    //         m_FrameBuffer[i - m_StartFrame] = item->InternalFrame(i);
+    //     else
+    //         m_FrameBuffer[i - m_StartFrame] = SequenceFrame();
+    // }
+    // VOID_LOG_INFO("Updated Buffer in range: {} - {}", range.startframe, range.endframe);
+    type == Sequence::Type::VIDEO ? UpdateVideoBuffer(range) : UpdateAudioBuffer(range);
+}
+
+void PlaybackSequence::UpdateVideoBuffer(const MFrameRange& range)
 {
     for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
     {
@@ -695,7 +758,22 @@ void PlaybackSequence::UpdateBuffer(const MFrameRange& range)
         else
             m_FrameBuffer[i - m_StartFrame] = SequenceFrame();
     }
-    VOID_LOG_INFO("Updated Buffer in range: {} - {}", range.startframe, range.endframe);
+    VOID_LOG_INFO("Updated Video Buffer in range: {} - {}", range.startframe, range.endframe);
+}
+
+void PlaybackSequence::UpdateAudioBuffer(const MFrameRange& range)
+{
+    for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
+    {
+        SharedFrameAudio& buffer = m_AudioBuffer[i - m_StartFrame];
+        if (!buffer)
+            buffer = std::make_shared<FrameAudio>();
+
+        SharedTrackItem item = AudioTrackItem(i);
+        if (item && item->Enabled())
+            item->Audio(i, buffer);
+    }
+    VOID_LOG_INFO("Updated Audio Buffer in range: {} - {}", range.startframe, range.endframe);
 }
 
 // void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
@@ -708,12 +786,12 @@ void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameR
     // Item was moved slightly i.e offsetted
     if (current.Overlaps(previous))
     {
-        UpdateBuffer({std::min(previous.startframe, current.startframe), std::max(previous.endframe, current.endframe)});
+        UpdateBuffer({std::min(previous.startframe, current.startframe), std::max(previous.endframe, current.endframe)}, item->Type());
     }
     else
     {
-        UpdateBuffer(previous);
-        UpdateBuffer(current);
+        UpdateBuffer(previous, item->Type());
+        UpdateBuffer(current, item->Type());
     }
 
     emit itemUpdated(item);
@@ -721,8 +799,8 @@ void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameR
 
 void PlaybackSequence::HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item)
 {
-    UpdateBuffer(current.HeadDiff(previous));
-    UpdateBuffer(current.TailDiff(previous));
+    UpdateBuffer(current.HeadDiff(previous), item->Type());
+    UpdateBuffer(current.TailDiff(previous), item->Type());
 
     emit itemUpdated(item);
 }
@@ -730,22 +808,22 @@ void PlaybackSequence::HandleItemRangeChanged(const MFrameRange& current, const 
 void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
 {
     for (const SharedTrackItem& item : track->Items())
-        UpdateBuffer(item->TimelineRange());
+        UpdateBuffer(item->TimelineRange(), item->Type());
 
     emit itemsUpdated(track->Items());
 }
 
 void PlaybackSequence::HandleItemUpdated(const SharedTrackItem& item)
 {
-    UpdateBuffer(item->TimelineRange());
+    UpdateBuffer(item->TimelineRange(), item->Type());
     emit internalUpdated();
 }
 
 void PlaybackSequence::HandleItemsUpdated(const std::vector<SharedTrackItem>& items)
 {
     if (items.size())
-        UpdateBuffer(MFrameRange(items.front()->TimelineIn(), items.back()->TimelineOut()));
-    
+        UpdateBuffer(MFrameRange(items.front()->TimelineIn(), items.back()->TimelineOut()), items.front()->Type());
+
     emit internalUpdated();
 }
 

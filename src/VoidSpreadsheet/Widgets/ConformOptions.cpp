@@ -12,21 +12,6 @@
 
 VOID_NAMESPACE_OPEN
 
-/// RuleCheckBox
-
-class RuleCheckbox : public QCheckBox
-{
-public:
-    RuleCheckbox(ConformRule* rule, QWidget* parent = nullptr)
-        : QCheckBox(rule->Name().c_str(), parent), rule(rule) {}
-
-    ConformRule* Rule() { return rule; }
-
-private:
-    ConformRule* rule;
-};
-
-
 /// ConformOptionsDialog
 
 ConformOptionsDialog::ConformOptionsDialog(QWidget* parent)

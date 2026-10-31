@@ -128,8 +128,10 @@ void STrack::RemoveEffect(Effect* effect)
 
 void STrack::AddItem(const SharedTrackItem& item)
 {
-    STrackItem* trackitem = new STrackItem(item, m_Context, this);
-    m_Items[item.get()] = std::move(trackitem);
+    if (item->Type() == Sequence::Type::VIDEO)
+        m_Items[item.get()] = new SVideoTrackItem(item, m_Context, this);
+    else
+        m_Items[item.get()] = new SAudioTrackItem(item, m_Context, this);
 }
 
 void STrack::RemoveItem(const SharedTrackItem& item)

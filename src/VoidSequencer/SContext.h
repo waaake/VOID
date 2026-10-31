@@ -40,6 +40,8 @@ public:
     void SetSequence(const SharedPlaybackSequence& sequence) { m_Sequence = sequence; }
     SharedPlaybackSequence Sequence() const { return m_Sequence; }
     bool HasActiveSequence() const { return (bool)m_Sequence; }
+    bool DisplayAudioWaveforms() const { return m_DrawAudioWaveforms; }
+    void ToggleAudioWaveforms(bool display) { m_DrawAudioWaveforms = display; }
 
 private:
     SSelectionModel m_Selection;
@@ -48,7 +50,9 @@ private:
     SequencerController m_Controller;
     v_frame_t m_CurrentFrame { 0 };
     SequencerAction m_Action { SequencerAction::NONE };
-    SharedPlaybackSequence m_Sequence { nullptr };
+    SharedPlaybackSequence m_Sequence = { nullptr };
+
+    bool m_DrawAudioWaveforms = false;
 };
 
 VOID_NAMESPACE_CLOSE

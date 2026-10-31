@@ -28,6 +28,7 @@ set(SOURCES
     Media/Delegates/ThumbnailDelegate.cpp
 
     # Player
+    Player/AudioStreamBuffer.cpp
     Player/OverlayWidget.cpp
     Player/Player.cpp
     Player/PlayerBridge.cpp
