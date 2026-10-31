@@ -88,6 +88,12 @@ struct FrameAudio
     std::size_t Bytes() const { return samples.size() * sizeof(float); }
     std::size_t Size() const { return samples.size(); }
     const void* Data() const { return samples.data(); }
+    void Reset()
+    {
+        if (samples.empty()) return;
+        samples.clear();
+        samples.shrink_to_fit();
+    }
 };
 
 typedef std::shared_ptr<FrameAudio> SharedFrameAudio;
