@@ -98,7 +98,7 @@ void TimeDisplay::Setup()
     QPalette p = palette();
     p.setColor(QPalette::WindowText, p.color(QPalette::Highlight));
     setPalette(p);
-    
+
     /* Setup Font */
     QFont f = font();
     f.setBold(true);
@@ -253,6 +253,105 @@ void FrameDisplayModeBox::Setup()
 	{
 		emit frameDisplayChanged(static_cast<FrameDisplayMode>(index));
 	});
+}
+
+/// VolumeRocker
+
+VolumeRocker::VolumeRocker(QWidget* parent)
+	: TranslucentDialog(parent)
+{
+	Build();
+	Setup();
+}
+
+VolumeRocker::~VolumeRocker()
+{
+	m_Layout->deleteLater();
+	delete m_Layout;
+	m_Layout = nullptr;
+}
+
+void VolumeRocker::Build()
+{
+	m_Layout = new QVBoxLayout(this);
+
+	m_VolumeController = new QSlider(Qt::Vertical, this);
+	m_Mutebox = new QCheckBox("Mute");
+
+	m_Layout->addWidget(m_VolumeController, 0, Qt::AlignHCenter);
+	m_Layout->addWidget(m_Mutebox);
+}
+
+void VolumeRocker::Setup()
+{
+	m_VolumeController->setRange(0, 10);
+	m_VolumeController->setValue(10);
+
+	connect(m_VolumeController, &QSlider::valueChanged, this, &VolumeRocker::volumeChanged);
+	connect(m_Mutebox, &QCheckBox::toggled, this, &VolumeRocker::muted);
+}
+
+/// VolumeButton
+
+VolumeButton::VolumeButton(QWidget* parent)
+	: QPushButton(parent)
+{
+	Setup();
+}
+
+VolumeButton::~VolumeButton()
+{
+	m_Rocker->deleteLater();
+	delete m_Rocker;
+	m_Rocker = nullptr;
+}
+
+void VolumeButton::Setup()
+{
+	m_Rocker = new VolumeRocker(this);
+	connect(this, &QPushButton::clicked, this, [this]() -> void
+	{
+		const QSize s = m_Rocker->sizeHint();
+		m_Rocker->move(mapToGlobal(QPoint(-s.width() * 0.5, y() - (s.height() + height() * 0.5))));
+		m_Rocker->exec();
+	});
+
+	connect(m_Rocker, &VolumeRocker::volumeChanged, this, [this](int volume) -> void
+	{
+		// If the rocker state is currently mute, then we don't want to emit any volume being changed
+		if (m_Rocker->Muted())
+			return;
+
+		ResetIcon(volume);
+		emit volumeChanged(volume);
+	});
+	connect(m_Rocker, &VolumeRocker::muted, this, [this](bool mute) -> void
+	{
+		if (mute)
+		{
+			setIcon(IconForge::GetIcon(IconType::icon_volume_off, _DARK_COLOR(QPalette::Text, 120)));
+			emit volumeChanged(0);
+		}
+		else
+		{
+			ResetIcon(m_Rocker->Volume());
+			emit volumeChanged(m_Rocker->Volume());
+		}
+
+		// emit muted(mute);
+	});
+
+	setIcon(IconForge::GetIcon(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 120)));
+}
+
+void VolumeButton::ResetIcon(int volume)
+{
+	if (volume > 5)
+		setIcon(IconForge::GetIcon(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 120)));
+	else if (volume == 0)
+		setIcon(IconForge::GetIcon(IconType::icon_volume_mute, _DARK_COLOR(QPalette::Text, 120)));
+	else
+		setIcon(IconForge::GetIcon(IconType::icon_volume_down, _DARK_COLOR(QPalette::Text, 120)));
 }
 
 VOID_NAMESPACE_CLOSE

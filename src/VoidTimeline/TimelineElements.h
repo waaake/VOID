@@ -5,16 +5,20 @@
 #define _VOID_TIMELINE_ELEMENTS_H
 
 /* Qt */
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
+#include <QLayout>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSlider>
 
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/ComboBox.h"
+#include "VoidQExtensions/Dialog.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -70,9 +74,7 @@ public:
 	TimeDisplay(QWidget* parent = nullptr);
 
 private:
-	/* Setup the UI */
 	void Setup();
-
 };
 
 class FramerateBox : public QComboBox
@@ -128,6 +130,51 @@ signals:
 
 private:
 	void Setup();
+};
+
+class VolumeRocker : public TranslucentDialog
+{
+	Q_OBJECT
+public:
+	explicit VolumeRocker(QWidget* parent = nullptr);
+	~VolumeRocker();
+
+	QSize sizeHint() const override { return QSize(46, 180); }
+
+	int Volume() const { return m_VolumeController->value(); }
+	bool Muted() const { return m_Mutebox->isChecked(); }
+
+signals:
+	void volumeChanged(int);
+	void muted(bool);
+
+private:
+	QVBoxLayout* m_Layout;
+	QSlider* m_VolumeController;
+	QCheckBox* m_Mutebox;
+
+private:
+	void Build();
+	void Setup();
+};
+
+class VolumeButton : public QPushButton
+{
+	Q_OBJECT
+public:
+	explicit VolumeButton(QWidget* parent = nullptr);
+	~VolumeButton();
+	
+signals:
+	void volumeChanged(int);
+	void muted(bool);
+
+private:
+	VolumeRocker* m_Rocker;
+
+private:
+	void Setup();
+	void ResetIcon(int volume);
 };
 
 VOID_NAMESPACE_CLOSE
