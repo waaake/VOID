@@ -49,7 +49,7 @@ void AnnotationsController::Build()
     m_AnnotationGroup->setExclusive(true);
 
     /* Slider */
-    m_SizeSlider = new FramelessSlider(this);
+    m_SizeSlider = new FramelessSlider(Qt::Horizontal, this);
 
     /* Buttons */
     m_PointerButton = new HighlightToggleButton;
