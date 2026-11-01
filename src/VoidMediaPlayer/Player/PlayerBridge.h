@@ -59,7 +59,7 @@ public:
     float PeelFactor() const { return m_Player->PeelFactor(); }
     void SetPeelFactor(float factor) { m_Player->SetPeelFactor(factor); }
 
-    void SetVolume(float volume) { m_Player->SetVolume(volume); }
+    void SetVolume(int volume) { m_Player->SetVolume(volume); }
 
     inline void ResetPlaylistMedia() { m_Player->ResetPlaylistMedia(); }
 
