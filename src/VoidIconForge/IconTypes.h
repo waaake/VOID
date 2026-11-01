@@ -68,6 +68,9 @@ enum class IconType : char16_t
     icon_view_stream        = 0xe8f2,
     icon_visible            = 0xe8f4,
     icon_visible_off        = 0xe8f5,
+    icon_volume_down        = 0xe04d,
+    icon_volume_mute        = 0xe04e,
+    icon_volume_off         = 0xe04f,
     icon_volume_up          = 0xe050,
 };
 

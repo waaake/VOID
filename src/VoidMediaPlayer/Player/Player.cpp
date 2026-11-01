@@ -8,6 +8,7 @@
 /* Internal */
 #include "Player.h"
 #include "Internal/Descriptors.h"
+#include "VoidAudio/Core/Engine.h"
 #include "VoidBridge/Engine.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidCore/Media/Renderer.h"
@@ -24,10 +25,14 @@ Player::Player(TimelineController* timelineController, QWidget* parent)
     : PlayerWidget(timelineController, parent)
 {
     Connect();
+    m_AudioEngine = new AudioEngine;
+    m_AudioEngine->Start();
 }
 
 Player::~Player()
 {
+    delete m_AudioEngine;
+    m_AudioEngine = nullptr;
 }
 
 void Player::SetMedia(const SharedMediaClip& media)
@@ -269,6 +274,7 @@ void Player::Connect()
     {
         m_AudioDecoder.SeekTo((double)frame / m_TimelineController->Framerate());
     });
+    connect(m_TimelineController, &TimelineController::volumeChanged, this, &Player::SetVolume);
 
     // ControlBar
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
@@ -318,9 +324,9 @@ void Player::ClearCache()
 
 void Player::Render(int frame)
 {
-    BufferData data = m_ActiveViewBuffer->MData(frame);
-    if (data)
-        m_Renderer->Render(data.image, data.annotation);
+    MediaDesc::RenderBuffer buffer = m_ActiveViewBuffer->RenderData(frame);
+    m_Renderer->Render(buffer.image, buffer.annotation);
+    m_AudioEngine->Play(buffer.audio);
 }
 
 // void Player::SetSequenceFrame(int frame)
@@ -522,6 +528,11 @@ void Player::SetComparisonMode(int mode)
     }
 
     Refresh();
+}
+
+void Player::SetVolume(int volume)
+{
+    m_AudioEngine->SetVolume(volume);
 }
 
 void Player::RenderCurrentFrame()

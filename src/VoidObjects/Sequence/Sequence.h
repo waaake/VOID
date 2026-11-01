@@ -13,10 +13,12 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Audio.h"
 #include "Frame.h"
 #include "Track.h"
 #include "VoidObjects/Core/Entity.h"
 #include "VoidObjects/Core/Snapshot.h"
+#include "VoidObjects/Media/Descriptors.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -94,10 +96,13 @@ public:
      */
     SharedPlaybackTrack ActiveVideoTrack() const;
     SharedTrackItem GetTrackItem(const int frame);
+    SharedTrackItem AudioTrackItem(const int frame);
     SharedMediaClip Media(v_frame_t frame);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
     const FloatImage Evaluated(v_frame_t frame);
+    const SharedFrameAudio Audio(v_frame_t frame);
+    bool FrameBuffer(v_frame_t frame, MediaDesc::RenderBuffer& data);
 
     void SaveSnapshot(const std::string& name, const std::string& description);
     void RemoveSnapshot(int index);
@@ -130,6 +135,7 @@ signals: /* Signals denoting actions in the seqeuence */
 
 protected: /* Members */
     std::vector<SequenceFrame> m_FrameBuffer;
+    std::vector<SharedFrameAudio> m_AudioBuffer;
     std::vector<SharedPlaybackTrack> m_VideoTracks;
     std::vector<SharedPlaybackTrack> m_AudioTracks;
     std::vector<Snapshot> m_Snapshots;
@@ -151,7 +157,10 @@ private: /* Methods */
     void ConnectAudioTrack(const SharedPlaybackTrack& track);
     void ResizeBuffer(std::size_t size);
     void UpdateBuffer();
-    void UpdateBuffer(const MFrameRange& range);
+    void UpdateBuffer(const MFrameRange& range, const Sequence::Type& type);
+    void UpdateVideoBuffer(const MFrameRange& range);
+    void UpdateAudioBuffer(const MFrameRange& range);
+    // void ResizeAudioBuffer(std::size_t size);
     // void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);

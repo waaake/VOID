@@ -40,6 +40,7 @@ signals:
     void fitAllRequested();
     void fitSelectedRequested();
     void resetFitRequested();
+    void waveformDisplayChangeRequested(bool display = false);
 
     /// Mark
     void inOutSetRequested(bool selection = false);
@@ -84,6 +85,7 @@ private:
     QAction* m_FitAllAction;
     QAction* m_FitSelectedAction;
     QAction* m_ResetFitAction;
+    QAction* m_WaveformsDisplayAction;
 
     QMenu* m_MarkMenu;
     QAction* m_MarkSelectionAction;

@@ -14,6 +14,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Audio.h"
 #include "Internal/Descriptors.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Frame.h"
@@ -132,6 +133,9 @@ public:
      */
     void Image(const v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
+    bool Audio(v_frame_t frame, SharedFrameAudio& buffer);
+
+    std::vector<std::pair<float, float>> AudioPeaks();
 
     void ClearCache(v_frame_t frame);
 

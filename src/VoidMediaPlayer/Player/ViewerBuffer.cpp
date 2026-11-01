@@ -220,6 +220,7 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
             break;
         case PlayableComponent::Sequence:
             d.image = m_Sequence->Evaluated(frame);
+            d.audio = m_Sequence->Audio(frame);
             break;
         default:
             if (m_Clip->Valid() && m_Clip->Contains(frame))
@@ -230,6 +231,30 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
     }
 
     return d;
+}
+
+MediaDesc::RenderBuffer ViewerBuffer::RenderData(const v_frame_t frame, bool nearest)
+{
+    EnsureCached(frame);
+    MediaDesc::RenderBuffer b;
+    switch (m_PlayingComponent)
+    {
+        case PlayableComponent::Track:
+            b.image = m_Track->Image(frame);
+            break;
+        case PlayableComponent::Sequence:
+            m_Sequence->FrameBuffer(frame, b);
+            break;
+        default:
+            if (m_Clip->Valid() && m_Clip->Contains(frame))
+            {
+                b.image = m_Clip->Evaluate(frame);
+                b.audio = m_AudioBuffer.At(frame);
+                b.annotation = m_Clip->Annotation(frame);
+            }
+    }
+
+    return b;
 }
 
 std::vector<FloatImage> ViewerBuffer::GridFrame(const v_frame_t frame)
@@ -433,6 +458,9 @@ void ViewerBuffer::ResetMedia()
 {
     EnsureCached(m_Startframe);
     CacheAvailable();
+
+    if (m_Clip->Valid())
+        m_AudioBuffer.SetMedia(m_Clip);
 }
 
 v_frame_t ViewerBuffer::GetNextFrame()

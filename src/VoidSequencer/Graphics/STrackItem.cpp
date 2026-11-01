@@ -63,93 +63,6 @@ STrack* STrackItem::Track() const
     return dynamic_cast<STrack*>(parentItem());
 }
 
-void STrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    const QPalette& p = option->palette;
-    painter->setRenderHint(QPainter::Antialiasing);
-
-    const QRectF brect = boundingRect();
-    const int width = brect.width();
-
-    if (m_Item->Linked())
-    {
-        const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
-        painter->setPen(QPen(itemcol, 1));
-        painter->setBrush(Background(option));
-        painter->drawRect(brect);
-
-        painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
-
-        painter->setPen(p.color(QPalette::Text));
-        const ElementTokens& tokens = m_Item->Tokens();
-        painter->drawText(
-            brect.adjusted(10, 0, -2, 0),
-            Qt::AlignLeft | Qt::AlignTop,
-            tokens.HasVersion()
-            ? QString("%1 (%2)").arg(m_Item->Name().c_str()).arg(tokens.version.c_str())
-            : m_Item->Name().c_str()
-        );
-
-        const SharedMediaClip media = m_Item->GetMedia();
-        if (media && (width > 40 && m_Item->Type() == Sequence::Type::VIDEO))
-        {
-            QPixmap thumbnail = media->Thumbnail();
-            QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
-
-            QSizeF size = thumbnail.size();
-            size.scale(thumbRect.size(), Qt::KeepAspectRatio);
-
-            QRectF drawRect(thumbRect.x(), thumbRect.y(), size.width(), size.height());
-            drawRect.moveCenter(thumbRect.center());
-
-            painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
-        }
-
-        if (m_SlipContext.active)
-        {
-            painter->setPen(p.color(QPalette::Highlight));
-            painter->drawText(
-                brect,
-                Qt::AlignCenter,
-                m_SlipContext.offset > 0 ? QString("+%1").arg(m_SlipContext.offset) : (QString::number(m_SlipContext.offset))
-            );
-        }
-
-        if (m_Context->Action() == SequencerAction::TRIM && m_Context->HoverModel()->IsHovered(m_Item) && !m_TrimContext.active)
-        {
-            painter->setPen(QPen(p.color(QPalette::Highlight), 2));
-            painter->drawLine(m_HeadTrimRect.right(), 8, m_HeadTrimRect.right(), m_HeadTrimRect.height() - 8);
-            painter->drawLine(m_TailTrimRect.left(), 8, m_TailTrimRect.left(), m_TailTrimRect.height() - 8);
-        }
-    }
-    else
-    {
-        QColor itemcol(160, 70, 50);
-        painter->setPen(QPen(itemcol.darker(200), 1));
-        painter->setBrush(m_Context->SelectionModel()->IsSelected(m_Item) ? p.color(QPalette::Highlight).darker(180) : itemcol);
-        painter->drawRect(brect);
-
-        const QRect trect(6, Sequencer::TrackItemHeight - 30, 40, 20);
-        if (width > trect.right())
-        {
-            painter->fillRect(trect, itemcol.darker(180));
-
-            painter->setPen(p.color(QPalette::Text));
-            painter->drawText(trect, Qt::AlignCenter, "OFF");
-            painter->drawText(brect.adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
-        }
-    }
-
-    if (m_Item->HasTags() && (width > 40))
-        painter->drawPixmap(m_TagRect.topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
-
-    painter->setPen(QPen(p.color(QPalette::Highlight), 2));
-    if (Track()->IsRazored(m_Item->TimelineIn()))
-        painter->drawLine(brect.left() + 4, 4, brect.left() + 4, brect.bottom() - 4);
-    if (Track()->IsRazored(m_Item->TimelineOut()))
-        painter->drawLine(brect.right() - 4, 4, brect.right() - 4, brect.bottom() - 4);
-}
-
 void STrackItem::Update()
 {
     prepareGeometryChange();
@@ -512,6 +425,209 @@ void STrackItem::ToggleHandles(int head, int tail, int duration, bool visible)
         m_TailHandle->Update(tail);
         m_DurationHandle->Update(duration);
     }
+}
+
+/// SVideoTrackItem
+
+void SVideoTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    const QPalette& p = option->palette;
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    const QRectF brect = boundingRect();
+    const int width = brect.width();
+
+    if (m_Item->Linked())
+    {
+        const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
+        painter->setPen(QPen(itemcol, 1));
+        painter->setBrush(Background(option));
+        painter->drawRect(brect);
+
+        painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
+
+        if (width > 40)
+        {
+            painter->setPen(p.color(QPalette::Text));
+            const ElementTokens& tokens = m_Item->Tokens();
+            painter->drawText(
+                brect.adjusted(10, 0, -2, 0),
+                Qt::AlignLeft | Qt::AlignTop,
+                tokens.HasVersion()
+                ? QString("%1 (%2)").arg(m_Item->Name().c_str()).arg(tokens.version.c_str())
+                : m_Item->Name().c_str()
+            );
+
+            const SharedMediaClip media = m_Item->GetMedia();
+            QPixmap thumbnail = media->Thumbnail();
+            QRectF thumbRect(10, 16, std::min(72, option->rect.width() - 10), 36);
+
+            QSizeF size = thumbnail.size();
+            size.scale(thumbRect.size(), Qt::KeepAspectRatio);
+
+            QRectF drawRect(thumbRect.x(), thumbRect.y(), size.width(), size.height());
+            drawRect.moveCenter(thumbRect.center());
+
+            painter->drawPixmap(drawRect, thumbnail, thumbnail.rect());
+        }
+
+        if (m_SlipContext.active)
+        {
+            painter->setPen(p.color(QPalette::Highlight));
+            painter->drawText(
+                brect,
+                Qt::AlignCenter,
+                m_SlipContext.offset > 0 ? QString("+%1").arg(m_SlipContext.offset) : (QString::number(m_SlipContext.offset))
+            );
+        }
+
+        if (m_Context->Action() == SequencerAction::TRIM && m_Context->HoverModel()->IsHovered(m_Item) && !m_TrimContext.active)
+        {
+            painter->setPen(QPen(p.color(QPalette::Highlight), 2));
+            painter->drawLine(m_HeadTrimRect.right(), 8, m_HeadTrimRect.right(), m_HeadTrimRect.height() - 8);
+            painter->drawLine(m_TailTrimRect.left(), 8, m_TailTrimRect.left(), m_TailTrimRect.height() - 8);
+        }
+    }
+    else
+    {
+        QColor itemcol(160, 70, 50);
+        painter->setPen(QPen(itemcol.darker(200), 1));
+        painter->setBrush(m_Context->SelectionModel()->IsSelected(m_Item) ? p.color(QPalette::Highlight).darker(180) : itemcol);
+        painter->drawRect(brect);
+
+        const QRect trect(6, Sequencer::TrackItemHeight - 30, 40, 20);
+        if (width > trect.right())
+        {
+            painter->fillRect(trect, itemcol.darker(180));
+
+            painter->setPen(p.color(QPalette::Text));
+            painter->drawText(trect, Qt::AlignCenter, "OFF");
+            painter->drawText(brect.adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+        }
+    }
+
+    if (width < 40)
+        return;
+
+    if (m_Item->HasTags())
+        painter->drawPixmap(m_TagRect.topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
+
+    painter->setPen(QPen(p.color(QPalette::Highlight), 2));
+    if (Track()->IsRazored(m_Item->TimelineIn()))
+        painter->drawLine(brect.left() + 4, 4, brect.left() + 4, brect.bottom() - 4);
+    if (Track()->IsRazored(m_Item->TimelineOut()))
+        painter->drawLine(brect.right() - 4, 4, brect.right() - 4, brect.bottom() - 4);
+}
+
+/// SAudioTrackItem
+
+void SAudioTrackItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    const QPalette& p = option->palette;
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    const QRectF brect = boundingRect();
+    const int width = brect.width();
+    if (m_Item->Linked())
+    {
+        const QColor itemcol = Track()->Enabled() && m_Item->Enabled() ? m_Item->Color() : m_Item->Color().darker(150);
+        painter->setPen(QPen(itemcol, 1));
+        painter->setBrush(Background(option));
+        painter->drawRect(brect);
+
+        if (width > 40)
+        {
+            if (m_Context->DisplayAudioWaveforms())
+                DrawAudioPeaks(painter, itemcol, brect);
+            else
+                painter->fillRect(2, 2, std::min(6, width - 2) , Sequencer::TrackItemHeight - 8, itemcol);
+
+            painter->setPen(p.color(QPalette::Text));
+            const ElementTokens& tokens = m_Item->Tokens();
+            painter->drawText(
+                brect.adjusted(10, 0, -2, 0),
+                Qt::AlignLeft | Qt::AlignTop,
+                tokens.HasVersion()
+                ? QString("%1 (%2)").arg(m_Item->Name().c_str()).arg(tokens.version.c_str())
+                : m_Item->Name().c_str()
+            );
+        }
+
+        if (m_SlipContext.active)
+        {
+            painter->setPen(p.color(QPalette::Highlight));
+            painter->drawText(
+                brect,
+                Qt::AlignCenter,
+                m_SlipContext.offset > 0 ? QString("+%1").arg(m_SlipContext.offset) : (QString::number(m_SlipContext.offset))
+            );
+        }
+
+        if (m_Context->Action() == SequencerAction::TRIM && m_Context->HoverModel()->IsHovered(m_Item) && !m_TrimContext.active)
+        {
+            painter->setPen(QPen(p.color(QPalette::Highlight), 2));
+            painter->drawLine(m_HeadTrimRect.right(), 8, m_HeadTrimRect.right(), m_HeadTrimRect.height() - 8);
+            painter->drawLine(m_TailTrimRect.left(), 8, m_TailTrimRect.left(), m_TailTrimRect.height() - 8);
+        }
+    }
+    else
+    {
+        QColor itemcol(160, 70, 50);
+        painter->setPen(QPen(itemcol.darker(200), 1));
+        painter->setBrush(m_Context->SelectionModel()->IsSelected(m_Item) ? p.color(QPalette::Highlight).darker(180) : itemcol);
+        painter->drawRect(brect);
+
+        const QRect trect(6, Sequencer::TrackItemHeight - 30, 40, 20);
+        if (width > trect.right())
+        {
+            painter->fillRect(trect, itemcol.darker(180));
+
+            painter->setPen(p.color(QPalette::Text));
+            painter->drawText(trect, Qt::AlignCenter, "OFF");
+            painter->drawText(brect.adjusted(10, 0, -2, 0), Qt::AlignLeft | Qt::AlignTop, m_Item->Name().c_str());
+        }
+    }
+
+    if (width < 40)
+        return;
+
+    if (m_Item->HasTags())
+        painter->drawPixmap(m_TagRect.topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
+
+    painter->setPen(QPen(p.color(QPalette::Highlight), 2));
+    if (Track()->IsRazored(m_Item->TimelineIn()))
+        painter->drawLine(brect.left() + 4, 4, brect.left() + 4, brect.bottom() - 4);
+    if (Track()->IsRazored(m_Item->TimelineOut()))
+        painter->drawLine(brect.right() - 4, 4, brect.right() - 4, brect.bottom() - 4);
+}
+
+void SAudioTrackItem::DrawAudioPeaks(QPainter* painter, const QColor& color, const QRectF& rect)
+{
+    if (m_AudioPeaks.empty())
+        m_AudioPeaks = m_Item->AudioPeaks();
+
+    const v_frame_t start = m_Item->TimelineIn();
+    double dx = m_Context->Geometry()->PixelsPerFrame();
+    double x = dx * 0.5;
+
+    const double baselineY = rect.bottom() - 4;
+    const double centerY = rect.center().y();
+    const double scale = rect.height() * 0.6;
+
+    painter->setPen(QPen(color, 2));
+
+    for (v_frame_t i = start; i <= m_Item->TimelineOut(); ++i)
+    {
+        std::pair<float, float> p = m_AudioPeaks[i - start];
+        const float magnitude = std::max(std::abs(p.first), std::abs(p.second));
+        const double top = baselineY - magnitude * scale;
+
+        painter->drawLine(QPointF(x, top), QPointF(x, baselineY));
+
+        // Increment the x by the amount of pixels we have per frame
+        x += dx;
+    }
+    painter->fillRect(QRect(rect.left(), baselineY, rect.width(), 4), color);
 }
 
 VOID_NAMESPACE_CLOSE

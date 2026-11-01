@@ -105,6 +105,9 @@ void Timeline::Build()
 	m_LoopTypeButton = new LoopTypeButton;
 	m_LoopTypeButton->setToolTip(ToolTipString("Playback Loop", "Sets the loop for playback.").c_str());
 
+	m_VolumeButton = new VolumeButton;
+	m_VolumeButton->setToolTip(ToolTipString("Adjust Volume", "Controls the player volume levels.").c_str());
+
 	/* Fullscreen Button */
 	m_FullscreenButton = new QPushButton;
 	m_FullscreenButton->setIcon(IconForge::GetIcon(IconType::icon_pageless, _DARK_COLOR(QPalette::Text, 100)));
@@ -144,8 +147,9 @@ void Timeline::Build()
 	m_RightLayout->addWidget(m_EndFrameButton);
 	m_RightLayout->addWidget(m_OutFrameButton);
 
-	m_RightLayout->addItem(new QSpacerItem(40, 0, QSizePolicy::Minimum, QSizePolicy::Minimum));
+	m_RightLayout->addItem(new QSpacerItem(10, 0, QSizePolicy::Minimum, QSizePolicy::Minimum));
 
+	m_RightLayout->addWidget(m_VolumeButton);
 	m_RightLayout->addWidget(m_LoopTypeButton);
 	m_RightLayout->addWidget(m_FullscreenButton);
 
@@ -205,6 +209,7 @@ void Timeline::Connect()
 	connect(m_InTimeEdit, &TimeEdit::frameEdited, this, &Timeline::SetInFrame);
 	connect(m_OutTimeEdit, &TimeEdit::frameEdited, this, &Timeline::SetOutFrame);
 
+	connect(m_VolumeButton, &VolumeButton::volumeChanged, this, &Timeline::volumeChanged);
 	connect(m_TimeDisplayController, &FrameDisplayModeBox::frameDisplayChanged, this, &Timeline::FrameDisplayUpdated);
 }
 
@@ -225,6 +230,7 @@ void Timeline::Setup()
 	m_StopButton->setFixedWidth(BUTTON_WIDTH);
 	m_InFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 	m_OutFrameButton->setFixedWidth(SMALL_BUTTON_WIDTH);
+	m_VolumeButton->setFixedWidth(BUTTON_WIDTH);
 	m_LoopTypeButton->setFixedWidth(MEDIUM_BUTTON_WIDTH);
 	m_FullscreenButton->setFixedWidth(SMALL_BUTTON_WIDTH);
 

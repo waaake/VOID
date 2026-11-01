@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Audio.h"
 #include "PixReader.h"
 #include "Filesystem.h"
 
@@ -54,6 +55,7 @@ public:
     void Thumbnail(UInt8Image& image);
     void Image(FloatImage& image);
     const FloatImage& Image();
+    bool Audio(SharedFrameAudio& buffer);
 
     // Image Properties
     [[nodiscard]] inline int Width() const { return m_Reader->Width(); }

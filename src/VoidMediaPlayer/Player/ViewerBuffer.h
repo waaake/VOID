@@ -19,8 +19,10 @@
 
 /* Internal */
 #include "Definition.h"
+#include "AudioStreamBuffer.h"
 #include "Components.h"
 #include "PlayerBuffer.h"
+#include "VoidObjects/Media/Descriptors.h"
 #include "VoidTimeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
@@ -49,6 +51,7 @@ public:
     /// ImageData
 
     BufferData MData(const v_frame_t frame, bool nearest = false);
+    MediaDesc::RenderBuffer RenderData(const v_frame_t frame, bool nearest = false);
     std::vector<FloatImage> GridFrame(const v_frame_t frame);
 
     /// Attribs
@@ -86,6 +89,7 @@ public:
     const FloatImage Image(const v_frame_t frame);
 
 private: /* Members */
+    AudioStreamBuffer m_AudioBuffer;
     std::deque<v_frame_t> m_Numbers;
     std::unordered_set<v_frame_t> m_Buffered;
 

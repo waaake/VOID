@@ -291,10 +291,15 @@ void SequencerTimeline::Connect()
     connect(m_Menu, &SequencerContextMenu::rippleDeleteRequested, this, &SequencerTimeline::RippleDeleteSelected);
     connect(m_Menu, &SequencerContextMenu::razorRequested, this, &SequencerTimeline::Razor);
 
-    /// Fit
+    /// View
     connect(m_Menu, &SequencerContextMenu::fitAllRequested, this, &SequencerTimeline::FitAll);
     connect(m_Menu, &SequencerContextMenu::fitSelectedRequested, this, &SequencerTimeline::FitSelected);
     connect(m_Menu, &SequencerContextMenu::resetFitRequested, this, &SequencerTimeline::ResetFit);
+    connect(m_Menu, &SequencerContextMenu::waveformDisplayChangeRequested, this, [this](bool display) -> void
+    {
+        m_Context.ToggleAudioWaveforms(display);
+        m_View->Refresh();
+    });
 }
 
 void SequencerTimeline::Connect(PlaybackSequence* sequence)

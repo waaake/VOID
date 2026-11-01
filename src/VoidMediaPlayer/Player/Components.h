@@ -7,6 +7,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Image.h"
+#include "Audio.h"
 #include "VoidRenderer/Core/RenderTypes.h"
 
 VOID_NAMESPACE_OPEN
@@ -28,6 +29,7 @@ enum class VOID_API PlayerViewBuffer
 struct BufferData
 {
     FloatImage image = nullptr;
+    SharedFrameAudio audio = nullptr;
     Renderer::SharedAnnotation annotation = nullptr;
 
     bool Valid() const { return (bool)image; }

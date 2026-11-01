@@ -33,6 +33,13 @@ enum class Type
 
 } // namespace Sequence
 
+namespace Audio {
+
+inline constexpr int64_t OutSamplerate = 48000;
+inline constexpr int64_t OutChannels = 2;
+
+} // namespace Audio
+
 VOID_NAMESPACE_CLOSE
 
 #endif // _INTERNAL_DESCRIPTORS_H

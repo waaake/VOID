@@ -76,6 +76,7 @@ public:
 
 signals:
     void timeChanged(int);
+    void volumeChanged(int);
 	void fullscreenRequested();
 	void playbackStateChanged(const Timeline::PlayState&);
 	void mediaFinished(const Timeline::PlayState& type);

@@ -1,0 +1,210 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* Internal */
+#include "FFmpegStream.h"
+#include "VoidCore/Logging.h"
+
+VOID_NAMESPACE_OPEN
+
+FFmpegStream::FFmpegStream(AVFormatContext* format, AVStream* stream, int index, const std::string& path)
+    : m_SourcePath(path)
+    , m_Format(format)
+    , m_Stream(stream)
+    , m_Index(index)
+    , m_CurrentFrame(-1)
+    , m_CurrentAudioSample(-1)
+    , m_Scaler(nullptr)
+    , m_Resampler(nullptr)
+{
+}
+
+FFmpegStream::~FFmpegStream()
+{
+    if (m_Frame) av_frame_free(&m_Frame);
+    if (m_CodecContext) avcodec_free_context(&m_CodecContext);
+    #if LIBSWSCALE_VERSION_MAJOR < 9
+    if (m_Scaler) sws_freeContext(m_Scaler);
+    m_Scaler = nullptr;
+    #else
+    if (m_Scaler) sws_free_context(&m_Scaler);
+    #endif
+    if (m_Resampler) swr_free(&m_Resampler);
+}
+
+bool FFmpegStream::Setup()
+{
+    m_Frame = av_frame_alloc();
+    const AVCodec* codec = avcodec_find_decoder(m_Stream->codecpar->codec_id);
+    m_CodecContext = avcodec_alloc_context3(codec);
+
+    avcodec_parameters_to_context(m_CodecContext, m_Stream->codecpar);
+    avcodec_open2(m_CodecContext, codec, nullptr);
+
+    if (codec->type == AVMEDIA_TYPE_VIDEO)
+    {
+        m_Frame->width = m_Stream->codecpar->width;
+        m_Frame->height = m_Stream->codecpar->height;
+        m_Frame->format = m_CodecContext->pix_fmt;
+
+        return true;
+    }
+    else if (codec->type == AVMEDIA_TYPE_AUDIO)
+    {
+        return SetupResampler();
+    }
+
+    return false;
+}
+
+int64_t FFmpegStream::FrameToPts(v_frame_t frame) const
+{
+    return av_rescale_q(frame, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+}
+
+void FFmpegStream::SendFlushPacket()
+{
+    avcodec_send_packet(m_CodecContext, nullptr);
+}
+
+int FFmpegStream::SendPacket(AVPacket* packet)
+{
+    int ret = avcodec_send_packet(m_CodecContext, packet);
+    av_packet_unref(packet);
+    return ret;
+}
+
+int64_t FFmpegStream::ReceiveFrame()
+{
+    av_frame_unref(m_Frame);
+    int ret = avcodec_receive_frame(m_CodecContext, m_Frame);
+    if (!ret)
+        m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
+
+    return ret;
+}
+
+void FFmpegStream::FlushBuffers()
+{
+    avcodec_flush_buffers(m_CodecContext);
+}
+
+bool FFmpegStream::Decode(DecodedFrame& out)
+{
+    m_Scaler = sws_getCachedContext(
+            m_Scaler,
+            m_Frame->width,
+            m_Frame->height,
+            m_CodecContext->pix_fmt,
+            m_Frame->width,
+            m_Frame->height,
+            AV_PIX_FMT_RGB24,
+            SWS_BILINEAR,
+            nullptr,
+            nullptr,
+            nullptr
+        );
+
+    if (!m_Scaler) return false;
+
+    out.framenumber = m_CurrentFrame;
+    out.pts = m_Frame->pts;
+    out.duration = m_Frame->duration;
+    out.timebase = m_Stream->time_base;
+    out.buffer.resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Frame->width, m_Frame->height, 1));
+
+    int linesizes[4] = { 3 * m_Frame->width, 0, 0, 0 };
+    uint8_t* planes[4] = { out.buffer.data(), nullptr, nullptr, nullptr };
+
+    sws_scale(m_Scaler, m_Frame->data, m_Frame->linesize, 0, m_Frame->height, planes, linesizes);
+    return true;
+}
+
+bool FFmpegStream::Decode(AudioBuffer& out)
+{
+    if (!m_Resampler || m_Frame->nb_samples <= 0)
+        return false;
+
+    if (!ResampleAudio(out))
+        return false;
+
+    if (m_CurrentAudioSample == -1)
+        m_CurrentAudioSample = (m_Frame->pts * m_Frame->sample_rate * m_Stream->time_base.num) / m_Stream->time_base.den;
+    
+    m_CurrentAudioSample += m_Frame->nb_samples;
+
+    return true;
+}
+
+int64_t FFmpegStream::ToAudioSamplePosition(int64_t pts, const AVRational& sourcetimebase)
+{
+    return av_rescale_q(pts, sourcetimebase, s_AudioTimeBase);
+}
+
+bool FFmpegStream::SetupResampler()
+{
+    AVChannelLayout layout = AV_CHANNEL_LAYOUT_STEREO;
+    int ret = swr_alloc_set_opts2(
+        &m_Resampler,
+        &layout,
+        AV_SAMPLE_FMT_FLT,
+        Audio::OutSamplerate,
+        &m_CodecContext->ch_layout,
+        m_CodecContext->sample_fmt,
+        m_CodecContext->sample_rate,
+        0,
+        nullptr
+    );
+
+    av_channel_layout_uninit(&layout);
+    if (ret < 0 || !m_Resampler)
+        return false;
+
+    ret = swr_init(m_Resampler);
+    if (ret < 0)
+    {
+        AVLogError(ret);
+        return false;
+    }
+
+    return true;
+}
+
+bool FFmpegStream::ResampleAudio(AudioBuffer& buffer) const
+{
+    // get the number of delay samples the input will have after the current output
+    const int64_t delay = swr_get_delay(m_Resampler, m_Frame->sample_rate);
+    int outcount = av_rescale_rnd(delay + m_Frame->nb_samples, Audio::OutSamplerate, m_Frame->sample_rate, AV_ROUND_UP);
+
+    int targetSize = av_samples_get_buffer_size(nullptr, Audio::OutChannels, outcount, AV_SAMPLE_FMT_FLT, 0);
+    if (targetSize < 0)
+        return false;
+
+    /// Extend the buffer, if it has preexisting data on it
+    std::size_t offset = buffer.samples.size();
+    buffer.samples.resize(offset + targetSize);
+    uint8_t* out = (uint8_t*)(buffer.samples.data() + offset);
+
+    int converted = swr_convert(m_Resampler, &out, outcount, (const uint8_t**)m_Frame->extended_data, m_Frame->nb_samples);
+    if (converted < 0)
+        return false;
+
+    buffer.sampleCount += converted;
+
+    // Figure out where the resampled pts now belongs in time
+    buffer.pts = av_rescale_q(m_Frame->pts, m_Stream->time_base, s_AudioTimeBase);
+    // worth storing the original samplerate and channels somewhere? not sure if its needed though?
+    buffer.samplerate =  Audio::OutSamplerate; // m_Frame->sample_rate;
+    buffer.channels = Audio::OutChannels; // m_Frame->ch_layout.nb_channels;
+
+    return true;
+}
+
+void AVLogError(int errnum)
+{
+    char buf[4096];
+    av_strerror(errnum, buf, sizeof(buf));
+    VOID_LOG_ERROR("AVError: Error code: {} - {}", errnum, buf);
+}
+
+VOID_NAMESPACE_CLOSE
