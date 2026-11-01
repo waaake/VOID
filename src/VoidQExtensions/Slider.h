@@ -19,7 +19,7 @@ class VOID_API FramelessSlider : public QWidget
 {
     Q_OBJECT
 public:
-    FramelessSlider(QWidget* parent);
+    explicit FramelessSlider(const Qt::Orientation& orientation = Qt::Horizontal, QWidget* parent = nullptr);
     ~FramelessSlider();
 
     /**
@@ -37,7 +37,7 @@ private: /* Members */
     QSlider* m_Slider;
 
 private: /* Methods */
-    void Build();
+    void Build(const Qt::Orientation& orientation);
 };
 
 class VOID_API SimpleSlider : public QSlider

@@ -15,12 +15,10 @@ VOID_NAMESPACE_OPEN
 
 /// Frameless Slider
 
-FramelessSlider::FramelessSlider(QWidget* parent)
+FramelessSlider::FramelessSlider(const Qt::Orientation& orientation, QWidget* parent)
     : QWidget(parent, Qt::Popup | Qt::FramelessWindowHint)
 {
-    /* Build Layout */
-    Build();
-    /* Connect Signals */
+    Build(orientation);
     connect(m_Slider, &QSlider::valueChanged, this, &FramelessSlider::valueChanged);
 }
 
@@ -30,13 +28,10 @@ FramelessSlider::~FramelessSlider()
     m_Layout->deleteLater();
 }
 
-void FramelessSlider::Build()
+void FramelessSlider::Build(const Qt::Orientation& orientation)
 {
-    /* Main Layout */
     m_Layout = new QHBoxLayout(this);
-
-    m_Slider = new QSlider(Qt::Horizontal, this);
-
+    m_Slider = new QSlider(orientation, this);
     m_Layout->addWidget(m_Slider);
 }
 
