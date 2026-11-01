@@ -23,12 +23,12 @@ public:
     ~AudioStreamBuffer();
 
     void SetMedia(const SharedMediaClip& media);
-    SharedFrameAudio At(v_frame_t frame) const { return m_Buffer[frame - m_StartFrame]; }
+    SharedFrameAudio At(v_frame_t frame) const { return m_Media ? m_Buffer[frame - m_StartFrame] : nullptr; }
 
 private:
     std::vector<SharedFrameAudio> m_Buffer;
-    SharedMediaClip m_Media;
-    v_frame_t m_StartFrame;    
+    SharedMediaClip m_Media = nullptr;
+    v_frame_t m_StartFrame;
     std::future<void> m_Worker;
     std::atomic_bool m_StopToken = false;
 
