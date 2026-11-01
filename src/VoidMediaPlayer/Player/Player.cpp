@@ -274,6 +274,7 @@ void Player::Connect()
     {
         m_AudioDecoder.SeekTo((double)frame / m_TimelineController->Framerate());
     });
+    connect(m_TimelineController, &TimelineController::volumeChanged, this, &Player::SetVolume);
 
     // ControlBar
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
@@ -529,7 +530,7 @@ void Player::SetComparisonMode(int mode)
     Refresh();
 }
 
-void Player::SetVolume(float volume)
+void Player::SetVolume(int volume)
 {
     m_AudioEngine->SetVolume(volume);
 }

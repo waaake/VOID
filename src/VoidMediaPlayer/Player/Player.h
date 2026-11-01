@@ -43,7 +43,7 @@ public:
     void SetGrid(Playlist* playlist);
     void ResetPlaylistMedia();
 
-    void SetVolume(float volume);
+    void SetVolume(int volume);
 
     void RenderCurrentFrame();
     void RenderAnnotatedFrames();
