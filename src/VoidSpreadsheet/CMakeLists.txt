@@ -60,7 +60,6 @@ target_include_directories(
     PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    ${FFMPEG_INCLUDE_DIRS} # This comes from AudioDecoder being included on the player that gets used when playerbridge is included; needs fixing
 )
 
 target_link_libraries(
