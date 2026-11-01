@@ -41,14 +41,24 @@ void AudioEngine::Stop()
     m_AudioStream->Stop();
 }
 
-void AudioEngine::SetVolume(float volume)
+void AudioEngine::SetVolume(int volume)
 {
-    m_AudioStream->SetVolume(volume);
+    m_AudioStream->SetVolume((float)volume / 10);
 }
+
+// void AudioEngine::SetVolume(float volume)
+// {
+//     m_AudioStream->SetVolume(volume);
+// }
 
 void AudioEngine::Play(const SharedFrameAudio& buffer)
 {
-    if (buffer)
+    /// There's no point (atleast what I think) in pushing samples, multiplying everything by 0 and then copying
+    /// them onto the dervice buffer if we're muted, so better return from here
+    if (m_AudioStream->Muted())
+        return;
+
+    if (buffer);
     {
         // VOID_LOG_INFO("Writing {} bytes with {} samplecount", buffer->Bytes(), buffer->samplecount);
         #if defined(_VOID_PLATFORM_LINUX)

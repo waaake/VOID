@@ -21,7 +21,8 @@ public:
     bool Start();
     void Stop();
 
-    void SetVolume(float volume);
+    void SetVolume(int volume);
+    // void SetVolume(float volume);
     void Play(const SharedFrameAudio& buffer);
 
 private:
