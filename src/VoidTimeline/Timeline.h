@@ -104,6 +104,7 @@ public:
 
 signals:
 	void timeChanged(int);
+	void volumeChanged(int);
 	void fullscreenRequested();
 	void playbackStateChanged(const PlayState&);
 	void mediaFinished(const PlayState & type = PlayState::FORWARDS);
@@ -124,6 +125,7 @@ private: /* Members */
 	ToggleStatePushButton* m_InFrameButton;
 	ToggleStatePushButton* m_OutFrameButton;
 	LoopTypeButton* m_LoopTypeButton;
+	VolumeButton* m_VolumeButton;
 	QPushButton* m_FullscreenButton;
 	QPushButton* m_StopButton;
 
