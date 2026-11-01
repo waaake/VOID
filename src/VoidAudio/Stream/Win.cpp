@@ -3,7 +3,6 @@
 
 /* STD */
 #include <cstring>
-// #include <algorithm>
 #include <thread>
 
 /* Internal */
@@ -35,7 +34,6 @@ AudioStream::AudioStream(int samplerate, int channels)
     m_AudioClient->GetBufferSize(&m_BufferCount);
 }
 
-
 AudioStream::~AudioStream()
 {
     if (m_Wfx) CoTaskMemFree(m_Wfx);
@@ -55,43 +53,6 @@ bool AudioStream::Start()
 void AudioStream::Stop()
 {
     m_AudioClient->Stop();
-}
-
-bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
-{
-    const int16_t* in = reinterpret_cast<const int16_t*>(buffer);
-    std::size_t insamples = size / sizeof(int16_t);
-    UINT32 inframes = insamples / m_Wfx->nChannels;
-
-    UINT32 framesAvailable = 0;
-    while (framesAvailable < inframes)
-    {
-        framesAvailable = AvailableFrames();
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
-
-    if (framesAvailable > 0)
-    {
-        BYTE* data;
-        HRESULT hr = m_AudioRenderClient->GetBuffer(framesAvailable, &data);
-
-        if (FAILED(hr))
-        {
-            VOID_LOG_ERROR("GetBuffer failed");
-            return false;
-        }
-
-        float* out = reinterpret_cast<float*>(data);
-
-        UINT32 frames = (framesAvailable < inframes) ? framesAvailable : inframes;
-
-        for (UINT32 i = 0; i < frames * m_Wfx->nChannels; ++i)
-            out[i] = in[i] / 32768.0f;
-
-        m_AudioRenderClient->ReleaseBuffer(frames, 0);
-    }
-
-    return true;
 }
 
 bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples)
@@ -138,6 +99,23 @@ bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples
     }
 
     return true;
+}
+
+void AudioStream::Clear()
+{
+    HRESULT hr = m_AudioClient->Stop();
+    if (FAILED(hr))
+    {
+        VOID_LOG_ERROR("AudioStream: Unable to stop client.")
+        return;
+    }
+    hr = m_AudioClient->Reset();
+    if (FAILED(hr))
+    {
+        VOID_LOG_ERROR("AudioStream: Unable to reset buffer");
+    }
+
+    m_AudioClient->Start();
 }
 
 void AudioStream::SetVolume(float volume)

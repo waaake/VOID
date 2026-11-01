@@ -9,15 +9,12 @@
 /* Internal */
 #include "Mac.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Timekeeper.h"
 
 VOID_NAMESPACE_OPEN
 
 AudioStream::AudioStream(int samplerate, int channels)
     : m_Samplerate(samplerate)
     , m_Channels(channels)
-    , m_PlaybackTime(0.0)
-    , m_SessionTime(0.0)
     , m_AudioUnit(nullptr)
     , m_Volume(0.1f)
 {
@@ -84,61 +81,25 @@ void AudioStream::Stop()
     {
         AudioOutputUnitStop(m_AudioUnit);
         AudioUnitUninitialize(m_AudioUnit);
-
-        m_SessionTime = m_PlaybackTime;
     }
-}
-
-bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
-{
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        m_Samples.insert(m_Samples.end(), buffer, buffer + size);
-    }
-
-    // m_Cond.wait(lock, [&] { return m_Samples.empty(); });
-
-    /** 
-     * The Decoder expects this function to be blocking till the time the samples are played
-     * well almost played to be precise, we don't want the buffer to underrun and cause stutters
-     * Instead we wait just till the time the next samples can be played keeping enough time buffer
-     * so that the additional processing for decoding and other bits can happen
-     */
-    std::this_thread::sleep_for(std::chrono::milliseconds((samples * 500 / m_Samplerate)));
-
-    return true;
 }
 
 bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
+    std::size_t offset = m_Samples.size();
+    m_Samples.resize(m_Samples.size() + size);
 
-    // const float* fltbuf = static_cast<const float*>(buffer);
-
-    // m_FloatSamples.insert(m_FloatSamples.end(), fltbuf, fltbuf + size);
-    // float* internal = m_FloatSamples.data() + m_FloatSamples.size();
-    std::size_t offset = m_FloatSamples.size();
-    m_FloatSamples.resize(m_FloatSamples.size() + size);
-
-    ApplyVolume(static_cast<const float*>(buffer), m_FloatSamples.data() + offset, size);
+    ApplyVolume(static_cast<const float*>(buffer), m_Samples.data() + offset, size);
     return true;
 }
 
-void AudioStream::SeekTo(double time)
+void AudioStream::Clear()
 {
-    m_SessionTime = time;
-    if (m_AudioUnit)
+    // Clear anything that we currently have in unused buffer i.e. not yet queued on the device buffer
     {
-        AudioOutputUnitStop(m_AudioUnit);
-        AudioUnitUninitialize(m_AudioUnit);
-
-        // Safely clear any remaining samples from the buffer
-        {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-            m_Samples.clear();
-        }
-
-        Start();
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_Samples.clear();
     }
 }
 
@@ -164,19 +125,15 @@ OSStatus AudioStream::RenderCallback(void* inRefCon, AudioUnitRenderActionFlags*
     AudioBuffer* output = &ioData->mBuffers[0];
 
     const std::size_t samplesRequested = static_cast<std::size_t>(inNumberFrames) * self->m_Channels;
-    // const std::size_t requestedBytes = samplesRequested * sizeof(float);
-
     std::memset(output->mData, 0, samplesRequested * sizeof(float));
 
     {
         std::lock_guard<std::mutex> lock(self->m_Mutex);
-        const std::size_t samplesToCopy = std::min(samplesRequested, self->m_FloatSamples.size());
-        // const std::size_t bytesToCopy = samplesToCopy * sizeof(float);
-    
+        const std::size_t samplesToCopy = std::min(samplesRequested, self->m_Samples.size());
         if (samplesToCopy > 0)
         {
-            std::memcpy(output->mData, self->m_FloatSamples.data(), samplesToCopy * sizeof(float));
-            self->m_FloatSamples.erase(self->m_FloatSamples.begin(), self->m_FloatSamples.begin() + samplesToCopy);
+            std::memcpy(output->mData, self->m_Samples.data(), samplesToCopy * sizeof(float));
+            self->m_Samples.erase(self->m_Samples.begin(), self->m_Samples.begin() + samplesToCopy);
         }
     }
 
