@@ -27,6 +27,9 @@ public:
     void SeekTo(double time) {}
 
     void SetVolume(float volume);
+    float Volume() const { return m_Volume; }
+    bool Muted() const { return m_Volume == 0; }
+
     double CurrentTime() const { return 0.0; }
     double Latency() const;
 
