@@ -712,7 +712,7 @@ void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
     connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
     connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
-    // connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
+    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
 }
 
 void PlaybackSequence::ResizeBuffer(std::size_t size)
@@ -722,12 +722,6 @@ void PlaybackSequence::ResizeBuffer(std::size_t size)
     VOID_LOG_INFO("Resized buffers to: {}", size);
 }
 
-// void PlaybackSequence::ResizeAudioBuffer(std::size_t size)
-// {
-//     m_AudioBuffer.resize(size);
-//     VOID_LOG_INFO("Resized audio buffer to: {}", size);
-// }
-
 void PlaybackSequence::UpdateBuffer()
 {
     ResizeBuffer(m_EndFrame - m_StartFrame + 1);
@@ -736,15 +730,6 @@ void PlaybackSequence::UpdateBuffer()
 
 void PlaybackSequence::UpdateBuffer(const MFrameRange& range, const Sequence::Type& type)
 {
-    // for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
-    // {
-    //     SharedTrackItem item = GetTrackItem(i);
-    //     if (item && item->Enabled())
-    //         m_FrameBuffer[i - m_StartFrame] = item->InternalFrame(i);
-    //     else
-    //         m_FrameBuffer[i - m_StartFrame] = SequenceFrame();
-    // }
-    // VOID_LOG_INFO("Updated Buffer in range: {} - {}", range.startframe, range.endframe);
     type == Sequence::Type::VIDEO ? UpdateVideoBuffer(range) : UpdateAudioBuffer(range);
 }
 
@@ -769,6 +754,7 @@ void PlaybackSequence::UpdateAudioBuffer(const MFrameRange& range)
         if (!buffer)
             buffer = std::make_shared<FrameAudio>();
 
+        buffer->Clear();
         SharedTrackItem item = AudioTrackItem(i);
         if (item && item->Enabled())
             item->Audio(i, buffer);

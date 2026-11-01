@@ -160,7 +160,6 @@ private: /* Methods */
     void UpdateBuffer(const MFrameRange& range, const Sequence::Type& type);
     void UpdateVideoBuffer(const MFrameRange& range);
     void UpdateAudioBuffer(const MFrameRange& range);
-    // void ResizeAudioBuffer(std::size_t size);
     // void HandleNewItem(const SharedTrackItem& item);
     void HandleItemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
     void HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
