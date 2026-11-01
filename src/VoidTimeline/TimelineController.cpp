@@ -16,6 +16,7 @@ TimelineController::TimelineController(QObject* parent)
     connect(m_Timeline, &Timeline::playbackStateChanged, this, &TimelineController::playbackStateChanged, Qt::DirectConnection);
     connect(m_Timeline, &Timeline::mediaFinished, this, &TimelineController::mediaFinished, Qt::DirectConnection);
     connect(m_Timeline, &Timeline::seeked, this, &TimelineController::seeked);
+    connect(m_Timeline, &Timeline::volumeChanged, this, &TimelineController::volumeChanged);
 }
 
 TimelineController::~TimelineController()
