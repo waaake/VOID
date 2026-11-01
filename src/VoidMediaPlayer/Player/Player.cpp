@@ -26,7 +26,9 @@ Player::Player(TimelineController* timelineController, QWidget* parent)
 {
     Connect();
     m_AudioEngine = new AudioEngine;
-    m_AudioEngine->Start();
+    // If we have the player invoked with audio, only then start the underlying device (audio client)
+    if (_EngineBridge.AudioEnabled())
+        m_AudioEngine->Start();
 }
 
 Player::~Player()
@@ -54,9 +56,6 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     Timekeeper::Instance().Reset();
     Timekeeper::Instance().SetMediaFramerate(media->Framerate());
-
-    if (_EngineBridge.AudioEnabled())
-        m_AudioDecoder.Init(media->Fullpath());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -256,23 +255,15 @@ void Player::Connect()
         {
             if (m_ActiveViewBuffer)
                 m_ActiveViewBuffer->StopPlaybackCache();
-            m_AudioDecoder.Stop();
         }
         else
         {
             m_ActiveViewBuffer->StartPlaybackCache(static_cast<ViewerBuffer::PlayState>(state));
-            if (state == Timeline::PlayState::FORWARDS)
-                m_AudioDecoder.Start();
         }
     });
     connect(m_TimelineController, &TimelineController::mediaFinished, this, [this](const Timeline::PlayState& state) -> void
     {
-        m_AudioDecoder.Restart();
         state == Timeline::PlayState::FORWARDS ? NextMedia() : PreviousMedia();
-    });
-    connect(m_TimelineController, &TimelineController::seeked, this, [this](v_frame_t frame)
-    {
-        m_AudioDecoder.SeekTo((double)frame / m_TimelineController->Framerate());
     });
     connect(m_TimelineController, &TimelineController::volumeChanged, this, &Player::SetVolume);
 
