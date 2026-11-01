@@ -55,18 +55,15 @@ void AudioEngine::Play(const SharedFrameAudio& buffer)
 {
     /// There's no point (atleast what I think) in pushing samples, multiplying everything by 0 and then copying
     /// them onto the dervice buffer if we're muted, so better return from here
-    if (m_AudioStream->Muted())
+    if (m_AudioStream->Muted() || !buffer || buffer->Empty())
         return;
 
-    if (buffer);
-    {
-        // VOID_LOG_INFO("Writing {} bytes with {} samplecount", buffer->Bytes(), buffer->samplecount);
-        #if defined(_VOID_PLATFORM_LINUX)
-        m_AudioStream->WriteSamples(buffer->Data(), buffer->Bytes(), buffer->samplecount);
-        #else
-        m_AudioStream->WriteSamples(buffer->Data(), buffer->Size(), buffer->samplecount);
-        #endif
-    }
+    // VOID_LOG_INFO("Writing {} bytes with {} samplecount", buffer->Bytes(), buffer->samplecount);
+    #if defined(_VOID_PLATFORM_LINUX)
+    m_AudioStream->WriteSamples(buffer->Data(), buffer->Bytes(), buffer->samplecount);
+    #else
+    m_AudioStream->WriteSamples(buffer->Data(), buffer->Size(), buffer->samplecount);
+    #endif
 }
 
 VOID_NAMESPACE_CLOSE
