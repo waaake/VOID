@@ -3,6 +3,7 @@
 
 /* STD */
 #include <atomic>
+#include <mutex>
 #include <vector>
 
 /* Internal */
@@ -53,6 +54,8 @@ private:
     int64_t m_LastAudioPTS      = -1;
     bool m_Backwards            = false;
     int m_LastIndex             = -1;
+
+    std::mutex m_Mutex;
 
 private:
     bool Open(const std::string& path);
