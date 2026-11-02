@@ -106,7 +106,6 @@ void Timeline::Build()
 	m_LoopTypeButton->setToolTip(ToolTipString("Playback Loop", "Sets the loop for playback.").c_str());
 
 	m_VolumeButton = new VolumeButton;
-	m_VolumeButton->setToolTip(ToolTipString("Adjust Volume", "Controls the player volume levels.").c_str());
 
 	/* Fullscreen Button */
 	m_FullscreenButton = new QPushButton;
@@ -244,6 +243,16 @@ void Timeline::Setup()
 	m_Timekeeper.SetRange(m_Timeslider->minimum(), m_Timeslider->maximum());
 	m_InTimeEdit->Set(m_Timekeeper.DisplayStart());
 	m_OutTimeEdit->Set(m_Timekeeper.DisplayEnd());
+
+	m_VolumeButton->setEnabled(_EngineBridge.AudioEnabled());
+	if (_EngineBridge.AudioEnabled())
+		m_VolumeButton->setToolTip(
+			ToolTipString("Adjust Volume", "Controls the player volume levels.").c_str()
+		);
+	else
+		m_VolumeButton->setToolTip(
+			ToolTipString("Volume control disabled", "Launch VOID with '--audio' to enable audio.").c_str()
+		);
 }
 
 void Timeline::StartPlayback()

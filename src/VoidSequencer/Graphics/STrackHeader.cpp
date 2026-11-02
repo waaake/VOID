@@ -32,35 +32,6 @@ STrackHeaderItem::STrackHeaderItem(const SharedPlaybackTrack& track, SequencerCo
     Resize(index);
 }
 
-void STrackHeaderItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
-{
-    const QPalette& p = option->palette;
-    painter->setPen(Qt::black);
-    painter->setBrush(Background(p));
-    painter->drawRect(boundingRect().adjusted(1, 0, -1, 0));
-
-    painter->setPen(p.color(QPalette::Text));
-    QFontMetrics fm(painter->font());
-    painter->drawText(NameRect(), Qt::AlignVCenter | Qt::AlignRight, fm.elidedText(m_Track->Name().c_str(), Qt::ElideMiddle, NameRect().width()));
-
-    painter->drawPixmap(
-        StateRect().topLeft(),
-        m_Track->Enabled()
-            ? IconForge::GetPixmap(IconType::icon_visible, p.color(QPalette::Text).darker(100), 14)
-            : IconForge::GetPixmap(IconType::icon_visible_off, p.color(QPalette::Highlight).darker(100), 14)
-    );
-
-    painter->drawPixmap(
-        LockRect().topLeft(),
-        m_Track->Locked()
-            ? IconForge::GetPixmap(IconType::icon_lock, p.color(QPalette::Highlight).darker(100), 14)
-            : IconForge::GetPixmap(IconType::icon_lock_open, p.color(QPalette::Text).darker(100), 14)
-    );
-
-    if (m_Track->HasTags())
-        painter->drawPixmap(TagRect().topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
-}
-
 void STrackHeaderItem::Update()
 {
     prepareGeometryChange();
@@ -132,12 +103,82 @@ void STrackHeaderItem::Resize(int index)
     m_TagRect = QRect(m_BoundingRect.right() - (iconSize + spacing + margin), m_LockRect.bottom(), iconSize, iconSize);
 }
 
-QColor STrackHeaderItem::Background(const QPalette& palette) const
+/// SVideoTrakHeaderItem
+
+void SVideoTrackHeaderItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    const QPalette& p = option->palette;
+    painter->setPen(Qt::black);
+    painter->setBrush(Background(p));
+    painter->drawRect(boundingRect().adjusted(1, 0, -1, 0));
+
+    painter->setPen(p.color(QPalette::Text));
+    QFontMetrics fm(painter->font());
+    painter->drawText(NameRect(), Qt::AlignVCenter | Qt::AlignRight, fm.elidedText(m_Track->Name().c_str(), Qt::ElideMiddle, NameRect().width()));
+
+    painter->drawPixmap(
+        StateRect().topLeft(),
+        m_Track->Enabled()
+            ? IconForge::GetPixmap(IconType::icon_visible, p.color(QPalette::Text).darker(100), 14)
+            : IconForge::GetPixmap(IconType::icon_visible_off, p.color(QPalette::Highlight).darker(100), 14)
+    );
+
+    painter->drawPixmap(
+        LockRect().topLeft(),
+        m_Track->Locked()
+            ? IconForge::GetPixmap(IconType::icon_lock, p.color(QPalette::Highlight).darker(100), 14)
+            : IconForge::GetPixmap(IconType::icon_lock_open, p.color(QPalette::Text).darker(100), 14)
+    );
+
+    if (m_Track->HasTags())
+        painter->drawPixmap(TagRect().topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
+}
+
+QColor SVideoTrackHeaderItem::Background(const QPalette& palette) const
 {
     if (m_Context->SelectionModel()->IsSelected(m_Track))
         return palette.color(QPalette::Highlight).darker(150);
 
-    return m_Track->Type() == Sequence::Type::VIDEO ? palette.color(QPalette::Dark) : QColor(45, 55, 45);
+    return palette.color(QPalette::Dark);
+}
+
+/// SAudioTrackHeaderItem
+
+void SAudioTrackHeaderItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    const QPalette& p = option->palette;
+    painter->setPen(Qt::black);
+    painter->setBrush(Background(p));
+    painter->drawRect(boundingRect().adjusted(1, 0, -1, 0));
+
+    painter->setPen(p.color(QPalette::Text));
+    QFontMetrics fm(painter->font());
+    painter->drawText(NameRect(), Qt::AlignVCenter | Qt::AlignRight, fm.elidedText(m_Track->Name().c_str(), Qt::ElideMiddle, NameRect().width()));
+
+    painter->drawPixmap(
+        StateRect().topLeft(),
+        m_Track->Enabled()
+            ? IconForge::GetPixmap(IconType::icon_volume_up, p.color(QPalette::Text).darker(100), 14)
+            : IconForge::GetPixmap(IconType::icon_volume_off, p.color(QPalette::Highlight).darker(100), 14)
+    );
+
+    painter->drawPixmap(
+        LockRect().topLeft(),
+        m_Track->Locked()
+            ? IconForge::GetPixmap(IconType::icon_lock, p.color(QPalette::Highlight).darker(100), 14)
+            : IconForge::GetPixmap(IconType::icon_lock_open, p.color(QPalette::Text).darker(100), 14)
+    );
+
+    if (m_Track->HasTags())
+        painter->drawPixmap(TagRect().topLeft(), IconForge::GetPixmap(IconType::icon_style, p.color(QPalette::Highlight).darker(100), 12));
+}
+
+QColor SAudioTrackHeaderItem::Background(const QPalette& palette) const
+{
+    if (m_Context->SelectionModel()->IsSelected(m_Track))
+        return palette.color(QPalette::Highlight).darker(150);
+
+    return QColor(45, 55, 45);
 }
 
 VOID_NAMESPACE_CLOSE

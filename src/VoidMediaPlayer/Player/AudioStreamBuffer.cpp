@@ -3,6 +3,7 @@
 
 /* Internal */
 #include "AudioStreamBuffer.h"
+#include "VoidBridge/Engine.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
@@ -16,13 +17,23 @@ void AudioStreamBuffer::SetMedia(const SharedMediaClip& media)
 {
     StopCaching();
 
-    m_Media = media;
-    m_StartFrame = m_Media->FirstFrame();
-
-    m_Buffer.resize(m_Media->Duration());
-    m_StopToken = false;
-
-    m_Worker = std::async(std::launch::async, &AudioStreamBuffer::Cache, this);
+    if (media->HasAudio() && _EngineBridge.AudioEnabled())
+    {
+        m_Media = media;
+        m_StartFrame = m_Media->FirstFrame();
+    
+        m_Buffer.resize(m_Media->Duration());
+        m_StopToken = false;
+    
+        m_Worker = std::async(std::launch::async, &AudioStreamBuffer::Cache, this);
+    }
+    else
+    {
+        /// Clear the underlying media as we now don't have any active media to read audio from
+        /// this also results in no results when audio for a frame is requested
+        m_Media.reset();
+        VOID_LOG_INFO("No Audio set.");
+    }
 }
 
 void AudioStreamBuffer::Cache()
@@ -37,7 +48,7 @@ void AudioStreamBuffer::Cache()
         if (!buffer)
             buffer = std::make_shared<FrameAudio>();
 
-        buffer->Reset();
+        buffer->Clear();
         m_Media->Audio(i, buffer);
         VOID_LOG_INFO("Buffering audio for frame... {}", i);
     }

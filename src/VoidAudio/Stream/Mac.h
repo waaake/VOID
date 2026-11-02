@@ -25,27 +25,22 @@ public:
 
     bool Start();
     void Stop();
-    bool WriteSamples(const unsigned char* buffer, std::size_t size, int samples);
+
     bool WriteSamples(const void* buffer, std::size_t size, int samples);
-    void SeekTo(double time);
+    void Clear();
 
     void SetVolume(float volume);
     float Volume() const { return m_Volume; }
     bool Muted() const { return m_Volume == 0; }
 
-    double CurrentTime() const { return m_Time; }
     double Latency() const;
 
 private:
     int m_Samplerate, m_Channels;
-    double m_PlaybackTime, m_SessionTime, m_Time;
     AudioUnit m_AudioUnit;
     AudioStreamBasicDescription m_Format;
-    std::vector<unsigned char> m_Samples;
-    std::vector<float> m_FloatSamples;
+    std::vector<float> m_Samples;
     std::mutex m_Mutex;
-
-    std::condition_variable m_Cond;
 
     float m_Volume;
 

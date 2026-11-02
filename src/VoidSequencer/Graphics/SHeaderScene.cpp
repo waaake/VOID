@@ -30,7 +30,7 @@ SHeaderScene::~SHeaderScene()
 
 void SHeaderScene::AddVideoTrack(const SharedPlaybackTrack& track)
 {
-    STrackHeaderItem* strack = new STrackHeaderItem(track, m_Context);
+    STrackHeaderItem* strack = new SVideoTrackHeaderItem(track, m_Context);
     m_VTracks.push_back(strack);
     addItem(strack);
 
@@ -39,7 +39,7 @@ void SHeaderScene::AddVideoTrack(const SharedPlaybackTrack& track)
 
 void SHeaderScene::AddAudioTrack(const SharedPlaybackTrack& track)
 {
-    STrackHeaderItem* strack = new STrackHeaderItem(track, m_Context);
+    STrackHeaderItem* strack = new SAudioTrackHeaderItem(track, m_Context);
     m_ATracks.push_back(strack);
     addItem(strack);
 

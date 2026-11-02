@@ -18,7 +18,7 @@ AudioStream::AudioStream(int samplerate, int channels, pa_sample_format_t format
     m_SampleSpec.rate = samplerate;
     m_SampleSpec.channels = channels;
 
-    VOID_LOG_INFO("New Audio Stream with {0} channels @ {1} bps", channels, samplerate);
+    // VOID_LOG_INFO("New Audio Stream with {0} channels @ {1} bps", channels, samplerate);
 }
 
 AudioStream::~AudioStream()
@@ -65,21 +65,6 @@ double AudioStream::Latency() const
     return 0.0;
 }
 
-bool AudioStream::WriteSamples(const unsigned char* data, std::size_t size, int samples)
-{
-    if (!m_Stream)
-        return false;
-
-    int error;
-    if (pa_simple_write(m_Stream, data, size, &error) < 0)
-    {
-        VOID_LOG_INFO("Unable to write samples: {0}", pa_strerror(error));
-        return false;
-    }
-
-    return true;
-}
-
 bool AudioStream::WriteSamples(const void* data, std::size_t bytes, int samples)
 {
     if (!m_Stream)
@@ -93,11 +78,20 @@ bool AudioStream::WriteSamples(const void* data, std::size_t bytes, int samples)
     // if (pa_simple_write(m_Stream, data, bytes, &error) < 0)
     if (pa_simple_write(m_Stream, static_cast<void*>(m_InternalBuffer.data()), bytes, &error) < 0)
     {
-        VOID_LOG_INFO("Unable to write samples: {0}", pa_strerror(error));
+        VOID_LOG_ERROR("AudioStream: Unable to write samples: {0}", pa_strerror(error));
         return false;
     }
 
     return true;
+}
+
+void AudioStream::Clear()
+{
+    int error;
+    if (pa_simple_flush(m_Stream, &error) < 0)
+    {
+        VOID_LOG_ERROR("AudioStream: Unable to clear buffer: {0}", pa_strerror(error));
+    }
 }
 
 void AudioStream::SetVolume(float volume)

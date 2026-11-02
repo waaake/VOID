@@ -1,5 +1,5 @@
 set(SOURCES
-    Core/Decoder.cpp
+    # Core/Decoder.cpp
     Core/Engine.cpp
 )
 
@@ -34,11 +34,11 @@ target_link_libraries(
     ${FFMPEG_LIBRARIES}
 )
 
-target_include_directories(
-    VoidAudio
-    PRIVATE
-    ${FFMPEG_INCLUDE_DIRS}
-)
+# target_include_directories(
+#     VoidAudio
+#     PRIVATE
+#     ${FFMPEG_INCLUDE_DIRS}
+# )
 
 if (APPLE)
 target_link_libraries(

@@ -341,17 +341,31 @@ void VolumeButton::Setup()
 		// emit muted(mute);
 	});
 
-	setIcon(IconForge::GetIcon(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 120)));
+	QIcon icon;
+	icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 190)), QIcon::Disabled);
+	icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 120)), QIcon::Normal);
+	setIcon(icon);
 }
 
 void VolumeButton::ResetIcon(int volume)
 {
+	QIcon icon;
 	if (volume > 5)
-		setIcon(IconForge::GetIcon(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 120)));
+	{
+		icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 120)), QIcon::Normal);
+		icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_up, _DARK_COLOR(QPalette::Text, 190)), QIcon::Disabled);
+	}
 	else if (volume == 0)
-		setIcon(IconForge::GetIcon(IconType::icon_volume_mute, _DARK_COLOR(QPalette::Text, 120)));
+	{
+		icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_mute, _DARK_COLOR(QPalette::Text, 120)), QIcon::Normal);
+		icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_mute, _DARK_COLOR(QPalette::Text, 190)), QIcon::Disabled);
+	}
 	else
-		setIcon(IconForge::GetIcon(IconType::icon_volume_down, _DARK_COLOR(QPalette::Text, 120)));
+	{
+		icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_down, _DARK_COLOR(QPalette::Text, 120)), QIcon::Normal);
+		icon.addPixmap(IconForge::GetPixmap(IconType::icon_volume_down, _DARK_COLOR(QPalette::Text, 190)), QIcon::Disabled);
+	}
+	setIcon(icon);
 }
 
 VOID_NAMESPACE_CLOSE

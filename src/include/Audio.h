@@ -78,17 +78,19 @@ struct AudioBuffer
 /// Audio buffer may cross boundaries with multiple video frames
 struct FrameAudio
 {
-    int samplerate;
-    int channels;
+    int samplerate = 0;
+    int channels = 0;
 
-    int samplecount;
+    int samplecount = 0;
 
     std::vector<float> samples;
 
     std::size_t Bytes() const { return samples.size() * sizeof(float); }
     std::size_t Size() const { return samples.size(); }
     const void* Data() const { return samples.data(); }
-    void Reset()
+    bool Valid() const { return samplerate > 0; }
+    bool Empty() const { return samples.empty(); }
+    void Clear()
     {
         if (samples.empty()) return;
         samples.clear();

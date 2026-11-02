@@ -6,7 +6,6 @@
 
 /* Internal */
 #include "PlayerWidget.h"
-#include "VoidAudio/Core/Decoder.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -83,7 +82,6 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 private: /* Members */
-    AudioDecoder m_AudioDecoder;
     AudioEngine* m_AudioEngine;
 
 private: /* Methods */
