@@ -18,7 +18,7 @@ VOID_NAMESPACE_OPEN
 class VOID_API ConformRule
 {
 public:
-    virtual ConformRule() = default;
+    virtual ~ConformRule() = default;
     virtual std::string Name() const = 0;
     virtual bool Match(
         const std::unordered_map<std::string, std::string>& sourceMedia,
