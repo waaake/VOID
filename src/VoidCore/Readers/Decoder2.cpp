@@ -20,7 +20,7 @@ VOID_NAMESPACE_OPEN
 // we may want to allow configuring this later on depending on system specs
 // For now we allow 16 as something to test as well
 static constexpr std::size_t MAX_DECODERS = 16;
-static constexpr std::size_t MAX_CACHED_FRAMES = 6;
+static constexpr std::size_t MAX_CACHED_FRAMES = 32;
 
 /// FFmpegDecoder2
 
@@ -123,6 +123,7 @@ bool FFmpegDecoder2::FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe)
 
 bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe)
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
     if (TryCached(framenumber, buffer, timeframe))
         return true;
 
@@ -425,8 +426,15 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, T
         }
     }
 
-    for (const DecodedFrame& entry : m_VideoCache)
+    /// Our frames are cached in incrementing order, in forward it means
+    /// cache has entries like [1] [2] [3] [4] ... [n]
+    /// Since we cached n right now which is last, and then we want a frame which is n - 1
+    /// Assuming this is running in multi threaded mode, and n frame got cached first
+    /// in that case, running the loop backwards would always be more beneficial in the longer run,
+    /// ofcourse the first n frames have to bear the penalty
+    for (auto it = m_VideoCache.crbegin(); it != m_VideoCache.crend(); ++it)
     {
+        const DecodedFrame& entry = *it;
         if (entry.framenumber == framenumber)
         {
             FillBuffer(entry.buffer, out);
