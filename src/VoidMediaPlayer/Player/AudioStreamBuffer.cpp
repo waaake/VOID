@@ -8,7 +8,7 @@
 
 VOID_NAMESPACE_OPEN
 
-static constexpr unsigned int s_MAX_CHUNK_SIZE = 50;
+static constexpr unsigned int s_MAX_CHUNK_SIZE = 500;
 static constexpr unsigned int s_MAX_TEMP_CHUNK_SIZE = 10;
 
 AudioStreamBuffer::AudioStreamBuffer()
