@@ -23,7 +23,7 @@ struct BufferChunk
 
     bool Contains(v_frame_t frame) const { return frame >= start && frame <= end; }
     void Reset() { start = -1; end = -1; }
-    SharedFrameAudio operator[](v_frame_t frame) const { return buffer[frame - start]; }
+    const SharedFrameAudio& operator[](v_frame_t frame) const { return buffer[frame - start]; }
 };
 
 class AudioStreamBuffer
