@@ -82,13 +82,13 @@ SharedFrameAudio AudioStreamBuffer::At(v_frame_t frame)
         if (m_Temp.Contains(frame))
             return m_Temp[frame];
 
-        CacheTemp(backwards ? std::max((frame - s_MAX_TEMP_CHUNK_SIZE) + 1, start) : frame);
+        CacheTemp(backwards ? std::max((v_frame_t)(frame - s_MAX_TEMP_CHUNK_SIZE) + 1, start) : frame);
         // And also start the cache for the frames now
         m_Worker = std::async(
             std::launch::async,
             &AudioStreamBuffer::CacheChunk,
             this,
-            backwards ? std::max((frame - s_MAX_CHUNK_SIZE) + 1, start) : frame,
+            backwards ? std::max((v_frame_t)(frame - s_MAX_CHUNK_SIZE) + 1, start) : frame,
             m_ActiveChunk
         );
         return m_Temp[frame];
