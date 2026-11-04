@@ -7,6 +7,36 @@ and VOID player adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ---
 
+## [0.5.0-alpha] - 2026-11-04
+### Added
+- Added initial version of Sequencer which is an NLE, providing a visual representation of Sequence and Items within it.
+- Sequencer supports tagging Tracks and TrackItems.
+- Effects can be added on TrackItems which gets processed before the frame is rendered on screen.
+- Added support for snapshot of a sequence which saves the current state of the sequence in time for restoring back later if required.
+- Sequencer supports dragging media from the Media View to the tracks within the sequence.
+- Added Spreadsheet widget allowing media to be set as Reference media on the active sequence.
+- Media can also be relinked using Default and Custom Conform rules and support is extended to be created from python.
+- Added support for media versioning based on the naming pattern of the media, having (v/V followed by numbers e.g. v001) is treated as the version of the element.
+- Sequencer allows finding and importing any parallel versions to the project present in the root directory of media.
+- Media having multiple versions can be switched in the sequence allowing users to have the latest elements in the timeline always.
+- Added support for showing timecodes in the Timeline and Sequencer with the drop down in the timeline.
+
+### Fixed
+- Fixed slowness during playback due to drawing too many elements in the Timeslider when the frame range is huge, by limiting the amount of ticks that gets drawn for any range.
+
+### Misc
+- Restructured internal components to be separate libraries within VOID.
+- Improved the media drag import to support multiple directories at once.
+- Imporved adding multiple media to the track on a sequence which now is much faster than before.
+- Improved performance in reading Media through JPEG, EXR and FFmpeg Media readers.
+- Improved audio playback support in the player across all platforms.
+- Audio can be played through the sequence timeline as well.
+- Track items are searched and indexed through binary search as they are sorted all the time, improving performance where used.
+- Executed python script in the script editor widget retains after reopening VOID.
+- Improved undo-redo for media items which now serialises and deserialised the media compared to copying internal information before.
+- Ensures that the code is now compatible with Qt 6.8 as well.
+- Updated playlist view to be similar to the Media view in terms of interface.
+
 ## [0.4.0-alpha] - 2026-07-04
 ### Added
 - Added support for Grid/Contact Sheet view of images, which can also be used for QC in a layout.
