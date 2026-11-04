@@ -3,7 +3,7 @@
 
 /* STD */
 #include <cstring>
-#include <thread>
+// #include <thread>
 
 /* Internal */
 #include "Win.h"
@@ -17,7 +17,6 @@ AudioStream::AudioStream(int samplerate, int channels)
     , m_AudioClient(nullptr)
     , m_AudioRenderClient(nullptr)
     , m_Wfx(nullptr)
-    , m_BufferCount(0)
     , m_Samplerate(samplerate)
     , m_Channels(channels)
     , m_Volume(1.f)
@@ -31,7 +30,6 @@ AudioStream::AudioStream(int samplerate, int channels)
     m_AudioClient->GetMixFormat(&m_Wfx);
     m_AudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 10000000, 0, m_Wfx, NULL);
     m_AudioClient->GetService(__uuidof(IAudioRenderClient), (void**)&m_AudioRenderClient);
-    m_AudioClient->GetBufferSize(&m_BufferCount);
 }
 
 AudioStream::~AudioStream()
@@ -133,9 +131,11 @@ double AudioStream::Latency() const
 
 UINT32 AudioStream::AvailableFrames()
 {
+    UINT32 bufsize;
     UINT32 framesPadding;
+    m_AudioClient->GetBufferSize(&bufsize);
     m_AudioClient->GetCurrentPadding(&framesPadding);
-    return m_BufferCount - framesPadding;
+    return bufsize - framesPadding;
 }
 
 VOID_NAMESPACE_CLOSE
