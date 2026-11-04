@@ -14,21 +14,19 @@ VOID is cross-platform and currently supports **Linux**, **Windows**, and **macO
 
 ---
 
-## View [changelog](CHANGELOG.md) for updates and [Full overview](docs/Overview.md) for more details!
+## View [changelog](CHANGELOG.md) for updates and [full overview](docs/Overview.md) for more details!
 
 Few highlights of the latest release:
 
-**0.4.0-alpha**
-- Added support for Annotation export/media transcode.
-- Added support for Image processing through pre-defined/custom pluggable Image Operators.
-- Added support for Custom tags.
-- Added support for Grid view/Contact sheet view through the Media Queue.
+**0.5.0-alpha**
+- Added initial version of Sequencer (multi track NLE) with support for Timeline Effects.
 
 ## What's coming next?
 
 Features planned for upcoming development:
 
-- Movie timeline in a Timeline sequence UI. (Currently Work in Progress)
+- Quick Grading and Transformation tools. (Currently Work in Progress)
+- Onion peel for annotations.
 - Stereoscopic playback support with anaglyph mode.
-- Quick Grading and Transformation tools.
 - Export Processors.
+- Improvement of the first version of Movie timeline in a Timeline sequence UI (Sequencer).
