@@ -3,58 +3,396 @@
 
 /* Internal */
 #include "TrackItem.h"
+#include "Track.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Effects/Bridge.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
-TrackItem::TrackItem(QObject* parent)
-    : VoidObject(parent)
+TrackItem::TrackItem(const Sequence::Type& type, QObject* parent)
+    : VoidObject()
+    , m_Media(nullptr)
+    , m_Track(nullptr)
+    , m_Color(QColor(100, 116, 101))
     , m_Offset(0)
-    , m_StartFrame(0)
-    , m_EndFrame(0)
+    , m_TimelineIn(0)
+    , m_TimelineOut(0)
+    , m_SourceIn(0)
+    , m_SourceOut(0)
+    , m_NumVersions(-1)
+    , m_Enabled(true)
+    , m_Type(type)
 {
+    m_TagModel = new TagModel;
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
+    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
-TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, QObject* parent)
-    : VoidObject(parent)
+TrackItem::TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset, const Sequence::Type& type, QObject* parent)
+    : VoidObject()
+    , m_Name(media->Name())
+    , m_Path(media->Path())
     , m_Media(media)
+    , m_Track(reinterpret_cast<PlaybackTrack*>(parent))
+    , m_Color(type == Sequence::Type::VIDEO ? media->Color() : QColor(100, 116, 101))
     , m_Offset(offset)
-    , m_StartFrame(start)
-    , m_EndFrame(end)
+    , m_TimelineIn(start)
+    , m_TimelineOut(end)
+    , m_SourceIn(media->FirstFrame())
+    , m_SourceOut(media->LastFrame())
+    , m_NumVersions(-1)
+    , m_Enabled(true)
+    , m_Type(type)
 {
+    m_TagModel = new TagModel;
     VOID_LOG_INFO("TrackItem Created: {0}", Vuid());
+    connect(this, &TrackItem::rangeChanged, this, &TrackItem::ResetEffectsRange);
 }
 
 TrackItem::~TrackItem()
 {
+    m_TagModel->deleteLater();
+    delete m_TagModel;
+    m_TagModel = nullptr;
+}
+
+TrackItem::TrackItem(const TrackItem& other)
+    : m_Effects(other.m_Effects)
+    , m_Media(other.m_Media)
+    , m_Track(other.m_Track)
+    , m_Name(other.m_Name)
+    , m_Color(other.m_Color)
+    , m_Offset(other.m_Offset)
+    , m_TimelineIn(other.m_TimelineIn)
+    , m_TimelineOut(other.m_TimelineOut)
+    , m_SourceIn(other.m_SourceIn)
+    , m_SourceOut(other.m_SourceOut)
+    , m_Enabled(other.m_Enabled)
+{
+}
+
+TrackItem& TrackItem::operator=(const TrackItem& other)
+{
+    if (&other == this) return *this;
+
+    m_Effects = other.m_Effects;
+    m_Media = other.m_Media;
+    m_Track = other.m_Track;
+    m_Name = other.m_Name;
+    m_Color = other.m_Color;
+    m_Offset = other.m_Offset;
+    m_TimelineIn = other.m_TimelineIn;
+    m_TimelineOut = other.m_TimelineOut;
+    m_SourceIn = other.m_SourceIn;
+    m_SourceOut = other.m_SourceOut;
+    m_Enabled = other.m_Enabled;
+
+    return *this;
+}
+
+TrackItem::TrackItem(TrackItem&& other) noexcept
+{
+    m_Effects = std::move(other.m_Effects);
+    m_Media = other.m_Media;
+    m_Track = other.m_Track;
+    m_Name = std::move(other.m_Name);
+    m_Color = std::move(other.m_Color);
+    m_Offset = other.m_Offset;
+    m_TimelineIn = other.m_TimelineIn;
+    m_TimelineOut = other.m_TimelineOut;
+    m_SourceIn = other.m_SourceIn;
+    m_SourceOut = other.m_SourceOut;
+    m_Enabled = other.m_Enabled;
+}
+
+TrackItem& TrackItem::operator=(TrackItem&& other) noexcept
+{
+    if (&other == this) return *this;
+
+    m_Effects = std::move(other.m_Effects);
+    m_Media = other.m_Media;
+    m_Track = other.m_Track;
+    m_Name = std::move(other.m_Name);
+    m_Color = std::move(other.m_Color);
+    m_Offset = other.m_Offset;
+    m_TimelineIn = other.m_TimelineIn;
+    m_TimelineOut = other.m_TimelineOut;
+    m_SourceIn = other.m_SourceIn;
+    m_SourceOut = other.m_SourceOut;
+    m_Enabled = other.m_Enabled;
+    return *this;
 }
 
 void TrackItem::SetMedia(const SharedMediaClip& media, v_frame_t offset)
 {
-    /* Update the underlying media and relevant offset */
     m_Media = media;
     m_Offset = offset;
+    m_Path = media->Path();
 
-    /* Once the Media has been updated -> emit mediaChanged signal */
     emit mediaChanged();
+}
+
+void TrackItem::ResetMedia(const SharedMediaClip& media)
+{
+    // TODO: Check on offset and source in
+    m_Media = media;
+    m_Path = media->Path();
+
+    emit updated();
 }
 
 void TrackItem::SetRange(v_frame_t start, v_frame_t end)
 {
-    /* 
+    /*
      * Update the range of the track item
      * This points to where the track item starts and end in a given Track
      */
-    m_StartFrame = start;
-    m_EndFrame = end;
+    m_TimelineIn = start;
+    m_TimelineOut = end;
+}
+
+void TrackItem::Unlink()
+{
+    m_Media.reset();
+    emit updated();
+}
+
+std::string TrackItem::Version() const
+{
+    return m_Media ? m_Media->Tokens().version : "";
+}
+
+int TrackItem::NumAvailableVersions()
+{
+    if (m_Media)
+    {
+        if (m_NumVersions < 0)
+        {
+            const ElementTokens& tokens = m_Media->Tokens();
+            m_NumVersions = Project()->NumAvailableVersions(tokens.name);
+        }
+        return m_NumVersions;
+    }
+    return 0;
+}
+
+bool TrackItem::VersionUp()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+
+        // The clips are sorted in descending order and we're looking to get the current clip
+        // and go backwards to get a clip with just a version higher than current
+        for (int i = 0; i < static_cast<int>(clips.size()); ++i)
+        {
+            if (m_Media.get() == clips[i].get() && i != 0)
+            {
+                ResetMedia(clips[i - 1]);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool TrackItem::VersionDown()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+
+        // The clips are sorted in descending order and we're looking to get the current clip
+        // and go backwards to get a clip with just a version higher than current
+        for (int i = 0; i < static_cast<int>(clips.size()); ++i)
+        {
+            if (m_Media.get() == clips[i].get() && (i + 1) < static_cast<int>(clips.size()))
+            {
+                ResetMedia(clips[i + 1]);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool TrackItem::SetLatestAvailableVersion()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+        const SharedMediaClip& clip = clips.front();
+
+        if (clip.get() != m_Media.get())
+        {
+            ResetMedia(clip);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TrackItem::SetMinAvailableVersion()
+{
+    if (m_Media)
+    {
+        const ElementTokens& current = m_Media->Tokens();
+        const std::vector<SharedMediaClip>& clips = Project()->AvailableVersions(current.name);
+        const SharedMediaClip& clip = clips.back();
+
+        if (clip.get() != m_Media.get())
+        {
+            ResetMedia(clip);
+            return true;
+        }
+    }
+    return false;
+}
+
+std::size_t TrackItem::Index() const
+{
+    return m_Track->ItemIndex(this);
+}
+
+void TrackItem::SetEnabled(bool enable)
+{
+    m_Enabled = enable;
+    emit stateChanged();
+}
+
+SequenceFrame TrackItem::InternalFrame(v_frame_t frame)
+{
+    v_frame_t f = frame + m_Offset;
+    if (m_Media && m_Media->Contains(f))
+        return SequenceFrame(this, m_Media->InternalFrame(f), LastEffect());
+
+    return SequenceFrame();
+}
+
+Effect* TrackItem::CreateEffect(const std::string& type)
+{
+    if (Effect* effect = _EffectsBridge.CreateEffect(type, m_TimelineIn, m_TimelineOut, LastEffect()))
+    {
+        effect->SetTimelineItem(this);
+        m_Effects.push_back(effect);
+
+        emit effectCreated(effect);
+        connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+        return effect;
+    }
+
+    return nullptr;
+}
+
+Effect* TrackItem::CreateEffect(const std::string& type, const std::string& name)
+{
+    if (Effect* effect = _EffectsBridge.CreateEffect(type, name, m_TimelineIn, m_TimelineOut, LastEffect()))
+    {
+        effect->SetTimelineItem(this);
+        m_Effects.push_back(effect);
+
+        emit effectCreated(effect);
+        connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+        return effect;
+    }
+
+    return nullptr;
+}
+
+void TrackItem::AddEffect(Effect* effect)
+{
+    effect->ResetParent(LastEffect());
+    effect->SetTimelineItem(this);
+    connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+
+    m_Effects.push_back(effect);
+    emit effectCreated(effect);
+}
+
+void TrackItem::InsertEffect(Effect* effect, int index)
+{
+    if (index != 0)
+        effect->ResetParent(m_Effects[index - 1]);
+
+    effect->SetTimelineItem(this);
+    connect(effect, &Effect::updated, this, &TrackItem::effectUpdated);
+
+    m_Effects.insert(m_Effects.begin() + index, effect);
+    emit effectCreated(effect);
+
+    // When an effect is inserted in the middle, we reset it's and the parentage of the one above it
+    // if such an effect exists...
+    ResetEffectParentage(index + 1);
+}
+
+bool TrackItem::RemoveEffect(const std::string& name)
+{
+    for (int i = static_cast<int>(m_Effects.size()) - 1; i >= 0; --i)
+    {
+        Effect* effect = m_Effects[i];
+        if (effect->Name() == name)
+        {
+            emit effectAboutToBeRemoved(effect);
+
+            effect->deleteLater();
+            delete effect;
+            effect = nullptr;
+
+            m_Effects.erase(m_Effects.begin() + i);
+            ResetEffectParentage(i);
+            emit effectRemoved();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void TrackItem::RemoveEffect(int index, bool destroy)
+{
+    Effect*& effect = m_Effects[index];
+    emit effectAboutToBeRemoved(effect);
+    if (destroy)
+    {
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.erase(m_Effects.begin() + index);
+    ResetEffectParentage(index);
+    emit effectRemoved();
+}
+
+void TrackItem::ClearEffects()
+{
+    for (auto& effect : m_Effects)
+    {
+        emit effectAboutToBeRemoved(effect);
+        effect->deleteLater();
+        delete effect;
+        effect = nullptr;
+    }
+
+    m_Effects.clear();
+    emit effectRemoved();
+}
+
+int TrackItem::EffectIndex(const Effect* const effect) const
+{
+    auto it = std::find(m_Effects.begin(), m_Effects.end(), effect);
+    return it == m_Effects.end() ? -1 : it - m_Effects.begin();
 }
 
 void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 {
     // Update the frame value with the offset so that we match the original media range
     v_frame_t f = frame + m_Offset;
-    if (m_Media->Contains(f))
+    if (m_Media && m_Media->Contains(f))
     {
         // emit frameCached(frame);
         m_Media->Image(f, image);
@@ -64,17 +402,366 @@ void TrackItem::Image(const v_frame_t frame, FloatImage& image)
 const FloatImage TrackItem::Image(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
-    if (m_Media->Contains(f))
+    if (m_Media && m_Media->Contains(f))
         return m_Media->Image(f);
-    
+
     return nullptr;
+}
+
+bool TrackItem::Audio(v_frame_t frame, SharedFrameAudio& buffer)
+{
+    v_frame_t f = frame + m_Offset;
+    if (m_Media && m_Media->Contains(f))
+        return m_Media->Audio(f, buffer);
+    
+    return false;
+}
+
+std::vector<std::pair<float, float>> TrackItem::AudioPeaks()
+{
+    auto _getPeak = [](const SharedFrameAudio& audio) -> std::pair<float, float>
+    {
+        if (audio->samples.empty())
+            return { 0.f, 0.f };
+
+        const auto& [minIt, maxIt] = std::minmax_element(audio->samples.begin(), audio->samples.end());
+        return { *minIt, *maxIt };
+    };
+
+    std::vector<std::pair<float, float>> out;
+    out.resize(m_Media->Duration());
+
+    const v_frame_t start = m_Media->FirstFrame();
+    SharedFrameAudio buffer = std::make_shared<FrameAudio>();
+    for (v_frame_t i = start; i <= m_Media->LastFrame(); ++i)
+    {
+        m_Media->Audio(i, buffer);
+        out[i - start] = std::move(_getPeak(buffer));
+    }
+
+    return out;
 }
 
 void TrackItem::ClearCache(v_frame_t frame)
 {
     v_frame_t f = frame + m_Offset;
-    if (m_Media->Contains(f))
+    if (m_Media && m_Media->Contains(f))
         m_Media->Clear(f);
+}
+
+void TrackItem::SetTimelineIn(v_frame_t frame)
+{
+    const MFrameRange previous = TimelineRange();
+    m_TimelineIn = frame;
+    m_Offset = m_SourceIn - m_TimelineIn;
+    m_SourceOut = frame + (m_TimelineOut - m_TimelineIn);
+
+    emit rangeChanged(TimelineRange(), previous);
+}
+
+void TrackItem::SetTimelineOut(v_frame_t frame)
+{
+    const MFrameRange previous = TimelineRange();
+    m_TimelineOut = frame;
+    m_SourceOut = m_SourceIn + (m_TimelineOut - m_TimelineIn);
+
+    emit rangeChanged(TimelineRange(), previous);
+}
+
+void TrackItem::SetSourceIn(v_frame_t frame)
+{
+    const MFrameRange previous = TimelineRange();
+    int offset = m_Media->FirstFrame() - frame;
+    m_SourceIn = frame;
+    m_SourceOut = m_SourceIn + (m_TimelineOut - m_TimelineIn);
+
+    m_Offset = m_SourceIn - m_TimelineIn;
+
+    emit rangeChanged(TimelineRange(), previous);
+}
+
+void TrackItem::SetSourceOut(v_frame_t frame)
+{
+    m_SourceOut = frame;
+}
+
+void TrackItem::TrimHead(int handle)
+{
+    const MFrameRange previous = TimelineRange();
+    m_SourceIn += handle;
+    m_TimelineIn += handle;
+
+    emit rangeChanged(TimelineRange(), previous);
+}
+
+void TrackItem::TrimTail(int handle)
+{
+    const MFrameRange previous = TimelineRange();
+    m_SourceOut -= handle;
+    m_TimelineOut -= handle;
+
+    emit rangeChanged(TimelineRange(), previous);
+}
+
+void TrackItem::Move(v_frame_t frame)
+{
+    // const MFrameRange previous = TimelineRange();
+    m_Offset = m_Media ? m_SourceIn - frame : 0;
+    m_TimelineOut = frame + (m_TimelineOut - m_TimelineIn);
+    m_TimelineIn = frame;
+
+    // emit rangeChanged(m_TimelineIn, m_TimelineOut);
+    // emit rangeChanged(TimelineRange(), previous);
+    // emit updated(); // Either we use a different signal here or don't emit anything -- causes issues with sequence buffers
+    emit moved();
+}
+
+Core::Project* TrackItem::Project() const
+{
+    return m_Track->Project();
+}
+
+void TrackItem::SetColor(const QColor& color)
+{
+    m_Color = color;
+    emit updated();
+}
+
+bool TrackItem::AddTag(const std::string& name)
+{
+    if (m_TagModel->AddTag(name))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool TrackItem::AddTag(const std::string& name, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->AddTag(name, metadata))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool TrackItem::InsertTag(const std::string& name, int index)
+{
+    if (m_TagModel->InsertTag(name, index))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+bool TrackItem::InsertTag(const std::string& name, int index, const TagMetaStruct& metadata)
+{
+    if (m_TagModel->InsertTag(name, index, metadata))
+    {
+        emit tagsUpdated();
+        return true;
+    }
+
+    return false;
+}
+
+void TrackItem::InsertTag(Tag* tag, int index)
+{
+    m_TagModel->InsertTag(tag, index);
+    emit tagsUpdated();
+}
+
+void TrackItem::RemoveTag(const QModelIndex& index)
+{
+    m_TagModel->RemoveTag(index);
+    emit tagsUpdated();
+}
+
+void TrackItem::RemoveTag(int row)
+{
+    m_TagModel->RemoveTag(row);
+    emit tagsUpdated();
+}
+
+void TrackItem::ClearTags()
+{
+    m_TagModel->ClearAll();
+    emit tagsUpdated();
+}
+
+void TrackItem::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
+{
+    out.SetObject();
+
+    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+    // All Unlinked media gets -1 index
+    out.AddMember("media_index", m_Media ? m_Media->Project()->MediaRow(m_Media) : -1, allocator);
+    out.AddMember("source_name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
+    out.AddMember("timeline_in", static_cast<int64_t>(m_TimelineIn), allocator);
+    out.AddMember("timeline_out", static_cast<int64_t>(m_TimelineOut), allocator);
+    out.AddMember("source_in", static_cast<int64_t>(m_SourceIn), allocator);
+    out.AddMember("source_out", static_cast<int64_t>(m_SourceOut), allocator);
+    out.AddMember("offset", static_cast<int64_t>(m_Offset), allocator);
+    out.AddMember("enabled", static_cast<int>(m_Enabled), allocator);
+    out.AddMember("r", m_Color.red(), allocator);
+    out.AddMember("g", m_Color.green(), allocator);
+    out.AddMember("b", m_Color.blue(), allocator);
+
+    out.AddMember("effect_count", static_cast<int>(m_Effects.size()), allocator);
+    rapidjson::Value effects(rapidjson::kArrayType);
+    for (const auto& effect : m_Effects)
+    {
+        rapidjson::Value entry(rapidjson::kObjectType);
+        std::string type(effect->Type());
+        entry.AddMember("typename", rapidjson::Value(type.c_str(), allocator), allocator);
+
+        rapidjson::Value effectObject;
+        effect->Serialize(effectObject, allocator);
+        entry.AddMember("effect", effectObject, allocator);
+
+        effects.PushBack(entry, allocator);
+    }
+
+    out.AddMember("timeline_effects", effects, allocator);
+}
+
+void TrackItem::Serialize(std::ostream& out) const
+{
+    WriteString(out, m_Name);
+
+    int index = m_Media ? m_Media->Project()->MediaRow(m_Media) : -1;
+    out.write(reinterpret_cast<const char*>(&index), sizeof(index));
+    out.write(reinterpret_cast<const char*>(&m_TimelineIn), sizeof(m_TimelineIn));
+    out.write(reinterpret_cast<const char*>(&m_TimelineOut), sizeof(m_TimelineOut));
+    out.write(reinterpret_cast<const char*>(&m_SourceIn), sizeof(m_SourceIn));
+    out.write(reinterpret_cast<const char*>(&m_SourceOut), sizeof(m_SourceOut));
+    out.write(reinterpret_cast<const char*>(&m_Offset), sizeof(m_Offset));
+    out.write(reinterpret_cast<const char*>(&m_Enabled), sizeof(m_Enabled));
+
+    int r = m_Color.red();
+    int g = m_Color.green();
+    int b = m_Color.blue();
+    out.write(reinterpret_cast<const char*>(&r), sizeof(r));
+    out.write(reinterpret_cast<const char*>(&g), sizeof(g));
+    out.write(reinterpret_cast<const char*>(&b), sizeof(b));
+
+    int effectsCount = static_cast<int>(m_Effects.size());
+    out.write(reinterpret_cast<const char*>(&effectsCount), sizeof(effectsCount));
+    for (const auto& effect : m_Effects)
+    {
+        WriteString(out, effect->Type());
+        effect->Serialize(out);
+    }
+}
+
+void TrackItem::Deserialize(const rapidjson::Value& in)
+{
+    // Media could be unlinked from the item
+    int index = in["media_index"].GetInt();
+    m_Media = index > -1 ? Project()->MediaAt(index, 0) : nullptr;
+
+    m_Name = in["source_name"].GetString();
+    m_TimelineIn = in["timeline_in"].GetInt64();
+    m_TimelineOut = in["timeline_out"].GetInt64();
+    m_SourceIn = in["source_in"].GetInt64();
+    m_SourceOut = in["source_out"].GetInt64();
+    m_Offset = in["offset"].GetInt64();
+    m_Enabled = in["enabled"].GetInt();
+
+    m_Color.setRed(in["r"].GetInt());
+    m_Color.setGreen(in["g"].GetInt());
+    m_Color.setBlue(in["b"].GetInt());
+
+    const rapidjson::Value::ConstArray effects = in["timeline_effects"].GetArray();
+    m_Effects.reserve(effects.Size());
+
+    Effect* last = nullptr;
+    for (unsigned int i = 0; i < static_cast<unsigned int>(effects.Size()); ++i)
+    {
+        std::string type = effects[i]["typename"].GetString();
+        if (Effect* effect = _EffectsBridge.CreateEffect(type, last))
+        {
+            effect->SetTimelineItem(this);
+            effect->Deserialize(effects[i]["effect"]);
+            m_Effects.push_back(effect);
+
+            last = effect;
+        }
+    }
+}
+
+void TrackItem::Deserialize(std::istream& in)
+{
+    m_Name = ReadString(in);
+
+    int index;
+    in.read(reinterpret_cast<char*>(&index), sizeof(index));
+    m_Media = index > -1 ? Project()->MediaAt(index, 0) : nullptr;
+
+    in.read(reinterpret_cast<char*>(&m_TimelineIn), sizeof(m_TimelineIn));
+    in.read(reinterpret_cast<char*>(&m_TimelineOut), sizeof(m_TimelineOut));
+    in.read(reinterpret_cast<char*>(&m_SourceIn), sizeof(m_SourceIn));
+    in.read(reinterpret_cast<char*>(&m_SourceOut), sizeof(m_SourceOut));
+    in.read(reinterpret_cast<char*>(&m_Offset), sizeof(m_Offset));
+    in.read(reinterpret_cast<char*>(&m_Enabled), sizeof(m_Enabled));
+
+    int r, g, b;
+    in.read(reinterpret_cast<char*>(&r), sizeof(r));
+    in.read(reinterpret_cast<char*>(&g), sizeof(g));
+    in.read(reinterpret_cast<char*>(&b), sizeof(b));
+
+    m_Color.setRed(r);
+    m_Color.setGreen(g);
+    m_Color.setBlue(b);
+
+    int effectsCount;
+    in.read(reinterpret_cast<char*>(&effectsCount), sizeof(effectsCount));
+    m_Effects.reserve(effectsCount);
+
+    Effect* last = nullptr;
+    for (int i = 0; i < effectsCount; ++i)
+    {
+        std::string type = ReadString(in);
+        if (Effect* effect = _EffectsBridge.CreateEffect(type, last))
+        {
+            effect->SetTimelineItem(this);
+            effect->Deserialize(in);
+            m_Effects.push_back(effect);
+
+            last = effect;
+        }
+    }
+}
+
+void TrackItem::ResetEffectsRange(const MFrameRange& updated)
+{
+    for (auto& effect : m_Effects)
+        effect->SetTimelineRange(updated.startframe, updated.endframe);
+}
+
+// void TrackItem::ResetEffectsParentage()
+// {
+//     Effect* parent = nullptr;
+//     for (Effect* effect : m_Effects)
+//     {
+//         effect->ResetParent(parent);
+//         parent = effect;
+//     }
+// }
+
+void TrackItem::ResetEffectParentage(int index)
+{
+    if (index < static_cast<int>(m_Effects.size()))
+    {
+        Effect*& effect = m_Effects[index];
+        effect->ResetParent(index - 1 < 0 ? nullptr : m_Effects[index - 1]);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

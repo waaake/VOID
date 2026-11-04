@@ -1,0 +1,182 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+#ifndef _VOID_TIMELINE_ELEMENTS_H
+#define _VOID_TIMELINE_ELEMENTS_H
+
+/* Qt */
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSlider>
+
+/* Internal */
+#include "Definition.h"
+#include "VoidCore/Timekeeper.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/ComboBox.h"
+#include "VoidQExtensions/Dialog.h"
+
+VOID_NAMESPACE_OPEN
+
+/**
+ * A play loop defines what happens when we reach the end of the timeline/media/clip/sequence
+ * Should we continue from beginning? LoopInfinitely
+ * Should we stop? PlayOnce
+ * Should we start going backwards if we're at the end and go forwards once we're in the beginning? PingPong
+ */
+enum class LoopType : short
+{
+	LoopInfinitely,
+	LoopOneInfinitely,
+	PlayOnce,
+	PingPong
+};
+
+struct LoopState
+{
+	std::string text;
+	IconType icon;
+};
+
+class LoopTypeButton : public QPushButton
+{
+	Q_OBJECT
+public:
+	LoopTypeButton(QWidget* parent = nullptr);
+	~LoopTypeButton();
+
+	/**
+	 * Set the Loop Type for playback
+	 */
+	void SetLoopType(const LoopType& looptype);
+
+signals:
+	void loopTypeChanged(const LoopType&);
+
+private: /* Members */
+	LoopType m_LoopType;
+	std::unordered_map<LoopType, LoopState> m_LoopState;
+
+	QMenu* m_Menu;
+
+private: /* Methods */
+	void Build();
+	void Update();
+};
+
+class TimeDisplay : public QLabel
+{
+public:
+	TimeDisplay(QWidget* parent = nullptr);
+
+private:
+	void Setup();
+};
+
+class FramerateBox : public QComboBox
+{
+	Q_OBJECT
+
+public:
+	FramerateBox(QWidget* parent = nullptr);
+
+	inline double Framerate() const { return currentText().toDouble(); }
+
+	inline void SetFramerate(const double rate) { setCurrentText(std::to_string(rate).c_str()); }
+	inline void SetFramerate(const std::string& rate) { setCurrentText(rate.c_str()); }
+
+signals:
+	void framerateChanged(double);
+
+private: /* Members */
+	QDoubleValidator* m_DoubleValidator;
+
+private: /* Methods */
+	void Setup();
+	void RateChanged(const QString& text);
+};
+
+class TimeEdit : public QLineEdit
+{
+	Q_OBJECT
+public:
+	explicit TimeEdit(QWidget* parent = nullptr);
+
+	void Set(const std::string& tc) { setText(tc.c_str()); }
+	void Set(const QString& t) { setText(t); }
+	void Set(int t) { setText(QString::number(t)); }
+
+	int Frame() const;
+
+signals:
+	void frameEdited(int);
+
+private:
+	void Setup();
+};
+
+class FrameDisplayModeBox : public ControlCombo
+{
+	Q_OBJECT
+public:
+	explicit FrameDisplayModeBox(QWidget* parent = nullptr);
+
+signals:
+	void frameDisplayChanged(const FrameDisplayMode&);
+
+private:
+	void Setup();
+};
+
+class VolumeRocker : public TranslucentDialog
+{
+	Q_OBJECT
+public:
+	explicit VolumeRocker(QWidget* parent = nullptr);
+	~VolumeRocker();
+
+	QSize sizeHint() const override { return QSize(46, 180); }
+
+	int Volume() const { return m_VolumeController->value(); }
+	bool Muted() const { return m_Mutebox->isChecked(); }
+
+signals:
+	void volumeChanged(int);
+	void muted(bool);
+
+private:
+	QVBoxLayout* m_Layout;
+	QSlider* m_VolumeController;
+	QCheckBox* m_Mutebox;
+
+private:
+	void Build();
+	void Setup();
+};
+
+class VolumeButton : public QPushButton
+{
+	Q_OBJECT
+public:
+	explicit VolumeButton(QWidget* parent = nullptr);
+	~VolumeButton();
+	
+signals:
+	void volumeChanged(int);
+	void muted(bool);
+
+private:
+	VolumeRocker* m_Rocker;
+
+private:
+	void Setup();
+	void ResetIcon(int volume);
+};
+
+VOID_NAMESPACE_CLOSE
+
+#endif // _VOID_TIMELINE_ELEMENTS_H

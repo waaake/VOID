@@ -8,6 +8,9 @@
 /* TurboJPEG */
 #include <turbojpeg.h>
 
+/* TBB */
+#include <tbb/parallel_for.h>
+
 /* Internal */
 #include "TurboJpegReader.h"
 #include "VoidCore/Logging.h"
@@ -36,7 +39,6 @@ void TurboJpegReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
     // Determine the file size
     file.seekg(0, std::ios::end);
     size_t jpegSize = file.tellg();
-    // Reset
     file.seekg(0, std::ios::beg);
 
     std::vector<unsigned char> jpegBuffer(jpegSize);
@@ -51,7 +53,6 @@ void TurboJpegReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
     }
 
     int subsample, colorspace;
-    /* Try to read the jpeg specs */
     if (tjDecompressHeader3(handle, jpegBuffer.data(), jpegSize, &image->width, &image->height, &subsample, &colorspace) != 0)
     {
         VOID_LOG_ERROR("Failed to read JPEG header: {0}", tjGetErrorStr());
@@ -99,7 +100,6 @@ void TurboJpegReader::Read(const std::string& path, v_frame_t frame, FloatImage&
     // Determine the file size
     file.seekg(0, std::ios::end);
     size_t jpegSize = file.tellg();
-    // Reset
     file.seekg(0, std::ios::beg);
 
     std::vector<unsigned char> jpegBuffer(jpegSize);
@@ -114,7 +114,6 @@ void TurboJpegReader::Read(const std::string& path, v_frame_t frame, FloatImage&
     }
 
     int subsample, colorspace;
-    /* Try to read the jpeg specs */
     if (tjDecompressHeader3(handle, jpegBuffer.data(), jpegSize, &image->width, &image->height, &subsample, &colorspace) != 0)
     {
         VOID_LOG_ERROR("Failed to read JPEG header: {0}", tjGetErrorStr());
@@ -145,14 +144,19 @@ void TurboJpegReader::Read(const std::string& path, v_frame_t frame, FloatImage&
 
     tjDestroy(handle);
 
-    for (std::size_t i = 0; i < (image->width * image->height); ++i)
+    float* buffer = image->buffer.Data();
+    int64_t count = (image->width * image->height);
+    tbb::parallel_for(tbb::blocked_range<int64_t>(0, count), [&](const tbb::blocked_range<int64_t>& r) -> void
     {
-        int index = i * image->channels;
-        image->buffer[index] = Linear(static_cast<float>(pixels[index]) / 255.f);
-        image->buffer[index + 1] = Linear(static_cast<float>(pixels[index + 1]) / 255.f);
-        image->buffer[index + 2] = Linear(static_cast<float>(pixels[index + 2]) / 255.f);
-        image->buffer[index + 3] = Linear(static_cast<float>(pixels[index + 3]) / 255.f);
-    }
+        for (int64_t i = r.begin(); i != r.end(); ++i)
+        {
+            int index = i * image->channels;
+            buffer[index] = Linear(static_cast<float>(pixels[index]) / 255.f);
+            buffer[index + 1] = Linear(static_cast<float>(pixels[index + 1]) / 255.f);
+            buffer[index + 2] = Linear(static_cast<float>(pixels[index + 2]) / 255.f);
+            buffer[index + 3] = Linear(static_cast<float>(pixels[index + 3]) / 255.f);
+        }
+    });
 }
 
 void TurboJpegReader::Read()
@@ -167,7 +171,6 @@ void TurboJpegReader::Read()
     // Determine the file size
     file.seekg(0, std::ios::end);
     size_t jpegSize = file.tellg();
-    // Reset
     file.seekg(0, std::ios::beg);
 
     std::vector<unsigned char> jpegBuffer(jpegSize);
@@ -182,7 +185,6 @@ void TurboJpegReader::Read()
     }
 
     int subsample, colorspace;
-    /* Try to read the jpeg specs */
     if (tjDecompressHeader3(handle, jpegBuffer.data(), jpegSize, &m_Image->width, &m_Image->height, &subsample, &colorspace) != 0)
     {
         VOID_LOG_ERROR("Failed to read JPEG header: {0}", tjGetErrorStr());
@@ -213,14 +215,19 @@ void TurboJpegReader::Read()
 
     tjDestroy(handle);
 
-    for (std::size_t i = 0; i < (m_Image->width * m_Image->height); ++i)
+    float* buffer = m_Image->buffer.Data();
+    int64_t count = (m_Image->width * m_Image->height);
+    tbb::parallel_for(tbb::blocked_range<int64_t>(0, count), [&](const tbb::blocked_range<int64_t>& r) -> void
     {
-        int index = i * m_Image->channels;
-        m_Image->buffer[index] = Linear(static_cast<float>(pixels[index]) / 255.f);
-        m_Image->buffer[index + 1] = Linear(static_cast<float>(pixels[index + 1]) / 255.f);
-        m_Image->buffer[index + 2] = Linear(static_cast<float>(pixels[index + 2]) / 255.f);
-        m_Image->buffer[index + 3] = Linear(static_cast<float>(pixels[index + 3]) / 255.f);
-    }
+        for (int64_t i = r.begin(); i != r.end(); ++i)
+        {
+            int index = i * m_Image->channels;
+            buffer[index] = Linear(static_cast<float>(pixels[index]) / 255.f);
+            buffer[index + 1] = Linear(static_cast<float>(pixels[index + 1]) / 255.f);
+            buffer[index + 2] = Linear(static_cast<float>(pixels[index + 2]) / 255.f);
+            buffer[index + 3] = Linear(static_cast<float>(pixels[index + 3]) / 255.f);
+        }
+    });
 }
 
 const std::map<std::string, std::string> TurboJpegReader::Metadata() const

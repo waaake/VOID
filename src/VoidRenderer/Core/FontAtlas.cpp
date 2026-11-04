@@ -77,7 +77,7 @@ const FChar& FontAtlas::AddChar(char c)
 
     FT_Bitmap& bitmap = m_Face->glyph->bitmap;
 
-    if (m_PenX + bitmap.width >= m_Width)
+    if (m_PenX + (int)bitmap.width >= m_Width)
     {
         m_PenX = 0;
         m_PenY += m_RowHeight;

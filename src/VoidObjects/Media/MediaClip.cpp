@@ -10,12 +10,12 @@
 #include "VoidCore/Processors/ImageProcessor.h"
 #include "VoidObjects/Core/Threads.h"
 #include "VoidObjects/Effects/Bridge.h"
-#include "VoidCore/Profiler.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
-MediaClip::MediaClip(QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(Core::Project* project)
+    : ProjectEntity({93, 150, 163}, project)
     , Media()
     , m_Thumbnail()
     , m_Working(false)
@@ -24,8 +24,8 @@ MediaClip::MediaClip(QObject* parent)
     m_TagModel = new TagModel(this);
 }
 
-MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(const MediaStruct& mstruct, Core::Project* project)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(mstruct)
     , m_Thumbnail()
     , m_Working(false)
@@ -34,8 +34,8 @@ MediaClip::MediaClip(const MediaStruct& mstruct, QObject* parent)
     m_TagModel = new TagModel(this);
 }
 
-MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
-    : VoidObject(parent)
+MediaClip::MediaClip(MediaStruct& mstruct, Core::Project* project)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(mstruct)
     , m_Thumbnail()
     , m_Working(false)
@@ -47,9 +47,9 @@ MediaClip::MediaClip(MediaStruct& mstruct, QObject* parent)
 MediaClip::MediaClip(const std::string& basepath,
         const std::string& name,
         const std::string& extension,
-        QObject* parent
+        Core::Project* project
     )
-    : VoidObject(parent)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(basepath, name, extension)
     , m_Thumbnail()
     , m_Working(false)
@@ -64,9 +64,9 @@ MediaClip::MediaClip(const std::string& basepath,
         v_frame_t start,
         v_frame_t end,
         unsigned int padding,
-        QObject* parent
+        Core::Project* project
     )
-    : VoidObject(parent)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(basepath, name, extension, start, end, padding)
     , m_Thumbnail()
     , m_Working(false)
@@ -82,9 +82,9 @@ MediaClip::MediaClip(const std::string& basepath,
         v_frame_t end,
         unsigned int padding,
         const std::vector<v_frame_t>& missing,
-        QObject* parent
+        Core::Project* project
     )
-    : VoidObject(parent)
+    : ProjectEntity({93, 150, 163}, project)
     , Media(basepath, name, extension, start, end, padding, missing)
     , m_Thumbnail()
     , m_Working(false)
@@ -143,15 +143,6 @@ void MediaClip::ReadThumbnail()
     emit updated();
 }
 
-QPixmap MediaClip::DefaultThumbnail()
-{
-    /* 16:9 aspect default */
-    QPixmap pix = QPixmap(QSize(400, 225));
-    pix.fill(Qt::black);
-
-    return pix;
-}
-
 QPixmap MediaClip::FetchThumbnail()
 {
     if (m_Thumbnail.isNull() && !m_Working.load())
@@ -165,20 +156,16 @@ QPixmap MediaClip::FetchThumbnail()
 
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const
 {
-    /* We have an annotation available for the given frame */
     if (m_Annotations.find(frame) != m_Annotations.end())
         return m_Annotations.at(frame);
 
-    /* Nothing available */
     return nullptr;
 }
 
 /* Add Annotation for a Frame */
 void MediaClip::SetAnnotation(const v_frame_t frame, const Renderer::SharedAnnotation& annotation)
 {
-    /* Update the Annotation */
     m_Annotations[frame] = annotation;
-    /* Media Clip has been updated */
     emit updated();
 
     VOID_LOG_INFO("Annotation Added. Frame {0}", frame);
@@ -192,7 +179,6 @@ void MediaClip::RemoveAnnotation(const v_frame_t frame)
      * deleted as there are no more references to it
      */
     m_Annotations.erase(frame);
-    /* Media clip has been updated */
     emit updated();
 
     VOID_LOG_INFO("Annotation Removed. Frame {0}", frame);
@@ -240,6 +226,12 @@ bool MediaClip::InsertTag(const std::string& name, int index, const TagMetaStruc
     }
 
     return false;
+}
+
+void MediaClip::InsertTag(Tag* tag, int index)
+{
+    m_TagModel->InsertTag(tag, index);
+    emit updated();
 }
 
 void MediaClip::RemoveTag(const QModelIndex& index)
@@ -392,6 +384,16 @@ void MediaClip::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorT
     }
 
     out.AddMember("annotations", annotations, allocator);
+
+    rapidjson::Value tags(rapidjson::kArrayType);
+    for (const Tag* tag : m_TagModel->Tags())
+    {
+        rapidjson::Value data;
+        tag->Serialize(data, allocator);
+        tags.PushBack(data, allocator);
+    }
+
+    out.AddMember("tags", tags, allocator);
 }
 
 void MediaClip::Serialize(std::ostream& out) const
@@ -442,6 +444,11 @@ void MediaClip::Serialize(std::ostream& out) const
         out.write(reinterpret_cast<const char*>(&data.first), sizeof(v_frame_t));
         data.second->Serialize(out);
     }
+
+    int tagcount = m_TagModel->rowCount();
+    out.write(reinterpret_cast<const char*>(&tagcount), sizeof(tagcount));
+    for (const Tag* tag : m_TagModel->Tags())
+        tag->Serialize(out);
 }
 
 void MediaClip::Deserialize(const rapidjson::Value& in)
@@ -477,7 +484,7 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
         std::vector<v_frame_t> missing;
         missing.reserve(missingFrames.Size());
 
-        for (int i = 0; i < missingFrames.Size(); ++i)
+        for (int i = 0; i < static_cast<int>(missingFrames.Size()); ++i)
             missing.emplace_back(missingFrames[i].GetInt64());
 
         Read(
@@ -496,13 +503,24 @@ void MediaClip::Deserialize(const rapidjson::Value& in)
     const rapidjson::Value::ConstArray annotations = in["annotations"].GetArray();
     if (!annotations.Empty())
     {
-        for (int i = 0; i < annotations.Size(); ++i)
+        for (unsigned int i = 0; i < annotations.Size(); ++i)
         {
             Renderer::SharedAnnotation annotation = std::make_shared<Renderer::Annotation>();
             annotation->Deserialize(annotations[i]["data"]);
 
             m_Annotations[annotations[i]["frame"].GetInt64()] = annotation;
         }
+    }
+
+    const rapidjson::Value::ConstArray tags = in["tags"].GetArray();
+    m_TagModel->Reserve(tags.Size());
+    for (unsigned int i = 0; i < static_cast<unsigned int>(tags.Size()); ++i)
+    {
+        // Use basic name, the actual name will be deserialized from the data
+        Tag* tag = new Tag("t");
+        tag->Deserialize(tags[i]);
+
+        m_TagModel->AddTag(tag);
     }
 }
 
@@ -550,6 +568,18 @@ void MediaClip::Deserialize(std::istream& in)
         annotation->Deserialize(in);
 
         m_Annotations[f] = annotation;
+    }
+
+    int tagcount = 0;
+    in.read(reinterpret_cast<char*>(&tagcount), sizeof(tagcount));
+    m_TagModel->Reserve(tagcount);
+
+    for (int i = 0; i < tagcount; ++i)
+    {
+        Tag* tag = new Tag("t");
+        tag->Deserialize(in);
+
+        m_TagModel->AddTag(tag);
     }
 }
 

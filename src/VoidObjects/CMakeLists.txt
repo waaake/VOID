@@ -1,5 +1,7 @@
 # Build Intermediate Objects Library
 set(SOURCES
+    Core/Entity.cpp
+    Core/Snapshot.cpp
     Core/Task.cpp
     Core/TaskLog.cpp
     Core/Threads.cpp
@@ -10,19 +12,24 @@ set(SOURCES
     Media/MediaClip.cpp
     Media/Tag.cpp
 
-    Models/MediaModel.cpp
+    Models/EntityModel.cpp
     Models/ProjectModel.cpp
     Models/PlaylistModel.cpp
     Models/TagModel.cpp
     Models/TagMetadataModel.cpp
 
+    Playlist/Playlist.cpp
+    
     Project/Project.cpp
 
-    Playlist/Playlist.cpp
+    Preferences/Preferences.cpp
 
+    Sequence/Context.cpp
+    Sequence/Frame.cpp
     Sequence/Sequence.cpp
     Sequence/SequenceView.cpp
     Sequence/Track.cpp
+    Sequence/TrackMap.cpp
     Sequence/TrackItem.cpp
     Sequence/TrackView.cpp
 )
@@ -45,6 +52,7 @@ target_link_libraries(
     VoidObjects
     PRIVATE
     Qt::Core
+    TBB::tbb
 
     # TODO: Check if MediaClip can be pushed without a thumbnail
     Qt::Gui

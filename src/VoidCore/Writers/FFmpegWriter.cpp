@@ -50,8 +50,8 @@ bool FFmpegWriter::Setup(const std::string& path)
         m_CodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
         m_CodecCtx->width = m_Spec.width;
         m_CodecCtx->height = m_Spec.height;
-        m_CodecCtx->time_base = av_make_q(1, m_Spec.rate);
-        m_CodecCtx->framerate = av_make_q(m_Spec.rate, 1);
+        m_CodecCtx->time_base = av_make_q(1, (int)m_Spec.rate);
+        m_CodecCtx->framerate = av_make_q((int)m_Spec.rate, 1);
 
         // Configure codec context params based on user specified out codec type
         ContextSetup();
@@ -69,7 +69,7 @@ bool FFmpegWriter::Setup(const std::string& path)
         // This will change when we call avformat_write_header to something which ffmpeg finds appropriate
         // to ensure this the framerate of the final written container, ensure the the AVFrame* pts is
         // always incremented by av_rescale_q(1, codec_context->time_base, stream->time_base)
-        m_Stream->time_base = av_make_q(1, m_Spec.rate);
+        m_Stream->time_base = av_make_q(1, (int)m_Spec.rate);
 
         // open
         avio_open(&m_FormatCtx->pb, path.c_str(), AVIO_FLAG_WRITE);

@@ -1,0 +1,63 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+#ifndef _SEQUENCER_TIMELINE_GEOMETRY_H
+#define _SEQUENCER_TIMELINE_GEOMETRY_H
+
+/* Qt */
+#include <QRectF>
+
+/* Internal */
+#include "Definition.h"
+#include "Descriptors.h"
+#include "VoidObjects/Sequence/Sequence.h"
+
+VOID_NAMESPACE_OPEN
+
+class STimelineGeometry
+{
+public:
+    QRectF RulerRect() const;
+    QRectF HeaderRect() const;
+    QRectF TrackRect(int index) const;
+    QRectF TrackHeaderRect(int index) const;
+
+    int TrackTop(int index, const Sequence::Type& type);
+    int AudioTrackTop(int index);
+    int VideoTrackTop(int index);
+
+    int TimelineTop() const { return Sequencer::RulerHeight; }
+    // int ContentLeft() const { return Sequencer::TrackHeaderWidth; }
+    int ContentLeft() const { return 0; }
+    
+    int VideoTrackHeight(int index) const;
+    int AudioTrackHeight(int index) const;
+
+    int VideoTracksHeight() const;
+    int AudioTracksHeight() const;
+
+    int VideoSectionHeight() const;
+    int AudioSectionHeight() const;
+
+    double FrameToX(v_frame_t frame) const { return frame * m_PixelsPerFrame; }
+    v_frame_t XToFrame(double x) const { return static_cast<v_frame_t>(x / m_PixelsPerFrame); }
+
+    double FrameToSceneX(v_frame_t frame) const;
+    v_frame_t SceneXToFrame(double x) const;
+
+    double PixelsPerFrame() const { return m_PixelsPerFrame; }
+    void SetPixelsPerFrame(double p) { if (p > 0) m_PixelsPerFrame = p; }
+    void ResetPixelsPerFrame() { m_PixelsPerFrame = 2.0; }
+
+    void SetSequence(const SharedPlaybackSequence& sequence) { m_Sequence = sequence; }
+    void ResetSequence() { m_Sequence = nullptr; }
+
+private:
+    double m_PixelsPerFrame = 2.0;
+    SharedPlaybackSequence m_Sequence;
+};
+
+
+VOID_NAMESPACE_CLOSE
+
+#endif // _SEQUENCER_TIMELINE_GEOMETRY_H

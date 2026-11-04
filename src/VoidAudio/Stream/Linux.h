@@ -4,6 +4,9 @@
 #ifndef _LINUX_AUDIO_STREAM_H
 #define _LINUX_AUDIO_STREAM_H
 
+/* STD */
+#include <vector>
+
 /* Pulse */
 #include <pulse/error.h>
 #include <pulse/simple.h>
@@ -21,15 +24,24 @@ public:
 
     bool Start();
     void Stop();
-    bool WriteSamples(const unsigned char* data, std::size_t size, int samples);
-    void SeekTo(double time) { }
 
-    double CurrentTime() const { return 0.0; }
+    bool WriteSamples(const void* data, std::size_t bytes, int samples);
+    void Clear();
+
+    void SetVolume(float volume);
+    float Volume() const { return m_Volume; }
+    bool Muted() const { return m_Volume == 0; }
+
     double Latency() const;
 
 private:
-    pa_simple* m_Stream;
+    std::vector<float> m_InternalBuffer;
     pa_sample_spec m_SampleSpec;
+    pa_simple* m_Stream;
+    float m_Volume;
+
+private:
+    void Process(const float* source, float* buffer, std::size_t count);
 };
 
 VOID_NAMESPACE_CLOSE

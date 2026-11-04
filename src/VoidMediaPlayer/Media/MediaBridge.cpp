@@ -1,0 +1,637 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* STD */
+#include <sstream>
+
+/* Qt */
+#include <QCoreApplication>
+#include <QDataStream>
+#include <QIODevice>
+
+/* Internal */
+#include "MediaBridge.h"
+#include "VoidCore/Logging.h"
+#include "VoidObjects/Preferences/Preferences.h"
+
+/* Commands */
+#include "VoidMediaPlayer/Commands/EffectCommands.h"
+#include "VoidMediaPlayer/Commands/MediaCommands.h"
+#include "VoidMediaPlayer/Commands/PlaylistCommands.h"
+#include "VoidMediaPlayer/Commands/TagCommands.h"
+
+VOID_NAMESPACE_OPEN
+
+MBridge& MBridge::Instance()
+{
+    static MBridge instance;
+    return instance;
+}
+
+MBridge::MBridge(QObject* parent)
+    : QObject(parent)
+    , m_RecentProjectsMenu(nullptr)
+{
+    m_Projects = new ProjectModel(this);
+    m_UndoGroup = new QUndoGroup(this);
+
+    /* Setup a Default Project */
+    NewProject();
+
+    connect(&VoidPreferences::Instance(), &VoidPreferences::projectsUpdated, this, &MBridge::ResetProjectsMenu);
+}
+
+MBridge::~MBridge()
+{
+    m_Projects->deleteLater();
+    delete m_Projects;
+    m_Projects = nullptr;
+
+    // m_RecentProjectsMenu->deleteLater();
+    // delete m_RecentProjectsMenu;
+    // m_RecentProjectsMenu = nullptr;
+}
+
+void MBridge::NewProject()
+{
+    /* Use default name */
+    std::string name = "Project ";
+    name += std::to_string(m_Projects->rowCount() + 1);
+
+    NewProject(name);
+}
+
+void MBridge::NewProject(const std::string& name)
+{
+    SetActiveProject(new Project(name, true, this));
+
+    m_Projects->Add(m_Project);
+    emit projectCreated(m_Project);
+
+    // Connect Project Signals
+    connect(m_Project, &Project::mediaAdded, this, &MBridge::mediaAdded);
+    connect(m_Project, &Project::mediaAboutToBeRemoved, this, &MBridge::mediaAboutToBeRemoved);
+    connect(m_Project, &Project::mediaRemoved, this, &MBridge::mediaRemoved);
+    connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
+    connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
+}
+
+void MBridge::SetCurrentProject(int index)
+{
+    /* Provided index is not valid */
+    if (index > m_Projects->rowCount() - 1)
+        return;
+
+    SetActiveProject(dynamic_cast<Project*>(m_Projects->ProjectAt(m_Projects->index(index, 0))));
+    emit projectChanged(m_Project);
+}
+
+void MBridge::SetCurrentProject(const QModelIndex& index)
+{
+    /* Provided index is not valid */
+    if (!index.isValid())
+        return;
+
+    SetActiveProject(dynamic_cast<Project*>(m_Projects->ProjectAt(index)));
+    emit projectChanged(m_Project);
+}
+
+void MBridge::SetCurrentProject(Project* project)
+{
+    SetActiveProject(project);
+    emit projectChanged(m_Project);
+}
+
+void MBridge::SetActiveProject(Project* project)
+{
+    if (!project)
+        return;
+
+    /* Mark the current one as inactive */
+    if (m_Project)
+        m_Project->SetActive(false);
+
+    m_Project = project;
+    m_Project->SetActive(true);
+
+    m_UndoGroup->addStack(m_Project->UndoStack());
+    m_UndoGroup->setActiveStack(m_Project->UndoStack());
+
+    m_Projects->Refresh();
+}
+
+bool MBridge::AddMedia(const std::string& filepath)
+{
+    MediaImportCommand* command = new MediaImportCommand(m_Project, filepath);
+    PushCommand(command);
+    return command->Status();
+}
+
+void MBridge::RemoveEntity(const QModelIndex& index)
+{
+    PushCommand(new RemoveEntityCommand(m_Project, index));
+}
+
+void MBridge::RemoveEntity(const std::vector<QModelIndex>& indexes)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Remove Media");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new RemoveEntityCommand(m_Project, index));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::AddToPlaylist(const QModelIndex& index)
+{
+    PushCommand(new PlaylistAddMediaCommand(m_Project, index));
+}
+
+void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Add Media to Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistAddMediaCommand(m_Project, index));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::AddToPlaylist(const QModelIndex& index, Playlist* playlist)
+{
+    PushCommand(new PlaylistAddMediaCommand(index, playlist));
+}
+
+void MBridge::AddToPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Add Media to Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistAddMediaCommand(index, playlist));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::AddToPlaylist(QByteArray& data)
+{
+    AddToPlaylist(data, ActivePlaylist());
+}
+
+void MBridge::AddToPlaylist(QByteArray& data, Playlist* playlist)
+{
+    if (m_Project)
+    {
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        int count;
+        stream >> count;
+
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Add Media to Playlist");
+
+        for (int i = 0; i < count; ++i)
+        {
+            int row, column;
+            stream >> row >> column;
+
+            stack->push(new PlaylistAddMediaCommand(m_Project->DataModel()->index(row, column), playlist));
+        }
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::RemoveFromPlaylist(const QModelIndex& index)
+{
+    PushCommand(new PlaylistRemoveMediaCommand(m_Project, index));
+}
+
+void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Remove Media from Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistRemoveMediaCommand(m_Project, index));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::RemoveFromPlaylist(const QModelIndex& index, Playlist* playlist)
+{
+    PushCommand(new PlaylistRemoveMediaCommand(index, playlist));
+}
+
+void MBridge::RemoveFromPlaylist(const std::vector<QModelIndex>& indexes, Playlist* playlist)
+{
+    if (m_Project)
+    {
+        QUndoStack* stack = m_Project->UndoStack();
+        stack->beginMacro("Remove Media from Playlist");
+
+        for (const QModelIndex& index : indexes)
+            stack->push(new PlaylistRemoveMediaCommand(index, playlist));
+
+        stack->endMacro();
+    }
+}
+
+bool MBridge::AddMedia(MediaStruct&& mstruct)
+{
+    return m_Project->AddMedia(mstruct);
+}
+
+bool MBridge::AddMedia(const MediaStruct& mstruct)
+{
+    return m_Project->AddMedia(mstruct);
+}
+
+bool MBridge::InsertMedia(MediaStruct&& mstruct, int index)
+{
+    return m_Project->InsertMedia(mstruct, index);
+}
+
+bool MBridge::InsertMedia(const MediaStruct& mstruct, int index)
+{
+    return m_Project->InsertMedia(mstruct, index);
+}
+
+bool MBridge::InsertMedia(const SharedMediaClip& media, int index)
+{
+    return m_Project->InsertMedia(media, index);
+}
+
+void MBridge::AddTag(const QModelIndex& index, const std::string& tag)
+{
+    if (m_Project) m_Project->PushCommand(new ApplyTagCommand(index, tag));
+}
+
+void MBridge::AddTag(const SharedMediaClip& media, const std::string& tag)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new ApplyTagCommand(index, tag));
+    }
+}
+
+void MBridge::AddTag(const QModelIndex& index, const std::string& tag, const TagMetaStruct& metadata)
+{
+    if (m_Project) m_Project->PushCommand(new ApplyTagCommand(index, tag, metadata));
+}
+
+void MBridge::AddTag(const SharedMediaClip& media, const std::string& tag, const TagMetaStruct& metadata)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new ApplyTagCommand(index, tag, metadata));
+    }
+}
+
+void MBridge::RemoveTag(const QModelIndex& mindex, const QModelIndex& tindex)
+{
+    if (m_Project) m_Project->PushCommand(new RemoveTagCommand(mindex, tindex));
+}
+
+void MBridge::ClearTags(const SharedMediaClip& media)
+{
+    TagModel* model = media->TagsModel();
+    if (model->HasTags())
+    {
+        const std::vector<Tag*>& tags = model->Tags();
+        const QModelIndex index = m_Project->ClipIndex(media);
+
+        QUndoStack* stack = m_Project->UndoStack();
+
+        stack->beginMacro("Remove Tags");
+
+        for (int i = 0; i < static_cast<int>(tags.size()); ++i)
+            stack->push(new RemoveTagCommand(index, model->index(i, 0)));
+
+        stack->endMacro();
+    }
+}
+
+void MBridge::CreateEffect(const SharedMediaClip& media, const std::string& type)
+{
+    if (m_Project)
+    {
+        const QModelIndex index = m_Project->ClipIndex(media);
+        m_Project->PushCommand(new CreateEffectCommand(index, type));
+    }
+}
+
+void MBridge::CreateEffect(const QModelIndex& index, const std::string& type)
+{
+    if (m_Project) m_Project->PushCommand(new CreateEffectCommand(index, type));
+}
+
+void MBridge::SaveSnapshot(const QModelIndex& index, const std::string& name, const std::string& description)
+{
+    if (m_Project) m_Project->PushCommand(new SaveSnapshotCommand(m_Project, index, name, description));
+}
+
+void MBridge::RestoreSnapshot(const QModelIndex& index, int snapshotidx)
+{
+    if (m_Project) m_Project->PushCommand(new RestoreSnapshotCommand(m_Project, index, snapshotidx));
+}
+
+bool MBridge::Remove(SharedMediaClip clip)
+{
+    emit mediaAboutToBeRemoved(clip);
+    QCoreApplication::processEvents();
+    m_Project->RemoveMedia(m_Project->ClipIndex(clip));
+
+    return true;
+}
+
+bool MBridge::Remove(const QModelIndex& index)
+{
+    return m_Project->Remove(index);
+}
+
+Playlist* MBridge::NewPlaylist()
+{
+    if (m_Project)
+    {
+        m_Project->UndoStack()->push(new PlaylistAddCommand(m_Project));
+        return m_Project->ActivePlaylist();
+    }
+
+    return nullptr;
+}
+
+Playlist* MBridge::NewPlaylist(const std::string& name)
+{
+    if (m_Project)
+    {
+        m_Project->UndoStack()->push(new PlaylistAddCommand(m_Project, name));
+        return m_Project->ActivePlaylist();
+    }
+
+    return nullptr;
+}
+
+void MBridge::RemovePlaylist(const QModelIndex& index)
+{
+    PushCommand(new PlaylistRemoveCommand(m_Project, index));
+}
+
+void MBridge::SetCurrentPlaylist(const QModelIndex& index)
+{
+    if (m_Project)
+        m_Project->SetCurrentPlaylist(index);
+}
+
+void MBridge::SetCurrentPlaylist(int row)
+{
+    if (m_Project)
+        m_Project->SetCurrentPlaylist(row);
+}
+
+void MBridge::PushCommand(QUndoCommand* command)
+{
+    /* Push it on the Undo Stack of the active project */
+    if (m_Project)
+        m_Project->PushCommand(command);
+}
+
+bool MBridge::Save()
+{
+    if (!m_Project)
+        return false;
+
+    if (m_Project->Save())
+    {
+        /* Force Update on the Model */
+        m_Projects->Refresh();
+        return true;
+    }
+
+    return false;
+}
+
+bool MBridge::Save(const std::string& path, const std::string& name, const EtherFormat::Type& type)
+{
+    if (!m_Project)
+        return false;
+
+    if (m_Project->Save(path, name, type))
+    {
+        /* Force Update on the Model */
+        m_Projects->Refresh();
+
+        /* Add the current project path to Recents */
+        VoidPreferences::Instance().AddRecentProject(path);
+        return true;
+    }
+
+    return false;
+}
+
+QByteArray MBridge::PackIndexes(const std::vector<QModelIndex>& indexes) const
+{
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+
+    /* Save the count of the Media first -- followed by media indices */
+    stream << static_cast<int>(indexes.size());
+    for (const QModelIndex& index : indexes)
+        stream << index.row() << index.column();
+
+    return data;
+}
+
+std::vector<SharedMediaClip> MBridge::UnpackProjectMedia(QByteArray& data) const
+{
+    QDataStream stream(&data, QIODevice::ReadOnly);
+    int count;
+    stream >> count;
+
+    std::vector<SharedMediaClip> clips;
+    clips.reserve(count);
+    const EntityModel* entities = m_Project->DataModel();
+
+    for (int i = 0; i < count; ++i)
+    {
+        int row, column;
+        stream >> row >> column;
+
+        if (row < entities->MediaCount())
+            clips.emplace_back(entities->Media(entities->index(row, column)));
+    }
+
+    return clips;
+}
+
+std::vector<SharedMediaClip> MBridge::UnpackPlaylistMedia(QByteArray& data) const
+{
+    QDataStream stream(&data, QIODevice::ReadOnly);
+    int count;
+    stream >> count;
+
+    std::vector<SharedMediaClip> clips;
+    clips.reserve(count);
+
+    for (int i = 0; i < count; ++i)
+    {
+        int row, column;
+        stream >> row >> column;
+
+        clips.emplace_back(m_Project->ActivePlaylist()->Media(row, column));
+    }
+
+    return clips;
+}
+
+// SharedPlaybackTrack MBridge::AsTrack(const std::vector<SharedMediaClip>& media) const
+// {
+//     SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::VIDEO);
+
+//     for (const SharedMediaClip& clip : media)
+//         track->AddMedia(clip);
+
+//     return track;
+// }
+
+void MBridge::Load(const std::string& path)
+{
+    std::ifstream in(path, std::ios::binary);
+    if (!in.is_open())
+    {
+        VOID_LOG_ERROR("Failed to Open File {0}", path);
+        return;
+    }
+
+    // Valid ?
+    char header[EtherFormat::MAGIC_SIZE] = {};
+    in.read(header, EtherFormat::MAGIC_SIZE);
+
+    EtherFormat::Type type = EtherFormat::FileType(header);
+    if (type == EtherFormat::Type::INVALID)
+    {
+        VOID_LOG_INFO("Invalid File format");
+        return;
+    }
+
+    // Save as the Last project Opened
+    VoidPreferences::Instance().AddRecentProject(path);
+
+    if (type == EtherFormat::Type::ASCII)
+    {
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        SetActiveProject(Project::FromDocument(buffer.str()));
+    }
+    else
+    {
+        SetActiveProject(Project::FromStream(in));
+    }
+
+    connect(m_Project, &Project::mediaAdded, this, &MBridge::mediaAdded);
+    connect(m_Project, &Project::mediaAboutToBeRemoved, this, &MBridge::mediaAboutToBeRemoved);
+    connect(m_Project, &Project::mediaRemoved, this, &MBridge::mediaRemoved);
+    connect(m_Project, &Project::playlistCreated, this, &MBridge::playlistCreated);
+    connect(m_Project, &Project::playlistChanged, this, &MBridge::playlistChanged);
+
+    // Add to the projects
+    m_Projects->Add(m_Project);
+    m_Project->SetSavePath(path);
+
+    emit projectCreated(m_Project);
+    emit updated();
+}
+
+bool MBridge::CloseProject(bool force)
+{
+    if (!m_Project)
+        return true; // No project to close
+
+    /* Project needs saving if not forced*/
+    if (m_Project->Modified() && !force)
+        return false;
+
+    /* Case where the current project is the last one */
+    bool create = m_Projects->rowCount() == 1;
+
+    int row = m_Projects->ProjectRow(m_Project);
+    QModelIndex index = m_Projects->index(row, 0);
+
+    /* Remove the targeted project */
+    m_Projects->Remove(index);
+
+    if (create)
+        NewProject();
+    else
+        SetCurrentProject(m_Projects->index(row == 0 ? ++row : --row, 0));
+
+    emit updated();
+
+    return true;
+}
+
+bool MBridge::CloseProject(Project* project, bool force)
+{
+    /* It's the current project */
+    if (project == m_Project)
+        return CloseProject(force);
+
+    /* Project needs saving if not forced*/
+    if (m_Project->Modified() && !force)
+        return false;
+
+    /* Case where the current project is the last one */
+    bool create = m_Projects->rowCount() == 1;
+
+    int row = m_Projects->ProjectRow(project);
+    QModelIndex index = m_Projects->index(row, 0);
+
+    /* Remove the targeted project */
+    m_Projects->Remove(index);
+
+    if (create)
+        NewProject();
+
+    emit updated();
+
+    return true;
+}
+
+QMenu* MBridge::RecentProjectsMenu(QMenu* parent)
+{
+    if (!m_RecentProjectsMenu)
+        m_RecentProjectsMenu = new QMenu("Recent Projects", parent);
+
+    ResetProjectsMenu();
+    return m_RecentProjectsMenu;
+}
+
+void MBridge::ResetProjectsMenu()
+{
+    m_RecentProjectsMenu->clear();
+
+    for (const std::string& project : VoidPreferences::Instance().RecentProjects())
+    {
+        QAction* action = new QAction(project.c_str(), m_RecentProjectsMenu);
+        connect(action, &QAction::triggered, this, [=]() { Load(project); });
+
+        m_RecentProjectsMenu->addAction(action);
+    }
+}
+
+VOID_NAMESPACE_CLOSE

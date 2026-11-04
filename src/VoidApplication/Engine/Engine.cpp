@@ -16,13 +16,15 @@
 #include "VoidCore/Readers/Registration.h"
 #include "VoidCore/Operators/Registration.h"
 #include "VoidCore/Writers/Registration.h"
+#include "VoidConformer/Rules/Registration.h"
 
 #include "VoidCore/Profiler.h"
 #include "VoidObjects/Core/Threads.h"
-#include "VoidUi/Engine/Bridge.h"
-#include "VoidUi/Engine/Globals.h"
-#include "VoidUi/Preferences/Preferences.h"
-#include "VoidUi/BaseWindow/StartupWindow.h"
+#include "VoidObjects/Preferences/Preferences.h"
+#include "VoidEngine/BaseWindow/StartupWindow.h"
+#include "VoidEngine/Engine/Bridge.h"
+#include "VoidEngine/Engine/Globals.h"
+#include "VoidEngine/Engine/Controller.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -58,6 +60,7 @@ int VoidEngine::Exec(int argc, char** argv)
 
     QApplication app(argc, argv);
 
+    EngineController controller;
     Setup(app);
     Initialize();
 
@@ -130,7 +133,7 @@ void VoidEngine::Initialize()
                 : static_cast<Workspace>(VoidPreferences::Instance().GetDefaultWorkspace()));
 
     /* Init Menu */
-    m_MenuSystem = new MenuSystem(m_Imager);
+    m_MenuSystem = new MenuSystem(m_Imager->MenuBar());
     UIGlobals::g_MenuSystem = m_MenuSystem;
     m_Imager->InitMenu(m_MenuSystem);
 
@@ -145,6 +148,8 @@ void VoidEngine::PostInit()
     RegisterOperators();
     // Register Media Writers
     RegisterWriters();
+    // Rules
+    RegisterConformRules();
 
     /* Register Any other Media plugins that are found in the way */
     // ReaderPluginLoader::Instance().LoadExternals();

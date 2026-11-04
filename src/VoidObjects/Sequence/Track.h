@@ -5,9 +5,7 @@
 #define _VOID_TRACK_H
 
 /* STD */
-#include <memory>
-#include <map>
-#include <vector>
+#include <unordered_set>
 
 /* Qt */
 #include <QObject>
@@ -15,132 +13,74 @@
 
 /* Internal */
 #include "Definition.h"
+#include "TrackMap.h"
 #include "TrackItem.h"
+#include "Internal/Descriptors.h"
 #include "VoidObjects/VoidObject.h"
+#include "VoidObjects/Models/TagModel.h"
 
 VOID_NAMESPACE_OPEN
 
-/* Forward Declaration of the Sequence which holds the Track */
 class PlaybackSequence;
-class PlaybackTrack;
-
-/*
- * Let the Tracks be auto managed by reference count whether they survive
- * in the world or die or even get killed
- */
-typedef std::shared_ptr<PlaybackTrack> SharedPlaybackTrack;
-
-class VOID_API TrackMap
-{
-public:
-    /**
-     * Adds track item to the mapping.
-     */
-    void Add(const SharedTrackItem& item);
-
-    /**
-     * Removes the track item from the mapping.
-     */
-    void Remove(const SharedTrackItem& item);
-    void Clear();
-
-    /**
-     * Returns a Track Item present at a given frame, if it exists
-     * else a null pointer is returned.
-     */
-    SharedTrackItem At(const int frame) const;
-    inline bool Empty() const { return m_Frames.empty(); }
-
-private: /* Members */
-    /**
-     * This mapping holds the first frame of Track Item mapped to the Shared track item
-     * The intent is to be able to get a lower frame from any provided frame to get an item which may be present
-     * at the given frame
-     *
-     * e.g. If we have a track holding items like
-     *  __________  ________        _______  ___________
-     * |__________||________|------|_______||___________|
-     * 1        20 21     30       50    60  61        80
-     *
-     * and our internal map would look like 
-     * {
-     *      1  -> TrackItem1
-     *      21 -> TrackItem2
-     *      50 -> TrackItem3
-     *      61 -> TrackItem4
-     * }
-     * 
-     * Then if we were to pass in frame 10, this logic is going to find the nearest lower bound frame to 10
-     * which will result in 1 and we take a look at the track item at frame 1 and check if frame 10 (with the offset ofcourse)
-     * belongs to it, if yes we return the track item
-     *
-     * For another case, if some one is to pass a frame 35, the avaialable lower bound frame in the vector or map is 21
-     * we get the item at frame 21 and check if frame 35 (with offset) is in it's range, it won't be so we return nullptr back
-     * indicating that nothing exists at that point.
-     */
-    std::map<int, SharedTrackItem> m_Items;
-    std::vector<int> m_Frames;
-
-    /**
-     * Inner iterator to expose the TrackItems' iterator directly from this class
-     * this allows having only one Structure being used at the Track level to hold track items
-     */
-    class Iterator
-    {
-        /* Members */
-        using Iter = std::map<int, SharedTrackItem>::iterator;
-
-        /* Internal iterator */
-        Iter it;
-
-    public:
-        explicit Iterator(Iter it)
-            : it(it) {}
-
-        /* Dereference operator */
-        SharedTrackItem& operator*() { return it->second; }
-        /**
-         * Increment operator
-         * Increment internal iterator and return the instance reference
-         */
-        Iterator& operator++() { ++it; return *this; }
-
-        /* Not equals */
-        bool operator!=(const Iterator& other) { return it != other.it; }
-    };
-
-public: /* Iterator */
-    Iterator begin() { return Iterator(m_Items.begin()); }
-    Iterator end() { return Iterator(m_Items.end()); }
-};
+class STimelineEffect;
 
 class VOID_API PlaybackTrack : public VoidObject
 {
     Q_OBJECT
-
 public:
-    PlaybackTrack(QObject* parent = nullptr);
+    explicit PlaybackTrack(const Sequence::Type& type, QObject* parent = nullptr);
     virtual ~PlaybackTrack();
 
-    /*
-     * Clears anything in the track and sets the provided media as first
+    const Sequence::Type& Type() const { return m_Type; }
+
+    void SetName(const std::string& name) { m_Name = name; emit attribUpdated(); }
+    void SetName(std::string&& name) { m_Name = std::move(name); emit attribUpdated(); }
+    const std::string& Name() const { return m_Name; }
+
+    // /* Set a color for the Track */
+    // inline void SetColor(const QColor& color)
+    // {
+    //     /* Update the color for the track */
+    //     m_Color = color;
+    //     /* Emit a changed signal */
+    //     emit updated();
+    // }
+
+    std::size_t NumItems() const { return m_Items.Size(); }
+    int NumEffects() const { return static_cast<int>(m_Effects.size()); }
+    std::size_t ItemIndex(const SharedTrackItem& item) const { return m_Items.ItemIndex(item); }
+    std::size_t ItemIndex(const TrackItem* item) const { return m_Items.ItemIndex(item); }
+    int EffectIndex(const Effect* const effect) const;
+    SharedTrackItem ItemAt(std::size_t index) const { return m_Items.AtIndex(index); }
+    SharedTrackItem ItemInRange(v_frame_t start, v_frame_t end) const;
+    Effect* EffectAt(std::size_t index) const { return m_Effects.at(index); }
+    MFrameRange ItemRange(std::size_t index) const { return m_Items.AtIndex(index)->TimelineRange(); }
+    const std::vector<SharedTrackItem>& Items() const { return m_Items.Items(); }
+
+    Effect* CreateEffect(const std::string& effect);
+    Effect* CreateEffect(const std::string& effect, const std::string& name);
+    void InsertEffect(Effect* effect, int index);
+    void RemoveEffect(int index, bool destroy = true);
+    void ClearEffects();
+    Effect* CreateEffect(const SharedTrackItem& item, const std::string& effect);
+    Effect* CreateEffect(const SharedTrackItem& item, const std::string& effect, const std::string& name);
+    void CopyEffect(Effect* effect, const SharedTrackItem& item);
+    int MaxEffects() const { return m_Effects.empty() ? m_MaxEffects : static_cast<int>(m_Effects.size()); }
+
+    /**
+     * @brief Clears anything in the track and sets the provided media as first
+     * 
+     * @param media Media to be reset on the track.
      */
     void SetMedia(const SharedMediaClip& media);
 
-    /* Set a color for the Track */
-    inline void SetColor(const QColor& color)
-    {
-        /* Update the color for the track */
-        m_Color = color;
-        /* Emit a changed signal */
-        emit updated();
-    }
-
-    /*
+    /**
      * Appends the Media to the already existing track of Medis files
      * Which will get played in order
      */
-    void AddMedia(const SharedMediaClip& media);
+    SharedTrackItem AddMedia(const SharedMediaClip& media);
+    SharedTrackItem AddMedia(const SharedMediaClip& media, v_frame_t frame);
+    std::vector<SharedTrackItem> AddMedia(const std::vector<SharedMediaClip>& media, v_frame_t frame);
     SharedMediaClip Media(v_frame_t frame);
 
     /* Clears the Playback Track */
@@ -161,11 +101,13 @@ public:
     /* Getters */
     inline int StartFrame() const { return m_StartFrame; }
     inline int EndFrame() const { return m_EndFrame; }
+    v_frame_t GetSnapFrame(v_frame_t frame, const SharedTrackItem& trackitem, int threshold = 5) const;
 
     inline bool IsEmpty() const { return m_Items.Empty(); }
+    inline bool IsEffectsTrack() const { return !m_Effects.empty(); }
 
-    /* Returns the Color associated with the Track */
-    inline QColor Color() const { return m_Color; }
+    // /* Returns the Color associated with the Track */
+    // inline QColor Color() const { return m_Color; }
 
     /**
      * Describes whether a track is active for playback or taking in elements with menu options
@@ -173,7 +115,14 @@ public:
     [[nodiscard]] inline bool Active() const { return m_Visible && m_Enabled; }
 
     inline bool Visible() const { return m_Visible; }
+
+    bool Locked() const { return m_Locked; }
+    void Lock(bool lock) { m_Locked = lock; emit updated(); }
+
+    void SetEnabled(bool enable) { m_Enabled = enable; emit stateChanged(); }
     inline bool Enabled() const { return m_Enabled; }
+
+    bool IsReference() const;
 
     /**
      * From the track, return the track item which is present at a given frame in the timeline
@@ -182,9 +131,42 @@ public:
     SharedTrackItem GetTrackItem(v_frame_t frame);
 
     /* The parent of the Track should always be a Sequence, in case it exists inside a Sequence */
-    inline PlaybackSequence* Sequence() const { return reinterpret_cast<PlaybackSequence*>(parent()); }
+    void SetSequence(PlaybackSequence* sequence) { m_Sequence = sequence; }
+    inline PlaybackSequence* Sequence() const { return m_Sequence; }
+    Core::Project* Project() const;
+    int Index() const;
 
     /* Setters */
+
+    bool RazorAt(v_frame_t frame);
+    bool MergeCut(v_frame_t frame);
+    bool IsRazored(v_frame_t frame) const { return m_Razored.find(frame) != m_Razored.end(); }
+
+    bool MoveItem(const SharedTrackItem& item, v_frame_t frame);
+    bool OffsetItem(const SharedTrackItem& item, int offset);
+    bool AddItem(const SharedTrackItem& item);
+    bool AddItem(const SharedTrackItem& item, v_frame_t frame);
+    // Removes the Track Item at the given frame
+    // void RemoveItem(v_frame_t frame);
+    void RemoveItem(const SharedTrackItem& item);
+    void RemoveItems(const std::vector<SharedTrackItem>& items);
+
+    /// Tags
+    bool AddTag(const std::string& name);
+    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
+    bool InsertTag(const std::string& name, int index);
+    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
+    void InsertTag(Tag* tag, int index);
+    void RemoveTag(const QModelIndex& index);
+    void RemoveTag(int row);
+
+    Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
+    Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+    Tag* GetTag(const std::string& name) const { return m_TagModel->GetTag(name); }
+    int NumTags() const { return m_TagModel->rowCount(); }
+    bool HasTags() const { return m_TagModel->HasTags(); }
+    inline TagModel* TagsModel() const { return m_TagModel; }
+    void ClearTags();
 
     /**
      * The track's range is always defined by the track items in it
@@ -192,39 +174,64 @@ public:
      */
     inline void SetStartFrame(int start) { SetRange(start, start + m_EndFrame); }
 
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
+
+    const char* TypeName() const override { return "PlaybackTrack"; }
+
 signals: /* Signals Denoting actions in the Track */
-    void mediaAdded();
+    void itemAdded(const SharedTrackItem&);
+    void itemsAdded(const std::vector<SharedTrackItem>&);
+    void itemAboutToBeRemoved(const SharedTrackItem&);
+    void itemsAboutToBeRemoved(const std::vector<SharedTrackItem>&);
+    void itemUpdated(const SharedTrackItem&);
+    void itemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
+    void itemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item);
+    void itemStateChanged(const SharedTrackItem& item);
+    void itemRemoved();
+    void itemEffectAdded(const SharedTrackItem&, Effect*);
+    void itemEffectUpdated(const SharedTrackItem&);
+    void itemEffectRemoved(const SharedTrackItem&);
+
     void cleared();
-
-    /* This signal denotes that something in the track was changed/modified i.e. updated */
     void updated();
-
-    /**
-     * Emitted when the time range of the track has changed
-     * includes the start and end frame of the track
-     */
+    void updatedInRange(const MFrameRange&);
     void rangeChanged(int start, int end);
+    void stateChanged();
+    void effectAdded(Effect*);
+    void effectAboutToBeRemoved(Effect*);
+    void effectRemoved();
+    void maxEffectsChanged();
+    void tagsUpdated();
+    void attribUpdated();
 
-    /**
-     * Emitted when a frame is cached
-     * The cache could happen when the media cache operation is run continuously on a thread
-     * Or if the frame is queried by the viewport
-     */
-    void frameCached(int frame);
-
-    /* Emitted when the cache of all items' media has been cleared internally */
-    void cacheCleared();
 protected: /* Members */
     TrackMap m_Items;
+    std::unordered_set<v_frame_t> m_Razored;
+    std::vector<Effect*> m_Effects;
+    
+    PlaybackSequence* m_Sequence;
     SharedTrackItem m_Recent;
+    std::string m_Name;
+    TagModel* m_TagModel;
+
     int m_StartFrame, m_EndFrame;
     int m_Duration;
+    int m_MaxEffects;
     bool m_Visible;
     bool m_Enabled;
-    QColor m_Color;
+    bool m_Locked;
+    Sequence::Type m_Type;
 
 protected: /* Methods */
+    void ResetRange();
     void SetRange(int start, int end, const bool inclusive = true);
+    void CalculateMaxEffects(const SharedTrackItem& item);
+    void CalculateMaxEffects();
+    void ConnectItem(const SharedTrackItem& item);
+    void DisconnectItem(const SharedTrackItem& item);
 };
 
 VOID_NAMESPACE_CLOSE

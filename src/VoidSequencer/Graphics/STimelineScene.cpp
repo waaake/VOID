@@ -1,0 +1,352 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* STD */
+#include <algorithm>
+
+/* Qt */
+#include <QPainter>
+#include <QPalette>
+#include <QGraphicsSceneMouseEvent>
+
+/* Internal */
+#include "STimelineScene.h"
+#include "SPlayheadItem.h"
+#include "SPreviewTrackItem.h"
+#include "SRazorItem.h"
+#include "STrack.h"
+#include "STrackItem.h"
+#include "STimelineEffect.h"
+#include "VoidCore/Logging.h"
+
+VOID_NAMESPACE_OPEN
+
+// class TestItem : public QGraphicsRectItem
+// {
+// public:
+//     TestItem()
+//         : QGraphicsRectItem(0,0, 200, 200)
+//     {
+//         setBrush(Qt::red);
+//     }
+// };
+
+STimelineScene::STimelineScene(SequencerContext* context, QObject* parent)
+    : QGraphicsScene(parent)
+    , m_Context(context)
+    , m_Playhead(nullptr)
+    , m_Razorhead(nullptr)
+{
+    // Can now be accessed directly by any other sub-component within the sequencer
+    m_Context->Controller()->SetScene(this);
+    ResizeScene();
+}
+
+STimelineScene::~STimelineScene()
+{
+    Clear();
+}
+
+void STimelineScene::AddVideoTrack(const SharedPlaybackTrack& track)
+{
+    STrack* strack = new STrack(track, m_Context);
+    m_VTracks.push_back(strack);
+    addItem(strack);
+
+    ResizeScene();
+}
+
+void STimelineScene::AddAudioTrack(const SharedPlaybackTrack& track)
+{
+    STrack* strack = new STrack(track, m_Context);
+    m_ATracks.push_back(strack);
+    addItem(strack);
+
+    ResizeScene();
+}
+
+void STimelineScene::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    track->Type() == Sequence::Type::VIDEO ? RemoveVideoTrack(track) : RemoveAudioTrack(track);
+}
+
+void STimelineScene::Clear()
+{
+    for (auto& track : m_VTracks)
+    {
+        track->deleteLater();
+        delete track;
+        track = nullptr;
+    }
+    m_VTracks.clear();
+
+    for (auto& track : m_ATracks)
+    {
+        track->deleteLater();
+        delete track;
+        track = nullptr;
+    }
+    m_ATracks.clear();
+
+    if (m_Playhead)
+    {
+        m_Playhead->deleteLater();
+        delete m_Playhead;
+        m_Playhead = nullptr;
+    }
+
+    if (m_Razorhead)
+    {
+        m_Razorhead->deleteLater();
+        delete m_Razorhead;
+        m_Razorhead = nullptr;
+    }
+
+    clear();
+}
+
+void STimelineScene::AddRazorhead()
+{
+    m_Razorhead = new SRazorItem(m_Context);
+    addItem(m_Razorhead);
+}
+
+void STimelineScene::SetRazorX(int x)
+{
+    m_Razorhead->SetX(x);
+}
+
+void STimelineScene::ToggleRazorhead(bool visible)
+{
+    if (!m_Razorhead) AddRazorhead();
+    m_Razorhead->setVisible(visible);
+}
+
+void STimelineScene::AddPlayhead()
+{
+    m_Playhead = new SPlayheadItem(m_Context);
+    addItem(m_Playhead);
+}
+
+void STimelineScene::UpdatePlayhead(v_frame_t frame)
+{
+    m_Playhead->Update(frame);
+}
+
+void STimelineScene::Update()
+{
+    ResizeScene();
+}
+
+void STimelineScene::UpdateItems()
+{
+    // ResizeScene();
+    m_Playhead->Update();
+
+    for (STrack* track : m_VTracks)
+    {
+        track->Update();
+        track->UpdateItems();
+        track->UpdateEffects();
+    }
+
+    for (STrack* track : m_ATracks)
+    {
+        track->Update();
+        track->UpdateItems();
+    }
+}
+
+STrack* STimelineScene::TrackAt(int index) const
+{
+    return m_VTracks.at(index);
+}
+
+STrack*& STimelineScene::TrackAt(int index)
+{
+    return m_VTracks.at(index);
+}
+
+void STimelineScene::SelectItems(const QRectF& rect)
+{
+    const QList<QGraphicsItem*> hits = items(rect, Qt::IntersectsItemShape);
+    if (hits.empty())
+        return;
+
+    std::vector<SharedTrackItem> trackitems;
+    std::vector<Effect*> effects;
+    trackitems.reserve(hits.size());
+    effects.reserve(hits.size());
+    for (auto& item : hits)
+    {
+        if (const auto& trackitem = dynamic_cast<STrackItem*>(item))
+            trackitems.emplace_back(trackitem->TrackItem());
+        else if (const auto& effect = dynamic_cast<STimelineEffect*>(item))
+            effects.push_back(effect->TimelineEffect());
+    }
+
+    m_Context->SelectionModel()->Select(trackitems);
+    m_Context->SelectionModel()->Select(effects);
+}
+
+void STimelineScene::InitDraggableItems(const std::vector<SharedMediaClip>& media)
+{
+    m_DraggedItems.reserve(media.size());
+
+    int duration = 0;
+    for (const SharedMediaClip& clip : media)
+    {
+        int offset = clip->FirstFrame() - duration;
+        duration = duration + clip->Duration();
+        SharedTrackItem item = std::make_shared<TrackItem>(
+                                        clip,
+                                        clip->FirstFrame() - offset,
+                                        clip->LastFrame() - offset,
+                                        offset
+                                    );
+
+        SPreviewTrackItem* preview = new SPreviewTrackItem(item, m_Context);
+        m_DraggedItems.push_back(preview);
+        addItem(preview);
+    }
+}
+
+void STimelineScene::MoveDraggableItems(const QPointF& position, const QRectF& bounds)
+{
+    if (m_DraggedItems.empty()) return;
+
+    int x = m_DraggedItems[0]->pos().x();
+    const double extreme = bounds.right();
+
+    for (SPreviewTrackItem*& item : m_DraggedItems)
+    {
+        int offset = item->pos().x() - x;
+        if (offset > extreme)
+            break;
+
+        item->UpdatePosition(offset + position.x(), position.y());
+    }
+}
+
+void STimelineScene::DestroyDraggableItems()
+{
+    for (SPreviewTrackItem*& item : m_DraggedItems)
+    {
+        removeItem(item);
+        delete item;
+        item = nullptr;
+    }
+    m_DraggedItems.clear();
+}
+
+void STimelineScene::DropItems(const QPointF& position)
+{
+    STrack* track = m_Context->Controller()->TrackAt(position);
+    if (track)
+    {
+        std::vector<SharedMediaClip> media(m_DraggedItems.size());
+
+        v_frame_t frame = m_Context->Geometry()->SceneXToFrame(position.x());
+        std::transform(
+            m_DraggedItems.begin(),
+            m_DraggedItems.end(),
+            media.begin(),
+            [](SPreviewTrackItem*& item) -> SharedMediaClip
+            {
+                SharedMediaClip clip = item->TrackItem()->GetMedia();
+                delete item;
+                item = nullptr;
+                return clip;
+            }
+        );
+
+        m_DraggedItems.clear();
+        m_Context->Controller()->CreateTrackItems(media, track->Track(), frame);
+    }
+    else
+    {
+        DestroyDraggableItems();
+    }
+}
+
+int STimelineScene::PlayheadX() const
+{
+    return m_Playhead->x();
+}
+
+STrackItem* STimelineScene::Item(const SharedTrackItem& item) const
+{
+    const PlaybackTrack* track = item->Track();
+    auto _pred = [track](const STrack* t) -> bool { return track == t->Track().get(); };
+    if (track->Type() == Sequence::Type::VIDEO)
+    {
+        auto it = std::find_if(m_VTracks.begin(), m_VTracks.end(), _pred);
+        if (it == m_VTracks.end()) return nullptr;
+        STrack* strack = *it;
+
+        return strack->Item(item);
+    }
+
+    auto it = std::find_if(m_ATracks.begin(), m_ATracks.end(), _pred);
+    if (it == m_ATracks.end()) return nullptr;
+    STrack* strack = *it;
+
+    return strack->Item(item);
+}
+
+void STimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
+{
+    painter->fillRect(rect, palette().color(QPalette::Base));
+}
+
+void STimelineScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
+{
+    if ((event->button() == Qt::LeftButton) && !(event->modifiers() & Qt::ControlModifier))
+        m_Context->SelectionModel()->Clear();
+
+    QGraphicsScene::mousePressEvent(event);
+}
+
+void STimelineScene::RemoveVideoTrack(const SharedPlaybackTrack& track)
+{
+    auto _pred = [track](const STrack* t) -> bool { return track.get() == t->Track().get(); };
+    auto it = std::find_if(m_VTracks.begin(), m_VTracks.end(), _pred);
+    if (it == m_VTracks.end())
+        return;
+
+    STrack*& strack = *it;
+    removeItem(strack);
+
+    strack->deleteLater();
+    delete strack;
+    strack = nullptr;
+
+    m_VTracks.erase(it);
+}
+
+void STimelineScene::RemoveAudioTrack(const SharedPlaybackTrack& track)
+{
+    auto _pred = [track](const STrack* t) -> bool { return track.get() == t->Track().get(); };
+    auto it = std::find_if(m_ATracks.begin(), m_ATracks.end(), _pred);
+    if (it == m_ATracks.end())
+        return;
+
+    STrack*& strack = *it;
+    removeItem(strack);
+
+    strack->deleteLater();
+    delete strack;
+    strack = nullptr;
+
+    m_ATracks.erase(it);
+}
+
+void STimelineScene::ResizeScene()
+{
+    const auto* geo = m_Context->Geometry();
+    int vh = geo->VideoSectionHeight();
+    int ah = geo->AudioSectionHeight();
+    setSceneRect(0, -vh, Sequencer::SceneWidth, vh + ah);
+}
+
+VOID_NAMESPACE_CLOSE

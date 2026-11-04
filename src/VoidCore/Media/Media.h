@@ -78,6 +78,8 @@ public:
     inline v_frame_t LastFrame() const { return m_LastFrame; }
     inline v_frame_t Duration() const { return (m_LastFrame - m_FirstFrame) + 1; }
 
+    const ElementTokens& Tokens() const { return m_Tokens; }
+
     /**
      * Returns whether a given frame falls in the range of Media
      * i.e. between the first and the last frame of media
@@ -102,6 +104,8 @@ public:
     void Thumbnail(v_frame_t frame, UInt8Image& image);
     void Image(v_frame_t frame, FloatImage& image);
     const FloatImage& Image(v_frame_t frame) { return m_Frames[frame - m_FirstFrame].Image(); }
+    bool Audio(v_frame_t frame, SharedFrameAudio& buffer) { return m_Frames[frame - m_FirstFrame].Audio(buffer); }
+    Frame* InternalFrame(v_frame_t frame) { return &(m_Frames[frame - m_FirstFrame]); }
 
     // Media Attribs
     inline int Channels() const { return m_Frames[0].Channels(); }
@@ -124,6 +128,7 @@ protected: /* Members */
     MediaStruct m_MediaStruct;
     std::vector<Frame> m_Frames;
     std::vector<v_frame_t> m_Numbers;
+    ElementTokens m_Tokens;
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
     double m_Framerate;

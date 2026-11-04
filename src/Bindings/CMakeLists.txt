@@ -4,6 +4,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Sources
 set(SOURCES
     Module.cpp
+    Bases.cpp
     CoreModule.cpp
     UiModule.cpp
 )
@@ -11,17 +12,14 @@ set(SOURCES
 # Create Python Module
 pybind11_add_module(vortex "${SOURCES}")
 
-target_include_directories(
-    vortex
-    PRIVATE
-    ${FFMPEG_INCLUDE_DIRS}
-)
-
 target_link_libraries(
     vortex
     PRIVATE
     VoidCore
-    VoidUi
+    VoidMediaPlayer
+    VoidObjects
+    VoidSequencer
+    VoidEngine
     Qt::Widgets
     Freetype::Freetype
 )

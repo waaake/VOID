@@ -1,0 +1,360 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* Qt */
+#include <QEvent>
+#include <QLineEdit>
+#include <QMouseEvent>
+#include <QPainter>
+
+/* Internal */
+#include "ListDelegate.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidObjects/Models/EntityModel.h"
+
+VOID_NAMESPACE_OPEN
+
+constexpr int MAX_THUMBNAIL_WIDTH = 80;
+constexpr int MAX_THUMBNAIL_HEIGHT = 50;
+
+#ifdef _VOID_PLATFORM_APPLE
+constexpr int ICON_SIZE = 14;
+#else
+constexpr int ICON_SIZE = 12;
+#endif
+
+#define _ENTITY_TYPE(x) static_cast<ProjectEntity::Type>(x.data(static_cast<int>(EntityModel::MRoles::Type)).toInt())
+
+/// Basic Media Item Delegate
+
+BasicMediaItemDelegate::BasicMediaItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent)
+    , m_TagX(0)
+    , m_TagY(0)
+{
+}
+
+bool BasicMediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, const QStyleOptionViewItem& option, const QModelIndex& index)
+{
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        const QRect r(m_TagX, m_TagY, ICON_SIZE, ICON_SIZE);
+        auto mevent = static_cast<QMouseEvent*>(event);
+        #if _QT6_COMPACT
+        QPoint pos = mevent->position();
+        #else
+        QPoint pos = mevent->pos();
+        #endif
+
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
+            emit tagClicked(index, pos);
+    }
+
+    return QStyledItemDelegate::editorEvent(event, item, option, index);
+}
+
+void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    /**
+     * The main Rect for the Item will used as is for the name | item count
+     * ------------------------------
+     * |    Name      1001 - 1200   |
+     * ------------------------------
+     */
+
+    // Background
+    const QColor bg(option.palette.color(QPalette::Base).darker(_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150));
+    painter->fillRect(option.rect, bg);
+
+    const QColor lighter1(bg.lighter(120));
+    const QColor lighter2(bg.lighter(140));
+
+    // Selected
+    if (option.state & QStyle::State_Selected)
+    {
+        // Gradient
+        QLinearGradient gradient(0, 0, option.rect.width(), 0);
+        gradient.setColorAt(0, bg);
+        gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(180));
+
+        painter->save();
+
+        painter->setBrush(gradient);
+        painter->setPen(Qt::NoPen);
+        painter->drawRect(option.rect);
+
+        painter->fillRect(
+            QRect(option.rect.width() - 3, option.rect.top(), 4, option.rect.height()),
+            option.palette.color(QPalette::Highlight)
+        );
+
+        painter->restore();
+    }
+
+    // Side Bar
+    painter->fillRect(QRect(option.rect.left(), option.rect.top(), ICON_SIZE + 6, option.rect.height()), lighter1);
+
+    m_TagX = option.rect.left() + 2;
+    m_TagY = option.rect.top() + ICON_SIZE + 4;
+
+    painter->drawPixmap(
+        option.rect.left() + 2, option.rect.top() + 2,
+        IconForge::GetPixmap(
+            IconType::icon_volume_up,
+            index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool()
+            ? option.palette.color(QPalette::Text)
+            : lighter2,
+            ICON_SIZE
+        )
+    );
+
+    painter->drawPixmap(
+        m_TagX,
+        m_TagY,
+        IconForge::GetPixmap(
+            IconType::icon_style,
+            index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool()
+            ? option.palette.color(QPalette::Text)
+            : lighter2,
+            ICON_SIZE
+        )
+    );
+
+    const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
+    if (channels == 3)
+    {
+        const int w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+    }
+    else if (channels == 4)
+    {
+        const int w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 2, QColor(255, 255, 255));
+    }
+
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
+        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, (ICON_SIZE + 6), 2, QColor(255, 130, 0));
+
+    // Name
+    const QRect namerect(option.rect.left() + 30, option.rect.top(), option.rect.right(), option.rect.height());
+    painter->drawText(
+        namerect,
+        Qt::AlignLeft | Qt::AlignVCenter,
+        index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
+    );
+
+    // Frame Range
+    painter->drawText(
+        QRect(namerect.left(), option.rect.top(), option.rect.right() - 40, option.rect.height()),
+        Qt::AlignRight | Qt::AlignVCenter,
+        index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
+    );
+}
+
+QSize BasicMediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 54);
+}
+
+QWidget* BasicMediaItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void BasicMediaItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
+}
+
+void BasicMediaItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(QRect(option.rect.left() + 26, option.rect.top(), option.rect.width() - 80, option.rect.height()));
+}
+
+/// MediaItemDelegate
+
+MediaItemDelegate::MediaItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent)
+    , m_TagX(0)
+    , m_TagY(0)
+{
+}
+
+bool MediaItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* item, const QStyleOptionViewItem& option, const QModelIndex& index)
+{
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        const QRect r(m_TagX, m_TagY, ICON_SIZE, ICON_SIZE);
+        auto mevent = static_cast<QMouseEvent*>(event);
+        #if _QT6_COMPACT
+        QPoint pos = mevent->position();
+        #else
+        QPoint pos = mevent->pos();
+        #endif
+
+        if (mevent->button() == Qt::LeftButton && r.contains(pos) && index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool())
+            emit tagClicked(index, pos);
+    }
+
+    return QStyledItemDelegate::editorEvent(event, item, option, index);
+}
+
+void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    /**
+     * The main Rect for the Item will be divided into 5 sub sections
+     * -------------------------------------------------------------
+     * |               |    Name                    |    Extension |
+     * |   Thumbnail   |-------------------------------------------|
+     * |               |    1001 - 1010             |        24fps |
+     * -------------------------------------------------------------
+     */
+
+    // Base Rect
+    QRect rect = option.rect;
+    // Background
+    const QColor bg(option.palette.color(QPalette::Base).darker(_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE ? 115 : 150));
+    painter->fillRect(rect, bg);
+    const QColor lighter1(bg.lighter(120));
+    const QColor lighter2(bg.lighter(140));
+
+    // Selected
+    if (option.state & QStyle::State_Selected)
+    {
+        // Gradient
+        QLinearGradient gradient(0, 0, rect.width(), 0);
+        gradient.setColorAt(0, bg);
+        gradient.setColorAt(1, option.palette.color(QPalette::Highlight).darker(150));
+
+        painter->save();
+
+        painter->setBrush(gradient);
+        painter->setPen(Qt::NoPen);
+        painter->drawRect(rect);
+        painter->fillRect(QRect(rect.width() - 3, rect.top(), 4, rect.height()), option.palette.color(QPalette::Highlight));
+
+        painter->restore();
+    }
+
+    // Side Bar
+    painter->fillRect(QRect(rect.left(), rect.top(), ICON_SIZE + 6, rect.height()), lighter1);
+
+    /// Thumbnail
+    const QRect thumbrect(rect.left() + ICON_SIZE + 10, rect.top() + 5, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+    QPixmap p = index.data(static_cast<int>(EntityModel::MRoles::Thumbnail)).value<QPixmap>();
+    QPixmap scaled = p.scaled(MAX_THUMBNAIL_WIDTH, thumbrect.height(), Qt::KeepAspectRatio);
+
+    const int x = thumbrect.left() + (MAX_THUMBNAIL_WIDTH - scaled.width()) * 0.5;
+    const int y = thumbrect.top() + (MAX_THUMBNAIL_HEIGHT - scaled.height()) * 0.5;
+
+    m_TagX = rect.left() + 2;
+    m_TagY = rect.top() + ICON_SIZE + 4;
+    painter->drawPixmap(x, y, scaled);
+
+    const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
+    const bool tags = index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool();
+
+    const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
+    if (channels == 3)
+    {
+        constexpr int w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+    }
+    else if (channels == 4)
+    {
+        constexpr int w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
+        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
+        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 2, QColor(255, 255, 255));
+    }
+
+    painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
+        IconType::icon_volume_up,
+        audio ? option.palette.color(QPalette::Text) : lighter2,
+        ICON_SIZE
+    ));
+
+    painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
+        IconType::icon_style,
+        tags ? option.palette.color(QPalette::Text) : lighter2,
+        ICON_SIZE
+    ));
+
+    if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
+        painter->fillRect(rect.left(), rect.bottom() - 1, (ICON_SIZE + 6), 2, QColor(255, 130, 0));
+
+    const int thumbright = thumbrect.right() + 5;
+    const int halfheight = rect.height() * 0.5;
+    const int namewidth = rect.width() - (thumbrect.width() + 90);
+
+    // Name
+    const QRect namerect(thumbright, rect.top(), namewidth, halfheight);
+    painter->drawText(
+        namerect,
+        Qt::AlignLeft | Qt::AlignVCenter,
+        index.data(static_cast<int>(EntityModel::MRoles::Name)).toString()
+    );
+
+    // Extension
+    const QRect extrect(namerect.right(), rect.top(), 60, halfheight);
+    painter->drawText(
+        extrect,
+        Qt::AlignRight | Qt::AlignVCenter,
+        index.data(static_cast<int>(EntityModel::MRoles::Extension)).toString()
+    );
+
+    // Frame range
+    painter->drawText(
+        QRect(thumbright, namerect.bottom(), namewidth, halfheight),
+        Qt::AlignLeft | Qt::AlignVCenter,
+        index.data(static_cast<int>(EntityModel::MRoles::FrameRange)).toString()
+    );
+
+    // Framerate
+    painter->drawText(
+        QRect(namerect.right(), extrect.bottom(), 60,halfheight),
+        Qt::AlignRight | Qt::AlignVCenter,
+        index.data(static_cast<int>(EntityModel::MRoles::Framerate)).toString()
+    );
+}
+
+QSize MediaItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return QSize(QStyledItemDelegate::sizeHint(option, index).width(), 60);
+}
+
+QWidget* MediaItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    return new QLineEdit(parent);
+}
+
+void MediaItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+{
+    QLineEdit* edit = qobject_cast<QLineEdit*>(editor);
+    if (edit)
+        edit->setText(index.data(static_cast<int>(EntityModel::MRoles::Name)).toString());
+}
+
+void MediaItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    editor->setGeometry(
+        QRect(
+            option.rect.left() + ICON_SIZE + 10 + MAX_THUMBNAIL_WIDTH,
+            option.rect.top(),
+            option.rect.width() - (MAX_THUMBNAIL_WIDTH + 90),
+            option.rect.height() * 0.5
+        )
+    );
+}
+
+VOID_NAMESPACE_CLOSE

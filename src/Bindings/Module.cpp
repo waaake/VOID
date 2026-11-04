@@ -14,6 +14,7 @@ VOID_NAMESPACE_OPEN
 
 namespace bindings {
 
+    void BindBases(py::module_&);
     void BindCore(py::module_&);
     void BindUi(py::module_&);
 
@@ -22,11 +23,13 @@ namespace bindings {
 PYBIND11_MODULE(vortex, m)
 {
     m.doc() = "Void Python Binding";
-
+    
+    py::module_ bases = m.def_submodule("bases", "Void Bases Module");
     py::module_ core = m.def_submodule("core", "Void Core Module");
     py::module_ ui = m.def_submodule("ui", "Void UI Module");
     VOID_NAMESPACE::bindings::BindCore(core);
     VOID_NAMESPACE::bindings::BindUi(ui);
+    VOID_NAMESPACE::bindings::BindBases(bases);
 }
 
 VOID_NAMESPACE_CLOSE

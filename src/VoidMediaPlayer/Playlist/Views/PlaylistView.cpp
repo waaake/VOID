@@ -1,0 +1,240 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* Qt */
+#include <QDragEnterEvent>
+#include <QMenu>
+#include <QMimeData>
+
+/* Internal */
+#include "PlaylistView.h"
+#include "Internal/Descriptors.h"
+#include "VoidCore/Logging.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Playlist/Delegates/ListDelegate.h"
+
+VOID_NAMESPACE_OPEN
+
+PlaylistView::PlaylistView(QWidget* parent)
+    : QListView(parent)
+{
+    m_PlayAction = new QAction("Play");
+    m_PlayAsSequenceAction = new QAction("Play as Sequence");
+    m_AddAction = new QAction("Create Playlist");
+    m_RemoveAction = new QAction("Remove Playlist");
+
+    Setup();
+
+    /* Connect Signals */
+    Connect();
+}
+
+PlaylistView::~PlaylistView()
+{
+    /**
+     * Set the source Model as nullpointer so that we don't actually delete
+     * the original source model
+     */
+    m_Proxy->setSourceModel(nullptr);
+
+    m_Proxy->deleteLater();
+    delete m_Proxy;
+    m_Proxy = nullptr;
+
+    m_PlayAction->deleteLater();
+    delete m_PlayAction;
+    m_PlayAction = nullptr;
+
+    m_PlayAsSequenceAction->deleteLater();
+    delete m_PlayAsSequenceAction;
+    m_PlayAsSequenceAction = nullptr;
+
+    m_AddAction->deleteLater();
+    delete m_AddAction;
+    m_AddAction = nullptr;
+
+    m_RemoveAction->deleteLater();
+    delete m_RemoveAction;
+    m_RemoveAction = nullptr;
+}
+
+void PlaylistView::Setup()
+{
+    m_Proxy = new PlaylistProxyModel(this);
+    Project* project = _MediaBridge.ActiveProject();
+    ResetModel(project->PlaylistMediaModel());
+
+    setSelectionMode(QAbstractItemView::SingleSelection);
+    setUniformItemSizes(true);
+    setItemDelegate(new PlaylistItemDelegate(this));
+    setSpacing(1);
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+
+    setAcceptDrops(true);
+    setDropIndicatorShown(true);
+}
+
+void PlaylistView::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void PlaylistView::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void PlaylistView::dropEvent(QDropEvent* event)
+{
+    if (event->mimeData()->hasFormat(MimeTypes::MediaItem))
+    {
+        #if _QT6
+        QModelIndex index = indexAt(event->position().toPoint());
+        #else
+        QModelIndex index = indexAt(event->pos());
+        #endif // _QT6
+
+        if (!index.isValid())
+            return;
+
+        Playlist* playlist = _MediaBridge.PlaylistAt(index);
+        if (!playlist)
+            return;
+
+        QByteArray data = event->mimeData()->data(MimeTypes::MediaItem);
+        _MediaBridge.AddToPlaylist(data, playlist);
+    }
+}
+
+void PlaylistView::Connect()
+{
+    connect(this, &QListView::clicked, this, &PlaylistView::ItemClicked);
+    connect(&_MediaBridge, &MBridge::projectCreated, this, &PlaylistView::ProjectChanged);
+    connect(&_MediaBridge, &MBridge::projectChanged, this, &PlaylistView::ProjectChanged);
+    connect(this, &QListView::customContextMenuRequested, this, &PlaylistView::ShowContextMenu);
+
+    connect(m_PlayAction, &QAction::triggered, this, &PlaylistView::Play);
+    connect(m_PlayAsSequenceAction, &QAction::triggered, this, &PlaylistView::PlayAsSequence);
+    connect(m_AddAction, &QAction::triggered, this, []() -> void { _MediaBridge.NewPlaylist(); });
+    connect(m_RemoveAction, &QAction::triggered, this, &PlaylistView::RemoveSelected);
+}
+
+void PlaylistView::ResetModel(PlaylistModel* model)
+{
+    m_Proxy->setSourceModel(model);
+    setModel(m_Proxy);
+    VOID_LOG_INFO("Playlist Source Model Updated");
+}
+
+void PlaylistView::ItemClicked(const QModelIndex& index)
+{
+    if (!index.isValid())
+        return;
+
+    emit itemClicked(m_Proxy->mapToSource(index));
+}
+
+const std::vector<QModelIndex> PlaylistView::SelectedIndexes() const
+{
+    std::vector<QModelIndex> sources;
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return sources;
+
+    const QModelIndexList proxyindexes = selection->selectedRows();
+    sources.reserve(proxyindexes.size());
+
+    for (const QModelIndex& index: proxyindexes)
+    {
+        QModelIndex source = m_Proxy->mapToSource(index);
+        if (source.isValid())
+            sources.emplace_back(source);
+    }
+
+    return sources;
+}
+
+bool PlaylistView::HasSelection()
+{
+    QItemSelectionModel* s = selectionModel();
+    return s && s->hasSelection();
+}
+
+void PlaylistView::EnableSorting(bool state, const Qt::SortOrder& order)
+{
+    m_Proxy->sort(state ? 0 : -1, order);
+}
+
+void PlaylistView::ProjectChanged(const Project* project)
+{
+    ResetModel(project->PlaylistMediaModel());   
+}
+
+void PlaylistView::ShowContextMenu(const _QPoint& position)
+{
+    QMenu contextMenu(this);
+
+    contextMenu.addAction(m_PlayAction);
+    contextMenu.addAction(m_PlayAsSequenceAction);
+    contextMenu.addSeparator();
+    contextMenu.addAction(m_AddAction);
+    contextMenu.addAction(m_RemoveAction);
+
+    bool hasSelection = HasSelection();
+    m_PlayAction->setEnabled(hasSelection);
+    m_PlayAsSequenceAction->setEnabled(hasSelection);
+    m_RemoveAction->setEnabled(hasSelection);
+
+    /* Show Menu */
+    #if _QT6
+    /**
+     * Qt6 mapToGlobal returns QPointF while menu.exec expects QPoint
+     */
+    contextMenu.exec(mapToGlobal(position).toPoint());
+    #else
+    contextMenu.exec(mapToGlobal(position));
+    #endif // _QT6
+}
+
+void PlaylistView::Play()
+{
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return;
+
+    Playlist* playlist = _MediaBridge.PlaylistAt(m_Proxy->mapToSource(selection->currentIndex()));
+
+    if (playlist)
+        emit played(playlist);
+}
+
+void PlaylistView::PlayAsSequence()
+{
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return;
+    
+    Playlist* playlist = _MediaBridge.PlaylistAt(m_Proxy->mapToSource(selection->currentIndex()));
+
+    if (playlist)
+        emit playedAsSequence(playlist);
+}
+
+void PlaylistView::RemoveSelected()
+{
+    QItemSelectionModel* selection = selectionModel();
+    if (!selection)
+        return;
+
+    _MediaBridge.RemovePlaylist(m_Proxy->mapToSource(selection->currentIndex()));
+    emit updated();
+}
+
+VOID_NAMESPACE_CLOSE

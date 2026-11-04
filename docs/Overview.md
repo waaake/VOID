@@ -1,7 +1,6 @@
-# ![VOID](../images/VOID_Logo_900x200.png)
+# [<img src="../images/VOID_Logo_Full.svg" width="545"/>](../images/VoidPlayerBasic.png)
 
 ### A quick overview of VOID's interface and capabilities.
----
 
 ## Project & Media Organization
 
@@ -24,16 +23,14 @@ Supports a wide range of media formats:
 The player also supports **media reader plugins**, allowing developers to extend format support by writing custom plugins.
  *An example plugin is available [here](https://github.com/waaake/VOID-Exr-plugin)*
 
-[<img src="../images/VoidPlayerBasic.png" width="1000"/>](../images/VoidPlayerBasic.png)
+[<img src="../images/VoidPlayerPlaying.png" width="1000"/>](../images/VoidPlayerPlaying.png)
 
 ---
 
 ## Playback Features
 
 - Standard playback controls: Play, Pause, Seek, etc.
-- **Dual-buffer playback**: A/B buffers for simultaneous media handling
-
-[<img src="../images/VoidPlayerPlaying.png" width="1000"/>](../images/VoidPlayerPlaying.png)
+- **Dual-buffer playback**: A/B buffers for simultaneous media buffering and comparing.
 
 [<img src="../images/VoidMultiBuffer.png" width="1000"/>](../images/VoidMultiBuffer.png)
 
@@ -59,12 +56,25 @@ Dual-buffer mode enables rich media comparison using multiple viewer layouts:
 
 ## Annotation Support
 
-- Add annotations directly on media for review and feedback
-- Useful for collaborative workflows and visual notes
+- Add annotations directly on media for review and feedback.
+- Useful for review workflows and visual notes.
 
-> *Annotation export is not yet implemented. Exporting annotated frames will be supported once the media writer system is integrated.*
+> *Annotated frames can be exported as .png or .exr file format. Raw annotation data import/export is not currently implemented.*
 
 [<img src="../images/VoidAnnotations.png" width="1000"/>](../images/VoidAnnotations.png)
+
+---
+
+## Sequence Viewer (Sequencer)
+
+- Visualise the elements in an NLE supporting multiple tracks (Audio and Video).
+- Support for Image Operators (ImageOp) to be applied directly on the timeline elements. 
+
+> *Timeline Effects feature is currently WIP with only Grade and Invert node available.*
+
+[<img src="../images/VoidSequencer.png" width="1000"/>](../images/VoidSequencer.png)
+
+[<img src="../images/VoidGradeEffect.png" width="1000"/>](../images/VoidGradeEffect.png)
 
 ---
 
@@ -98,7 +108,8 @@ VOID provides internal API via **vortex** python binding, allowing interaction w
 
 ## Credits & Licensing Notice
 
-Screenshots used in this project feature content from the open movie **Big Buck Bunny**, created by the [Blender Foundation](https://www.blender.org/).
-This content is licensed under the [Creative Commons Attribution 3.0 license](https://creativecommons.org/licenses/by/3.0/).
+Screenshots used in this project feature content from the open movies **Big Buck Bunny**, **Wing It**, and **Sprite Fright**, created by the Blender Foundation.
 
-> © Blender Foundation | [www.bigbuckbunny.org](https://peach.blender.org/)
+These movies are made available under their respective Creative Commons licenses. Please refer to the original sources for licensing and attribution details.
+
+> © Blender Foundation

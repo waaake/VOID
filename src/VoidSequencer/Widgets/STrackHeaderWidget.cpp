@@ -1,0 +1,104 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* Qt */
+#include <QPainter>
+#include <QScrollBar>
+
+/* Internal */
+#include "STrackHeaderWidget.h"
+#include "STrackHeader.h"
+#include "VoidCore/Logging.h"
+#include "VoidQExtensions/Frame.h"
+#include "VoidSequencer/Descriptors.h"
+#include "VoidSequencer/SContext.h"
+
+VOID_NAMESPACE_OPEN
+
+STrackHeaderWidget::STrackHeaderWidget(SequencerContext* context, QWidget* parent)
+    : QWidget(parent)
+    , m_Context(context)
+{
+    setFixedWidth(Sequencer::TrackHeaderWidth);
+    Build();
+}
+
+void STrackHeaderWidget::DeleteSelected()
+{
+    emit deleteSelectionRequested();
+}
+
+void STrackHeaderWidget::AddTrack(const SharedPlaybackTrack& track, const QPoint& position)
+{
+    STrackHeader* header = new STrackHeader(track, m_Context, m_ContentArea);
+    header->setObjectName(track->Vuid().c_str());
+    // m_ScrollLayout->addWidget(header);
+    header->move(0, position.y());
+    header->setVisible(true);
+}
+
+void STrackHeaderWidget::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    if (auto header = findChild<STrackHeader*>(track->Vuid().c_str()))
+    {
+        header->setParent(nullptr);
+        header->setVisible(false);
+        header->deleteLater();
+        delete header;
+        header = nullptr;
+    }
+}
+
+void STrackHeaderWidget::Clear()
+{
+    for (auto& header : findChildren<STrackHeader*>())
+    {
+        header->setParent(nullptr);
+        header->setVisible(false);
+        header->deleteLater();
+        delete header;
+        header = nullptr;
+    }
+}
+
+void STrackHeaderWidget::Update()
+{
+    for (auto& header : findChildren<STrackHeader*>())
+        header->Update();
+    
+    m_ScrollLayout->update();
+}
+
+void STrackHeaderWidget::SetScroll(int value)
+{
+    m_ScrollArea->verticalScrollBar()->setValue(value);
+}
+
+void STrackHeaderWidget::Build()
+{
+    m_Layout = new QVBoxLayout(this);
+
+    // BaseWidget* content = new BaseWidget;
+    m_ContentArea = new BaseWidget;
+    m_ContentArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
+
+    // m_ScrollLayout = new QVBoxLayout(m_ContentArea);
+    // m_ScrollLayout->setAlignment(Qt::AlignTop);
+    // m_ScrollLayout->setContentsMargins(0, 0, 0, 0);
+    // m_ScrollLayout->setSpacing(Sequencer::TrackSpacing);
+
+    // m_ScrollLayout->addItem(new QSpacerItem(0, Sequencer::RulerHeight, QSizePolicy::Expanding, QSizePolicy::Fixed));
+
+    m_ScrollArea = new QScrollArea(this);
+    m_ScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    m_ScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    m_ScrollArea->setWidgetResizable(true);
+    m_ScrollArea->setWidget(m_ContentArea);
+    // m_ScrollArea->setFrameShape(QFrame::NoFrame);
+
+    m_Layout->addWidget(m_ScrollArea);
+    m_Layout->setContentsMargins(0, 0, 0, 0);
+}
+
+VOID_NAMESPACE_CLOSE

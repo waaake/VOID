@@ -106,7 +106,7 @@ struct VOID_API Stroke : public SerializableEntity
     float thickness;
 
     inline bool Empty() const noexcept { return vertices.empty(); }
-    inline int Size() const noexcept { return vertices.size(); }
+    inline int Size() const noexcept { return static_cast<int>(vertices.size()); }
     inline const AnnotatedVertex* Data() const noexcept { return vertices.data(); }
     inline void Clear() { vertices.clear(); }
 

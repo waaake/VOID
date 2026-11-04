@@ -9,6 +9,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Audio.h"
 #include "PixReader.h"
 #include "Filesystem.h"
 
@@ -41,6 +42,7 @@ public:
     inline const std::string& Path() const { return m_Entry.Fullpath(); }
     inline const std::string& Name() const { return m_Entry.Name(); }
     inline const std::string& Extension() const { return m_Entry.Extension(); }
+    inline const MEntry& Entry() const { return m_Entry; }
     
     // Frame Attribs
     inline v_frame_t Framenumber() const { return m_Framenumber; }
@@ -53,6 +55,7 @@ public:
     void Thumbnail(UInt8Image& image);
     void Image(FloatImage& image);
     const FloatImage& Image();
+    bool Audio(SharedFrameAudio& buffer);
 
     // Image Properties
     [[nodiscard]] inline int Width() const { return m_Reader->Width(); }

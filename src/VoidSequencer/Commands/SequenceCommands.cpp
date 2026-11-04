@@ -1,0 +1,1430 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* STD */
+#include <sstream>
+
+/* Internal */
+#include "SequenceCommands.h"
+#include "VoidCore/Logging.h"
+
+VOID_NAMESPACE_OPEN
+
+/// CreateTrackItemCommand
+
+CreateTrackItemCommand::CreateTrackItemCommand(const SharedMediaClip& media, const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Project(media->Project())
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->Index())
+    , m_MediaIndex(m_Project->MediaRow(media))
+    , m_Frame(frame)
+    , m_TrackType(track->Type())
+{
+    setText("Add media to track");
+}
+
+void CreateTrackItemCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        track->RemoveItem(item);
+    }
+}
+
+bool CreateTrackItemCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedMediaClip& media = m_Project->MediaAt(m_MediaIndex, 0);
+        if (SharedTrackItem item = track->AddMedia(media, m_Frame))
+        {
+            m_ItemIndex = item->Index();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/// CreateTrackItemsCommand
+
+CreateTrackItemsCommand::CreateTrackItemsCommand(const std::vector<SharedMediaClip>& clips, const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Frame(frame)
+{
+    m_ItemIndexes.reserve(clips.size());
+    m_MediaIndexes.resize(clips.size());
+
+    Core::Project* project = track->Project();
+    std::transform(
+        clips.begin(),
+        clips.end(),
+        m_MediaIndexes.begin(),
+        [&](const SharedMediaClip& clip) -> int { return project->MediaRow(clip); }
+    );
+
+    setText("Add media to Track");
+}
+
+void CreateTrackItemsCommand::undo()
+{
+    Sequence::ResolvedContext ctx = m_TrackContext.Resolve();
+    if (ctx.track)
+    {
+        std::vector<SharedTrackItem> items(m_ItemIndexes.size());
+        std::transform(
+            m_ItemIndexes.begin(),
+            m_ItemIndexes.end(),
+            items.begin(),
+            [&](int& index) -> SharedTrackItem { return ctx.track->ItemAt(index); }
+        );
+
+        ctx.track->RemoveItems(items);
+    }
+}
+
+bool CreateTrackItemsCommand::Redo()
+{
+    Sequence::ResolvedContext ctx = m_TrackContext.Resolve();
+    if (ctx.track)
+    {
+        std::vector<SharedMediaClip> clips(m_MediaIndexes.size());
+
+        std::transform(
+            m_MediaIndexes.begin(),
+            m_MediaIndexes.end(),
+            clips.begin(),
+            [&](int& row) -> SharedMediaClip { return ctx.project->MediaAt(row, 0); }
+        );
+
+        std::vector<SharedTrackItem> items = ctx.track->AddMedia(clips, m_Frame);
+
+        std::transform(
+            items.begin(),
+            items.end(),
+            std::back_inserter(m_ItemIndexes),
+            [](const SharedTrackItem& item) -> int { return item->Index(); }
+        );
+
+        return (bool)items.size();
+    }
+
+    return false;
+}
+
+/// MoveTrackItemCommand
+
+MoveTrackItemCommand::MoveTrackItemCommand(const SharedTrackItem& item, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
+    , m_Requested(frame)
+    , m_Previous(item->TimelineIn())
+    , m_TrackType(item->Track()->Type())
+{
+    setText("Move TrackItem");
+}
+
+void MoveTrackItemCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        track->MoveItem(item, m_Previous);
+
+        // Since the item has been moved, based on the new frame, the index may or may not be the same
+        m_ItemIndex = item->Index();
+    }
+}
+
+bool MoveTrackItemCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        if (track->MoveItem(item, m_Requested))
+        {
+            // Since the item has been moved, based on the new frame, the index may or may not be the same
+            // Best to query the internal item index again so that the undo works correctly
+            m_ItemIndex = item->Index();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/// MoveItemToTrackCommand
+
+MoveItemToTrackCommand::MoveItemToTrackCommand(const SharedPlaybackTrack& track, const SharedTrackItem& item, int trackIndex, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_PreviousFrame(item->TimelineIn())
+    , m_RequestedFrame(frame)
+    , m_PreviousTrackIndex(track->Index())
+    , m_RequestedTrackIndex(trackIndex)
+    , m_PreviousItemIndex(item->Index())
+    , m_Type(track->Type())
+{
+    setText("Move TrackItem");
+}
+
+void MoveItemToTrackCommand::undo()
+{
+    SharedPlaybackTrack previous = m_Sequence->TrackAt(m_PreviousTrackIndex, m_Type);
+    SharedPlaybackTrack requested = m_Sequence->TrackAt(m_RequestedTrackIndex, m_Type);
+
+    if (previous && requested)
+    {
+        SharedTrackItem item = requested->ItemAt(m_MovedItemIndex);
+        // Try move back, should have no issues though
+        if (previous->AddItem(item, m_PreviousFrame))
+            requested->RemoveItem(item);
+    }
+}
+
+bool MoveItemToTrackCommand::Redo()
+{
+    SharedPlaybackTrack previous = m_Sequence->TrackAt(m_PreviousTrackIndex, m_Type);
+    SharedPlaybackTrack requested = m_Sequence->TrackAt(m_RequestedTrackIndex, m_Type);
+
+    if (previous && requested)
+    {
+        SharedTrackItem item = previous->ItemAt(m_PreviousItemIndex);
+        if (requested->AddItem(item, m_RequestedFrame))
+        {
+            m_MovedItemIndex = requested->ItemIndex(item);
+            previous->RemoveItem(item);
+            return true;
+        }
+    }
+    return false;
+}
+
+/// OffsetItemCommand
+
+OffsetItemCommand::OffsetItemCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
+    , m_Offset(offset)
+    , m_TrackType(item->Track()->Type())
+{
+    setText("Offset Item");
+}
+
+void OffsetItemCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        track->OffsetItem(item, -m_Offset);
+    }
+}
+
+bool OffsetItemCommand::Redo()
+{
+    if (m_Offset == 0) return false;
+
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        return track->OffsetItem(item, m_Offset);
+    }
+
+    return false;
+}
+
+/// SetTrackItemColorCommand
+
+SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, const QColor& color, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
+    , m_Color(color)
+    , m_Previous(item->Color())
+    , m_TrackType(item->Track()->Type())
+    , m_Reset(false)
+{
+    setText("Set Trackitem Color");
+}
+
+SetTrackItemColorCommand::SetTrackItemColorCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Index())
+    , m_Color(QColor(0, 0, 0))
+    , m_Previous(item->Color())
+    , m_Reset(true)
+    , m_TrackType(item->Track()->Type())
+{
+    setText("Reset Trackitem Color");
+}
+
+void SetTrackItemColorCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetColor(m_Previous);
+    }
+}
+
+bool SetTrackItemColorCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        m_Reset ? item->ResetColor() : item->SetColor(m_Color);
+        return true;
+    }
+
+    return false;
+}
+
+/// LockTrackCommand
+
+ToggleLockTrackCommand::ToggleLockTrackCommand(const SharedPlaybackTrack& track, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->Index())
+    , m_TrackType(track->Type())
+{
+    setText(track->Locked() ? "Unlock Track" : "Lock Track");
+}
+
+void ToggleLockTrackCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+        track->Lock(!track->Locked());
+}
+
+bool ToggleLockTrackCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        track->Lock(!track->Locked());
+        return true;
+    }
+
+    return false;
+}
+
+/// ToggleTrackStateCommand
+
+ToggleTrackStateCommand::ToggleTrackStateCommand(const SharedPlaybackTrack& track, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->Index())
+    , m_TrackType(track->Type())
+{
+    setText(track->Enabled() ? "Disable Track" : "Enable Track");
+}
+
+void ToggleTrackStateCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+        track->SetEnabled(!track->Enabled());
+}
+
+bool ToggleTrackStateCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        track->SetEnabled(!track->Enabled());
+        return true;
+    }
+
+    return false;
+}
+
+/// ToggleTrackItemStateCommand
+
+ToggleTrackItemStateCommand::ToggleTrackItemStateCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->Index())
+{
+    setText("Toggle TrackItem");
+}
+
+void ToggleTrackItemStateCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetEnabled(!item->Enabled());
+    }
+}
+
+bool ToggleTrackItemStateCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetEnabled(!item->Enabled());
+        return true;
+    }
+    return false;
+}
+
+/// ToggleTimelineEffectCommand
+
+ToggleTimelineEffectCommand::ToggleTimelineEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->TimelineItem()->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->TimelineItem()->Track();
+    const TrackItem* const item = effect->TimelineItem();
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_ItemIndex = item->Index();
+    m_EffectIndex = item->EffectIndex(effect);
+}
+
+void ToggleTimelineEffectCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = item->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+    }
+}
+
+bool ToggleTimelineEffectCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = item->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+        return true;
+    }
+    return false;
+}
+
+/// ToggleTrackEffectCommand
+
+ToggleTrackEffectCommand::ToggleTrackEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_EffectIndex = track->EffectIndex(effect);
+}
+
+void ToggleTrackEffectCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+    }
+}
+
+bool ToggleTrackEffectCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->SetEnabled(!effect->Enabled());
+        return true;
+    }
+    return false;
+}
+
+/// CreateTrackCommand
+
+CreateTrackCommand::CreateTrackCommand(const SharedPlaybackSequence& sequence, const Sequence::Type& type, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
+    , m_Type(type)
+    , m_Index(type == Sequence::Type::VIDEO ? sequence->NumVideoTracks() : sequence->NumAudioTracks())
+{
+    setText(type == Sequence::Type::VIDEO ? "Create Video Track" : "Create Audio Track");
+}
+
+void CreateTrackCommand::undo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock()) sequence->RemoveTrack(m_Index, m_Type);
+}
+
+bool CreateTrackCommand::Redo()
+{
+    if (SharedPlaybackSequence sequence = m_Sequence.lock())
+    {
+        sequence->CreateTrack(m_Type);
+        return true;
+    }
+    return false;
+}
+
+/// DeleteTrackCommand
+
+DeleteTrackCommand::DeleteTrackCommand(const SharedPlaybackTrack& track, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_Type(track->Type())
+{
+    m_TrackIndex = track->Index();
+    setText("Delete Track");
+}
+
+void DeleteTrackCommand::undo()
+{
+    std::istringstream is(m_TrackData, std::ios::binary);
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(m_Type, m_Sequence);
+    track->Deserialize(is);
+    m_Type == Sequence::Type::VIDEO ? m_Sequence->AddVideoTrack(track, m_TrackIndex) : m_Sequence->AddAudioTrack(track, m_TrackIndex);
+}
+
+bool DeleteTrackCommand::Redo()
+{
+    if (SharedPlaybackTrack track = m_Sequence->TrackAt(m_TrackIndex, m_Type))
+    {
+        std::ostringstream os(std::ios::binary);
+        track->Serialize(os);
+        m_TrackData = os.str();
+
+        track->Clear();
+        m_Sequence->RemoveTrack(track);
+        return true;
+    }
+
+    return false;
+}
+
+/// DeleteTrackItemCommand
+
+DeleteTrackItemCommand::DeleteTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+{
+    PlaybackTrack* track = item->Track();
+    m_Sequence = track->Sequence();
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_ItemIndex = item->Index();
+
+    setText("Delete TrackItem");
+}
+
+void DeleteTrackItemCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        std::istringstream is(m_ItemData, std::ios::binary);
+        SharedTrackItem item = std::make_shared<TrackItem>(m_TrackType, track.get());
+        item->Deserialize(is);
+        track->AddItem(item);
+    }
+}
+
+bool DeleteTrackItemCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        std::ostringstream os(std::ios::binary);
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->Serialize(os);
+        m_ItemData = os.str();
+        track->RemoveItem(item);
+        return true;
+    }
+    return false;
+}
+
+/// DeleteTimelineEffectCommand
+
+DeleteTimelineEffectCommand::DeleteTimelineEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->TimelineItem()->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->TimelineItem()->Track();
+    const TrackItem* const item = effect->TimelineItem();
+    m_TrackType = track->Type();
+    m_TrackIndex = m_TrackType == Sequence::Type::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_ItemIndex = track->ItemIndex(item);
+    m_EffectIndex = item->EffectIndex(effect);
+
+    m_EffectType = effect->Type();
+
+    setText("Delete Timeline Effect");
+}
+
+void DeleteTimelineEffectCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
+    if (track)
+    {
+        std::istringstream is(m_EffectData, std::ios::binary);
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = EffectsBridge::Instance().CreateEffect(m_EffectType);
+        effect->Deserialize(is);
+        item->InsertEffect(effect, m_EffectIndex);
+    }
+}
+
+bool DeleteTimelineEffectCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
+    if (track)
+    {
+        std::ostringstream os(std::ios::binary);
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        Effect* effect = item->EffectAt(m_EffectIndex);
+        effect->Serialize(os);
+        m_EffectData = os.str();
+        item->RemoveEffect(m_EffectIndex);
+        return true;
+    }
+    return false;
+}
+
+/// DeleteTrackEffectCommand
+
+DeleteTrackEffectCommand::DeleteTrackEffectCommand(Effect* effect, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(effect->Track()->Sequence())
+{
+    const PlaybackTrack* const track = effect->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = m_TrackType == Sequence::Type::VIDEO ? m_Sequence->VideoTrackIndex(track) : m_Sequence->AudioTrackIndex(track);
+    m_EffectIndex = track->EffectIndex(effect);
+    m_EffectType = effect->Type();
+
+    setText("Delete Timeline Effect");
+}
+
+void DeleteTrackEffectCommand::undo()
+{
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
+    if (track)
+    {
+        std::istringstream is(m_EffectData, std::ios::binary);
+        Effect* effect = EffectsBridge::Instance().CreateEffect(m_EffectType);
+        effect->Deserialize(is);
+        track->InsertEffect(effect, m_EffectIndex);
+    }
+}
+
+bool DeleteTrackEffectCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType);
+    if (track)
+    {
+        std::ostringstream os(std::ios::binary);
+        Effect* effect = track->EffectAt(m_EffectIndex);
+        effect->Serialize(os);
+        m_EffectData = os.str();
+        track->RemoveEffect(m_EffectIndex, true);
+        return true;
+    }
+    return false;
+}
+
+/// CreateTimelineEffectCommand
+
+CreateTimelineEffectCommand::CreateTimelineEffectCommand(const SharedTrackItem& item, const std::string type, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_EffectType(type)
+{
+    const PlaybackTrack* const track = item->Track();
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_ItemIndex = track->ItemIndex(item);
+    m_EffectIndex = item->NumEffects();
+
+    QString text("Create '%1' Effect");
+    setText(text.arg(type.c_str()));
+}
+
+void CreateTimelineEffectCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->RemoveEffect(m_EffectIndex);
+    }
+}
+
+bool CreateTimelineEffectCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        const SharedTrackItem item = track->ItemAt(m_ItemIndex);
+
+        if (m_Name.empty())
+        {
+            if (Effect* effect = track->CreateEffect(item, m_EffectType))
+            {
+                m_Name = effect->Name();
+                return true;
+            }
+        }
+        else
+        {
+            return (bool)track->CreateEffect(item, m_EffectType, m_Name);
+        }
+    }
+    return false;
+}
+
+/// CreateTrackEffectCommand
+
+CreateTrackEffectCommand::CreateTrackEffectCommand(const SharedPlaybackTrack& track, const std::string type, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_EffectType(type)
+{
+    m_TrackType = track->Type();
+    m_TrackIndex = track->Index();
+    m_EffectIndex = track->NumEffects();
+
+    QString text("Create '%1' Effect");
+    setText(text.arg(type.c_str()));
+}
+
+void CreateTrackEffectCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+        track->RemoveEffect(m_EffectIndex);
+}
+
+bool CreateTrackEffectCommand::Redo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        if (m_Name.empty())
+        {
+            if (Effect* effect = track->CreateEffect(m_EffectType))
+            {
+                m_Name = effect->Name();
+                return true;
+            }
+        }
+        else
+        {
+            return (bool)track->CreateEffect(m_EffectType, m_Name);
+        }
+    }
+    return false;
+}
+
+/// RazorTrackCommand
+
+RazorTrackCommand::RazorTrackCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : RazorTrackCommand(track.get(), frame, parent)
+{
+    setText("Razor Item");
+}
+
+RazorTrackCommand::RazorTrackCommand(const PlaybackTrack* track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->Index())
+    , m_Type(track->Type())
+    , m_Frame(frame)
+{
+    setText("Razor Item");
+}
+
+void RazorTrackCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_Type))
+        track->MergeCut(m_Frame);
+}
+
+bool RazorTrackCommand::Redo()
+{
+    const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_Type);
+    return track ? track->RazorAt(m_Frame) : false;
+}
+
+/// RazorSequenceCommand
+
+RazorSequenceCommand::RazorSequenceCommand(const SharedPlaybackSequence& sequence, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(sequence)
+    , m_Frame(frame)
+{
+    setText("Razor Items");
+}
+
+void RazorSequenceCommand::undo()
+{
+    for (auto& track : m_Sequence->VideoTracks())
+        track->MergeCut(m_Frame);
+
+    for (auto& track : m_Sequence->AudioTracks())
+        track->MergeCut(m_Frame);
+}
+
+bool RazorSequenceCommand::Redo()
+{
+    bool status = false;
+
+    for (auto& track : m_Sequence->VideoTracks())
+        status |= track->RazorAt(m_Frame);
+
+    for (auto& track : m_Sequence->AudioTracks())
+        status |= track->RazorAt(m_Frame);
+
+    return status;
+}
+
+/// MergeCutCommand
+
+MergeCutCommand::MergeCutCommand(const SharedPlaybackTrack& track, v_frame_t frame, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(track->Sequence())
+    , m_TrackIndex(track->Index())
+    , m_Type(track->Type())
+    , m_Frame(frame)
+{
+    setText("Merge Items");
+}
+
+void MergeCutCommand::undo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::Type::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    track->RazorAt(m_Frame);
+}
+
+bool MergeCutCommand::Redo()
+{
+    SharedPlaybackTrack track = m_Type == Sequence::Type::VIDEO ? m_Sequence->VideoTrackAt(m_TrackIndex) : m_Sequence->AudioTrackAt(m_TrackIndex);
+    return track ? track->MergeCut(m_Frame) : false;
+}
+
+/// OffsetItemSourceCommand
+
+OffsetItemSourceCommand::OffsetItemSourceCommand(const SharedTrackItem& item, int offset, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Offset(offset)
+    , m_Previous(item->SourceIn())
+{
+    setText("Slip Item Source");
+}
+
+void OffsetItemSourceCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetSourceIn(m_Previous);
+    }
+}
+
+bool OffsetItemSourceCommand::Redo()
+{
+    if (m_Offset == 0)
+        return false;
+
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->SetSourceIn(item->SourceIn() + m_Offset);
+        return true;
+    }
+
+    return false;
+}
+
+/// TrimItemHeadCommand
+
+TrimItemHeadCommand::TrimItemHeadCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Handle(handle)
+{
+    setText("Trim Item");
+}
+
+void TrimItemHeadCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->TrimHead(-m_Handle);
+    }
+}
+
+bool TrimItemHeadCommand::Redo()
+{
+    if (m_Handle == 0) return false;
+
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        if (m_Handle > item->Duration()) return false;
+        item->TrimHead(m_Handle);
+        return true;
+    }
+
+    return false;
+}
+
+/// TrimItemTailCommand
+
+TrimItemTailCommand::TrimItemTailCommand(const SharedTrackItem& item, int handle, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Sequence(item->Track()->Sequence())
+    , m_TrackType(item->Track()->Type())
+    , m_TrackIndex(item->Track()->Index())
+    , m_ItemIndex(item->Track()->ItemIndex(item))
+    , m_Handle(handle)
+{
+    setText("Trim Item");
+}
+
+void TrimItemTailCommand::undo()
+{
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        item->TrimTail(-m_Handle);
+    }
+}
+
+bool TrimItemTailCommand::Redo()
+{
+    if (m_Handle == 0) return false;
+
+    if (const SharedPlaybackTrack& track = m_Sequence->TrackAt(m_TrackIndex, m_TrackType))
+    {
+        SharedTrackItem item = track->ItemAt(m_ItemIndex);
+        if (m_Handle > item->Duration()) return false;
+        item->TrimTail(m_Handle);
+        return true;
+    }
+
+    return false;
+}
+
+/// CutPasteTrackItemCommand
+
+CutPasteTrackItemCommand::CutPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Cut TrackItem");
+}
+
+void CutPasteTrackItemCommand::undo()
+{
+    // The source track item has been moved, can't resolve back to the track item object
+    Sequence::ResolvedContext rsource = m_SourceCtx.Resolve(Sequence::Context::Type::TRACK);
+    Sequence::ResolvedContext rdest = m_ActedCtx.Resolve();
+    if (rdest.track.get() == rsource.track.get())
+    {
+        rsource.track->MoveItem(rdest.trackItem, rsource.frame);
+        return;
+    }
+
+    if (rsource.track->AddItem(rdest.trackItem, rsource.frame))
+    {
+        rdest.track->RemoveItem(rdest.trackItem);
+    }
+}
+
+bool CutPasteTrackItemCommand::Redo()
+{
+    // Ensure that we have a Track Context to copy the item to
+    if (m_DestinationCtx.type == Sequence::Context::Type::TRACK)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        if (rdest.track.get() == rsource.track.get())
+        {
+            rdest.track->MoveItem(rsource.trackItem, rdest.frame);
+            m_ActedCtx = Sequence::Context::Get(rsource.trackItem);
+            return true;
+        }
+
+        if (rdest.track->AddItem(rsource.trackItem, rdest.frame))
+        {
+            rsource.track->RemoveItem(rsource.trackItem);
+            m_ActedCtx = Sequence::Context::Get(rsource.trackItem);
+            return true;
+        }
+    }
+    return false;
+}
+
+/// CopyPasteTrackItemCommand
+
+CopyPasteTrackItemCommand::CopyPasteTrackItemCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Copy TrackItem");
+}
+
+void CopyPasteTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+    acted.track->RemoveItem(acted.trackItem);
+}
+
+bool CopyPasteTrackItemCommand::Redo()
+{
+    // Ensure that we have a Track Context to copy the item to
+    if (m_DestinationCtx.type == Sequence::Context::Type::TRACK)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        SharedTrackItem copied = std::make_shared<TrackItem>(*rsource.trackItem.get());
+        if (rdest.track->AddItem(copied, rdest.frame))
+        {
+            // Store the acted upon context
+            m_ActedCtx = Sequence::Context::Get(copied);
+            return true;
+        }
+    }
+    return false;
+}
+
+/// CutPasteTrackCommand
+
+CutPasteTrackCommand::CutPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Cut Track");
+}
+
+void CutPasteTrackCommand::undo()
+{
+    Sequence::ResolvedContext rsource = m_SourceCtx.Resolve(Sequence::Context::Type::SEQUENCE);
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+
+    SharedPlaybackTrack track = acted.track;
+    acted.sequence->RemoveTrack(track);
+    acted.tracktype == Sequence::Type::VIDEO
+                    ? rsource.sequence->AddVideoTrack(track, m_SourceCtx.trackIdx)
+                    : rsource.sequence->AddAudioTrack(track, m_SourceCtx.trackIdx);
+}
+
+bool CutPasteTrackCommand::Redo()
+{
+    // Ensure that we have a Sequence Context to move the track to
+    if (m_DestinationCtx.type >= Sequence::Context::Type::SEQUENCE)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        SharedPlaybackTrack track = rsource.track;
+        rsource.sequence->RemoveTrack(track);
+        rsource.tracktype == Sequence::Type::VIDEO ? rdest.sequence->AddVideoTrack(track) : rdest.sequence->AddAudioTrack(track);
+        m_ActedCtx = Sequence::Context::Get(track);
+
+        return true;
+    }
+    return false;
+}
+
+/// CopyPasteTrackCommand
+
+CopyPasteTrackCommand::CopyPasteTrackCommand(const Sequence::Context& source, const Sequence::Context& destination, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_SourceCtx(source)
+    , m_DestinationCtx(destination)
+{
+    setText("Copy Track");
+}
+
+void CopyPasteTrackCommand::undo()
+{
+    Sequence::ResolvedContext acted = m_ActedCtx.Resolve();
+    acted.sequence->RemoveTrack(acted.track);
+}
+
+bool CopyPasteTrackCommand::Redo()
+{
+    // Ensure that we have a Sequence Context to copy the track to
+    if (m_DestinationCtx.type >= Sequence::Context::Type::SEQUENCE)
+    {
+        Sequence::ResolvedContext rsource = m_SourceCtx.Resolve();
+        Sequence::ResolvedContext rdest = m_DestinationCtx.Resolve();
+
+        std::ostringstream os(std::ios::binary);
+        rsource.track->Serialize(os);
+
+        std::istringstream is(os.str(), std::ios::binary);
+        SharedPlaybackTrack copied = std::make_shared<PlaybackTrack>(rsource.tracktype, rdest.sequence.get());
+        // rdest.sequence->Add
+        rsource.tracktype == Sequence::Type::VIDEO ? rdest.sequence->AddVideoTrack(copied) : rdest.sequence->AddAudioTrack(copied);
+        copied->Deserialize(is);
+
+        m_ActedCtx = Sequence::Context::Get(copied);
+        return true;
+    }
+    return false;
+}
+
+/// VersionUpTrackItemCommand
+
+VersionUpTrackItemCommand::VersionUpTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    setText("Version Up TrackItem");
+}
+
+void VersionUpTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->VersionDown();
+}
+
+bool VersionUpTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->VersionUp();
+}
+
+/// MaxVersionTrackItemCommand
+
+MaxVersionTrackItemCommand::MaxVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    m_PreviousRow = item->Project()->MediaRow(item->GetMedia());
+    setText("Max Version TrackItem");
+}
+
+void MaxVersionTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_PreviousRow, 0));
+}
+
+bool MaxVersionTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->SetLatestAvailableVersion();
+}
+
+/// VersionDownTrackItemCommand
+
+VersionDownTrackItemCommand::VersionDownTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    setText("Version Up TrackItem");
+}
+
+void VersionDownTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->VersionUp();
+}
+
+bool VersionDownTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->VersionDown();
+}
+
+/// MinVersionTrackItemCommand
+
+MinVersionTrackItemCommand::MinVersionTrackItemCommand(const SharedTrackItem& item, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    m_PreviousRow = item->Project()->MediaRow(item->GetMedia());
+    setText("Min Version TrackItem");
+}
+
+void MinVersionTrackItemCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_PreviousRow, 0));
+}
+
+bool MinVersionTrackItemCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->SetMinAvailableVersion();
+}
+
+/// ResetTrackItemMediaCommand
+
+ResetTrackItemMediaCommand::ResetTrackItemMediaCommand(const SharedTrackItem& item, const SharedMediaClip& media, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    Core::Project* project = item->Project();
+    m_PreviousRow = project->MediaRow(item->GetMedia());
+    m_RequestedRow = project->MediaRow(media);
+
+    setText("Update Media");
+}
+
+ResetTrackItemMediaCommand::ResetTrackItemMediaCommand(const SharedTrackItem& item, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+{
+    Core::Project* project = item->Project();
+    m_PreviousRow = project->MediaRow(item->GetMedia());
+    m_RequestedRow = index.row();
+
+    setText("Update Media");
+}
+
+void ResetTrackItemMediaCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_PreviousRow, 0));
+}
+
+bool ResetTrackItemMediaCommand::Redo()
+{
+    if (m_RequestedRow == m_PreviousRow) return false;
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->ResetMedia(context.project->MediaAt(m_RequestedRow, 0));
+    return true;
+}
+
+/// AddTagCommand
+
+AddTagCommand::AddTagCommand(const SharedPlaybackTrack& track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(track->NumTags())
+{
+    setText("Add Tag");
+}
+
+AddTagCommand::AddTagCommand(PlaybackTrack* track, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(track->NumTags())
+{
+    setText("Add Tag");
+}
+
+void AddTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    context.track->RemoveTag(m_TagIndex);
+}
+
+bool AddTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    return context.track->AddTag(m_Tag, m_Metadata);
+}
+
+/// AddTrackItemTagCommand
+
+AddTrackItemTagCommand::AddTrackItemTagCommand(const SharedTrackItem& trackitem, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(trackitem))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(trackitem->NumTags())
+{
+    setText("Add Tag");
+}
+
+AddTrackItemTagCommand::AddTrackItemTagCommand(TrackItem* trackitem, const std::string& tag, const TagMetaStruct& metadata, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(trackitem))
+    , m_Tag(tag)
+    , m_Metadata(metadata)
+    , m_TagIndex(trackitem->NumTags())
+{
+    setText("Add Tag");
+}
+
+void AddTrackItemTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    context.trackItem->RemoveTag(m_TagIndex);
+}
+
+bool AddTrackItemTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    return context.trackItem->AddTag(m_Tag, m_Metadata);
+}
+
+/// RemoveTrackTagCommand
+
+RemoveTrackTagCommand::RemoveTrackTagCommand(const SharedPlaybackTrack& track, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+RemoveTrackTagCommand::RemoveTrackTagCommand(PlaybackTrack* track, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_TrackContext(Sequence::Context::Get(track))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+void RemoveTrackTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    std::istringstream in(m_TagData, std::ios::binary);
+    Tag* tag = new Tag("t");
+    tag->Deserialize(in);
+
+    context.track->InsertTag(tag, m_TagIndex.row());
+}
+
+bool RemoveTrackTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_TrackContext.Resolve();
+    if (Tag* tag = context.track->TagAt(m_TagIndex))
+    {
+        std::ostringstream os(std::ios::binary);
+        tag->Serialize(os);
+
+        m_TagData = os.str();
+
+        // We're going to Remove the same tag here, so Tag* tag will be a dangling pointer to something
+        // which gets deleted after this call, make sure we don't have a case for that
+        tag = nullptr;
+        context.track->RemoveTag(m_TagIndex);
+
+        return true;
+    }
+    return false;
+}
+
+/// RemoveTrackItemTagCommand
+
+RemoveTrackItemTagCommand::RemoveTrackItemTagCommand(const SharedTrackItem& item, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+RemoveTrackItemTagCommand::RemoveTrackItemTagCommand(TrackItem* item, const QModelIndex& index, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_ItemContext(Sequence::Context::Get(item))
+    , m_TagIndex(index)
+{
+    setText("Remove Tag");
+}
+
+void RemoveTrackItemTagCommand::undo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    std::istringstream in(m_TagData, std::ios::binary);
+    Tag* tag = new Tag("t");
+    tag->Deserialize(in);
+
+    context.trackItem->InsertTag(tag, m_TagIndex.row());
+}
+
+bool RemoveTrackItemTagCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_ItemContext.Resolve();
+    if (Tag* tag = context.trackItem->TagAt(m_TagIndex))
+    {
+        std::ostringstream os(std::ios::binary);
+        tag->Serialize(os);
+
+        m_TagData = os.str();
+
+        // We're going to Remove the same tag here, so Tag* tag will be a dangling pointer to something
+        // which gets deleted after this call, make sure we don't have a case for that
+        tag = nullptr;
+        context.trackItem->RemoveTag(m_TagIndex);
+
+        return true;
+    }
+    return false;
+}
+
+/// SetReferenceMediaCommand
+
+SetReferenceMediaCommand::SetReferenceMediaCommand(const SharedMediaClip& media, const SharedPlaybackSequence& sequence, QUndoCommand* parent)
+    : VoidUndoCommand(parent)
+    , m_Context(Sequence::Context::Get(sequence))
+    , m_Project(media->Project())
+    , m_MediaIndex(m_Project->MediaRow(media))
+{
+    setText("Set Reference Media");
+}
+
+void SetReferenceMediaCommand::undo()
+{
+    Sequence::ResolvedContext context = m_Context.Resolve();
+    if (SharedPlaybackTrack refvideo = context.sequence->ReferenceVideoTrack())
+        context.sequence->RemoveTrack(refvideo);
+
+    if (SharedPlaybackTrack refaudio = context.sequence->ReferenceAudioTrack())
+        context.sequence->RemoveTrack(refaudio);
+}
+
+bool SetReferenceMediaCommand::Redo()
+{
+    Sequence::ResolvedContext context = m_Context.Resolve();
+    const SharedMediaClip& media = m_Project->MediaAt(m_MediaIndex, 0);
+
+    if (!media) return false;
+
+    SharedPlaybackTrack refvideo = context.sequence->ReferenceVideoTrack();
+    if (!refvideo)
+    {
+        refvideo = context.sequence->CreateTrack(Sequence::Type::VIDEO, 0);
+        refvideo->SetName("Reference");
+        refvideo->AddTag("Reference");
+    }
+    refvideo->SetMedia(media);
+
+    if (media->HasAudio())
+    {
+        SharedPlaybackTrack refaudio = context.sequence->ReferenceAudioTrack();
+        if (!refaudio)
+        {
+            refaudio = context.sequence->CreateTrack(Sequence::Type::AUDIO, 0);
+            refaudio->SetName("Reference");
+            refaudio->AddTag("Reference");
+        }
+        refaudio->SetMedia(media);
+    }
+
+    return true;
+}
+
+VOID_NAMESPACE_CLOSE

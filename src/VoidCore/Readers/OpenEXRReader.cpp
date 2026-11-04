@@ -24,9 +24,13 @@
 #include <OpenEXR/ImfRgbaFile.h>
 #include <OpenEXR/ImfStringAttribute.h>
 
+/* TBB */
+#include <tbb/parallel_for.h>
+
 /* Internal */
 #include "OpenEXRReader.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/VoidTools.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -47,7 +51,7 @@ void OpenEXRReader::Clear()
 
 void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
-    Imf::RgbaInputFile f(path.c_str());
+    Imf::RgbaInputFile f(path.c_str(), Tools::thread_count());
     // Image Specs
     Imath::Box2i dw = f.dataWindow();
     image->width = (dw.max.x - dw.min.x) + 1;
@@ -81,20 +85,23 @@ void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt
     f.readPixels(dw.min.y, dw.max.y);
 
     image->buffer.Resize(image->width * image->height * image->channels);
+    const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
+    const Imf::Rgba* source = &pixels[0][0];
+    unsigned char* im = image->buffer.Data();
 
-    for (int y = 0; y < image->height; y++)
+    tbb::parallel_for(tbb::blocked_range<int64_t>(0, pixelcount), [&](const tbb::blocked_range<int64_t>& r) -> void
     {
-        for (int x = 0; x < image->width; x++)
+        for (int64_t i = r.begin(); i != r.end(); ++i)
         {
-            const Imf::Rgba& pixel = pixels[y][x];
-            int index = (y * image->width + x) * image->channels;
+            const Imf::Rgba pixel = source[i];
+            const int index = i * 4;
 
-            image->buffer[index] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
-            image->buffer[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
-            image->buffer[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
-            image->buffer[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
+            im[index + 0] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
+            im[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
+            im[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
+            im[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
         }
-    }
+    });
 }
 
 void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
@@ -132,24 +139,28 @@ void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& i
 
     image->buffer.Resize(image->width * image->height * image->channels);
 
-    for (int y = 0; y < image->height; y++)
-    {
-        for (int x = 0; x < image->width; x++)
-        {
-            const Imf::Rgba& pixel = pixels[y][x];
-            int index = (y * image->width + x) * image->channels;
+    const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
+    const Imf::Rgba* source = &pixels[0][0];
+    float* im = image->buffer.Data();
 
-            image->buffer[index] = pixel.r;
-            image->buffer[index + 1] = pixel.g;
-            image->buffer[index + 2] = pixel.b;
-            image->buffer[index + 3] = pixel.a;
+    tbb::parallel_for(tbb::blocked_range<int64_t>(0, pixelcount), [&](const tbb::blocked_range<int64_t>& r) -> void
+    {
+        for (int64_t i = r.begin(); i != r.end(); ++i)
+        {
+            const Imf::Rgba pixel = source[i];
+            const int index = i * 4;
+
+            im[index + 0] = pixel.r;
+            im[index + 1] = pixel.g;
+            im[index + 2] = pixel.b;
+            im[index + 3] = pixel.a;
         }
-    }
+    });
 }
 
 void OpenEXRReader::Read()
 {
-    Imf::RgbaInputFile f(m_Path.c_str());
+    Imf::RgbaInputFile f(m_Path.c_str(), Tools::thread_count());
 
     // Image Specs
     Imath::Box2i dw = f.dataWindow();
@@ -181,20 +192,24 @@ void OpenEXRReader::Read()
     f.readPixels(dw.min.y, dw.max.y);
 
     m_Image->buffer.Resize(m_Image->width * m_Image->height * m_Image->channels);
+    const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
 
-    for (int y = 0; y < m_Image->height; y++)
+    const Imf::Rgba* source = &pixels[0][0];
+    float* im = m_Image->buffer.Data();
+
+    tbb::parallel_for(tbb::blocked_range<int64_t>(0, pixelcount), [&](const tbb::blocked_range<int64_t>& r) -> void
     {
-        for (int x = 0; x < m_Image->width; x++)
+        for (int64_t i = r.begin(); i != r.end(); ++i)
         {
-            const Imf::Rgba& pixel = pixels[y][x];
-            int index = (y * m_Image->width + x) * m_Image->channels;
+            const Imf::Rgba pixel = source[i];
+            const int index = i * 4;
 
-            m_Image->buffer[index] = pixel.r;
-            m_Image->buffer[index + 1] = pixel.g;
-            m_Image->buffer[index + 2] = pixel.b;
-            m_Image->buffer[index + 3] = pixel.a;
+            im[index + 0] = pixel.r;
+            im[index + 1] = pixel.g;
+            im[index + 2] = pixel.b;
+            im[index + 3] = pixel.a;
         }
-    }
+    });
 }
 
 const std::map<std::string, std::string> OpenEXRReader::Metadata() const

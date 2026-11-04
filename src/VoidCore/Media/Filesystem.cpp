@@ -73,67 +73,67 @@ MEntry::MEntry(const std::string& basepath, const std::string& name, const std::
     m_Path = path.string();
 }
 
-MEntry::~MEntry()
-{
-}
+// MEntry::~MEntry()
+// {
+// }
 
-MEntry::MEntry(MEntry&& other) noexcept
-    : m_Path(std::move(other.m_Path))
-    , m_Basepath(std::move(other.m_Basepath))
-    , m_Name(std::move(other.m_Name))
-    , m_Extension(std::move(other.m_Extension))
-    , m_FramePadding(other.m_FramePadding)
-    , m_Framenumber(other.m_Framenumber)
-    , m_SingleFile(other.m_SingleFile)
-    , m_Templated(other.m_Templated)
-{
-}
+// MEntry::MEntry(MEntry&& other) noexcept
+//     : m_Path(std::move(other.m_Path))
+//     , m_Basepath(std::move(other.m_Basepath))
+//     , m_Name(std::move(other.m_Name))
+//     , m_Extension(std::move(other.m_Extension))
+//     , m_FramePadding(other.m_FramePadding)
+//     , m_Framenumber(other.m_Framenumber)
+//     , m_SingleFile(other.m_SingleFile)
+//     , m_Templated(other.m_Templated)
+// {
+// }
 
-MEntry& MEntry::operator=(MEntry&& other) noexcept
-{
-    if (&other == this)
-        return *this;
+// MEntry& MEntry::operator=(MEntry&& other) noexcept
+// {
+//     if (&other == this)
+//         return *this;
     
-    m_Path = std::move(other.m_Path);
-    m_Basepath = std::move(other.m_Basepath);
-    m_Name = std::move(other.m_Name);
-    m_Extension = std::move(other.m_Extension);
-    m_FramePadding = other.m_FramePadding;
-    m_Framenumber = other.m_Framenumber;
-    m_SingleFile = other.m_SingleFile;
-    m_Templated = other.m_Templated;
+//     m_Path = std::move(other.m_Path);
+//     m_Basepath = std::move(other.m_Basepath);
+//     m_Name = std::move(other.m_Name);
+//     m_Extension = std::move(other.m_Extension);
+//     m_FramePadding = other.m_FramePadding;
+//     m_Framenumber = other.m_Framenumber;
+//     m_SingleFile = other.m_SingleFile;
+//     m_Templated = other.m_Templated;
 
-    return *this;
-}
+//     return *this;
+// }
 
-MEntry::MEntry(const MEntry& other)
-    : m_Path(other.m_Path)
-    , m_Basepath(other.m_Basepath)
-    , m_Name(other.m_Name)
-    , m_Extension(other.m_Extension)
-    , m_FramePadding(other.m_FramePadding)
-    , m_Framenumber(other.m_Framenumber)
-    , m_SingleFile(other.m_SingleFile)
-    , m_Templated(other.m_Templated)
-{
-}
+// MEntry::MEntry(const MEntry& other)
+//     : m_Path(other.m_Path)
+//     , m_Basepath(other.m_Basepath)
+//     , m_Name(other.m_Name)
+//     , m_Extension(other.m_Extension)
+//     , m_FramePadding(other.m_FramePadding)
+//     , m_Framenumber(other.m_Framenumber)
+//     , m_SingleFile(other.m_SingleFile)
+//     , m_Templated(other.m_Templated)
+// {
+// }
 
-MEntry& MEntry::operator=(const MEntry& other)
-{
-    if (&other == this)
-        return *this;
+// MEntry& MEntry::operator=(const MEntry& other)
+// {
+//     if (&other == this)
+//         return *this;
 
-    m_Path = other.m_Path;
-    m_Basepath = other.m_Basepath;
-    m_Name = other.m_Name;
-    m_Extension = other.m_Extension;
-    m_FramePadding = other.m_FramePadding;
-    m_Framenumber = other.m_Framenumber;
-    m_SingleFile = other.m_SingleFile;
-    m_Templated = other.m_Templated;
+//     m_Path = other.m_Path;
+//     m_Basepath = other.m_Basepath;
+//     m_Name = other.m_Name;
+//     m_Extension = other.m_Extension;
+//     m_FramePadding = other.m_FramePadding;
+//     m_Framenumber = other.m_Framenumber;
+//     m_SingleFile = other.m_SingleFile;
+//     m_Templated = other.m_Templated;
 
-    return *this;
-}
+//     return *this;
+// }
 
 void MEntry::Parse(const std::string& path)
 {
@@ -141,14 +141,10 @@ void MEntry::Parse(const std::string& path)
     m_Path = path;
 
     std::filesystem::path filepath(path);
-
-    /* The base path for the file */
     m_Basepath = filepath.parent_path().string();
-    /* Grab the filename from the rest of the base path */
     std::string filename = filepath.filename().string();
 
-    /* From the last . try to get the extension and other parts */
-    size_t lastDot = filename.find_last_of(".");
+    std::size_t lastDot = filename.find_last_of(".");
     std::string remaining = filename.substr(0, lastDot);
 
     m_Extension = filename.substr(lastDot + 1);
@@ -156,14 +152,11 @@ void MEntry::Parse(const std::string& path)
     lastDot = remaining.find_last_of(".");
     std::string framestring = remaining.substr(lastDot + 1);
 
-    /* Validate a case where file is named 1.ext or 1001.ext */
+    // Validate a case where file is named 1.ext or 1001.ext
     if (framestring == remaining)
     {
         m_Name = remaining;
-        /* It can be considered as a single file */
         m_SingleFile = true;
-
-        /* No need to proceed further */
         return;
     }
 
@@ -173,7 +166,7 @@ void MEntry::Parse(const std::string& path)
      */
     if (ValidFrame(framestring))
     {
-        m_FramePadding = framestring.size();
+        m_FramePadding = static_cast<unsigned int>(framestring.size());
         m_Framenumber = std::stol(framestring);
         m_Name = remaining.substr(0, lastDot);
     }
@@ -182,10 +175,9 @@ void MEntry::Parse(const std::string& path)
         m_Templated = true;
         m_Name = remaining.substr(0, lastDot);
     }
-    else /* In case we don't have an image sequence, just a standard image */
+    else // In case we don't have an image sequence, just a standard image
     {
         m_Name = remaining;
-        /* Update the state so we know it is a single file */
         m_SingleFile = true;
     }
 }
@@ -201,7 +193,7 @@ bool MEntry::ValidFrame(const std::string& framestring) const
             return false;
     }
 
-    /* Valid frame */
+    // Valid frame number
     return true;
 }
 
@@ -291,6 +283,29 @@ std::string MEntry::ResolvedPath(v_frame_t frame) const
     return m_Path;
 }
 
+ElementTokens MEntry::Tokens() const
+{
+    /**
+     * A file path (or an element) can have version embedded within the name for e.g. bt01_002_0020_v001
+     * but sometimes it could only be mentioned in the path for e.g.
+     * /projects/rom/renders/lighting/rt_01_0350_0040/v005/rt_01_0350_0040.####.exr
+     * as a check, we'll start with the name first, if it's not found in the name, we'll check the path
+     * else No Version (unless we provide one to it, but that can be handled at the media level)
+     */
+    std::string_view name = m_Name;
+    std::size_t pos = name.rfind('_');
+    if (pos != std::string_view::npos && (pos + 1) < name.size())
+    {
+        if (name[pos + 1] == 'v' || name[pos + 1] == 'V')
+            return ElementTokens(m_Name.substr(0, pos), m_Name.substr(pos + 1));
+    }
+
+    std::filesystem::path p(m_Basepath);
+    std::string stem(p.stem().string());
+
+    return (stem[0] == 'v' || stem[0] == 'V') ? ElementTokens(m_Name, stem) : ElementTokens(m_Name);
+}
+
 /* }}} */
 
 /* Media Struct {{{ */
@@ -302,13 +317,12 @@ MediaStruct::MediaStruct()
 
 MediaStruct::MediaStruct(const MEntry& entry, const MediaType& type)
 {
-    /* Setup Media */
     Reset(entry, type);
 }
 
-MediaStruct::~MediaStruct()
-{
-}
+// MediaStruct::~MediaStruct()
+// {
+// }
 
 MediaStruct::MediaStruct(const std::string& basepath, const std::string& name, const std::string& extension)
 {
@@ -373,63 +387,63 @@ MediaStruct::MediaStruct(const std::string& basepath,
     m_MediaType = MediaType::Image;
 }
 
-MediaStruct::MediaStruct(const MediaStruct& other)
-{
-    /* Update the Media Type */
-    m_MediaType = other.m_MediaType;
+// MediaStruct::MediaStruct(const MediaStruct& other)
+// {
+//     /* Update the Media Type */
+//     m_MediaType = other.m_MediaType;
 
-    /* Clear Existing Frames */
-    m_Frames.clear();
-    m_Frames.reserve(other.m_Frames.size());
+//     /* Clear Existing Frames */
+//     m_Frames.clear();
+//     m_Frames.reserve(other.m_Frames.size());
 
-    for (v_frame_t frame: other.m_Frames)
-        m_Frames.emplace_back(frame);
+//     for (v_frame_t frame: other.m_Frames)
+//         m_Frames.emplace_back(frame);
 
-    m_Entries = other.m_Entries;
-}
+//     m_Entries = other.m_Entries;
+// }
 
-MediaStruct::MediaStruct(MediaStruct&& other) noexcept
-    : m_MediaType(other.m_MediaType)
-{
-    std::swap(m_Frames, other.m_Frames);
-    std::swap(m_Entries, other.m_Entries);
-}
+// MediaStruct::MediaStruct(MediaStruct&& other) noexcept
+//     : m_MediaType(other.m_MediaType)
+// {
+//     std::swap(m_Frames, other.m_Frames);
+//     std::swap(m_Entries, other.m_Entries);
+// }
 
-MediaStruct MediaStruct::operator=(const MediaStruct& other)
-{
-    /* Talking about the same entity */
-    if (this == &other)
-        return *this;
+// MediaStruct MediaStruct::operator=(const MediaStruct& other)
+// {
+//     /* Talking about the same entity */
+//     if (this == &other)
+//         return *this;
 
-    /* Update the Media Type */
-    m_MediaType = other.m_MediaType;
-    m_Frames.clear();
+//     /* Update the Media Type */
+//     m_MediaType = other.m_MediaType;
+//     m_Frames.clear();
 
-    m_Frames.reserve(other.m_Frames.size());
-    for (v_frame_t frame: other.m_Frames)
-        m_Frames.emplace_back(frame);
+//     m_Frames.reserve(other.m_Frames.size());
+//     for (v_frame_t frame: other.m_Frames)
+//         m_Frames.emplace_back(frame);
 
-    m_Entries = other.m_Entries;
+//     m_Entries = other.m_Entries;
 
-    return *this;
-}
+//     return *this;
+// }
 
-MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
-{
-    if (&other == this)
-        return *this;
+// MediaStruct MediaStruct::operator=(MediaStruct&& other) noexcept
+// {
+//     if (&other == this)
+//         return *this;
 
-    /* Clear Contents */
-    Clear();
+//     /* Clear Contents */
+//     Clear();
 
-    m_MediaType = other.m_MediaType;
+//     m_MediaType = other.m_MediaType;
 
-    /* Swap the contents of the provided Struct with ours */
-    std::swap(m_Frames, other.m_Frames);
-    std::swap(m_Entries, other.m_Entries);
+//     /* Swap the contents of the provided Struct with ours */
+//     std::swap(m_Frames, other.m_Frames);
+//     std::swap(m_Entries, other.m_Entries);
 
-    return *this;
-}
+//     return *this;
+// }
 
 MFrameRange MediaStruct::Framerange() const
 {
@@ -466,7 +480,7 @@ MediaStruct MediaStruct::FromFile(const std::string& filepath)
     /**
      * If the type of the media is Movie or any other then we can just return the current MediaStruct from here
      * considering a movie or audio is a container on it's own and does not depend on other containers
-     * Also consider if the entry does not have a frame seqeunce number like #### or %03d or %04d something similar
+     * Also consider if the entry does not have a frame sequence number like #### or %03d or %04d something similar
      */
     if (m.Type() != MediaType::Image || m.SingleFile())
         return m;
@@ -495,9 +509,9 @@ MediaStruct MediaStruct::FromFile(const std::string& filepath)
                 m.Add(next);
         }
     }
-    catch (const std::filesystem::filesystem_error& e)
+    catch (const std::filesystem::filesystem_error& exc)
     {
-        VOID_LOG_ERROR(e.what());
+        VOID_LOG_ERROR(exc.what());
     }
 
     return m;

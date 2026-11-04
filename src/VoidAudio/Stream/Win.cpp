@@ -3,8 +3,7 @@
 
 /* STD */
 #include <cstring>
-// #include <algorithm>
-#include <thread>
+// #include <thread>
 
 /* Internal */
 #include "Win.h"
@@ -13,14 +12,14 @@
 VOID_NAMESPACE_OPEN
 
 AudioStream::AudioStream(int samplerate, int channels)
-    : m_Samplerate(samplerate)
-    , m_Channels(channels)
-    , m_Enumerator(nullptr)
+    : m_Enumerator(nullptr)
     , m_Device(nullptr)
     , m_AudioClient(nullptr)
     , m_AudioRenderClient(nullptr)
     , m_Wfx(nullptr)
-    , m_BufferCount(0)
+    , m_Samplerate(samplerate)
+    , m_Channels(channels)
+    , m_Volume(1.f)
 {
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
@@ -31,9 +30,7 @@ AudioStream::AudioStream(int samplerate, int channels)
     m_AudioClient->GetMixFormat(&m_Wfx);
     m_AudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 10000000, 0, m_Wfx, NULL);
     m_AudioClient->GetService(__uuidof(IAudioRenderClient), (void**)&m_AudioRenderClient);
-    m_AudioClient->GetBufferSize(&m_BufferCount);
 }
-
 
 AudioStream::~AudioStream()
 {
@@ -56,6 +53,74 @@ void AudioStream::Stop()
     m_AudioClient->Stop();
 }
 
+bool AudioStream::WriteSamples(const void* buffer, std::size_t size, int samples)
+{
+    // UINT32 inframes = size / m_Wfx->nChannels;
+    UINT32 inframes = static_cast<UINT32>(samples);
+    UINT32 framesAvailable = AvailableFrames();
+
+    if (framesAvailable > 0)
+    {
+        BYTE* data;
+        HRESULT hr = m_AudioRenderClient->GetBuffer(framesAvailable, &data);
+        if (FAILED(hr))
+        {
+            VOID_LOG_ERROR("GetBuffer failed");
+            return false;
+        }
+
+        UINT32 frames = (framesAvailable < inframes) ? framesAvailable : inframes;
+        /// Based on how many frames can be pushed into the buffer for playback
+        const std::size_t count = static_cast<std::size_t>(frames) * m_Wfx->nChannels;
+        if (count > 0)
+        {
+            if (m_Volume == 1.f)
+            {
+                std::memcpy(data, buffer, count * sizeof(float));
+            }
+            else
+            {
+                const float* src = static_cast<const float*>(buffer);
+                float* dest = reinterpret_cast<float*>(data);
+
+                for (std::size_t i = 0; i < count; ++i)
+                    dest[i] = src[i] * m_Volume;
+            }
+        }
+
+        hr = m_AudioRenderClient->ReleaseBuffer(frames, 0);
+        if (FAILED(hr))
+        {
+            VOID_LOG_ERROR("ReleaseBuffer failed");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void AudioStream::Clear()
+{
+    HRESULT hr = m_AudioClient->Stop();
+    if (FAILED(hr))
+    {
+        VOID_LOG_ERROR("AudioStream: Unable to stop client.")
+        return;
+    }
+    hr = m_AudioClient->Reset();
+    if (FAILED(hr))
+    {
+        VOID_LOG_ERROR("AudioStream: Unable to reset buffer");
+    }
+
+    m_AudioClient->Start();
+}
+
+void AudioStream::SetVolume(float volume)
+{
+    m_Volume = (volume < 0.f) ? 0.f : ((volume > 1.f) ? 1.f : volume);
+}
+
 double AudioStream::Latency() const
 {
     REFERENCE_TIME latency;
@@ -64,48 +129,13 @@ double AudioStream::Latency() const
     return latency / 10000.0; // nanoseconds to ms
 }
 
-bool AudioStream::WriteSamples(const unsigned char* buffer, std::size_t size, int samples)
-{
-    const int16_t* in = reinterpret_cast<const int16_t*>(buffer);
-    std::size_t insamples = size / sizeof(int16_t);
-    UINT32 inframes = insamples / m_Wfx->nChannels;
-
-    UINT32 framesAvailable = 0;
-    while (framesAvailable < inframes)
-    {
-        framesAvailable = AvailableFrames();
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
-
-    if (framesAvailable > 0)
-    {
-        BYTE* data;
-        HRESULT hr = m_AudioRenderClient->GetBuffer(framesAvailable, &data);
-
-        if (FAILED(hr))
-        {
-            VOID_LOG_INFO("GetBuffer failed");
-            return false;
-        }
-
-        float* out = reinterpret_cast<float*>(data);
-
-        UINT32 frames = (framesAvailable < inframes) ? framesAvailable : inframes;
-
-        for (UINT32 i = 0; i < frames * m_Wfx->nChannels; ++i)
-            out[i] = in[i] / 32768.0f;
-
-        m_AudioRenderClient->ReleaseBuffer(frames, 0);
-    }
-
-    return true;
-}
-
 UINT32 AudioStream::AvailableFrames()
 {
+    UINT32 bufsize;
     UINT32 framesPadding;
+    m_AudioClient->GetBufferSize(&bufsize);
     m_AudioClient->GetCurrentPadding(&framesPadding);
-    return m_BufferCount - framesPadding;
+    return bufsize - framesPadding;
 }
 
 VOID_NAMESPACE_CLOSE

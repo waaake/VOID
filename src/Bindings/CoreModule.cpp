@@ -3,6 +3,8 @@
 
 /* STD */
 #include <sstream>
+#include <string>
+#include <unordered_map>
 
 /* Pybind11 */
 #include <pybind11/pybind11.h>
@@ -10,11 +12,20 @@
 
 /* Internal */
 #include "Definition.h"
+#include "ConformRule.h"
+#include "FormatForge.h"
 #include "Operator.h"
+#include "FrameRange.h"
+#include "Timecode.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidCore/VoidTools.h"
-#include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Effects/Effects.h"
+#include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Project/Project.h"
+#include "VoidObjects/Sequence/Sequence.h"
+#include "VoidObjects/Sequence/Track.h"
+#include "VoidObjects/Sequence/TrackItem.h"
+#include "VoidObjects/Media/Tag.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -30,6 +41,64 @@ void BindCore(py::module_& m)
     // {
     //     VOID_LOG_INFO("test");
     // });
+
+    /// Plugin Registration
+    m.def("register_conform_rule", [](ConformRule* rule) -> bool
+    {
+        return Forge::Instance().Register(rule);
+    });
+
+    py::class_<MFrameRange>(m, "MFrameRange")
+        .def(py::init<v_frame_t, v_frame_t, double>(), py::arg("start"), py::arg("end"), py::arg("framerate") = 24.0)
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const MFrameRange& r = h.cast<MFrameRange&>();
+            std::stringstream ss;
+            ss << "MFrameRange <" << r.startframe << " - " << r.endframe << ", " << r.duration << " frames>";
+            return ss.str();
+        })
+        .def("contains", &MFrameRange::Contains, py::arg("frame"))
+        .def("overlaps", &MFrameRange::Overlaps, py::arg("range"))
+        .def("covers", &MFrameRange::Covers, py::arg("range"))
+        .def("head_diff", &MFrameRange::HeadDiff, py::arg("range"))
+        .def("tail_diff", &MFrameRange::TailDiff, py::arg("range"))
+        .def_static("from_numbers", &MFrameRange::FromNumbers, py::arg("_a"), py::arg("_b"))
+        .def_readonly("startframe", &MFrameRange::startframe)
+        .def_readonly("endframe", &MFrameRange::endframe)
+        .def_readonly("duration", &MFrameRange::duration)
+        .def_readonly("framerate", &MFrameRange::framerate)
+        .def("start_tc", &MFrameRange::StartTC, py::arg("dropframe") = false)
+        .def("end_tc", &MFrameRange::EndTC, py::arg("dropframe") = false)
+        .def("timecode", &MFrameRange::TC, py::arg("frame"), py::arg("dropframe") = false);
+
+    py::class_<Timecode>(m, "Timecode")
+        .def(py::init<v_frame_t, double, bool>(), py::arg("frame"), py::arg("framerate"), py::arg("dropframe") = false)
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const Timecode& tc = h.cast<const Timecode&>();
+            std::stringstream ss;
+            ss << "Timecode <" << tc.String() << " frames=" << tc.frames << " fps=" << tc.framerate << ">";
+            return ss.str();
+        })
+        // .def("__str__", &Timecode::String)
+        .def("string", &Timecode::String)
+        .def_readonly("frames", &Timecode::frames)
+        .def_readonly("framerate", &Timecode::framerate)
+        .def_readonly("fps", &Timecode::framerate)
+        .def("is_drop_frame", [](const Timecode& self) -> bool { return self.dropframe; })
+        .def_static("from_string", &Timecode::Get, py::arg("frame"), py::arg("framerate"), py::arg("dropframe") = false);
+    
+    py::class_<ElementTokens>(m, "ElementTokens")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const ElementTokens& t = h.cast<ElementTokens&>();
+            std::stringstream ss;
+            ss << "ElementTokens <" << t.name << " (" << t.version << ")>";
+            return ss.str();
+        })
+        .def_readonly("name", &ElementTokens::name)
+        .def_readonly("version", &ElementTokens::version)
+        .def_readonly("version_number", &ElementTokens::vnum);
 
     /* Media Type */
     py::enum_<MediaType>(m, "MediaType")
@@ -76,7 +145,7 @@ void BindCore(py::module_& m)
 
     /* MediaClip */
     py::class_<MediaClip, SharedMediaClip>(m, "MediaClip")
-        .def(py::init<const MediaStruct&>(), py::arg("media"))
+        .def(py::init<const MediaStruct&, Core::Project*>(), py::arg("media"), py::arg("project"))
 
         .def(py::init<const std::string&, const std::string&, const std::string&>(), py::arg("basepath"),
                                                                                 py::arg("name"), py::arg("extension"))
@@ -100,7 +169,8 @@ void BindCore(py::module_& m)
         .def("extension", &MediaClip::Extension)
         .def("startframe", &MediaClip::FirstFrame)
         .def("endframe", &MediaClip::LastFrame)
-        .def("metadata", &MediaClip::Metadata);
+        .def("metadata", &MediaClip::Metadata)
+        .def("tokens", &MediaClip::Tokens, py::return_value_policy::reference_internal);
 
     /* Operator */
     py::class_<ParamValue>(m, "ParamValue")
@@ -148,8 +218,191 @@ void BindCore(py::module_& m)
         .def("set_name", &Effect::SetName, py::arg("name"))
         .def("enabled", &Effect::Enabled)
         .def("set_enabled", &Effect::SetEnabled, py::arg("enable"))
+        .def("timeline_in", &Effect::TimelineIn)
+        .def("timeline_out", &Effect::TimelineOut)
+        .def("set_timeline_in", &Effect::SetTimelineIn, py::arg("frame"))
+        .def("set_timeline_out", &Effect::SetTimelineOut, py::arg("frame"))
+        .def("set_timeline_range", &Effect::SetTimelineRange, py::arg("start"), py::arg("end"))
         .def("get_value", &Effect::Value, py::return_value_policy::reference)
         .def("set_value", &Effect::SetValue, py::arg("param"), py::arg("value"));
+
+    py::class_<Tag>(m, "Tag")
+        .def("name", &Tag::Name)
+        .def("set_name", &Tag::SetName, py::arg("name"))
+        .def("add_metadata", &Tag::AddMetadata, py::arg("key"), py::arg("value"))
+        .def("metadata", [](const Tag* self) -> std::unordered_map<std::string, std::string>
+        {
+            const std::vector<std::pair<std::string, std::string>> metadata = self->Metadata();
+            std::unordered_map<std::string, std::string> map;
+            map.reserve(metadata.size());
+            map.insert(metadata.begin(), metadata.end());
+            return map;
+        });
+
+    py::class_<PlaybackSequence, SharedPlaybackSequence>(m, "PlaybackSequence")
+        .def(py::init())
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const PlaybackSequence& t = h.cast<PlaybackSequence&>();
+            std::stringstream ss;
+            ss << "PlaybackSequence <" << t.Name() << " at 0x " << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+        .def("start_frame", &PlaybackSequence::StartFrame)
+        .def("end_frame", &PlaybackSequence::EndFrame)
+        .def("set_range", &PlaybackSequence::SetRange, py::arg("start"), py::arg("end"))
+        .def("set_framerate", &PlaybackSequence::SetFramerate, py::arg("framerate"))
+        .def("set_name", &PlaybackSequence::SetName, py::arg("name"))
+        .def("has_media", &PlaybackSequence::HasMedia)
+        .def(
+            "create_track",
+            static_cast<SharedPlaybackTrack (PlaybackSequence::*)(const Sequence::Type&)>(&PlaybackSequence::CreateTrack),
+            py::arg("type"),
+            py::return_value_policy::reference
+        )
+        .def(
+            "remove_track",
+            static_cast<void (PlaybackSequence::*)(const SharedPlaybackTrack&)>(&PlaybackSequence::RemoveTrack),
+            py::arg("track")
+        )
+        .def(
+            "remove_track",
+            static_cast<void (PlaybackSequence::*)(int, const Sequence::Type&)>(&PlaybackSequence::RemoveTrack),
+            py::arg("index"),
+            py::arg("type")
+        )
+        .def("video_track", &PlaybackSequence::VideoTrackAt, py::arg("index"), py::return_value_policy::reference)
+        .def("audio_track", &PlaybackSequence::AudioTrackAt, py::arg("index"), py::return_value_policy::reference)
+        .def("video_tracks", &PlaybackSequence::VideoTracks, py::return_value_policy::reference)
+        .def("audio_tracks", &PlaybackSequence::AudioTracks, py::return_value_policy::reference)
+        .def("save_snapshot", &PlaybackSequence::SaveSnapshot, py::arg("name"), py::arg("description"))
+        .def("restore_snapshot", &PlaybackSequence::RestoreSnapshot, py::arg("index"))
+        .def("video_track_items", &PlaybackSequence::VideoTrackItems, py::return_value_policy::reference_internal);
+
+    py::enum_<Sequence::Type>(m, "Type")
+        .value("VIDEO", Sequence::Type::VIDEO)
+        .value("AUDIO", Sequence::Type::AUDIO)
+        .export_values();
+
+    py::class_<PlaybackTrack, SharedPlaybackTrack>(m, "PlaybackTrack")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const PlaybackTrack& t = h.cast<PlaybackTrack&>();
+            std::stringstream ss;
+            ss << "PlaybackTrack <" << t.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+        .def("set_name", static_cast<void (PlaybackTrack::*)(std::string&&)>(&PlaybackTrack::SetName), py::arg("name"))
+        .def("name", &PlaybackTrack::Name)
+        .def("start_frame", &PlaybackTrack::StartFrame)
+        .def("end_frame", &PlaybackTrack::EndFrame)
+        .def("set_enabled", &PlaybackTrack::SetEnabled, py::arg("enabled"))
+        .def("enabled", &PlaybackTrack::Enabled)
+        .def("is_reference", &PlaybackTrack::IsReference)
+        .def("add_item",
+            static_cast<SharedTrackItem (PlaybackTrack::*)(const SharedMediaClip&)>(&PlaybackTrack::AddMedia),
+            py::arg("media"),
+            py::return_value_policy::reference
+        )
+        .def("add_item",
+            static_cast<SharedTrackItem (PlaybackTrack::*)(const SharedMediaClip&, v_frame_t)>(&PlaybackTrack::AddMedia),
+            py::arg("media"),
+            py::arg("frame"),
+            py::return_value_policy::reference
+        )
+        .def("razor_at", &PlaybackTrack::RazorAt, py::arg("frame"))
+        .def("merge_cut", &PlaybackTrack::MergeCut, py::arg("frame"))
+        .def("move_item", &PlaybackTrack::MoveItem, py::arg("track_item"), py::arg("frame"))
+        .def("item_at", &PlaybackTrack::ItemAt, py::arg("index"), py::return_value_policy::reference)
+        .def("items", &PlaybackTrack::Items, py::return_value_policy::reference)
+        .def(
+            "create_effect",
+            static_cast<Effect* (PlaybackTrack::*)(const SharedTrackItem&, const std::string&)>(&PlaybackTrack::CreateEffect),
+            py::arg("track_item"),
+            py::arg("effect"),
+            py::return_value_policy::reference
+        )
+        .def(
+            "create_effect",
+            static_cast<Effect* (PlaybackTrack::*)(const std::string&)>(&PlaybackTrack::CreateEffect),
+            py::arg("effect"),
+            py::return_value_policy::reference
+        )
+        .def("remove_effect", [](const SharedPlaybackTrack& self, Effect* effect) -> void
+            {
+                int index = self->EffectIndex(effect);
+                if (index < 0) return;
+
+                self->RemoveEffect(index, true);
+            },
+            py::arg("effect")
+        )
+        .def("clear_effects", &PlaybackTrack::ClearEffects)
+        .def("add_tag", static_cast<bool (PlaybackTrack::*)(const std::string&)>(&PlaybackTrack::AddTag), py::arg("name"))
+        .def("remove_tag", static_cast<void (PlaybackTrack::*)(int)>(&PlaybackTrack::RemoveTag), py::arg("index"))
+        .def("get_tag", &PlaybackTrack::GetTag, py::arg("name"), py::return_value_policy::reference_internal);
+
+    py::class_<TrackItem, SharedTrackItem>(m, "TrackItem")
+        .def("__repr__", [](py::handle h) -> std::string
+        {
+            const TrackItem& t = h.cast<TrackItem&>();
+            std::stringstream ss;
+            ss << "TrackItem <" << t.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+        .def("name", &TrackItem::Name)
+        .def("timeline_in", &TrackItem::TimelineIn)
+        .def("timeline_out", &TrackItem::TimelineOut)
+        .def("timeline_duration", &TrackItem::Duration)
+        .def("timeline_range", &TrackItem::TimelineRange, py::return_value_policy::reference)
+        .def("set_timeline_in", &TrackItem::SetTimelineIn, py::arg("frame"))
+        .def("set_timeline_out", &TrackItem::SetTimelineOut, py::arg("frame"))
+        .def("source_in", &TrackItem::SourceIn)
+        .def("source_out", &TrackItem::SourceOut)
+        .def("set_source_in", &TrackItem::SetSourceIn, py::arg("frame"))
+        .def("set_source_out", &TrackItem::SetSourceOut, py::arg("frame"))
+        .def("head_handle", &TrackItem::HeadHandle)
+        .def("tail_handle", &TrackItem::TailHandle)
+        .def("trim_head", &TrackItem::TrimHead, py::arg("handle"))
+        .def("trim_tail", &TrackItem::TrimTail, py::arg("handle"))
+        .def("source_media", &TrackItem::GetMedia, py::return_value_policy::reference)
+        .def("unlink", &TrackItem::Unlink)
+        .def("add_tag", static_cast<bool (TrackItem::*)(const std::string&)>(&TrackItem::AddTag), py::arg("name"))
+        .def("remove_tag", static_cast<void (TrackItem::*)(int)>(&TrackItem::RemoveTag), py::arg("index"))
+        .def("get_tag", &TrackItem::GetTag, py::arg("name"), py::return_value_policy::reference_internal)
+        .def("version_up", &TrackItem::VersionUp)
+        .def("version_down", &TrackItem::VersionDown)
+        .def("update_to_latest_version", &TrackItem::SetLatestAvailableVersion);
+
+    /* Project */
+    py::class_<Core::Project> project(m, "Project");
+
+    /* Project Save Type*/
+    py::enum_<EtherFormat::Type>(project, "EtherFormat")
+        .value("Ascii", EtherFormat::Type::ASCII)
+        .value("Binary", EtherFormat::Type::BINARY)
+        .export_values();
+
+    project
+        .def("__repr__", [](py::handle h)
+        {
+            const Core::Project& p = h.cast<Core::Project&>();
+            std::stringstream ss;
+            ss << "Project <" << p.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
+            return ss.str();
+        })
+        .def("add", static_cast<void (Core::Project::*)(const SharedMediaClip&)>(&Core::Project::Add), py::arg("media_clip"))
+        .def("add", static_cast<void (Core::Project::*)(const SharedPlaybackSequence&)>(&Core::Project::Add), py::arg("sequence"))
+        .def("document", &Core::Project::Document, py::arg("name"))
+        .def("modified", &Core::Project::Modified)
+        .def(
+            "save",
+            static_cast<bool (Core::Project::*)(const std::string&, const std::string&, const EtherFormat::Type&)>(&Core::Project::Save),
+            py::arg("path"), py::arg("name"), py::arg("type")
+        )
+        .def("available_versions", &Core::Project::AvailableVersions, py::arg("name"), py::return_value_policy::reference_internal)
+        .def("media_clips", &Core::Project::MediaClips, py::return_value_policy::reference_internal)
+        .def("sequences", &Core::Project::Sequences, py::return_value_policy::reference_internal);
 }
 
 } // namespace bindings

@@ -32,12 +32,12 @@ BasicRenderer::BasicRenderer(QWidget* parent)
 
 BasicRenderer::~BasicRenderer()
 {
-    /* Delete the Render Status bar */
     m_RenderStatus->deleteLater();
+    delete m_RenderStatus;
     m_RenderStatus = nullptr;
 
-    /* Delete the Error Label */
     m_DisplayLabel->deleteLater();
+    delete m_DisplayLabel;
     m_DisplayLabel = nullptr;
 }
 
@@ -78,19 +78,14 @@ void BasicRenderer::paintGL()
 
 void BasicRenderer::resizeGL(int w, int h)
 {
-    /* Adjust the viewport size */
     glViewport(0, 0, w, h);
 }
 
 void BasicRenderer::resizeEvent(QResizeEvent* event)
 {
-    /* Base Resize */
     QOpenGLWidget::resizeEvent(event);
-
-    /* The Label has to have a certain gap from the edges */
     m_DisplayLabel->move(10, 10);
 
-    /* Ensure that the status bar always stays at the bottom of the Renderer */
     m_RenderStatus->move(0, height() - m_RenderStatus->height());
     m_RenderStatus->setFixedWidth(width());
 }
@@ -186,25 +181,19 @@ void BasicRenderer::SetProfile()
     QSurfaceFormat::setDefaultFormat(format);
 }
 
-/* Placeholder Renderer {{{ */
+/// Placeholder Renderer
 
 VoidPlaceholderRenderer::VoidPlaceholderRenderer(QWidget* parent)
     : QWidget(parent)
 {
-    /* Setup */
     m_Layout = new QHBoxLayout(this);
-    /* Label description */
     m_Label = new QLabel("The Renderer is currently playing in Fullscreen View.");
 
-    /* Update label font */
     QFont f = m_Label->font();
     f.setPixelSize(24);
     m_Label->setFont(f);
 
-    /* Add to the layout */
     m_Layout->addWidget(m_Label, 1, Qt::AlignCenter);
 }
-
-/* }}} */
 
 VOID_NAMESPACE_CLOSE

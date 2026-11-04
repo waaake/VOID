@@ -2,35 +2,74 @@
 include(CMakePackageConfigHelpers)
 include(FreetypeInstallHelpers)
 
-# Build Core Library
-add_subdirectory(VoidCore)
-
-# Build Renderer Library
-add_subdirectory(VoidRenderer)
-
-# Build Intermediate Objects Library
-add_subdirectory(VoidObjects)
+# Python Bindings
+add_subdirectory(Bindings)
 
 # Build Audio Library
 add_subdirectory(VoidAudio)
 
-# Build Ui Library
-add_subdirectory(VoidUi)
+# Application bridge
+add_subdirectory(VoidBridge)
 
-# Python Bindings
-add_subdirectory(Bindings)
+# Build Core Library
+add_subdirectory(VoidCore)
 
-# Depends on Qt
-target_include_directories(
-    VoidUi
-    PRIVATE
-    include
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${QtWidgets_INCLUDE_DIRS}
-    ${QtCore_INCLUDE_DIRS}
-    ${FREETYPE_INCLUDE_DIRS}
-    ${FFMPEG_INCLUDE_DIRS}
-)
+# Conform Library
+add_subdirectory(VoidConformer)
+
+# Dock widgets and docking ability
+add_subdirectory(VoidDocker)
+
+# Build Core Engine - UI composite Library
+add_subdirectory(VoidEngine)
+
+# Media Exporter - 
+add_subdirectory(VoidExporter)
+
+# Icon Forge
+add_subdirectory(VoidIconForge)
+
+# Media Browser
+add_subdirectory(VoidMediaBrowser)
+
+# Media core ui component (composite of project - playlist and media components)
+add_subdirectory(VoidMediaPlayer)
+
+# Menu System
+add_subdirectory(VoidMenuSystem)
+
+# Build Intermediate Objects Library
+add_subdirectory(VoidObjects)
+
+# Preferences
+add_subdirectory(VoidPreferences)
+
+# Qt Extension common widgets/functionality
+add_subdirectory(VoidQExtensions)
+
+# Build Renderer Library
+add_subdirectory(VoidRenderer)
+
+# Python scripting window-console
+add_subdirectory(VoidScriptEditor)
+
+# Sequence timeline view
+add_subdirectory(VoidSequencer)
+
+# Sequencer Spreadsheet view
+add_subdirectory(VoidSpreadsheet)
+
+# Player Timeslider
+add_subdirectory(VoidTimeline)
+
+# Tools and other ui components serving as tools to perform certain operations
+add_subdirectory(VoidToolbox)
+
+# Undo system base
+add_subdirectory(VoidUndo)
+
+# Views
+add_subdirectory(VoidViews)
 
 target_include_directories(
     VoidCore
@@ -57,12 +96,6 @@ if (QT_MAJOR_VERSION EQUAL 6)
     include_directories(${QtOpenGLWidgets_INCLUDE_DIRS})
 endif()
 
-# Freetype
-include_directories(
-    ${FREETYPE_INCLUDE_DIRS}
-    ${FFMPEG_INCLUDE_DIRS}
-)
-
 # Main Executable
 add_executable(
     VOID
@@ -73,17 +106,23 @@ add_executable(
     Application.cpp
 )
 
+target_include_directories(
+    VOID
+    PRIVATE
+    ${FREETYPE_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS}
+)
+
 # Finally Linking to our executable
 target_link_libraries(
     VOID
     PRIVATE
     VoidCore
+    VoidConformer
     VoidObjects
-    VoidRenderer
-    VoidUi
+    VoidEngine
     Qt::Widgets
     Qt::Core
-    OpenGL::GL
     Python::Python
 )
 
@@ -102,6 +141,8 @@ if (QT_MAJOR_VERSION EQUAL 6)
         FILES
             # Icons
             ../images/VOID_Logo.svg
+            ../images/VOID_Logo_Full.svg
+            ../images/VOID_Logo_Full.png
             ../images/VOID_Logo_900x200.png
             ../icons/icon_add.svg
             ../icons/icon_adjust.svg
@@ -111,31 +152,37 @@ if (QT_MAJOR_VERSION EQUAL 6)
             ../icons/icon_brush.svg
             ../icons/icon_bounce.svg
             ../icons/icon_close.svg
-            ../icons/icon_cache.png
             ../icons/icon_close_small.svg
+            ../icons/icon_cube.svg
             ../icons/icon_delete.svg
+            ../icons/icon_disks.svg
             ../icons/icon_eraser.svg
             ../icons/icon_fullscreen.svg
             ../icons/icon_grid_view.svg
+            ../icons/icon_hard_drive.svg
             ../icons/icon_load.svg
             ../icons/icon_list_view.svg
             ../icons/icon_maximize.svg
             ../icons/icon_minimize.svg
-            ../icons/icon_media_view.png
             ../icons/icon_missing_frame.svg
             ../icons/icon_pointer.svg
+            ../icons/icon_open.svg
             ../icons/icon_play.svg
+            ../icons/icon_play_2.svg
             ../icons/icon_playlist.svg
             ../icons/icon_play_selected.svg
             ../icons/icon_repeat.svg
             ../icons/icon_restore.svg
             ../icons/icon_save.svg
+            ../icons/icon_save_2.svg
             ../icons/icon_settings.svg
-            ../icons/icon_setting.png
+            ../icons/icon_settings_2.svg
             ../icons/icon_sort_abc.svg
             ../icons/icon_tab_options.svg
+            ../icons/icon_tag_yellow.svg
             ../icons/icon_text.svg
-            ../icons/icon_video_player.png
+            ../icons/icon_views.svg
+            ../icons/icon_wrench.svg
             ../icons/icon_zoom_in.svg
             ../icons/icon_zoom_out.svg
 
@@ -148,15 +195,32 @@ if (QT_MAJOR_VERSION EQUAL 6)
     )
 endif()
 
-# # Global
-# include_directories(PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-#     $<INSTALL_INTERFACE:include>
-# )
-
 # Install Libraries and Binaries
-install(TARGETS VoidAudio VoidCore VoidObjects VoidRenderer VoidUi VOID vortex
+install(TARGETS
+    VoidAudio
+    VoidBridge
+    VoidCore
+    VoidConformer
+    VoidDocker
+    VoidExporter
+    VoidIconForge
+    VoidMediaBrowser
+    VoidMediaPlayer
+    VoidMenuSystem
+    VoidObjects
+    VoidPreferences
+    VoidQExtensions
+    VoidRenderer
+    VoidScriptEditor
+    VoidSequencer
+    VoidSpreadsheet
+    VoidTimeline
+    VoidToolbox
+    VoidEngine
+    VoidUndo
+    VoidViews
+    VOID
+    vortex
     EXPORT VOIDTargets
     RUNTIME DESTINATION bin
     ARCHIVE DESTINATION lib
@@ -171,7 +235,7 @@ install(DIRECTORY include/ DESTINATION include)
 if (APPLE) # MacOS uses @executable_path
 set_target_properties(VOID PROPERTIES INSTALL_RPATH "@executable_path/../lib/" INSTALL_RPATH_USE_LINK_PATH TRUE)
 elseif (UNIX) # Standard $ORIGIN RPATH
-set_target_properties(VoidUi PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
+set_target_properties(VoidEngine PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
 set_target_properties(VOID PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/")
 endif()
 
@@ -199,6 +263,7 @@ install(
 
 # Dll copier for windows
 if (WIN32)
+    find_package(zstd CONFIG REQUIRED)
     set(DEPENDENCY_TARGETS
         OpenEXR::OpenEXR
         OpenEXR::OpenEXRCore

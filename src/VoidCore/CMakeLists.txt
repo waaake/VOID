@@ -11,6 +11,7 @@ set(SOURCES
     Logging.cpp
     Profiler.h
     PyExecutor.cpp
+    Timecode.cpp
     Timekeeper.cpp
     VoidTools.cpp
 
@@ -22,8 +23,12 @@ set(SOURCES
     Media/Frame.cpp
     Media/Media.cpp
     Media/Renderer.cpp
+    Media/Tokens.cpp
 
     # Media Readers
+    # Readers/Decoder.cpp
+    Readers/Decoder2.cpp
+    Readers/FFmpegStream.cpp
     Readers/OIIOReader.cpp
     Readers/OpenEXRReader.cpp
     Readers/FFmpegReader.cpp
@@ -71,7 +76,7 @@ target_link_libraries(
     pybind11::embed
     Python::Python
     ${TurboJPEG_LIBRARIES}
-    OpenMP::OpenMP_CXX
+    TBB::tbb
 )
 
 # Mac for some reason needs this explicitly
@@ -81,3 +86,14 @@ endif()
 
 # Export symbols for windows
 target_compile_definitions(VoidCore PRIVATE VOID_LIB LOGGER_LIB)
+
+# NOTE: this for now has been resolved by directly using tbb for the parallel execution
+# We no longer use an internal c++ std exeuction policy to generate that code for us
+# But this needs to be better understood, or probably we better handle the reader --- for later
+
+# # Apple clang by default does not allow using std::execution::par
+# # This however is set to be enabled with the _LIBCPP_HAS_EXPERIMENTAL_PSTL define
+# # for now keeping it simple and going with sequential
+# if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+#     target_compile_definitions(VoidCore PRIVATE _DISABLE_PARALLEL_EXECUTION)
+# endif()

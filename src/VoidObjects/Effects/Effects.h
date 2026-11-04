@@ -4,6 +4,9 @@
 #ifndef _IMAGE_EFFECTS_H
 #define _IMAGE_EFFECTS_H
 
+/* Qt */
+#include <QColor>
+
 /* Internal */
 #include "Definition.h"
 #include "Operator.h"
@@ -11,16 +14,40 @@
 
 VOID_NAMESPACE_OPEN
 
+class PlaybackTrack;
+class TrackItem;
+
 class VOID_API Effect : public VoidObject
 {
     Q_OBJECT
+public:
+    enum class EffectType
+    {
+        CLIP,
+        ITEM,
+        TRACK
+    };
 
 public:
-    Effect(ImageOp* iop, const std::string& name, QObject* parent = nullptr);
+    Effect(ImageOp* iop, const std::string& name, Effect* parent = nullptr);
+    Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
     ~Effect();
 
+    void ResetParent(Effect* effect);
+
+    TrackItem* TimelineItem() const { return m_TrackItem; }
+    void SetTimelineItem(TrackItem* item);
+
+    PlaybackTrack* Track() const { return m_Track; }
+    void SetTrack(PlaybackTrack* track);
+
+    const EffectType& GetEffectType() const { return m_Type; }
+
     const std::string& Name() const { return m_Name; }
-    void SetName(const std::string& name) { m_Name = name; }
+    void SetName(const std::string& name);
+
+    void SetColor(const QColor& color);
+    QColor Color() const { return m_Color; }
 
     /**
      * @brief Set the Value on the param.
@@ -47,7 +74,7 @@ public:
      */
     const ValueType& Value(const std::string& param) const;
 
-    [[nodiscard]] bool Enabled() const { return m_Enabled; }
+    [[nodiscard]] bool Enabled() const;
     void SetEnabled(bool enable);
 
     Param* GetParam(const std::string& name) const { return m_Operator->GetParam(name); }
@@ -55,14 +82,42 @@ public:
 
     const std::vector<Param*>& Params() const { return m_Operator->Params(); }
 
+    void SetTimelineIn(v_frame_t frame);
+    void SetTimelineOut(v_frame_t frame);
+    void SetTimelineRange(v_frame_t start, v_frame_t end);
+    v_frame_t TimelineIn() const { return m_TimelineIn; }
+    v_frame_t TimelineOut() const { return m_TimelineOut; }
+
+    v_frame_t EvaluatedFrame(v_frame_t in);
+    FloatImage Evaluate(v_frame_t frame);
+    void Evaluate(FloatImage& image, v_frame_t frame);
+    void Evaluate(FloatImage& image);
+
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const;
+    void Serialize(std::ostream& out) const;
+    void Deserialize(const rapidjson::Value& in);
+    void Deserialize(std::istream& in);
+    std::string Type() const { return m_Operator->Type(); }
+    const char* TypeName() const { return "Effect"; }
+
 signals:
     void updated();
     void valueChanged(const Param*);
+    void rangeChanged(v_frame_t, v_frame_t);
 
 private:
     ImageOp* m_Operator;
+    Effect* m_Parent;
+    TrackItem* m_TrackItem;
+    PlaybackTrack* m_Track;
     std::string m_Name;
+    QColor m_Color;
+    v_frame_t m_TimelineIn, m_TimelineOut;
+    EffectType m_Type;
     bool m_Enabled;
+
+private:
+    void Evaluate_(FloatImage& image);
 };
 
 VOID_NAMESPACE_CLOSE

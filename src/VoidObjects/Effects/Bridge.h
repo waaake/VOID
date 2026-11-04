@@ -14,13 +14,17 @@
 
 VOID_NAMESPACE_OPEN
 
-class EffectsBridge
+class VOID_API EffectsBridge
 {
     EffectsBridge() = default;
 public:
     static EffectsBridge& Instance();
 
-    Effect* CreateEffect(const std::string& type);
+    Effect* CreateEffect(const std::string& type, Effect* parent = nullptr);
+    Effect* CreateEffect(const std::string& type, const std::string& name, Effect* parent = nullptr);
+    Effect* CreateEffect(const std::string& type, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
+    Effect* CreateEffect(const std::string& type, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
+    Effect* Copy(const Effect* effect);
 
 private: /* Members */
     std::unordered_map<std::string, std::size_t> m_EffectCount;

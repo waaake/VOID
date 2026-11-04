@@ -6,15 +6,16 @@
 
 /* STD */
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <string>
 #include <vector>
 #include <unordered_map>
 
-
 /* Internal */
 #include "FrameRange.h"
 #include "Definition.h"
+#include "Tokens.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -54,15 +55,15 @@ public:
         bool singlefile = false
     );
 
-    ~MEntry();
+    // ~MEntry();
 
-    /* Move */
-    MEntry(MEntry&& other) noexcept;
-    MEntry& operator=(MEntry&& other) noexcept;
+    // /* Move */
+    // MEntry(MEntry&& other) noexcept;
+    // MEntry& operator=(MEntry&& other) noexcept;
 
-    /* Copy */
-    MEntry(const MEntry& other);
-    MEntry& operator=(const MEntry& other);
+    // /* Copy */
+    // MEntry(const MEntry& other);
+    // MEntry& operator=(const MEntry& other);
 
     /**
      * Getters describing the Entry
@@ -100,6 +101,8 @@ public:
      */
     inline bool operator==(const MEntry& other) const { return m_Path == other.m_Path; }
     explicit inline operator bool() const noexcept { return !m_Path.empty(); }
+
+    ElementTokens Tokens() const;
 
 private: /* Members */
     std::string m_Path;
@@ -171,8 +174,8 @@ struct VOID_API MHelper
     /**
      * Checks if the MEntry is a Media format
      */
-    static inline bool IsImage(const MEntry& entry) { return std::find(std::begin(m_ImageFormats), std::end(m_ImageFormats), entry.Extension()) != std::end(m_ImageFormats); }
-    static inline bool IsMovie(const MEntry& entry) { return std::find(std::begin(m_MovieFormats), std::end(m_MovieFormats), entry.Extension()) != std::end(m_MovieFormats); }
+    static inline bool IsImage(const MEntry& entry) { return std::find(m_ImageFormats.begin(), m_ImageFormats.end(), entry.Extension()) != m_ImageFormats.end(); }
+    static inline bool IsMovie(const MEntry& entry) { return std::find(m_MovieFormats.begin(), m_MovieFormats.end(), entry.Extension()) != m_MovieFormats.end(); }
 
 private:
     /**
@@ -181,7 +184,7 @@ private:
      * types based on registered file formats (which will come soon)
      */
     /* Which can be classified as Images */
-    inline static const std::string m_ImageFormats[8] = {
+    inline static constexpr std::array<std::string_view, 8> m_ImageFormats = {
         "bmp",
         "dpx",
         "exr",
@@ -193,7 +196,7 @@ private:
     };
 
     /* Can be classified as Movies */
-    inline static const std::string m_MovieFormats[5] = {
+    inline static constexpr std::array<std::string_view, 5> m_MovieFormats = {
         "mov",
         "mp4",
         "mxf",
@@ -240,16 +243,16 @@ public:
             const std::vector<v_frame_t>& missing
     );
 
-    ~MediaStruct();
+    // ~MediaStruct();
 
-    /**
-     * Move and Copy
-     */
-    MediaStruct(const MediaStruct& other);
-    MediaStruct(MediaStruct&& other) noexcept;
+    // /**
+    //  * Move and Copy
+    //  */
+    // MediaStruct(const MediaStruct& other);
+    // MediaStruct(MediaStruct&& other) noexcept;
 
-    MediaStruct operator=(MediaStruct&& other) noexcept;
-    MediaStruct operator=(const MediaStruct& other);
+    // MediaStruct operator=(MediaStruct&& other) noexcept;
+    // MediaStruct operator=(const MediaStruct& other);
 
     /**
      * (Re)Initializes the MediaStruct
@@ -286,6 +289,8 @@ public:
 
     unsigned int Framepadding() const { return m_Entries.empty() ? 0 : m_Entries[0].Framepadding(); }
     MFrameRange Framerange() const;
+
+    ElementTokens Tokens() const { return m_Entries.empty() ? ElementTokens() : m_Entries[0].Tokens(); }
 
     /**
      * Returns whether the media struct is currently empty

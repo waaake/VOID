@@ -1,0 +1,385 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+/* Qt */
+#include <QApplication>
+#include <QByteArray>
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QStyle>
+#include <QToolButton>
+
+/* Internal */
+#include "Docker.h"
+#include "DockManager.h"
+#include "Internal/Descriptors.h"
+#include "VoidCore/Logging.h"
+#include "VoidIconForge/IconForge.h"
+#include "VoidQExtensions/Window.h"
+
+VOID_NAMESPACE_OPEN
+
+/// VoidDocker
+
+VoidDocker::VoidDocker(QWidget* parent)
+    : QDockWidget(parent)
+{
+}
+
+VoidDocker::VoidDocker(const std::string& title, QWidget* parent)
+    : QDockWidget(title.c_str(), parent)
+{
+}
+
+VoidDocker::~VoidDocker()
+{
+}
+
+void VoidDocker::SetClosable(const bool closable)
+{
+    if (closable)
+        setFeatures(features() & QDockWidget::DockWidgetClosable);
+    else
+        setFeatures(features() & ~QDockWidget::DockWidgetClosable);
+}
+
+/// Dock Tab
+
+DockTab::DockTab(QWidget* parent)
+	: QTabBar(parent)
+{
+	setMovable(true);
+}
+
+void DockTab::mousePressEvent(QMouseEvent* event)
+{
+	m_StartPos = event->pos();
+	m_Dragging = true;
+
+	QTabBar::mousePressEvent(event);
+}
+
+void DockTab::mouseMoveEvent(QMouseEvent* event)
+{
+	QTabBar::mouseMoveEvent(event);
+
+	if (m_Dragging)
+	{
+		if ((event->pos() - m_StartPos).manhattanLength() > 200)
+		{
+			DockWidget* p = dynamic_cast<DockWidget*>(parentWidget());
+			int index = currentIndex();
+			DockPanel* w = dynamic_cast<DockPanel*>(p->widget(index));
+
+			/**
+			 * Sometime when dragging tabs very quickly one after the other
+			 * there is a state where none of the tabs in the widget are active
+			 * atleast in qt5 this is quite noticable, need to test this behaviour
+			 * on qt6, anyways always good to check if a pointer is valid before
+			 * accessing it's attributes to play safe here, else we crash when calling 
+			 * widget::grab() below
+			 */
+			if (!w)
+				return;
+
+			QPixmap pixmap = w->grab();
+
+			emit tabDragged(index);
+
+			QDrag* drag = new QDrag(this);
+			QMimeData* mime = new QMimeData;
+			mime->setData(MimeTypes::TabIndex, QByteArray::number(w->PanelId()));
+			drag->setMimeData(mime);
+			drag->setPixmap(pixmap);
+
+			Qt::DropAction drop = drag->exec(Qt::MoveAction);
+
+			if (drop == Qt::IgnoreAction)
+				emit tabDetachRequested(index, mapToGlobal(event->pos()));
+			else
+				emit tabRemovalRequested(index);
+		}
+	}
+}
+
+void DockTab::mouseReleaseEvent(QMouseEvent* event)
+{
+	m_Dragging = false;
+	QTabBar::mouseReleaseEvent(event);
+}
+
+/// Dock Widget
+
+DockWidget::DockWidget(DockSplitter* parent, bool floating)
+	: QTabWidget(parent)
+	, m_Splitter(parent)
+	, m_DragActive(false)
+	, m_Floating(floating)
+{
+	m_DockTab = new DockTab(this);
+
+	setTabBar(m_DockTab);
+	SetupOptions();
+	Connect();
+}
+
+DockPanel* DockWidget::AddDock(QWidget* widget, const std::string& title, bool closable)
+{
+	DockPanel* panel = new DockPanel(widget, this);
+	int index = addTab(panel, title.c_str());
+	setCurrentIndex(index);
+
+	if (closable)
+		SetTabClosable(index);
+
+	return panel;
+}
+
+void DockWidget::AddDockManagerWidget(int index)
+{
+	DockStruct d = DockManager::Instance().Dock(index);
+	if (d.id < 0)
+		return;
+	
+	// Just show a widget if it's already added to this pane
+	if (ShowIfDocked(d.widget->objectName()))
+		return;
+
+	// Might be a bit expensive depending on how many panes we have open, but the only way (afaik)
+	m_Splitter->CloseExisting(d.widget->objectName());
+
+	// All Dock Manager Widgets shall be closable
+	DockPanel* panel = AddDock(d.widget, d.name, true);
+	panel->setObjectName(d.widget->objectName());
+}
+
+void DockWidget::RemoveTab(int index)
+{
+	DockPanel* panel = dynamic_cast<DockPanel*>(widget(index));
+	panel->setParent(nullptr);
+
+	/**
+	 * If the current Widget is a floating panel -> we're free to destroy it
+	 * if we don't have any more tabs left
+	 */
+	if (!count() && m_Floating)
+		CloseParent();
+}
+
+int DockWidget::DockTabIndex(const QString& name) const
+{
+	for (int i = 0; i < count(); ++i)
+	{
+		if (widget(i)->objectName() == name)
+			return i;
+	}
+
+	// Not found
+	return -1;
+}
+
+void DockWidget::dragEnterEvent(QDragEnterEvent* event)
+{
+	if (event->mimeData()->hasFormat(MimeTypes::TabIndex))
+	{
+		event->acceptProposedAction();
+
+		m_DragActive = true;
+		update();
+	}
+}
+
+void DockWidget::dragLeaveEvent(QDragLeaveEvent* event)
+{
+	m_DragActive = false;
+	update();
+}
+
+void DockWidget::dropEvent(QDropEvent* event)
+{
+	QByteArray data = event->mimeData()->data(MimeTypes::TabIndex);
+	int index = data.toInt();
+
+	AddDockManagerWidget(index);
+
+	m_DragActive = false;
+	update();
+	event->accept();
+}
+
+void DockWidget::paintEvent(QPaintEvent* event)
+{
+	QTabWidget::paintEvent(event);
+
+	if (m_DragActive)
+	{
+		QPainter p(this);
+		QColor highlight = palette().color(QPalette::Highlight);
+
+		if (count())
+		{
+			p.fillRect(
+				QRect(0, 0, width(), tabBar()->height()),
+				QColor(highlight.red(), highlight.green(), highlight.blue(), 127)
+			);
+		}
+		else
+		{
+			p.fillRect(rect(), QColor(highlight.red(), highlight.green(), highlight.blue(), 127));
+		}
+	}
+}
+
+void DockWidget::SetTabClosable(int index)
+{
+	CloseButton* closeButton = new CloseButton();
+    closeButton->setFixedSize(12, 12);
+
+	// connect(closeButton, &QToolButton::clicked, this, [=]() { emit tabCloseRequested(index); });
+	connect(closeButton, &QToolButton::clicked, this, [=]() { RemoveTab(index); });
+
+	// Set the tool button on the tabbar
+	tabBar()->setTabButton(index, QTabBar::RightSide, closeButton);
+}
+
+void DockWidget::HideTab(int index)
+{
+	/**
+	 * We're going to be in 6 very soon, so we don't have to handle this scenario in the older versions like 5.12
+	 * if we get a request, then we can look into custom porting this functionality else we leave it.
+	 */
+	#if _QT6_COMPAT
+	setTabVisible(index, false);
+	#endif
+}
+
+void DockWidget::UndockTab(int index, const QPoint& position)
+{
+	MainWindow* window = new MainWindow;
+	DockSplitter* splitter = new DockSplitter(Qt::Horizontal, window);
+	DockWidget* undocked = new DockWidget(splitter, true);
+	window->setCentralWidget(undocked);
+
+	DockPanel* panel = static_cast<DockPanel*>(widget(index));
+	panel->setParent(nullptr);
+	undocked->AddDockManagerWidget(panel->PanelId());
+
+	// Move the window to provided position
+	window->move(position);
+	window->show();
+}
+
+void DockWidget::SetupOptions()
+{
+	setAcceptDrops(true);
+
+	/* Options Button */
+	m_PanelOptions = new MenuToolButton;
+	m_PanelOptions->setIcon(IconForge::GetIcon(IconType::icon_browse, _DARK_COLOR(QPalette::Text, 140)));
+	m_PanelOptions->setAutoRaise(true);
+	m_PanelOptions->setPopupMode(QToolButton::InstantPopup);
+
+	setCornerWidget(m_PanelOptions, Qt::TopLeftCorner);
+	cornerWidget(Qt::TopLeftCorner)->setMinimumSize(m_PanelOptions->sizeHint());
+
+	m_Options = new QMenu(m_PanelOptions);
+	m_DockMenu = new QMenu("Docks", m_PanelOptions);
+
+	m_ClosePaneAction = new QAction("Close Pane", m_Options);
+	m_SplitHorizontalAction = new QAction("Split Horizontally", m_Options);
+	m_SplitVerticalAction = new QAction("Split Vertically", m_Options);
+
+	m_Options->addAction(m_ClosePaneAction);
+	m_Options->addAction(m_SplitHorizontalAction);
+	m_Options->addAction(m_SplitVerticalAction);
+
+	/**
+	 * TODO: For floating panels splitting is disabled at the moment
+	 * it is based on the current architecture that we are not tracking how many splits
+	 * have been added to the parent dock splitter, we can't really allow floating panels
+	 * to be split, as with 0 tabs remaining, the window is destroyed
+	 * Once the tracking on the parent Splitter is added, this can then be allowed
+	 * and Windows can then be allowed to have a full feature as the main window for docking
+	 */
+	m_SplitHorizontalAction->setEnabled(!m_Floating);
+	m_SplitVerticalAction->setEnabled(!m_Floating);
+
+	/* ------------------------ */
+	m_Options->addSeparator();
+
+	m_Options->addMenu(m_DockMenu);
+	m_PanelOptions->setMenu(m_Options);
+
+	ResetDockMenu();
+}
+
+void DockWidget::Connect()
+{
+	// Tab Bar
+	connect(m_DockTab, &DockTab::tabRemovalRequested, this, &DockWidget::RemoveTab);
+	connect(m_DockTab, &DockTab::tabDetachRequested, this, &DockWidget::UndockTab);
+	connect(m_DockTab, &DockTab::tabDragged, this, &DockWidget::HideTab);
+
+	// Panel Options
+	connect(m_ClosePaneAction, &QAction::triggered, this, &DockWidget::ClosePane);
+	connect(m_SplitHorizontalAction, &QAction::triggered, this, [this]() { emit splitRequested(Qt::Horizontal); });
+	connect(m_SplitVerticalAction, &QAction::triggered, this, [this]() { emit splitRequested(Qt::Vertical); });
+
+	// Dock Manager
+	connect(&DockManager::Instance(), &DockManager::updated, this, &DockWidget::ResetDockMenu);
+}
+
+void DockWidget::ClosePane()
+{
+	/**
+	 * Before we request for this panel to be deleted, unparent all of the existing tabs,
+	 * so they don't get deleted
+	 */
+	for (int i = count() - 1; i >= 0; --i)
+		widget(i)->setParent(nullptr);
+
+	emit closureRequested(this);
+}
+
+void DockWidget::CloseParent()
+{
+	/**
+	 * The floating panels are constructed with the main window -> Dock Splitter -> Dock Widget (this)
+	 * so from the dock widget we start getting the parent -> parent, i.e. the main window
+	 * and free the pointer to the window, clearing all of the children
+	 */
+	MainWindow* window = dynamic_cast<MainWindow*>(parentWidget()->window());
+
+	if (window)
+	{
+		window->deleteLater();
+		delete window;
+		window = nullptr;
+	}
+}
+
+void DockWidget::ResetDockMenu()
+{
+	m_DockMenu->clear();
+	for (const std::pair<int, DockStruct>& it: DockManager::Instance().AvailableDocks())
+	{
+		QAction* action = new QAction(it.second.name.c_str(), m_DockMenu);
+		connect(action, &QAction::triggered, this, [=]() { AddDockManagerWidget(it.first); });
+
+		m_DockMenu->addAction(action);
+	}
+}
+
+bool DockWidget::ShowIfDocked(const QString& name)
+{
+	int existing = DockTabIndex(name);
+	if (existing < 0)
+		return false;
+
+	setCurrentIndex(existing);
+	return true;
+}
+
+VOID_NAMESPACE_CLOSE

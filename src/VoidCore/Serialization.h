@@ -94,6 +94,13 @@ public:
 
         return str;
     }
+
+    static void ReadString(std::istream& in, std::string& str)
+    {
+        uint32_t len;
+        in.read(reinterpret_cast<char*>(&len), sizeof(len));
+        in.read(&str[0], len);
+    }
 };
 
 VOID_NAMESPACE_CLOSE

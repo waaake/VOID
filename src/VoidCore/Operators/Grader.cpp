@@ -108,25 +108,27 @@ bool Grade2::Evaluate(ImageRow& row)
 
     // Based on formula from https://www.chrisbturner.com/blog/nukes-grade-node-demystified
     // pow((((x - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma))
+    const float divisor = (whitepoint - blackpoint) * ((gain * multiply) - lift);
+    const float invgamma = 1 / gamma;
     for (std::size_t i = 0; i < row.width; ++i)
     {
         float* pixel = row.Pixel<float>(i);
 
         // Red
         if (redchan)
-            pixel[0] = pow((((pixel[0] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[0] = pow((((pixel[0] - blackpoint) / divisor) + lift) + offset, invgamma);
 
         // Green
         if (greenchan)
-            pixel[1] = pow((((pixel[1] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[1] = pow((((pixel[1] - blackpoint) / divisor) + lift) + offset, invgamma);
 
         // Blue
         if (bluechan)
-            pixel[2] = pow((((pixel[2] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[2] = pow((((pixel[2] - blackpoint) / divisor) + lift) + offset, invgamma);
 
         // Alpha
         if (row.channels > 3)
-            pixel[3] = pow((((pixel[3] - blackpoint) / (whitepoint - blackpoint) * ((gain * multiply) - lift)) + lift) + offset, (1 / gamma));
+            pixel[3] = pow((((pixel[3] - blackpoint) / divisor) + lift) + offset, invgamma);
     }
 
     return true;

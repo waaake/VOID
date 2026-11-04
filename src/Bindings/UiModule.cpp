@@ -12,11 +12,12 @@
 /* Internal */
 #include "Definition.h"
 #include "VoidCore/Serialization.h"
-#include "VoidUi/Media/MediaBridge.h"
-#include "VoidUi/Player/PlayerBridge.h"
-#include "VoidUi/Media/MetadataViewer.h"
-#include "VoidUi/Project/Project.h"
-#include "VoidUi/Engine/Globals.h"
+#include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Player/PlayerBridge.h"
+#include "VoidMediaPlayer/Media/MetadataViewer.h"
+#include "VoidMediaPlayer/Project/Project.h"
+#include "VoidSequencer/Sequencer.h"
+#include "VoidEngine/Engine/Globals.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -29,9 +30,10 @@ void BindUi(py::module_& m)
     m.doc() = "Void UI Module.";
 
     m.def("active_player", &UIGlobals::GetActivePlayer, py::return_value_policy::reference);
-    m.def("active_project", []() { return _MediaBridge.ActiveProject(); }, py::return_value_policy::reference);
+    m.def("active_project", []() { return static_cast<Core::Project*>(_MediaBridge.ActiveProject()); }, py::return_value_policy::reference);
     m.def("load_project", [](const std::string& path) { _MediaBridge.Load(path); }, py::arg("path"));
     m.def("metadata_viewer", &UIGlobals::GetMetadataViewer, py::return_value_policy::reference);
+    m.def("sequencer", &UIGlobals::GetSequencer, py::return_value_policy::reference);
     m.def("menu_system", &UIGlobals::InternalMenuSystem, py::return_value_policy::reference);
     m.def("player_controller", &PlayerBridge::Instance, py::return_value_policy::reference);
     m.def("create_effect", [](const SharedMediaClip& media, const std::string& type) -> void
@@ -80,23 +82,11 @@ void BindUi(py::module_& m)
         .def("set_media",
             py::overload_cast<const std::vector<SharedMediaClip>&, const PlayerViewBuffer&>(&PlayerBridge::SetMedia),
             py::arg("media_list"), py::arg("buffer"))
+        .def("set_sequence", &PlayerBridge::SetSequence, py::arg("sequence"))
         .def("set_grid_rows", &PlayerBridge::SetGridRows, py::arg("rows"))
-        .def("set_grid_columns", &PlayerBridge::SetGridColumns, py::arg("columns"));
-
-    /* Player */
-    py::class_<Player>(m, "Player")
-        .def("play_forwards", &Player::PlayForwards)
-        .def("play_backwards", &Player::PlayBackwards)
-        .def("play", &Player::PlayForwards)
-        .def("stop", &Player::Stop)
-        .def("next_frame", &Player::NextFrame)
-        .def("previous_frame", &Player::PreviousFrame)
-        .def("move_to_start", &Player::MoveToStart)
-        .def("move_to_end", &Player::MoveToEnd)
-        .def("set_frame", &Player::SetFrame, py::arg("frame"))
-        .def("refresh", &Player::Refresh)
-        .def("set_media", py::overload_cast<const SharedMediaClip&>(&Player::SetMedia), py::arg("media_clip"))
-        .def("active_viewer", &Player::ActiveViewer, py::return_value_policy::reference);
+        .def("set_grid_columns", &PlayerBridge::SetGridColumns, py::arg("columns"))
+        .def("active_viewer", &PlayerBridge::ActiveViewer, py::return_value_policy::reference)
+        .def("set_volume", &PlayerBridge::SetVolume, py::arg("volume"));
 
     /* Viewer Buffer */
     py::class_<ViewerBuffer>(m, "Viewer")
@@ -122,37 +112,30 @@ void BindUi(py::module_& m)
     py::class_<MetadataViewer>(m, "MetadataViewer")
         .def("set_from_media", &MetadataViewer::SetFromMedia)
         .def("set_metadata", &MetadataViewer::SetMetadata);
+
+    py::class_<SequencerTimeline>(m, "Sequencer")
+        .def("active_sequence", &SequencerTimeline::ActiveSequence, py::return_value_policy::reference)
+        .def("set_sequence", &SequencerTimeline::SetSequence, py::arg("sequence"))
+        .def("razor_at", static_cast<void (SequencerTimeline::*)(v_frame_t)>(&SequencerTimeline::RazorAt), py::arg("frame"))
+        .def("razor_at", static_cast<void (SequencerTimeline::*)(const SharedPlaybackSequence&, v_frame_t)>(&SequencerTimeline::RazorAt), py::arg("sequence"), py::arg("frame"))
+        .def("razor_at", static_cast<void (SequencerTimeline::*)(const SharedPlaybackTrack&, v_frame_t)>(&SequencerTimeline::RazorAt), py::arg("track"), py::arg("frame"))
+        .def("merge_cut", &SequencerTimeline::MergeCut, py::arg("track"), py::arg("frame"))
+        .def("trim_item_head", &SequencerTimeline::TrimItemHead, py::arg("item"), py::arg("handle"))
+        .def("trim_item_tail", &SequencerTimeline::TrimItemTail, py::arg("item"), py::arg("handle"))
+        .def("set_reference_media",
+            static_cast<bool (SequencerTimeline::*)(const SharedMediaClip&)>(&SequencerTimeline::SetReferenceMedia),
+            py::arg("media")
+        )
+        .def("set_reference_media",
+            static_cast<bool (SequencerTimeline::*)(const SharedMediaClip&, const SharedPlaybackSequence&)>(&SequencerTimeline::SetReferenceMedia),
+            py::arg("media"),
+            py::arg("sequence")
+        );
     
     /* Menu System */
     py::class_<MenuSystem>(m, "MenuSystem")
         .def("add_menu", [](MenuSystem* self, const std::string& name) { self->AddMenu(name); }, py::arg("name"))
         .def("register_action", &MenuSystem::RegisterAction, py::arg("menu"), py::arg("action"), py::arg("function"), py::arg("shortcut") = "");
-
-    /* Project */
-    py::class_<Project> project(m, "Project");
-
-    /* Project Save Type*/
-    py::enum_<EtherFormat::Type>(project, "EtherFormat")
-        .value("Ascii", EtherFormat::Type::ASCII)
-        .value("Binary", EtherFormat::Type::BINARY)
-        .export_values();
-
-    project
-        .def("__repr__", [](py::handle h)
-        {
-            const Project& p = h.cast<Project&>();
-            std::stringstream ss;
-            ss << "Project <" << p.Name() << " at 0x" << std::hex << reinterpret_cast<uintptr_t>(h.ptr()) << ">";
-            return ss.str();
-        })
-        .def("add_media", &Project::AddMedia, py::arg("media_clip"))
-        .def("document", &Project::Document, py::arg("name"))
-        .def("modified", &Project::Modified)
-        .def(
-            "save",
-            static_cast<bool (Project::*)(const std::string&, const std::string&, const EtherFormat::Type&)>(&Project::Save),
-            py::arg("path"), py::arg("name"), py::arg("type")
-        );
 }
 
 } // namespace bindings

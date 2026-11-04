@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* TBB */
+#include <tbb/parallel_for.h>
+
 /* Internal */
 #include "ImageProcessor.h"
 #include "VoidCore/Logging.h"
@@ -31,12 +34,21 @@ bool ImageProcessor::Process(FloatImage& image, ImageOp* iop)
      * TODO: Check how can we safely allow one ImageOp::Evaluate to access other rows
      * maybe with or without guarantee that it will be modified
      */
-    #pragma omp parallel for
-    for (int i = 0; i < image->height; ++i)
+    // #pragma omp parallel for
+    // for (int i = 0; i < image->height; ++i)
+    // {
+    //     ImageRow row = image->EditableRow(i);
+    //     status = iop->Evaluate(row);
+    // }
+
+    tbb::parallel_for(tbb::blocked_range<int>(0, image->height), [&](const tbb::blocked_range<int>& r) -> void
     {
-        ImageRow row = image->EditableRow(i);
-        status = iop->Evaluate(row);
-    }
+        for (int i = r.begin(); i != r.end(); ++i)
+        {
+            ImageRow row = image->EditableRow(i);
+            status = iop->Evaluate(row);
+        }
+    });
 
     return status;
 }

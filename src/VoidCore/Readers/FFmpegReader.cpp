@@ -2,335 +2,316 @@
 // Licensed under the MIT License
 
 /* STD */
-#include <memory>
 #include <algorithm>
+#include <memory>
+
+// /* TBB */
+// #include <tbb/parallel_for.h>
 
 /* Internal */
 #include "FFmpegReader.h"
+#include "Decoder2.h"
 #include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
-// This governs how many parallel instances of the Decoder can exist at ones
-// allowing multiple streams of videos to be decoded for playback
-// we may want to allow configuring this later on depending on system specs
-// For now we allow 16 as something to test as well
-static constexpr std::size_t MAX_DECODERS = 16;
+// // This governs how many parallel instances of the Decoder can exist at ones
+// // allowing multiple streams of videos to be decoded for playback
+// // we may want to allow configuring this later on depending on system specs
+// // For now we allow 16 as something to test as well
+// static constexpr std::size_t MAX_DECODERS = 16;
 
-/* FFmpegDecoder {{{ */
-FFmpegDecoder::FFmpegDecoder()
-    : m_Path("")
-    , m_CurrentFrame(0)
-    , m_Width(0)
-    , m_Height(0)
-    , m_Channels(3)
-    , m_FormatContext(nullptr)
-    , m_CodecContext(nullptr)
-    , m_Frame(nullptr)
-    , m_RGBFrame(nullptr)
-    , m_Packet(nullptr)
-    , m_SwsContext(nullptr)
-    , m_Stream(nullptr)
-    , m_StreamID(-1)
-{
-}
+// /// FFmpegDecoder
 
-FFmpegDecoder::~FFmpegDecoder()
-{
-    Close();
-}
+// FFmpegDecoder::FFmpegDecoder()
+//     : m_Path("")
+//     , m_CurrentFrame(0)
+//     , m_Width(0)
+//     , m_Height(0)
+//     , m_Channels(3)
+//     , m_FormatContext(nullptr)
+//     , m_CodecContext(nullptr)
+//     , m_Frame(nullptr)
+//     , m_RGBFrame(nullptr)
+//     , m_Packet(nullptr)
+//     , m_SwsContext(nullptr)
+//     , m_Stream(nullptr)
+//     , m_StreamID(-1)
+// {
+// }
 
-FFmpegDecoder& FFmpegDecoder::Instance(const std::string& path)
-{
-    static std::unordered_map<std::string, std::unique_ptr<FFmpegDecoder>> s_decoders;
-    static std::size_t s_head = 0;
+// FFmpegDecoder::~FFmpegDecoder()
+// {
+//     Close();
+// }
 
-    auto it = s_decoders.find(path);
-    if (it == s_decoders.end())
-    {
-        std::unique_ptr<FFmpegDecoder> decoder = nullptr;
-        if (s_decoders.size() == MAX_DECODERS)
-        {
-            auto iter = s_decoders.begin();
-            std::advance(iter, s_head);
-            decoder = std::move(iter->second);
-            s_decoders.erase(iter);
-        }
+// FFmpegDecoder& FFmpegDecoder::Instance(const std::string& path)
+// {
+//     static std::unordered_map<std::string, std::unique_ptr<FFmpegDecoder>> s_decoders;
+//     static std::size_t s_head = 0;
 
-        s_decoders[path] = decoder == nullptr ? std::make_unique<FFmpegDecoder>() : std::move(decoder);
-        s_head = (s_head + 1) % MAX_DECODERS;
-    }
+//     auto it = s_decoders.find(path);
+//     if (it == s_decoders.end())
+//     {
+//         std::unique_ptr<FFmpegDecoder> decoder = nullptr;
+//         if (s_decoders.size() == MAX_DECODERS)
+//         {
+//             auto iter = s_decoders.begin();
+//             std::advance(iter, s_head);
+//             decoder = std::move(iter->second);
+//             s_decoders.erase(iter);
+//         }
 
-    return *(s_decoders[path].get());
-}
+//         s_decoders[path] = decoder == nullptr ? std::make_unique<FFmpegDecoder>() : std::move(decoder);
+//         s_head = (s_head + 1) % MAX_DECODERS;
+//     }
 
-void FFmpegDecoder::Open()
-{
-    /* Allocate Frames with default values */
-    m_Frame = av_frame_alloc();
-    m_RGBFrame = av_frame_alloc();
-    m_Packet = av_packet_alloc();
+//     return *(s_decoders[path].get());
+// }
 
-    if (avformat_open_input(&m_FormatContext, m_Path.c_str(), nullptr, nullptr) > 0)
-        return;
+// void FFmpegDecoder::Open()
+// {
+//     m_Frame = av_frame_alloc();
+//     m_RGBFrame = av_frame_alloc();
+//     m_Packet = av_packet_alloc();
 
-    if (avformat_find_stream_info(m_FormatContext, nullptr) < 0)
-        return;
+//     if (avformat_open_input(&m_FormatContext, m_Path.c_str(), nullptr, nullptr) > 0)
+//         return;
 
-    m_StreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+//     if (avformat_find_stream_info(m_FormatContext, nullptr) < 0)
+//         return;
 
-    m_CurrentFrame = 0;
-    if (m_StreamID < 0)
-        return;
+//     m_StreamID = av_find_best_stream(m_FormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+//     m_CurrentFrame = 0;
+//     if (m_StreamID < 0) return;
 
-    m_Stream = m_FormatContext->streams[m_StreamID];
+//     m_Stream = m_FormatContext->streams[m_StreamID];
+//     AVCodecParameters* codecParams = m_Stream->codecpar;
 
-    AVCodecParameters* codecParams = m_Stream->codecpar;
+//     const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
+//     m_CodecContext = avcodec_alloc_context3(codec);
 
-    const AVCodec* codec = avcodec_find_decoder(codecParams->codec_id);
-    m_CodecContext = avcodec_alloc_context3(codec);
+//     if (m_CodecContext->pix_fmt == AV_PIX_FMT_RGBA)
+//         m_Channels = 4;
 
-    // if (m_CodecContext->pix_fmt == AV_PIX_FMT_RGBA)
-    //     m_Channels = 4;
+//     avcodec_parameters_to_context(m_CodecContext, codecParams);
+//     avcodec_open2(m_CodecContext, codec, nullptr);
 
-    /* Update the codec context based on the values from the codec params */
-    avcodec_parameters_to_context(m_CodecContext, codecParams);
-    avcodec_open2(m_CodecContext, codec, nullptr);
+//     m_Width = m_CodecContext->width;
+//     m_Height = m_CodecContext->height;
 
-    /* Update the resolution information */
-    m_Width = m_CodecContext->width;
-    m_Height = m_CodecContext->height;
-}
+//     m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+// }
 
-void FFmpegDecoder::Close()
-{
-    if (m_Frame) av_frame_free(&m_Frame);
-    if (m_RGBFrame) av_frame_free(&m_RGBFrame);
-    if (m_Packet) av_packet_free(&m_Packet);
-    if (m_CodecContext) avcodec_free_context(&m_CodecContext);
-    if (m_FormatContext) avformat_close_input(&m_FormatContext);
+// void FFmpegDecoder::Close()
+// {
+//     if (m_Frame) av_frame_free(&m_Frame);
+//     if (m_RGBFrame) av_frame_free(&m_RGBFrame);
+//     if (m_Packet) av_packet_free(&m_Packet);
+//     if (m_CodecContext) avcodec_free_context(&m_CodecContext);
+//     if (m_FormatContext) avformat_close_input(&m_FormatContext);
 
-    #if LIBSWSCALE_VERSION_MAJOR < 9
-    if (m_SwsContext) sws_freeContext(m_SwsContext);
-    m_SwsContext = nullptr;
-    #else
-    if (m_SwsContext) sws_free_context(&m_SwsContext);
-    #endif
+//     #if LIBSWSCALE_VERSION_MAJOR < 9
+//     if (m_SwsContext) sws_freeContext(m_SwsContext);
+//     m_SwsContext = nullptr;
+//     #else
+//     if (m_SwsContext) sws_free_context(&m_SwsContext);
+//     #endif
 
-    /* The read stream ID */
-    m_StreamID = -1;
-}
+//     m_StreamID = -1;
+//     m_Buffer.Clear();
+// }
 
-bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<float>& pixels)
-{
-    /**
-     * At the moment, this is not accessible concurrently throught multiple threads
-     * Rather than handling this specifically at the cache level, using a guard here
-     * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
-     * still this shouldn't cause any issues...
-     */
-    std::lock_guard<std::mutex> guard(m_Mutex);
+// bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<float>& pixels)
+// {
+//     /**
+//      * At the moment, this is not accessible concurrently throught multiple threads
+//      * Rather than handling this specifically at the cache level, using a guard here
+//      * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
+//      * still this shouldn't cause any issues...
+//      */
+//     std::lock_guard<std::mutex> guard(m_Mutex);
 
-    /* A new movie is being read */
-    if (path != m_Path)
-    {
-        Close();
-        m_Path = path;
-        Open();
-    }
+//     // A new movie is being read
+//     if (path != m_Path)
+//     {
+//         Close();
+//         m_Path = path;
+//         Open();
+//     }
 
-    m_Buffer.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
-    pixels.Resize(m_Buffer.Size());
+//     if (m_Buffer.Empty())
+//     {
+//         m_Buffer.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+//         av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, m_Buffer.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+//     }
 
-    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, m_Buffer.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+//     pixels._buf.resize(m_Buffer._buf.size());
 
-    m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+//     bool found = false;
+//     int retryCount = 0;
+//     bool seeked = false;
 
-    /* Now we start */
-    bool found = false;
-    int retryCount = 0;
+//     // Retry seeking for 3 times before giving up
+//     while (!found && retryCount < 3)
+//     {
+//         // Decode the next frame and it returns back either a negative value or the decoded frame
+//         v_frame_t ret = DecodeNextFrame();
 
-    int distance = 0;
-    bool seeked = false;
+//         /**
+//          * Then we check if the return value was greater than the requested frame
+//          * if so, we might need to seek back and try again (max 3 times)
+//          *
+//          * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
+//          */
+//         if (ret > framenumber || ret == -1)
+//         {
+//             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+//             // Seek the closest keyframe before the framenumber
+//             av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
+//             avcodec_flush_buffers(m_CodecContext);
 
-    /* Retry seeking for 3 times before giving up */
-    while (!found && retryCount < 3)
-    {
-        /**
-         * Calculate the distance between the requested and the last frame which was read
-         * this helps us determine whether or not to save any data and also if we need to seek forwards in order
-         * to reach the frame quickly
-         * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
-         * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
-         */
-        distance = framenumber - m_CurrentFrame;
-        /* Decode the next frame and it returns back either a negative value or the decoded frame */
-        v_frame_t ret = DecodeNextFrame((distance < 10));
+//             retryCount++;
+//         }
+//         else if (ret == framenumber)
+//         {
+//             // Frame found, fillup the float input buffer
+//             found = true;
+//             FillBuffer(pixels);
+//             break;
+//         }
+//         else if (!seeked)
+//         {
+//             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+//             /**
+//              * Seek the framenumber
+//              * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
+//              */
+//             av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
+//             avcodec_flush_buffers(m_CodecContext);
 
-        /**
-         * Then we check if the return value was greater than the requested frame
-         * if so, we might need to seek back and try again (max 3 times)
-         *
-         * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
-         */
-        if (ret > framenumber || ret == -1)
-        {
-            /* Seek */
-            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
-            /* Seek the closest keyframe before the framenumber */
-            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
-            avcodec_flush_buffers(m_CodecContext);
+//             seeked = true;
+//         }
+//     }
 
-            /* Increment the retry count */
-            retryCount++;
-        }
-        else if (ret == framenumber)
-        {
-            // Frame found, fillup the float input buffer
-            found = true;
-            FillBuffer(pixels);
-            break;
-        }
-        else if (distance > 20 && !seeked)
-        {
-            /* Seek */
-            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
-            /**
-             * Seek the framenumber
-             * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
-             */
-            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
-            avcodec_flush_buffers(m_CodecContext);
+//     return found;
+// }
 
-            seeked = true;
-        }
-    }
+// bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<unsigned char>& pixels)
+// {
+//     /**
+//      * At the moment, this is not accessible concurrently throught multiple threads
+//      * Rather than handling this specifically at the cache level, using a guard here
+//      * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
+//      * still this shouldn't cause any issues...
+//      */
+//     std::lock_guard<std::mutex> guard(m_Mutex);
 
-    return found;
-}
+//     // A new movie is being read
+//     if (path != m_Path)
+//     {
+//         Close();
+//         m_Path = path;
+//         Open();
+//     }
 
-bool FFmpegDecoder::Decode(const std::string& path, const int framenumber, Buffer<unsigned char>& pixels)
-{
-    /**
-     * At the moment, this is not accessible concurrently throught multiple threads
-     * Rather than handling this specifically at the cache level, using a guard here
-     * TODO: Maybe handling all movies to be single threaded can help solve this in a better way
-     * still this shouldn't cause any issues...
-     */
-    std::lock_guard<std::mutex> guard(m_Mutex);
+//     pixels.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
+//     av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
 
-    /* A new movie is being read */
-    if (path != m_Path)
-    {
-        Close();
-        m_Path = path;
-        Open();
-    }
+//     bool found = false;
+//     int retryCount = 0;
+//     bool seeked = false;
 
-    pixels.Resize(av_image_get_buffer_size(AV_PIX_FMT_RGB24, m_Width, m_Height, 1));
-    av_image_fill_arrays(m_RGBFrame->data, m_RGBFrame->linesize, pixels.Data(), AV_PIX_FMT_RGB24, m_Width, m_Height, 1);
+//     // Retry seeking for 3 times before giving up
+//     while (!found && retryCount < 3)
+//     {
+//         // Decode the next frame and it returns back either a negative value or the decoded frame
+//         v_frame_t ret = DecodeNextFrame();
 
-    m_SwsContext = sws_getContext(m_Width, m_Height, m_CodecContext->pix_fmt, m_Width, m_Height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+//         /**
+//          * Then we check if the return value was greater than the requested frame
+//          * if so, we might need to seek back and try again (max 3 times)
+//          *
+//          * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
+//          */
+//         if (ret > framenumber || ret == -1)
+//         {
+//             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+//             // Seek the closest keyframe before the framenumber
+//             av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
+//             avcodec_flush_buffers(m_CodecContext);
 
-    /* Now we start */
-    bool found = false;
-    int retryCount = 0;
+//             retryCount++;
+//         }
+//         else if (ret == framenumber)
+//         {
+//             // Frame found, fillup the float input buffer
+//             found = true;
+//             break;
+//         }
+//         else if (!seeked)
+//         {
+//             int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
+//             /**
+//              * Seek the framenumber
+//              * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
+//              */
+//             av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
+//             avcodec_flush_buffers(m_CodecContext);
 
-    int distance = 0;
-    bool seeked = false;
+//             seeked = true;
+//         }
+//     }
 
-    /* Retry seeking for 3 times before giving up */
-    while (!found && retryCount < 3)
-    {
-        /**
-         * Calculate the distance between the requested and the last frame which was read
-         * this helps us determine whether or not to save any data and also if we need to seek forwards in order
-         * to reach the frame quickly
-         * Always seeking isn't helpful, so seeking can be done if the distance is greater than 20 frames
-         * and any frames from 10 frames to the requested can be saved in case they are needed in the next intermediate
-         */
-        distance = framenumber - m_CurrentFrame;
-        /* Decode the next frame and it returns back either a negative value or the decoded frame */
-        v_frame_t ret = DecodeNextFrame((distance < 10));
+//     return found;
+// }
 
-        /**
-         * Then we check if the return value was greater than the requested frame
-         * if so, we might need to seek back and try again (max 3 times)
-         *
-         * Meanwhile also check if the file was at the end of it's frame? and we want to read it again?
-         */
-        if (ret > framenumber || ret == -1)
-        {
-            /* Seek */
-            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
-            /* Seek the closest keyframe before the framenumber */
-            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_BACKWARD);
-            avcodec_flush_buffers(m_CodecContext);
+// v_frame_t FFmpegDecoder::DecodeNextFrame()
+// {
+//     while (av_read_frame(m_FormatContext, m_Packet) >= 0)
+//     {
+//         if (m_Packet->stream_index != m_StreamID)
+//         {
+//             av_packet_unref(m_Packet);
+//             continue;
+//         }
 
-            /* Increment the retry count */
-            retryCount++;
-        }
-        else if (ret == framenumber)
-        {
-            // Frame found, fillup the float input buffer
-            found = true;
-            break;
-        }
-        else if (distance > 20 && !seeked)
-        {
-            /* Seek */
-            int64_t seek_pts = av_rescale_q(framenumber, av_inv_q(m_Stream->r_frame_rate), m_Stream->time_base);
-            /**
-             * Seek the framenumber
-             * using AVSEEK_FLAG_FRAME to seek to any frame and don't really care about keyframes
-             */
-            av_seek_frame(m_FormatContext, m_StreamID, seek_pts, AVSEEK_FLAG_FRAME);
-            avcodec_flush_buffers(m_CodecContext);
+//         int ret = avcodec_send_packet(m_CodecContext, m_Packet);
+//         av_packet_unref(m_Packet);
 
-            seeked = true;
-        }
-    }
+//         if (ret < 0) return -1;
+//         while (true)
+//         {
+//             ret = avcodec_receive_frame(m_CodecContext, m_Frame);
+//             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+//                 break;
 
-    return found;
-}
+//             if (ret < 0)
+//                 return -3;
 
-v_frame_t FFmpegDecoder::DecodeNextFrame(bool save)
-{
-    /* Read the next frame from the packet */
-    if (av_read_frame(m_FormatContext, m_Packet) < 0)
-        return -1;
+//             m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
+//             sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
 
-    if (m_Packet->stream_index != m_StreamID)
-        return -2;
+//             return (v_frame_t)m_CurrentFrame;
+//         }
+//     }
 
-    avcodec_send_packet(m_CodecContext, m_Packet);
-    if (avcodec_receive_frame(m_CodecContext, m_Frame) != 0)
-        return -3;
+//     return -1;
+// }
 
-    m_CurrentFrame = av_rescale_q(m_Frame->pts, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate));
-    if (save)
-        sws_scale(m_SwsContext, m_Frame->data, m_Frame->linesize, 0, m_Height, m_RGBFrame->data, m_RGBFrame->linesize);
+// void FFmpegDecoder::FillBuffer(Buffer<float>& out)
+// {
+//     float* buffer = out.Data();
+//     int64_t count = m_Width * m_Height * m_Channels;
+//     tbb::parallel_for(tbb::blocked_range<int64_t>(0, count), [&](const tbb::blocked_range<int64_t>& r) -> void
+//     {
+//         for (int64_t i = r.begin(); i != r.end(); ++i)
+//             buffer[i] = Linear(m_Buffer[i] / 255.f);
+//     });
+// }
 
-    av_packet_unref(m_Packet);
+/// FFmpegPixReader
 
-    /* The decoded frame number*/
-    return m_CurrentFrame;
-}
-
-void FFmpegDecoder::FillBuffer(Buffer<float>& out)
-{
-    for (std::size_t i = 0; i < (m_Width * m_Height); ++i)
-    {
-        int index = i * 3;
-        out[index] = Linear(m_Buffer[index] / 255.f);
-        out[index + 1] = Linear(m_Buffer[index + 1] / 255.f);
-        out[index + 2] = Linear(m_Buffer[index + 2] / 255.f);
-    }
-}
-
-/* }}} */
-
-/* FFmpegPixReader {{{ */
 FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
     : VoidMPixReader(path, framenumber)
     , m_AChannels(0)
@@ -348,8 +329,8 @@ FFmpegPixReader::~FFmpegPixReader()
 
 void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
-    FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
-    if (decoder.Decode(path, frame, image->buffer))
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
+    if (decoder.Decode(frame, image->buffer._buf, m_Timeframe))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -378,9 +359,8 @@ void FFmpegPixReader::ProcessInformation()
             const AVStream* stream = formatContext->streams[i];
             if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
             {
-                /* This always has been 2 less than the total number of frames, need a bit more information here... */
-                m_Duration = stream->nb_frames - 2;
-                m_Startframe = av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
+                m_Duration = (v_frame_t)stream->nb_frames;
+                m_Startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
                 m_Framerate = av_q2d(stream->r_frame_rate);
                 m_Endframe = m_Duration - 1;
             }
@@ -405,8 +385,8 @@ MFrameRange FFmpegPixReader::Framerange()
 
 void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
 {
-    FFmpegDecoder& decoder = FFmpegDecoder::Instance(path);
-    if (decoder.Decode(path, frame, image->buffer))
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+    if (decoder.Decode(m_Framenumber, image->buffer._buf, m_Timeframe))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -419,8 +399,8 @@ void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage&
 
 void FFmpegPixReader::Read()
 {
-    FFmpegDecoder& decoder = FFmpegDecoder::Instance(m_Path);
-    if (decoder.Decode(m_Path, m_Framenumber, m_Image->buffer))
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+    if (decoder.Decode(m_Framenumber, m_Image->buffer._buf, m_Timeframe))
     {
         m_Image->width = decoder.Width();
         m_Image->height = decoder.Height();
@@ -429,6 +409,16 @@ void FFmpegPixReader::Read()
         m_Image->format = VOID_GL_RGB;
         m_Image->type = VOID_GL_FLOAT;
     }
+}
+
+bool FFmpegPixReader::Read(SharedFrameAudio& buffer)
+{
+    AudioDecoder& decoder = AudioDecoder::Instance(m_Path);
+    // Ensure we have Valid video frame timestamp before reading audio
+    if (m_Timeframe.Invalid())
+        decoder.ComputeTimestamp(m_Framenumber, m_Timeframe);
+
+    return decoder.Decode(m_Framenumber, m_Timeframe, buffer);
 }
 
 const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
@@ -463,8 +453,7 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
         vidStream = formatContext->streams[streamId];
 
-        /* This always has been 2 less than the total number of frames, need a bit more information here... */
-        int endframe = vidStream->nb_frames - 2;
+        int endframe = (int)vidStream->nb_frames;
         double framerate = av_q2d(vidStream->r_frame_rate);
         m["end_frame"] = std::to_string(endframe);
         m["duration"] = std::to_string(endframe - m_Startframe + 1);
@@ -490,7 +479,5 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
     return m;
 }
-
-/* }}} */
 
 VOID_NAMESPACE_CLOSE

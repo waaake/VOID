@@ -60,7 +60,7 @@ struct InputSpec
     InputSpec(int w, int h, int ch, const BufferType& type) : width(w), height(h), channels(ch), type(type) {}
 };
 
-class PixWriter
+class VOID_API PixWriter
 {
 public:
     PixWriter(const EncodeSpec& spec) : m_Spec(spec) {}

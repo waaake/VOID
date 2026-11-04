@@ -97,7 +97,7 @@ void Stroke::Deserialize(const rapidjson::Value& in)
     const rapidjson::Value::ConstArray vertices = in["vertices"].GetArray();
     this->vertices.reserve(vertices.Size());
 
-    for (int i = 0; i < vertices.Size(); ++i)
+    for (unsigned int i = 0; i < vertices.Size(); ++i)
     {
         AnnotatedVertex v;
         v.Deserialize(vertices[i]);
@@ -249,7 +249,7 @@ void Annotation::Deserialize(const rapidjson::Value& in)
     this->strokes.reserve(strokes.Size());
     this->texts.reserve(texts.Size());
 
-    for (int i = 0; i < strokes.Size(); ++i)
+    for (unsigned int i = 0; i < strokes.Size(); ++i)
     {
         Stroke s;
         s.Deserialize(strokes[i]);
@@ -257,7 +257,7 @@ void Annotation::Deserialize(const rapidjson::Value& in)
         this->strokes.emplace_back(s);
     }
 
-    for (int i = 0; i < texts.Size(); ++i)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(texts.Size()); ++i)
     {
         RenderText t;
         t.Deserialize(texts[i]);

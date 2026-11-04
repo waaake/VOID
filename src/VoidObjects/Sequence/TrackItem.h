@@ -6,6 +6,7 @@
 
 /* STD */
 #include <memory>
+#include <vector>
 
 /* Qt */
 #include <QObject>
@@ -13,66 +14,177 @@
 
 /* Internal */
 #include "Definition.h"
+#include "Audio.h"
+#include "Internal/Descriptors.h"
 #include "VoidObjects/Media/MediaClip.h"
+#include "VoidObjects/Sequence/Frame.h"
 #include "VoidObjects/VoidObject.h"
+#include "VoidObjects/Models/TagModel.h"
 
 VOID_NAMESPACE_OPEN
 
 /* Forward Declaration of the Track */
 class PlaybackTrack;
 class TrackItem;
+class Effect;
 
 typedef std::shared_ptr<TrackItem> SharedTrackItem;
 
 class VOID_API TrackItem : public VoidObject
 {
     Q_OBJECT
-
 public:
-    TrackItem(QObject* parent = nullptr);
-    TrackItem(const SharedMediaClip& media, v_frame_t start, v_frame_t end, v_frame_t offset = 0, QObject* parent = nullptr);
+    TrackItem(const Sequence::Type& type = Sequence::Type::VIDEO, QObject* parent = nullptr);
+    TrackItem(
+        const SharedMediaClip& media,
+        v_frame_t start,
+        v_frame_t end,
+        v_frame_t offset = 0,
+        const Sequence::Type& type = Sequence::Type::VIDEO,
+        QObject* parent = nullptr
+    );
 
     virtual ~TrackItem();
+
+    TrackItem(const TrackItem& other);
+    TrackItem& operator=(const TrackItem& other);
+
+    TrackItem(TrackItem&& other) noexcept;
+    TrackItem& operator=(TrackItem&& other) noexcept;
+
+    const Sequence::Type& Type() const { return m_Type; }
 
     /**
      * Update the media on the track item
      * Offset corresponds to the offet in the framerange as when compared against the original range
-     * of the media. 
+     * of the media.
      * This is the number which when added to the range of the TrackItem gives the range of the Media
-     * 
+     *
      * e.g. Media Range: 1001 - 1010
      * TrackItem Range: 1 - 10
      * Offset: 1000
      */
     void SetMedia(const SharedMediaClip& media, v_frame_t offset = 0);
+    void ResetMedia(const SharedMediaClip& media);
     void SetRange(v_frame_t start, v_frame_t end);
-    inline void SetColor(const QColor& color) { m_Media->SetColor(color); }
+
+    bool Linked() const { return (bool)m_Media; }
+    void Unlink();
+
+    std::string Path() const { return m_Path; }
+
+    std::string Version() const;
+    int NumAvailableVersions();
+
+    bool VersionUp();
+    bool VersionDown();
+    bool SetLatestAvailableVersion();
+    bool SetMinAvailableVersion();
+
+    std::size_t Index() const;
+
+    void SetEnabled(bool enable);
+    bool Enabled() const { return m_Enabled; }
+
+    QPixmap Thumbnail() const { return m_Media ? m_Media->Thumbnail() : ProjectEntity::DefaultThumbnail(); }
 
     /* Getters */
     inline v_frame_t GetOffset() const { return m_Offset; }
     inline SharedMediaClip GetMedia() const { return m_Media; }
+    SequenceFrame InternalFrame(v_frame_t frame);
+
+    const ElementTokens& Tokens() const { return m_Media->Tokens(); }
+
+    std::string Name() const { return m_Media ? m_Media->Name() : m_Name; }
+    Effect* CreateEffect(const std::string& type);
+    Effect* CreateEffect(const std::string& type, const std::string& name);
+    void AddEffect(Effect* effect);
+    void InsertEffect(Effect* effect, int index);
+    bool RemoveEffect(const std::string& name);
+    void RemoveEffect(int index, bool destroy = true);
+    void ClearEffects();
+    bool HasEffects() const { return !m_Effects.empty(); }
+    int NumEffects() const { return static_cast<int>(m_Effects.size()); }
+    int EffectIndex(const Effect* const effect) const;
+    Effect* EffectAt(int index) const { return m_Effects.at(index); }
+    const std::vector<Effect*>& Effects() const { return m_Effects; }
+
+    /**
+     * @brief Returns the effect at the back of the (reverse stack) which was added at the very last
+     * Visually the effects are drawn first to last, so this one is the one at the top
+     *
+     * This one --->  [===== Effect 2 ======]  <--- This one
+     *                [===== Effect 1 ======]
+     *                [===== Effect 0 ======]
+     * """"""""""""""||"""""""""""""""""""""|  |""""""""""""""
+     *  Item 02      ||  Item 03            |  |  Item 04
+     *               ||                     |  |
+     * ______________||_____________________|  |______________
+     *
+     * @return Effect* Effect at the top.
+     */
+    Effect* LastEffect() const { return m_Effects.empty() ? nullptr : m_Effects.back(); }
 
     /**
      * @brief Updates the Image pointer with the data from the underlying media in the Item.
-     * 
+     *
      * @param frame Frame number.
      * @param image Image Buffer to be updated.
      */
     void Image(const v_frame_t frame, FloatImage& image);
     const FloatImage Image(v_frame_t frame);
+    bool Audio(v_frame_t frame, SharedFrameAudio& buffer);
+
+    std::vector<std::pair<float, float>> AudioPeaks();
 
     void ClearCache(v_frame_t frame);
 
-    inline v_frame_t StartFrame() const { return m_StartFrame; }
-    inline v_frame_t EndFrame() const { return m_EndFrame; }
+    /**
+     *              Timeline In         Timeline Out
+     *                    v              v
+     *  |' ' ' ' ' ' ' '  """""""""""""""" ' ' ' ' ' ' ' '|
+     *  |                 |              |                |
+     *  |                 | <-Duration-> |                |
+     *  | <----Head-----> |              | <---Tail------>|
+     *  |_ _ _ _ _ _ _ _ _|______________| _ _ _ _ _ _ _ _|
+     *  ^                 ^              ^                ^
+     * Source start   Source In       Source Out       Source end
+     */
+
+    v_frame_t TimelineIn() const { return m_TimelineIn; }
+    v_frame_t TimelineOut() const { return m_TimelineOut; }
+    MFrameRange TimelineRange() const { return MFrameRange(m_TimelineIn, m_TimelineOut); }
+
+    void SetTimelineIn(v_frame_t frame);
+    void SetTimelineOut(v_frame_t frame);
+
+    int Duration() const { return m_TimelineOut - m_TimelineIn + 1; }
+
+    v_frame_t SourceIn() const { return m_SourceIn; }
+    v_frame_t SourceOut() const { return m_SourceOut; }
+    MFrameRange SourceRange() const { return MFrameRange(m_SourceIn, m_SourceOut); }
+
+    void SetSourceIn(v_frame_t frame);
+    void SetSourceOut(v_frame_t frame);
+
+    v_frame_t HeadHandle() const { return m_Media ? m_SourceIn - m_Media->FirstFrame() : 0; }
+    v_frame_t TailHandle() const { return m_Media ? m_Media->LastFrame() - (m_SourceIn + (m_TimelineOut - m_TimelineIn)) : 0; }
+
+    void TrimHead(int handle);
+    void TrimTail(int handle);
+
+    // Moves the item to the given frame
+    void Move(v_frame_t frame);
+    void Offset(int offset) { Move(m_TimelineIn + offset); }
 
     /**
      * Returns whether the given frame is in range of the underlying media
      * Applies the offset of the track item's range back to check against the media
-     * 
+     *
      * TODO: Consider handle frames when they are implemented.
      */
-    inline bool InRange(const v_frame_t frame) const { return m_Media->InRange(frame + m_Offset); }
+    inline bool InRange(const v_frame_t frame) const { return m_Media ? m_Media->InRange(frame + m_Offset) : false; }
+    bool InTimelineRange(const v_frame_t frame) const { return frame >= m_TimelineIn && frame <= m_TimelineOut; }
 
     /**
      * Returns the nearest frame of a given frame from the media in TrackItem space
@@ -80,45 +192,87 @@ public:
      * E.g. Media's nearest frame for 1003 is 1001 and the offset of the Track Item is 1001
      * Hence for frame 3, the nearest frame is 0 by adding offset and querying media for nearest frame and
      * then negating back the offset
-     * 
+     *
      * TODO: See if we can improve our logic to get a frame value or Image Data directly?
      */
-    inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media->NearestFrame(frame + m_Offset) - m_Offset; }
+    inline v_frame_t NearestFrame(const v_frame_t frame) const { return m_Media ? m_Media->NearestFrame(frame + m_Offset) - m_Offset : frame; }
 
-    /* TODO: Cache the First frame and last frame for Media in that class */
-    inline v_frame_t MediaFirstFrame() const { return m_Media->FirstFrame(); }
-    inline v_frame_t MediaLastFrame() const { return m_Media->LastFrame(); }
+    // /* TODO: Cache the First frame and last frame for Media in that class */
+    // inline v_frame_t MediaFirstFrame() const { return m_Media->FirstFrame(); }
+    // inline v_frame_t MediaLastFrame() const { return m_Media->LastFrame(); }
 
     /* The parent of the TrackItem should always be a Track, in case it exists on a Track */
-    inline PlaybackTrack* Track() const { return reinterpret_cast<PlaybackTrack*>(parent()); }
+    inline PlaybackTrack* Track() const { return m_Track; }
+    void SetTrack(PlaybackTrack* track) { m_Track = track; }
+    Core::Project* Project() const;
 
-    inline QColor Color() const { return m_Media->Color(); }
+    inline QColor Color() const { return m_Color; }
+    void ResetColor() { if (m_Media) SetColor(m_Media->Color()); }
+    void SetColor(const QColor& color);
 
-signals: /* Signals denoting Actions in the TrackItem */
+    /// Tags
+    bool AddTag(const std::string& name);
+    bool AddTag(const std::string& name, const TagMetaStruct& metadata);
+    bool InsertTag(const std::string& name, int index);
+    bool InsertTag(const std::string& name, int index, const TagMetaStruct& metadata);
+    void InsertTag(Tag* tag, int index);
+    void RemoveTag(const QModelIndex& index);
+    void RemoveTag(int row);
+
+    Tag* TagAt(int row) const { return m_TagModel->TagAt(row); }
+    Tag* TagAt(const QModelIndex& index) const { return m_TagModel->TagAt(index); }
+    int NumTags() const { return m_TagModel->rowCount(); }
+    bool HasTags() const { return m_TagModel->HasTags(); }
+    TagModel* TagsModel() const { return m_TagModel; }
+    Tag* GetTag(const std::string& name) const { return m_TagModel->GetTag(name); }
+    void ClearTags();
+
+    void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
+    void Serialize(std::ostream& out) const override;
+    void Deserialize(const rapidjson::Value& in) override;
+    void Deserialize(std::istream& in) override;
+
+    const char* TypeName() const override { return "TrackItem"; }
+
+signals:
     void mediaChanged();
-
-    /* This signal denotes that something in the track item was changed/modified i.e. updated */
     void updated();
+    void rangeChanged(const MFrameRange& current, const MFrameRange& previous);
+    void effectCreated(Effect*);
+    void effectAboutToBeRemoved(Effect*);
+    void effectRemoved();
+    void stateChanged();
+    void effectUpdated();
+    void moved();
+    void tagsUpdated();
 
-    /**
-     * Emitted when the time range of the track item has changed
-     * includes the start and end frame of the track item
-     */
-    void rangeChanged(v_frame_t start, v_frame_t end);
-
-    /**
-     * Emitted when a frame is cached
-     * The cache could happen when the media cache operation is run continuously on a thread
-     * Or if the frame is queried by the viewport
-     */
-    void frameCached(v_frame_t frame);
-
-protected: /* Members */
+protected:
+    std::vector<Effect*> m_Effects;
+    std::string m_Name;
+    std::string m_Path;
     SharedMediaClip m_Media;
+    PlaybackTrack* m_Track;
+    QColor m_Color;
+
+    TagModel* m_TagModel;
+
     v_frame_t m_Offset;
 
-    v_frame_t m_StartFrame;
-    v_frame_t m_EndFrame;
+    v_frame_t m_TimelineIn;
+    v_frame_t m_TimelineOut;
+
+    v_frame_t m_SourceIn;
+    v_frame_t m_SourceOut;
+
+    int m_NumVersions;
+    bool m_Enabled;
+
+    Sequence::Type m_Type;
+
+private:
+    void ResetEffectsRange(const MFrameRange& updated);
+    // void ResetEffectsParentage();
+    void ResetEffectParentage(int index);
 };
 
 VOID_NAMESPACE_CLOSE

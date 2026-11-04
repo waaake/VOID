@@ -3,17 +3,23 @@
 
 /* STD */
 #include <algorithm>
+#include <sstream>
 
 /* Internal */
 #include "Sequence.h"
 #include "VoidCore/Logging.h"
+#include "VoidObjects/Effects/Effects.h"
+#include "VoidObjects/Project/Project.h"
 
 VOID_NAMESPACE_OPEN
 
-PlaybackSequence::PlaybackSequence(QObject* parent)
-    : VoidObject(parent)
+PlaybackSequence::PlaybackSequence(Core::Project* project)
+    : ProjectEntity({230, 140, 40}, project)
+    , m_Name("Sequence")
+    , m_Framerate(24.0)
     , m_StartFrame(0)
     , m_EndFrame(0)
+    , m_Recent(nullptr)
 {
     VOID_LOG_INFO("Sequence Created: {0}", Vuid());
 }
@@ -37,51 +43,203 @@ void PlaybackSequence::Clear()
 
 void PlaybackSequence::SetRange(int start, int end)
 {
-    /* Update the internal time range of the sequence */
     m_StartFrame = start;
     m_EndFrame = end;
 
-    /* Emit the rangeChanged signal to notify others */
     emit rangeChanged(m_StartFrame, m_EndFrame);
+    ResizeBuffer(m_EndFrame - m_StartFrame + 1);
+}
+
+void PlaybackSequence::SetFramerate(double framerate)
+{
+    m_Framerate = framerate;
+    emit updated();
+}
+
+void PlaybackSequence::SetName(const std::string& name)
+{
+    m_Name = name;
+    emit updated();
+    emit nameChanged();
+}
+
+QPixmap PlaybackSequence::Thumbnail()
+{
+    return m_Recent ? m_Recent->Thumbnail() : DefaultThumbnail();
+}
+
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::Type& type)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    return track;
+}
+
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::Type& type)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    track->SetName(name);
+
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track) : AddAudioTrack(track);
+    return track;
+}
+
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const Sequence::Type& type, int index)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
+    return track;
+}
+
+SharedPlaybackTrack PlaybackSequence::CreateTrack(const std::string& name, const Sequence::Type& type, int index)
+{
+    SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(type, this);
+    track->SetName(name);
+
+    type == Sequence::Type::VIDEO ? AddVideoTrack(track, index) : AddAudioTrack(track, index);
+    return track;
 }
 
 void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track)
 {
-    /* Update the Video tracks with the provided new track */
     m_VideoTracks.push_back(track);
+    track->SetSequence(this);
+    ConnectVideoTrack(track);
 
-    /* Connect the signal from the underlying pointer to the Track to updating the range of the sequence */
-    connect(track.get(), &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Video Track ");
+        name.append(std::to_string(m_VideoTracks.size()));
+
+        track->SetName(name);
+    }
 
     /**
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
-
-    /* Emit that a track has been added */
-    emit trackAdded();
+    emit trackAdded(track);
 }
 
 void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track)
 {
-    /* Update the Audio tracks with the provided new track */
     m_AudioTracks.push_back(track);
+    track->SetSequence(this);
+    ConnectAudioTrack(track);
+
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Audio Track ");
+        name.append(std::to_string(m_AudioTracks.size()));
+
+        track->SetName(name);
+    }
 
     /**
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided track) gets set as the start frame
      * and the maximum frame (existing or the provided track) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
+    emit trackAdded(track);
+}
 
-    /* Emit that a track has been added */
-    emit trackAdded();
+void PlaybackSequence::AddVideoTrack(const SharedPlaybackTrack& track, int index)
+{
+    m_VideoTracks.insert(m_VideoTracks.begin() + index, track);
+    track->SetSequence(this);
+    ConnectVideoTrack(track);
+
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Video Track ");
+        name.append(std::to_string(m_VideoTracks.size()));
+
+        track->SetName(name);
+    }
+
+    /**
+     * Inorder to update the range on the sequence, we need to see
+     * the minimum frame (existing or the provided track) gets set as the start frame
+     * and the maximum frame (existing or the provided track) gets set as the end frame
+     *
+     * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
+     */
+    SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
+    emit trackAdded(track);
+    emit tracksReordered();
+}
+
+void PlaybackSequence::AddAudioTrack(const SharedPlaybackTrack& track, int index)
+{
+    m_AudioTracks.insert(m_AudioTracks.begin() + index, track);
+    track->SetSequence(this);
+    ConnectAudioTrack(track);
+
+    if (track->Name().empty())
+    {
+        std::string name;
+        name.reserve(15);
+        name.append("Audio Track ");
+        name.append(std::to_string(m_AudioTracks.size()));
+
+        track->SetName(name);
+    }
+
+    /**
+     * Inorder to update the range on the sequence, we need to see
+     * the minimum frame (existing or the provided track) gets set as the start frame
+     * and the maximum frame (existing or the provided track) gets set as the end frame
+     *
+     * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
+     */
+    SetRange(std::min(m_StartFrame, track->StartFrame()), std::max(m_EndFrame, track->EndFrame()));
+    emit trackAdded(track);
+    emit tracksReordered();
+}
+
+void PlaybackSequence::RemoveTrack(const SharedPlaybackTrack& track)
+{
+    emit trackAboutToBeRemoved(track);
+    auto _pred = [track] (const SharedPlaybackTrack& t) -> bool { return track.get() == t.get(); };
+    if (track->Type() == Sequence::Type::VIDEO)
+        m_VideoTracks.erase(std::remove_if(m_VideoTracks.begin(), m_VideoTracks.end(), _pred), m_VideoTracks.end());
+    else
+        m_AudioTracks.erase(std::remove_if(m_AudioTracks.begin(), m_AudioTracks.end(), _pred), m_AudioTracks.end());
+
+    emit trackRemoved();
+    emit tracksReordered();
+}
+
+void PlaybackSequence::RemoveTrack(int index, const Sequence::Type& type)
+{
+    if (type == Sequence::Type::VIDEO)
+    {
+        const SharedPlaybackTrack& track = m_VideoTracks[index];
+        emit trackAboutToBeRemoved(track);
+        m_VideoTracks.erase(m_VideoTracks.begin() + index);
+    }
+    else
+    {
+        const SharedPlaybackTrack& track = m_AudioTracks[index];
+        emit trackAboutToBeRemoved(track);
+        m_AudioTracks.erase(m_AudioTracks.begin() + index);
+    }
+
+    emit trackRemoved();
+    emit tracksReordered();
 }
 
 void PlaybackSequence::UpdateRange(int start, int end)
@@ -90,7 +248,7 @@ void PlaybackSequence::UpdateRange(int start, int end)
      * Inorder to update the range on the sequence, we need to see
      * the minimum frame (existing or the provided start) gets set as the start frame
      * and the maximum frame (existing or the provided end) gets set as the end frame
-     * 
+     *
      * Once the range is set, this will then emit rangeChanged to ensure that it gets notified
      */
     if (HasMedia())
@@ -105,33 +263,78 @@ void PlaybackSequence::UpdateRange(int start, int end)
     }
 
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
+    ResizeBuffer(m_EndFrame - m_StartFrame + 1);
+}
+
+SharedPlaybackTrack PlaybackSequence::ReferenceVideoTrack() const
+{
+    for (const auto& track : m_VideoTracks)
+        if (track->IsReference())
+            return track;
+
+    return nullptr;
+}
+
+SharedPlaybackTrack PlaybackSequence::ReferenceAudioTrack() const
+{
+    for (const auto& track : m_AudioTracks)
+        if (track->IsReference())
+            return track;
+
+    return nullptr;
+}
+
+const SharedPlaybackTrack& PlaybackSequence::TrackAt(std::size_t index, const Sequence::Type& type) const
+{
+    return type == Sequence::Type::VIDEO ? m_VideoTracks.at(index) : m_AudioTracks.at(index);
+}
+
+int PlaybackSequence::VideoTrackIndex(const PlaybackTrack* track) const
+{
+    auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
+    auto it = std::find_if(m_VideoTracks.begin(), m_VideoTracks.end(), _f);
+    return std::distance(m_VideoTracks.begin(), it);
+}
+
+int PlaybackSequence::AudioTrackIndex(const PlaybackTrack* track) const
+{
+    auto _f = [track] (const SharedPlaybackTrack& t) -> bool { return track == t.get(); };
+    auto it = std::find_if(m_AudioTracks.begin(), m_AudioTracks.end(), _f);
+    return std::distance(m_AudioTracks.begin(), it);
+}
+
+int PlaybackSequence::TrackIndex(const PlaybackTrack* track) const
+{
+    return track->Type() == Sequence::Type::VIDEO ? VideoTrackIndex(track) : AudioTrackIndex(track);
+}
+
+int PlaybackSequence::Index() const
+{
+    Core::Project* p = Project();
+    return p ? p->SequenceRow(this) : -1;
 }
 
 bool PlaybackSequence::HasMedia() const
 {
     /**
      * A sequence can be said empty if there are no tracks on it
-     * But the same seqeunce can have track(s) but no media in them
+     * But the same sequence can have track(s) but no media in them
      * This means that the sequence is not empty but has no media on it to be played
      */
-    if (IsEmpty())    /* Already has no tracks on it */
-        return false;
+    if (IsEmpty()) return false;
 
-    /* Check if there are any Video tracks that have any media on them */
     for (SharedPlaybackTrack track: m_VideoTracks)
     {
         if (!track->IsEmpty())
             return true;
     }
 
-    /* Check if there are any audio tracks which have any media on them */
     for (SharedPlaybackTrack track: m_AudioTracks)
     {
         if (!track->IsEmpty())
             return true;
     }
 
-    /* The Sequence is empty */
     return false;
 }
 
@@ -147,59 +350,132 @@ SharedPlaybackTrack PlaybackSequence::ActiveVideoTrack() const
             return *it;
     }
 
-    /* None of the tracks of the sequence are active or there are no tracks at all */
+    // None of the tracks of the sequence are active or there are no tracks at all
     return nullptr;
 }
 
-SharedTrackItem PlaybackSequence::GetTrackItem(const int frame) const
+SharedTrackItem PlaybackSequence::GetTrackItem(const int frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->GetTrackItem(frame);
+    for (auto it = m_VideoTracks.rbegin(); it != m_VideoTracks.rend(); ++it)
+    {
+        const SharedPlaybackTrack& track = *it;
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
 
-    /* There is nothing in the sequence */
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item;
+    }
+
+    return nullptr;
+}
+
+SharedTrackItem PlaybackSequence::AudioTrackItem(const int frame)
+{
+    for (auto it = m_AudioTracks.begin(); it != m_AudioTracks.end(); ++it)
+    {
+        const SharedPlaybackTrack& track = *it;
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item;
+    }
+
     return nullptr;
 }
 
 SharedMediaClip PlaybackSequence::Media(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->Media(frame);
-    
+    for (auto it = m_VideoTracks.rbegin(); it != m_VideoTracks.rend(); ++it)
+    {
+        const SharedPlaybackTrack& track = *it;
+        if (track->IsEmpty() || !track->Enabled())
+            continue;
+
+        if (const SharedTrackItem& item = track->GetTrackItem(frame))
+            return item->GetMedia();
+    }
+
     return nullptr;
 }
 
 void PlaybackSequence::Image(v_frame_t frame, FloatImage& image)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        m_VideoTracks.back()->Image(frame, image);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // m_Recent->Image(frame, image);
+
+    // for (auto& track : m_VideoTracks)
+    // {
+    //     // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+    //     if (track->IsEmpty() || !track->Enabled())
+    //         continue;
+
+    //     if ((m_Recent = track->GetTrackItem(frame)))
+    //         m_Recent->Image(frame, image);
+    // }
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+        return m_FrameBuffer[index].Image(image);
 }
 
 const FloatImage PlaybackSequence::Image(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->Image(frame);
+    // if (m_Recent && m_Recent->InRange(frame))
+        // return m_Recent->Image(frame);
+
+    // for (auto& track : m_VideoTracks)
+    // {
+    //     // VOID_LOG_INFO("Looping over: {0} -- Enabled: {1}", track->Name(), track->Enabled());
+    //     if (track->IsEmpty() || !track->Enabled())
+    //         continue;
+
+    //     if ((m_Recent = track->GetTrackItem(frame)))
+    //         return m_Recent->Image(frame);
+    // }
+
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+    {
+        const FloatImage& image = m_FrameBuffer[index].Image();
+        return image->Empty() ? nullptr : image;
+    }
 
     return nullptr;
+}
+
+const FloatImage PlaybackSequence::Evaluated(v_frame_t frame)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+    {
+        const FloatImage& image = m_FrameBuffer[index].Evaluate();
+        return image->Empty() ? nullptr : image;
+    }
+
+    return nullptr;
+}
+
+const SharedFrameAudio PlaybackSequence::Audio(v_frame_t frame)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_AudioBuffer.size())
+        return m_AudioBuffer[index];
+
+    return nullptr;
+}
+
+bool PlaybackSequence::FrameBuffer(v_frame_t frame, MediaDesc::RenderBuffer& data)
+{
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+    {
+        const FloatImage& image = m_FrameBuffer[index].Evaluate();
+        data.image = image->Empty() ? nullptr : image;
+        data.audio = m_AudioBuffer[index];
+
+        return true;
+    }
+    return false;
 }
 
 void PlaybackSequence::ClearCache()
@@ -210,13 +486,352 @@ void PlaybackSequence::ClearCache()
 
 void PlaybackSequence::ClearCache(v_frame_t frame)
 {
-    /**
-     * When the Sequence is asked for an image for a given frame
-     * The sequence always returns back the data from the track which is at the top of the stack
-     * Meaning bottom of (last added to) the underlying video tracks
-     */
-    if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
-        return m_VideoTracks.back()->ClearCache(frame);
+    // /**
+    //  * When the Sequence is asked for an image for a given frame
+    //  * The sequence always returns back the data from the track which is at the top of the stack
+    //  * Meaning bottom of (last added to) the underlying video tracks
+    //  */
+    // if (!m_VideoTracks.empty() && !m_VideoTracks.back()->IsEmpty()) // TODO: FIX this -- The last Track could be just empty but others above it may not be
+    //     return m_VideoTracks.back()->ClearCache(frame);
+
+    std::size_t index = frame - m_StartFrame;
+    if (index < m_FrameBuffer.size())
+        return m_FrameBuffer[index].Clear();
+}
+
+void PlaybackSequence::SaveSnapshot(const std::string& name, const std::string& description)
+{
+    std::ostringstream os(std::ios::binary);
+    Serialize(os);
+    m_Snapshots.emplace_back(name, description, os.str());
+}
+
+void PlaybackSequence::RemoveSnapshot(int index)
+{
+    m_Snapshots.erase(m_Snapshots.begin() + index);
+}
+
+bool PlaybackSequence::RestoreSnapshot(int index)
+{
+    if (index < static_cast<int>(m_Snapshots.size()))
+    {
+        std::istringstream is(m_Snapshots[index].data, std::ios::binary);
+        Clear();
+        Deserialize(is);
+        return true;
+    }
+    return false;
+}
+
+std::vector<SharedTrackItem> PlaybackSequence::VideoTrackItems() const
+{
+    std::vector<SharedTrackItem> items;
+    for (const SharedPlaybackTrack& track : m_VideoTracks)
+    {
+        const std::vector<SharedTrackItem>& items_ = track->Items();
+        items.reserve(items.size() + items_.size());
+        items.insert(items.end(), items_.begin(), items_.end());
+    }
+
+    return items;
+}
+
+void PlaybackSequence::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
+{
+    out.SetObject();
+
+    out.AddMember("type", rapidjson::Value(TypeName(), allocator), allocator);
+    out.AddMember("name", rapidjson::Value(m_Name.c_str(), allocator), allocator);
+    out.AddMember("start_frame", static_cast<int>(m_StartFrame), allocator);
+    out.AddMember("end_frame", static_cast<int>(m_EndFrame), allocator);
+    out.AddMember("framerate", static_cast<double>(m_Framerate), allocator);
+
+    out.AddMember("video_tracks_count", static_cast<int>(m_VideoTracks.size()), allocator);
+    rapidjson::Value vtracks(rapidjson::kArrayType);
+    for (const SharedPlaybackTrack& vtrack : m_VideoTracks)
+    {
+        rapidjson::Value track(rapidjson::kObjectType);
+        vtrack->Serialize(track, allocator);
+
+        vtracks.PushBack(track, allocator);
+    }
+    out.AddMember("video_tracks", vtracks, allocator);
+
+    out.AddMember("audio_tracks_count", static_cast<int>(m_AudioTracks.size()), allocator);
+    rapidjson::Value atracks(rapidjson::kArrayType);
+    for (const SharedPlaybackTrack& atrack : m_AudioTracks)
+    {
+        rapidjson::Value track(rapidjson::kObjectType);
+        atrack->Serialize(track, allocator);
+
+        atracks.PushBack(track, allocator);
+    }
+    out.AddMember("audio_tracks", atracks, allocator);
+
+    out.AddMember("snapshot_count", static_cast<int>(m_Snapshots.size()), allocator);
+    rapidjson::Value snapshots(rapidjson::kArrayType);
+    for (const auto& snapshot : m_Snapshots)
+    {
+        rapidjson::Value s(rapidjson::kObjectType);
+        snapshot.Serialize(s, allocator);
+
+        snapshots.PushBack(s, allocator);
+    }
+    out.AddMember("snapshots", snapshots, allocator);
+}
+
+void PlaybackSequence::Serialize(std::ostream& out) const
+{
+    WriteString(out, m_Name);
+    out.write(reinterpret_cast<const char*>(&m_StartFrame), sizeof(m_StartFrame));
+    out.write(reinterpret_cast<const char*>(&m_EndFrame), sizeof(m_EndFrame));
+    out.write(reinterpret_cast<const char*>(&m_Framerate), sizeof(m_Framerate));
+
+    /// Video
+    int vcount = static_cast<int>(m_VideoTracks.size());
+    out.write(reinterpret_cast<const char*>(&vcount), sizeof(vcount));
+
+    for (const SharedPlaybackTrack& vtrack : m_VideoTracks)
+        vtrack->Serialize(out);
+
+    /// Audio
+    int acount = static_cast<int>(m_AudioTracks.size());
+    out.write(reinterpret_cast<const char*>(&acount), sizeof(acount));
+
+    for (const SharedPlaybackTrack& atrack : m_AudioTracks)
+        atrack->Serialize(out);
+
+    /// Snapshots
+    int scount = static_cast<int>(m_Snapshots.size());
+    out.write(reinterpret_cast<const char*>(&scount), sizeof(scount));
+
+    for (const auto& snapshot : m_Snapshots)
+        snapshot.Serialize(out);
+}
+
+void PlaybackSequence::Deserialize(const rapidjson::Value& in)
+{
+    m_Name = in["name"].GetString();
+    m_StartFrame = in["start_frame"].GetInt();
+    m_EndFrame = in["end_frame"].GetInt();
+    m_Framerate = in["framerate"].GetDouble();
+
+    const rapidjson::Value::ConstArray vtracks = in["video_tracks"].GetArray();
+    m_VideoTracks.reserve(vtracks.Size());
+
+    for (unsigned int i = 0; i < vtracks.Size(); ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::VIDEO, this);
+        track->Deserialize(vtracks[i]);
+        AddVideoTrack(track);
+    }
+
+    const rapidjson::Value::ConstArray atracks = in["audio_tracks"].GetArray();
+    m_AudioTracks.reserve(atracks.Size());
+
+    for (int i = 0; i < atracks.Size(); ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::AUDIO, this);
+        track->Deserialize(atracks[i]);
+        AddAudioTrack(track);
+    }
+
+    const rapidjson::Value::ConstArray snapshots = in["snapshots"].GetArray();
+    m_Snapshots.resize(snapshots.Size());
+
+    for (int i = 0; i < snapshots.Size(); ++i)
+        m_Snapshots[i].Deserialize(snapshots[i]);
+
+    UpdateBuffer();
+}
+
+void PlaybackSequence::Deserialize(std::istream& in)
+{
+    m_Name = ReadString(in);
+    in.read(reinterpret_cast<char*>(&m_StartFrame), sizeof(m_StartFrame));
+    in.read(reinterpret_cast<char*>(&m_EndFrame), sizeof(m_EndFrame));
+    in.read(reinterpret_cast<char*>(&m_Framerate), sizeof(m_Framerate));
+
+    int vcount = 0;
+    in.read(reinterpret_cast<char*>(&vcount), sizeof(vcount));
+    m_VideoTracks.reserve(vcount);
+
+    for (int i = 0; i < vcount; ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::VIDEO, this);
+        track->Deserialize(in);
+        AddVideoTrack(track);
+    }
+
+    int acount = 0;
+    in.read(reinterpret_cast<char*>(&acount), sizeof(acount));
+    m_AudioTracks.reserve(acount);
+
+    for (int i = 0; i < acount; ++i)
+    {
+        SharedPlaybackTrack track = std::make_shared<PlaybackTrack>(Sequence::Type::AUDIO, this);
+        track->Deserialize(in);
+        AddAudioTrack(track);
+    }
+
+    int scount = 0;
+    in.read(reinterpret_cast<char*>(&scount), sizeof(scount));
+    m_Snapshots.resize(scount);
+
+    for (int i = 0; i < scount; ++i)
+        m_Snapshots[i].Deserialize(in);
+
+    UpdateBuffer();
+}
+
+void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
+{
+    auto* ptr = track.get();
+    connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    connect(ptr, &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
+    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
+    connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
+    connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
+    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
+    connect(ptr, &PlaybackTrack::itemStateChanged, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemUpdated, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemEffectAdded, this, &PlaybackSequence::HandleItemEffectAdded);
+    connect(ptr, &PlaybackTrack::itemEffectUpdated, this, &PlaybackSequence::HandleItemEffectUpdated);
+    connect(ptr, &PlaybackTrack::itemEffectRemoved, this, &PlaybackSequence::HandleItemEffectChanged);
+    connect(ptr, &PlaybackTrack::updatedInRange, this, &PlaybackSequence::UpdateVideoBuffer);
+}
+
+void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
+{
+    auto* ptr = track.get();
+    connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
+    connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
+    connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
+    connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
+    connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
+    connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
+    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
+}
+
+void PlaybackSequence::ResizeBuffer(std::size_t size)
+{
+    m_FrameBuffer.resize(size);
+    m_AudioBuffer.resize(size);
+    VOID_LOG_INFO("Resized buffers to: {}", size);
+}
+
+void PlaybackSequence::UpdateBuffer()
+{
+    ResizeBuffer(m_EndFrame - m_StartFrame + 1);
+    UpdateBuffer(FrameRange(), Sequence::Type::VIDEO);
+}
+
+void PlaybackSequence::UpdateBuffer(const MFrameRange& range, const Sequence::Type& type)
+{
+    type == Sequence::Type::VIDEO ? UpdateVideoBuffer(range) : UpdateAudioBuffer(range);
+}
+
+void PlaybackSequence::UpdateVideoBuffer(const MFrameRange& range)
+{
+    for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
+    {
+        SharedTrackItem item = GetTrackItem(i);
+        if (item && item->Enabled())
+            m_FrameBuffer[i - m_StartFrame] = item->InternalFrame(i);
+        else
+            m_FrameBuffer[i - m_StartFrame] = SequenceFrame();
+    }
+    VOID_LOG_INFO("Updated Video Buffer in range: {} - {}", range.startframe, range.endframe);
+}
+
+void PlaybackSequence::UpdateAudioBuffer(const MFrameRange& range)
+{
+    for (v_frame_t i = range.startframe; i <= range.endframe; ++i)
+    {
+        SharedFrameAudio& buffer = m_AudioBuffer[i - m_StartFrame];
+        if (!buffer)
+            buffer = std::make_shared<FrameAudio>();
+
+        buffer->Clear();
+        SharedTrackItem item = AudioTrackItem(i);
+        if (item && item->Enabled())
+            item->Audio(i, buffer);
+    }
+    VOID_LOG_INFO("Updated Audio Buffer in range: {} - {}", range.startframe, range.endframe);
+}
+
+// void PlaybackSequence::HandleNewItem(const SharedTrackItem& item)
+// {
+//     UpdateBuffer(item->TimelineRange());
+// }
+
+void PlaybackSequence::HandleItemMoved(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item)
+{
+    // Item was moved slightly i.e offsetted
+    if (current.Overlaps(previous))
+    {
+        UpdateBuffer({std::min(previous.startframe, current.startframe), std::max(previous.endframe, current.endframe)}, item->Type());
+    }
+    else
+    {
+        UpdateBuffer(previous, item->Type());
+        UpdateBuffer(current, item->Type());
+    }
+
+    emit itemUpdated(item);
+}
+
+void PlaybackSequence::HandleItemRangeChanged(const MFrameRange& current, const MFrameRange& previous, const SharedTrackItem& item)
+{
+    UpdateBuffer(current.HeadDiff(previous), item->Type());
+    UpdateBuffer(current.TailDiff(previous), item->Type());
+
+    emit itemUpdated(item);
+}
+
+void PlaybackSequence::HandleTrackStateChanged(const SharedPlaybackTrack& track)
+{
+    for (const SharedTrackItem& item : track->Items())
+        UpdateBuffer(item->TimelineRange(), item->Type());
+
+    emit itemsUpdated(track->Items());
+}
+
+void PlaybackSequence::HandleItemUpdated(const SharedTrackItem& item)
+{
+    UpdateBuffer(item->TimelineRange(), item->Type());
+    emit internalUpdated();
+}
+
+void PlaybackSequence::HandleItemsUpdated(const std::vector<SharedTrackItem>& items)
+{
+    if (items.size())
+        UpdateBuffer(MFrameRange(items.front()->TimelineIn(), items.back()->TimelineOut()), items.front()->Type());
+
+    emit internalUpdated();
+}
+
+void PlaybackSequence::HandleItemEffectAdded(const SharedTrackItem& item, Effect* effect)
+{
+    for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
+    {
+        SequenceFrame& f = m_FrameBuffer[i - m_StartFrame];
+        f.SetEffect(effect);
+        f.SetDirty();
+    }
+}
+
+void PlaybackSequence::HandleItemEffectUpdated(const SharedTrackItem& item)
+{
+    for (v_frame_t i = item->TimelineIn(); i <= item->TimelineOut(); ++i)
+        m_FrameBuffer[i - m_StartFrame].SetDirty();
+}
+
+void PlaybackSequence::HandleItemEffectChanged(const SharedTrackItem& item)
+{
+    HandleItemEffectAdded(item, item->LastEffect());
 }
 
 VOID_NAMESPACE_CLOSE

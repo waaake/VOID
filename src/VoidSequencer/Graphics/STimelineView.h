@@ -1,0 +1,74 @@
+// Copyright (c) 2025 waaake
+// Licensed under the MIT License
+
+#ifndef _SEQUENCER_TIMELINE_VIEW_H
+#define _SEQUENCER_TIMELINE_VIEW_H
+
+/* Qt */
+#include <QGraphicsView>
+
+/* Internal */
+#include "QDefinition.h"
+#include "FrameRange.h"
+#include "VoidSequencer/SDragContext.h"
+#include "VoidObjects/Sequence/Sequence.h"
+
+VOID_NAMESPACE_OPEN
+
+class STimelineScene;
+class SequencerContext;
+
+class STimelineView : public QGraphicsView
+{
+    Q_OBJECT
+public:
+    explicit STimelineView(SequencerContext* m_Context, QWidget* parent = nullptr);
+    ~STimelineView();
+    void AddPlayhead();
+    void AddVideoTrack(const SharedPlaybackTrack& track);
+    void AddAudioTrack(const SharedPlaybackTrack& track);
+    void RemoveTrack(const SharedPlaybackTrack& track);
+    void Refresh();
+    void Clear();
+    void ResetScroll();
+
+    /**
+     * @brief The range which is currently visible in the View.
+     * 
+     * @return MFrameRange Visible frame range.
+     */
+    MFrameRange VisibleRange() const;
+    void FocusOn(v_frame_t frame);
+    void FocusOn(v_frame_t start, v_frame_t end, int y = 0);
+    const STimelineScene* TimelineScene() const { return m_Scene; }
+    QPoint TagPos(const SharedTrackItem& item) const;
+
+signals:
+    void sequenceCutRequested(v_frame_t);
+
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void drawForeground(QPainter* painter, const QRectF& rect) override;
+    void enterEvent(EnterEvent* event) override;
+    void leaveEvent(QEvent* event) override;
+
+private:
+    SequencerContext* m_Context;
+    STimelineScene* m_Scene;
+    SMarqueeContext m_Marquee;
+
+private: /* Methods */
+    void Build();
+    void Setup();
+    void FrameChanged(v_frame_t frame);
+};
+
+VOID_NAMESPACE_CLOSE
+
+#endif // _SEQUENCER_TIMELINE_VIEW_H
