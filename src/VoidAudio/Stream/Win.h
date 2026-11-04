@@ -38,7 +38,6 @@ private:
     IAudioClient* m_AudioClient;
     IAudioRenderClient* m_AudioRenderClient;
     WAVEFORMATEX* m_Wfx;
-    UINT32 m_BufferCount;
 
     int m_Samplerate, m_Channels;
     float m_Volume;
