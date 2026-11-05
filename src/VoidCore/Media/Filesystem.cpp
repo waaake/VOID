@@ -12,6 +12,7 @@
 #include "Filesystem.h"
 #include "VoidCore/Logging.h"
 #include "VoidCore/Profiler.h"
+#include "VoidCore/VoidTools.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -164,7 +165,7 @@ void MEntry::Parse(const std::string& path)
      * Image is a sequence or atleast follows a sequential naming convention
      * Check if the framestring is a valid number before trying to cast that to one
      */
-    if (ValidFrame(framestring))
+    if (Tools::isnum(framestring))
     {
         m_FramePadding = static_cast<unsigned int>(framestring.size());
         m_Framenumber = std::stol(framestring);
@@ -182,25 +183,10 @@ void MEntry::Parse(const std::string& path)
     }
 }
 
-bool MEntry::ValidFrame(const std::string& framestring) const
-{
-    if (framestring.empty())
-        return false;
-
-    for (char c: framestring)
-    {
-        if (!std::isdigit(c))
-            return false;
-    }
-
-    // Valid frame number
-    return true;
-}
-
 bool MEntry::ValidTemplate(const std::string& framestring) const
 {
-    std::regex hashPattern("(#+)");
-    std::regex printfPattern("%0\\d+d");
+    static const std::regex hashPattern("(#+)", std::regex_constants::optimize);
+    static const std::regex printfPattern("%0\\d+d", std::regex_constants::optimize);
 
     return std::regex_search(framestring, hashPattern) || std::regex_search(framestring, printfPattern);
 }
@@ -453,7 +439,6 @@ MFrameRange MediaStruct::Framerange() const
 
 void MediaStruct::Add(const MEntry& entry)
 {
-    /* Add the provided entry */
     m_Entries.push_back(entry);
     m_Frames.push_back(entry.Framenumber());
 }
