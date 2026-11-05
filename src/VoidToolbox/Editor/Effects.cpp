@@ -168,7 +168,7 @@ void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
     grid->addWidget(label, row, 0, Qt::AlignRight);
     grid->addWidget(editor, row, 1);
 
-    connect(editor, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [=](int i) -> void
+    connect(editor, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this, param](int i) -> void
     {
         m_Effect->SetValue(param->name, i);
         // _PlayerBridge.Refresh();
@@ -191,7 +191,7 @@ void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param
     grid->addWidget(label, row, 0, Qt::AlignRight);
     grid->addWidget(editor, row, 1);
 
-    connect(editor, &QuickDoubleSlider::valueChanged, this, [=](double d) -> void
+    connect(editor, &QuickDoubleSlider::valueChanged, this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
         // _PlayerBridge.Refresh();
@@ -211,7 +211,7 @@ void EffectEditor::SetupFloatParam(QGridLayout* grid, int row, const Param* para
     grid->addWidget(label, row, 0, Qt::AlignRight);
     grid->addWidget(editor, row, 1);
 
-    connect(editor, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, [=](double d) -> void
+    connect(editor, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
         // _PlayerBridge.Refresh();
@@ -230,7 +230,7 @@ void EffectEditor::SetupBoolParam(QGridLayout* grid, int row, const Param* param
     grid->addWidget(label, row, 0, Qt::AlignRight);
     grid->addWidget(editor, row, 1);
 
-    connect(editor, &QCheckBox::toggled, this, [=](bool b) -> void
+    connect(editor, &QCheckBox::toggled, this, [this, param](bool b) -> void
     {
         m_Effect->SetValue(param->name, b);
         // _PlayerBridge.Refresh();
@@ -249,7 +249,7 @@ void EffectEditor::SetupStringParam(QGridLayout* grid, int row, const Param* par
     grid->addWidget(label, row, 0, Qt::AlignRight);
     grid->addWidget(editor, row, 1);
 
-    connect(editor, &QLineEdit::editingFinished, this, [=]() -> void
+    connect(editor, &QLineEdit::editingFinished, this, [this, param, editor]() -> void
     {
         m_Effect->SetValue(param->name, editor->text().toStdString());
         // _PlayerBridge.Refresh();

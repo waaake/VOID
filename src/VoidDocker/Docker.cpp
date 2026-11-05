@@ -237,8 +237,8 @@ void DockWidget::SetTabClosable(int index)
 	CloseButton* closeButton = new CloseButton();
     closeButton->setFixedSize(12, 12);
 
-	// connect(closeButton, &QToolButton::clicked, this, [=]() { emit tabCloseRequested(index); });
-	connect(closeButton, &QToolButton::clicked, this, [=]() { RemoveTab(index); });
+	// connect(closeButton, &QToolButton::clicked, this, [this, index]() { emit tabCloseRequested(index); });
+	connect(closeButton, &QToolButton::clicked, this, [this, index]() { RemoveTab(index); });
 
 	// Set the tool button on the tabbar
 	tabBar()->setTabButton(index, QTabBar::RightSide, closeButton);
@@ -366,7 +366,7 @@ void DockWidget::ResetDockMenu()
 	for (const std::pair<int, DockStruct>& it: DockManager::Instance().AvailableDocks())
 	{
 		QAction* action = new QAction(it.second.name.c_str(), m_DockMenu);
-		connect(action, &QAction::triggered, this, [=]() { AddDockManagerWidget(it.first); });
+		connect(action, &QAction::triggered, this, [this, it]() { AddDockManagerWidget(it.first); });
 
 		m_DockMenu->addAction(action);
 	}

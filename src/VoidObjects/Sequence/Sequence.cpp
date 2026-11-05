@@ -689,12 +689,12 @@ void PlaybackSequence::ConnectVideoTrack(const SharedPlaybackTrack& track)
     auto* ptr = track.get();
     connect(ptr, &PlaybackTrack::rangeChanged, this, &PlaybackSequence::UpdateRange);
     connect(ptr, &PlaybackTrack::updated, this, &PlaybackSequence::updated);
-    connect(ptr, &PlaybackTrack::maxEffectsChanged, this, [=]() -> void { emit maxTrackEffectsChanged(track); });
+    connect(ptr, &PlaybackTrack::maxEffectsChanged, this, [this, track]() -> void { emit maxTrackEffectsChanged(track); });
     connect(ptr, &PlaybackTrack::itemAdded, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
     connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
     connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
-    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
+    connect(ptr, &PlaybackTrack::stateChanged, this, [this, track]() -> void { HandleTrackStateChanged(track); });
     connect(ptr, &PlaybackTrack::itemStateChanged, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemUpdated, this, &PlaybackSequence::HandleItemUpdated);
     connect(ptr, &PlaybackTrack::itemEffectAdded, this, &PlaybackSequence::HandleItemEffectAdded);
@@ -712,7 +712,7 @@ void PlaybackSequence::ConnectAudioTrack(const SharedPlaybackTrack& track)
     connect(ptr, &PlaybackTrack::itemsAdded, this, &PlaybackSequence::HandleItemsUpdated);
     connect(ptr, &PlaybackTrack::itemMoved, this, &PlaybackSequence::HandleItemMoved);
     connect(ptr, &PlaybackTrack::itemRangeChanged, this, &PlaybackSequence::HandleItemRangeChanged);
-    connect(ptr, &PlaybackTrack::stateChanged, this, [=]() -> void { HandleTrackStateChanged(track); });
+    connect(ptr, &PlaybackTrack::stateChanged, this, [this, track]() -> void { HandleTrackStateChanged(track); });
 }
 
 void PlaybackSequence::ResizeBuffer(std::size_t size)

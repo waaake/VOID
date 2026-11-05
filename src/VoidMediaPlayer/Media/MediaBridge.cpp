@@ -628,7 +628,7 @@ void MBridge::ResetProjectsMenu()
     for (const std::string& project : VoidPreferences::Instance().RecentProjects())
     {
         QAction* action = new QAction(project.c_str(), m_RecentProjectsMenu);
-        connect(action, &QAction::triggered, this, [=]() { Load(project); });
+        connect(action, &QAction::triggered, this, [this, project]() { Load(project); });
 
         m_RecentProjectsMenu->addAction(action);
     }

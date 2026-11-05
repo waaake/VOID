@@ -311,7 +311,7 @@ void SequencerContextMenu::BuildEffectsMenu()
         {
             VOID_LOG_INFO("Effect: {0}", name);
             QAction* effaction = new QAction(name.c_str(), m_EffectsMenu);
-            connect(effaction, &QAction::triggered, this, [=]() -> void { emit addEffectRequested(name); });
+            connect(effaction, &QAction::triggered, this, [this, name]() -> void { emit addEffectRequested(name); });
             m_EffectsMenu->addAction(effaction);
         }
     }
