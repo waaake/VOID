@@ -20,7 +20,7 @@ class VOID_API ImageOp
 public:
     virtual ~ImageOp();
 
-    Param* GetParam(const std::string& name);
+    Param* GetParam(std::string_view name);
     virtual bool Evaluate(ImageRow& row) = 0;
     virtual std::string Type() const = 0;
     virtual v_frame_t Frame(v_frame_t in) { return in; }

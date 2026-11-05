@@ -42,8 +42,7 @@ QPixmap IconForge::Pixmap(const IconType& icon, int size, const QColor& color)
 {
     QString key = QString("%1_%2_%3").arg(static_cast<char16_t>(icon)).arg(size).arg(color.name());
 
-    /* Already Exists in Cache */
-    if (m_Cache.find(key) != m_Cache.end())
+    if (m_Cache.contains(key))
         return m_Cache[key];
 
     QFont font(m_FontFamily);

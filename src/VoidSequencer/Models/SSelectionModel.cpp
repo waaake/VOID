@@ -124,17 +124,17 @@ bool SSelectionModel::IsSelected(const TrackItem* item)
 
 bool SSelectionModel::IsSelected(const SharedTrackItem& item)
 {
-    return m_Items.find(item) != m_Items.end();
+    return m_Items.contains(item);
 }
 
 bool SSelectionModel::IsSelected(const SharedPlaybackTrack& track)
 {
-    return m_Tracks.find(track) != m_Tracks.end();
+    return m_Tracks.contains(track);
 }
 
 bool SSelectionModel::IsSelected(Effect* effect)
 {
-    return m_Effects.find(effect) != m_Effects.end();
+    return m_Effects.contains(effect);
 }
 
 VOID_NAMESPACE_CLOSE

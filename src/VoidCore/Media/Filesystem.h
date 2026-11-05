@@ -148,12 +148,6 @@ private: /* Methods */
     void Parse(const std::string& path);
 
     /**
-     * Checks and returns whether provided string (generally frames as string)
-     * is a valid frame number or if it contains any unwanted character which may
-     * not allow it to be converted to an integer frame number
-     */
-    bool ValidFrame(const std::string& framestring) const;
-    /**
      * @brief Checks whether the provided string (generally frames section of the path)
      * is a valid templated frame, it is valid if the string is of the format ###, ####, #####
      * where number of '#'s represent the frame padding, or it could also be in a printf format

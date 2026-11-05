@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.13.4)
 
-project(VOID VERSION 0.5.0 LANGUAGES CXX)
+project(VOID VERSION 0.6.0 LANGUAGES CXX)
 
-# C++17 and Above
-set(CMAKE_CXX_STANDARD 17)
+# C++20 and Above
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)

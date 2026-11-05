@@ -101,8 +101,8 @@ int DockSplitter::AddWidget(DockWidget* widget)
 	int index = count() - 1;
 	widget->setObjectName(QString::number(index));
 
-	connect(widget, &DockWidget::closureRequested, this, [=]() { RemovePane(index); });
-	connect(widget, &DockWidget::splitRequested, this, [=](const Qt::Orientation& orientation) { Resplit(index, orientation); });
+	connect(widget, &DockWidget::closureRequested, this, [this, index]() { RemovePane(index); });
+	connect(widget, &DockWidget::splitRequested, this, [this, index](const Qt::Orientation& orientation) { Resplit(index, orientation); });
 
 	addWidget(widget);
 	return index;

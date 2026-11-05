@@ -156,7 +156,7 @@ QPixmap MediaClip::FetchThumbnail()
 
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const
 {
-    if (m_Annotations.find(frame) != m_Annotations.end())
+    if (m_Annotations.contains(frame))
         return m_Annotations.at(frame);
 
     return nullptr;

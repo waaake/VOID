@@ -115,7 +115,7 @@ private: /* Methods */
     void ResetMedia();
 
     // Cache
-    bool Buffered(v_frame_t frame) const { return m_Buffered.find(frame) != m_Buffered.end(); }
+    bool Buffered(v_frame_t frame) const { return m_Buffered.contains(frame); }
     bool Maxxed() const { return m_Numbers.size() >= m_Capacity; }
     bool Request(v_frame_t frame, bool evict = false);
     void EnsureCached(v_frame_t frame);
