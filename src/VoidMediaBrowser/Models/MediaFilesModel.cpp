@@ -85,10 +85,8 @@ bool MediaFilesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& so
 {
     if (m_SequenceView)
     {
-        QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
-        const QString& name = sourceModel()->data(index, QFileSystemModel::FileNameRole).toString();
+        const QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
         const QString& path = sourceModel()->data(index, QFileSystemModel::FilePathRole).toString();
-        const QString& directory = sourceModel()->data(index.parent(), QFileSystemModel::FilePathRole).toString();
 
         /**
          * Already visited and accepted media entry,
@@ -102,8 +100,11 @@ bool MediaFilesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& so
          * is then handled by the MediaFilesProxyModel::data method and any formatting to the hash or printf
          * representation is handled there
          */
-        if (m_Sequences.find(path) != m_Sequences.end())
+        if (m_Sequences.contains(path))
             return true;
+
+        const QString& name = sourceModel()->data(index, QFileSystemModel::FileNameRole).toString();
+        const QString& directory = sourceModel()->data(index.parent(), QFileSystemModel::FilePathRole).toString();
 
         QRegularExpressionMatch match = s_SequenceRegex.match(name);
         if (match.hasMatch())

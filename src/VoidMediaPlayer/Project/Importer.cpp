@@ -317,7 +317,7 @@ DirectoryImporter::GetVersionedMedia(const std::string& directory, const Element
             if (tokens == entokens || !tokens.Similar(entokens))
                 continue;
 
-            if (existing.find(tokens.vnum) != existing.end())
+            if (existing.contains(tokens.vnum))
                 continue;
 
             // Flag to control what happens with the entry

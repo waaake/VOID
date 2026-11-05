@@ -132,7 +132,7 @@ void Forge::RegisterMovieWriter(const std::string& extension, PixWriterForge for
 
 std::unique_ptr<VoidPixReader> Forge::GetImageReader(const std::string& extension, const std::string& path, v_frame_t framenumber) const
 {
-    std::unordered_map<std::string, PixForge>::const_iterator it = m_ImageForger.find(extension);
+    const auto it = m_ImageForger.find(extension);
     return it == m_ImageForger.end() ? nullptr : it->second(path, framenumber);
 }
 
@@ -143,7 +143,7 @@ std::unique_ptr<VoidPixReader> Forge::ImageReaderAt(const std::string& extension
 
 std::unique_ptr<VoidMPixReader> Forge::GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber) const
 {
-    std::unordered_map<std::string, MPixForge>::const_iterator it = m_MovieForger.find(extension);
+    const auto it = m_MovieForger.find(extension);
     return it == m_MovieForger.end() ? nullptr : it->second(path, framenumber);
 }
 
@@ -154,19 +154,19 @@ std::unique_ptr<VoidMPixReader> Forge::MovieReaderAt(const std::string& extensio
 
 std::unique_ptr<ImageOp> Forge::GetImageOp(const std::string& name) const
 {
-    std::unordered_map<std::string, IOpForge>::const_iterator it = m_IOpForger.find(name);
+    const auto it = m_IOpForger.find(name);
     return it == m_IOpForger.end() ? nullptr : it->second();
 }
 
 std::unique_ptr<PixWriter> Forge::GetImageWriter(const std::string& extension, const EncodeSpec& spec) const
 {
-    auto it = m_ImageWriters.find(extension);
+    const auto it = m_ImageWriters.find(extension);
     return it == m_ImageWriters.end() ? nullptr : it->second(spec);
 }
 
 std::unique_ptr<PixWriter> Forge::GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const
 {
-    auto it = m_MovieWriters.find(extension);
+    const auto it = m_MovieWriters.find(extension);
     return it == m_MovieWriters.end() ? nullptr : it->second(spec);
 }
 
