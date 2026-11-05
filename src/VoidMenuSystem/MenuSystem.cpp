@@ -14,7 +14,7 @@ MenuSystem::MenuSystem(QMenuBar* menubar)
 
 QMenu* MenuSystem::AddMenu(const std::string& name)
 {
-    if (m_Menus.find(name) != m_Menus.end())
+    if (m_Menus.contains(name))
         return m_Menus[name];
     return CreateMenu(name);
 }

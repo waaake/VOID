@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* STD */
+#include <algorithm>
+
 /* Internal */
 #include "Definition.h"
 #include "Operator.h"
@@ -57,15 +60,14 @@ Param* ImageOp::AddParam(std::string name, std::string label, std::string descri
     return m_Params.emplace_back(new Param(name, label, description, value, range, type));
 }
 
-Param* ImageOp::GetParam(const std::string& name)
+Param* ImageOp::GetParam(std::string_view name)
 {
-    for (auto& param : m_Params)
+    auto it = std::find_if(m_Params.begin(), m_Params.end(), [this, name](const Param* param) -> bool
     {
-        if (param->name == name)
-            return param;
-    }
+        return param->name == name;
+    });
 
-    return nullptr;
+    return it == m_Params.end() ? nullptr : *it;
 }
 
 VOID_NAMESPACE_CLOSE

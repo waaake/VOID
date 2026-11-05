@@ -104,8 +104,8 @@ public:
     std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const;
     std::vector<ConformRule*> ConformRules() const { return m_ConformRules; }
 
-    inline bool IsMovie(const std::string& extension) const { return m_MovieForger.find(extension) != m_MovieForger.end(); }
-    inline bool IsImage(const std::string& extension) const { return m_ImageForger.find(extension) != m_ImageForger.end(); }
+    inline bool IsMovie(const std::string& extension) const { return m_MovieForger.contains(extension); }
+    inline bool IsImage(const std::string& extension) const { return m_ImageForger.contains(extension); }
 
     bool IsRegistered(const std::string& extension) const;
 

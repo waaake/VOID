@@ -140,7 +140,7 @@ public:
 
     bool RazorAt(v_frame_t frame);
     bool MergeCut(v_frame_t frame);
-    bool IsRazored(v_frame_t frame) const { return m_Razored.find(frame) != m_Razored.end(); }
+    bool IsRazored(v_frame_t frame) const { return m_Razored.contains(frame); }
 
     bool MoveItem(const SharedTrackItem& item, v_frame_t frame);
     bool OffsetItem(const SharedTrackItem& item, int offset);

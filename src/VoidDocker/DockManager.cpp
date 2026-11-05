@@ -28,10 +28,9 @@ int DockManager::RegisterDock(QWidget* widget, const std::string& text)
 
 DockStruct DockManager::Dock(int index) const
 {
-    if (m_Docks.find(index) != m_Docks.end())
+    if (m_Docks.contains(index))
         return m_Docks.at(index);
 
-    /* Invalid Dock Struct */
     return {-1, nullptr, ""};
 }
 

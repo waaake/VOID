@@ -84,37 +84,31 @@ void Forge::UnregisterPlugins()
 
 void Forge::RegisterImageReader(const std::string& extension, PixForge forger)
 {
-    /* Show a warning if the plugin was already registered */
-    if (m_ImageForger.find(extension) != m_ImageForger.end())
+    if (m_ImageForger.contains(extension))
     {
         VOID_LOG_WARN("Image reader for {0} extension already registered. Ignoring registration.");
         return;
     }
 
     VOID_LOG_INFO("Registering Image Reader for extension: {0}", extension);
-
-    /* Move the forger to the registry */
     m_ImageForger[extension] = std::move(forger);
 }
 
 void Forge::RegisterMovieReader(const std::string& extension, MPixForge forger)
 {
-    /* Show a warning if the plugin was already registered */
-    if (m_MovieForger.find(extension) != m_MovieForger.end())
+    if (m_MovieForger.contains(extension))
     {
         VOID_LOG_WARN("Movie reader for {0} extension already registered. Ignoring registration.");
         return;
     }
 
     VOID_LOG_INFO("Registering Movie Reader for extension: {0}", extension);
-
-    /* Move the forger to the registry */
     m_MovieForger[extension] = std::move(forger);
 }
 
 void Forge::RegisterImageWriter(const std::string& extension, PixWriterForge forger)
 {
-    if (m_ImageWriters.find(extension) != m_ImageWriters.end())
+    if (m_ImageWriters.contains(extension))
     {
         VOID_LOG_WARN("Image writer for {0} extension is already registered. Ignoring registration");
         return;
@@ -126,7 +120,7 @@ void Forge::RegisterImageWriter(const std::string& extension, PixWriterForge for
 
 void Forge::RegisterMovieWriter(const std::string& extension, PixWriterForge forger)
 {
-    if (m_MovieWriters.find(extension) != m_MovieWriters.end())
+    if (m_MovieWriters.contains(extension))
     {
         VOID_LOG_WARN("Movie writer for {0} extension is already registered. Ignoring registration");
         return;
@@ -178,7 +172,7 @@ std::unique_ptr<PixWriter> Forge::GetMovieWriter(const std::string& extension, c
 
 bool Forge::IsRegistered(const std::string& extension) const
 {
-    return m_ImageForger.find(extension) != m_ImageForger.end() || m_MovieForger.find(extension) != m_MovieForger.end();
+    return m_ImageForger.contains(extension) || m_MovieForger.contains(extension);
 }
 
 VOID_NAMESPACE_CLOSE

@@ -37,7 +37,7 @@ std::unordered_set<SharedTrackItem> Conformer::Conform(const ConformOptions& opt
             if (candidate->Linked() && !options.reconform)
                 continue;
 
-            if (linked.find(candidate) != linked.end())
+            if (linked.contains(candidate))
                 continue;
 
             const std::unordered_map<std::string, std::string>& candidateMetadata = Metadata(candidate);
@@ -80,7 +80,7 @@ std::unordered_map<std::string, std::string> Conformer::Metadata(const SharedMed
 
 const std::unordered_map<std::string, std::string>& Conformer::Metadata(const SharedTrackItem& item)
 {
-    if (m_MetadataStore.find(item) == m_MetadataStore.end())
+    if (m_MetadataStore.contains(item))
     {
         std::unordered_map<std::string, std::string> metadata;
         
