@@ -477,7 +477,7 @@ void VoidMediaLister::RebuildPlaylistMenu()
     for (Playlist* playlist : *_MediaBridge.ActiveProject()->PlaylistMediaModel())
     {
         QAction* action = new QAction(playlist->Name().c_str(), m_PlaylistMenu);
-        connect(action, &QAction::triggered, this, [=]() { AddSelectionToPlaylist(playlist); });
+        connect(action, &QAction::triggered, this, [this, playlist]() { AddSelectionToPlaylist(playlist); });
         m_PlaylistMenu->addAction(action);
     }
 }
