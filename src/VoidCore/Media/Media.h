@@ -123,12 +123,15 @@ public:
      * Clears the cache for all the frames of the Media
      */
     void ClearCache(bool dirty = true);
+    void UpdateColorInfo();
 
 protected: /* Members */
     MediaStruct m_MediaStruct;
     std::vector<Frame> m_Frames;
     std::vector<v_frame_t> m_Numbers;
     ElementTokens m_Tokens;
+    MediaColor m_Color;
+
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
     double m_Framerate;
