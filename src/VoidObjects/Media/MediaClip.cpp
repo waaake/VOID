@@ -139,6 +139,9 @@ void MediaClip::ReadThumbnail()
     // Clear the data for when required
     // im->Clear();
 
+    // Also update the color information for the Media
+    Media::UpdateColorInfo();
+
     m_Working.store(false);
     emit updated();
 }
