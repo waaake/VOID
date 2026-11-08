@@ -102,6 +102,8 @@ public:
     MFrameRange Framerange() override;
     const std::map<std::string, std::string> Metadata() const override;
 
+    MediaColor MediaColorInfo() const override;
+
     int AudioChannels() const override { return m_AChannels; }
     int Samplerate() const override { return m_Samplerate; }
 

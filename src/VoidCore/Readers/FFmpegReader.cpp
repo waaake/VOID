@@ -480,4 +480,13 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
     return m;
 }
 
+MediaColor FFmpegPixReader::MediaColorInfo() const
+{
+    MediaColor color;
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+    decoder.MediaColorInfo(color);
+
+    return color;
+}
+
 VOID_NAMESPACE_CLOSE
