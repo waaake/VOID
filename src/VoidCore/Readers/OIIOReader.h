@@ -23,6 +23,7 @@ public:
     void Read() override;
 
     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
+    MediaColor MediaColorInfo() const override;
 
     void Clear() override;
     const std::map<std::string, std::string> Metadata() const override;
