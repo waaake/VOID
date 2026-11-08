@@ -63,6 +63,11 @@ FFmpegDecoder2::~FFmpegDecoder2()
     Close();
 }
 
+void FFmpegDecoder2::MediaColorInfo(MediaColor& color) const
+{
+    if (m_VideoStream) m_VideoStream->FrameColorInfo(color);
+}
+
 bool FFmpegDecoder2::Setup(const std::string& path)
 {
     if (path != m_Path)
@@ -542,7 +547,7 @@ void FFmpegDecoder2::FillBuffer(const std::vector<unsigned char>& in, std::vecto
     tbb::parallel_for(tbb::blocked_range<int64_t>(0, count), [&](const tbb::blocked_range<int64_t>& r) -> void
     {
         for (int64_t i = r.begin(); i != r.end(); ++i)
-            buffer[i] = Linear(in[i] / 255.f);
+            buffer[i] = in[i] / 255.f;
     });
 }
 
