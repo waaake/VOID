@@ -8,21 +8,24 @@
 #include "Frame.h"
 #include "FormatForge.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/ColorProcessor.h"
 
 VOID_NAMESPACE_OPEN
 
 Frame::Frame()
-{
-    m_Reader = nullptr;
-}
-
-Frame::Frame(const MEntry& e)
-    : Frame(e, e.Framenumber())
+    : m_Reader(nullptr)
+    , m_Color(nullptr)
 {
 }
 
-Frame::Frame(const MEntry& e, v_frame_t frame)
+Frame::Frame(const MEntry& e, MediaColor* color)
+    : Frame(e, color, e.Framenumber())
+{
+}
+
+Frame::Frame(const MEntry& e, MediaColor* color, v_frame_t frame)
     : m_Entry(e)
+    , m_Color(color)
     , m_Framenumber(frame)
 {
     m_Reader = std::move(Forge::Instance().ImageReaderAt(m_Entry.Extension(), m_Entry.Fullpath(), m_Framenumber));
@@ -34,6 +37,7 @@ Frame::~Frame()
 
 Frame::Frame(Frame&& other) noexcept
     : m_Entry(std::move(other.m_Entry))
+    , m_Color(other.m_Color)
     , m_Framenumber(other.m_Framenumber)
     , m_Reader(std::move(other.m_Reader))
 {
@@ -47,6 +51,8 @@ Frame& Frame::operator=(Frame&& other) noexcept
     m_Entry = std::move(other.m_Entry);
     m_Framenumber = other.m_Framenumber;
     m_Reader = std::move(other.m_Reader);
+    m_Color = other.m_Color;
+    other.m_Color = nullptr;
 
     return *this;
 }
@@ -54,6 +60,7 @@ Frame& Frame::operator=(Frame&& other) noexcept
 Frame::Frame(const Frame& other)
     : m_Entry(other.m_Entry)
     , m_Reader(other.m_Reader)
+    , m_Color(other.m_Color)
     , m_Framenumber(other.m_Framenumber)
 {
 }
@@ -64,6 +71,7 @@ Frame& Frame::operator=(const Frame& other)
     {
         m_Entry = other.m_Entry;
         m_Reader = other.m_Reader;
+        m_Color = other.m_Color;
         m_Framenumber = other.m_Framenumber;
     }
 
@@ -128,7 +136,10 @@ void Frame::Cache()
      */
     std::lock_guard<std::mutex> guard(m_Mutex);
     if (m_Reader->Empty())
+    {
         m_Reader->Read();
+        MediaColorProcessor::Instance().Process(*m_Color, m_Reader->FrameImage());
+    }
 }
 
 void Frame::Clear(bool dirty)
@@ -142,9 +153,17 @@ void Frame::Clear(bool dirty)
     m_Dirty = dirty;
 }
 
-MovieFrame::MovieFrame(const MEntry& e, const v_frame_t frame)
+void Frame::UpdateColorInfo()
+{
+    *m_Color = m_Reader->MediaColorInfo();
+}
+
+/// MovieFrame
+
+MovieFrame::MovieFrame(const MEntry& e, MediaColor* color, const v_frame_t frame)
 {
     m_Entry = e;
+    m_Color = color;
     m_Framenumber = frame;
 
     m_Reader = std::move(Forge::Instance().MovieReaderAt(m_Entry.Extension(), m_Entry.Fullpath(), m_Framenumber));

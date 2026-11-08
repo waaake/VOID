@@ -26,8 +26,8 @@ class VOID_API Frame
 {
 public:
     Frame();
-    explicit Frame(const MEntry& e);
-    Frame(const MEntry& e, v_frame_t frame);
+    Frame(const MEntry& e, MediaColor* color);
+    Frame(const MEntry& e, MediaColor* color, v_frame_t frame);
     ~Frame();
 
     // Move
@@ -66,10 +66,12 @@ public:
     /* Frame Caches */
     void Cache();
     void Clear(bool dirty = true);
+    void UpdateColorInfo();
 
 protected: /* Members */
     MEntry m_Entry;
     SharedPixReader m_Reader;
+    MediaColor* m_Color;
     v_frame_t m_Framenumber;
     bool m_Dirty = {false};
 
@@ -81,7 +83,7 @@ class VOID_API MovieFrame : public Frame
 {
 public:
     MovieFrame() : Frame() {}
-    MovieFrame(const MEntry& e, const v_frame_t frame);
+    MovieFrame(const MEntry& e, MediaColor* color, const v_frame_t frame);
 };
 
 VOID_NAMESPACE_CLOSE
