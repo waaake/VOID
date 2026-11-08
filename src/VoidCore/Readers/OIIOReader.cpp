@@ -11,7 +11,6 @@
 /* Internal */
 #include "OIIOReader.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -176,7 +175,6 @@ void OIIOPixReader::Read()
 
 MediaColor OIIOPixReader::MediaColorInfo() const
 {
-    Tools::VoidProfiler<std::chrono::duration<double>> p("OIIOPixReader::MediaColorInfo");
     MediaColor color;
     std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
     if (!input)
