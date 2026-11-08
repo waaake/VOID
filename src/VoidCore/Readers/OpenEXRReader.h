@@ -24,6 +24,7 @@ public:
     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
     void Clear() override;
     const std::map<std::string, std::string> Metadata() const override;
+    MediaColor MediaColorInfo() const override;
 };
 
 VOID_NAMESPACE_CLOSE

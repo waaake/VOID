@@ -23,6 +23,7 @@
 #include <OpenEXR/ImfIntAttribute.h>
 #include <OpenEXR/ImfRgbaFile.h>
 #include <OpenEXR/ImfStringAttribute.h>
+#include <OpenEXR/ImfChromaticitiesAttribute.h>
 
 /* TBB */
 #include <tbb/parallel_for.h>
@@ -280,6 +281,35 @@ const std::map<std::string, std::string> OpenEXRReader::Metadata() const
     }
 
     return m;
+}
+
+MediaColor OpenEXRReader::MediaColorInfo() const
+{
+    MediaColor color;
+    color.colorspace = ColorSpaceType::LinearRec709; // Default
+    /// Need some more insight on reading exact colorspaces from EXR versions lesser than 3.4
+
+    Imf::InputFile f(m_Path.c_str());
+    const Imf::Header& header = f.header();
+
+    const Imf::IntAttribute* acesf = header.findTypedAttribute<Imf::IntAttribute>("acesImageContainerFlag");
+    if (acesf)
+    {
+        if (acesf->value() == 1)
+        {
+            color.colorspace = ColorSpaceType::ACES2065_1;
+            color.transfer = TransferFunction::Linear;
+    
+            color.name = "ACES2065-1";
+        }
+
+        color.colorspaceMetadata = true;
+    }
+
+    // TODO: check chromaticities for a decent match to figure out colorspace
+    // const Imf::ChromaticitiesAttribute* chroma = header.findTypedAttribute<Imf::ChromaticitiesAttribute>("chromatacities");
+
+    return color;
 }
 
 VOID_NAMESPACE_CLOSE
