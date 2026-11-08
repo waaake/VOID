@@ -9,7 +9,7 @@
 
 VOID_NAMESPACE_OPEN
 
-Timekeeper::Timekeeper()
+constexpr Timekeeper::Timekeeper()
     : m_CurrentFrame(-1)
     , m_CurrentTime(-1.0)
     , m_Mediarate(24.0)

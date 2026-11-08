@@ -26,7 +26,7 @@ enum class VOID_API FrameDisplayMode
  */
 class VOID_API Timekeeper
 {
-    Timekeeper();
+    constexpr Timekeeper();
 public:
     static Timekeeper& Instance();
     ~Timekeeper();
