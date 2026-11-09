@@ -16,6 +16,7 @@
 #include "MediaLister.h"
 #include "TagWidget.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidQExtensions/Tooltip.h"
@@ -67,6 +68,10 @@ VoidMediaLister::~VoidMediaLister()
     m_PlaylistMenu->deleteLater();
     delete m_PlaylistMenu;
     m_PlaylistMenu = nullptr;
+
+    m_InputColorspacesMenu->deleteLater();
+    delete m_InputColorspacesMenu;
+    m_InputColorspacesMenu = nullptr;
 
     m_InspectMetadataAction->deleteLater();
     delete m_InspectMetadataAction;
@@ -122,6 +127,8 @@ void VoidMediaLister::Build()
     m_PlaylistMenu = new QMenu("Add to Playlist");
     // Add any playlists which are present in the active project
     RebuildPlaylistMenu();
+    m_InputColorspacesMenu = new QMenu("Set Media Input Colorspace");
+    RebuildColorspacesMenu();
 
     m_SequenceMenu = new QMenu("Sequence");
     m_AddSequenceAction = new QAction("Add Sequence", m_SequenceMenu);
@@ -412,6 +419,9 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
     contextMenu.addMenu(m_PlaylistMenu);
     m_PlaylistMenu->setEnabled(selection);
 
+    contextMenu.addMenu(m_InputColorspacesMenu);
+    m_InputColorspacesMenu->setEnabled(selection);
+
     /* Show Menu */
     #if _QT6
     /**
@@ -477,8 +487,19 @@ void VoidMediaLister::RebuildPlaylistMenu()
     for (Playlist* playlist : *_MediaBridge.ActiveProject()->PlaylistMediaModel())
     {
         QAction* action = new QAction(playlist->Name().c_str(), m_PlaylistMenu);
-        connect(action, &QAction::triggered, this, [this, playlist]() { AddSelectionToPlaylist(playlist); });
+        connect(action, &QAction::triggered, this, [this, playlist]() -> void { AddSelectionToPlaylist(playlist); });
         m_PlaylistMenu->addAction(action);
+    }
+}
+
+void VoidMediaLister::RebuildColorspacesMenu()
+{
+    m_InputColorspacesMenu->clear();
+    for (const auto& colorspace : MediaColorProcessor::Instance().Colorspaces())
+    {
+        QAction* action = new QAction(colorspace.c_str(), m_InputColorspacesMenu);
+        connect(action, &QAction::triggered, this, [this, colorspace]() -> void { SetSelectionColorspace(colorspace); });
+        m_InputColorspacesMenu->addAction(action);
     }
 }
 
@@ -543,6 +564,16 @@ void VoidMediaLister::ClearTagsFromSelected()
     {
         SharedMediaClip clip = _MediaBridge.MediaAt(current);
         _MediaBridge.ClearTags(clip);
+    }
+}
+
+void VoidMediaLister::SetSelectionColorspace(const std::string& colorspace)
+{
+    QModelIndex current = m_MediaView->currentIndex();
+    if (current.isValid())
+    {
+        SharedMediaClip clip = _MediaBridge.MediaAt(current);
+        clip->SetInputColorspace(colorspace);
     }
 }
 
