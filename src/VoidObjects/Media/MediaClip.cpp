@@ -157,6 +157,12 @@ QPixmap MediaClip::FetchThumbnail()
     return DefaultThumbnail();
 }
 
+void MediaClip::SetInputColorspace(const std::string& colorspace)
+{
+    m_MediaColor.colorspace = ColorSpaceType::Custom;
+    m_MediaColor.custom = colorspace;
+}
+
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const
 {
     if (m_Annotations.contains(frame))
