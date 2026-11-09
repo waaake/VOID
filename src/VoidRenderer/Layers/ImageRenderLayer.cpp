@@ -17,7 +17,6 @@ ImageRenderLayer::ImageRenderLayer()
     , m_Gamma(1.f)
     , m_Gain(1.f)
     , m_ChannelMode(5) /* RGBA */
-    , m_InputColorSpace(0)
     , m_VAO(0)
     , m_VBO(0)
     , m_IBO(0)
@@ -28,7 +27,6 @@ ImageRenderLayer::ImageRenderLayer()
     , m_UGamma(-1)
     , m_UGain(-1)
     , m_UChannelMode(-1)
-    , m_UInputColorSpace(-1)
     , m_Texture(0)
 {
 }
@@ -61,7 +59,6 @@ void ImageRenderLayer::Initialize()
     m_UGamma = glGetUniformLocation(m_Shader.ProgramId(), "gamma");
     m_UGain = glGetUniformLocation(m_Shader.ProgramId(), "gain");
     m_UChannelMode = glGetUniformLocation(m_Shader.ProgramId(), "channelMode");
-    m_UInputColorSpace = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpace");
 
     /* Gen Texture for Render */
     glGenTextures(1, &m_Texture);
@@ -110,8 +107,6 @@ void ImageRenderLayer::SetImage(const FloatImage& image)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-    m_InputColorSpace = static_cast<int>(image->colorspace);
 }
 
 void ImageRenderLayer::Render(const glm::mat4& projection, float, float)
@@ -137,7 +132,6 @@ void ImageRenderLayer::ReinitShaderProgram()
     m_UGamma = glGetUniformLocation(m_Shader.ProgramId(), "gamma");
     m_UGain = glGetUniformLocation(m_Shader.ProgramId(), "gain");
     m_UChannelMode = glGetUniformLocation(m_Shader.ProgramId(), "channelMode");
-    m_UInputColorSpace = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpace");
 }
 
 void ImageRenderLayer::SetupBuffers()
@@ -232,12 +226,6 @@ void ImageRenderLayer::Draw()
      * Update the channels to be displayed on the renderer
      */
     glUniform1i(m_UChannelMode, m_ChannelMode);
-
-    /**
-     * Update the input colorspace on the shader to ensure output is linear before applying the final
-     * view tranform for the viewer
-     */
-    glUniform1i(m_UInputColorSpace, m_InputColorSpace);
 
     /**
      * Draw triangles as bound in the Index buffer as defined earlier

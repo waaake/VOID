@@ -19,10 +19,9 @@ struct ImageData
 {
     int width;
     int height;
-    int colorspace;
 
-    ImageData() : width(1), height(1), colorspace(0) {}
-    ImageData(int width, int height, int colorspace) : width(width), height(height), colorspace(colorspace) {}
+    ImageData() : width(1), height(1) {}
+    ImageData(int width, int height) : width(width), height(height) {}
 };
 
 class GridRenderLayer
@@ -67,7 +66,6 @@ private: /* Members */
     int m_UGamma;
     int m_UGain;
     int m_UChannelMode;
-    int m_UInputColorSpace;
 
     float m_CellWidth, m_CellHeight;
     int m_Rows, m_Columns;
