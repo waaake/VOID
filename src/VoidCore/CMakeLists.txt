@@ -4,7 +4,6 @@ find_package(Boost REQUIRED)
 
 # Build Core Library
 set(SOURCES
-    ColorProcessor.cpp
     FormatForge.cpp
     Identity.h
     ImageData.cpp
@@ -43,6 +42,7 @@ set(SOURCES
 
     # Processors
     Processors/ImageProcessor.cpp
+    Processors/ColorProcessor.cpp
 
     # Media Writers
     Writers/OIIOWriter.cpp

@@ -3,7 +3,7 @@
 
 /* Internal */
 #include "ColorProcessor.h"
-#include "Logging.h"
+#include "VoidCore/Logging.h"
 
 namespace OCIO = OCIO_NAMESPACE;
 
@@ -170,7 +170,9 @@ void ColorProcessor::ProcessImage(float* pixels, int width, int height, int chan
 MediaColorProcessor::ProcessorEntry::ProcessorEntry(const MediaColor& color, const OCIO::ConstConfigRcPtr& config)
     : color(color)
 {
-    if (color.colorspace == ColorSpaceType::LinearSRGB || color.colorspace == ColorSpaceType::LinearRec709)
+    if (color.colorspace == ColorSpaceType::Custom && !color.custom.empty())
+        processor = config->getProcessor(color.custom.c_str(), OCIO::ROLE_SCENE_LINEAR);
+    else if (color.colorspace == ColorSpaceType::LinearSRGB || color.colorspace == ColorSpaceType::LinearRec709)
         processor = config->getProcessor("Linear Rec.709 (sRGB)", OCIO::ROLE_SCENE_LINEAR);
     else if (color.colorspace == ColorSpaceType::Rec709) // Need to handle transfer function with Gamma 2.2 and Gamma 2.4
         processor = config->getProcessor("Camera Rec.709", OCIO::ROLE_SCENE_LINEAR);
