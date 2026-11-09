@@ -8,7 +8,7 @@
 #include "Frame.h"
 #include "FormatForge.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/ColorProcessor.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 
 VOID_NAMESPACE_OPEN
 
