@@ -19,7 +19,6 @@ class ColorController : public ControlCombo
     Q_OBJECT
 public:
     ColorController(QWidget* parent = nullptr);
-    ~ColorController();
     
     /**
      * Current Display Settings for the Controller
@@ -31,11 +30,6 @@ signals:
     void colorDisplayChanged(const std::string&);
 
 private: /* Methods */
-    /**
-     * Initializes the Color Processor for VOID
-     * Sets up the Default config to be used
-     */
-    void InitColorProcessor();
     void Setup();
 };
 
