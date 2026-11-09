@@ -212,6 +212,18 @@ MediaColorProcessor& MediaColorProcessor::Instance()
     return instance;
 }
 
+std::vector<std::string> MediaColorProcessor::Colorspaces() const
+{
+    std::vector<std::string> colorspaces;
+    int num = m_Config->getNumColorSpaces();
+    colorspaces.reserve(num);
+
+    for (int i = 0; i < num; ++i)
+        colorspaces.emplace_back(m_Config->getColorSpaceNameByIndex(i));
+
+    return colorspaces;
+}
+
 void MediaColorProcessor::Process(const MediaColor& color, const FloatImage& image)
 {
     OCIO::ConstProcessorRcPtr processor = Processor(color);

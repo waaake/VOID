@@ -96,6 +96,7 @@ class MediaColorProcessor
     MediaColorProcessor();
 public:
     static MediaColorProcessor& Instance();
+    std::vector<std::string> Colorspaces() const;
     void Process(const MediaColor& color, const FloatImage& image);
 
 private:
