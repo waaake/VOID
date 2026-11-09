@@ -159,7 +159,7 @@ QPixmap MediaClip::FetchThumbnail()
 
 void MediaClip::SetInputColorspace(const std::string& colorspace)
 {
-    m_MediaColor.colorspace = ColorSpaceType::Custom;
+    m_MediaColor.colorspace = Colorspace::Custom;
     m_MediaColor.custom = colorspace;
 }
 

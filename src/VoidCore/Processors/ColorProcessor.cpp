@@ -170,31 +170,31 @@ void ColorProcessor::ProcessImage(float* pixels, int width, int height, int chan
 MediaColorProcessor::ProcessorEntry::ProcessorEntry(const MediaColor& color, const OCIO::ConstConfigRcPtr& config)
     : color(color)
 {
-    if (color.colorspace == ColorSpaceType::Custom && !color.custom.empty())
+    if (color.colorspace == Colorspace::Custom && !color.custom.empty())
         processor = config->getProcessor(color.custom.c_str(), OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::LinearSRGB || color.colorspace == ColorSpaceType::LinearRec709)
+    else if (color.colorspace == Colorspace::LinearSRGB || color.colorspace == Colorspace::LinearRec709)
         processor = config->getProcessor("Linear Rec.709 (sRGB)", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::Rec709) // Need to handle transfer function with Gamma 2.2 and Gamma 2.4
+    else if (color.colorspace == Colorspace::Rec709) // Need to handle transfer function with Gamma 2.2 and Gamma 2.4
         processor = config->getProcessor("Camera Rec.709", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::Rec2020) // Linear, need to test this
+    else if (color.colorspace == Colorspace::Rec2020) // Linear, need to test this
         processor = config->getProcessor("Linear Rec.2020", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::ACES2065_1)
+    else if (color.colorspace == Colorspace::ACES2065_1)
         processor = config->getProcessor("ACES2065-1", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::ACEScg)
+    else if (color.colorspace == Colorspace::ACEScg)
         processor = config->getProcessor("ACEScg", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::ARRI_LogC3)
+    else if (color.colorspace == Colorspace::ARRI_LogC3)
         processor = config->getProcessor("ARRI LogC3 (EI800)", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::ARRI_LogC4)
+    else if (color.colorspace == Colorspace::ARRI_LogC4)
         processor = config->getProcessor("ARRI LogC4", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::Sony_SLog3)
+    else if (color.colorspace == Colorspace::Sony_SLog3)
         processor = config->getProcessor("S-Log3 S-Gamut3.Cine", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::Panasonic_VLog)
+    else if (color.colorspace == Colorspace::Panasonic_VLog)
         processor = config->getProcessor("V-Log V-Gamut", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::Canon_Log3)
+    else if (color.colorspace == Colorspace::Canon_Log3)
         processor = config->getProcessor("CanonLog3 CinemaGamut D55", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::ST2084_PQ)
+    else if (color.colorspace == Colorspace::ST2084_PQ)
         processor = config->getProcessor("ST2084-P3-D65 - Display", OCIO::ROLE_SCENE_LINEAR);
-    else if (color.colorspace == ColorSpaceType::HLG)
+    else if (color.colorspace == Colorspace::HLG)
         processor = config->getProcessor("Rec.2100-HLG - Display", OCIO::ROLE_SCENE_LINEAR);
     else /// For now, going with SRGB as default
         processor = config->getProcessor("sRGB - Texture", OCIO::ROLE_SCENE_LINEAR);

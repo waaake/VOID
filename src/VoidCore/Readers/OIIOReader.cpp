@@ -194,19 +194,19 @@ MediaColor OIIOPixReader::MediaColorInfo() const
     {
         // VOID_LOG_INFO("Colorspace: {}", colorspace);
         if (colorspace == "sRGB")
-            color.colorspace = ColorSpaceType::SRGB;
+            color.colorspace = Colorspace::SRGB;
         else if (colorspace == "Rec709")
-            color.colorspace = ColorSpaceType::Rec709;
+            color.colorspace = Colorspace::Rec709;
         else if (colorspace == "AdobeRGB")
-            color.colorspace = ColorSpaceType::AdobeRGB;
+            color.colorspace = Colorspace::AdobeRGB;
         else if (colorspace == "ACEScg" || colorspace == "lin_ap1_scene")
-            color.colorspace = ColorSpaceType::ACEScg;
+            color.colorspace = Colorspace::ACEScg;
         else if (colorspace == "lin_ap0_scene")
-            color.colorspace = ColorSpaceType::ACES2065_1;
+            color.colorspace = Colorspace::ACES2065_1;
         else if (colorspace == "lin_rec709" || colorspace == "lin_rec709_scene" || colorspace == "Linear")
-            color.colorspace = ColorSpaceType::LinearRec709;
+            color.colorspace = Colorspace::LinearRec709;
         else
-            color.colorspace = ColorSpaceType::Custom;
+            color.colorspace = Colorspace::Custom;
     }
 
     const OIIO::ParamValue* icc = spec.find_attribute("ICCProfile");

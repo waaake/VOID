@@ -286,7 +286,7 @@ const std::map<std::string, std::string> OpenEXRReader::Metadata() const
 MediaColor OpenEXRReader::MediaColorInfo() const
 {
     MediaColor color;
-    color.colorspace = ColorSpaceType::LinearRec709; // Default
+    color.colorspace = Colorspace::LinearRec709; // Default
     /// Need some more insight on reading exact colorspaces from EXR versions lesser than 3.4
 
     Imf::InputFile f(m_Path.c_str());
@@ -297,7 +297,7 @@ MediaColor OpenEXRReader::MediaColorInfo() const
     {
         if (acesf->value() == 1)
         {
-            color.colorspace = ColorSpaceType::ACES2065_1;
+            color.colorspace = Colorspace::ACES2065_1;
             color.transfer = TransferFunction::Linear;
     
             color.name = "ACES2065-1";

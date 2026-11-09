@@ -4,34 +4,16 @@
 #ifndef _VOID_COLORSPACE_H
 #define _VOID_COLORSPACE_H
 
+/* STD */
+#include <string>
+
 /* Internal */
 #include "Definition.h"
 
 VOID_NAMESPACE_OPEN
 
-enum class ColorSpace
-{
-    /* Linear */
-    Linear,
-
-    /* Display Rec.709 */
-    Rec709,
-
-    /* Gamma encoding ~2.2 */
-    sRGB,
-
-    /* ACES Color Grading Space */
-    ACEScg,
-
-    /* Arri LogC */
-    LogC,
-
-    /* Custom, LUT Baked */
-    Custom,
-};
-
 /// @brief Defines the colorspace type for the media
-enum class ColorSpaceType
+enum class Colorspace
 {
     Unknown,
 
@@ -86,7 +68,7 @@ enum class TransferFunction
 /// stores whether the media has an icc profile etc.
 struct MediaColor
 {
-    ColorSpaceType colorspace = ColorSpaceType::Unknown;
+    Colorspace colorspace = Colorspace::Unknown;
     TransferFunction transfer = TransferFunction::Unknown;
 
     /// @brief colorspace name from the source metadata, if found
@@ -105,7 +87,7 @@ struct MediaColor
 
     bool operator==(const MediaColor& other) const
     { 
-        if (colorspace == ColorSpaceType::Custom)
+        if (colorspace == Colorspace::Custom)
             return other.colorspace == colorspace && other.custom == custom;
 
         return other.colorspace == colorspace && other.transfer == transfer && other.iccprofile == iccprofile;

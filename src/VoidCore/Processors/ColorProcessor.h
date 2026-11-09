@@ -82,11 +82,11 @@ private:
 /// Internally our working space is ACEScg based on it's wider range of color gamut
 /// This processor ensures that all the media we're dealing with, switches to that working space
 /// later other transforms can be applied before finally rendering out
-class MediaColorProcessor
+class VOID_API MediaColorProcessor
 {
     struct ProcessorEntry
     {
-        // ColorSpaceType colorspace;
+        // Colorspace colorspace;
         MediaColor color;
         OCIO_NAMESPACE::ConstProcessorRcPtr processor = nullptr;
         ProcessorEntry() = default;

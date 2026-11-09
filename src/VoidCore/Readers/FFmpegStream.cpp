@@ -143,16 +143,16 @@ void FFmpegStream::FrameColorInfo(MediaColor& color) const
         switch (m_Frame->color_primaries)
         {
             case AVCOL_PRI_BT709:
-                color.colorspace = ColorSpaceType::Rec709;
+                color.colorspace = Colorspace::Rec709;
                 color.colorPrimaries = true;
                 break;
             case AVCOL_PRI_BT2020:
-                color.colorspace = ColorSpaceType::Rec2020;
+                color.colorspace = Colorspace::Rec2020;
                 color.colorPrimaries = true;
                 break;
             case AVCOL_PRI_SMPTE431:
             case AVCOL_PRI_SMPTE432:
-                color.colorspace = ColorSpaceType::Custom;
+                color.colorspace = Colorspace::Custom;
                 color.colorPrimaries = true;
                 break;
             
@@ -171,12 +171,12 @@ void FFmpegStream::FrameColorInfo(MediaColor& color) const
                 break;
             case AVCOL_TRC_SMPTE2084:
                 color.transfer = TransferFunction::PQ;
-                color.colorspace = ColorSpaceType::ST2084_PQ;
+                color.colorspace = Colorspace::ST2084_PQ;
                 color.hdr = true;
                 break;
             case AVCOL_TRC_ARIB_STD_B67:
                 color.transfer = TransferFunction::HLG;
-                color.colorspace = ColorSpaceType::HLG;
+                color.colorspace = Colorspace::HLG;
                 color.hdr = true;
                 break;
             

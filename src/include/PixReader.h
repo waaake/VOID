@@ -91,12 +91,8 @@ public:
     /// @return true if the buffer was filled and usable, else false.
     virtual bool Read(SharedFrameAudio& buffer) { return false; }
 
-    /**
-     * Retrieve the input colorspace of the media file
-     * At the moment the reader is expected to output Linear colorspace,
-     * but in case the reader wants a different one, can possibly override this
-     */
-    virtual ColorSpace InputColorSpace() const { return ColorSpace::Linear; }
+    /// @brief Retrieve the input colorspace and other color information of the media file
+    /// @return Returns the Media color info.
     virtual MediaColor MediaColorInfo() const = 0;
 
     /**
