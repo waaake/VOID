@@ -97,7 +97,7 @@ public:
      * but in case the reader wants a different one, can possibly override this
      */
     virtual ColorSpace InputColorSpace() const { return ColorSpace::Linear; }
-    virtual MediaColor MediaColorInfo() const { MediaColor col; return col; }
+    virtual MediaColor MediaColorInfo() const = 0;
 
     /**
      * @brief Returns whether the given Image/Frame is a Movie
