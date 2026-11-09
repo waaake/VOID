@@ -54,7 +54,7 @@ uniform float gain;
 uniform int channelMode;
 
 // Input Colorspace
-uniform int inputColorSpace;
+// uniform int inputColorSpace;
 
 float Rec709ToLinear(float value)
 {
@@ -136,11 +136,12 @@ void main() {
     vec4 color = texture(uTexture, TexCoord);
 
     // Ensure we have linear output depending on the input colorspace
-    vec4 linear = Linearize(color, inputColorSpace);
+    // Not needed anymore as VOID now ensures the image data to the shader is in Linear working space
+    // vec4 linear = Linearize(color, inputColorSpace);
 
     // Once the pixel is converted to linear color space
     // Add the viewer transform to that linear pixel
-    vec4 transformed = OCIOViewerTransform(linear);
+    vec4 transformed = OCIOViewerTransform(color);
 
     // Apply linear gain multiplier
     transformed.rgb *= gain;
