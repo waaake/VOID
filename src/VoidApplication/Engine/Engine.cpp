@@ -23,6 +23,7 @@
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidEngine/BaseWindow/StartupWindow.h"
 #include "VoidEngine/Engine/Bridge.h"
+#include "VoidEngine/Engine/Color.h"
 #include "VoidEngine/Engine/Globals.h"
 #include "VoidEngine/Engine/Controller.h"
 
@@ -100,17 +101,17 @@ void VoidEngine::InitLogging()
 
 void VoidEngine::Setup(QApplication& app)
 {
-    /* App Settings */
+    // App Settings
     QCoreApplication::setOrganizationName("VOID");
     QCoreApplication::setApplicationName("VOID");
 
-    /* Setup Theme for the Player */
+    // Setup Theme for the Player
     app.setStyle(VoidColorStyle::GetProxyStyle(
         static_cast<VoidColorStyle::StyleType>(VoidPreferences::Instance().GetColorStyle())
     ));
     UIGlobals::SetLuminance(app.palette().color(QPalette::Window));
 
-    /* Set Application icon */
+    // Set Application icon
     QImage icon(":resources/images/VOID_Logo.svg");
     app.setWindowIcon(QIcon(QPixmap::fromImage(icon.scaled(128, 128, Qt::KeepAspectRatio, Qt::SmoothTransformation))));
 
@@ -118,6 +119,9 @@ void VoidEngine::Setup(QApplication& app)
         UIGlobals::SetFramerate(m_Args.framerate);
 
     UIGlobals::ToggleAudio(m_Args.audio);
+
+    // Init Color config
+    ColorConfig::Init();
 }
 
 void VoidEngine::Initialize()
