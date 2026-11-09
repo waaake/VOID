@@ -3,8 +3,8 @@
 
 /* Internal */
 #include "Exporter.h"
-#include "VoidCore/ColorProcessor.h"
 #include "VoidCore/Media/Renderer.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 // #include "VoidMediaPlayer/Player/Player.h"
 
 VOID_NAMESPACE_OPEN
