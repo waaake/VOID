@@ -11,7 +11,9 @@
 
 /* Internal */
 #include "Decoder2.h"
+#include "Row.h"
 #include "VoidCore/Logging.h"
+// #include "VoidCore/Profiler.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -542,12 +544,35 @@ void FFmpegDecoder2::FillBuffer(const std::vector<unsigned char>& in, std::vecto
 {
     out.resize(in.size());
 
+    // Tools::VoidProfiler<std::chrono::duration<double>> p("FFmpegDecoder2::FillBuffer");
     float* buffer = out.data();
-    int64_t count = static_cast<int64_t>(in.size());
-    tbb::parallel_for(tbb::blocked_range<int64_t>(0, count), [&](const tbb::blocked_range<int64_t>& r) -> void
+    unsigned char* inbuf = const_cast<unsigned char*>(in.data()); // not modifying
+    // int64_t count = static_cast<int64_t>(in.size());
+    // tbb::parallel_for(tbb::blocked_range<int64_t>(0, count), [&](const tbb::blocked_range<int64_t>& r) -> void
+    // {
+    //     for (int64_t i = r.begin(); i != r.end(); ++i)
+    //         buffer[i] = in[i] / 255.f;
+    // });
+
+    const int height = m_VideoStream->Height();
+    const int width = m_VideoStream->Width();
+    const int channels = 3;
+    tbb::parallel_for(tbb::blocked_range<int>(0, height), [&](const tbb::blocked_range<int>& r) -> void
     {
-        for (int64_t i = r.begin(); i != r.end(); ++i)
-            buffer[i] = in[i] / 255.f;
+        for (int i = r.begin(); i != r.end(); ++i)
+        {
+            ImageRow inrow(inbuf, i, width, channels, sizeof(unsigned char));
+            ImageRow outrow(buffer, i, width, channels, sizeof(float));
+            for (std::size_t j = 0; j < outrow.width; ++j)
+            {
+                auto* inpixel = inrow.Pixel<unsigned char const>(j);
+                auto* pixel = outrow.Pixel<float>(j);
+        
+                pixel[0] = inpixel[0] / 255.f;
+                pixel[1] = inpixel[1] / 255.f;
+                pixel[2] = inpixel[2] / 255.f;
+            }
+        }
     });
 }
 
