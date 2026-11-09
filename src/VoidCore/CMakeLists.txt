@@ -32,7 +32,7 @@ set(SOURCES
     Readers/OIIOReader.cpp
     Readers/OpenEXRReader.cpp
     Readers/FFmpegReader.cpp
-    Readers/TurboJpegReader.cpp
+    # Readers/TurboJpegReader.cpp
 
     # Operators
     Operators/Grader.cpp
