@@ -10,8 +10,8 @@
 /* Internal */
 #include "ImageShaderProgram.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/ColorProcessor.h"
 #include "VoidCore/VoidTools.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 
 namespace OCIO = OCIO_NAMESPACE;
 
@@ -180,12 +180,8 @@ void main() {
 }
     )";
 
-    /* Find the position where the OCIO shader needs to be added */
-    std::string placeholder = "// OCIO SHADER PLACEHOLDER //";
-
-    /* Add OCIO Shader in the source code */
-    Tools::find_replace(fragmentShaderSrc, placeholder, ocioShader);
-
+    // std::string placeholder = "// OCIO SHADER PLACEHOLDER //";
+    Tools::find_replace(fragmentShaderSrc, "// OCIO SHADER PLACEHOLDER //", ocioShader);
     return fragmentShaderSrc;
 }
 
@@ -200,8 +196,6 @@ ImageShaderProgram::~ImageShaderProgram()
 void ImageShaderProgram::Initialize()
 {
     m_Program = new QOpenGLShaderProgram;
-
-    /* Setup the Shaders */
     SetupShaders();
 }
 
@@ -212,7 +206,7 @@ bool ImageShaderProgram::SetupShaders()
      * The viewer tranform is based on the current display/view or input -> output colorspace
      * set on the ColorProcessor
      */
-    std::string fragmentShader = std::move(FragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform")));
+    const std::string fragmentShader = FragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform"));
 
     /* Add Shaders */
     m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, s_VertexShaderSrc);
