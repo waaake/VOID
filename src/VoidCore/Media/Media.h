@@ -130,7 +130,7 @@ protected: /* Members */
     std::vector<Frame> m_Frames;
     std::vector<v_frame_t> m_Numbers;
     ElementTokens m_Tokens;
-    MediaColor m_Color;
+    MediaColor m_MediaColor;
 
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
