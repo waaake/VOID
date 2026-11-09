@@ -94,7 +94,6 @@ struct Image
     // Format
     unsigned int type;
     unsigned int format;
-    ColorSpace colorspace = { ColorSpace::Linear };
 
     Buffer<_Ty> buffer;
 
