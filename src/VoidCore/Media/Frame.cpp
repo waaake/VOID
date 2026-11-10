@@ -91,7 +91,11 @@ void Frame::Image(FloatImage& image)
      * try to open the file again and result in unexpected behaviour including malloc or free related
      * crashes
      */
+
+    std::lock_guard<std::mutex> guard(m_Mutex);
     m_Reader->Read(m_Entry.Fullpath(), m_Framenumber, image);
+    // Convert the read image to the working colorspace
+    MediaColorProcessor::Instance().Process(*m_Color, image);
 }
 
 const FloatImage& Frame::Image()
@@ -138,6 +142,7 @@ void Frame::Cache()
     if (m_Reader->Empty())
     {
         m_Reader->Read();
+        // Convert the read image to the working colorspace
         MediaColorProcessor::Instance().Process(*m_Color, m_Reader->FrameImage());
     }
 }
