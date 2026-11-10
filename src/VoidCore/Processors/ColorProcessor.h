@@ -13,6 +13,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Colorspace.h"
+#include "Image.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -70,11 +71,43 @@ public:
 
     // CPU processing for the image from the source to destination colorspace
     void ProcessImage(float* pixels, int width, int height, int channels, const std::string& outcolorspace) const;
-    void ProcessImage(float* pixels, int width, int height, int channels, const ColorSpace& colorspace, const std::string& outcolorspace) const;
+    // void ProcessImage(float* pixels, int width, int height, int channels, const ColorSpace& colorspace, const std::string& outcolorspace) const;
 
 private:
     OCIO_NAMESPACE::ConstConfigRcPtr m_Config;
     OCIO_NAMESPACE::ConstGPUProcessorRcPtr m_GProcessor;
+};
+
+/// @brief Processes color for media to normalize the colorspace of the media in VOID
+/// Internally our working space is ACEScg based on it's wider range of color gamut
+/// This processor ensures that all the media we're dealing with, switches to that working space
+/// later other transforms can be applied before finally rendering out
+class VOID_API MediaColorProcessor
+{
+    struct ProcessorEntry
+    {
+        // Colorspace colorspace;
+        MediaColor color;
+        OCIO_NAMESPACE::ConstProcessorRcPtr processor = nullptr;
+        ProcessorEntry() = default;
+        ProcessorEntry(const MediaColor& color, const OCIO_NAMESPACE::ConstConfigRcPtr& config);
+    };
+
+    MediaColorProcessor();
+public:
+    static MediaColorProcessor& Instance();
+    std::vector<std::string> Colorspaces() const;
+    void Process(const MediaColor& color, const FloatImage& image);
+
+private:
+    // std::unordered_map
+    std::vector<MediaColorProcessor::ProcessorEntry> m_Processors;
+    OCIO_NAMESPACE::ConstConfigRcPtr m_Config;
+    MediaColorProcessor::ProcessorEntry* m_Processor;
+    // OCIO_NAMESPACE::ConstCPUProcessorRcPtr m_Processor;
+
+private:
+    OCIO_NAMESPACE::ConstProcessorRcPtr Processor(const MediaColor& color);
 };
 
 VOID_NAMESPACE_CLOSE

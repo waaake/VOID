@@ -6,9 +6,9 @@
 
 /* Internal */
 #include "ImageComparisonShaderProgram.h"
-#include "VoidCore/ColorProcessor.h"
 #include "VoidCore/Logging.h"
 #include "VoidCore/VoidTools.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -60,8 +60,8 @@ uniform float swipeX;
 uniform float peelFactor;
 
 // Input Colorspace
-uniform int inputColorSpaceA;
-uniform int inputColorSpaceB;
+// uniform int inputColorSpaceA;
+// uniform int inputColorSpaceB;
 
 float Rec709ToLinear(float value)
 {
@@ -144,8 +144,11 @@ void main() {
 
     // Texture pixel values from the buffers
     // Ensure we have linear output depending on the input colorspaces for each of the texture
-    vec4 colorA = Linearize(texture(uTexture, TexCoord), inputColorSpaceA);
-    vec4 colorB = Linearize(texture(uTextureB, TexCoord), inputColorSpaceB);
+    // Linearize not needed anymore as VOID now ensures the image data to the shader is in Linear working space
+    // vec4 colorA = Linearize(texture(uTexture, TexCoord), inputColorSpaceA);
+    // vec4 colorB = Linearize(texture(uTextureB, TexCoord), inputColorSpaceB);
+    vec4 colorA = texture(uTexture, TexCoord);
+    vec4 colorB = texture(uTextureB, TexCoord);
 
     // Clamped swipe to Texture Coordinates
     float swipe = clamp(swipeX, 0.0, 1.0);
@@ -222,7 +225,9 @@ void main() {
             vec2 texCoordA = vec2(TexCoord.x * 2.0, TexCoord.y);
 
             // Fetch the color from the calculated Texture Coordinate
-            color = Linearize(texture(uTexture, texCoordA), inputColorSpaceA);
+            // Not needed anymore as VOID now ensures the image data to the shader is in Linear working space
+            // color = Linearize(texture(uTexture, texCoordA), inputColorSpaceA);
+            color = texture(uTexture, texCoordA);
         }
         else
         {
@@ -231,7 +236,9 @@ void main() {
             vec2 texCoordB = vec2((TexCoord.x - 0.5) * 2.0, TexCoord.y);
 
             // Fetch the color from the calculated Texture Coordinate
-            color = Linearize(texture(uTextureB, texCoordB), inputColorSpaceB);
+            // Not needed anymore as VOID now ensures the image data to the shader is in Linear working space
+            // color = Linearize(texture(uTextureB, texCoordB), inputColorSpaceB);
+            color = texture(uTextureB, texCoordB);
         }
     }
     else
@@ -244,7 +251,9 @@ void main() {
             // When Multiplied gives the y range as [0.0 - 1.0]
             vec2 texCoordA = vec2(TexCoord.x, TexCoord.y * 2.0);
 
-            color = Linearize(texture(uTexture, texCoordA), inputColorSpaceA);
+            // Not needed anymore as VOID now ensures the image data to the shader is in Linear working space
+            // color = Linearize(texture(uTexture, texCoordA), inputColorSpaceA);
+            color = texture(uTexture, texCoordA);
         }
         else
         {   
@@ -252,7 +261,9 @@ void main() {
             // When Multiplied gives the y range as [0.0 - 1.0]
             vec2 texCoordB = vec2(TexCoord.x, (TexCoord.y - 0.5) * 2.0);
 
-            color = Linearize(texture(uTextureB, texCoordB), inputColorSpaceB);
+            // Not needed anymore as VOID now ensures the image data to the shader is in Linear working space
+            // color = Linearize(texture(uTextureB, texCoordB), inputColorSpaceB);
+            color = texture(uTextureB, texCoordB);
         }
     }
 
@@ -300,12 +311,7 @@ void main() {
 }
     )";
 
-    /* Find the position where the OCIO shader needs to be added */
-    std::string placeholder = "// OCIO SHADER PLACEHOLDER //";
-
-    /* Add OCIO Shader in the source code */
-    Tools::find_replace(fragmentShaderSrc, placeholder, ocioShader);
-
+    Tools::find_replace(fragmentShaderSrc, "// OCIO SHADER PLACEHOLDER //", ocioShader);
     return fragmentShaderSrc;
 }
 
@@ -331,7 +337,7 @@ bool ImageComparisonShaderProgram::SetupShaders()
      * The viewer tranform is based on the current display/view or input -> output colorspace
      * set on the ColorProcessor
      */
-    std::string fragmentShader = std::move(ComparisonFragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform")));
+    const std::string fragmentShader = ComparisonFragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform"));
 
     /* Add Shaders */
     m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, s_VertexShaderSrc);

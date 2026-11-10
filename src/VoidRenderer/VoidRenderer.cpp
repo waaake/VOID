@@ -14,7 +14,7 @@
 
 /* Internal */
 #include "VoidRenderer.h"
-#include "VoidCore/ColorProcessor.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 #include "VoidCore/Logging.h"
 
 constexpr float MAX_ZOOM = 12.8f;

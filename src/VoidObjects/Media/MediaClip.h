@@ -99,6 +99,8 @@ public:
     inline TagModel* TagsModel() const { return m_TagModel; }
 
     bool HasAudio() const override { return Media::HasAudio(); }
+
+    void SetInputColorspace(const std::string& colorspace);
     
     /**
      * Returns the Annotation for the frame 

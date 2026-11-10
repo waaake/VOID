@@ -39,7 +39,7 @@ void SplitSectionSelector::AddPrimaryItems(const QStringList& texts)
         QString text = texts[i];
         QAction* action = new QAction(text, m_Menu);
 
-        connect(action, &QAction::triggered, this, [=]() { PrimaryItemSelected(text, i); });
+        connect(action, &QAction::triggered, this, [this, text, i]() { PrimaryItemSelected(text, i); });
         m_Menu->addAction(action);
         if (i) continue;
 
@@ -62,7 +62,7 @@ void SplitSectionSelector::AddRadioItems(const QStringList& texts)
         action->setObjectName(QString::number(i));
         action->setActionGroup(m_RadioGroup);
 
-        connect(action, &QAction::triggered, this, [=]() { RadioItemSelected(text, i); });
+        connect(action, &QAction::triggered, this, [this, text, i]() { RadioItemSelected(text, i); });
         m_Menu->addAction(action);
         m_RadioActions.push_back(action);
     }

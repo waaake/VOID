@@ -53,7 +53,6 @@ void GridRenderLayer::Initialize()
     m_UGamma = glGetUniformLocation(m_Shader.ProgramId(), "gamma");
     m_UGain = glGetUniformLocation(m_Shader.ProgramId(), "gain");
     m_UChannelMode = glGetUniformLocation(m_Shader.ProgramId(), "channelMode");
-    m_UInputColorSpace = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpace");
 }
 
 void GridRenderLayer::Reset()
@@ -125,8 +124,7 @@ void GridRenderLayer::SetImages(const std::vector<FloatImage>& images)
 
         m_TexData[i] = std::move(ImageData(
             images[i]->width,
-            images[i]->height,
-            static_cast<int>(images[i]->colorspace)
+            images[i]->height
         ));
     }
 }
@@ -141,7 +139,6 @@ void GridRenderLayer::ReinitShaderProgram()
     m_UGamma = glGetUniformLocation(m_Shader.ProgramId(), "gamma");
     m_UGain = glGetUniformLocation(m_Shader.ProgramId(), "gain");
     m_UChannelMode = glGetUniformLocation(m_Shader.ProgramId(), "channelMode");
-    m_UInputColorSpace = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpace");
 }
 
 void GridRenderLayer::Render(const glm::mat4&, float width, float height)
@@ -190,7 +187,6 @@ void GridRenderLayer::Render(const glm::mat4&, float width, float height)
         glm::mat4 mvp = projection * view * model;
 
         glUniformMatrix4fv(m_UProjection, 1, GL_FALSE, glm::value_ptr(mvp));
-        glUniform1i(m_UInputColorSpace, m_TexData[i].colorspace);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_Textures[i]);

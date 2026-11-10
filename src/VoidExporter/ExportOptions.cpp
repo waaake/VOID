@@ -6,7 +6,7 @@
 
 /* Internal */
 #include "ExportOptions.h"
-#include "VoidCore/ColorProcessor.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidToolbox/Tools/Delegates/LogDelegate.h"
 

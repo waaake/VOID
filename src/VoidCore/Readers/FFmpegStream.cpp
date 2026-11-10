@@ -136,6 +136,64 @@ bool FFmpegStream::Decode(AudioBuffer& out)
     return true;
 }
 
+void FFmpegStream::FrameColorInfo(MediaColor& color) const
+{
+    if (m_Frame)
+    {
+        switch (m_Frame->color_primaries)
+        {
+            case AVCOL_PRI_BT709:
+                color.colorspace = Colorspace::Rec709;
+                color.colorPrimaries = true;
+                break;
+            case AVCOL_PRI_BT2020:
+                color.colorspace = Colorspace::Rec2020;
+                color.colorPrimaries = true;
+                break;
+            case AVCOL_PRI_SMPTE431:
+            case AVCOL_PRI_SMPTE432:
+                color.colorspace = Colorspace::Custom;
+                color.colorPrimaries = true;
+                break;
+            
+            default:
+                break;
+        }
+
+        // color transfer characteristics
+        switch (m_Frame->color_trc)
+        {
+            case AVCOL_TRC_LINEAR:
+                color.transfer = TransferFunction::Linear;
+                break;
+            case AVCOL_TRC_IEC61966_2_1:
+                color.transfer = TransferFunction::SRGB;
+                break;
+            case AVCOL_TRC_SMPTE2084:
+                color.transfer = TransferFunction::PQ;
+                color.colorspace = Colorspace::ST2084_PQ;
+                color.hdr = true;
+                break;
+            case AVCOL_TRC_ARIB_STD_B67:
+                color.transfer = TransferFunction::HLG;
+                color.colorspace = Colorspace::HLG;
+                color.hdr = true;
+                break;
+            
+            default:
+                break;
+        }
+
+        /// For now we just store iccprofile's presence
+        /// maybe we need information about gamut and primaries later on, depending on use cases
+        AVFrameSideData* icc = av_frame_get_side_data(m_Frame, AV_FRAME_DATA_ICC_PROFILE);
+        if (icc && icc->size > 0)
+            color.iccprofile = true;
+
+        color.colorspaceMetadata = color.colorPrimaries || m_Frame->color_trc != AVCOL_TRC_UNSPECIFIED;
+    }
+}
+
 int64_t FFmpegStream::ToAudioSamplePosition(int64_t pts, const AVRational& sourcetimebase)
 {
     return av_rescale_q(pts, sourcetimebase, s_AudioTimeBase);

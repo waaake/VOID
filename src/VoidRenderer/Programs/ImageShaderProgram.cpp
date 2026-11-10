@@ -10,8 +10,8 @@
 /* Internal */
 #include "ImageShaderProgram.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/ColorProcessor.h"
 #include "VoidCore/VoidTools.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 
 namespace OCIO = OCIO_NAMESPACE;
 
@@ -54,7 +54,7 @@ uniform float gain;
 uniform int channelMode;
 
 // Input Colorspace
-uniform int inputColorSpace;
+// uniform int inputColorSpace;
 
 float Rec709ToLinear(float value)
 {
@@ -136,11 +136,12 @@ void main() {
     vec4 color = texture(uTexture, TexCoord);
 
     // Ensure we have linear output depending on the input colorspace
-    vec4 linear = Linearize(color, inputColorSpace);
+    // Not needed anymore as VOID now ensures the image data to the shader is in Linear working space
+    // vec4 linear = Linearize(color, inputColorSpace);
 
     // Once the pixel is converted to linear color space
     // Add the viewer transform to that linear pixel
-    vec4 transformed = OCIOViewerTransform(linear);
+    vec4 transformed = OCIOViewerTransform(color);
 
     // Apply linear gain multiplier
     transformed.rgb *= gain;
@@ -179,12 +180,8 @@ void main() {
 }
     )";
 
-    /* Find the position where the OCIO shader needs to be added */
-    std::string placeholder = "// OCIO SHADER PLACEHOLDER //";
-
-    /* Add OCIO Shader in the source code */
-    Tools::find_replace(fragmentShaderSrc, placeholder, ocioShader);
-
+    // std::string placeholder = "// OCIO SHADER PLACEHOLDER //";
+    Tools::find_replace(fragmentShaderSrc, "// OCIO SHADER PLACEHOLDER //", ocioShader);
     return fragmentShaderSrc;
 }
 
@@ -199,8 +196,6 @@ ImageShaderProgram::~ImageShaderProgram()
 void ImageShaderProgram::Initialize()
 {
     m_Program = new QOpenGLShaderProgram;
-
-    /* Setup the Shaders */
     SetupShaders();
 }
 
@@ -211,7 +206,7 @@ bool ImageShaderProgram::SetupShaders()
      * The viewer tranform is based on the current display/view or input -> output colorspace
      * set on the ColorProcessor
      */
-    std::string fragmentShader = std::move(FragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform")));
+    const std::string fragmentShader = FragmentShader(ColorProcessor::Instance().Shader("OCIOViewerTransform"));
 
     /* Add Shaders */
     m_Program->addShaderFromSourceCode(QOpenGLShader::Vertex, s_VertexShaderSrc);

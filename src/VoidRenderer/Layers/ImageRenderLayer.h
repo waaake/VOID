@@ -50,7 +50,6 @@ private: /* Members */
     float m_Gamma;
     float m_Gain;
     int m_ChannelMode;
-    int m_InputColorSpace;
 
     /* Render Components */
     ImageShaderProgram m_Shader;
@@ -75,7 +74,6 @@ private: /* Members */
     int m_UGamma;
     int m_UGain;
     int m_UChannelMode;
-    int m_UInputColorSpace;
 
     /* Render Texture */
     unsigned int m_Texture;

@@ -15,7 +15,7 @@
 #include "OIIOReader.h"
 #include "OpenEXRReader.h"
 #include "FFmpegReader.h"
-#include "TurboJpegReader.h"
+// #include "TurboJpegReader.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -40,7 +40,7 @@ struct OIIOReaderPlugin
          * If at any point we want to have a dedicated original library based reader, that could also be implemented
          * as a custom plugin
          */
-        f.extensions = { "tga", "tiff", "dpx", "png" };
+        f.extensions = { "tga", "tiff", "dpx", "png", "JPG", "jpg", "jpeg", "JPEG" };
         /* OpenImageIO Reader */
         f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<OIIOPixReader> { return std::make_unique<OIIOPixReader>(path, framenumber); };
 
@@ -86,30 +86,30 @@ struct FFmpegReaderPlugin
     }
 };
 
-struct TurboJpegReaderPlugin
-{
-    TurboJpegReaderPlugin()
-    {
-        /**
-         * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
-         * We could go for a tolower but the case might have unnecessary copies going for each extension
-         * and for each of the frame that's from the source which looks too expensive at the moment
-         */ 
-        /* Image Registry */
-        FormatRegistry<PixForge> f;
+// struct TurboJpegReaderPlugin
+// {
+//     TurboJpegReaderPlugin()
+//     {
+//         /**
+//          * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
+//          * We could go for a tolower but the case might have unnecessary copies going for each extension
+//          * and for each of the frame that's from the source which looks too expensive at the moment
+//          */ 
+//         /* Image Registry */
+//         FormatRegistry<PixForge> f;
 
-        f.name = "Turbo JPEG Reader";
-        /**
-         * Support all known extension types for Lossy jpeg
-         */
-        f.extensions = { "JPG", "jpg", "jpeg", "JPEG" };
-        /* Turbo JPEG Reader */
-        f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<TurboJpegReader> { return std::make_unique<TurboJpegReader>(path, framenumber); };
+//         f.name = "Turbo JPEG Reader";
+//         /**
+//          * Support all known extension types for Lossy jpeg
+//          */
+//         f.extensions = { "JPG", "jpg", "jpeg", "JPEG" };
+//         /* Turbo JPEG Reader */
+//         f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<TurboJpegReader> { return std::make_unique<TurboJpegReader>(path, framenumber); };
 
-        /* Register Plugin */
-        Forge::Instance().Register(f);
-    }
-};
+//         /* Register Plugin */
+//         Forge::Instance().Register(f);
+//     }
+// };
 
 /**
  * Register Inbuilt Media Readers
@@ -128,8 +128,8 @@ void RegisterReaders()
     /* FFmpeg Reader */
     FFmpegReaderPlugin f;
 
-    /* Turbo JPEG Reader */
-    TurboJpegReaderPlugin t;
+    // /* Turbo JPEG Reader */
+    // TurboJpegReaderPlugin t;
 }
 
 VOID_NAMESPACE_CLOSE

@@ -110,6 +110,7 @@ private: /* Members */
     QAction* m_SaveSnapshotAction;
     QAction* m_RestoreSnapshotAction;
     QAction* m_RenameAction;
+    QMenu* m_InputColorspacesMenu;
 
     QShortcut* m_PrimaryViewShortcut;
     QShortcut* m_SecondaryViewShortcut;
@@ -118,12 +119,14 @@ private: /* Methods */
     void SetFromPreferences();
     // void ProjectChanged();
     void RebuildPlaylistMenu();
+    void RebuildColorspacesMenu();
     void AddToPrimaryViewer() const;
     void AddToSecondaryViewer() const;
     void AddSelectionToPlaylist(Playlist* playlist) const;
     void AddTagToSelected();
     void EditSelectedTags(const QModelIndex& index, const QPoint& position);
     void ClearTagsFromSelected();
+    void SetSelectionColorspace(const std::string& colorspace);
     bool IsSequenceSelected() const;
     bool HasSnapshots() const;
     void SaveSnapshot();

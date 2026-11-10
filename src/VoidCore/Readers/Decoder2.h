@@ -29,6 +29,8 @@ public:
     int Height() const { return m_VideoStream->Height(); }
     int Channels() const { return m_VideoStream->Channels(); }
 
+    void MediaColorInfo(MediaColor& color) const;
+
     bool Setup(const std::string& path);
 
     bool ComputeTimestamp(v_frame_t framenumber, TimeFrame& timeframe) const;

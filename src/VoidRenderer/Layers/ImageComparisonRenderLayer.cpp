@@ -37,8 +37,6 @@ ImageComparisonRenderLayer::ImageComparisonRenderLayer()
     , m_UBlendMode(-1)
     , m_USwipeX(-1)
     , m_UPeelFactor(-1)
-    , m_UInputColorSpaceA(-1)
-    , m_UInputColorSpaceB(-1)
     , m_TextureA(0)
     , m_TextureB(0)
 {
@@ -79,8 +77,6 @@ void ImageComparisonRenderLayer::Initialize()
     m_UBlendMode = glGetUniformLocation(m_Shader.ProgramId(), "blendMode");
     m_USwipeX = glGetUniformLocation(m_Shader.ProgramId(), "swipeX");
     m_UPeelFactor = glGetUniformLocation(m_Shader.ProgramId(), "peelFactor");
-    m_UInputColorSpaceA = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceA");
-    m_UInputColorSpaceB = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceB");
 
     /* Gen Texture for Render */
     glGenTextures(1, &m_TextureA);
@@ -135,9 +131,6 @@ void ImageComparisonRenderLayer::SetImageA(const FloatImage& image)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-    // Update the colorspace on the Image Data
-    m_InputColorSpaceA = static_cast<int>(image->colorspace); // TODO: Check this to use Colorspace from the image
 }
 
 void ImageComparisonRenderLayer::SetImageB(const FloatImage& image)
@@ -164,9 +157,6 @@ void ImageComparisonRenderLayer::SetImageB(const FloatImage& image)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
-    // Update the colorspace on the Image Data
-    m_InputColorSpaceB = static_cast<int>(image->colorspace);
 }
 
 void ImageComparisonRenderLayer::Render(const glm::mat4& projection, float, float)
@@ -195,8 +185,6 @@ void ImageComparisonRenderLayer::ReinitShaderProgram()
     m_UComparisonMode = glGetUniformLocation(m_Shader.ProgramId(), "comparisonMode");
     m_UBlendMode = glGetUniformLocation(m_Shader.ProgramId(), "blendMode");
     m_USwipeX = glGetUniformLocation(m_Shader.ProgramId(), "swipeX");
-    m_UInputColorSpaceA = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceA");
-    m_UInputColorSpaceB = glGetUniformLocation(m_Shader.ProgramId(), "inputColorSpaceB");
 }
 
 void ImageComparisonRenderLayer::SetupBuffers()
@@ -315,13 +303,6 @@ void ImageComparisonRenderLayer::Draw()
      */
     glUniform1f(m_USwipeX, m_SwipeX);
     glUniform1f(m_UPeelFactor, m_PeelFactor);
-
-    /**
-     * Update the input colorspaces on the shader to ensure output is linear before applying the final
-     * view tranform for the viewer
-     */
-    glUniform1i(m_UInputColorSpaceA, m_InputColorSpaceA);
-    glUniform1i(m_UInputColorSpaceB, m_InputColorSpaceB);
 
     /**
      * Draw triangles as bound in the Index buffer as defined earlier

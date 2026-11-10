@@ -12,6 +12,7 @@ set(SOURCES
     Engine/Bridge.cpp
     Engine/Globals.cpp
     Engine/Controller.cpp
+    Engine/Color.cpp
 )
 
 # Windows needs the headers to be able to link against the meta object generated for the Q_OBJECT translations

@@ -141,7 +141,7 @@ void Media::ProcessSequence()
          * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
          * will be 1010 - 1001 = 9
          */
-        m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e));
+        m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, &m_MediaColor));
         m_Numbers.emplace_back(e.Framenumber());
     }
 
@@ -169,7 +169,7 @@ void Media::ProcessMovie()
 
     for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
     {
-        m_Frames[counter] = std::move(MovieFrame(entry, i));
+        m_Frames[counter] = std::move(MovieFrame(entry, &m_MediaColor, i));
         m_Numbers.emplace_back(i);
     }
 
@@ -202,6 +202,11 @@ void Media::SetDirty(bool dirty)
 {
     for (auto& frame : m_Frames)
         frame.SetDirty(dirty);
+}
+
+void Media::UpdateColorInfo()
+{
+    m_Frames[0].UpdateColorInfo();
 }
 
 VOID_NAMESPACE_CLOSE

@@ -63,8 +63,6 @@ private: /* Members */
     int m_ChannelMode;
     int m_ComparisonMode;
     int m_BlendMode;
-    int m_InputColorSpaceA;
-    int m_InputColorSpaceB;
 
     float m_SwipeX;
     float m_PeelFactor;
@@ -99,8 +97,6 @@ private: /* Members */
     int m_UBlendMode;
     int m_USwipeX;
     int m_UPeelFactor;
-    int m_UInputColorSpaceA;
-    int m_UInputColorSpaceB;
 
     /* Render Texture */
     unsigned int m_TextureA;

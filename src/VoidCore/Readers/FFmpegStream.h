@@ -19,6 +19,7 @@ extern "C" {
 /* Internal */
 #include "Definition.h"
 #include "Audio.h"
+#include "Colorspace.h"
 #include "DecDefs.h"
 #include "Internal/Descriptors.h"
 
@@ -53,6 +54,8 @@ public:
 
     bool Decode(DecodedFrame& out);
     bool Decode(AudioBuffer& out);
+
+    void FrameColorInfo(MediaColor& color) const;
 
     static int64_t OutputSamplerate() { return Audio::OutSamplerate; }
     static int OutputChannels() { return Audio::OutChannels; }
