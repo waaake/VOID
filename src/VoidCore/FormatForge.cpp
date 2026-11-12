@@ -58,6 +58,14 @@ bool Forge::Register(const WriterRegistry& registry)
     return true;
 }
 
+bool Forge::Register(const ReaderRegistry& registry)
+{
+    for (const std::string& extension : registry.extensions)
+        RegisterMediaReader(extension, registry.reader);
+
+    return true;
+}
+
 bool Forge::Register(ConformRule* rule)
 {
     m_ConformRules.push_back(rule);
@@ -71,6 +79,8 @@ void Forge::UnregisterPlugins()
     m_MovieForger.clear();
     m_IOpForger.clear();
 
+    m_MediaReaders.clear();
+
     for (ConformRule*& rule : m_ConformRules)
     {
         delete rule;
@@ -80,6 +90,18 @@ void Forge::UnregisterPlugins()
     m_ConformRules.clear();
 
     VOID_LOG_INFO("Unregistered All Plugins.");
+}
+
+void Forge::RegisterMediaReader(const std::string& extension, MediaReaderForge forger)
+{
+    if (m_MediaReaders.contains(extension))
+    {
+        VOID_LOG_WARN("Media reader for {} extension already registered. Ignoring registration.");
+        return;
+    }
+
+    VOID_LOG_INFO("Registering Media Reader for extension: {0}", extension);
+    m_MediaReaders[extension] = forger;
 }
 
 void Forge::RegisterImageReader(const std::string& extension, PixForge forger)
@@ -156,6 +178,12 @@ std::unique_ptr<ImageOp> Forge::GetImageOp(const std::string& name) const
 {
     const auto it = m_IOpForger.find(name);
     return it == m_IOpForger.end() ? nullptr : it->second();
+}
+
+std::unique_ptr<MediaReader> Forge::GetMediaReader(const std::string& extension, const std::string& path) const
+{
+    const auto it = m_MediaReaders.find(extension);
+    return it == m_MediaReaders.end() ? nullptr : it->second(path);
 }
 
 std::unique_ptr<PixWriter> Forge::GetImageWriter(const std::string& extension, const EncodeSpec& spec) const
