@@ -11,6 +11,7 @@
 #include "Definition.h"
 #include "Audio.h"
 #include "PixReader.h"
+#include "MediaReader.h"
 #include "Filesystem.h"
 
 VOID_NAMESPACE_OPEN
@@ -28,6 +29,7 @@ public:
     Frame();
     Frame(const MEntry& e, MediaColor* color);
     Frame(const MEntry& e, MediaColor* color, v_frame_t frame);
+    Frame(const MEntry& e, MediaReader* reader, v_frame_t frame);
     ~Frame();
 
     // Move
@@ -48,8 +50,8 @@ public:
     inline v_frame_t Framenumber() const { return m_Framenumber; }
     inline void SetDirty(bool dirty) { m_Dirty = dirty; }
     [[nodiscard]] inline bool Dirty() const { return m_Dirty; }
-    [[nodiscard]] inline bool Invalid() const { return !m_Reader; }
-    [[nodiscard]] inline bool Valid() const { return bool(m_Reader); }
+    [[nodiscard]] inline bool Invalid() const { return m_Framenumber < 0; }
+    [[nodiscard]] inline bool Valid() const { return m_Framenumber >= 0; }
 
     // Image
     void Thumbnail(UInt8Image& image);
@@ -70,8 +72,14 @@ public:
 
 protected: /* Members */
     MEntry m_Entry;
+
+    MediaReader* m_MediaReader;
+    FloatImage m_Image;
+
     SharedPixReader m_Reader;
     MediaColor* m_Color;
+
+
     v_frame_t m_Framenumber;
     bool m_Dirty = {false};
 
