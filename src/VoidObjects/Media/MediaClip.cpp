@@ -139,9 +139,6 @@ void MediaClip::ReadThumbnail()
     // Clear the data for when required
     // im->Clear();
 
-    // Also update the color information for the Media
-    Media::UpdateColorInfo();
-
     m_Working.store(false);
     emit updated();
 }
@@ -159,8 +156,9 @@ QPixmap MediaClip::FetchThumbnail()
 
 void MediaClip::SetInputColorspace(const std::string& colorspace)
 {
-    m_MediaColor.colorspace = Colorspace::Custom;
-    m_MediaColor.custom = colorspace;
+    MediaColor* color = m_Reader->ColorInfo();
+    color->colorspace = Colorspace::Custom;
+    color->custom = colorspace;
 }
 
 Renderer::SharedAnnotation MediaClip::Annotation(const v_frame_t frame) const
