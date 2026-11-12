@@ -9,26 +9,26 @@
 
 /* Internal */
 #include "Definition.h"
-#include "PixReader.h"
+// #include "PixReader.h"
 #include "MediaReader.h"
 
 VOID_NAMESPACE_OPEN
 
-class VOID_API OIIOPixReader : public VoidPixReader
-{
-public:
-    OIIOPixReader(const std::string& path, v_frame_t framenumer = 0);
-    ~OIIOPixReader();
+// class VOID_API OIIOPixReader : public VoidPixReader
+// {
+// public:
+//     OIIOPixReader(const std::string& path, v_frame_t framenumer = 0);
+//     ~OIIOPixReader();
 
-    void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
-    void Read() override;
+//     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
+//     void Read() override;
 
-    void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
-    MediaColor MediaColorInfo() const override;
+//     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
+//     MediaColor MediaColorInfo() const override;
 
-    void Clear() override;
-    const std::map<std::string, std::string> Metadata() const override;
-};
+//     void Clear() override;
+//     const std::map<std::string, std::string> Metadata() const override;
+// };
 
 class VOID_API OIIOMediaReader : public MediaReader
 {

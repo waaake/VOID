@@ -244,293 +244,293 @@ bool ReadInterleaved(Imf::InputPart& part, const std::vector<std::string>& chann
 
 } // namespace
 
-OpenEXRReader::OpenEXRReader(const std::string& path, v_frame_t framenumber)
-    : VoidPixReader(path, framenumber)
-{
-    Imf::setGlobalThreadCount(16);
-}
+// OpenEXRReader::OpenEXRReader(const std::string& path, v_frame_t framenumber)
+//     : VoidPixReader(path, framenumber)
+// {
+//     Imf::setGlobalThreadCount(16);
+// }
 
-OpenEXRReader::~OpenEXRReader()
-{
-    Clear();
-}
+// OpenEXRReader::~OpenEXRReader()
+// {
+//     Clear();
+// }
 
-void OpenEXRReader::Clear()
-{
-    m_Image->Clear();
-}
+// void OpenEXRReader::Clear()
+// {
+//     m_Image->Clear();
+// }
 
-void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
-{
-    Imf::RgbaInputFile f(path.c_str(), Tools::thread_count());
-    // Image Specs
-    Imath::Box2i dw = f.dataWindow();
-    image->width = (dw.max.x - dw.min.x) + 1;
-    image->height = (dw.max.y - dw.min.y) + 1;
+// void OpenEXRReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
+// {
+//     Imf::RgbaInputFile f(path.c_str(), Tools::thread_count());
+//     // Image Specs
+//     Imath::Box2i dw = f.dataWindow();
+//     image->width = (dw.max.x - dw.min.x) + 1;
+//     image->height = (dw.max.y - dw.min.y) + 1;
 
-    /* To Get the channels -> Read through the header */
-    // const Imf::Header& header = f.header();
-    // const Imf::ChannelList& channels = header.channels();
+//     /* To Get the channels -> Read through the header */
+//     // const Imf::Header& header = f.header();
+//     // const Imf::ChannelList& channels = header.channels();
 
-    // /*
-    //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
-    //  * Update the channel count by reading the channels
-    //  */
-    // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
-    //     m_Channels++;
+//     // /*
+//     //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
+//     //  * Update the channel count by reading the channels
+//     //  */
+//     // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+//     //     m_Channels++;
 
-    // Force 4 Channels
-    image->channels = 4;
+//     // Force 4 Channels
+//     image->channels = 4;
 
-    // Image Specs
-    m_Image->width = image->width;
-    m_Image->height = image->height;
-    m_Image->channels = image->channels;
+//     // Image Specs
+//     m_Image->width = image->width;
+//     m_Image->height = image->height;
+//     m_Image->channels = image->channels;
 
-    // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
+//     // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
 
-    Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);
+//     Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);
 
-    // Read the Pixel data onto the buffer
-    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * image->width, 1, image->width);
-    f.readPixels(dw.min.y, dw.max.y);
+//     // Read the Pixel data onto the buffer
+//     f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * image->width, 1, image->width);
+//     f.readPixels(dw.min.y, dw.max.y);
 
-    image->buffer.Resize(image->width * image->height * image->channels);
-    const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
-    const Imf::Rgba* source = &pixels[0][0];
-    unsigned char* im = image->buffer.Data();
+//     image->buffer.Resize(image->width * image->height * image->channels);
+//     const int64_t pixelcount = static_cast<int64_t>(m_Image->width) * m_Image->height;
+//     const Imf::Rgba* source = &pixels[0][0];
+//     unsigned char* im = image->buffer.Data();
 
-    tbb::parallel_for(tbb::blocked_range<int64_t>(0, pixelcount), [&](const tbb::blocked_range<int64_t>& r) -> void
-    {
-        for (int64_t i = r.begin(); i != r.end(); ++i)
-        {
-            const Imf::Rgba pixel = source[i];
-            const int index = i * 4;
+//     tbb::parallel_for(tbb::blocked_range<int64_t>(0, pixelcount), [&](const tbb::blocked_range<int64_t>& r) -> void
+//     {
+//         for (int64_t i = r.begin(); i != r.end(); ++i)
+//         {
+//             const Imf::Rgba pixel = source[i];
+//             const int index = i * 4;
 
-            im[index + 0] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
-            im[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
-            im[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
-            im[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
-        }
-    });
-}
+//             im[index + 0] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
+//             im[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
+//             im[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
+//             im[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
+//         }
+//     });
+// }
 
-void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
-{
-    Imf::MultiPartInputFile input(path.c_str());
+// void OpenEXRReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
+// {
+//     Imf::MultiPartInputFile input(path.c_str());
 
-    int index = -1;
-    std::vector<std::string> channelsToLoad;
+//     int index = -1;
+//     std::vector<std::string> channelsToLoad;
 
-    for (int i = 0; i < input.parts(); ++i)
-    {
-        const Imf::Header& header = input.header(i);
+//     for (int i = 0; i < input.parts(); ++i)
+//     {
+//         const Imf::Header& header = input.header(i);
 
-        const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
-        const std::vector<std::string> streams = HeaderStreams(header, channels);
+//         const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+//         const std::vector<std::string> streams = HeaderStreams(header, channels);
 
-        for (const auto& stream : streams)
-        {
-            if (stream == "RGBA")
-            {
-                channelsToLoad.clear();
-                channelsToLoad = channels.at(stream);
+//         for (const auto& stream : streams)
+//         {
+//             if (stream == "RGBA")
+//             {
+//                 channelsToLoad.clear();
+//                 channelsToLoad = channels.at(stream);
 
-                if (channelsToLoad.empty())
-                    break;
+//                 if (channelsToLoad.empty())
+//                     break;
 
-                SortChannels(channelsToLoad);
+//                 SortChannels(channelsToLoad);
 
-                index = i;
-                break;
-            }
-        }
+//                 index = i;
+//                 break;
+//             }
+//         }
 
-        if (index >= 0)
-            break;
-    }
+//         if (index >= 0)
+//             break;
+//     }
 
-    if (index < 0)
-    {
-        VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
-        return;
-    }
+//     if (index < 0)
+//     {
+//         VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
+//         return;
+//     }
 
-    if (channelsToLoad.empty() || channelsToLoad.size() > 4)
-    {
-        VOID_LOG_ERROR("Invalid channel count");
-        return;
-    }
+//     if (channelsToLoad.empty() || channelsToLoad.size() > 4)
+//     {
+//         VOID_LOG_ERROR("Invalid channel count");
+//         return;
+//     }
 
-    image->type = VOID_GL_FLOAT;
-    Imf::InputPart part(input, index);
+//     image->type = VOID_GL_FLOAT;
+//     Imf::InputPart part(input, index);
 
-    // Read Success
-    if (ReadInterleaved(part, channelsToLoad, image))
-        return;
+//     // Read Success
+//     if (ReadInterleaved(part, channelsToLoad, image))
+//         return;
 
-    /// There maybe cases, this is partially read and we don't want to display partial information on the viewer at the moment
-    /// Better is that we clear the image buffer in that case
-    m_Image->Clear();
-}
+//     /// There maybe cases, this is partially read and we don't want to display partial information on the viewer at the moment
+//     /// Better is that we clear the image buffer in that case
+//     m_Image->Clear();
+// }
 
-void OpenEXRReader::Read()
-{
-    Imf::MultiPartInputFile input(m_Path.c_str());
+// void OpenEXRReader::Read()
+// {
+//     Imf::MultiPartInputFile input(m_Path.c_str());
 
-    int index = -1;
-    std::vector<std::string> channelsToLoad;
+//     int index = -1;
+//     std::vector<std::string> channelsToLoad;
 
-    for (int i = 0; i < input.parts(); ++i)
-    {
-        const Imf::Header& header = input.header(i);
+//     for (int i = 0; i < input.parts(); ++i)
+//     {
+//         const Imf::Header& header = input.header(i);
 
-        const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
-        const std::vector<std::string> streams = HeaderStreams(header, channels);
+//         const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+//         const std::vector<std::string> streams = HeaderStreams(header, channels);
 
-        for (const auto& stream : streams)
-        {
-            if (stream == "RGBA")
-            {
-                channelsToLoad.clear();
-                channelsToLoad = channels.at(stream);
+//         for (const auto& stream : streams)
+//         {
+//             if (stream == "RGBA")
+//             {
+//                 channelsToLoad.clear();
+//                 channelsToLoad = channels.at(stream);
 
-                if (channelsToLoad.empty())
-                    break;
+//                 if (channelsToLoad.empty())
+//                     break;
 
-                SortChannels(channelsToLoad);
+//                 SortChannels(channelsToLoad);
 
-                index = i;
-                break;
-            }
-        }
+//                 index = i;
+//                 break;
+//             }
+//         }
 
-        if (index >= 0)
-            break;
-    }
+//         if (index >= 0)
+//             break;
+//     }
 
-    if (index < 0)
-    {
-        VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
-        return;
-    }
+//     if (index < 0)
+//     {
+//         VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
+//         return;
+//     }
 
-    if (channelsToLoad.empty() || channelsToLoad.size() > 4)
-    {
-        VOID_LOG_ERROR("Invalid channel count");
-        return;
-    }
+//     if (channelsToLoad.empty() || channelsToLoad.size() > 4)
+//     {
+//         VOID_LOG_ERROR("Invalid channel count");
+//         return;
+//     }
 
-    m_Image->type = VOID_GL_FLOAT;
-    Imf::InputPart part(input, index);
+//     m_Image->type = VOID_GL_FLOAT;
+//     Imf::InputPart part(input, index);
 
-    // Read Success
-    if (ReadInterleaved(part, channelsToLoad, m_Image))
-        return;
+//     // Read Success
+//     if (ReadInterleaved(part, channelsToLoad, m_Image))
+//         return;
 
-    /// There maybe cases, this is partially read and we don't want to display partial information on the viewer at the moment
-    /// Better is that we clear the image buffer in that case
-    m_Image->Clear();
-}
+//     /// There maybe cases, this is partially read and we don't want to display partial information on the viewer at the moment
+//     /// Better is that we clear the image buffer in that case
+//     m_Image->Clear();
+// }
 
-const std::map<std::string, std::string> OpenEXRReader::Metadata() const
-{
-    std::map<std::string, std::string> m;
+// const std::map<std::string, std::string> OpenEXRReader::Metadata() const
+// {
+//     std::map<std::string, std::string> m;
 
-    Imf::InputFile f(m_Path.c_str());
-    const Imf::Header& header = f.header();
+//     Imf::InputFile f(m_Path.c_str());
+//     const Imf::Header& header = f.header();
 
-    /* Basic Metadata */
-    m["filepath"] = m_Path;
+//     /* Basic Metadata */
+//     m["filepath"] = m_Path;
 
-    int channelCount = 0;
-    const Imf::ChannelList& channels = header.channels();
+//     int channelCount = 0;
+//     const Imf::ChannelList& channels = header.channels();
 
-    Imf::PixelType pixelType = Imf::PixelType::HALF;
-    for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++it)
-    {
-        channelCount++;
-        pixelType = it.channel().type;
-    }
+//     Imf::PixelType pixelType = Imf::PixelType::HALF;
+//     for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++it)
+//     {
+//         channelCount++;
+//         pixelType = it.channel().type;
+//     }
 
-    /**
-     * UINT  = 0, // unsigned int (32 bit)
-     * HALF  = 1, // half (16 bit floating point)
-     * FLOAT = 2, // float (32 bit floating point)
-     */
-    if (pixelType == Imf::PixelType::HALF)
-        m["pixelType"] = "16 bit floating point";
-    else if (pixelType == Imf::PixelType::FLOAT)
-        m["pixelType"] = "32 bit floating point";
-    else
-        m["pixelType"] = "32 bit";
+//     /**
+//      * UINT  = 0, // unsigned int (32 bit)
+//      * HALF  = 1, // half (16 bit floating point)
+//      * FLOAT = 2, // float (32 bit floating point)
+//      */
+//     if (pixelType == Imf::PixelType::HALF)
+//         m["pixelType"] = "16 bit floating point";
+//     else if (pixelType == Imf::PixelType::FLOAT)
+//         m["pixelType"] = "32 bit floating point";
+//     else
+//         m["pixelType"] = "32 bit";
 
-    Imath::Box2i dw = header.dataWindow();
-    int width = dw.max.x - dw.min.x + 1;
-    int height = dw.max.y - dw.min.y + 1;
+//     Imath::Box2i dw = header.dataWindow();
+//     int width = dw.max.x - dw.min.x + 1;
+//     int height = dw.max.y - dw.min.y + 1;
 
-    m["width"] = std::to_string(width);
-    m["height"] = std::to_string(height);
-    m["channels"] = std::to_string(channelCount);
+//     m["width"] = std::to_string(width);
+//     m["height"] = std::to_string(height);
+//     m["channels"] = std::to_string(channelCount);
 
-    // const Imf::Compression& compression = header.compression();
-    // std::string compressionType;
-    // Imf::getCompressionNameFromId(compression, compressionType);
-    // m["compression"] = compressionType;
+//     // const Imf::Compression& compression = header.compression();
+//     // std::string compressionType;
+//     // Imf::getCompressionNameFromId(compression, compressionType);
+//     // m["compression"] = compressionType;
 
-    /* Specific metadata */
-    for (Imf::Header::ConstIterator it = header.begin(); it != header.end(); ++it)
-    {
-        const Imf::Attribute& attr = it.attribute();
+//     /* Specific metadata */
+//     for (Imf::Header::ConstIterator it = header.begin(); it != header.end(); ++it)
+//     {
+//         const Imf::Attribute& attr = it.attribute();
 
-        if (std::strcmp(attr.typeName(), "string") == 0)
-        {
-            const Imf::StringAttribute& sattr = static_cast<const Imf::StringAttribute&>(attr);
-            m[it.name()] = sattr.value();
-        }
-        else if (std::strcmp(attr.typeName(), "float") == 0)
-        {
-            const Imf::FloatAttribute& fattr = static_cast<const Imf::FloatAttribute&>(attr);
-            m[it.name()] = std::to_string(fattr.value());
-        }
-        else if (std::strcmp(attr.typeName(), "int") == 0)
-        {
-            const Imf::IntAttribute& iattr = static_cast<const Imf::IntAttribute&>(attr);
-            m[it.name()] = std::to_string(iattr.value());
-        }
-    }
+//         if (std::strcmp(attr.typeName(), "string") == 0)
+//         {
+//             const Imf::StringAttribute& sattr = static_cast<const Imf::StringAttribute&>(attr);
+//             m[it.name()] = sattr.value();
+//         }
+//         else if (std::strcmp(attr.typeName(), "float") == 0)
+//         {
+//             const Imf::FloatAttribute& fattr = static_cast<const Imf::FloatAttribute&>(attr);
+//             m[it.name()] = std::to_string(fattr.value());
+//         }
+//         else if (std::strcmp(attr.typeName(), "int") == 0)
+//         {
+//             const Imf::IntAttribute& iattr = static_cast<const Imf::IntAttribute&>(attr);
+//             m[it.name()] = std::to_string(iattr.value());
+//         }
+//     }
 
-    return m;
-}
+//     return m;
+// }
 
-MediaColor OpenEXRReader::MediaColorInfo() const
-{
-    MediaColor color;
-    color.colorspace = Colorspace::LinearRec709; // Default
-    /// Need some more insight on reading exact colorspaces from EXR versions lesser than 3.4
+// MediaColor OpenEXRReader::MediaColorInfo() const
+// {
+//     MediaColor color;
+//     color.colorspace = Colorspace::LinearRec709; // Default
+//     /// Need some more insight on reading exact colorspaces from EXR versions lesser than 3.4
 
-    Imf::InputFile f(m_Path.c_str());
-    const Imf::Header& header = f.header();
+//     Imf::InputFile f(m_Path.c_str());
+//     const Imf::Header& header = f.header();
 
-    const Imf::IntAttribute* acesf = header.findTypedAttribute<Imf::IntAttribute>("acesImageContainerFlag");
-    if (acesf)
-    {
-        if (acesf->value() == 1)
-        {
-            color.colorspace = Colorspace::ACES2065_1;
-            color.transfer = TransferFunction::Linear;
+//     const Imf::IntAttribute* acesf = header.findTypedAttribute<Imf::IntAttribute>("acesImageContainerFlag");
+//     if (acesf)
+//     {
+//         if (acesf->value() == 1)
+//         {
+//             color.colorspace = Colorspace::ACES2065_1;
+//             color.transfer = TransferFunction::Linear;
 
-            color.name = "ACES2065-1";
-        }
+//             color.name = "ACES2065-1";
+//         }
 
-        color.colorspaceMetadata = true;
-    }
+//         color.colorspaceMetadata = true;
+//     }
 
-    // TODO: check chromaticities for a decent match to figure out colorspace
-    // const Imf::ChromaticitiesAttribute* chroma = header.findTypedAttribute<Imf::ChromaticitiesAttribute>("chromatacities");
+//     // TODO: check chromaticities for a decent match to figure out colorspace
+//     // const Imf::ChromaticitiesAttribute* chroma = header.findTypedAttribute<Imf::ChromaticitiesAttribute>("chromatacities");
 
-    return color;
-}
+//     return color;
+// }
 
 OpenEXRMediaReader::OpenEXRMediaReader(const std::string& path)
     : MediaReader(path)
@@ -674,7 +674,7 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, Fl
 
 std::map<std::string, std::string> OpenEXRMediaReader::Metadata() const
 {
-std::map<std::string, std::string> m;
+    std::map<std::string, std::string> m;
 
     Imf::InputFile f(m_Path.c_str());
     const Imf::Header& header = f.header();

@@ -9,24 +9,24 @@
 
 /* Internal */
 #include "Definition.h"
-#include "PixReader.h"
+// #include "PixReader.h"
 #include "MediaReader.h"
 
 VOID_NAMESPACE_OPEN
 
-class VOID_API OpenEXRReader : public VoidPixReader
-{
-public:
-    OpenEXRReader(const std::string& path, v_frame_t framenumber = 0);
-    ~OpenEXRReader();
+// class VOID_API OpenEXRReader : public VoidPixReader
+// {
+// public:
+//     OpenEXRReader(const std::string& path, v_frame_t framenumber = 0);
+//     ~OpenEXRReader();
 
-    void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
-    void Read() override;
-    void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
-    void Clear() override;
-    const std::map<std::string, std::string> Metadata() const override;
-    MediaColor MediaColorInfo() const override;
-};
+//     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
+//     void Read() override;
+//     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
+//     void Clear() override;
+//     const std::map<std::string, std::string> Metadata() const override;
+//     MediaColor MediaColorInfo() const override;
+// };
 
 class VOID_API OpenEXRMediaReader : public MediaReader
 {

@@ -22,7 +22,7 @@ extern "C" {
 #include "Definition.h"
 #include "DecDefs.h"
 #include "MediaReader.h"
-#include "PixReader.h"
+// #include "PixReader.h"
 #include "Decoder2.h"
 
 VOID_NAMESPACE_OPEN
@@ -89,44 +89,44 @@ VOID_NAMESPACE_OPEN
 //     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 // };
 
-class VOID_API FFmpegPixReader : public VoidMPixReader
-{
-public:
-    FFmpegPixReader(const std::string& path, v_frame_t framenumber = 0);
-    ~FFmpegPixReader();
+// class VOID_API FFmpegPixReader : public VoidMPixReader
+// {
+// public:
+//     FFmpegPixReader(const std::string& path, v_frame_t framenumber = 0);
+//     ~FFmpegPixReader();
 
-    void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
-    void Read() override;
-    bool Read(SharedFrameAudio& buffer) override;
-    void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
-    void Clear() override { m_Image->Clear(); }
+//     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
+//     void Read() override;
+//     bool Read(SharedFrameAudio& buffer) override;
+//     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
+//     void Clear() override { m_Image->Clear(); }
 
-    MFrameRange Framerange() override;
-    const std::map<std::string, std::string> Metadata() const override;
+//     MFrameRange Framerange() override;
+//     const std::map<std::string, std::string> Metadata() const override;
 
-    MediaColor MediaColorInfo() const override;
+//     MediaColor MediaColorInfo() const override;
 
-    int AudioChannels() const override { return m_AChannels; }
-    int Samplerate() const override { return m_Samplerate; }
+//     int AudioChannels() const override { return m_AChannels; }
+//     int Samplerate() const override { return m_Samplerate; }
 
-private: /* Members */
-    TimeFrame m_Timeframe;
-    int m_AChannels;
-    int m_Samplerate;
+// private: /* Members */
+//     TimeFrame m_Timeframe;
+//     int m_AChannels;
+//     int m_Samplerate;
 
-    // Media timeline information
-    v_frame_t m_Startframe;
-    v_frame_t m_Endframe;
-    v_frame_t m_Duration;
-    double m_Framerate;
+//     // Media timeline information
+//     v_frame_t m_Startframe;
+//     v_frame_t m_Endframe;
+//     v_frame_t m_Duration;
+//     double m_Framerate;
 
-private: /* Methods */
-    /**
-     * Processes the basic media information like framerate,
-     * start and end frames and anything additional that could describe the media
-     */
-    void ProcessInformation();
-};
+// private: /* Methods */
+//     /**
+//      * Processes the basic media information like framerate,
+//      * start and end frames and anything additional that could describe the media
+//      */
+//     void ProcessInformation();
+// };
 
 class VOID_API FFmpegMediaReader : public MediaReader
 {
