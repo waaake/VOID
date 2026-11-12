@@ -27,8 +27,6 @@ class VOID_API Frame
 {
 public:
     Frame();
-    Frame(const MEntry& e, MediaColor* color);
-    Frame(const MEntry& e, MediaColor* color, v_frame_t frame);
     Frame(const MEntry& e, MediaReader* reader, v_frame_t frame);
     ~Frame();
 
@@ -45,7 +43,7 @@ public:
     inline const std::string& Name() const { return m_Entry.Name(); }
     inline const std::string& Extension() const { return m_Entry.Extension(); }
     inline const MEntry& Entry() const { return m_Entry; }
-    
+
     // Frame Attribs
     inline v_frame_t Framenumber() const { return m_Framenumber; }
     inline void SetDirty(bool dirty) { m_Dirty = dirty; }
@@ -59,39 +57,17 @@ public:
     const FloatImage& Image();
     bool Audio(SharedFrameAudio& buffer);
 
-    // Image Properties
-    [[nodiscard]] inline int Width() const { return m_Reader->Width(); }
-    [[nodiscard]] inline int Height() const { return m_Reader->Height(); }
-    [[nodiscard]] inline int Channels() const { return m_Reader->Channels(); }
-    inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
-
-    /* Frame Caches */
+    // Frame Caches
     void Cache();
     void Clear(bool dirty = true);
-    void UpdateColorInfo();
 
-protected: /* Members */
+private: /* Members */
     MEntry m_Entry;
-
-    MediaReader* m_MediaReader;
-    FloatImage m_Image;
-
-    SharedPixReader m_Reader;
-    MediaColor* m_Color;
-
-
-    v_frame_t m_Framenumber;
-    bool m_Dirty = {false};
-
-private: /* Members*/
     std::mutex m_Mutex;
-};
-
-class VOID_API MovieFrame : public Frame
-{
-public:
-    MovieFrame() : Frame() {}
-    MovieFrame(const MEntry& e, MediaColor* color, const v_frame_t frame);
+    FloatImage m_Image;
+    MediaReader* m_Reader;
+    v_frame_t m_Framenumber;
+    bool m_Dirty = { false };
 };
 
 VOID_NAMESPACE_CLOSE
