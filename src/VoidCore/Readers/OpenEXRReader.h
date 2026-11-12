@@ -31,7 +31,7 @@ public:
 class VOID_API OpenEXRMediaReader : public MediaReader
 {
 public:
-    using MediaReader::MediaReader;
+    OpenEXRMediaReader(const std::string& path);
 
     bool Read(const std::string& path, v_frame_t framenumber, UInt8Image& image) override;
     bool Read(const std::string& path, v_frame_t framenumber, FloatImage& image) override;

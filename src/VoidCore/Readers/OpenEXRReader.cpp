@@ -532,6 +532,12 @@ MediaColor OpenEXRReader::MediaColorInfo() const
     return color;
 }
 
+OpenEXRMediaReader::OpenEXRMediaReader(const std::string& path)
+    : MediaReader(path)
+{
+    Imf::setGlobalThreadCount(std::max(Tools::thread_count() / 2, 4U));
+}
+
 bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, UInt8Image& image)
 {
     Imf::RgbaInputFile f(path.c_str(), Tools::thread_count());
