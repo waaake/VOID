@@ -10,6 +10,7 @@
 /* Internal */
 #include "Definition.h"
 #include "PixReader.h"
+#include "MediaReader.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -27,6 +28,24 @@ public:
 
     void Clear() override;
     const std::map<std::string, std::string> Metadata() const override;
+};
+
+class VOID_API OIIOMediaReader : public MediaReader
+{
+public:
+    using MediaReader::MediaReader;
+
+    bool Read(const std::string& path, v_frame_t framenumber, UInt8Image& image) override;
+    bool Read(const std::string& path, v_frame_t framenumber, FloatImage& image) override;
+
+    MediaColor* ColorInfo() override { return &m_ColorInfo; }
+
+    /// Only reads images
+    bool IsMovieFormat() const { return false; }
+    std::map<std::string, std::string> Metadata() const override;
+
+private:
+    MediaColor m_ColorInfo;
 };
 
 VOID_NAMESPACE_CLOSE
