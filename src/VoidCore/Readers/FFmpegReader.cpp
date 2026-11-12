@@ -330,7 +330,7 @@ FFmpegPixReader::~FFmpegPixReader()
 void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
 {
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
-    if (decoder.Decode(frame, image->buffer._buf, m_Timeframe))
+    if (decoder.Decode(frame, image->buffer._buf))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -386,7 +386,7 @@ MFrameRange FFmpegPixReader::Framerange()
 void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
 {
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-    if (decoder.Decode(m_Framenumber, image->buffer._buf, m_Timeframe))
+    if (decoder.Decode(m_Framenumber, image->buffer._buf))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -400,7 +400,7 @@ void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage&
 void FFmpegPixReader::Read()
 {
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-    if (decoder.Decode(m_Framenumber, m_Image->buffer._buf, m_Timeframe))
+    if (decoder.Decode(m_Framenumber, m_Image->buffer._buf))
     {
         m_Image->width = decoder.Width();
         m_Image->height = decoder.Height();
@@ -492,26 +492,17 @@ MediaColor FFmpegPixReader::MediaColorInfo() const
 FFmpegMediaReader::FFmpegMediaReader(const std::string& path)
     : MediaReader(path)
 {
-    if (m_Decoder.Setup(path))
-    {
-        m_Framerange.startframe = m_Decoder.Startframe();
-        m_Framerange.duration = m_Decoder.Duration();
-        m_Framerange.framerate = m_Decoder.Framerate();
-
-        m_Framerange.endframe = m_Framerange.startframe + m_Framerange.duration - 1;
-
-        m_HasAudio = m_Decoder.HasAudio();
-    }
+    ProcessInfo();
 }
 
 bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, UInt8Image& image)
 {
-    TimeFrame tf;
-    if (m_Decoder.Decode(framenumber, image->buffer._buf, tf))
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
+    if (decoder.Decode(framenumber, image->buffer._buf))
     {
-        image->width = m_Decoder.Width();
-        image->height = m_Decoder.Height();
-        image->channels = m_Decoder.Channels();
+        image->width = decoder.Width();
+        image->height = decoder.Height();
+        image->channels = decoder.Channels();
 
         image->format = VOID_GL_RGB;
 
@@ -521,7 +512,7 @@ bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, UIn
         m_Channels = image->channels;
 
         // Color info
-        m_Decoder.MediaColorInfo(m_ColorInfo);
+        decoder.MediaColorInfo(m_ColorInfo);
 
         return true;
     }
@@ -531,12 +522,12 @@ bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, UIn
 
 bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, FloatImage& image)
 {
-    TimeFrame tf;
-    if (m_Decoder.Decode(framenumber, image->buffer._buf, tf))
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
+    if (decoder.Decode(framenumber, image->buffer._buf))
     {
-        image->width = m_Decoder.Width();
-        image->height = m_Decoder.Height();
-        image->channels = m_Decoder.Channels();
+        image->width = decoder.Width();
+        image->height = decoder.Height();
+        image->channels = decoder.Channels();
 
         image->format = VOID_GL_RGB;
         image->type = VOID_GL_FLOAT;
@@ -613,6 +604,35 @@ std::map<std::string, std::string> FFmpegMediaReader::Metadata() const
     m["start_frame"] = std::to_string(m_Framerange.startframe);
 
     return m;
+}
+
+void FFmpegMediaReader::ProcessInfo()
+{
+    if (m_Path.empty())
+        return;
+
+    AVFormatContext* formatContext = nullptr;
+    if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
+    {
+        for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
+        {
+            const AVStream* stream = formatContext->streams[i];
+            if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+            {
+                m_Framerange.startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
+                m_Framerange.duration = (v_frame_t)stream->nb_frames;
+                m_Framerange.framerate = av_q2d(stream->r_frame_rate);
+
+                m_Framerange.endframe = m_Framerange.startframe + m_Framerange.duration - 1;
+            }
+            else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+            {
+                m_HasAudio = true;
+            }
+        }
+
+        avformat_close_input(&formatContext);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

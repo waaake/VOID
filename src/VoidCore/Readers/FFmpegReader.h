@@ -31,9 +31,9 @@ VOID_NAMESPACE_OPEN
 // {
 // public:
 //     static FFmpegDecoder& Instance(const std::string& path);
-        
+
 //     FFmpegDecoder();
-//     ~FFmpegDecoder();    
+//     ~FFmpegDecoder();
 
 //     FFmpegDecoder(const FFmpegDecoder&) = delete;
 //     FFmpegDecoder(FFmpegDecoder&&) = delete;
@@ -147,10 +147,12 @@ public:
     std::map<std::string, std::string> Metadata() const override;
 
 private:
-    FFmpegDecoder2 m_Decoder;    
     MediaColor m_ColorInfo;
     MFrameRange m_Framerange;
     bool m_HasAudio;
+
+private:
+    void ProcessInfo();
 };
 
 VOID_NAMESPACE_CLOSE
