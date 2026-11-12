@@ -72,6 +72,12 @@ struct OpenEXRReaderPlugin
 
         /* Register Plugin */
         Forge::Instance().Register(f);
+
+        ReaderRegistry r;
+        r.extensions = { "exr" };
+        r.reader = [](const std::string& path) -> std::unique_ptr<OpenEXRMediaReader> { return std::make_unique<OpenEXRMediaReader>(path); };
+
+        Forge::Instance().Register(r);
     }
 };
 

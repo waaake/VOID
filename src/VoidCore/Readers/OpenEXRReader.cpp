@@ -69,7 +69,7 @@ std::map<std::string, std::vector<std::string>> HeaderChannels(const Imf::Header
             if (rgba.contains(channelLower))
                 names[part + "RGBA"].push_back(channel);
             else if (xyz.contains(channelLower))
-                names[part + "XYZ"].push_back(channel); 
+                names[part + "XYZ"].push_back(channel);
             else
                 names[part + "Other"].push_back(channel);
         }
@@ -164,7 +164,7 @@ void SortChannels(std::vector<std::string>& channels)
     // malformed or unconventional layers from overrunning the fixed pixel type array.
     if (channels.size() > 4) {
         channels.resize(4);
-    }   
+    }
 }
 
 /// Read a scanline part directly into an interleaved float buffer
@@ -519,7 +519,7 @@ MediaColor OpenEXRReader::MediaColorInfo() const
         {
             color.colorspace = Colorspace::ACES2065_1;
             color.transfer = TransferFunction::Linear;
-    
+
             color.name = "ACES2065-1";
         }
 
@@ -530,6 +530,210 @@ MediaColor OpenEXRReader::MediaColorInfo() const
     // const Imf::ChromaticitiesAttribute* chroma = header.findTypedAttribute<Imf::ChromaticitiesAttribute>("chromatacities");
 
     return color;
+}
+
+bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, UInt8Image& image)
+{
+    Imf::RgbaInputFile f(path.c_str(), Tools::thread_count());
+
+    // Image Specs
+    Imath::Box2i dw = f.dataWindow();
+    image->width = (dw.max.x - dw.min.x) + 1;
+    image->height = (dw.max.y - dw.min.y) + 1;
+
+    /* To Get the channels -> Read through the header */
+    const Imf::Header& header = f.header();
+    const Imf::ChannelList& channels = header.channels();
+
+    m_ColorInfo.colorspace = Colorspace::LinearRec709; // Default
+    /// Need some more insight on reading exact colorspaces from EXR versions lesser than 3.4
+    const Imf::IntAttribute* acesf = header.findTypedAttribute<Imf::IntAttribute>("acesImageContainerFlag");
+    if (acesf)
+    {
+        if (acesf->value() == 1)
+        {
+            m_ColorInfo.colorspace = Colorspace::ACES2065_1;
+            m_ColorInfo.transfer = TransferFunction::Linear;
+
+            m_ColorInfo.name = "ACES2065-1";
+        }
+
+        m_ColorInfo.colorspaceMetadata = true;
+    }
+
+    // /*
+    //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
+    //  * Update the channel count by reading the channels
+    //  */
+    // for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+    //     m_Channels++;
+
+    // Force 4 Channels
+    image->channels = 4;
+
+    // Image Specs
+    m_Width = image->width;
+    m_Height = image->height;
+    m_Channels = image->channels;
+
+    // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
+
+    Imf::Array2D<Imf::Rgba> pixels(image->height, image->width);
+
+    // Read the Pixel data onto the buffer
+    f.setFrameBuffer(&pixels[0][0] - dw.min.x - dw.min.y * image->width, 1, image->width);
+    f.readPixels(dw.min.y, dw.max.y);
+
+    image->buffer.Resize(image->width * image->height * image->channels);
+    const int64_t pixelcount = static_cast<int64_t>(image->width) * image->height;
+    const Imf::Rgba* source = &pixels[0][0];
+    unsigned char* im = image->buffer.Data();
+
+    tbb::parallel_for(tbb::blocked_range<int64_t>(0, pixelcount), [&](const tbb::blocked_range<int64_t>& r) -> void
+    {
+        for (int64_t i = r.begin(); i != r.end(); ++i)
+        {
+            const Imf::Rgba pixel = source[i];
+            const int index = i * 4;
+
+            im[index + 0] = static_cast<unsigned char>(std::clamp((float)pixel.r, 0.f, 1.f) * 255.f);
+            im[index + 1] = static_cast<unsigned char>(std::clamp((float)pixel.g, 0.f, 1.f) * 255.f);
+            im[index + 2] = static_cast<unsigned char>(std::clamp((float)pixel.b, 0.f, 1.f) * 255.f);
+            im[index + 3] = static_cast<unsigned char>(std::clamp((float)pixel.a, 0.f, 1.f) * 255.f);
+        }
+    });
+
+    return true;
+}
+
+bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, FloatImage& image)
+{
+    Imf::MultiPartInputFile input(path.c_str());
+
+    int index = -1;
+    std::vector<std::string> channelsToLoad;
+
+    for (int i = 0; i < input.parts(); ++i)
+    {
+        const Imf::Header& header = input.header(i);
+
+        const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+        const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+        for (const auto& stream : streams)
+        {
+            if (stream == "RGBA")
+            {
+                channelsToLoad.clear();
+                channelsToLoad = channels.at(stream);
+
+                if (channelsToLoad.empty())
+                    break;
+
+                SortChannels(channelsToLoad);
+
+                index = i;
+                break;
+            }
+        }
+
+        if (index >= 0)
+            break;
+    }
+
+    if (index < 0)
+    {
+        VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
+        return false;
+    }
+
+    if (channelsToLoad.empty() || channelsToLoad.size() > 4)
+    {
+        VOID_LOG_ERROR("Invalid channel count");
+        return false;
+    }
+
+    image->type = VOID_GL_FLOAT;
+    Imf::InputPart part(input, index);
+
+    // Read Success
+    if (ReadInterleaved(part, channelsToLoad, image))
+        return true;
+
+    /// There maybe cases, this is partially read and we don't want to display partial information on the viewer at the moment
+    /// Better is that we clear the image buffer in that case
+    image->Clear();
+    return false;
+}
+
+std::map<std::string, std::string> OpenEXRMediaReader::Metadata() const
+{
+std::map<std::string, std::string> m;
+
+    Imf::InputFile f(m_Path.c_str());
+    const Imf::Header& header = f.header();
+
+    /* Basic Metadata */
+    m["filepath"] = m_Path;
+
+    int channelCount = 0;
+    const Imf::ChannelList& channels = header.channels();
+
+    Imf::PixelType pixelType = Imf::PixelType::HALF;
+    for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++it)
+    {
+        channelCount++;
+        pixelType = it.channel().type;
+    }
+
+    /**
+     * UINT  = 0, // unsigned int (32 bit)
+     * HALF  = 1, // half (16 bit floating point)
+     * FLOAT = 2, // float (32 bit floating point)
+     */
+    if (pixelType == Imf::PixelType::HALF)
+        m["pixelType"] = "16 bit floating point";
+    else if (pixelType == Imf::PixelType::FLOAT)
+        m["pixelType"] = "32 bit floating point";
+    else
+        m["pixelType"] = "32 bit";
+
+    Imath::Box2i dw = header.dataWindow();
+    int width = dw.max.x - dw.min.x + 1;
+    int height = dw.max.y - dw.min.y + 1;
+
+    m["width"] = std::to_string(width);
+    m["height"] = std::to_string(height);
+    m["channels"] = std::to_string(channelCount);
+
+    // const Imf::Compression& compression = header.compression();
+    // std::string compressionType;
+    // Imf::getCompressionNameFromId(compression, compressionType);
+    // m["compression"] = compressionType;
+
+    /* Specific metadata */
+    for (Imf::Header::ConstIterator it = header.begin(); it != header.end(); ++it)
+    {
+        const Imf::Attribute& attr = it.attribute();
+
+        if (std::strcmp(attr.typeName(), "string") == 0)
+        {
+            const Imf::StringAttribute& sattr = static_cast<const Imf::StringAttribute&>(attr);
+            m[it.name()] = sattr.value();
+        }
+        else if (std::strcmp(attr.typeName(), "float") == 0)
+        {
+            const Imf::FloatAttribute& fattr = static_cast<const Imf::FloatAttribute&>(attr);
+            m[it.name()] = std::to_string(fattr.value());
+        }
+        else if (std::strcmp(attr.typeName(), "int") == 0)
+        {
+            const Imf::IntAttribute& iattr = static_cast<const Imf::IntAttribute&>(attr);
+            m[it.name()] = std::to_string(iattr.value());
+        }
+    }
+
+    return m;
 }
 
 VOID_NAMESPACE_CLOSE
