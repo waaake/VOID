@@ -66,6 +66,11 @@ Media::Media(const std::string& basepath,
 
 Media::~Media()
 {
+    // if (m_Reader)
+    // {
+    //     delete m_Reader;
+    //     m_Reader = nullptr;
+    // }
 }
 
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
@@ -92,34 +97,48 @@ void Media::Read(const MediaStruct& mstruct)
 {
     m_MediaStruct = mstruct;
 
-    /**
-     * Check if we have a Plugin reader for the file format
-     * If not -> we can't proceed
-     */
-    if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
+    auto reader = Forge::Instance().GetMediaReader(m_MediaStruct.Extension(), m_MediaStruct.FirstPath());
+    if (reader)
     {
-        VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
-        return;
+        m_Reader = reader.release();
+        m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
     }
 
-    m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
+    // /**
+    //  * Check if we have a Plugin reader for the file format
+    //  * If not -> we can't proceed
+    //  */
+    // if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
+    // {
+    //     VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
+    //     return;
+    // }
+
+    // m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
 void Media::Read(MediaStruct&& mstruct)
 {
     m_MediaStruct = std::move(mstruct);
 
-    /**
-     * Check if we have a Plugin reader for the file format
-     * If not -> we can't proceed
-     */
-    if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
+    auto reader = Forge::Instance().GetMediaReader(m_MediaStruct.Extension(), m_MediaStruct.FirstPath());
+    if (reader)
     {
-        VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
-        return;
+        m_Reader = reader.release();
+        m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
     }
 
-    m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
+    // /**
+    //  * Check if we have a Plugin reader for the file format
+    //  * If not -> we can't proceed
+    //  */
+    // if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
+    // {
+    //     VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
+    //     return;
+    // }
+
+    // m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
 void Media::ProcessSequence()
@@ -141,7 +160,8 @@ void Media::ProcessSequence()
          * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
          * will be 1010 - 1001 = 9
          */
-        m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, &m_MediaColor));
+        // m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, &m_MediaColor));
+        m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, m_Reader, e.Framenumber()));
         m_Numbers.emplace_back(e.Framenumber());
     }
 
@@ -155,10 +175,10 @@ void Media::ProcessMovie()
     if (!entry.Valid())
         return;
 
-    std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_MediaStruct.Extension(), entry.Fullpath());
-    MFrameRange frange = r->Framerange();
+    // std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_MediaStruct.Extension(), entry.Fullpath());
+    MFrameRange frange = m_Reader->Framerange();
     m_Framerate = frange.framerate;
-    m_Samplerate = r->Samplerate();
+    // m_Samplerate = r->Samplerate();
     VOID_LOG_INFO("Movie Media Range: {0}-{1}--{2} @ {3}", frange.startframe, frange.endframe, frange.duration, frange.framerate);
 
     m_Frames.resize(frange.duration);
@@ -169,7 +189,8 @@ void Media::ProcessMovie()
 
     for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
     {
-        m_Frames[counter] = std::move(MovieFrame(entry, &m_MediaColor, i));
+        // m_Frames[counter] = std::move(MovieFrame(entry, &m_MediaColor, i));
+        m_Frames[counter] = std::move(Frame(entry, m_Reader, i));
         m_Numbers.emplace_back(i);
     }
 

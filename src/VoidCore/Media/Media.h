@@ -70,7 +70,7 @@ public:
     inline std::string Extension() const { return m_MediaStruct.Extension(); }
 
     inline Media::Type MediaType() const { return m_Type; }
-    inline bool HasAudio() const { return bool(m_Samplerate); }
+    inline bool HasAudio() const { return m_Reader->HasAudio(); }
 
     // inline bool Valid() const { return m_Type != Type::NON_MEDIA; }
 
@@ -108,9 +108,12 @@ public:
     Frame* InternalFrame(v_frame_t frame) { return &(m_Frames[frame - m_FirstFrame]); }
 
     // Media Attribs
-    inline int Channels() const { return m_Frames[0].Channels(); }
-    inline int Width() const { return m_Frames[0].Width(); }
-    inline int Height() const { return m_Frames[0].Height(); }
+    // inline int Channels() const { return m_Frames[0].Channels(); }
+    // inline int Width() const { return m_Frames[0].Width(); }
+    // inline int Height() const { return m_Frames[0].Height(); }
+    inline int Channels() const { return m_Reader->Channels(); }
+    inline int Width() const { return m_Reader->Width(); }
+    inline int Height() const { return m_Reader->Height(); }
     inline double Framerate() const { return m_Framerate; }
 
     inline bool Empty() const { return m_MediaStruct.Empty(); }
@@ -131,6 +134,8 @@ protected: /* Members */
     std::vector<v_frame_t> m_Numbers;
     ElementTokens m_Tokens;
     MediaColor m_MediaColor;
+
+    MediaReader* m_Reader;
 
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
