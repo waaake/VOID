@@ -44,8 +44,8 @@ public:
 
     bool ComputeTimestamp(v_frame_t framenumber, TimeFrame& timeframe) const;
     bool FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe);
-    bool Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe);
-    bool Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe);
+    bool Decode(v_frame_t framenumber, std::vector<float>& buffer);
+    bool Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer);
     bool Decode(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
 private:
@@ -78,8 +78,8 @@ private:
     void StoreAudioBuffer(FFmpegStream* stream);
 
     bool TryCached(v_frame_t framenumber, TimeFrame& timeframe, int preferred = -1);
-    bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred = -1);
-    bool TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred = -1);
+    bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, int preferred = -1);
+    bool TryCached(v_frame_t framenumber, std::vector<float>& out, int preferred = -1);
     bool TryCached(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
     bool ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
