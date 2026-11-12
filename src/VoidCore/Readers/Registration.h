@@ -46,6 +46,12 @@ struct OIIOReaderPlugin
 
         /* Register Plugin */
         Forge::Instance().Register(f);
+
+        ReaderRegistry r;
+        r.extensions = { "tga", "tiff", "dpx", "png", "JPG", "jpg", "jpeg", "JPEG" };
+        r.reader = [](const std::string& path) -> std::unique_ptr<OIIOMediaReader> { return std::make_unique<OIIOMediaReader>(path); };
+
+        Forge::Instance().Register(r);
     }
 };
 
@@ -83,6 +89,12 @@ struct FFmpegReaderPlugin
 
         /* Register Plugin */
         Forge::Instance().Register(f);
+
+        ReaderRegistry r;
+        r.extensions = { "mp4", "mov", "MOV" };
+        r.reader = [](const std::string& path) -> std::unique_ptr<FFmpegMediaReader> { return std::make_unique<FFmpegMediaReader>(path); };
+
+        Forge::Instance().Register(r);
     }
 };
 
