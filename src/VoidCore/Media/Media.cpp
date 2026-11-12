@@ -16,7 +16,6 @@ Media::Media()
     , m_LastFrame(-1)
     , m_Framesize(0)
     , m_Framerate(24.0)
-    , m_Samplerate(0)
     , m_Type(Type::UNDEFINED)
 {
 }
@@ -79,8 +78,19 @@ v_frame_t Media::NearestFrame(const v_frame_t frame) const
      * find a frame just next to given frame which exists in the set of frames that the media has
      * if it exists, return that else we return that else the first frame from the media frames
      */
-    auto it = std::lower_bound(m_Numbers.begin(), m_Numbers.end(), frame);
-    return (it == m_Numbers.begin()) ? m_FirstFrame : *(--it);
+    // auto it = std::lower_bound(m_Numbers.begin(), m_Numbers.end(), frame);
+    // return (it == m_Numbers.begin()) ? m_FirstFrame : *(--it);
+
+    /// Rounding lower to the given frame
+    int index = frame - m_FirstFrame;
+
+    for (int i = index - 1; i > 0; --i)
+    {
+        if (m_Frames[i].Valid())
+            return m_FirstFrame + i;
+    }
+
+    return m_FirstFrame;
 }
 
 bool Media::Contains(v_frame_t frame) const
@@ -103,18 +113,6 @@ void Media::Read(const MediaStruct& mstruct)
         m_Reader = reader.release();
         m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
     }
-
-    // /**
-    //  * Check if we have a Plugin reader for the file format
-    //  * If not -> we can't proceed
-    //  */
-    // if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
-    // {
-    //     VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
-    //     return;
-    // }
-
-    // m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
 void Media::Read(MediaStruct&& mstruct)
@@ -127,18 +125,6 @@ void Media::Read(MediaStruct&& mstruct)
         m_Reader = reader.release();
         m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
     }
-
-    // /**
-    //  * Check if we have a Plugin reader for the file format
-    //  * If not -> we can't proceed
-    //  */
-    // if (!Forge::Instance().IsRegistered(m_MediaStruct.Extension()))
-    // {
-    //     VOID_LOG_WARN("No Media Reader found for type {0}", m_MediaStruct.Extension());
-    //     return;
-    // }
-
-    // m_MediaStruct.Type() == MediaType::Movie ? ProcessMovie() : ProcessSequence();
 }
 
 void Media::ProcessSequence()
@@ -147,7 +133,6 @@ void Media::ProcessSequence()
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
-    m_Numbers.reserve(frange.duration);
     m_Frames.resize(frange.duration);
 
     for (const MEntry& e : m_MediaStruct)
@@ -160,9 +145,7 @@ void Media::ProcessSequence()
          * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
          * will be 1010 - 1001 = 9
          */
-        // m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, &m_MediaColor));
         m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, m_Reader, e.Framenumber()));
-        m_Numbers.emplace_back(e.Framenumber());
     }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
@@ -175,23 +158,18 @@ void Media::ProcessMovie()
     if (!entry.Valid())
         return;
 
-    // std::unique_ptr<VoidMPixReader> r = Forge::Instance().GetMovieReader(m_MediaStruct.Extension(), entry.Fullpath());
     MFrameRange frange = m_Reader->Framerange();
     m_Framerate = frange.framerate;
-    // m_Samplerate = r->Samplerate();
-    VOID_LOG_INFO("Movie Media Range: {0}-{1}--{2} @ {3}", frange.startframe, frange.endframe, frange.duration, frange.framerate);
+    // VOID_LOG_INFO("Movie Media Range: {0}-{1}--{2} @ {3}", frange.startframe, frange.endframe, frange.duration, frange.framerate);
 
     m_Frames.resize(frange.duration);
-    m_Numbers.reserve(frange.duration);
 
     m_FirstFrame = frange.startframe;
     m_LastFrame = frange.endframe;
 
     for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
     {
-        // m_Frames[counter] = std::move(MovieFrame(entry, &m_MediaColor, i));
         m_Frames[counter] = std::move(Frame(entry, m_Reader, i));
-        m_Numbers.emplace_back(i);
     }
 
     m_Type = Media::Type::MOVIE;
@@ -223,11 +201,6 @@ void Media::SetDirty(bool dirty)
 {
     for (auto& frame : m_Frames)
         frame.SetDirty(dirty);
-}
-
-void Media::UpdateColorInfo()
-{
-    m_Frames[0].UpdateColorInfo();
 }
 
 VOID_NAMESPACE_CLOSE
