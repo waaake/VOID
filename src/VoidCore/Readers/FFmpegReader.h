@@ -20,8 +20,10 @@ extern "C" {
 
 /* Internal */
 #include "Definition.h"
-#include "PixReader.h"
 #include "DecDefs.h"
+#include "MediaReader.h"
+#include "PixReader.h"
+#include "Decoder2.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -124,6 +126,31 @@ private: /* Methods */
      * start and end frames and anything additional that could describe the media
      */
     void ProcessInformation();
+};
+
+class VOID_API FFmpegMediaReader : public MediaReader
+{
+public:
+    // using MediaReader::MediaReader;
+    FFmpegMediaReader(const std::string& path);
+
+    bool Read(const std::string& path, v_frame_t framenumber, UInt8Image& image) override;
+    bool Read(const std::string& path, v_frame_t framenumber, FloatImage& image) override;
+    bool Read(const std::string& path, v_frame_t framenumber, SharedFrameAudio& buffer) override;
+
+    MediaColor* ColorInfo() override { return &m_ColorInfo; }
+
+    /// Only reads images
+    bool IsMovieFormat() const override { return true; }
+    bool HasAudio() const override { return m_HasAudio; }
+    MFrameRange Framerange() const override { return m_Framerange; }
+    std::map<std::string, std::string> Metadata() const override;
+
+private:
+    FFmpegDecoder2 m_Decoder;    
+    MediaColor m_ColorInfo;
+    MFrameRange m_Framerange;
+    bool m_HasAudio;
 };
 
 VOID_NAMESPACE_CLOSE

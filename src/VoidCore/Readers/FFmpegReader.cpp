@@ -489,4 +489,130 @@ MediaColor FFmpegPixReader::MediaColorInfo() const
     return color;
 }
 
+FFmpegMediaReader::FFmpegMediaReader(const std::string& path)
+    : MediaReader(path)
+{
+    if (m_Decoder.Setup(path))
+    {
+        m_Framerange.startframe = m_Decoder.Startframe();
+        m_Framerange.duration = m_Decoder.Duration();
+        m_Framerange.framerate = m_Decoder.Framerate();
+
+        m_Framerange.endframe = m_Framerange.startframe + m_Framerange.duration - 1;
+
+        m_HasAudio = m_Decoder.HasAudio();
+    }
+}
+
+bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, UInt8Image& image)
+{
+    TimeFrame tf;
+    if (m_Decoder.Decode(framenumber, image->buffer._buf, tf))
+    {
+        image->width = m_Decoder.Width();
+        image->height = m_Decoder.Height();
+        image->channels = m_Decoder.Channels();
+
+        image->format = VOID_GL_RGB;
+
+        // Underlying image specifications
+        m_Width = image->width;
+        m_Height = image->height;
+        m_Channels = image->channels;
+
+        // Color info
+        m_Decoder.MediaColorInfo(m_ColorInfo);
+
+        return true;
+    }
+
+    return false;
+}
+
+bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, FloatImage& image)
+{
+    TimeFrame tf;
+    if (m_Decoder.Decode(framenumber, image->buffer._buf, tf))
+    {
+        image->width = m_Decoder.Width();
+        image->height = m_Decoder.Height();
+        image->channels = m_Decoder.Channels();
+
+        image->format = VOID_GL_RGB;
+        image->type = VOID_GL_FLOAT;
+
+        return true;
+    }
+
+    return false;
+}
+
+bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, SharedFrameAudio& buffer)
+{
+    TimeFrame tf;
+    AudioDecoder& decoder = AudioDecoder::Instance(m_Path);
+    // Ensure we have Valid video frame timestamp before reading audio
+    decoder.ComputeTimestamp(framenumber, tf);
+
+    return decoder.Decode(framenumber, tf, buffer);
+}
+
+std::map<std::string, std::string> FFmpegMediaReader::Metadata() const
+{
+    /// TODO: Move this inside the decoder as well, as that already has the AVFormatContext open, we don't need to open it again
+    std::map<std::string, std::string> m;
+    AVFormatContext* formatContext = nullptr;
+
+    if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
+    {
+        /* Get Stream info */
+        if (avformat_find_stream_info(formatContext, nullptr) < 0)
+        {
+            avformat_close_input(&formatContext);
+            return m;
+        }
+
+        AVStream* vidStream = nullptr;
+        int streamId = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+
+        /* Not found */
+        if (streamId < 0)
+        {
+            avformat_close_input(&formatContext);
+            return m;
+        }
+
+        /* Iterate over all metadata for the file */
+        AVDictionaryEntry* tag = nullptr;
+        /* Match the starting component of the key to get the find the tag --> None will match every */
+        while((tag = av_dict_get(formatContext->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
+            m[tag->key] = tag->value;
+
+        vidStream = formatContext->streams[streamId];
+
+        m["end_frame"] = std::to_string(m_Framerange.endframe);
+        m["duration"] = std::to_string(m_Framerange.duration);
+        m["framerate"] = std::to_string(m_Framerange.duration);
+
+        const AVCodecDescriptor* desc = avcodec_descriptor_get(vidStream->codecpar->codec_id);
+        m["codec"] = desc->name;
+        m["codec_long_name"] = desc->long_name ? desc->long_name : "N/A";
+
+        const AVCodec* codec = avcodec_find_decoder(vidStream->codecpar->codec_id);
+        m["decoder"] = codec->name;
+
+        /* Deallocate internals */
+        avformat_close_input(&formatContext);
+    }
+
+    /* Basic Metadata */
+    m["filepath"] = m_Path;
+    m["width"] = std::to_string(m_Width);
+    m["height"] = std::to_string(m_Height);
+    m["channels"] = std::to_string(m_Channels);
+    m["start_frame"] = std::to_string(m_Framerange.startframe);
+
+    return m;
+}
+
 VOID_NAMESPACE_CLOSE
