@@ -23,10 +23,6 @@ Frame::Frame(const MEntry& e, MediaReader* reader, v_frame_t frame)
 {
 }
 
-Frame::~Frame()
-{
-}
-
 Frame::Frame(Frame&& other) noexcept
     : m_Entry(std::move(other.m_Entry))
     , m_Reader(other.m_Reader)

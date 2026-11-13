@@ -28,7 +28,6 @@ class VOID_API Frame
 public:
     Frame();
     Frame(const MEntry& e, MediaReader* reader, v_frame_t frame);
-    ~Frame();
 
     // Move
     Frame(Frame&& other) noexcept;
