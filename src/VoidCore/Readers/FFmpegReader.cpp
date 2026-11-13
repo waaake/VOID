@@ -310,27 +310,195 @@ VOID_NAMESPACE_OPEN
 //     });
 // }
 
-/// FFmpegPixReader
+// /// FFmpegPixReader
 
-FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
-    : VoidMPixReader(path, framenumber)
-    , m_AChannels(0)
-    , m_Samplerate(0)
-    , m_Startframe(0)
-    , m_Endframe(0)
-    , m_Duration(0)
-    , m_Framerate(0.0)
+// FFmpegPixReader::FFmpegPixReader(const std::string& path, v_frame_t framenumber)
+//     : VoidMPixReader(path, framenumber)
+//     , m_AChannels(0)
+//     , m_Samplerate(0)
+//     , m_Startframe(0)
+//     , m_Endframe(0)
+//     , m_Duration(0)
+//     , m_Framerate(0.0)
+// {
+// }
+
+// FFmpegPixReader::~FFmpegPixReader()
+// {
+// }
+
+// void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
+// {
+//     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
+//     if (decoder.Decode(frame, image->buffer._buf))
+//     {
+//         image->width = decoder.Width();
+//         image->height = decoder.Height();
+//         image->channels = decoder.Channels();
+
+//         image->format = VOID_GL_RGB;
+
+//         // Underlying image specifications
+//         m_Image->width = image->width;
+//         m_Image->height = image->height;
+//         m_Image->channels = image->channels;
+//         m_Image->format = VOID_GL_RGB;
+//     }
+// }
+
+// void FFmpegPixReader::ProcessInformation()
+// {
+//     if (m_Path.empty())
+//         return;
+
+//     AVFormatContext* formatContext = nullptr;
+//     if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
+//     {
+//         for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
+//         {
+//             const AVStream* stream = formatContext->streams[i];
+//             if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+//             {
+//                 m_Duration = (v_frame_t)stream->nb_frames;
+//                 m_Startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
+//                 m_Framerate = av_q2d(stream->r_frame_rate);
+//                 m_Endframe = m_Duration - 1;
+//             }
+//             else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+//             {
+//                 m_Samplerate = stream->codecpar->sample_rate;
+//                 m_AChannels = stream->codecpar->ch_layout.nb_channels;
+//             }
+//         }
+
+//         avformat_close_input(&formatContext);
+//     }
+// }
+
+// MFrameRange FFmpegPixReader::Framerange()
+// {
+//     if (!m_Duration)
+//         ProcessInformation();
+
+//     return {m_Startframe, m_Endframe, m_Duration, m_Framerate};
+// }
+
+// void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
+// {
+//     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+//     if (decoder.Decode(m_Framenumber, image->buffer._buf))
+//     {
+//         image->width = decoder.Width();
+//         image->height = decoder.Height();
+//         image->channels = decoder.Channels();
+
+//         image->format = VOID_GL_RGB;
+//         image->type = VOID_GL_FLOAT;
+//     }
+// }
+
+// void FFmpegPixReader::Read()
+// {
+//     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+//     if (decoder.Decode(m_Framenumber, m_Image->buffer._buf))
+//     {
+//         m_Image->width = decoder.Width();
+//         m_Image->height = decoder.Height();
+//         m_Image->channels = decoder.Channels();
+
+//         m_Image->format = VOID_GL_RGB;
+//         m_Image->type = VOID_GL_FLOAT;
+//     }
+// }
+
+// bool FFmpegPixReader::Read(SharedFrameAudio& buffer)
+// {
+//     AudioDecoder& decoder = AudioDecoder::Instance(m_Path);
+//     // Ensure we have Valid video frame timestamp before reading audio
+//     if (m_Timeframe.Invalid())
+//         decoder.ComputeTimestamp(m_Framenumber, m_Timeframe);
+
+//     return decoder.Decode(m_Framenumber, m_Timeframe, buffer);
+// }
+
+// const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
+// {
+//     std::map<std::string, std::string> m;
+//     AVFormatContext* formatContext = nullptr;
+
+//     if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
+//     {
+//         /* Get Stream info */
+//         if (avformat_find_stream_info(formatContext, nullptr) < 0)
+//         {
+//             avformat_close_input(&formatContext);
+//             return m;
+//         }
+
+//         AVStream* vidStream = nullptr;
+//         int streamId = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+
+//         /* Not found */
+//         if (streamId < 0)
+//         {
+//             avformat_close_input(&formatContext);
+//             return m;
+//         }
+
+//         /* Iterate over all metadata for the file */
+//         AVDictionaryEntry* tag = nullptr;
+//         /* Match the starting component of the key to get the find the tag --> None will match every */
+//         while((tag = av_dict_get(formatContext->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
+//             m[tag->key] = tag->value;
+
+//         vidStream = formatContext->streams[streamId];
+
+//         int endframe = (int)vidStream->nb_frames;
+//         double framerate = av_q2d(vidStream->r_frame_rate);
+//         m["end_frame"] = std::to_string(endframe);
+//         m["duration"] = std::to_string(endframe - m_Startframe + 1);
+//         m["framerate"] = std::to_string(framerate);
+
+//         const AVCodecDescriptor* desc = avcodec_descriptor_get(vidStream->codecpar->codec_id);
+//         m["codec"] = desc->name;
+//         m["codec_long_name"] = desc->long_name ? desc->long_name : "N/A";
+
+//         const AVCodec* codec = avcodec_find_decoder(vidStream->codecpar->codec_id);
+//         m["decoder"] = codec->name;
+
+//         /* Deallocate internals */
+//         avformat_close_input(&formatContext);
+//     }
+
+//     /* Basic Metadata */
+//     m["filepath"] = m_Path;
+//     m["width"] = std::to_string(m_Image->width);
+//     m["height"] = std::to_string(m_Image->height);
+//     m["channels"] = std::to_string(m_Image->channels);
+//     m["start_frame"] = std::to_string(m_Startframe);
+
+//     return m;
+// }
+
+// MediaColor FFmpegPixReader::MediaColorInfo() const
+// {
+//     MediaColor color;
+//     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+//     decoder.MediaColorInfo(color);
+
+//     return color;
+// }
+
+FFmpegMediaReader::FFmpegMediaReader(const std::string& path)
+    : MediaReader(path)
 {
+    ProcessInfo();
 }
 
-FFmpegPixReader::~FFmpegPixReader()
-{
-}
-
-void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image)
+bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, UInt8Image& image)
 {
     FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
-    if (decoder.Decode(frame, image->buffer._buf, m_Timeframe))
+    if (decoder.Decode(framenumber, image->buffer._buf))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -339,54 +507,23 @@ void FFmpegPixReader::ReadThumbnail(const std::string& path, v_frame_t frame, UI
         image->format = VOID_GL_RGB;
 
         // Underlying image specifications
-        m_Image->width = image->width;
-        m_Image->height = image->height;
-        m_Image->channels = image->channels;
-        m_Image->format = VOID_GL_RGB;
+        m_Width = image->width;
+        m_Height = image->height;
+        m_Channels = image->channels;
+
+        // Color info
+        decoder.MediaColorInfo(m_ColorInfo);
+
+        return true;
     }
+
+    return false;
 }
 
-void FFmpegPixReader::ProcessInformation()
+bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, FloatImage& image)
 {
-    if (m_Path.empty())
-        return;
-
-    AVFormatContext* formatContext = nullptr;
-    if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
-    {
-        for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
-        {
-            const AVStream* stream = formatContext->streams[i];
-            if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
-            {
-                m_Duration = (v_frame_t)stream->nb_frames;
-                m_Startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
-                m_Framerate = av_q2d(stream->r_frame_rate);
-                m_Endframe = m_Duration - 1;
-            }
-            else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
-            {
-                m_Samplerate = stream->codecpar->sample_rate;
-                m_AChannels = stream->codecpar->ch_layout.nb_channels;
-            }
-        }
-
-        avformat_close_input(&formatContext);
-    }
-}
-
-MFrameRange FFmpegPixReader::Framerange()
-{
-    if (!m_Duration)
-        ProcessInformation();
-
-    return {m_Startframe, m_Endframe, m_Duration, m_Framerate};
-}
-
-void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage& image)
-{
-    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-    if (decoder.Decode(m_Framenumber, image->buffer._buf, m_Timeframe))
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(path);
+    if (decoder.Decode(framenumber, image->buffer._buf))
     {
         image->width = decoder.Width();
         image->height = decoder.Height();
@@ -394,35 +531,26 @@ void FFmpegPixReader::Read(const std::string& path, v_frame_t frame, FloatImage&
 
         image->format = VOID_GL_RGB;
         image->type = VOID_GL_FLOAT;
+
+        return true;
     }
+
+    return false;
 }
 
-void FFmpegPixReader::Read()
+bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, SharedFrameAudio& buffer)
 {
-    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-    if (decoder.Decode(m_Framenumber, m_Image->buffer._buf, m_Timeframe))
-    {
-        m_Image->width = decoder.Width();
-        m_Image->height = decoder.Height();
-        m_Image->channels = decoder.Channels();
-
-        m_Image->format = VOID_GL_RGB;
-        m_Image->type = VOID_GL_FLOAT;
-    }
-}
-
-bool FFmpegPixReader::Read(SharedFrameAudio& buffer)
-{
+    TimeFrame tf;
     AudioDecoder& decoder = AudioDecoder::Instance(m_Path);
     // Ensure we have Valid video frame timestamp before reading audio
-    if (m_Timeframe.Invalid())
-        decoder.ComputeTimestamp(m_Framenumber, m_Timeframe);
+    decoder.ComputeTimestamp(framenumber, tf);
 
-    return decoder.Decode(m_Framenumber, m_Timeframe, buffer);
+    return decoder.Decode(framenumber, tf, buffer);
 }
 
-const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
+std::map<std::string, std::string> FFmpegMediaReader::Metadata() const
 {
+    /// TODO: Move this inside the decoder as well, as that already has the AVFormatContext open, we don't need to open it again
     std::map<std::string, std::string> m;
     AVFormatContext* formatContext = nullptr;
 
@@ -453,11 +581,9 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
         vidStream = formatContext->streams[streamId];
 
-        int endframe = (int)vidStream->nb_frames;
-        double framerate = av_q2d(vidStream->r_frame_rate);
-        m["end_frame"] = std::to_string(endframe);
-        m["duration"] = std::to_string(endframe - m_Startframe + 1);
-        m["framerate"] = std::to_string(framerate);
+        m["end_frame"] = std::to_string(m_Framerange.endframe);
+        m["duration"] = std::to_string(m_Framerange.duration);
+        m["framerate"] = std::to_string(m_Framerange.duration);
 
         const AVCodecDescriptor* desc = avcodec_descriptor_get(vidStream->codecpar->codec_id);
         m["codec"] = desc->name;
@@ -472,21 +598,41 @@ const std::map<std::string, std::string> FFmpegPixReader::Metadata() const
 
     /* Basic Metadata */
     m["filepath"] = m_Path;
-    m["width"] = std::to_string(m_Image->width);
-    m["height"] = std::to_string(m_Image->height);
-    m["channels"] = std::to_string(m_Image->channels);
-    m["start_frame"] = std::to_string(m_Startframe);
+    m["width"] = std::to_string(m_Width);
+    m["height"] = std::to_string(m_Height);
+    m["channels"] = std::to_string(m_Channels);
+    m["start_frame"] = std::to_string(m_Framerange.startframe);
 
     return m;
 }
 
-MediaColor FFmpegPixReader::MediaColorInfo() const
+void FFmpegMediaReader::ProcessInfo()
 {
-    MediaColor color;
-    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
-    decoder.MediaColorInfo(color);
+    if (m_Path.empty())
+        return;
 
-    return color;
+    AVFormatContext* formatContext = nullptr;
+    if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
+    {
+        for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
+        {
+            const AVStream* stream = formatContext->streams[i];
+            if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
+            {
+                m_Framerange.startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
+                m_Framerange.duration = (v_frame_t)stream->nb_frames;
+                m_Framerange.framerate = av_q2d(stream->r_frame_rate);
+
+                m_Framerange.endframe = m_Framerange.startframe + m_Framerange.duration - 1;
+            }
+            else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+            {
+                m_HasAudio = true;
+            }
+        }
+
+        avformat_close_input(&formatContext);
+    }
 }
 
 VOID_NAMESPACE_CLOSE

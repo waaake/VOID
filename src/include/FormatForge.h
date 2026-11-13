@@ -13,6 +13,7 @@
 /* Internal */
 #include "Definition.h"
 #include "ConformRule.h"
+#include "MediaReader.h"
 #include "PixReader.h"
 #include "PixWriter.h"
 #include "Operator.h"
@@ -24,6 +25,7 @@ using PixForge = std::function<std::unique_ptr<VoidPixReader>(const std::string&
 using MPixForge = std::function<std::unique_ptr<VoidMPixReader>(const std::string&, v_frame_t)>;
 using IOpForge = std::function<std::unique_ptr<ImageOp>()>;
 using PixWriterForge = std::function<std::unique_ptr<PixWriter>(const EncodeSpec&)>;
+using MediaReaderForge = std::function<std::unique_ptr<MediaReader>(const std::string&)>;
 
 /**
  * Registry describing the Plugin
@@ -42,6 +44,12 @@ struct FormatRegistry
 
     /* The Image or Movie Reader to be registered */
     Ty reader;
+};
+
+struct ReaderRegistry
+{
+    std::vector<std::string> extensions;
+    MediaReaderForge reader;
 };
 
 struct WriterRegistry
@@ -86,6 +94,7 @@ public:
     bool Register(const FormatRegistry<MPixForge>& registry);
     bool Register(const IOpRegistry& registry);
     bool Register(const WriterRegistry& registry);
+    bool Register(const ReaderRegistry& registry);
     bool Register(ConformRule* rule);
 
     /* Unregister all of the loaded plugins */
@@ -100,6 +109,7 @@ public:
     std::unique_ptr<VoidMPixReader> GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> MovieReaderAt(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<ImageOp> GetImageOp(const std::string& name) const;
+    std::unique_ptr<MediaReader> GetMediaReader(const std::string& extension, const std::string& path) const;
     std::unique_ptr<PixWriter> GetImageWriter(const std::string& extension, const EncodeSpec& spec) const;
     std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const;
     std::vector<ConformRule*> ConformRules() const { return m_ConformRules; }
@@ -117,9 +127,11 @@ private: /* Members */
     std::unordered_map<std::string, IOpForge> m_IOpForger;
     std::unordered_map<std::string, PixWriterForge> m_ImageWriters;
     std::unordered_map<std::string, PixWriterForge> m_MovieWriters;
+    std::unordered_map<std::string, MediaReaderForge> m_MediaReaders;
     std::vector<ConformRule*> m_ConformRules;
 
 private: /* Methods */
+    void RegisterMediaReader(const std::string& extension, MediaReaderForge forger);
     void RegisterImageReader(const std::string& extension, PixForge forger);
     void RegisterMovieReader(const std::string& extension, MPixForge forger);
     void RegisterImageWriter(const std::string& extension, PixWriterForge forger);

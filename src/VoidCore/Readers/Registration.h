@@ -15,101 +15,39 @@
 #include "OIIOReader.h"
 #include "OpenEXRReader.h"
 #include "FFmpegReader.h"
-// #include "TurboJpegReader.h"
 
 VOID_NAMESPACE_OPEN
 
-/* Registration {{{ */
-struct OIIOReaderPlugin
+namespace Internal {
+
+void RegisterOIIOReader(Forge& registry)
 {
-    OIIOReaderPlugin()
-    {
-        /**
-         * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
-         * We could go for a tolower but the case might have unnecessary copies going for each extension
-         * and for each of the frame that's from the source which looks too expensive at the moment
-         */ 
-        /* Image Registry */
-        FormatRegistry<PixForge> f;
+    ReaderRegistry r;
+    r.extensions = { "tga", "tiff", "dpx", "png", "JPG", "jpg", "jpeg", "JPEG" };
+    r.reader = [](const std::string& path) -> std::unique_ptr<OIIOMediaReader> { return std::make_unique<OIIOMediaReader>(path); };
 
-        f.name = "OIIO Reader";
-        /**
-         * OIIO supports multiple formats
-         * internally reading from original library functions
-         * Using this as the base Image Reader
-         * If at any point we want to have a dedicated original library based reader, that could also be implemented
-         * as a custom plugin
-         */
-        f.extensions = { "tga", "tiff", "dpx", "png", "JPG", "jpg", "jpeg", "JPEG" };
-        /* OpenImageIO Reader */
-        f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<OIIOPixReader> { return std::make_unique<OIIOPixReader>(path, framenumber); };
+    registry.Register(r);
+}
 
-        /* Register Plugin */
-        Forge::Instance().Register(f);
-    }
-};
-
-struct OpenEXRReaderPlugin
+void RegisterOpenEXRReader(Forge& registry)
 {
-    OpenEXRReaderPlugin()
-    {
-        /* exr */
-        // Forge::Instance().RegisterImageReader("exr", []() { return std::make_unique<OpenEXRReader>(); });
+    ReaderRegistry r;
+    r.extensions = { "exr" };
+    r.reader = [](const std::string& path) -> std::unique_ptr<OpenEXRMediaReader> { return std::make_unique<OpenEXRMediaReader>(path); };
 
-        /* Image Registry */
-        FormatRegistry<PixForge> f;
+    registry.Register(r);
+}
 
-        f.name = "EXR Reader";
-        f.extensions = { "exr" };
-        /* Open EXR Reader*/
-        f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<OpenEXRReader> { return std::make_unique<OpenEXRReader>(path, framenumber); };
-
-        /* Register Plugin */
-        Forge::Instance().Register(f);
-    }
-};
-
-struct FFmpegReaderPlugin
+void RegisterFFmpegReader(Forge& registry)
 {
-    FFmpegReaderPlugin()
-    {
-        /* Movie Registry */
-        FormatRegistry<MPixForge> f;
+    ReaderRegistry r;
+    r.extensions = { "mp4", "mov", "MOV" };
+    r.reader = [](const std::string& path) -> std::unique_ptr<FFmpegMediaReader> { return std::make_unique<FFmpegMediaReader>(path); };
 
-        f.name = "FFmpeg Reader";
-        f.extensions = { "mp4", "mov", "MOV" };
-        /* FFmpeg Reader */
-        f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<FFmpegPixReader> { return std::make_unique<FFmpegPixReader>(path, framenumber); };
+    registry.Register(r);
+}
 
-        /* Register Plugin */
-        Forge::Instance().Register(f);
-    }
-};
-
-// struct TurboJpegReaderPlugin
-// {
-//     TurboJpegReaderPlugin()
-//     {
-//         /**
-//          * For now Going with all types of formats separately like "jpg" and "JPG" differ in cases
-//          * We could go for a tolower but the case might have unnecessary copies going for each extension
-//          * and for each of the frame that's from the source which looks too expensive at the moment
-//          */ 
-//         /* Image Registry */
-//         FormatRegistry<PixForge> f;
-
-//         f.name = "Turbo JPEG Reader";
-//         /**
-//          * Support all known extension types for Lossy jpeg
-//          */
-//         f.extensions = { "JPG", "jpg", "jpeg", "JPEG" };
-//         /* Turbo JPEG Reader */
-//         f.reader = [](const std::string& path, v_frame_t framenumber = 0) -> std::unique_ptr<TurboJpegReader> { return std::make_unique<TurboJpegReader>(path, framenumber); };
-
-//         /* Register Plugin */
-//         Forge::Instance().Register(f);
-//     }
-// };
+} // namesapce Internal
 
 /**
  * Register Inbuilt Media Readers
@@ -119,17 +57,11 @@ struct FFmpegReaderPlugin
  */
 void RegisterReaders()
 {
-    /* Register OIIO Reader */
-    OIIOReaderPlugin o;
-
-    /* Register OpenEXR Reader */
-    OpenEXRReaderPlugin openx;
-
-    /* FFmpeg Reader */
-    FFmpegReaderPlugin f;
-
-    // /* Turbo JPEG Reader */
-    // TurboJpegReaderPlugin t;
+    Forge& registry = Forge::Instance();
+    
+    Internal::RegisterOIIOReader(registry);
+    Internal::RegisterOpenEXRReader(registry);
+    Internal::RegisterFFmpegReader(registry);
 }
 
 VOID_NAMESPACE_CLOSE

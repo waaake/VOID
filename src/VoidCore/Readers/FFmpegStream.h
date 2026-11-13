@@ -43,6 +43,11 @@ public:
     AVMediaType Type() const { return m_CodecContext->codec->type; }
     int Index() const { return m_Index; }
 
+    v_frame_t Startframe() const { return (v_frame_t)av_rescale_q(m_Stream->start_time, m_Stream->time_base, av_inv_q(m_Stream->r_frame_rate)); }
+    v_frame_t Duration() const { return (v_frame_t)m_Stream->nb_frames; }
+    double PlaybackFramerate() const { return av_q2d(m_Stream->r_frame_rate); }
+
+
     int Width() const { return m_CodecContext->width; }
     int Height() const { return m_CodecContext->height; }
     int Channels() const { return 3; }

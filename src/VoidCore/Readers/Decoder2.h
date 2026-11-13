@@ -1,6 +1,9 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+#ifndef _FFMPEG_DECODER_2_H
+#define _FFMPEG_DECODER_2_H
+
 /* STD */
 #include <atomic>
 #include <mutex>
@@ -25,9 +28,15 @@ public:
 
     static FFmpegDecoder2& Instance(const std::string& path);
 
+    v_frame_t Startframe() const { return m_VideoStream->Startframe(); }
+    v_frame_t Duration() const { return m_VideoStream->Duration(); }
+    double Framerate() const { return m_VideoStream->PlaybackFramerate(); }
+
     int Width() const { return m_VideoStream->Width(); }
     int Height() const { return m_VideoStream->Height(); }
     int Channels() const { return m_VideoStream->Channels(); }
+
+    bool HasAudio() const { return (bool)m_AudioStream; }
 
     void MediaColorInfo(MediaColor& color) const;
 
@@ -35,8 +44,8 @@ public:
 
     bool ComputeTimestamp(v_frame_t framenumber, TimeFrame& timeframe) const;
     bool FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe);
-    bool Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe);
-    bool Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe);
+    bool Decode(v_frame_t framenumber, std::vector<float>& buffer);
+    bool Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer);
     bool Decode(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
 private:
@@ -69,8 +78,8 @@ private:
     void StoreAudioBuffer(FFmpegStream* stream);
 
     bool TryCached(v_frame_t framenumber, TimeFrame& timeframe, int preferred = -1);
-    bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred = -1);
-    bool TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred = -1);
+    bool TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, int preferred = -1);
+    bool TryCached(v_frame_t framenumber, std::vector<float>& out, int preferred = -1);
     bool TryCached(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
 
     bool ConvertAudio(v_frame_t framenumber, const TimeFrame& timeframe, SharedFrameAudio& buffer);
@@ -121,3 +130,5 @@ private:
 };
 
 VOID_NAMESPACE_CLOSE
+
+#endif // _FFMPEG_DECODER_2_H

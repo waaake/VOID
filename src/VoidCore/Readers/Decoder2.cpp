@@ -128,10 +128,10 @@ bool FFmpegDecoder2::FetchTimestamp(v_frame_t framenumber, TimeFrame& timeframe)
     return false;
 }
 
-bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, TimeFrame& timeframe)
+bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    if (TryCached(framenumber, buffer, timeframe))
+    if (TryCached(framenumber, buffer))
         return true;
 
     /// If we want to decode backwards
@@ -160,16 +160,16 @@ bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<float>& buffer, T
     }
 
     // Check now if we have frame
-    if (TryCached(framenumber, buffer, timeframe, m_LastCacheIndex))
+    if (TryCached(framenumber, buffer, m_LastCacheIndex))
         return true;
 
     /// Could not decode the requested frame
     return false;
 }
 
-bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer, TimeFrame& timeframe)
+bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<unsigned char>& buffer)
 {
-    if (TryCached(framenumber, buffer, timeframe))
+    if (TryCached(framenumber, buffer))
         return true;
 
     while (m_LastDecoded < framenumber)
@@ -183,7 +183,7 @@ bool FFmpegDecoder2::Decode(v_frame_t framenumber, std::vector<unsigned char>& b
     }
 
     // Check now if we have frame with a preferred index
-    if (TryCached(framenumber, buffer, timeframe, m_LastCacheIndex))
+    if (TryCached(framenumber, buffer, m_LastCacheIndex))
         return true;
 
     /// Could not decode the requested frame
@@ -386,7 +386,7 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, TimeFrame& timeframe, int 
     return false;
 }
 
-bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, TimeFrame& timeframe, int preferred)
+bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>& out, int preferred)
 {
     if (preferred > -1)
     {
@@ -394,10 +394,6 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>
         if (frame.framenumber == framenumber)
         {
             out = frame.buffer;
-
-            timeframe.duration = frame.duration;
-            timeframe.pts = frame.pts;
-            timeframe.timebase = frame.timebase;
             return true;
         }
     }
@@ -407,10 +403,6 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>
         if (entry.framenumber == framenumber)
         {
             out = entry.buffer;
-
-            timeframe.duration = entry.duration;
-            timeframe.pts = entry.pts;
-            timeframe.timebase = entry.timebase;
             return true;
         }
     }
@@ -418,7 +410,7 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<unsigned char>
     return false;
 }
 
-bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, TimeFrame& timeframe, int preferred)
+bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, int preferred)
 {
     if (preferred > -1)
     {
@@ -426,9 +418,6 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, T
         if (frame.framenumber == framenumber)
         {
             FillBuffer(frame.buffer, out);
-            timeframe.duration = frame.duration;
-            timeframe.pts = frame.pts;
-            timeframe.timebase = frame.timebase;
             return true;
         }
     }
@@ -445,9 +434,6 @@ bool FFmpegDecoder2::TryCached(v_frame_t framenumber, std::vector<float>& out, T
         if (entry.framenumber == framenumber)
         {
             FillBuffer(entry.buffer, out);
-            timeframe.duration = entry.duration;
-            timeframe.pts = entry.pts;
-            timeframe.timebase = entry.timebase;
             return true;
         }
     }

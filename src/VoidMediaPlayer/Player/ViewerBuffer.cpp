@@ -225,7 +225,7 @@ BufferData ViewerBuffer::MData(const v_frame_t frame, bool nearest)
         default:
             if (m_Clip->Valid() && m_Clip->Contains(frame))
             {
-                d.image = m_Clip->Evaluate(frame);
+                d.image = m_Clip->Image(frame);
                 d.annotation = m_Clip->Annotation(frame);
             }
     }
@@ -248,7 +248,7 @@ MediaDesc::RenderBuffer ViewerBuffer::RenderData(const v_frame_t frame, bool nea
         default:
             if (m_Clip->Valid() && m_Clip->Contains(frame))
             {
-                b.image = m_Clip->Evaluate(frame);
+                b.image = m_Clip->Image(frame);
                 b.audio = m_AudioBuffer.At(frame);
                 b.annotation = m_Clip->Annotation(frame);
             }

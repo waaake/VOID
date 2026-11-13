@@ -20,8 +20,10 @@ extern "C" {
 
 /* Internal */
 #include "Definition.h"
-#include "PixReader.h"
 #include "DecDefs.h"
+#include "MediaReader.h"
+// #include "PixReader.h"
+#include "Decoder2.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -29,9 +31,9 @@ VOID_NAMESPACE_OPEN
 // {
 // public:
 //     static FFmpegDecoder& Instance(const std::string& path);
-        
+
 //     FFmpegDecoder();
-//     ~FFmpegDecoder();    
+//     ~FFmpegDecoder();
 
 //     FFmpegDecoder(const FFmpegDecoder&) = delete;
 //     FFmpegDecoder(FFmpegDecoder&&) = delete;
@@ -87,43 +89,70 @@ VOID_NAMESPACE_OPEN
 //     inline static float Linear(float pixel) { return (pixel <= 0.04045f) ? pixel / 12.92f : powf((pixel + 0.055f) / 1.055f, 2.4f); }
 // };
 
-class VOID_API FFmpegPixReader : public VoidMPixReader
+// class VOID_API FFmpegPixReader : public VoidMPixReader
+// {
+// public:
+//     FFmpegPixReader(const std::string& path, v_frame_t framenumber = 0);
+//     ~FFmpegPixReader();
+
+//     void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
+//     void Read() override;
+//     bool Read(SharedFrameAudio& buffer) override;
+//     void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
+//     void Clear() override { m_Image->Clear(); }
+
+//     MFrameRange Framerange() override;
+//     const std::map<std::string, std::string> Metadata() const override;
+
+//     MediaColor MediaColorInfo() const override;
+
+//     int AudioChannels() const override { return m_AChannels; }
+//     int Samplerate() const override { return m_Samplerate; }
+
+// private: /* Members */
+//     TimeFrame m_Timeframe;
+//     int m_AChannels;
+//     int m_Samplerate;
+
+//     // Media timeline information
+//     v_frame_t m_Startframe;
+//     v_frame_t m_Endframe;
+//     v_frame_t m_Duration;
+//     double m_Framerate;
+
+// private: /* Methods */
+//     /**
+//      * Processes the basic media information like framerate,
+//      * start and end frames and anything additional that could describe the media
+//      */
+//     void ProcessInformation();
+// };
+
+class VOID_API FFmpegMediaReader : public MediaReader
 {
 public:
-    FFmpegPixReader(const std::string& path, v_frame_t framenumber = 0);
-    ~FFmpegPixReader();
+    // using MediaReader::MediaReader;
+    FFmpegMediaReader(const std::string& path);
 
-    void Read(const std::string& path, v_frame_t frame, FloatImage& image) override;
-    void Read() override;
-    bool Read(SharedFrameAudio& buffer) override;
-    void ReadThumbnail(const std::string& path, v_frame_t frame, UInt8Image& image) override;
-    void Clear() override { m_Image->Clear(); }
+    bool Read(const std::string& path, v_frame_t framenumber, UInt8Image& image) override;
+    bool Read(const std::string& path, v_frame_t framenumber, FloatImage& image) override;
+    bool Read(const std::string& path, v_frame_t framenumber, SharedFrameAudio& buffer) override;
 
-    MFrameRange Framerange() override;
-    const std::map<std::string, std::string> Metadata() const override;
+    MediaColor* ColorInfo() override { return &m_ColorInfo; }
 
-    MediaColor MediaColorInfo() const override;
+    /// Only reads images
+    bool IsMovieFormat() const override { return true; }
+    bool HasAudio() const override { return m_HasAudio; }
+    MFrameRange Framerange() const override { return m_Framerange; }
+    std::map<std::string, std::string> Metadata() const override;
 
-    int AudioChannels() const override { return m_AChannels; }
-    int Samplerate() const override { return m_Samplerate; }
+private:
+    MediaColor m_ColorInfo;
+    MFrameRange m_Framerange;
+    bool m_HasAudio;
 
-private: /* Members */
-    TimeFrame m_Timeframe;
-    int m_AChannels;
-    int m_Samplerate;
-
-    // Media timeline information
-    v_frame_t m_Startframe;
-    v_frame_t m_Endframe;
-    v_frame_t m_Duration;
-    double m_Framerate;
-
-private: /* Methods */
-    /**
-     * Processes the basic media information like framerate,
-     * start and end frames and anything additional that could describe the media
-     */
-    void ProcessInformation();
+private:
+    void ProcessInfo();
 };
 
 VOID_NAMESPACE_CLOSE
