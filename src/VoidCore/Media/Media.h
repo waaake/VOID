@@ -129,7 +129,7 @@ protected: /* Members */
     std::vector<Frame> m_Frames;
     ElementTokens m_Tokens;
 
-    MediaReader* m_Reader;
+    MediaReader* m_Reader = nullptr;
 
     v_frame_t m_FirstFrame, m_LastFrame;
     std::size_t m_Framesize;
