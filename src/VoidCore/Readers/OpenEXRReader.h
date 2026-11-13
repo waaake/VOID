@@ -39,7 +39,8 @@ public:
     MediaColor* ColorInfo() override { return &m_ColorInfo; }
 
     /// Only reads images
-    bool IsMovieFormat() const { return false; }
+    bool IsMovieFormat() const override { return false; }
+    bool IsMultiPart() const override { return true; }
     std::map<std::string, std::string> Metadata() const override;
 
 private:
