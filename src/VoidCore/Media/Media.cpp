@@ -65,11 +65,11 @@ Media::Media(const std::string& basepath,
 
 Media::~Media()
 {
-    // if (m_Reader)
-    // {
-    //     delete m_Reader;
-    //     m_Reader = nullptr;
-    // }
+    if (m_Reader)
+    {
+        delete m_Reader;
+        m_Reader = nullptr;
+    }
 }
 
 v_frame_t Media::NearestFrame(const v_frame_t frame) const
@@ -135,18 +135,16 @@ void Media::ProcessSequence()
 
     m_Frames.resize(frange.duration);
 
+    /**
+     * Index here is basically the distance between the current frame being processed
+     * and the start frame, this is how we actually want the data to always be layed out
+     * meaning that the frames are always ordered and correspond to the distance between the frames
+     * 
+     * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
+     * will be 1010 - 1001 = 9
+     */
     for (const MEntry& e : m_MediaStruct)
-    {
-        /**
-         * Index here is basically the distance between the current frame being processed
-         * and the start frame, this is how we actually want the data to always be layed out
-         * meaning that the frames are always ordered and correspond to the distance between the frames
-         * 
-         * e.g. if we need frame 1010 and the start frame is 1001, we know that the index to look at
-         * will be 1010 - 1001 = 9
-         */
         m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, m_Reader, e.Framenumber()));
-    }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
     m_Tokens = m_MediaStruct.Tokens();
@@ -168,9 +166,7 @@ void Media::ProcessMovie()
     m_LastFrame = frange.endframe;
 
     for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
-    {
         m_Frames[counter] = std::move(Frame(entry, m_Reader, i));
-    }
 
     m_Type = Media::Type::MOVIE;
     m_Tokens = m_MediaStruct.Tokens();
