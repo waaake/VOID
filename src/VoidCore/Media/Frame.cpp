@@ -11,7 +11,7 @@ VOID_NAMESPACE_OPEN
 
 Frame::Frame()
     : m_Reader(nullptr)
-    , m_Image(nullptr)
+    , m_Image(VOID_NAMESPACE::Image<float>::Create())
 {
 }
 
@@ -62,6 +62,13 @@ Frame& Frame::operator=(const Frame& other)
     }
 
     return *this;
+}
+
+void Frame::Reset(const MEntry& e, MediaReader* reader, v_frame_t frame)
+{
+    m_Entry = e;
+    m_Reader = reader;
+    m_Framenumber = frame;
 }
 
 void Frame::Image(FloatImage& image)

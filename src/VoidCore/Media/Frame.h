@@ -37,6 +37,8 @@ public:
     Frame(const Frame& other);
     Frame& operator=(const Frame& other);
 
+    void Reset(const MEntry& e, MediaReader* reader, v_frame_t frame);
+
     // Entry Attribs
     inline const std::string& Path() const { return m_Entry.Fullpath(); }
     inline const std::string& Name() const { return m_Entry.Name(); }

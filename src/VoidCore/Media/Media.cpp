@@ -144,7 +144,10 @@ void Media::ProcessSequence()
      * will be 1010 - 1001 = 9
      */
     for (const MEntry& e : m_MediaStruct)
-        m_Frames[e.Framenumber() - m_FirstFrame] = std::move(Frame(e, m_Reader, e.Framenumber()));
+    {
+        Frame& f = m_Frames[e.Framenumber() - m_FirstFrame];
+        f.Reset(e, m_Reader, e.Framenumber());
+    }
 
     m_Type = Media::Type::IMAGE_SEQUENCE;
     m_Tokens = m_MediaStruct.Tokens();
@@ -166,7 +169,10 @@ void Media::ProcessMovie()
     m_LastFrame = frange.endframe;
 
     for (v_frame_t i = frange.startframe, counter = 0; counter < frange.duration; ++i, ++counter)
-        m_Frames[counter] = std::move(Frame(entry, m_Reader, i));
+    {
+        Frame& f = m_Frames[counter];
+        f.Reset(entry, m_Reader, i);
+    }
 
     m_Type = Media::Type::MOVIE;
     m_Tokens = m_MediaStruct.Tokens();
