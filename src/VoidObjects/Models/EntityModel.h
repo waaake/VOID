@@ -39,6 +39,7 @@ public:
         Channels,
         Snapshots,
         Type,
+        MultiPart,
         ElementName,
         VersionName,
         Version

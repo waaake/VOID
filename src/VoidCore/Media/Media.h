@@ -115,6 +115,7 @@ public:
 
     inline bool Empty() const { return m_MediaStruct.Empty(); }
     inline bool Valid() const { return m_Type != Media::Type::UNDEFINED; }
+    inline bool IsMultiPart() const { return m_Reader->IsMultiPart(); }
     
     inline const std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
     void SetDirty(bool dirty = true);

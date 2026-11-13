@@ -79,6 +79,7 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Channels: return item->Channels();
             case MRoles::Snapshots: return 0;
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::MEDIA);
+            case MRoles::MultiPart: return item->IsMultiPart();
             case MRoles::ElementName: return item->Tokens().name.c_str();
             case MRoles::VersionName: return item->Tokens().version.c_str();
             case MRoles::Version: return item->Tokens().vnum;
@@ -103,6 +104,7 @@ QVariant EntityModel::data(const QModelIndex& index, int role) const
             case MRoles::Channels: return sequence->Channels();
             case MRoles::Snapshots: return sequence->NumSnapshots();
             case MRoles::Type: return static_cast<int>(ProjectEntity::Type::SEQUENCE);
+            case MRoles::MultiPart: return false;
             case MRoles::ElementName: return QVariant();
             case MRoles::VersionName: return QVariant();
             case MRoles::Version: return 0;

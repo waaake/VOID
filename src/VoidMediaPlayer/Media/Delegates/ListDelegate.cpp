@@ -260,6 +260,7 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
     const bool tags = index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool();
+    const bool multipart = index.data(static_cast<int>(EntityModel::MRoles::MultiPart)).toBool();
 
     const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
@@ -287,6 +288,12 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
         IconType::icon_style,
         tags ? option.palette.color(QPalette::Text) : lighter2,
+        ICON_SIZE
+    ));
+
+    painter->drawPixmap(QPoint(m_TagX, m_TagY + ICON_SIZE + 4), IconForge::GetPixmap(
+        IconType::icon_photo_library,
+        multipart ? option.palette.color(QPalette::Text) : lighter2,
         ICON_SIZE
     ));
 
