@@ -7,6 +7,7 @@
 /* STD */
 #include <map>
 #include <string>
+#include <vector>
 
 /* Internal */
 #include "Definition.h"
@@ -56,6 +57,13 @@ public:
     /// @brief Returns whether the File format supported by this reader is a movie or a single image file.
     /// @return false The image/frame is a physical image file.
     virtual bool IsMovieFormat() const = 0;
+
+    /// @brief Returns whether the given media input is multi part? Applies to EXRs
+    /// @return true if the exr media is multi part, else false.
+    virtual bool IsMultiPart() const { return false; }
+
+    /// @brief Returns the names of the parts available in the input.
+    virtual std::vector<std::string> Parts() const { return {}; }
 
     // /// @brief Returns a samplerate if the media path has audio samples.
     // /// @return 0 if no audio can be read from the media, else the media samplerate
