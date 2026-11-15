@@ -36,15 +36,13 @@ public:
     bool Read(const std::string& path, v_frame_t framenumber, UInt8Image& image) override;
     bool Read(const std::string& path, v_frame_t framenumber, FloatImage& image) override;
 
-    MediaColor* ColorInfo() override { return &m_ColorInfo; }
-
     /// Only reads images
     bool IsMovieFormat() const override { return false; }
-    bool IsMultiPart() const override { return true; }
+    void FetchInfo() override;
     std::map<std::string, std::string> Metadata() const override;
 
 private:
-    MediaColor m_ColorInfo;
+    void FetchLayers();
 };
 
 VOID_NAMESPACE_CLOSE

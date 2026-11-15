@@ -167,6 +167,122 @@ void SortChannels(std::vector<std::string>& channels)
     }
 }
 
+bool GetDefaultStream(const Imf::Header& header, std::string& layer, std::vector<std::string>& readableChannels)
+{
+    const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    if (streams.empty())
+        return false;
+
+    auto _readChannels = [&channels] (const std::string& stream, std::string& layer, std::vector<std::string>& rchannels) -> void
+    {
+        rchannels.clear();
+        rchannels = channels.at(stream);
+
+        if (rchannels.empty()) return;
+        SortChannels(rchannels);
+        layer = stream;
+    };
+
+    for (const auto& stream : streams)
+    {
+        if (stream == "RGBA")
+        {
+            _readChannels(stream, layer, readableChannels);
+            return true;
+        }
+    }
+
+    // Could not find RGBA as the layer name - going with the first available
+    _readChannels(streams[0], layer, readableChannels);
+    return true;
+}
+
+bool GetChannels(const Imf::Header& header, const std::string& layer, std::vector<std::string>& readableChannels)
+{
+    const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    for (const auto& stream : streams)
+    {
+        if (stream == layer)
+        {
+            readableChannels.clear();
+            readableChannels = channels.at(stream);
+
+            if (readableChannels.empty()) return false;
+            SortChannels(readableChannels);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool GetRGBAStream(const Imf::Header& header, std::vector<std::string>& readableChannels)
+{
+    const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    for (const auto& stream : streams)
+    {
+        if (stream == "RGBA")
+        {
+            readableChannels.clear();
+            readableChannels = channels.at(stream);
+
+            if (readableChannels.empty())
+                break;
+
+            SortChannels(readableChannels);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// int DefaultPart(const Imf::MultiPartInputFile& input, std::vector<std::string>& readableChannels)
+// {
+//     int parts = input.parts();
+//     if (!parts)
+//         return -1;
+
+
+//     for (int i = 0; i < parts; ++i)
+//     {
+//         if (GetDefaultStream(input.header(i), readableChannels))
+//             return i;
+//         // const Imf::Header& header = input.header(i);
+
+//         // const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+//         // const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+//         // for (const auto& stream : streams)
+//         // {
+//         //     if (stream == "RGBA")
+//         //     {
+//         //         readableChannels.clear();
+//         //         readableChannels = channels.at(stream);
+
+//         //         if (readableChannels.empty())
+//         //             break;
+
+//         //         SortChannels(readableChannels);
+
+//         //         // index = i;
+//         //         break;
+//         //     }
+//         // }
+
+//         // // if (index >= 0)
+//         // //     break;
+//     }
+
+//     return -1;
+// }
+
 /// Read a scanline part directly into an interleaved float buffer
 ///
 /// Output layout:
@@ -184,8 +300,33 @@ bool ReadInterleaved(Imf::InputPart& part, const std::vector<std::string>& chann
 
     const size_t channels = channelNames.size();
 
+    image->type = VOID_GL_FLOAT;
     image->channels = static_cast<int>(channels);
-    image->format = image->channels == 3 ? VOID_GL_RGB : VOID_GL_RGBA;
+    // image->format = image->channels == 3 ? VOID_GL_RGB : VOID_GL_RGBA;
+
+    switch (channels)
+    {
+        case 1:
+            image->format = VOID_GL_R32F;
+            image->pixfmt = VOID_GL_RED;
+            break;
+        case 2:
+            image->format = VOID_GL_RG32F;
+            image->pixfmt = VOID_GL_RG;
+            break;
+        case 3:
+            image->format = VOID_GL_RGB;
+            image->pixfmt = VOID_GL_RGB;
+            break;
+        case 4:
+        default:
+            image->format = VOID_GL_RGBA;
+            image->pixfmt = VOID_GL_RGBA;
+            break;
+    }
+
+    // image->format = VOID_GL_R32F;
+    // image->pixfmt = VOID_GL_RED;
 
     if (image->width > std::numeric_limits<int>::max() / image->height)
     {
@@ -551,22 +692,6 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, UI
     const Imf::Header& header = f.header();
     const Imf::ChannelList& channels = header.channels();
 
-    m_ColorInfo.colorspace = Colorspace::LinearRec709; // Default
-    /// Need some more insight on reading exact colorspaces from EXR versions lesser than 3.4
-    const Imf::IntAttribute* acesf = header.findTypedAttribute<Imf::IntAttribute>("acesImageContainerFlag");
-    if (acesf)
-    {
-        if (acesf->value() == 1)
-        {
-            m_ColorInfo.colorspace = Colorspace::ACES2065_1;
-            m_ColorInfo.transfer = TransferFunction::Linear;
-
-            m_ColorInfo.name = "ACES2065-1";
-        }
-
-        m_ColorInfo.colorspaceMetadata = true;
-    }
-
     // /*
     //  * TODO: Check if we have a better way of reading channels rather than iterating here ?
     //  * Update the channel count by reading the channels
@@ -576,11 +701,6 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, UI
 
     // Force 4 Channels
     image->channels = 4;
-
-    // Image Specs
-    m_Width = image->width;
-    m_Height = image->height;
-    m_Channels = image->channels;
 
     // VOID_LOG_INFO("EXRImage ( Width: {0}, Height: {1}, Channels: {2} )", image->width, image->height, image->channels);
 
@@ -616,42 +736,74 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, Fl
 {
     Imf::MultiPartInputFile input(path.c_str());
 
-    int index = -1;
+    // int index = -1;
     std::vector<std::string> channelsToLoad;
+    const int parts = input.parts();
+    if (!parts)
+        return false;
 
-    for (int i = 0; i < input.parts(); ++i)
+    // for (int i = 0; i < input.parts(); ++i)
+    // {
+    //     const Imf::Header& header = input.header(i);
+
+    //     const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    //     const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    //     VOID_LOG_INFO("Part: {} -- {}", i, header.name());
+
+    //     for (const auto& stream : streams)
+    //     {
+    //         VOID_LOG_INFO("Stream: {}", stream);
+    //         if (stream == "RGBA")
+    //         {
+    //             channelsToLoad.clear();
+    //             channelsToLoad = channels.at(stream);
+
+    //             if (channelsToLoad.empty())
+    //                 break;
+
+    //             SortChannels(channelsToLoad);
+
+    //             index = i;
+    //             break;
+    //         }
+    //     }
+
+    //     if (index >= 0)
+    //         break;
+    // }
+    // int index = DefaultPart(input, channelsToLoad);
+    // if (index < 0)
+    // {
+    //     VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
+    //     return false;
+    // }
+    // int index = 7;
+    // const Imf::Header& h = input.header(index);
+    // GetDefaultStream(h, channelsToLoad);
+
+    int index = 0;
+    if (m_Format.layer.empty())
     {
-        const Imf::Header& header = input.header(i);
-
-        const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
-        const std::vector<std::string> streams = HeaderStreams(header, channels);
-
-        for (const auto& stream : streams)
+        GetDefaultStream(input.header(index), m_Format.layer, channelsToLoad);
+    }
+    else
+    {
+        for (int i = 0; i < parts; ++i)
         {
-            if (stream == "RGBA")
+            if (GetChannels(input.header(i), m_Format.layer, channelsToLoad))
             {
-                channelsToLoad.clear();
-                channelsToLoad = channels.at(stream);
-
-                if (channelsToLoad.empty())
-                    break;
-
-                SortChannels(channelsToLoad);
-
                 index = i;
                 break;
             }
         }
-
-        if (index >= 0)
-            break;
     }
 
-    if (index < 0)
-    {
-        VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
-        return false;
-    }
+    
+    // VOID_LOG_INFO("Header: {}", h.name());
+    VOID_LOG_INFO("Stream: {}", m_Format.layer);
+    for (const auto& channel : channelsToLoad)
+        VOID_LOG_INFO("Channel: {}", channel);
 
     if (channelsToLoad.empty() || channelsToLoad.size() > 4)
     {
@@ -659,7 +811,6 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, Fl
         return false;
     }
 
-    image->type = VOID_GL_FLOAT;
     Imf::InputPart part(input, index);
 
     // Read Success
@@ -670,6 +821,44 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, Fl
     /// Better is that we clear the image buffer in that case
     image->Clear();
     return false;
+}
+
+void OpenEXRMediaReader::FetchInfo()
+{
+    Imf::MultiPartInputFile f(m_Path.c_str());
+    const int parts = f.parts();
+
+    const Imf::Header& header = f.header(0);
+    const Imath::Box2i dw = header.dataWindow();
+
+    m_Format.SetResolution((dw.max.x - dw.min.x) + 1, (dw.max.y - dw.min.y) + 1);
+
+    for (int i = 0; i < parts; ++i)
+    {
+        const Imf::Header& h = f.header(i);
+        auto chan = HeaderChannels(h);
+        m_Format.channels += static_cast<int>(chan.size());
+        std::vector<std::string> streams = HeaderStreams(h, std::move(chan));
+
+        m_Format.layers.reserve(m_Format.layers.size() + streams.size());
+        m_Format.layers.insert(m_Format.layers.end(), std::make_move_iterator(streams.begin()), std::make_move_iterator(streams.end()));
+    }
+
+    m_Format.color.colorspace = Colorspace::LinearRec709; // Default
+    /// Need some more insight on reading exact colorspaces from EXR versions lesser than 3.4
+    const Imf::IntAttribute* acesf = header.findTypedAttribute<Imf::IntAttribute>("acesImageContainerFlag");
+    if (acesf)
+    {
+        if (acesf->value() == 1)
+        {
+            m_Format.color.colorspace = Colorspace::ACES2065_1;
+            m_Format.color.transfer = TransferFunction::Linear;
+
+            m_Format.color.name = "ACES2065-1";
+        }
+
+        m_Format.color.colorspaceMetadata = true;
+    }
 }
 
 std::map<std::string, std::string> OpenEXRMediaReader::Metadata() const
@@ -740,6 +929,11 @@ std::map<std::string, std::string> OpenEXRMediaReader::Metadata() const
     }
 
     return m;
+}
+
+void OpenEXRMediaReader::FetchLayers()
+{
+    
 }
 
 VOID_NAMESPACE_CLOSE
