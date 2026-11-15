@@ -67,7 +67,7 @@ void ImageRenderLayer::Initialize()
 void ImageRenderLayer::ReinitBuffer(const FloatImage& image)
 {
     /* Init the bound tex with null image for Tex*/
-    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->pixfmt, image->type, nullptr);
     m_InternalFormat = image->InternalFormat();
 
     /* Re-alloc the pixel buffer as the texture size has changed */
@@ -101,7 +101,7 @@ void ImageRenderLayer::SetImage(const FloatImage& image)
     // VOID_LOG_INFO("Size: {0}, FrameSize: {1}", size, image->FrameSize());
     // assert(size >= image->FrameSize());
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->format, image->type, 0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->pixfmt, image->type, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
