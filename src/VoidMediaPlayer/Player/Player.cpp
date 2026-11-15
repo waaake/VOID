@@ -245,6 +245,11 @@ void Player::ResetPlaylistMedia()
     }
 }
 
+void Player::ResetLayer(const std::string& layer)
+{
+    m_ActiveViewBuffer->ResetLayer(layer);
+}
+
 void Player::Connect()
 {
     // Timeline

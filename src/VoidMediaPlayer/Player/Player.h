@@ -42,6 +42,8 @@ public:
     void SetGrid(Playlist* playlist);
     void ResetPlaylistMedia();
 
+    void ResetLayer(const std::string& layer);
+
     void SetVolume(int volume);
 
     void RenderCurrentFrame();

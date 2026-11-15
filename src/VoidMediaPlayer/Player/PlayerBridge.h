@@ -62,6 +62,7 @@ public:
     void SetVolume(int volume) { m_Player->SetVolume(volume); }
 
     inline void ResetPlaylistMedia() { m_Player->ResetPlaylistMedia(); }
+    inline void ResetMediaLayer(const std::string& layer) { m_Player->ResetLayer(layer); }
 
     inline void ResumeCache() { m_Player->ResumeCache(); }
     inline void DisableCache() { m_Player->DisableCache(); }
