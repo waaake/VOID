@@ -218,47 +218,6 @@ bool OIIOMediaReader::Read(const std::string& path, v_frame_t framenumber, UInt8
     input->read_image(0, 0, 0, image->channels, OIIO::TypeDesc::UINT8, image->Writable());
     input->close();
 
-    /// Update the internals as well here
-    /// This method is called for Thumbnail
-    m_Width = spec.width;
-    m_Height = spec.height;
-    m_Channels = spec.nchannels;
-
-    /// Color specs
-    std::string_view colorspace = spec.get_string_attribute("oiio:ColorSpace");
-    if (!colorspace.empty())
-    {
-        // VOID_LOG_INFO("Colorspace: {}", colorspace);
-        if (colorspace == "sRGB")
-            m_ColorInfo.colorspace = Colorspace::SRGB;
-        else if (colorspace == "Rec709")
-            m_ColorInfo.colorspace = Colorspace::Rec709;
-        else if (colorspace == "AdobeRGB")
-            m_ColorInfo.colorspace = Colorspace::AdobeRGB;
-        else if (colorspace == "ACEScg" || colorspace == "lin_ap1_scene")
-            m_ColorInfo.colorspace = Colorspace::ACEScg;
-        else if (colorspace == "lin_ap0_scene")
-            m_ColorInfo.colorspace = Colorspace::ACES2065_1;
-        else if (colorspace == "lin_rec709" || colorspace == "lin_rec709_scene" || colorspace == "Linear")
-            m_ColorInfo.colorspace = Colorspace::LinearRec709;
-        else
-            m_ColorInfo.colorspace = Colorspace::Custom;
-    }
-
-    const OIIO::ParamValue* icc = spec.find_attribute("ICCProfile");
-    if (icc)
-        m_ColorInfo.iccprofile = true;
-
-    const float gamma = spec.get_float_attribute("oiio:Gamma");
-    // VOID_LOG_INFO("Gamma: {}", gamma);
-    if (gamma > 0.f)
-    {
-        if (std::abs(gamma - 2.2f) < 0.01f)
-            m_ColorInfo.transfer = TransferFunction::Gamma22;
-        else if (std::abs(gamma - 2.4f) < 0.01f)
-            m_ColorInfo.transfer = TransferFunction::Gamma24;
-    }
-
     return true;
 }
 
@@ -279,6 +238,7 @@ bool OIIOMediaReader::Read(const std::string& path, v_frame_t framenumber, Float
     image->height = spec.height;
     image->channels = spec.nchannels;
     image->format = (image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA;
+    image->pixfmt = image->format;
     image->type = VOID_GL_FLOAT;
 
     image->buffer.Resize(image->width * image->height * image->channels);
@@ -287,6 +247,61 @@ bool OIIOMediaReader::Read(const std::string& path, v_frame_t framenumber, Float
     input->close();
 
     return true;
+}
+
+void OIIOMediaReader::FetchInfo()
+{
+    std::unique_ptr<OIIO::ImageInput> input = OIIO::ImageInput::open(m_Path);
+    if (!input)
+    {
+        VOID_LOG_INFO("Unable to load image. Path: {0}", m_Path);
+        // Fetch the error from OpenImageIO
+        VOID_LOG_ERROR(OIIO::geterror());
+        return;
+    }
+
+    const OIIO::ImageSpec spec = input->spec();
+    input->close();
+
+    /// Update the internals as well here
+    /// This method is called for Thumbnail
+    m_Format.SetResolution(spec.width, spec.height);
+    m_Format.SetChannels(spec.nchannels);
+
+    /// Color specs
+    std::string_view colorspace = spec.get_string_attribute("oiio:ColorSpace");
+    if (!colorspace.empty())
+    {
+        // VOID_LOG_INFO("Colorspace: {}", colorspace);
+        if (colorspace == "sRGB")
+            m_Format.color.colorspace = Colorspace::SRGB;
+        else if (colorspace == "Rec709")
+            m_Format.color.colorspace = Colorspace::Rec709;
+        else if (colorspace == "AdobeRGB")
+            m_Format.color.colorspace = Colorspace::AdobeRGB;
+        else if (colorspace == "ACEScg" || colorspace == "lin_ap1_scene")
+            m_Format.color.colorspace = Colorspace::ACEScg;
+        else if (colorspace == "lin_ap0_scene")
+            m_Format.color.colorspace = Colorspace::ACES2065_1;
+        else if (colorspace == "lin_rec709" || colorspace == "lin_rec709_scene" || colorspace == "Linear")
+            m_Format.color.colorspace = Colorspace::LinearRec709;
+        else
+            m_Format.color.colorspace = Colorspace::Custom;
+    }
+
+    const OIIO::ParamValue* icc = spec.find_attribute("ICCProfile");
+    if (icc)
+        m_Format.color.iccprofile = true;
+
+    const float gamma = spec.get_float_attribute("oiio:Gamma");
+    // VOID_LOG_INFO("Gamma: {}", gamma);
+    if (gamma > 0.f)
+    {
+        if (std::abs(gamma - 2.2f) < 0.01f)
+            m_Format.color.transfer = TransferFunction::Gamma22;
+        else if (std::abs(gamma - 2.4f) < 0.01f)
+            m_Format.color.transfer = TransferFunction::Gamma24;
+    }
 }
 
 std::map<std::string, std::string> OIIOMediaReader::Metadata() const
@@ -320,7 +335,7 @@ std::map<std::string, std::string> OIIOMediaReader::Metadata() const
             m[attr.name().c_str()] = *(const char**)attr.data();
     }
 
-    return m;   
+    return m;
 }
 
 VOID_NAMESPACE_CLOSE

@@ -492,6 +492,11 @@ VOID_NAMESPACE_OPEN
 FFmpegMediaReader::FFmpegMediaReader(const std::string& path)
     : MediaReader(path)
 {
+    /// We need to perform a very lightweight operation here to fill some basic data
+    /// This gets invoked as the media is read, and has to be very fast
+    /// else we'll see performance hits when importing media and we don't want that
+    /// Heavy lifting part which opens the streams and other bits can happen in the FetchDetail
+    /// method, as that's likely happening asynchronously and doesn't block further execution
     ProcessInfo();
 }
 
@@ -507,12 +512,8 @@ bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, UIn
         image->format = VOID_GL_RGB;
 
         // Underlying image specifications
-        m_Width = image->width;
-        m_Height = image->height;
-        m_Channels = image->channels;
-
-        // Color info
-        decoder.MediaColorInfo(m_ColorInfo);
+        m_Format.SetResolution(image->width, image->height);
+        m_Format.SetChannels(image->channels);
 
         return true;
     }
@@ -530,6 +531,7 @@ bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, Flo
         image->channels = decoder.Channels();
 
         image->format = VOID_GL_RGB;
+        image->pixfmt = image->format;
         image->type = VOID_GL_FLOAT;
 
         return true;
@@ -548,15 +550,21 @@ bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, Sha
     return decoder.Decode(framenumber, tf, buffer);
 }
 
+void FFmpegMediaReader::FetchInfo()
+{
+    FFmpegDecoder2& decoder = FFmpegDecoder2::Instance(m_Path);
+    decoder.MediaColorInfo(m_Format.color);
+}
+
 std::map<std::string, std::string> FFmpegMediaReader::Metadata() const
 {
     /// TODO: Move this inside the decoder as well, as that already has the AVFormatContext open, we don't need to open it again
     std::map<std::string, std::string> m;
     AVFormatContext* formatContext = nullptr;
+    const MFrameRange& frange = m_Format.framerange;
 
     if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
     {
-        /* Get Stream info */
         if (avformat_find_stream_info(formatContext, nullptr) < 0)
         {
             avformat_close_input(&formatContext);
@@ -565,25 +573,21 @@ std::map<std::string, std::string> FFmpegMediaReader::Metadata() const
 
         AVStream* vidStream = nullptr;
         int streamId = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
-
-        /* Not found */
         if (streamId < 0)
         {
             avformat_close_input(&formatContext);
             return m;
         }
 
-        /* Iterate over all metadata for the file */
         AVDictionaryEntry* tag = nullptr;
-        /* Match the starting component of the key to get the find the tag --> None will match every */
         while((tag = av_dict_get(formatContext->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
             m[tag->key] = tag->value;
 
         vidStream = formatContext->streams[streamId];
 
-        m["end_frame"] = std::to_string(m_Framerange.endframe);
-        m["duration"] = std::to_string(m_Framerange.duration);
-        m["framerate"] = std::to_string(m_Framerange.duration);
+        m["end_frame"] = std::to_string(frange.endframe);
+        m["duration"] = std::to_string(frange.duration);
+        m["framerate"] = std::to_string(frange.duration);
 
         const AVCodecDescriptor* desc = avcodec_descriptor_get(vidStream->codecpar->codec_id);
         m["codec"] = desc->name;
@@ -592,16 +596,15 @@ std::map<std::string, std::string> FFmpegMediaReader::Metadata() const
         const AVCodec* codec = avcodec_find_decoder(vidStream->codecpar->codec_id);
         m["decoder"] = codec->name;
 
-        /* Deallocate internals */
         avformat_close_input(&formatContext);
     }
 
     /* Basic Metadata */
     m["filepath"] = m_Path;
-    m["width"] = std::to_string(m_Width);
-    m["height"] = std::to_string(m_Height);
-    m["channels"] = std::to_string(m_Channels);
-    m["start_frame"] = std::to_string(m_Framerange.startframe);
+    m["width"] = std::to_string(m_Format.width);
+    m["height"] = std::to_string(m_Format.height);
+    m["channels"] = std::to_string(m_Format.channels);
+    m["start_frame"] = std::to_string(frange.startframe);
 
     return m;
 }
@@ -614,20 +617,22 @@ void FFmpegMediaReader::ProcessInfo()
     AVFormatContext* formatContext = nullptr;
     if (avformat_open_input(&formatContext, m_Path.c_str(), nullptr, nullptr) >= 0)
     {
+        MFrameRange& frange = m_Format.framerange;
         for (unsigned int i = 0; i < formatContext->nb_streams; ++i)
         {
             const AVStream* stream = formatContext->streams[i];
             if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
             {
-                m_Framerange.startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
-                m_Framerange.duration = (v_frame_t)stream->nb_frames;
-                m_Framerange.framerate = av_q2d(stream->r_frame_rate);
+                frange.startframe = (v_frame_t)av_rescale_q(stream->start_time, stream->time_base, av_inv_q(stream->r_frame_rate));
+                frange.duration = (v_frame_t)stream->nb_frames;
+                frange.framerate = av_q2d(stream->r_frame_rate);
 
-                m_Framerange.endframe = m_Framerange.startframe + m_Framerange.duration - 1;
+                frange.endframe = frange.startframe + frange.duration - 1;
             }
             else if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
             {
-                m_HasAudio = true;
+                m_Format.samplerate = stream->codecpar->sample_rate;
+                m_Format.audChannels = stream->codecpar->ch_layout.nb_channels;
             }
         }
 
