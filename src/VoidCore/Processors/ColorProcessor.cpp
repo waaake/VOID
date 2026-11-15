@@ -226,6 +226,11 @@ std::vector<std::string> MediaColorProcessor::Colorspaces() const
 
 void MediaColorProcessor::Process(const MediaColor& color, const FloatImage& image)
 {
+    /// OCIO PackadImageDesc only works for channels >=3 and channels greater than 4 are ignored
+    /// but it actually throws if channels are anything apart from these two values
+    if (image->channels < 3 || image->channels > 4)
+        return;
+
     OCIO::ConstProcessorRcPtr processor = Processor(color);
 
     OCIO::PackedImageDesc desc(image->Writable(), image->width, image->height, image->channels);
