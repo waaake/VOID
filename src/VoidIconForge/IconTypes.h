@@ -60,6 +60,7 @@ enum class IconType : char16_t
     icon_skip_previous      = 0xe045,
     icon_sort_by_alpha      = 0xe053,
     icon_square             = 0xeb36,
+    icon_stacks             = 0xf500,
     icon_style              = 0xe41d,
     icon_sync_alt           = 0xea18,
     icon_tile_small         = 0xf3c1,

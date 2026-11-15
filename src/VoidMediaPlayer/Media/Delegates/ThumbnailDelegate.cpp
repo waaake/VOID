@@ -134,18 +134,27 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
-        const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        constexpr float w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(QRectF(rect.left(), rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(rect.left() + w, rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(rect.left() + 2 * w, rect.bottom() - 1, w, 2), QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
-        const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
-        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 2, QColor(255, 255, 255));
+        constexpr float w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(QRectF(rect.left(), rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(rect.left() + w, rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(rect.left() + 2 * w, rect.bottom() - 1, w, 2), QColor(0, 0, 255));
+        painter->fillRect(QRectF(rect.left() + 3 * w, rect.bottom() - 1, w, 2), QColor(255, 255, 255));
+    }
+    else if (channels > 4)
+    {
+        constexpr float w = (ICON_SIZE + 6) * 0.20;
+        painter->fillRect(QRectF(rect.left(), rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(rect.left() + w, rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(rect.left() + 2 * w, rect.bottom() - 1, w, 2), QColor(0, 0, 255));
+        painter->fillRect(QRectF(rect.left() + 3 * w, rect.bottom() - 1, w, 2), QColor(255, 255, 255));
+        painter->fillRect(QRectF(rect.left() + 4 * w, rect.bottom() - 1, w, 2), QColor(55, 140, 15));
     }
 
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
