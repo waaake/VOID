@@ -15,9 +15,13 @@
 #include "VoidQExtensions/MessageBox.h"
 #include "VoidMediaBrowser/Browser.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Toolkit/ControlBar.h"
+#include "VoidMediaPlayer/Toolkit/ImageToolbar.h"
 #include "VoidExporter/Exporter.h"
 #include "VoidExporter/MediaExporter.h"
 #include "VoidRenderer/VoidRenderer.h"
+#include "VoidTimeline/TimelineController.h"
+#include "VoidCore/Logging.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -56,6 +60,7 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     Timekeeper::Instance().Reset();
     Timekeeper::Instance().SetMediaFramerate(media->Framerate());
+    SetMediaLayers(media->Layers());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
@@ -217,6 +222,11 @@ void Player::SetFrame(int frame)
     return Render(frame);
 }
 
+void Player::Refresh()
+{
+    SetFrame(m_TimelineController->Frame());
+}
+
 void Player::NextMedia()
 {
     if (m_ActiveViewBuffer->NextMedia())
@@ -247,7 +257,22 @@ void Player::ResetPlaylistMedia()
 
 void Player::ResetLayer(const std::string& layer)
 {
-    m_ActiveViewBuffer->ResetLayer(layer);
+    // m_ActiveViewBuffer->ResetLayer(layer);
+    if (m_ActiveViewBuffer->PlayingComponent() == PlayerBuffer::PlayableComponent::Clip)
+    {
+        auto media = m_ActiveViewBuffer->GetMediaClip();
+        if (media->Valid() && media->MultiLayered())
+        {
+            media->SetCurrentLayer(layer);
+
+            /// We want to reset the media on the view buffer for it to recache everything like before
+            /// Just in this case, we won't be resetting any ranges or other bits, only render the current frame
+            m_ActiveViewBuffer->Set(media);
+            Render(m_TimelineController->Frame());
+
+            VOID_LOG_INFO("Resetting the media layer to: {}", layer);
+        }
+    }
 }
 
 void Player::Connect()
@@ -276,6 +301,12 @@ void Player::Connect()
     connect(m_ControlBar, &ControlBar::viewerBufferSwitched, this, &Player::ResetViewBuffer);
     connect(m_ControlBar, &ControlBar::comparisonModeChanged, this, &Player::SetComparisonMode);
     connect(m_ControlBar, &ControlBar::blendModeChanged, this, &Player::SetBlendMode);
+
+    // ImageToolbar
+    connect(m_ImageToolbar, &ImageToolbar::imageLayerChangeRequested, this, [this](const QString& layer) -> void
+    {
+        ResetLayer(layer.toStdString());
+    });
 
     // ViewerBuffer
     connect(m_ViewBufferA, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);
@@ -502,6 +533,11 @@ void Player::CompareMediaFrame(v_frame_t frame)
 void Player::RenderGrid(v_frame_t frame)
 {
     m_Renderer->RenderGrid(m_ActiveViewBuffer->GridFrame(frame));
+}
+
+void Player::SwitchBlendMode(int delta)
+{
+    m_ControlBar->SwitchBlendMode(delta);
 }
 
 void Player::SetComparisonMode(int mode)
