@@ -15,12 +15,13 @@
 #include "OverlayWidget.h"
 #include "VoidObjects/Media/MediaClip.h"
 #include "VoidObjects/Sequence/Sequence.h"
-#include "VoidTimeline/TimelineController.h"
-#include "VoidMediaPlayer/Toolkit/AnnotationController.h"
-#include "VoidMediaPlayer/Toolkit/ControlBar.h"
 
 VOID_NAMESPACE_OPEN
 
+class AnnotationsController;
+class ControlBar;
+class ImageToolbar;
+class TimelineController;
 class VoidRenderer;
 class VoidPlaceholderRenderer;
 
@@ -109,6 +110,8 @@ protected:  /* Methods */
     void AddAnnotation(const Renderer::SharedAnnotation& annotation);
     void RemoveAnnotation();
 
+    void ResetMediaLayers();
+    void SetMediaLayers(const std::vector<std::string>& layers);
     void SetFromPreferences();
     
 protected:  /* Members */
@@ -124,6 +127,7 @@ protected:  /* Members */
 
     ControlBar* m_ControlBar;
     AnnotationsController* m_AnnotationsController;
+    ImageToolbar* m_ImageToolbar;
 
     Renderer::ComparisonMode m_ComparisonMode;
     Renderer::BlendMode m_BlendMode;
