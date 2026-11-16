@@ -40,9 +40,6 @@ public:
     bool IsMovieFormat() const override { return false; }
     void FetchInfo() override;
     std::map<std::string, std::string> Metadata() const override;
-
-private:
-    void FetchLayers();
 };
 
 VOID_NAMESPACE_CLOSE
