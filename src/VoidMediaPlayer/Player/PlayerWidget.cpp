@@ -74,12 +74,13 @@ void PlayerWidget::Connect()
 
     // ControlBar
     connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::SetZoom);
-    connect(m_ControlBar, &ControlBar::exposureChanged, m_Renderer, &VoidRenderer::SetExposure);
-    connect(m_ControlBar, &ControlBar::gammaChanged, m_Renderer, &VoidRenderer::SetGamma);
-    connect(m_ControlBar, &ControlBar::gainChanged, m_Renderer, &VoidRenderer::SetGain);
     connect(m_ControlBar, &ControlBar::channelModeChanged, m_Renderer, &VoidRenderer::SetChannelMode);
     connect(m_ControlBar, &ControlBar::annotationsToggled, this, &PlayerWidget::ToggleAnnotations);
     connect(m_ControlBar, &ControlBar::colorDisplayChanged, m_Renderer, &VoidRenderer::SetColorDisplay);
+
+    connect(m_ImageToolbar, &ImageToolbar::exposureChanged, m_Renderer, &VoidRenderer::SetExposure);
+    connect(m_ImageToolbar, &ImageToolbar::gammaChanged, m_Renderer, &VoidRenderer::SetGamma);
+    connect(m_ImageToolbar, &ImageToolbar::gainChanged, m_Renderer, &VoidRenderer::SetGain);
 
     // AnnotationsController
     connect(m_AnnotationsController, &AnnotationsController::cleared, m_Renderer, &VoidRenderer::ClearAnnotations);
