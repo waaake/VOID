@@ -237,8 +237,8 @@ bool OIIOMediaReader::Read(const std::string& path, v_frame_t framenumber, Float
     image->width = spec.width;
     image->height = spec.height;
     image->channels = spec.nchannels;
-    image->format = (image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA;
-    image->pixfmt = image->format;
+    image->format = (image->channels == 3) ? VOID_GL_RGB32F : VOID_GL_RGBA32F;
+    image->pixfmt = (image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA;
     image->type = VOID_GL_FLOAT;
 
     image->buffer.Resize(image->width * image->height * image->channels);

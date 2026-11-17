@@ -530,8 +530,8 @@ bool FFmpegMediaReader::Read(const std::string& path, v_frame_t framenumber, Flo
         image->height = decoder.Height();
         image->channels = decoder.Channels();
 
-        image->format = VOID_GL_RGB;
-        image->pixfmt = image->format;
+        image->format = (image->channels == 3) ? VOID_GL_RGB32F : VOID_GL_RGBA32F;
+        image->pixfmt = (image->channels == 3) ? VOID_GL_RGB : VOID_GL_RGBA;
         image->type = VOID_GL_FLOAT;
 
         return true;
