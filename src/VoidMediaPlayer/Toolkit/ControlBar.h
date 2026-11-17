@@ -59,9 +59,6 @@ public:
 
 signals:
     void zoomChanged(const float factor);
-    void exposureChanged(const float exposure);
-    void gammaChanged(const float gamma);
-    void gainChanged(const float gain);
     void viewerBufferSwitched(const PlayerViewBuffer&);
     void channelModeChanged(const int);
     void comparisonModeChanged(const int);
@@ -72,16 +69,6 @@ signals:
 private: /* Members */
     /* Base Layout */
     QHBoxLayout* m_Layout;
-
-    /**
-     * Viewer Properties
-     * Exposure
-     * Gamma
-     * Gain
-     */
-    QuickSpinner* m_ExposureSpinner;
-    QuickSpinner* m_GammaSpinner;
-    QuickSpinner* m_GainSpinner;
 
     /**
      * Set/Update channels on the viewer

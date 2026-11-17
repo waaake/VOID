@@ -12,6 +12,7 @@
 
 /* Internal */
 #include "Definition.h"
+#include "ColorController.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -26,11 +27,18 @@ public:
     void ResetImageLayers() { m_LayerController->clear(); }
 
 signals:
+    void exposureChanged(const float exposure);
+    void gammaChanged(const float gamma);
+    void gainChanged(const float gain);
     void imageLayerChangeRequested(const QString&);
 
 private:
     QHBoxLayout* m_Layout;
     ImageLayerController* m_LayerController;
+
+    QuickSpinner* m_ExposureSpinner;
+    QuickSpinner* m_GammaSpinner;
+    QuickSpinner* m_GainSpinner;
 
 private:
     void Build();
