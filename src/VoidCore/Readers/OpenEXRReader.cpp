@@ -13,6 +13,7 @@
 /* STD */
 #include <algorithm>
 #include <map>
+#include <span>
 
 /* OpenEXR */
 #include <OpenEXR/ImfArray.h>
@@ -80,7 +81,7 @@ ChannelLayout GetChannelLayout(const std::vector<std::string>& channels)
     static constexpr std::string_view xyz[] = { "x", "y", "z", "w" };
     static constexpr std::string_view uv[] = { "u", "v" };
 
-    for (int i = 0; i < layout.channels; ++i)
+    for (std::size_t i = 0; i < channels.size(); ++i)
     {
         std::string_view name = channels[i];
         const std::size_t dot = name.rfind(".");
@@ -91,7 +92,7 @@ ChannelLayout GetChannelLayout(const std::vector<std::string>& channels)
         {
             if (Tools::equals_ignore_case(component, rgba[c]))
             {
-                layout.indices[c] = i;
+                layout.indices[c] = static_cast<int>(i);
                 layout.type = ChannelLayout::Type::RGBA;
                 
                 break;
@@ -103,7 +104,7 @@ ChannelLayout GetChannelLayout(const std::vector<std::string>& channels)
         {
             if (Tools::equals_ignore_case(component, xyz[c]))
             {
-                layout.indices[c] = i;
+                layout.indices[c] = static_cast<int>(i);
                 layout.type = ChannelLayout::Type::XYZ;
             }
         }
@@ -113,7 +114,7 @@ ChannelLayout GetChannelLayout(const std::vector<std::string>& channels)
         {
             if (Tools::equals_ignore_case(component, uv[c]))
             {
-                layout.indices[c] = i;
+                layout.indices[c] = static_cast<int>(i);
                 layout.type = ChannelLayout::Type::UV;
             }
         }
@@ -131,6 +132,7 @@ bool is_blank(std::span<float> data)
 
 std::map<std::string, std::vector<std::string>> HeaderChannels(const Imf::Header& header)
 {
+    // Tools::VoidProfiler<std::chrono::microseconds> p("HeaderChannels2");
     std::map<std::string, std::vector<std::string>> names;
 
     const std::string prefix = header.hasName() ? header.name() + "." : "";
@@ -253,43 +255,85 @@ std::vector<EXRStream> GetStreams(const Imf::Header& header)
     return streams;
 }
 
-// channels is copied, need a better way around this
-std::vector<std::string> HeaderStreams2(const Imf::Header& header, std::map<std::string, std::vector<std::string>> channels)
-{
-    std::vector<std::string> streams;
-    streams.reserve(channels.size());
+// std::map<std::string, std::vector<std::string>> HeaderChannels2(const Imf::Header& header)
+// {
+//     Tools::VoidProfiler<std::chrono::microseconds> p("HeaderChannels");
+//     std::map<std::string, std::vector<std::string>> names;
+//     const std::string part = header.hasName() ? header.name() + "." : "";
+//     const Imf::ChannelList& channels = header.channels();
 
-    if (channels.contains("RGBA"))
-    {
-        streams.emplace_back("RGBA");
-    }
-    else
-    {
-        for (auto it = channels.begin(); it != channels.end(); ++it)
-        {
-            const std::string layer = Tools::to_lower(it->first);
-            if (layer.find(".rgb") != std::string::npos || layer.ends_with(".combined") || layer == "combined")
-            {
-                streams.emplace_back(it->first);
-                channels.erase(it);
-                break;
-            }
-        }
-    }
+//     const static std::set<std::string> rgba({"r", "g", "b", "a", "red", "green", "blue", "alpha"});
+//     const static std::set<std::string> xyz({"x", "y", "z", "w"});
 
-    if (channels.contains("XYZ"))
-        streams.emplace_back("XYZ");
+//     for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++it)
+//     {
+//         const std::string channel = it.name();
+//         const std::size_t pos = channel.rfind(".");
 
-    for (const auto& chan : channels)
-    {
-        if (chan.first == "RGBA" || chan.first == "XYZ")
-            continue;
+//         if (pos != std::string::npos && pos)
+//         {
+//             std::string layer = std::string(channel, 0, pos);
+//             names[part + layer].push_back(channel);
+//         }
+//         else
+//         {
+//             const std::string channelLower = Tools::to_lower(channel);
+//             if (rgba.contains(channelLower))
+//                 names[part + "RGBA"].push_back(channel);
+//             else if (xyz.contains(channelLower))
+//                 names[part + "XYZ"].push_back(channel);
+//             else
+//                 names[part + "Other"].push_back(channel);
+//         }
+//     }
 
-        streams.push_back(chan.first);
-    }
+//     if (header.hasName() && names.size() == 1)
+//     {
+//         std::vector<std::string> chans = names.begin()->second;
+//         names.clear();
+//         names[header.name()] = chans;
+//     }
 
-    return streams;
-}
+//     return names;
+// }
+
+// // channels is copied, need a better way around this
+// std::vector<std::string> HeaderStreams2(const Imf::Header& header, std::map<std::string, std::vector<std::string>> channels)
+// {
+//     std::vector<std::string> streams;
+//     streams.reserve(channels.size());
+
+//     if (channels.contains("RGBA"))
+//     {
+//         streams.emplace_back("RGBA");
+//     }
+//     else
+//     {
+//         for (auto it = channels.begin(); it != channels.end(); ++it)
+//         {
+//             const std::string layer = Tools::to_lower(it->first);
+//             if (layer.find(".rgb") != std::string::npos || layer.ends_with(".combined") || layer == "combined")
+//             {
+//                 streams.emplace_back(it->first);
+//                 channels.erase(it);
+//                 break;
+//             }
+//         }
+//     }
+
+//     if (channels.contains("XYZ"))
+//         streams.emplace_back("XYZ");
+
+//     for (const auto& chan : channels)
+//     {
+//         if (chan.first == "RGBA" || chan.first == "XYZ")
+//             continue;
+
+//         streams.push_back(chan.first);
+//     }
+
+//     return streams;
+// }
 
 std::vector<std::string> HeaderStreams(const Imf::Header& header, const std::map<std::string, std::vector<std::string>>& channels)
 {
@@ -305,7 +349,6 @@ std::vector<std::string> HeaderStreams(const Imf::Header& header, const std::map
         for (const auto& [name, _] : channels)
         {
             const std::string layer = Tools::to_lower(name);
-
             if (layer.find(".rgb") != std::string::npos || layer.ends_with(".combined") || layer == "combined")
             {
                 streams.emplace_back(name);
@@ -331,15 +374,126 @@ std::vector<std::string> HeaderStreams(const Imf::Header& header, const std::map
     return streams;
 }
 
-bool FetchStream(const Imf::Header& header, const std::string& layer, EXRStream& out)
+void SortChannels(std::vector<std::string>& channels)
+{
+    // try and work out if channels are *.x, *.y etc or just 'x' 'y' 'z' etc.
+    // we want to be careful that we don't match a channel called 'xyz.red' though!
+    int score = 0;
+    static const std::vector<std::string> xyzTokens({".x", ".y", ".z", ".u", ".v"});
+    static const std::vector<std::string> xyzTokens0({"x", "y", "z", "u", "v"});
+    for (const auto &chan : channels)
+    {
+        const std::string lower = Tools::to_lower(chan);
+        for (const auto &token : xyzTokens)
+        {
+            if (lower.find(token) != std::string::npos)
+                score++;
+        }
+        for (const auto &token : xyzTokens0)
+        {
+            if (lower == token)
+                score++;
+        }
+    }
+    const bool xyzuv = score >= 2;
+
+    // now we need to sort the channels so that RGBA gets mapped into 0,1,2,3
+    // so we can use reverse alphabetical sorting.
+    // OR channels named like *.x, *.y, *.z will also get mapped to 0,1,2
+    std::sort(
+        channels.begin(),
+        channels.end(),
+        [&xyzuv](const std::string& a, const std::string& b) {
+            if (xyzuv) {
+                return Tools::to_lower(a) < Tools::to_lower(b);
+            } else {
+                return Tools::to_lower(a) > Tools::to_lower(b);
+            }
+        });
+
+    // The image buffer and shader support at most four interleaved channels. Keep
+    // malformed or unconventional layers from overrunning the fixed pixel type array.
+    if (channels.size() > 4) {
+        channels.resize(4);
+    }
+}
+
+bool GetDefaultStream(const Imf::Header& header, std::string& layer, std::vector<std::string>& readableChannels)
+{
+    const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    if (streams.empty())
+        return false;
+
+    auto _readChannels = [&channels] (const std::string& stream, std::string& layer, std::vector<std::string>& rchannels) -> void
+    {
+        rchannels.clear();
+        rchannels = channels.at(stream);
+
+        if (rchannels.empty()) return;
+        SortChannels(rchannels);
+        layer = stream;
+    };
+
+    for (const auto& stream : streams)
+    {
+        if (stream == "RGBA")
+        {
+            _readChannels(stream, layer, readableChannels);
+            return true;
+        }
+    }
+
+    // Could not find RGBA as the layer name - going with the first available
+    _readChannels(streams[0], layer, readableChannels);
+    return true;
+}
+
+bool GetChannels(const Imf::Header& header, const std::string& layer, std::vector<std::string>& readableChannels)
+{
+    const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    for (const auto& stream : streams)
+    {
+        if (stream == layer)
+        {
+            readableChannels.clear();
+            readableChannels = channels.at(stream);
+
+            if (readableChannels.empty()) return false;
+            SortChannels(readableChannels);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+EXRStream GetStream(const Imf::Header& header, const std::string& layer)
 {
     std::vector<EXRStream> streams = GetStreams(header);
     for (auto& stream : streams)
     {
         if (stream.name == layer)
         {
-            // std::swap(out, stream);
-            out = std::move(stream);
+            stream.layout = GetChannelLayout(stream.channels);
+            return stream;
+        }
+    }
+
+    return EXRStream{};
+}
+
+bool FetchStream(const Imf::Header& header, const std::string& layer, EXRStream& out)
+{
+    const std::vector<EXRStream> streams = GetStreams(header);
+    for (auto& stream : streams)
+    {
+        if (stream.name == layer)
+        {
+            out = stream;
             out.layout = GetChannelLayout(out.channels);
             return true;
         }
@@ -348,17 +502,30 @@ bool FetchStream(const Imf::Header& header, const std::string& layer, EXRStream&
     return false;
 }
 
-void FirstStream(const Imf::Header& header, EXRStream& out)
+bool GetRGBAStream(const Imf::Header& header, std::vector<std::string>& readableChannels)
 {
-    std::vector<EXRStream> streams = GetStreams(header);
-    if (streams.empty())
-        return;
-    
-    out = std::move(streams[0]);
-    out.layout = GetChannelLayout(out.channels);
+    const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    for (const auto& stream : streams)
+    {
+        if (stream == "RGBA")
+        {
+            readableChannels.clear();
+            readableChannels = channels.at(stream);
+
+            if (readableChannels.empty())
+                break;
+
+            SortChannels(readableChannels);
+            return true;
+        }
+    }
+
+    return false;
 }
 
-bool ReadInterleaved(Imf::InputPart& part, const EXRStream& stream, FloatImage& image)
+bool ReadInterleaved(Imf::InputPart& part, const std::vector<std::string>& channelNames, FloatImage& image)
 {
     const Imf::Header& header = part.header();
     const Imath::Box2i dataWindow = header.dataWindow();
@@ -366,10 +533,11 @@ bool ReadInterleaved(Imf::InputPart& part, const EXRStream& stream, FloatImage& 
     image->width = int64_t(dataWindow.max.x) - dataWindow.min.x + 1;
     image->height = int64_t(dataWindow.max.y) - dataWindow.min.y + 1;
 
-    const size_t channels = stream.channels.size();
+    const size_t channels = channelNames.size();
 
     image->type = VOID_GL_FLOAT;
     image->channels = static_cast<int>(channels);
+    // image->format = image->channels == 3 ? VOID_GL_RGB : VOID_GL_RGBA;
 
     switch (channels)
     {
@@ -382,7 +550,7 @@ bool ReadInterleaved(Imf::InputPart& part, const EXRStream& stream, FloatImage& 
             image->pixfmt = VOID_GL_RG;
             break;
         case 3:
-            image->format = VOID_GL_RGB;
+            image->format = VOID_GL_RGB32F;
             image->pixfmt = VOID_GL_RGB;
             break;
         case 4:
@@ -417,6 +585,102 @@ bool ReadInterleaved(Imf::InputPart& part, const EXRStream& stream, FloatImage& 
 
     for (size_t c = 0; c < channels; ++c)
     {
+        const std::string& name = channelNames[c];
+        const Imf::Channel* channel = channelList.findChannel(name.c_str());
+
+        if (!channel)
+        {
+            VOID_LOG_ERROR("Missing Channel: {}", name);
+            return false;
+        }
+
+        // Direct interleaving is straightforward for full-resolution
+        // channels. Subsampled channels need a different memory layout
+        if (channel->xSampling != 1 || channel->ySampling != 1)
+        {
+            VOID_LOG_ERROR("Subsampled EXR channel {}", name);
+            return false;
+        }
+
+        float* channelPtr = image->buffer._buf.data() + c;
+        frameBuffer.insert(name, Imf::Slice::Make(Imf::FLOAT, channelPtr, dataWindow, pixelStride, rowStride, 1, 1, 0.0));
+    }
+
+    part.setFrameBuffer(frameBuffer);
+
+    // One full-frame request. OpenEXR handles the underlying
+    // compression blocks and decompression scheduling
+    part.readPixels(dataWindow.min.y, dataWindow.max.y);
+    return true;
+}
+
+bool ReadInterleaved(Imf::InputPart& part, const EXRStream& stream, FloatImage& image)
+{
+    const Imf::Header& header = part.header();
+    const Imath::Box2i dataWindow = header.dataWindow();
+
+    image->width = int64_t(dataWindow.max.x) - dataWindow.min.x + 1;
+    image->height = int64_t(dataWindow.max.y) - dataWindow.min.y + 1;
+
+    const size_t channels = stream.channels.size();
+
+    image->type = VOID_GL_FLOAT;
+    image->channels = static_cast<int>(channels);
+    // image->format = image->channels == 3 ? VOID_GL_RGB : VOID_GL_RGBA;
+
+    switch (channels)
+    {
+        case 1:
+            image->format = VOID_GL_R32F;
+            image->pixfmt = VOID_GL_RED;
+            break;
+        case 2:
+            image->format = VOID_GL_RG32F;
+            image->pixfmt = VOID_GL_RG;
+            break;
+        case 3:
+            image->format = VOID_GL_RGB;
+            image->pixfmt = VOID_GL_RGB;
+            break;
+        case 4:
+        default:
+            image->format = VOID_GL_RGBA32F;
+            image->pixfmt = VOID_GL_RGBA;
+            break;
+    }
+
+    // image->format = VOID_GL_R32F;
+    // image->pixfmt = VOID_GL_RED;
+
+    if (image->width > std::numeric_limits<int>::max() / image->height)
+    {
+        VOID_LOG_ERROR("EXR image dimensions overflow");
+        return false;
+    }
+
+    const std::size_t pixels = static_cast<std::size_t>(image->width) * image->height;
+    if (pixels > std::numeric_limits<std::size_t>::max() / channels)
+    {
+        VOID_LOG_ERROR("EXR image buffer size overflow");
+        return false;
+    }
+
+    const std::size_t values = pixels * channels;
+    image->buffer._buf.assign(values, 0.0f);
+
+    const std::size_t pixelStride = channels * sizeof(float);
+    const std::size_t rowStride = image->width * pixelStride;
+
+    Imf::FrameBuffer frameBuffer;
+
+    const Imf::ChannelList& channelList = header.channels();
+
+    for (size_t c = 0; c < channels; ++c)
+    {
+        // This will give the actual index of the channel at position c
+        // e.g. RGBA is the layout we're expecting, but the channels in the exr may be
+        // ABRG, so when we ask the index of the channel at position 0, it will return us 4
+        int chindex = stream.layout.indices[c];
         const std::string& name = stream.channels[c];
         const Imf::Channel* channel = channelList.findChannel(name.c_str());
 
@@ -434,11 +698,13 @@ bool ReadInterleaved(Imf::InputPart& part, const EXRStream& stream, FloatImage& 
             return false;
         }
 
-        // This will give the actual index of the channel at position c
-        // e.g. RGBA is the layout we're expecting, but the channels in the exr may be
-        // ABRG, so when we ask the index of the channel at position 0 i.e. channel A, it will return us 4
-        // this ensures that the interleaved data that we have corresponds to the correct RGBA position or mapped accordingly
-        int chindex = stream.layout.indices[c];
+        // std::cout
+        //     << name
+        //     << " | Type: " << channel->type
+        //     << " | xSampling: " << channel->xSampling
+        //     << " | ySampling: " << channel->ySampling
+        //     << '\n';
+
         float* channelPtr = image->buffer._buf.data() + chindex;
         frameBuffer.insert(name, Imf::Slice::Make(Imf::FLOAT, channelPtr, dataWindow, pixelStride, rowStride, 1, 1, 0.0));
     }
@@ -802,26 +1068,65 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, UI
 
 bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, FloatImage& image)
 {
+    Tools::VoidProfiler<std::chrono::duration<double>> p("OpenEXRMediaReader::Read");
     Imf::MultiPartInputFile input(path.c_str());
 
+    // int index = -1;
     std::vector<std::string> channelsToLoad;
     const int parts = input.parts();
     if (!parts)
         return false;
 
-    EXRStream stream;
-    int index = 0;
+    // for (int i = 0; i < input.parts(); ++i)
+    // {
+    //     const Imf::Header& header = input.header(i);
 
-    /// Default - if layer wasn't set yet
+    //     const std::map<std::string, std::vector<std::string>> channels = HeaderChannels(header);
+    //     const std::vector<std::string> streams = HeaderStreams(header, channels);
+
+    //     VOID_LOG_INFO("Part: {} -- {}", i, header.name());
+
+    //     for (const auto& stream : streams)
+    //     {
+    //         VOID_LOG_INFO("Stream: {}", stream);
+    //         if (stream == "RGBA")
+    //         {
+    //             channelsToLoad.clear();
+    //             channelsToLoad = channels.at(stream);
+
+    //             if (channelsToLoad.empty())
+    //                 break;
+
+    //             SortChannels(channelsToLoad);
+
+    //             index = i;
+    //             break;
+    //         }
+    //     }
+
+    //     if (index >= 0)
+    //         break;
+    // }
+    // int index = DefaultPart(input, channelsToLoad);
+    // if (index < 0)
+    // {
+    //     VOID_LOG_ERROR("No RGBA stream found in {}", m_Path);
+    //     return false;
+    // }
+    // int index = 7;
+    // const Imf::Header& h = input.header(index);
+    // GetDefaultStream(h, channelsToLoad);
+
+    int index = 0;
     if (m_Format.layer.empty())
     {
-        FirstStream(input.header(0), stream);
+        GetDefaultStream(input.header(index), m_Format.layer, channelsToLoad);
     }
     else
     {
         for (int i = 0; i < parts; ++i)
         {
-            if (FetchStream(input.header(i), m_Format.layer, stream))
+            if (GetChannels(input.header(i), m_Format.layer, channelsToLoad))
             {
                 index = i;
                 break;
@@ -829,16 +1134,56 @@ bool OpenEXRMediaReader::Read(const std::string& path, v_frame_t framenumber, Fl
         }
     }
 
+    
+    // VOID_LOG_INFO("Header: {}", h.name());
+    // VOID_LOG_INFO("Stream: {}", m_Format.layer);
+    // for (const auto& channel : channelsToLoad)
+    //     VOID_LOG_INFO("Channel: {}", channel);
+
+    if (channelsToLoad.empty() || channelsToLoad.size() > 4)
+    {
+        VOID_LOG_ERROR("Invalid channel count");
+        return false;
+    }
+
     Imf::InputPart part(input, index);
 
     // Read Success
-    if (ReadInterleaved(part, stream, image))
+    if (ReadInterleaved(part, channelsToLoad, image))
         return true;
 
     /// There maybe cases, this is partially read and we don't want to display partial information on the viewer at the moment
     /// Better is that we clear the image buffer in that case
     image->Clear();
     return false;
+
+    // EXRStream s;
+
+    // int index = 0;
+    // for (int i = 0; i < parts; ++i)
+    // {
+    //     if (FetchStream(input.header(i), "RGBA", s))
+    //     {
+    //         index = i;
+    //         break;
+    //     }
+    // }
+
+    // Imf::InputPart part(input, index);
+
+    // // Read Success
+    // if (ReadInterleaved(part, s, image))
+    // {
+    //     // VOID_LOG_WARN("IS Empty: {}", is_blank(image->buffer._buf));
+    //     // auto [minIt, maxIt] = std::minmax_element(image->buffer._buf.begin(), image->buffer._buf.end());
+    //     // VOID_LOG_ERROR("Min: {}, Max: {}", *minIt, *maxIt);
+    //     return true;
+    // }
+
+    // /// There maybe cases, this is partially read and we don't want to display partial information on the viewer at the moment
+    // /// Better is that we clear the image buffer in that case
+    // image->Clear();
+    // return false;
 }
 
 void OpenEXRMediaReader::FetchInfo()
