@@ -1199,6 +1199,12 @@ void OpenEXRMediaReader::FetchInfo()
     for (int i = 0; i < parts; ++i)
     {
         const Imf::Header& h = f.header(i);
+
+        // Num Channels in the MediaFormat
+        const Imf::ChannelList& channels = header.channels();
+        for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++ it)
+            m_Format.channels++;
+
         auto chan = HeaderChannels(h);
         m_Format.channels += static_cast<int>(chan.size());
         std::vector<std::string> streams = HeaderStreams(h, std::move(chan));
