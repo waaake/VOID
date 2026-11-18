@@ -111,6 +111,7 @@ protected:  /* Methods */
     void RemoveAnnotation();
 
     void ResetMediaLayers();
+    void SetMediaLayers(const std::vector<std::string>& layers, const std::string& current);
     void SetMediaLayers(const std::vector<std::string>& layers);
     void SetFromPreferences();
     

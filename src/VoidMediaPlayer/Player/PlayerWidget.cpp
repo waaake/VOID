@@ -156,6 +156,11 @@ void PlayerWidget::ResetMediaLayers()
     m_ImageToolbar->ResetImageLayers();
 }
 
+void PlayerWidget::SetMediaLayers(const std::vector<std::string>& layers, const std::string& current)
+{
+    m_ImageToolbar->SetImageLayers(layers, current);
+}
+
 void PlayerWidget::SetMediaLayers(const std::vector<std::string>& layers)
 {
     m_ImageToolbar->SetImageLayers(layers);
