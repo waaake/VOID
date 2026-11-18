@@ -20,6 +20,7 @@ public:
     ImageLayerController(QWidget* parent = nullptr);
 
     void SetLayers(const std::vector<std::string>& layers);
+    void SetLayers(const std::vector<std::string>& layers, const std::string& current);
 
 signals:
     void layerChanged(const QString&);

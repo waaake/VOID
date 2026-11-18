@@ -23,4 +23,15 @@ void ImageLayerController::SetLayers(const std::vector<std::string>& layers)
     blockSignals(blocked);
 }
 
+void ImageLayerController::SetLayers(const std::vector<std::string>& layers, const std::string& current)
+{
+    bool blocked = blockSignals(true);
+    clear();
+    for (const auto& layer : layers)
+        addItem(layer.c_str());
+
+    setCurrentText(current.c_str());
+    blockSignals(blocked);
+}
+
 VOID_NAMESPACE_CLOSE
