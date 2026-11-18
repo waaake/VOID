@@ -9,9 +9,13 @@
 #include "PlayerWidget.h"
 #include "VoidCore/Logging.h"
 #include "VoidMediaPlayer/Media/MediaBridge.h"
+#include "VoidMediaPlayer/Toolkit/AnnotationController.h"
+#include "VoidMediaPlayer/Toolkit/ControlBar.h"
+#include "VoidMediaPlayer/Toolkit/ImageToolbar.h"
 #include "VoidObjects/Preferences/Preferences.h"
 #include "VoidRenderer/Core/RenderTypes.h"
 #include "VoidRenderer/VoidRenderer.h"
+#include "VoidTimeline/TimelineController.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -70,12 +74,13 @@ void PlayerWidget::Connect()
 
     // ControlBar
     connect(m_ControlBar, &ControlBar::zoomChanged, m_Renderer, &VoidRenderer::SetZoom);
-    connect(m_ControlBar, &ControlBar::exposureChanged, m_Renderer, &VoidRenderer::SetExposure);
-    connect(m_ControlBar, &ControlBar::gammaChanged, m_Renderer, &VoidRenderer::SetGamma);
-    connect(m_ControlBar, &ControlBar::gainChanged, m_Renderer, &VoidRenderer::SetGain);
     connect(m_ControlBar, &ControlBar::channelModeChanged, m_Renderer, &VoidRenderer::SetChannelMode);
     connect(m_ControlBar, &ControlBar::annotationsToggled, this, &PlayerWidget::ToggleAnnotations);
     connect(m_ControlBar, &ControlBar::colorDisplayChanged, m_Renderer, &VoidRenderer::SetColorDisplay);
+
+    connect(m_ImageToolbar, &ImageToolbar::exposureChanged, m_Renderer, &VoidRenderer::SetExposure);
+    connect(m_ImageToolbar, &ImageToolbar::gammaChanged, m_Renderer, &VoidRenderer::SetGamma);
+    connect(m_ImageToolbar, &ImageToolbar::gainChanged, m_Renderer, &VoidRenderer::SetGain);
 
     // AnnotationsController
     connect(m_AnnotationsController, &AnnotationsController::cleared, m_Renderer, &VoidRenderer::ClearAnnotations);
@@ -146,6 +151,21 @@ void PlayerWidget::RemoveMedia(const SharedMediaClip& media)
     }
 }
 
+void PlayerWidget::ResetMediaLayers()
+{
+    m_ImageToolbar->ResetImageLayers();
+}
+
+void PlayerWidget::SetMediaLayers(const std::vector<std::string>& layers, const std::string& current)
+{
+    m_ImageToolbar->SetImageLayers(layers, current);
+}
+
+void PlayerWidget::SetMediaLayers(const std::vector<std::string>& layers)
+{
+    m_ImageToolbar->SetImageLayers(layers);
+}
+
 void PlayerWidget::SetFromPreferences()
 {
     VOID_LOG_INFO("Player Preferences Updated.");
@@ -176,9 +196,10 @@ void PlayerWidget::Build()
     m_RendererLayout = new QVBoxLayout;
     m_RendererLayout->setContentsMargins(0, 0, 0, 0);
 
-    /* Instantiate widgets */
     m_ControlBar = new ControlBar(m_ViewBufferA, m_ViewBufferB, this);
+    m_ImageToolbar = new ImageToolbar(this);
     m_Renderer = new VoidRenderer(this);
+
     /* The placeholder renderer for when the actual renderer is fullscreen */
     m_PlaceholderRenderer = new VoidPlaceholderRenderer(this);
     /* Is hidden by default */
@@ -202,6 +223,7 @@ void PlayerWidget::Build()
     horizontalInternal->addWidget(m_AnnotationsController);
 
     layout->addLayout(horizontalInternal);
+    layout->addWidget(m_ImageToolbar);
     layout->addWidget(m_TimelineController->TimelineWidget());
 
     /* Spacing */

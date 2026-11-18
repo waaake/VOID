@@ -32,6 +32,7 @@ namespace Tools {
     VOID_API size_t total_memory();
     VOID_API unsigned int processor_count();
     VOID_API unsigned int thread_count();
+    VOID_API bool equals_ignore_case(std::string_view _a, std::string_view _b);
 
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value);

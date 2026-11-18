@@ -170,7 +170,8 @@ void BindCore(py::module_& m)
         .def("startframe", &MediaClip::FirstFrame)
         .def("endframe", &MediaClip::LastFrame)
         .def("metadata", &MediaClip::Metadata)
-        .def("tokens", &MediaClip::Tokens, py::return_value_policy::reference_internal);
+        .def("tokens", &MediaClip::Tokens, py::return_value_policy::reference_internal)
+        .def("layers", &MediaClip::Layers);
 
     /* Operator */
     py::class_<ParamValue>(m, "ParamValue")

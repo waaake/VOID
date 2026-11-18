@@ -64,13 +64,8 @@ ControlBar::ControlBar(ViewerBuffer* A, ViewerBuffer* B, QWidget* parent)
     , m_ViewerBufferA(A)
     , m_ViewerBufferB(B)
 {
-    /* Build UI */
     Build();
-
-    /* Setup how the UI appears */
     Setup();
-
-    /* Connect Signals from Components */
     Connect();
 }
 
@@ -99,31 +94,6 @@ void ControlBar::Build()
 
     /* Viewer Buffer Controls */
     m_BufferSwitch = new BufferSwitch(m_ViewerBufferA, m_ViewerBufferB);
-
-    /* Viewer Controls */
-    m_ExposureSpinner = new QuickSpinner;
-    m_ExposureSpinner->setToolTip(
-        ToolTipString(
-            "Quick Exposure Adjustment Tool",
-            "Adjust image brightness based on exposure values. Switches between last and the default value when the label is clicked."
-        ).c_str()
-    );
-
-    m_GammaSpinner = new QuickSpinner;
-    m_GammaSpinner->setToolTip(
-        ToolTipString(
-            "Quick Gamma Adjustment Tool",
-            "Tweaks midtone luminance. Switches between last and the default value when the label is clicked."
-        ).c_str()
-    );
-
-    m_GainSpinner = new QuickSpinner;
-    m_GainSpinner->setToolTip(
-        ToolTipString(
-            "Quick Gain Adjustment Tool",
-            "Amplifies image signal intensity. Switches between last and the default value when the label is clicked."
-        ).c_str()
-    );
 
     m_ChannelModeController = new ControlCombo();
 
@@ -155,12 +125,6 @@ void ControlBar::Build()
     /* Add to Left Controls */
     m_LeftLayout->addWidget(m_ChannelModeController);
     m_LeftLayout->addWidget(new VLine(this));
-    m_LeftLayout->addWidget(m_ExposureSpinner);
-    m_LeftLayout->addWidget(new VLine(this));
-    m_LeftLayout->addWidget(m_GammaSpinner);
-    m_LeftLayout->addWidget(new VLine(this));
-    m_LeftLayout->addWidget(m_GainSpinner);
-    m_LeftLayout->addWidget(new VLine(this));
 
     /* And a spacer at the end */
     m_LeftLayout->addStretch(1);
@@ -174,18 +138,14 @@ void ControlBar::Build()
     m_RightLayout->addWidget(new VLine(this));
     m_RightLayout->addWidget(m_AnnotationButton);
 
-    /* Add the left side controls */
     m_Layout->addWidget(m_LeftControls);
-    /* The Buffer switch in the middle */
     m_Layout->addWidget(m_BufferSwitch);
-    /* And the Right side controls */
     m_Layout->addWidget(m_RightControls);
 }
 
 void ControlBar::Setup()
 {
-    /* Widget has a Fixed height */
-    setFixedHeight(38);
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     /**
      * Channels controller
@@ -193,59 +153,20 @@ void ControlBar::Setup()
     m_ChannelModeController->addItems({"R", "G", "B", "Alpha", "RGB", "RGBA"});
     m_ChannelModeController->setCurrentIndex(5);
 
-    /**
-     * Exposure Controller
-     */
-    m_ExposureSpinner->SetDefault(0.f);
-    m_ExposureSpinner->SetRange(-5.f, 5.f);
-    m_ExposureSpinner->SetStep(0.1f);
-    m_ExposureSpinner->SetLabel("E");
-
-    /* Default */
-    m_ExposureSpinner->SetValue(0.f);
-    /* Resize */
-    m_ExposureSpinner->setMaximumWidth(52);
-
-    /**
-     * Gamma Controller
-     */
-    m_GammaSpinner->SetDefault(1.0);
-    m_GammaSpinner->SetRange(1.f, 3.f);
-    m_GammaSpinner->SetStep(0.1f);
-    m_GammaSpinner->SetLabel(QStringLiteral("γ").toStdString().c_str());
-
-    /* Default */
-    m_GammaSpinner->SetValue(1.0);
-    /* Resize */
-    m_GammaSpinner->setMaximumWidth(52);
-
-    /**
-     * Gain Controller
-     */
-    m_GainSpinner->SetDefault(1.f);
-    m_GainSpinner->SetRange(0.5f, 3.5f);
-    m_GainSpinner->SetStep(0.1f);
-    m_GainSpinner->SetLabel("f/");
-
-    /* Default */
-    m_GainSpinner->SetValue(1.f);
-    /* Resize */
-    m_GainSpinner->setMaximumWidth(52);
-
     m_Zoomer->setMinimum(1);
     m_Zoomer->setMaximum(100);
     m_Zoomer->setValue(50);
+
+    QMargins cm = m_Layout->contentsMargins();
+    cm.setTop(6);
+    cm.setBottom(6);
+    m_Layout->setContentsMargins(cm);
 }
 
 void ControlBar::Connect()
 {
     /* Zoom */
     connect(m_Zoomer, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ControlBar::zoomChanged);
-
-    /* Viewer Controls Exposure | Gamma | Gain */
-    connect(m_ExposureSpinner, &QuickSpinner::valueChanged, this, &ControlBar::exposureChanged);
-    connect(m_GammaSpinner, &QuickSpinner::valueChanged, this, &ControlBar::gammaChanged);
-    connect(m_GainSpinner, &QuickSpinner::valueChanged, this, &ControlBar::gainChanged);
 
     /* Channel Mode controller */
     connect(m_ChannelModeController, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged), this, &ControlBar::channelModeChanged);
@@ -263,7 +184,7 @@ void ControlBar::Connect()
 }
 
 void ControlBar::SetZoom(float zoom)
-{ 
+{
     bool blocked = m_Zoomer->blockSignals(true);
     m_Zoomer->setValue(zoom);
     m_Zoomer->blockSignals(blocked);

@@ -202,6 +202,21 @@ namespace Tools {
         return s_ThreadCount;
     }
 
+    bool equals_ignore_case(std::string_view _a, std::string_view _b)
+    {
+        if (_a.size() == _b.size())
+        {
+            for (std::size_t i = 0; i < _a.size(); ++i)
+            {
+                if (std::tolower(static_cast<unsigned char>(_a[i])) != std::tolower(static_cast<unsigned char>(_b[i])))
+                    return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     template <typename Ty>
     int index_of(const std::vector<Ty>& vec, const Ty& value)
     {

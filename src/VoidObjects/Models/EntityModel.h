@@ -39,6 +39,7 @@ public:
         Channels,
         Snapshots,
         Type,
+        MultiLayer,
         ElementName,
         VersionName,
         Version

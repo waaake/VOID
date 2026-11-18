@@ -85,7 +85,7 @@ void ImageComparisonRenderLayer::Initialize()
 
 void ImageComparisonRenderLayer::InitTextureA(const FloatImage& image)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->pixfmt, image->type, nullptr);
     m_InternalFormatA = image->InternalFormat();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_A[0]);
@@ -97,7 +97,7 @@ void ImageComparisonRenderLayer::InitTextureA(const FloatImage& image)
 
 void ImageComparisonRenderLayer::InitTextureB(const FloatImage& image)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->format, image->type, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, image->format, image->width, image->height, 0, image->pixfmt, image->type, nullptr);
     m_InternalFormatB = image->InternalFormat();
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_PBOs_B[0]);
@@ -126,7 +126,7 @@ void ImageComparisonRenderLayer::SetImageA(const FloatImage& image)
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     }
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->format, image->type, 0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->pixfmt, image->type, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -152,7 +152,7 @@ void ImageComparisonRenderLayer::SetImageB(const FloatImage& image)
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     }
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->format, image->type, 0);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image->width, image->height, image->pixfmt, image->type, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

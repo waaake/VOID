@@ -138,18 +138,11 @@ public:
     bool Read(const std::string& path, v_frame_t framenumber, FloatImage& image) override;
     bool Read(const std::string& path, v_frame_t framenumber, SharedFrameAudio& buffer) override;
 
-    MediaColor* ColorInfo() override { return &m_ColorInfo; }
+    void FetchInfo() override;
 
     /// Only reads images
     bool IsMovieFormat() const override { return true; }
-    bool HasAudio() const override { return m_HasAudio; }
-    MFrameRange Framerange() const override { return m_Framerange; }
     std::map<std::string, std::string> Metadata() const override;
-
-private:
-    MediaColor m_ColorInfo;
-    MFrameRange m_Framerange;
-    bool m_HasAudio;
 
 private:
     void ProcessInfo();

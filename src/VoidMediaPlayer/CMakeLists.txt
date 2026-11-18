@@ -57,6 +57,8 @@ set(SOURCES
     Toolkit/ControlBar.cpp
     Toolkit/ControlScroller.cpp
     Toolkit/GridController.cpp
+    Toolkit/ImageToolbar.cpp
+    Toolkit/LayerController.cpp
     Toolkit/ViewerController.cpp
 )
 

@@ -28,7 +28,7 @@ public:
      * @param frame Framenumber to be set on the Timeline.
      */
     void SetFrame(int frame);
-    inline void Refresh() { SetFrame(m_TimelineController->Frame()); }
+    void Refresh();
     inline ViewerBuffer* ActiveViewer() const { return m_ActiveViewBuffer; }
 
     void SetMedia(const SharedMediaClip& media);
@@ -42,6 +42,8 @@ public:
     void SetGrid(Playlist* playlist);
     void ResetPlaylistMedia();
 
+    void ResetLayer(const std::string& layer);
+
     void SetVolume(int volume);
 
     void RenderCurrentFrame();
@@ -50,7 +52,7 @@ public:
 
     void ToggleChannels(int channel);
     void SetBlendMode(int mode);
-    void SwitchBlendMode(int delta) { m_ControlBar->SwitchBlendMode(delta); }
+    void SwitchBlendMode(int delta);
     void SetComparisonMode(int mode);
 
     float PeelFactor() const;

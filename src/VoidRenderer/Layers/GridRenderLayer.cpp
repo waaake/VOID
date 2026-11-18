@@ -109,7 +109,7 @@ void GridRenderLayer::SetImages(const std::vector<FloatImage>& images)
             images[i]->width,
             images[i]->height,
             0,
-            images[i]->format,
+            images[i]->pixfmt,
             images[i]->type,
             images[i]->Pixels()
         );

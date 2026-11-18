@@ -98,7 +98,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     m_TagY = option.rect.top() + ICON_SIZE + 4;
 
     painter->drawPixmap(
-        option.rect.left() + 2, option.rect.top() + 2,
+        QPoint(option.rect.left() + 2, option.rect.top() + 2),
         IconForge::GetPixmap(
             IconType::icon_volume_up,
             index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool()
@@ -109,8 +109,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     );
 
     painter->drawPixmap(
-        m_TagX,
-        m_TagY,
+        QPoint(m_TagX,  m_TagY),
         IconForge::GetPixmap(
             IconType::icon_style,
             index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool()
@@ -120,21 +119,40 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
         )
     );
 
+    painter->drawPixmap(
+        QPoint(m_TagX, m_TagY + ICON_SIZE + 4),
+        IconForge::GetPixmap(
+            IconType::icon_stacks,
+            index.data(static_cast<int>(EntityModel::MRoles::MultiLayer)).toBool()
+            ? option.palette.color(QPalette::Text)
+            : lighter2,
+            ICON_SIZE
+    ));
+
     const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
-        const int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 2, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 2, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        constexpr float w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(QRectF(option.rect.left(), option.rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(option.rect.left() + w, option.rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2), QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
-        const int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(option.rect.left(), option.rect.bottom() - 1, w, 2, QColor(255, 0, 0));
-        painter->fillRect(option.rect.left() + w, option.rect.bottom() - 1, w, 2, QColor(0, 255, 0));
-        painter->fillRect(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2, QColor(0, 0, 255));
-        painter->fillRect(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 2, QColor(255, 255, 255));
+        constexpr float w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(QRectF(option.rect.left(), option.rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(option.rect.left() + w, option.rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2), QColor(0, 0, 255));
+        painter->fillRect(QRectF(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 2), QColor(255, 255, 255));
+    }
+    else if (channels > 4)
+    {
+        constexpr float w = (ICON_SIZE + 6) * 0.20;
+        painter->fillRect(QRectF(option.rect.left(), option.rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(option.rect.left() + w, option.rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(option.rect.left() + 2 * w, option.rect.bottom() - 1, w, 2), QColor(0, 0, 255));
+        painter->fillRect(QRectF(option.rect.left() + 3 * w, option.rect.bottom() - 1, w, 2), QColor(255, 255, 255));
+        painter->fillRect(QRectF(option.rect.left() + 4 * w, option.rect.bottom() - 1, w, 2), QColor(55, 140, 15));
     }
 
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
@@ -260,22 +278,32 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
 
     const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
     const bool tags = index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool();
+    const bool multilayer = index.data(static_cast<int>(EntityModel::MRoles::MultiLayer)).toBool();
 
     const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
     {
-        constexpr int w = (ICON_SIZE + 6) * 0.333334;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
+        constexpr float w = (ICON_SIZE + 6) * 0.333334;
+        painter->fillRect(QRectF(rect.left(), rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(rect.left() + w, rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(rect.left() + 2 * w, rect.bottom() - 1, w, 2), QColor(0, 0, 255));
     }
     else if (channels == 4)
     {
-        constexpr int w = (ICON_SIZE + 6) * 0.25;
-        painter->fillRect(rect.left(), rect.bottom() - 1, w, 2, QColor(255, 0, 0));
-        painter->fillRect(rect.left() + w, rect.bottom() - 1, w, 2, QColor(0, 255, 0));
-        painter->fillRect(rect.left() + 2 * w, rect.bottom() - 1, w, 2, QColor(0, 0, 255));
-        painter->fillRect(rect.left() + 3 * w, rect.bottom() - 1, w, 2, QColor(255, 255, 255));
+        constexpr float w = (ICON_SIZE + 6) * 0.25;
+        painter->fillRect(QRectF(rect.left(), rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(rect.left() + w, rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(rect.left() + 2 * w, rect.bottom() - 1, w, 2), QColor(0, 0, 255));
+        painter->fillRect(QRectF(rect.left() + 3 * w, rect.bottom() - 1, w, 2), QColor(255, 255, 255));
+    }
+    else if (channels > 4)
+    {
+        constexpr float w = (ICON_SIZE + 6) * 0.20;
+        painter->fillRect(QRectF(rect.left(), rect.bottom() - 1, w, 2), QColor(255, 0, 0));
+        painter->fillRect(QRectF(rect.left() + w, rect.bottom() - 1, w, 2), QColor(0, 255, 0));
+        painter->fillRect(QRectF(rect.left() + 2 * w, rect.bottom() - 1, w, 2), QColor(0, 0, 255));
+        painter->fillRect(QRectF(rect.left() + 3 * w, rect.bottom() - 1, w, 2), QColor(255, 255, 255));
+        painter->fillRect(QRectF(rect.left() + 4 * w, rect.bottom() - 1, w, 2), QColor(55, 140, 15));
     }
 
     painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
@@ -287,6 +315,12 @@ void MediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opt
     painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
         IconType::icon_style,
         tags ? option.palette.color(QPalette::Text) : lighter2,
+        ICON_SIZE
+    ));
+
+    painter->drawPixmap(QPoint(m_TagX, m_TagY + ICON_SIZE + 4), IconForge::GetPixmap(
+        IconType::icon_stacks,
+        multilayer ? option.palette.color(QPalette::Text) : lighter2,
         ICON_SIZE
     ));
 

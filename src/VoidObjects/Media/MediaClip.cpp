@@ -117,6 +117,9 @@ void MediaClip::ReadThumbnail()
     if (!Valid())
         return;
 
+    /// Fetch internal details about the media
+    m_Reader->FetchInfo();
+
     UInt8Image image = VOID_NAMESPACE::Image<unsigned char>::Create();
     Media::Thumbnail(image);
 

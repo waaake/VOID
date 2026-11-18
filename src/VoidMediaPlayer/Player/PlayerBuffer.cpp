@@ -185,6 +185,15 @@ void PlayerBuffer::RemoveAnnotation(const v_frame_t frame)
         m_Clip->RemoveAnnotation(frame);
 }
 
+void PlayerBuffer::ResetLayer(const std::string& layer)
+{
+    if (m_PlayingComponent == PlayableComponent::Clip && m_Clip->MultiLayered())
+    {
+        m_Clip->SetCurrentLayer(layer);
+        emit mediaUpdated();
+    }
+}
+
 bool PlayerBuffer::NextMedia()
 {
     if (m_PlayingComponent == PlayableComponent::Playlist)
