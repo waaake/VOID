@@ -118,18 +118,31 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     const bool audio = index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool();
     const bool tags = index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool();
+    const bool multilayer = index.data(static_cast<int>(EntityModel::MRoles::MultiLayer)).toBool();
 
-    painter->drawPixmap(rect.left() + 2, rect.top() + 2, IconForge::GetPixmap(
-        IconType::icon_volume_up,
-        audio ? option.palette.color(QPalette::Text) : lighter2,
-        ICON_SIZE
-    ));
+    painter->drawPixmap(QPoint(rect.left() + 2, rect.top() + 2),
+        IconForge::GetPixmap(
+            IconType::icon_volume_up,
+            audio ? option.palette.color(QPalette::Text) : lighter2,
+            ICON_SIZE
+        )
+    );
 
-    painter->drawPixmap(m_TagX, m_TagY, IconForge::GetPixmap(
-        IconType::icon_style,
-        tags ? option.palette.color(QPalette::Text) : lighter2,
-        ICON_SIZE
-    ));
+    painter->drawPixmap(QPoint(m_TagX, m_TagY),
+        IconForge::GetPixmap(
+            IconType::icon_style,
+            tags ? option.palette.color(QPalette::Text) : lighter2,
+            ICON_SIZE
+        )
+    );
+
+    painter->drawPixmap(QPoint(m_TagX, m_TagY + ICON_SIZE + 4),
+        IconForge::GetPixmap(
+            IconType::icon_stacks,
+            multilayer ? option.palette.color(QPalette::Text) : lighter2,
+            ICON_SIZE
+        )
+    );
 
     const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)

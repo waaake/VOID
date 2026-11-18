@@ -98,7 +98,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     m_TagY = option.rect.top() + ICON_SIZE + 4;
 
     painter->drawPixmap(
-        option.rect.left() + 2, option.rect.top() + 2,
+        QPoint(option.rect.left() + 2, option.rect.top() + 2),
         IconForge::GetPixmap(
             IconType::icon_volume_up,
             index.data(static_cast<int>(EntityModel::MRoles::Audio)).toBool()
@@ -109,8 +109,7 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     );
 
     painter->drawPixmap(
-        m_TagX,
-        m_TagY,
+        QPoint(m_TagX,  m_TagY),
         IconForge::GetPixmap(
             IconType::icon_style,
             index.data(static_cast<int>(EntityModel::MRoles::Tags)).toBool()
@@ -119,6 +118,16 @@ void BasicMediaItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
             ICON_SIZE
         )
     );
+
+    painter->drawPixmap(
+        QPoint(m_TagX, m_TagY + ICON_SIZE + 4),
+        IconForge::GetPixmap(
+            IconType::icon_stacks,
+            index.data(static_cast<int>(EntityModel::MRoles::MultiLayer)).toBool()
+            ? option.palette.color(QPalette::Text)
+            : lighter2,
+            ICON_SIZE
+    ));
 
     const int channels = index.data(static_cast<int>(EntityModel::MRoles::Channels)).toInt();
     if (channels == 3)
