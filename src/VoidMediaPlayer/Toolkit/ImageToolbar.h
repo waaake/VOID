@@ -24,6 +24,10 @@ public:
     ~ImageToolbar();
 
     void SetImageLayers(const std::vector<std::string>& layers) { m_LayerController->SetLayers(layers); }
+    void SetImageLayers(const std::vector<std::string>& layers, const std::string& current)
+    {
+        m_LayerController->SetLayers(layers, current);
+    }
     void ResetImageLayers() { m_LayerController->clear(); }
 
 signals:

@@ -21,9 +21,9 @@ ImageToolbar::ImageToolbar(QWidget* parent)
 
 ImageToolbar::~ImageToolbar()
 {
-    m_LayerController->deleteLater();
-    delete m_LayerController;
-    m_LayerController = nullptr;
+    // m_LayerController->deleteLater();
+    // delete m_LayerController;
+    // m_LayerController = nullptr;
 
     m_ExposureSpinner->deleteLater();
     delete m_ExposureSpinner;
@@ -45,7 +45,7 @@ ImageToolbar::~ImageToolbar()
 void ImageToolbar::Build()
 {
     m_Layout = new QHBoxLayout(this);
-    m_LayerController = new ImageLayerController(this);
+    // m_LayerController = new ImageLayerController(this);
 
     m_ExposureSpinner = new QuickSpinner;
     m_ExposureSpinner->setToolTip(
@@ -80,8 +80,8 @@ void ImageToolbar::Build()
     
     m_Layout->addStretch(1);
 
-    m_Layout->addWidget(new VLine(this));
-    m_Layout->addWidget(m_LayerController);
+    // m_Layout->addWidget(new VLine(this));
+    // m_Layout->addWidget(m_LayerController);
 }
 
 void ImageToolbar::Setup()
@@ -116,7 +116,7 @@ void ImageToolbar::Setup()
     connect(m_ExposureSpinner, &QuickSpinner::valueChanged, this, &ImageToolbar::exposureChanged);
     connect(m_GammaSpinner, &QuickSpinner::valueChanged, this, &ImageToolbar::gammaChanged);
     connect(m_GainSpinner, &QuickSpinner::valueChanged, this, &ImageToolbar::gainChanged);
-    connect(m_LayerController, &ImageLayerController::layerChanged, this, &ImageToolbar::imageLayerChangeRequested);
+    // connect(m_LayerController, &ImageLayerController::layerChanged, this, &ImageToolbar::imageLayerChangeRequested);
 }
 
 VOID_NAMESPACE_CLOSE
