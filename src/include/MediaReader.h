@@ -58,6 +58,7 @@ public:
     /// @return true if the exr media has multi layers, else false.
     virtual bool MultiLayered() const { return m_Format.layers.size() > 1; }
 
+    virtual std::string CurrentLayer() const { return m_Format.layer; }
     /// @brief Returns the names of the Layers available in the input.
     virtual std::vector<std::string> Layers() const { return m_Format.layers; }
 

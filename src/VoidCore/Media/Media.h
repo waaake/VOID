@@ -118,6 +118,7 @@ public:
     inline bool MultiLayered() const { return m_Reader->MultiLayered(); }
     
     inline std::vector<std::string> Layers() const { return m_Reader->Layers(); }
+    inline std::string CurrentLayer() const { return m_Reader->CurrentLayer(); }
     inline void SetCurrentLayer(const std::string& layer) { m_Reader->Info()->layer = layer; }
     inline std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
     void SetDirty(bool dirty = true);
