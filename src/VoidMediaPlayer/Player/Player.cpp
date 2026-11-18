@@ -60,7 +60,6 @@ void Player::SetMedia(const SharedMediaClip& media)
 
     Timekeeper::Instance().Reset();
     Timekeeper::Instance().SetMediaFramerate(media->Framerate());
-    SetMediaLayers(media->Layers());
 }
 
 void Player::SetMedia(const std::vector<SharedMediaClip>& media)
