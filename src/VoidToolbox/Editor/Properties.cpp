@@ -40,13 +40,24 @@ void PropertiesPanel::Show(QWidget* panel)
 void PropertiesPanel::EditEffect(Effect* effect)
 {
     // Remove any existing Editors for the same Effect before adding this again
-    for (auto w : findChildren<EffectEditor*>(effect->Name().c_str()))
+    for (auto* w : findChildren<EffectEditor*>(effect->Name().c_str()))
         w->Close();
 
     // Ensure we have only panels till the limit
     // Going one lesser here as we are also adding another widget
     ClearAdditionalPanels(m_PanelCounter->CurrentValue() - 1);
     m_ScrollLayout->insertWidget(0, new EffectEditor(effect, this));
+}
+
+void PropertiesPanel::EditMedia(const SharedMediaClip& media)
+{
+    for (auto* w : findChildren<MediaEditor*>())
+    {
+        if (w->HasSameMedia(media))
+            w->Close();
+    }
+
+    m_ScrollLayout->insertWidget(0, new MediaEditor(media, this));
 }
 
 void PropertiesPanel::Clear()
