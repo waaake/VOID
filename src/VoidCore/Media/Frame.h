@@ -57,6 +57,7 @@ public:
     void Image(FloatImage& image);
     const FloatImage& Image();
     bool Audio(SharedFrameAudio& buffer);
+    void ResetPixelAspect() { m_Image->pixaspect = m_Reader->PixelAspect(); }
 
     // Frame Caches
     void Cache();

@@ -89,6 +89,7 @@ void Frame::Image(FloatImage& image)
     m_Reader->Read(m_Entry.Fullpath(), m_Framenumber, image);
     // Convert the read image to the working colorspace
     MediaColorProcessor::Instance().Process(*m_Reader->ColorInfo(), image);
+    ResetPixelAspect();
 }
 
 const FloatImage& Frame::Image()
@@ -136,6 +137,7 @@ void Frame::Cache()
     {
         m_Reader->Read(m_Entry.Fullpath(), m_Framenumber, m_Image);
         MediaColorProcessor::Instance().Process(*m_Reader->ColorInfo(), m_Image);
+        ResetPixelAspect();
     }
 }
 
