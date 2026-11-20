@@ -46,6 +46,8 @@ signals:
     // When a Media is inspected of its Metadata
     void metadataInspected(const SharedMediaClip&);
     void effectsEdited(const SharedMediaClip&);
+    void mediaInspected(const SharedMediaClip&);
+    void sequenceInspected(const SharedPlaybackSequence&);
 
 protected: /* Methods */
     void dragEnterEvent(QDragEnterEvent* event) override;
@@ -53,6 +55,7 @@ protected: /* Methods */
 
 private: /* Methods */
     void Build();
+    void BuildMenu();
 
     /* Setup how the default UI elements appear */
     void Setup();
@@ -111,6 +114,7 @@ private: /* Members */
     QAction* m_RestoreSnapshotAction;
     QAction* m_RenameAction;
     QMenu* m_InputColorspacesMenu;
+    QAction* m_InspectMediaAction;
 
     QShortcut* m_PrimaryViewShortcut;
     QShortcut* m_SecondaryViewShortcut;
@@ -131,6 +135,7 @@ private: /* Methods */
     bool HasSnapshots() const;
     void SaveSnapshot();
     void RestoreSnapshot();
+    void InspectSelected();
 };
 
 VOID_NAMESPACE_CLOSE

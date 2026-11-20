@@ -33,6 +33,7 @@ VoidMediaLister::VoidMediaLister(QWidget* parent)
     : QWidget(parent)
 {
     Build();
+    BuildMenu();
     Connect();
     Setup();
 
@@ -76,6 +77,10 @@ VoidMediaLister::~VoidMediaLister()
     m_InspectMetadataAction->deleteLater();
     delete m_InspectMetadataAction;
     m_InspectMetadataAction = nullptr;
+
+    m_InspectMediaAction->deleteLater();
+    delete m_InspectMediaAction;
+    m_InspectMediaAction = nullptr;
 }
 
 void VoidMediaLister::dragEnterEvent(QDragEnterEvent* event)
@@ -105,51 +110,6 @@ void VoidMediaLister::dropEvent(QDropEvent* event)
 
 void VoidMediaLister::Build()
 {
-    m_PlayMenu = new QMenu("Play");
-    m_PlayAction = new QAction("Play Selected As Sequence", m_PlayMenu);
-    m_PlayAsListAction = new QAction("Play Selected in Queue", m_PlayMenu);
-    m_AddToQueueAction = new QAction("Add Selected to Queue", m_PlayMenu);
-    m_PlayAsGridAction = new QAction("Play Selected as Grid", m_PlayMenu);
-    m_PlayMenu->addAction(m_PlayAction);
-    m_PlayMenu->addAction(m_PlayAsListAction);
-    m_PlayMenu->addAction(m_AddToQueueAction);
-    m_PlayMenu->addAction(m_PlayAsGridAction);
-
-    m_RemoveAction = new QAction("Remove Selected");
-    m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
-
-    m_TagsMenu = new QMenu("Tags");
-    m_AddTagAction = new QAction("Add tag...", m_TagsMenu);
-    m_ClearTagsAction = new QAction("Clear all tags", m_TagsMenu);
-    m_TagsMenu->addAction(m_AddTagAction);
-    m_TagsMenu->addAction(m_ClearTagsAction);
-
-    m_PlaylistMenu = new QMenu("Add to Playlist");
-    // Add any playlists which are present in the active project
-    RebuildPlaylistMenu();
-    m_InputColorspacesMenu = new QMenu("Set Media Input Colorspace");
-    RebuildColorspacesMenu();
-
-    m_SequenceMenu = new QMenu("Sequence");
-    m_AddSequenceAction = new QAction("Add Sequence", m_SequenceMenu);
-    m_AddSequenceAction->setShortcut(QKeySequence::New);
-    m_AddSequenceAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-    m_RenameAction = new QAction("Rename", m_SequenceMenu);
-    m_SaveSnapshotAction = new QAction("Add Snapshot...", m_SequenceMenu);
-    m_RestoreSnapshotAction = new QAction("Restore from Snapshot...", m_SequenceMenu);
-
-    addAction(m_AddSequenceAction);
-    m_SequenceMenu->addAction(m_AddSequenceAction);
-    m_SequenceMenu->addAction(m_RenameAction);
-    m_SequenceMenu->addAction(m_SaveSnapshotAction);
-    m_SequenceMenu->addAction(m_RestoreSnapshotAction);
-
-    m_PrimaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_1), this);
-    m_PrimaryViewShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-    m_SecondaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_2), this);
-    m_SecondaryViewShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-
     m_layout = new QVBoxLayout(this);
 
     m_OptionsLayout = new QHBoxLayout;
@@ -231,6 +191,56 @@ void VoidMediaLister::Build()
     m_layout->setContentsMargins(0, top, 0, 2);
 }
 
+void VoidMediaLister::BuildMenu()
+{
+    m_PlayMenu = new QMenu("Play");
+    m_PlayAction = new QAction("Play Selected As Sequence", m_PlayMenu);
+    m_PlayAsListAction = new QAction("Play Selected in Queue", m_PlayMenu);
+    m_AddToQueueAction = new QAction("Add Selected to Queue", m_PlayMenu);
+    m_PlayAsGridAction = new QAction("Play Selected as Grid", m_PlayMenu);
+    m_PlayMenu->addAction(m_PlayAction);
+    m_PlayMenu->addAction(m_PlayAsListAction);
+    m_PlayMenu->addAction(m_AddToQueueAction);
+    m_PlayMenu->addAction(m_PlayAsGridAction);
+
+    m_RemoveAction = new QAction("Remove Selected");
+    m_InspectMetadataAction = new QAction("Show in Metadata Viewer");
+
+    m_TagsMenu = new QMenu("Tags");
+    m_AddTagAction = new QAction("Add tag...", m_TagsMenu);
+    m_ClearTagsAction = new QAction("Clear all tags", m_TagsMenu);
+    m_TagsMenu->addAction(m_AddTagAction);
+    m_TagsMenu->addAction(m_ClearTagsAction);
+
+    m_PlaylistMenu = new QMenu("Add to Playlist");
+    // Add any playlists which are present in the active project
+    RebuildPlaylistMenu();
+    m_InputColorspacesMenu = new QMenu("Set Media Input Colorspace");
+    RebuildColorspacesMenu();
+
+    m_InspectMediaAction = new QAction("Properties");
+
+    m_SequenceMenu = new QMenu("Sequence");
+    m_AddSequenceAction = new QAction("Add Sequence", m_SequenceMenu);
+    m_AddSequenceAction->setShortcut(QKeySequence::New);
+    m_AddSequenceAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+    m_RenameAction = new QAction("Rename", m_SequenceMenu);
+    m_SaveSnapshotAction = new QAction("Add Snapshot...", m_SequenceMenu);
+    m_RestoreSnapshotAction = new QAction("Restore from Snapshot...", m_SequenceMenu);
+
+    addAction(m_AddSequenceAction);
+    m_SequenceMenu->addAction(m_AddSequenceAction);
+    m_SequenceMenu->addAction(m_RenameAction);
+    m_SequenceMenu->addAction(m_SaveSnapshotAction);
+    m_SequenceMenu->addAction(m_RestoreSnapshotAction);
+
+    m_PrimaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_1), this);
+    m_PrimaryViewShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    m_SecondaryViewShortcut = new QShortcut(QKeySequence(Qt::Key_2), this);
+    m_SecondaryViewShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+}
+
 void VoidMediaLister::Setup()
 {
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
@@ -268,6 +278,7 @@ void VoidMediaLister::Connect()
     connect(m_RenameAction, &QAction::triggered, this, [this]() -> void { m_MediaView->edit(m_MediaView->currentIndex()); });
     connect(m_SaveSnapshotAction, &QAction::triggered, this, &VoidMediaLister::SaveSnapshot);
     connect(m_RestoreSnapshotAction, &QAction::triggered, this, &VoidMediaLister::RestoreSnapshot);
+    connect(m_InspectMediaAction, &QAction::triggered, this, &VoidMediaLister::InspectSelected);
 
     connect(m_SearchBar, &MediaSearchBar::typed, m_MediaView, &MediaView::Search);
     connect(m_SortButton, &QPushButton::toggled, this, [this](const bool checked) { m_MediaView->EnableSorting(checked, Qt::AscendingOrder); });
@@ -421,6 +432,9 @@ void VoidMediaLister::ShowContextMenu(const _QPoint& position)
 
     contextMenu.addMenu(m_InputColorspacesMenu);
     m_InputColorspacesMenu->setEnabled(selection);
+
+    contextMenu.addAction(m_InspectMediaAction);
+    m_InspectMediaAction->setEnabled(selection);
 
     /* Show Menu */
     #if _QT6
@@ -616,6 +630,20 @@ void VoidMediaLister::RestoreSnapshot()
             if (r.exec())
                 _MediaBridge.RestoreSnapshot(index, r.Index());
         }
+    }
+}
+
+void VoidMediaLister::InspectSelected()
+{
+    QModelIndex current = m_MediaView->currentIndex();
+
+    if (_ENTITY_TYPE(current) == ProjectEntity::Type::SEQUENCE)
+    {
+        // emit sequenceInspected(_MediaBridge.Medi)
+    }
+    else
+    {
+        emit mediaInspected(_MediaBridge.MediaAt(current));
     }
 }
 
