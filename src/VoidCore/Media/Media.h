@@ -123,6 +123,8 @@ public:
     inline std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
 
     std::string InputColorTransform() const;
+    float PixelAspect() const { return m_Reader->PixelAspect(); }
+    void SetPixelAspect(float a);
     void SetDirty(bool dirty = true);
 
     /**

@@ -199,6 +199,13 @@ std::string Media::InputColorTransform() const
     return MediaColorProcessor::Instance().FromMediaColorspace(*m_Reader->ColorInfo());
 }
 
+void Media::SetPixelAspect(float a)
+{
+    m_Reader->SetPixelAspect(a);
+    for (Frame& f : m_Frames)
+        f.ResetPixelAspect();
+}
+
 void Media::ClearCache(bool dirty)
 {
     for (Frame& f : m_Frames)
