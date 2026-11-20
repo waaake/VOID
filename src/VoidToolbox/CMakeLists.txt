@@ -1,6 +1,8 @@
 set(SOURCES
     # Editors
+    Editor/Editor.cpp
     Editor/Effects.cpp
+    Editor/Media.cpp
     Editor/ParamEditor.cpp
     Editor/Properties.cpp
     Editor/RangedParamEditor.cpp
