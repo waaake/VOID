@@ -8,6 +8,7 @@
 #include "FormatForge.h"
 #include "Media.h"
 #include "VoidCore/Logging.h"
+#include "VoidCore/Processors/ColorProcessor.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -191,6 +192,11 @@ void Media::Thumbnail(UInt8Image& image)
 void Media::Thumbnail(v_frame_t frame, UInt8Image& image)
 {
     m_Frames[frame - m_FirstFrame].Thumbnail(image);
+}
+
+std::string Media::InputColorTransform() const
+{
+    return MediaColorProcessor::Instance().FromMediaColorspace(*m_Reader->ColorInfo());
 }
 
 void Media::ClearCache(bool dirty)
