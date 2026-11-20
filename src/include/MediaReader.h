@@ -81,6 +81,8 @@ public:
     int Width() const { return m_Format.width; }
     int Height() const { return m_Format.height; }
     int Channels() const { return m_Format.channels; }
+    float PixelAspect() const { return m_Format.pixelAspect; }
+    void SetPixelAspect(float a) { m_Format.SetPixelAspect(a); }
 
 protected:
     MediaFormat m_Format;
