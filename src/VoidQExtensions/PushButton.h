@@ -62,6 +62,7 @@ public:
     ColorSelectionButton(QWidget* parent = nullptr);
     ColorSelectionButton(const QColor& color, QWidget* parent = nullptr);
     void SetColor(const QColor& color);
+    QColor Color() const { return m_Color; }
 
 signals:
     /**
