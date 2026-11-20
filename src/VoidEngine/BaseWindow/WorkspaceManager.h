@@ -96,6 +96,7 @@ private: /* Members */
     void Clear();
     void InspectMetadata(const SharedMediaClip& media);
     void UpdateMediaQueue(Playlist* playlist);
+    void EditMedia(const SharedMediaClip& media);
     void EditEffects(const SharedMediaClip& media);
     void EditEffects(Effect* effect);
     void ShowComponent(const Component& component) const;
