@@ -108,6 +108,10 @@ void WorkspaceManager::Connect()
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
     connect(m_Sequencer, &SequencerTimeline::editEffectRequested, this, static_cast<void (WorkspaceManager::*)(Effect*)>(&WorkspaceManager::EditEffects));
+    connect(m_PropertiesEditor, &PropertiesPanel::mediaReceivedUpdate, this, [this](const SharedMediaClip& media, bool needsRecache) -> void
+    {
+        _PlayerBridge.RefreshMedia(media, needsRecache);
+    });
 }
 
 void WorkspaceManager::InitMenu(MenuSystem* menuSystem)
