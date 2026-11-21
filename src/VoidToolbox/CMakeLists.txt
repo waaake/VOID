@@ -1,4 +1,7 @@
 set(SOURCES
+    # Editor Controls
+    Editor/Controls/Field.cpp
+
     # Editors
     Editor/Editor.cpp
     Editor/Effects.cpp
