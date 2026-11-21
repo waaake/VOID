@@ -87,13 +87,19 @@ void MediaEditor::Setup()
     connect(m_LayerCombo, &QComboBox::currentTextChanged, this, [this](const QString& text) -> void
     {
         m_Clip->SetCurrentLayer(text.toStdString());
+        emit mediaUpdated(m_Clip, true);
     });
     connect(m_ColorspaceCombo, &QComboBox::currentTextChanged, this, [this](const QString& text) -> void
     {
         m_Clip->SetInputColorspace(text.toStdString());
+        emit mediaUpdated(m_Clip, true);
     });
 
-    connect(m_PixelAspectEdit, &DoubleField::valueChanged, this, [this](double v) -> void { m_Clip->SetPixelAspect(v); });
+    connect(m_PixelAspectEdit, &DoubleField::valueChanged, this, [this](double v) -> void
+    {
+        m_Clip->SetPixelAspect(v);
+        emit mediaUpdated(m_Clip, false);
+    });
 }
 
 VOID_NAMESPACE_CLOSE

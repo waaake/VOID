@@ -18,11 +18,15 @@ VOID_NAMESPACE_OPEN
 
 class MediaEditor : public BaseEditor
 {
+    Q_OBJECT
 public:
     explicit MediaEditor(const SharedMediaClip& clip, QWidget* parent = nullptr);
     ~MediaEditor();
 
     bool HasSameMedia(const SharedMediaClip& media) const { return m_Clip.get() == media.get(); }
+
+signals:
+    void mediaUpdated(const SharedMediaClip& media, bool needsRecache = false);
 
 private:
     QLineEdit* m_PathEdit;
