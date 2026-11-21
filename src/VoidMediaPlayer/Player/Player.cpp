@@ -226,6 +226,30 @@ void Player::Refresh()
     SetFrame(m_TimelineController->Frame());
 }
 
+void Player::MediaUpdated(const SharedMediaClip& media, bool recache)
+{
+    /// The provided media has received an update
+    /// Before we actually do anything, we need to know whether the media is currently being played
+    /// if yes, then based on the type of update we clear-recache or just refresh the current frame
+    /// TODO: check if we can do this differently?...
+    if (m_ActiveViewBuffer->PlayingComponent() == PlayerBuffer::PlayableComponent::Clip)
+    {
+        auto active = m_ActiveViewBuffer->GetMediaClip();
+        if (media.get() == active.get())
+        {
+            if (recache)
+            {
+                /// We want to reset the media on the view buffer for it to recache everything like before
+                /// Just in this case, we won't be resetting any ranges or other bits, only render the current frame
+                m_ActiveViewBuffer->Set(media);
+            }
+
+            SetFrame(m_TimelineController->Frame());
+            VOID_LOG_INFO("Refreshed...");
+        }
+    }
+}
+
 void Player::NextMedia()
 {
     if (m_ActiveViewBuffer->NextMedia())
