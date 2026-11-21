@@ -11,6 +11,7 @@
 /* Internal */
 #include "Definition.h"
 #include "Editor.h"
+#include "Controls/Field.h"
 #include "VoidObjects/Media/MediaClip.h"
 
 VOID_NAMESPACE_OPEN
@@ -25,10 +26,11 @@ public:
 
 private:
     QLineEdit* m_PathEdit;
-    QLineEdit* m_RangeStartEdit;
-    QLineEdit* m_RangeEndEdit;
+    IntField* m_RangeStartEdit;
+    IntField* m_RangeEndEdit;
     QComboBox* m_ColorspaceCombo;
     QComboBox* m_LayerCombo;
+    DoubleField* m_PixelAspectEdit;
     SharedMediaClip m_Clip;
 
 private:
