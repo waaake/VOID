@@ -20,7 +20,6 @@ VOID_NAMESPACE_OPEN
 class VOID_API PropertiesPanel : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit PropertiesPanel(QWidget* parent = nullptr);
     ~PropertiesPanel();
@@ -34,6 +33,9 @@ public:
     void Clear();
     void Remove(const std::string& name);
     void ClearAdditionalPanels(int limit);
+
+signals:
+    void mediaReceivedUpdate(const SharedMediaClip&, bool needsRecache = false);
 
 private: /* Members */
     QVBoxLayout* m_Layout;

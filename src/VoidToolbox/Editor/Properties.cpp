@@ -57,7 +57,9 @@ void PropertiesPanel::EditMedia(const SharedMediaClip& media)
             w->Close();
     }
 
-    m_ScrollLayout->insertWidget(0, new MediaEditor(media, this));
+    auto* editor = new MediaEditor(media, this);
+    connect(editor, &MediaEditor::mediaUpdated, this, &PropertiesPanel::mediaReceivedUpdate);
+    m_ScrollLayout->insertWidget(0, editor);
 }
 
 void PropertiesPanel::Clear()
