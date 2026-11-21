@@ -63,6 +63,7 @@ public:
 
     inline void ResetPlaylistMedia() { m_Player->ResetPlaylistMedia(); }
     inline void ResetMediaLayer(const std::string& layer) { m_Player->ResetLayer(layer); }
+    inline void RefreshMedia(const SharedMediaClip& media, bool recache = false) { m_Player->MediaUpdated(media, recache); }
 
     inline void ResumeCache() { m_Player->ResumeCache(); }
     inline void DisableCache() { m_Player->DisableCache(); }
