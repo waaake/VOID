@@ -638,13 +638,9 @@ void VoidMediaLister::InspectSelected()
     QModelIndex current = m_MediaView->currentIndex();
 
     if (_ENTITY_TYPE(current) == ProjectEntity::Type::SEQUENCE)
-    {
-        // emit sequenceInspected(_MediaBridge.Medi)
-    }
+        emit sequenceInspected(_MediaBridge.SequenceAt(current));
     else
-    {
         emit mediaInspected(_MediaBridge.MediaAt(current));
-    }
 }
 
 VOID_NAMESPACE_CLOSE
