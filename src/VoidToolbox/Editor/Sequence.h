@@ -12,6 +12,7 @@
 #include "Definition.h"
 #include "Editor.h"
 #include "Controls/Field.h"
+#include "VoidToolbox/Elements/Framerate.h"
 #include "VoidObjects/Sequence/Sequence.h"
 
 VOID_NAMESPACE_OPEN
@@ -29,7 +30,7 @@ public:
 //     void mediaUpdated(const SharedPlaybackSequence& media, bool needsRecache = false);
 
 private:
-    QComboBox* m_FramerateCombo;
+    FramerateBox* m_FramerateCtrl;
     IntField* m_FrameStartEdit;
     // QComboBox* m_TimeDisplayCombo;
     // DoubleField* m_PixelAspectEdit;
