@@ -7,6 +7,7 @@
 
 /* Internal */
 #include "About.h"
+#include "VoidQExtensions/Frame.h"
 
 static const char* DESCRIPTION = \
 "VOID is a media player with evolving capabilities.\n\
@@ -46,13 +47,6 @@ void AboutVoid::Build()
     m_VoidLabel = new QLabel;
     QImage logo(":resources/images/VOID_Logo_Full.png");
     m_VoidLabel->setPixmap(QPixmap::fromImage(logo.scaledToWidth(400, Qt::SmoothTransformation)));
-
-    // ---------------------------------------------
-    m_LogoSeparator = new QFrame;
-    m_LogoSeparator->setFrameShape(QFrame::HLine);
-    m_LogoSeparator->setFrameShadow(QFrame::Raised);
-    m_LogoSeparator->setLineWidth(2);
-    m_LogoSeparator->setMidLineWidth(3);
 
     m_About = new QLabel("About VOID");
 
@@ -101,20 +95,13 @@ void AboutVoid::Build()
     detailsLayout->addWidget(m_GithubHeader, 3, 0, Qt::AlignLeft);
     detailsLayout->addWidget(new QLabel(GITHUB, this), 3, 1);
 
-    // ---------------------------------------------
-    m_ButtonSeparator = new QFrame;
-    m_ButtonSeparator->setFrameShape(QFrame::HLine);
-    m_ButtonSeparator->setFrameShadow(QFrame::Raised);
-    m_ButtonSeparator->setLineWidth(2);
-    m_ButtonSeparator->setMidLineWidth(3);
-
     m_OkButton = new QPushButton("&Close");
 
     buttonLayout->addStretch(1);
     buttonLayout->addWidget(m_OkButton);
 
     m_Layout->addWidget(m_VoidLabel);
-    m_Layout->addWidget(m_LogoSeparator);
+    m_Layout->addWidget(new HLine(this));
     m_Layout->addWidget(m_About);
     m_Layout->addWidget(m_Description);
 
@@ -122,7 +109,7 @@ void AboutVoid::Build()
     m_Layout->addStretch(1);
     m_Layout->addLayout(detailsLayout);
     m_Layout->addStretch(1);
-    m_Layout->addWidget(m_ButtonSeparator);
+    m_Layout->addWidget(new HLine(this));
     m_Layout->addLayout(buttonLayout);
 }
 

@@ -28,10 +28,6 @@ private: /* Members */
     /* Main Layout for the Dialog */
     QVBoxLayout* m_Layout;
 
-    /* Separators */
-    QFrame* m_LogoSeparator;
-    QFrame* m_ButtonSeparator;
-
     /* Logo */
     QLabel* m_VoidLabel;
 
