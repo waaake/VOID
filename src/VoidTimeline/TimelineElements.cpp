@@ -4,6 +4,7 @@
 /* Qt */
 #include <QAbstractItemView>
 #include <QAction>
+#include <QKeyEvent>
 #include <QLineEdit>
 #include <QMenu>
 #include <QPalette>
@@ -112,42 +113,39 @@ void TimeDisplay::Setup()
 FramerateBox::FramerateBox(QWidget* parent)
 	: QComboBox(parent)
 {
-	/* Validator */
-	m_DoubleValidator = new QDoubleValidator(this);
-	m_DoubleValidator->setBottom(0.0);
-	m_DoubleValidator->setTop(2000.0);
+	m_Model = new FramerateModel(this);
 
-	/* Setup the Box */
+	m_DoubleValidator = new QDoubleValidator(this);
+	m_DoubleValidator->setRange(0.1, 1000.0, 6);
+
 	Setup();
 
-	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int) { RateChanged(currentText()); });
-	connect(lineEdit(), &QLineEdit::returnPressed, this, [this]() { RateChanged(currentText()); });
-	connect(lineEdit(), &QLineEdit::editingFinished, this, [this]() { RateChanged(currentText()); });
+	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int index)
+	{
+		RateChanged(m_Model->Framerate(index));
+	});
+	connect(lineEdit(), &QLineEdit::returnPressed, this, &FramerateBox::RateEdited);
+	connect(lineEdit(), &QLineEdit::editingFinished, this, &FramerateBox::RateEdited);
 
 	lineEdit()->setAlignment(Qt::AlignCenter);
 }
 
+void FramerateBox::keyPressEvent(QKeyEvent* event)
+{
+	/// This happens before the lineEdit::returnPressed is invoked
+	/// if the value is not added to the model by then, it's set as empty
+	/// we have one way to override and accept the event, let it not propagate further down
+	/// or we could do like this, add the value to the model, so by the time returnPressed is invoked,
+	/// we already have this value persist and that will invoke the required signals...
+	if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+		m_Model->Add(currentText());
+
+	QComboBox::keyPressEvent(event);
+}
+
 void FramerateBox::Setup()
 {
-	// Setup values and defaults
-	const QStringList values = {
-		"8",
-		"10",
-		"12",
-		"12.50",
-		"15",
-		"23.98",
-		"24",
-		"25",
-		"29.97",
-		"30",
-		"48",
-		"50",
-		"59.94",
-		"60"
-	};
-
-	addItems(values);
+	setModel(m_Model);
 	setEditable(true);
 
 	setValidator(m_DoubleValidator);
@@ -156,15 +154,23 @@ void FramerateBox::Setup()
 	QPalette p = palette();
 	p.setColor(QPalette::Base, p.color(QPalette::Dark));
     setPalette(p);
+
 }
 
-void FramerateBox::RateChanged(const QString& text)
+void FramerateBox::RateChanged(double d)
 {
-	Timekeeper::Instance().SetFramerate(text.toDouble());
-	emit framerateChanged(text.toDouble());
+	Timekeeper::Instance().SetFramerate(d);
+	emit framerateChanged(d);
 
-	/* Unset Focus once the text is updated */
 	clearFocus();
+}
+
+void FramerateBox::RateEdited()
+{
+	const double t = currentText().toDouble();
+	// Ensure that we have it added to the model as well
+	m_Model->Add(t);
+	RateChanged(t);
 }
 
 /* }}} */

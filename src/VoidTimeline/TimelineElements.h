@@ -17,6 +17,7 @@
 #include "Definition.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidIconForge/IconForge.h"
+#include "VoidObjects/Models/Framerate.h"
 #include "VoidQExtensions/ComboBox.h"
 #include "VoidQExtensions/Dialog.h"
 
@@ -92,12 +93,17 @@ public:
 signals:
 	void framerateChanged(double);
 
+protected:
+	void keyPressEvent(QKeyEvent* event) override;
+
 private: /* Members */
+	FramerateModel* m_Model;
 	QDoubleValidator* m_DoubleValidator;
 
 private: /* Methods */
 	void Setup();
-	void RateChanged(const QString& text);
+	void RateChanged(double d);
+	void RateEdited();
 };
 
 class TimeEdit : public QLineEdit
