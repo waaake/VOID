@@ -12,6 +12,9 @@ set(SOURCES
     Editor/Sequence.cpp
     Editor/TagEditor.cpp
 
+    # Elements
+    Elements/Framerate.cpp
+
     Tools/Models/SnapshotModel.cpp
 
     # Tools

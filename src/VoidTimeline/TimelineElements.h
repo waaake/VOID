@@ -6,7 +6,6 @@
 
 /* Qt */
 #include <QCheckBox>
-#include <QComboBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
@@ -17,7 +16,6 @@
 #include "Definition.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidObjects/Models/Framerate.h"
 #include "VoidQExtensions/ComboBox.h"
 #include "VoidQExtensions/Dialog.h"
 
@@ -76,34 +74,6 @@ public:
 
 private:
 	void Setup();
-};
-
-class FramerateBox : public QComboBox
-{
-	Q_OBJECT
-
-public:
-	FramerateBox(QWidget* parent = nullptr);
-
-	inline double Framerate() const { return currentText().toDouble(); }
-
-	inline void SetFramerate(const double rate) { setCurrentText(std::to_string(rate).c_str()); }
-	inline void SetFramerate(const std::string& rate) { setCurrentText(rate.c_str()); }
-
-signals:
-	void framerateChanged(double);
-
-protected:
-	void keyPressEvent(QKeyEvent* event) override;
-
-private: /* Members */
-	FramerateModel* m_Model;
-	QDoubleValidator* m_DoubleValidator;
-
-private: /* Methods */
-	void Setup();
-	void RateChanged(double d);
-	void RateEdited();
 };
 
 class TimeEdit : public QLineEdit

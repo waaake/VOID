@@ -4,7 +4,6 @@
 /* Qt */
 #include <QAbstractItemView>
 #include <QAction>
-#include <QKeyEvent>
 #include <QLineEdit>
 #include <QMenu>
 #include <QPalette>
@@ -15,7 +14,6 @@
 /* Internal */
 #include "TimelineElements.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Timekeeper.h"
 #include "VoidIconForge/IconForge.h"
 
 VOID_NAMESPACE_OPEN
@@ -104,73 +102,6 @@ void TimeDisplay::Setup()
     QFont f = font();
     f.setBold(true);
     setFont(f);
-}
-
-/* }}} */
-
-/* Framerate Box {{{ */
-
-FramerateBox::FramerateBox(QWidget* parent)
-	: QComboBox(parent)
-{
-	m_Model = new FramerateModel(this);
-
-	m_DoubleValidator = new QDoubleValidator(this);
-	m_DoubleValidator->setRange(0.1, 1000.0, 6);
-
-	Setup();
-
-	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int index)
-	{
-		RateChanged(m_Model->Framerate(index));
-	});
-	connect(lineEdit(), &QLineEdit::returnPressed, this, &FramerateBox::RateEdited);
-	connect(lineEdit(), &QLineEdit::editingFinished, this, &FramerateBox::RateEdited);
-
-	lineEdit()->setAlignment(Qt::AlignCenter);
-}
-
-void FramerateBox::keyPressEvent(QKeyEvent* event)
-{
-	/// This happens before the lineEdit::returnPressed is invoked
-	/// if the value is not added to the model by then, it's set as empty
-	/// we have one way to override and accept the event, let it not propagate further down
-	/// or we could do like this, add the value to the model, so by the time returnPressed is invoked,
-	/// we already have this value persist and that will invoke the required signals...
-	if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
-		m_Model->Add(currentText());
-
-	QComboBox::keyPressEvent(event);
-}
-
-void FramerateBox::Setup()
-{
-	setModel(m_Model);
-	setEditable(true);
-
-	setValidator(m_DoubleValidator);
-	setFocusPolicy(Qt::ClickFocus);
-
-	QPalette p = palette();
-	p.setColor(QPalette::Base, p.color(QPalette::Dark));
-    setPalette(p);
-
-}
-
-void FramerateBox::RateChanged(double d)
-{
-	Timekeeper::Instance().SetFramerate(d);
-	emit framerateChanged(d);
-
-	clearFocus();
-}
-
-void FramerateBox::RateEdited()
-{
-	const double t = currentText().toDouble();
-	// Ensure that we have it added to the model as well
-	m_Model->Add(t);
-	RateChanged(t);
 }
 
 /* }}} */
