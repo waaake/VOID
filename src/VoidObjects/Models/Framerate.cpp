@@ -95,4 +95,13 @@ double FramerateModel::Framerate(int index) const
     return 0.0;
 }
 
+QModelIndex FramerateModel::Index(double fr) const
+{
+    auto it = std::lower_bound(s_Framerates.begin(), s_Framerates.end(), fr);
+    if (it != s_Framerates.end() && *it == fr)
+        return index(it - s_Framerates.begin(), 0);
+
+    return QModelIndex();
+}
+
 VOID_NAMESPACE_CLOSE

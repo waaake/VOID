@@ -26,6 +26,7 @@ public:
     void Add(double fr);
     void Remove(int row);
     double Framerate(int index) const;
+    QModelIndex Index(double fr) const;
 };
 
 VOID_NAMESPACE_CLOSE
