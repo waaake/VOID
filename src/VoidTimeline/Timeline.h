@@ -22,6 +22,7 @@
 #include "Timeslider.h"
 #include "TimelineElements.h"
 #include "VoidQExtensions/PushButton.h"
+#include "VoidToolbox/Elements/Framerate.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -55,7 +56,6 @@ public:
 
 	/* Setters */
 	inline void SetFramerate(const double rate) { m_FramerateBox->SetFramerate(rate); }
-	inline void SetFramerate(const std::string& rate) { m_FramerateBox->SetFramerate(rate); }
 
 	void Play(const PlayState& state = PlayState::FORWARDS);
 	void Stop();
