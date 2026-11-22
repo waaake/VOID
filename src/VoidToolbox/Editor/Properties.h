@@ -13,6 +13,7 @@
 #include "Definition.h"
 #include "Effects.h"
 #include "Media.h"
+#include "VoidObjects/Sequence/Sequence.h"
 #include "VoidQExtensions/LineEdit.h"
 
 VOID_NAMESPACE_OPEN
@@ -29,6 +30,7 @@ public:
     void Show(QWidget* panel);
     void EditEffect(Effect* effect);
     void EditMedia(const SharedMediaClip& media);
+    void EditSequence(const SharedPlaybackSequence& sequence);
 
     void Clear();
     void Remove(const std::string& name);

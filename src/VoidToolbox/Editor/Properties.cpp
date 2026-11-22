@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "Properties.h"
+#include "Sequence.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Frame.h"
 
@@ -59,6 +60,18 @@ void PropertiesPanel::EditMedia(const SharedMediaClip& media)
 
     auto* editor = new MediaEditor(media, this);
     connect(editor, &MediaEditor::mediaUpdated, this, &PropertiesPanel::mediaReceivedUpdate);
+    m_ScrollLayout->insertWidget(0, editor);
+}
+
+void PropertiesPanel::EditSequence(const SharedPlaybackSequence& sequence)
+{
+    for (auto* w : findChildren<SequenceEditor*>())
+    {
+        if (w->HasSameSequence(sequence))
+            w->Close();
+    }
+
+    auto* editor = new SequenceEditor(sequence, this);
     m_ScrollLayout->insertWidget(0, editor);
 }
 
