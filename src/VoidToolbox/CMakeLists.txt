@@ -9,6 +9,7 @@ set(SOURCES
     Editor/ParamEditor.cpp
     Editor/Properties.cpp
     Editor/RangedParamEditor.cpp
+    Editor/Sequence.cpp
     Editor/TagEditor.cpp
 
     Tools/Models/SnapshotModel.cpp
