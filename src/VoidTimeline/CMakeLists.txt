@@ -12,6 +12,7 @@ if (WIN32)
         ../VoidObjects/Core/Task.h
         ../VoidQExtensions/PushButton.h
         ../VoidQExtensions/Frame.h
+        ../VoidToolbox/Elements/Framerate.h
     )
 endif()
 
@@ -36,6 +37,7 @@ target_link_libraries(
     VoidIconForge
     VoidObjects
     VoidQExtensions
+    VoidToolbox
 )
 
 target_link_libraries(
