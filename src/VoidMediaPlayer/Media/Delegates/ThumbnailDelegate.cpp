@@ -171,7 +171,10 @@ void MediaThumbnailDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     }
 
     if (_ENTITY_TYPE(index) == ProjectEntity::Type::SEQUENCE)
-        painter->fillRect(rect.left(), rect.bottom() - 1, (ICON_SIZE + 6), 2, QColor(255, 130, 0));
+        painter->fillRect(
+            QRectF(option.rect.left(), option.rect.bottom() - 1, (ICON_SIZE + 6), 2),
+            index.data(static_cast<int>(EntityModel::MRoles::Color)).value<QColor>()
+        );
 
     // Name
     const QRect namerect(left, thumbrect.bottom(), 90 * m_Scale, 20);
