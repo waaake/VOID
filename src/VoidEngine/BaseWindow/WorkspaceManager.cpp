@@ -105,6 +105,7 @@ void WorkspaceManager::Connect()
     connect(m_MediaLister, &VoidMediaLister::effectsEdited, this, static_cast<void (WorkspaceManager::*)(const SharedMediaClip&)>(&WorkspaceManager::EditEffects));
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(m_MediaLister, &VoidMediaLister::mediaInspected, this, &WorkspaceManager::EditMedia);
+    connect(m_MediaLister, &VoidMediaLister::sequenceInspected, this, &WorkspaceManager::EditSequence);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
     connect(m_Sequencer, &SequencerTimeline::editEffectRequested, this, static_cast<void (WorkspaceManager::*)(Effect*)>(&WorkspaceManager::EditEffects));
@@ -217,6 +218,12 @@ void WorkspaceManager::UpdateMediaQueue(Playlist* playlist)
 void WorkspaceManager::EditMedia(const SharedMediaClip& media)
 {
     m_PropertiesEditor->EditMedia(media);
+    ShowComponent(Component::Properties);
+}
+
+void WorkspaceManager::EditSequence(const SharedPlaybackSequence& sequence)
+{
+    m_PropertiesEditor->EditSequence(sequence);
     ShowComponent(Component::Properties);
 }
 
