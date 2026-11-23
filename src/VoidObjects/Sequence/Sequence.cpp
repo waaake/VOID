@@ -41,6 +41,11 @@ void PlaybackSequence::Clear()
     SetRange(0, 0);
 }
 
+void PlaybackSequence::SetStartFrame(v_frame_t frame)
+{
+    OffsetRange(frame - m_StartFrame);
+}
+
 void PlaybackSequence::SetRange(int start, int end)
 {
     m_StartFrame = start;
@@ -264,6 +269,20 @@ void PlaybackSequence::UpdateRange(int start, int end)
 
     VOID_LOG_INFO("Sequence Range Updated. Range: {0}-{1}", m_StartFrame, m_EndFrame);
     ResizeBuffer(m_EndFrame - m_StartFrame + 1);
+}
+
+void PlaybackSequence::OffsetRange(int offset)
+{
+    m_StartFrame += offset;
+    m_EndFrame += offset;
+
+    for (auto& track : m_VideoTracks)
+        track->OffsetRange(offset);
+    
+    for (auto& track : m_AudioTracks)
+        track->OffsetRange(offset);
+
+    emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 
 SharedPlaybackTrack PlaybackSequence::ReferenceVideoTrack() const
