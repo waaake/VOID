@@ -173,6 +173,7 @@ public:
      * The only thing which can/should be changed of a track is the starting frame
      */
     inline void SetStartFrame(int start) { SetRange(start, start + m_EndFrame); }
+    void OffsetRange(int offset);
 
     void Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const override;
     void Serialize(std::ostream& out) const override;

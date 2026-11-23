@@ -604,6 +604,12 @@ void PlaybackTrack::ClearTags()
     emit tagsUpdated();
 }
 
+void PlaybackTrack::OffsetRange(int offset)
+{
+    m_StartFrame += offset;
+    m_EndFrame += offset;
+}
+
 void PlaybackTrack::Serialize(rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator) const
 {
     out.SetObject();
