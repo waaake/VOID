@@ -40,20 +40,24 @@ public:
     int AudioSectionHeight() const;
 
     double FrameToX(v_frame_t frame) const { return frame * m_PixelsPerFrame; }
-    v_frame_t XToFrame(double x) const { return static_cast<v_frame_t>(x / m_PixelsPerFrame); }
+    v_frame_t XToFrame(double x) const { return m_Startframe + static_cast<v_frame_t>(x / m_PixelsPerFrame); }
+    v_frame_t XToFrame(double x, bool) const { return static_cast<v_frame_t>(x / m_PixelsPerFrame); }
 
     double FrameToSceneX(v_frame_t frame) const;
     v_frame_t SceneXToFrame(double x) const;
+    v_frame_t SceneXToFrame(double x, bool) const;
 
     double PixelsPerFrame() const { return m_PixelsPerFrame; }
     void SetPixelsPerFrame(double p) { if (p > 0) m_PixelsPerFrame = p; }
     void ResetPixelsPerFrame() { m_PixelsPerFrame = 2.0; }
 
-    void SetSequence(const SharedPlaybackSequence& sequence) { m_Sequence = sequence; }
-    void ResetSequence() { m_Sequence = nullptr; }
+    void SetSequence(const SharedPlaybackSequence& sequence);
+    void ResetSequence();
+    void ResetStartFrame(v_frame_t frame) { m_Startframe = frame; }
 
 private:
     double m_PixelsPerFrame = 2.0;
+    v_frame_t m_Startframe  = 0;
     SharedPlaybackSequence m_Sequence;
 };
 

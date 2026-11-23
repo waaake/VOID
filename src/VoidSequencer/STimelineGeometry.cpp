@@ -99,12 +99,28 @@ int STimelineGeometry::AudioSectionHeight() const
 
 double STimelineGeometry::FrameToSceneX(v_frame_t frame) const
 {
-    return ContentLeft() + FrameToX(frame);
+    return ContentLeft() + FrameToX(frame - m_Startframe);
 }
 
 v_frame_t STimelineGeometry::SceneXToFrame(double x) const
 {
     return XToFrame(x - ContentLeft());
+}
+
+v_frame_t STimelineGeometry::SceneXToFrame(double x, bool) const
+{
+    return XToFrame(x - ContentLeft(), false);
+}
+
+void STimelineGeometry::SetSequence(const SharedPlaybackSequence& sequence)
+{
+    m_Sequence = sequence;
+    m_Startframe = m_Sequence->StartFrame();
+}
+void STimelineGeometry::ResetSequence()
+{
+    m_Sequence = nullptr;
+    m_Startframe = 0;
 }
 
 VOID_NAMESPACE_CLOSE
