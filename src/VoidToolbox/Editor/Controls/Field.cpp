@@ -60,6 +60,9 @@ IntField::IntField(int lo, int hi, QWidget* parent)
 {
     m_Validator->setRange(lo, hi);
     setValidator(m_Validator);
+
+    connect(this, &QLineEdit::editingFinished, this, [this]() -> void { emit valueChanged(Value()); });
+    connect(this, &QLineEdit::returnPressed, this, [this]() -> void { emit valueChanged(Value()); });
 }
 
 IntField::~IntField()
