@@ -41,6 +41,7 @@ void SequenceEditor::Setup()
     SetColor(m_Sequence->Color());
 
     m_FramerateCtrl->SetFramerate(m_Sequence->Framerate());
+    m_FrameStartEdit->SetValue(m_Sequence->StartFrame());
 
     connect(this, &SequenceEditor::nameChangeRequested, this, [this](const QString& name) -> void
     {
@@ -53,6 +54,10 @@ void SequenceEditor::Setup()
     connect(m_FramerateCtrl, &FramerateBox::framerateChanged, this, [this](double fr) -> void
     {
         m_Sequence->SetFramerate(fr);
+    });
+    connect(m_FrameStartEdit, &IntField::valueChanged, this, [this](int f) -> void
+    {
+        m_Sequence->SetStartFrame(f);
     });
 }
 
