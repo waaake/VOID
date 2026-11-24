@@ -154,6 +154,16 @@ void SequencerTimeline::Refresh()
         AddAudioTrack(track);
 }
 
+void SequencerTimeline::Reset()
+{
+    v_frame_t f = m_Context.Sequence()->StartFrame();
+
+    m_Context.Geometry()->ResetStartFrame(f);
+    m_Ruler->Update();
+    m_View->Refresh();
+    m_View->FocusOn(f);
+}
+
 void SequencerTimeline::FitAll()
 {
     if (SharedPlaybackSequence sequence = m_Context.Sequence())
@@ -310,6 +320,7 @@ void SequencerTimeline::Connect(PlaybackSequence* sequence)
     connect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     connect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
     connect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
+    connect(sequence, &PlaybackSequence::startFrameChanged, this, &SequencerTimeline::Reset);
     connect(sequence->Project(), &Core::Project::sequenceAboutToBeRemoved, this, [this](const SharedPlaybackSequence& sequence) -> void
     {
         if (sequence.get() == m_Context.Sequence().get()) ClearSequence();
@@ -324,6 +335,7 @@ void SequencerTimeline::Disconnect(PlaybackSequence* sequence)
     disconnect(sequence, &PlaybackSequence::rangeChanged, m_Context.Controller(), &SequencerController::ResetRange);
     disconnect(sequence, &PlaybackSequence::nameChanged, this, &SequencerTimeline::ResetTabText);
     disconnect(sequence, &PlaybackSequence::cleared, this, &SequencerTimeline::Clear);
+    disconnect(sequence, &PlaybackSequence::startFrameChanged, this, &SequencerTimeline::Reset);
     disconnect(sequence->Project(), &Core::Project::sequenceAboutToBeRemoved, this, nullptr);
 }
 
