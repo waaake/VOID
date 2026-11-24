@@ -176,6 +176,7 @@ public:
     // Moves the item to the given frame
     void Move(v_frame_t frame);
     void Offset(int offset) { Move(m_TimelineIn + offset); }
+    void OffsetInternal(int offset);
 
     /**
      * Returns whether the given frame is in range of the underlying media
