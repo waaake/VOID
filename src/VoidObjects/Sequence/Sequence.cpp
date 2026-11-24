@@ -273,6 +273,7 @@ void PlaybackSequence::UpdateRange(int start, int end)
 
 void PlaybackSequence::OffsetRange(int offset)
 {
+    int old = m_StartFrame;
     m_StartFrame += offset;
     m_EndFrame += offset;
 
@@ -282,6 +283,7 @@ void PlaybackSequence::OffsetRange(int offset)
     for (auto& track : m_AudioTracks)
         track->OffsetRange(offset);
 
+    emit startFrameChanged(m_StartFrame, old);
     emit rangeChanged(m_StartFrame, m_EndFrame);
 }
 

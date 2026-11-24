@@ -132,6 +132,7 @@ signals: /* Signals denoting actions in the seqeuence */
     void itemsUpdated(const std::vector<SharedTrackItem>&);
     void nameChanged();
     void rangeChanged(int start, int end);
+    void startFrameChanged(v_frame_t updated, v_frame_t older);
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);
 
 protected: /* Members */
