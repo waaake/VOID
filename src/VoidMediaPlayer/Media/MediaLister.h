@@ -45,7 +45,6 @@ signals:
     void mediaDropped(const std::string&);
     // When a Media is inspected of its Metadata
     void metadataInspected(const SharedMediaClip&);
-    void effectsEdited(const SharedMediaClip&);
     void mediaInspected(const SharedMediaClip&);
     void sequenceInspected(const SharedPlaybackSequence&);
 

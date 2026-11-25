@@ -465,15 +465,6 @@ void VoidMediaLister::InspectMetadata()
         emit metadataInspected(_MediaBridge.MediaAt(current));
 }
 
-void VoidMediaLister::EditEffects()
-{
-    QModelIndex current = m_MediaView->currentIndex();
-    if (current.isValid() && _ENTITY_TYPE(current) == ProjectEntity::Type::MEDIA)
-    {
-        emit effectsEdited(_MediaBridge.MediaAt(current));
-    }
-}
-
 void VoidMediaLister::SetFromPreferences()
 {
     switch(static_cast<MediaView::ViewType>(VoidPreferences::Instance().GetMediaViewType()))
