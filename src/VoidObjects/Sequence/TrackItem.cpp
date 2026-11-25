@@ -523,6 +523,10 @@ void TrackItem::OffsetInternal(int offset)
     
     m_TimelineIn += offset;
     m_TimelineOut += offset;
+
+    /// Effects internal offset
+    for (auto& effect : m_Effects)
+        effect->OffsetInternal(offset);
 }
 
 Core::Project* TrackItem::Project() const
