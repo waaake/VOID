@@ -13,149 +13,60 @@
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Slider.h"
 #include "VoidQExtensions/Tooltip.h"
-// #include "VoidMediaPlayer/Player/PlayerBridge.h"
 
 VOID_NAMESPACE_OPEN
 
 EffectEditor::EffectEditor(Effect* effect, QWidget* parent)
-    : QWidget(parent)
+    : BaseEditor(parent)
     , m_Effect(effect)
 {
     Build();
     Setup();
-    Connect();
-}
-
-EffectEditor::~EffectEditor()
-{
-    m_Layout->deleteLater();
-    delete m_Layout;
-    m_Layout = nullptr;
-}
-
-void EffectEditor::Close()
-{
-    hide();
-    setParent(nullptr);
-    deleteLater();
-}
-
-void EffectEditor::paintEvent(QPaintEvent* event)
-{
-    QPainter painter(this);
-
-    const QRect r = rect();
-    painter.save();
-
-    painter.setPen(QPen(QBrush(Qt::black), 1));
-    painter.setBrush(QBrush(palette().color(QPalette::Window)));
-    painter.drawRect(r.adjusted(0, 0, -1, -1));
-
-    painter.setBrush(QBrush(palette().color(QPalette::Dark)));
-    painter.drawRect(0, 0, r.width() - 1, 30);
-    painter.restore();
-
-    QWidget::paintEvent(event);
 }
 
 void EffectEditor::Build()
 {
-    m_Layout = new QVBoxLayout(this);
-
-    QHBoxLayout* title = new QHBoxLayout;
-    title->setContentsMargins(2, 0, 6, 8);
-
-    m_NameEdit = new QLineEdit;
-    m_NameEdit->setText(m_Effect->Name().c_str());
-
-    m_ColorButton = new ColorSelectionButton;
-    m_EnableButton = new QToolButton;
-    m_CloseButton = new CloseButton;
-
-    title->addWidget(m_NameEdit);
-    title->addWidget(m_ColorButton);
-    title->addWidget(m_EnableButton);
-    title->addWidget(m_CloseButton);
-
-    QGridLayout* grid = new QGridLayout;
-    int row = 0;
     for (const auto& param : m_Effect->Params())
     {
         switch (param->type)
         {
             case Param::TypeDesc::Boolean:
-                SetupBoolParam(grid, ++row, param);
+                SetupBoolParam(param);
                 break;
             case Param::TypeDesc::Float:
-                param->range ? SetupFloatRangedParam(grid, ++row, param) : SetupFloatParam(grid, ++row, param);
+                param->range ? SetupFloatRangedParam(param) : SetupFloatParam(param);
                 break;
             case Param::TypeDesc::Int:
-                SetupIntParam(grid, ++row, param);
+                SetupIntParam(param);
                 break;
             case Param::TypeDesc::String:
             default:
-                SetupStringParam(grid, ++row, param);
+                SetupStringParam(param);
                 break;
         }
     }
-
-    grid->setColumnStretch(0, 0);
-    grid->setColumnStretch(1, 1);
-    grid->setRowStretch(++row, 1);
-    grid->setContentsMargins(8, 0, 8, 8);
-
-    m_Layout->addLayout(title);
-    m_Layout->addLayout(grid);
 }
 
 void EffectEditor::Setup()
 {
-    int margins[4];
-    m_Layout->getContentsMargins(&margins[0], &margins[1], &margins[2], &margins[3]);
-    m_Layout->setContentsMargins(1, 4, 1, margins[3]);
+    SetName(m_Effect->Name().c_str());
+    SetColor(m_Effect->Color());
 
-    QIcon icon;
-    icon.addPixmap(IconForge::GetPixmap(IconType::icon_visible, _DARK_COLOR(QPalette::Text, 100)), QIcon::Normal, QIcon::On);
-    icon.addPixmap(IconForge::GetPixmap(IconType::icon_visible_off, _DARK_COLOR(QPalette::Text, 100)), QIcon::Normal, QIcon::Off);
-
-    m_EnableButton->setIcon(icon);
-    m_EnableButton->setCheckable(true);
-    m_EnableButton->setAutoRaise(true);
-
-    m_EnableButton->setChecked(m_Effect->Enabled());
-    m_ColorButton->SetColor(m_Effect->Color());
-
-    m_EnableButton->setFixedSize(16, 16);
-    m_CloseButton->setFixedSize(16, 16);
-    m_ColorButton->setFixedSize(16, 16);
-
-    // Match the Effect Name, for finding the widget corresponding to the effect
-    setObjectName(m_Effect->Name().c_str());
-}
-
-void EffectEditor::Connect()
-{
-    connect(m_NameEdit, &QLineEdit::editingFinished, this, [this]() -> void
+    connect(this, &EffectEditor::nameChangeRequested, this, [this](const QString& name) -> void
     {
-        const QString text = m_NameEdit->text();
-        m_Effect->SetName(text.toStdString());
-        setObjectName(text);
+        m_Effect->SetName(name.toStdString());
     });
 
-    connect(m_CloseButton, &QToolButton::clicked, this, &EffectEditor::Close);
-    connect(m_EnableButton, &QToolButton::toggled, this, [this](bool checked) -> void
+    connect(this, &EffectEditor::stateChangeRequested, this, [this](bool checked) -> void
     {
         m_Effect->SetEnabled(checked);
         // _PlayerBridge.Refresh();
     });
-    connect(m_ColorButton, &ColorSelectionButton::colorChanged, m_Effect, &Effect::SetColor);
+    connect(this, &EffectEditor::colorChangeRequested, m_Effect, &Effect::SetColor);
 }
 
-void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
+void EffectEditor::SetupIntParam(const Param* param)
 {
-    QLabel* label = new QLabel(param->label.c_str());
-    label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-
     QSpinBox* editor = new QSpinBox;
     if (param->range)
     {
@@ -165,9 +76,7 @@ void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
     editor->setValue(param->GetInt());
     editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    grid->addWidget(label, row, 0, Qt::AlignRight);
-    grid->addWidget(editor, row, 1);
-
+    AddControl(param->label.c_str(), editor);
     connect(editor, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this, param](int i) -> void
     {
         m_Effect->SetValue(param->name, i);
@@ -175,11 +84,8 @@ void EffectEditor::SetupIntParam(QGridLayout* grid, int row, const Param* param)
     });
 }
 
-void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param* param)
+void EffectEditor::SetupFloatRangedParam(const Param* param)
 {
-    QLabel* label = new QLabel(param->label.c_str());
-    label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-
     QuickDoubleSlider* editor = new QuickDoubleSlider;
 
     editor->SetRange(param->range.lower, param->range.upper);
@@ -188,9 +94,7 @@ void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param
     editor->SetValue(param->GetFloat());
     editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    grid->addWidget(label, row, 0, Qt::AlignRight);
-    grid->addWidget(editor, row, 1);
-
+    AddControl(param->label.c_str(), editor);
     connect(editor, &QuickDoubleSlider::valueChanged, this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
@@ -198,19 +102,14 @@ void EffectEditor::SetupFloatRangedParam(QGridLayout* grid, int row, const Param
     });
 }
 
-void EffectEditor::SetupFloatParam(QGridLayout* grid, int row, const Param* param)
+void EffectEditor::SetupFloatParam(const Param* param)
 {
-    QLabel* label = new QLabel(param->label.c_str());
-    label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-
     QDoubleSpinBox* editor = new QDoubleSpinBox;
     editor->setSingleStep(0.1);
     editor->setValue(param->GetFloat());
     editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    grid->addWidget(label, row, 0, Qt::AlignRight);
-    grid->addWidget(editor, row, 1);
-
+    AddControl(param->label.c_str(), editor);
     connect(editor, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
@@ -218,18 +117,13 @@ void EffectEditor::SetupFloatParam(QGridLayout* grid, int row, const Param* para
     });
 }
 
-void EffectEditor::SetupBoolParam(QGridLayout* grid, int row, const Param* param)
+void EffectEditor::SetupBoolParam(const Param* param)
 {
-    QLabel* label = new QLabel(param->label.c_str());
-    label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-
     QCheckBox* editor = new QCheckBox;
     editor->setChecked(param->GetBool());
     editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    grid->addWidget(label, row, 0, Qt::AlignRight);
-    grid->addWidget(editor, row, 1);
-
+    AddControl(param->label.c_str(), editor);
     connect(editor, &QCheckBox::toggled, this, [this, param](bool b) -> void
     {
         m_Effect->SetValue(param->name, b);
@@ -237,18 +131,13 @@ void EffectEditor::SetupBoolParam(QGridLayout* grid, int row, const Param* param
     });
 }
 
-void EffectEditor::SetupStringParam(QGridLayout* grid, int row, const Param* param)
+void EffectEditor::SetupStringParam(const Param* param)
 {
-    QLabel* label = new QLabel(param->label.c_str());
-    label->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-
     QLineEdit* editor = new QLineEdit;
     editor->setText(param->GetString().c_str());
     editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    grid->addWidget(label, row, 0, Qt::AlignRight);
-    grid->addWidget(editor, row, 1);
-
+    AddControl(param->label.c_str(), editor);
     connect(editor, &QLineEdit::editingFinished, this, [this, param, editor]() -> void
     {
         m_Effect->SetValue(param->name, editor->text().toStdString());
