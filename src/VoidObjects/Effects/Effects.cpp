@@ -139,6 +139,12 @@ void Effect::SetTimelineRange(v_frame_t start, v_frame_t end)
     emit rangeChanged(m_TimelineIn, m_TimelineOut);
 }
 
+void Effect::OffsetInternal(int offset)
+{
+    m_TimelineIn += offset;
+    m_TimelineOut += offset;
+}
+
 v_frame_t Effect::EvaluatedFrame(v_frame_t in)
 {
     // In case we have an effect below in stack which gets applied first, need it's frame output
