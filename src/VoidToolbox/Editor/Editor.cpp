@@ -66,7 +66,19 @@ void BaseEditor::Enable(bool enabled)
     // m_EnableButton->toggle
 }
 
-void BaseEditor::AddProperty(const QString& label, QWidget* editor, int rspan, int cspan, bool newline)
+void BaseEditor::AddControl(const QString& label, QWidget* editor, bool newline)
+{
+    if (newline)
+    {
+        ++m_Row;
+        m_Column = -1;
+    }
+
+    m_Grid->addWidget(new QLabel(label), m_Row, ++m_Column, Qt::AlignRight);
+    m_Grid->addWidget(editor, m_Row, ++m_Column, 1, -1); // Occupy full width
+}
+
+void BaseEditor::AddControl(const QString& label, QWidget* editor, int rspan, int cspan, bool newline)
 {
     if (newline)
     {
@@ -76,6 +88,17 @@ void BaseEditor::AddProperty(const QString& label, QWidget* editor, int rspan, i
 
     m_Grid->addWidget(new QLabel(label), m_Row, ++m_Column, Qt::AlignRight);
     m_Grid->addWidget(editor, m_Row, ++m_Column, rspan, cspan);
+}
+
+void BaseEditor::AddWidget(QWidget* widget, bool newline)
+{
+    if (newline)
+    {
+        ++m_Row;
+        m_Column = -1;
+    }
+
+    m_Grid->addWidget(widget, m_Row, ++m_Column);
 }
 
 void BaseEditor::AddWidget(QWidget* widget, int rspan, int cspan, bool newline)

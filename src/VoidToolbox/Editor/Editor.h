@@ -38,7 +38,9 @@ protected:
     void SetName(const QString& name);
     void SetColor(const QColor& color);
     void Enable(bool enabled);
-    void AddProperty(const QString& label, QWidget* editor, int rspan, int cspan, bool newline = true);
+    void AddControl(const QString& label, QWidget* editor, bool newline = true);
+    void AddControl(const QString& label, QWidget* editor, int rspan, int cspan, bool newline = true);
+    void AddWidget(QWidget* editor, bool newline = true);
     void AddWidget(QWidget* editor, int rspan, int cspan, bool newline = true);
     void AddSeparator();
 
