@@ -42,6 +42,8 @@ protected:
     void AddControl(const QString& label, QWidget* editor, int rspan, int cspan, bool newline = true);
     void AddWidget(QWidget* editor, bool newline = true);
     void AddWidget(QWidget* editor, int rspan, int cspan, bool newline = true);
+    void BeginSection(const QString& name);
+    void EndSection() { AddSeparator(); }
     void AddSeparator();
 
 private:

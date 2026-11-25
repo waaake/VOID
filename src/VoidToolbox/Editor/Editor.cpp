@@ -74,7 +74,7 @@ void BaseEditor::AddControl(const QString& label, QWidget* editor, bool newline)
         m_Column = -1;
     }
 
-    m_Grid->addWidget(new QLabel(label), m_Row, ++m_Column, Qt::AlignRight);
+    m_Grid->addWidget(new QLabel(label, this), m_Row, ++m_Column, Qt::AlignRight);
     m_Grid->addWidget(editor, m_Row, ++m_Column, 1, -1); // Occupy full width
 }
 
@@ -86,7 +86,7 @@ void BaseEditor::AddControl(const QString& label, QWidget* editor, int rspan, in
         m_Column = -1;
     }
 
-    m_Grid->addWidget(new QLabel(label), m_Row, ++m_Column, Qt::AlignRight);
+    m_Grid->addWidget(new QLabel(label, this), m_Row, ++m_Column, Qt::AlignRight);
     m_Grid->addWidget(editor, m_Row, ++m_Column, rspan, cspan);
 }
 
@@ -110,6 +110,22 @@ void BaseEditor::AddWidget(QWidget* widget, int rspan, int cspan, bool newline)
     }
 
     m_Grid->addWidget(widget, m_Row, ++m_Column, rspan, cspan);
+}
+
+void BaseEditor::BeginSection(const QString& label)
+{
+    QHBoxLayout* l = new QHBoxLayout();
+
+    QLabel* name = new QLabel(label, this);
+    QFont f(name->font());
+    f.setBold(true);
+    name->setFont(f);
+    name->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+    l->addWidget(name);
+    l->addWidget(new HLine(this));
+
+    m_Grid->addLayout(l, ++m_Row, 0, 1, -1);
 }
 
 void BaseEditor::AddSeparator()
