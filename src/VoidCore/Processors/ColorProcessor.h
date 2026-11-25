@@ -99,6 +99,8 @@ public:
     std::vector<std::string> Colorspaces() const;
     void Process(const MediaColor& color, const FloatImage& image);
 
+    std::string FromMediaColorspace(const MediaColor& color) const;
+
 private:
     // std::unordered_map
     std::vector<MediaColorProcessor::ProcessorEntry> m_Processors;

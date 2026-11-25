@@ -577,14 +577,14 @@ void VoidRenderer::CalculateModelViewProjection()
      * Calculate the aspect of the current view (Renderer Width / Renderer Height)
      * And the aspect of the image being rendered
      */
-    float viewAspect = (width() * WidthDivisor()) / (height() * HeightDivisor());
-    float imageAspect = float(m_ImageA->width) / float((m_ImageA->height ? m_ImageA->height : 1));
+    const float viewAspect = (width() * WidthDivisor()) / (height() * HeightDivisor());
+    const float imageAspect = m_ImageA->Aspect();
 
-    glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
+    const glm::vec2 scale = (imageAspect > viewAspect) ? glm::vec2(1.f, viewAspect / imageAspect) : glm::vec2(imageAspect / viewAspect, 1.f);
     glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(m_Pan, 0.f));
 
     model = glm::scale(model, glm::vec3(scale.x * m_ZoomFactor, scale.y * m_ZoomFactor, 1.f));
-    glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+    const glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
 
     m_VProjection = model * projection; // * unity view i.e. glm::mat4(1.f)
     m_InverseProjection = glm::inverse(m_VProjection);

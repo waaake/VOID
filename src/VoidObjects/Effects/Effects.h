@@ -85,6 +85,7 @@ public:
     void SetTimelineIn(v_frame_t frame);
     void SetTimelineOut(v_frame_t frame);
     void SetTimelineRange(v_frame_t start, v_frame_t end);
+    void OffsetInternal(int offset);
     v_frame_t TimelineIn() const { return m_TimelineIn; }
     v_frame_t TimelineOut() const { return m_TimelineOut; }
 

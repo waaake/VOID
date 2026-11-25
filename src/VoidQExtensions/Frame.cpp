@@ -114,6 +114,25 @@ void VLine::paintEvent(QPaintEvent* event)
     painter.drawLine(width(), 0, width(), height());
 }
 
+/// HLine
+
+HLine::HLine(QWidget* parent)
+    : QWidget(parent)
+{
+    setFixedHeight(2);
+}
+
+void HLine::paintEvent(QPaintEvent* event)
+{
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    painter.setPen(QPen(palette().color(QPalette::Dark).darker(200), 2));
+    painter.drawLine(-1, 0, width(), 0);
+    painter.setPen(QPen(palette().color(QPalette::Window).lighter(180), 2));
+    painter.drawLine(-1, height(), width(), height());
+}
+
 /// BaseWidget
 
 void BaseWidget::paintEvent(QPaintEvent* event)

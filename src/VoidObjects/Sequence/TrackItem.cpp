@@ -516,6 +516,19 @@ void TrackItem::Move(v_frame_t frame)
     emit moved();
 }
 
+void TrackItem::OffsetInternal(int offset)
+{
+    if (m_Media)
+        m_Offset += offset;
+    
+    m_TimelineIn += offset;
+    m_TimelineOut += offset;
+
+    /// Effects internal offset
+    for (auto& effect : m_Effects)
+        effect->OffsetInternal(offset);
+}
+
 Core::Project* TrackItem::Project() const
 {
     return m_Track->Project();

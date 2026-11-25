@@ -29,6 +29,7 @@ public:
      */
     void SetFrame(int frame);
     void Refresh();
+    void MediaUpdated(const SharedMediaClip& media, bool recache = false);
     inline ViewerBuffer* ActiveViewer() const { return m_ActiveViewBuffer; }
 
     void SetMedia(const SharedMediaClip& media);

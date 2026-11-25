@@ -171,7 +171,9 @@ void BindCore(py::module_& m)
         .def("endframe", &MediaClip::LastFrame)
         .def("metadata", &MediaClip::Metadata)
         .def("tokens", &MediaClip::Tokens, py::return_value_policy::reference_internal)
-        .def("layers", &MediaClip::Layers);
+        .def("layers", &MediaClip::Layers)
+        .def("pixel_aspect", &MediaClip::PixelAspect)
+        .def("set_pixel_aspect", &MediaClip::SetPixelAspect, py::arg("aspect"));
 
     /* Operator */
     py::class_<ParamValue>(m, "ParamValue")
@@ -251,6 +253,7 @@ void BindCore(py::module_& m)
         })
         .def("start_frame", &PlaybackSequence::StartFrame)
         .def("end_frame", &PlaybackSequence::EndFrame)
+        .def("set_start_frame", &PlaybackSequence::SetStartFrame, py::arg("frame"))
         .def("set_range", &PlaybackSequence::SetRange, py::arg("start"), py::arg("end"))
         .def("set_framerate", &PlaybackSequence::SetFramerate, py::arg("framerate"))
         .def("set_name", &PlaybackSequence::SetName, py::arg("name"))

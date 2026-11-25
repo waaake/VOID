@@ -238,6 +238,39 @@ void MediaColorProcessor::Process(const MediaColor& color, const FloatImage& ima
     // processor->getOptimizedCPUProcessor(OCIO::OptimizationFlags::OPTIMIZATION_LOSSLESS)->apply(desc);
 }
 
+std::string MediaColorProcessor::FromMediaColorspace(const MediaColor& color) const
+{
+    /// TODO: Need to check on how to get individiual mapping based on any color.ocio file set in the config...
+    if (color.colorspace == Colorspace::Custom && !color.custom.empty())
+        return color.custom.c_str();
+    else if (color.colorspace == Colorspace::LinearSRGB || color.colorspace == Colorspace::LinearRec709)
+        return "Linear Rec.709 (sRGB)";
+    else if (color.colorspace == Colorspace::Rec709) // Need to handle transfer function with Gamma 2.2 and Gamma 2.4
+        return "Camera Rec.709";
+    else if (color.colorspace == Colorspace::Rec2020) // Linear, need to test this
+        return "Linear Rec.2020";
+    else if (color.colorspace == Colorspace::ACES2065_1)
+        return "ACES2065-1";
+    else if (color.colorspace == Colorspace::ACEScg)
+        return "ACEScg";
+    else if (color.colorspace == Colorspace::ARRI_LogC3)
+        return "ARRI LogC3 (EI800)";
+    else if (color.colorspace == Colorspace::ARRI_LogC4)
+        return "ARRI LogC4";
+    else if (color.colorspace == Colorspace::Sony_SLog3)
+        return "S-Log3 S-Gamut3.Cine";
+    else if (color.colorspace == Colorspace::Panasonic_VLog)
+        return "V-Log V-Gamut";
+    else if (color.colorspace == Colorspace::Canon_Log3)
+        return "CanonLog3 CinemaGamut D55";
+    else if (color.colorspace == Colorspace::ST2084_PQ)
+        return "ST2084-P3-D65 - Display";
+    else if (color.colorspace == Colorspace::HLG)
+        return "Rec.2100-HLG - Display";
+    else /// For now, going with SRGB as default
+        return "sRGB - Texture";
+}
+
 OCIO::ConstProcessorRcPtr MediaColorProcessor::Processor(const MediaColor& color)
 {
     if (m_Processor && m_Processor->color == color)

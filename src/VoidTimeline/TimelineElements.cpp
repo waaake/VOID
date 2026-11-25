@@ -14,7 +14,6 @@
 /* Internal */
 #include "TimelineElements.h"
 #include "VoidCore/Logging.h"
-#include "VoidCore/Timekeeper.h"
 #include "VoidIconForge/IconForge.h"
 
 VOID_NAMESPACE_OPEN
@@ -103,68 +102,6 @@ void TimeDisplay::Setup()
     QFont f = font();
     f.setBold(true);
     setFont(f);
-}
-
-/* }}} */
-
-/* Framerate Box {{{ */
-
-FramerateBox::FramerateBox(QWidget* parent)
-	: QComboBox(parent)
-{
-	/* Validator */
-	m_DoubleValidator = new QDoubleValidator(this);
-	m_DoubleValidator->setBottom(0.0);
-	m_DoubleValidator->setTop(2000.0);
-
-	/* Setup the Box */
-	Setup();
-
-	connect(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int) { RateChanged(currentText()); });
-	connect(lineEdit(), &QLineEdit::returnPressed, this, [this]() { RateChanged(currentText()); });
-	connect(lineEdit(), &QLineEdit::editingFinished, this, [this]() { RateChanged(currentText()); });
-
-	lineEdit()->setAlignment(Qt::AlignCenter);
-}
-
-void FramerateBox::Setup()
-{
-	// Setup values and defaults
-	const QStringList values = {
-		"8",
-		"10",
-		"12",
-		"12.50",
-		"15",
-		"23.98",
-		"24",
-		"25",
-		"29.97",
-		"30",
-		"48",
-		"50",
-		"59.94",
-		"60"
-	};
-
-	addItems(values);
-	setEditable(true);
-
-	setValidator(m_DoubleValidator);
-	setFocusPolicy(Qt::ClickFocus);
-
-	QPalette p = palette();
-	p.setColor(QPalette::Base, p.color(QPalette::Dark));
-    setPalette(p);
-}
-
-void FramerateBox::RateChanged(const QString& text)
-{
-	Timekeeper::Instance().SetFramerate(text.toDouble());
-	emit framerateChanged(text.toDouble());
-
-	/* Unset Focus once the text is updated */
-	clearFocus();
 }
 
 /* }}} */

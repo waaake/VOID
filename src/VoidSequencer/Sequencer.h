@@ -45,6 +45,7 @@ public:
 
     void SetHorizontalScale(float factor);
     void Refresh();
+    void Reset();
     void FitAll();
     void FitSelected();
     void ResetFit();

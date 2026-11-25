@@ -121,6 +121,10 @@ public:
     inline std::string CurrentLayer() const { return m_Reader->CurrentLayer(); }
     inline void SetCurrentLayer(const std::string& layer) { m_Reader->Info()->layer = layer; }
     inline std::map<std::string, std::string> Metadata() const { return m_Reader->Metadata(); }
+
+    std::string InputColorTransform() const;
+    float PixelAspect() const { return m_Reader->PixelAspect(); }
+    void SetPixelAspect(float a);
     void SetDirty(bool dirty = true);
 
     /**

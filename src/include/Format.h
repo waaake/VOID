@@ -30,19 +30,20 @@ struct MediaFormat
 
     /// @brief Audio source info, even though internally the system has a fixed audio out samplerate
     /// Storing the source audio information
-    int samplerate  = 0;
-    int audChannels = 0;
+    int samplerate      = 0;
+    int audChannels     = 0;
 
     /// @brief dimensions
-    int width       = 0;
-    int height      = 0;
+    int width           = 0;
+    int height          = 0;
 
-    int channels    = 0;
-    int pixelAspect = 1;
+    int channels        = 0;
+    float pixelAspect   = 1.f;
 
     bool HasAudio() const { return samplerate > 0; }
     void SetResolution(int w, int h) { width = w; height = h; }
     void SetChannels(int c) { channels = c; }
+    void SetPixelAspect(float a) { pixelAspect = a; }
 };
 
 VOID_NAMESPACE_CLOSE

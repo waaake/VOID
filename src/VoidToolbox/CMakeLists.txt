@@ -1,10 +1,19 @@
 set(SOURCES
+    # Editor Controls
+    Editor/Controls/Field.cpp
+
     # Editors
+    Editor/Editor.cpp
     Editor/Effects.cpp
+    Editor/Media.cpp
     Editor/ParamEditor.cpp
     Editor/Properties.cpp
     Editor/RangedParamEditor.cpp
+    Editor/Sequence.cpp
     Editor/TagEditor.cpp
+
+    # Elements
+    Elements/Framerate.cpp
 
     Tools/Models/SnapshotModel.cpp
 

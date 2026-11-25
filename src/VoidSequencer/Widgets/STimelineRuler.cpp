@@ -87,7 +87,7 @@ void STimelineRuler::mousePressEvent(QMouseEvent* event)
 
     MFrameRange visible = m_View->VisibleRange();
     m_Pressed = true;
-    m_Context->Controller()->RequestFrameChange(visible.startframe + m_Context->Geometry()->SceneXToFrame(x));
+    m_Context->Controller()->RequestFrameChange(visible.startframe + m_Context->Geometry()->SceneXToFrame(x, false));
 }
 
 void STimelineRuler::mouseMoveEvent(QMouseEvent* event)
@@ -98,7 +98,7 @@ void STimelineRuler::mouseMoveEvent(QMouseEvent* event)
         MFrameRange visible = m_View->VisibleRange();
         int x = event->pos().x();
 
-        m_Context->Controller()->RequestFrameChange(visible.startframe + m_Context->Geometry()->SceneXToFrame(x));
+        m_Context->Controller()->RequestFrameChange(visible.startframe + m_Context->Geometry()->SceneXToFrame(x, false));
     }
 }
 

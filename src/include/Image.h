@@ -117,6 +117,8 @@ struct Image
     int height;
     int channels;
 
+    float pixaspect;
+
     // Format
     unsigned int type;
     unsigned int format;
@@ -154,6 +156,7 @@ struct Image
     }
 
     explicit operator bool() const noexcept { return !buffer.Empty(); }
+    float Aspect() const { return ((float)width / (height ? (float)height : 1.f)) * pixaspect; }
 
     Image() {}
     static std::shared_ptr<Image<_Ty>> Create() { return std::make_shared<Image<_Ty>>(); }

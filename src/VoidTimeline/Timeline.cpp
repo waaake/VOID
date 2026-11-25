@@ -214,7 +214,7 @@ void Timeline::Connect()
 
 void Timeline::Setup()
 {
-	SetFramerate(_EngineBridge.FramerateString());
+	SetFramerate(_EngineBridge.Framerate());
 	SetFrame(m_Timeslider->minimum());
 	m_PlayTimer.setTimerType(Qt::PreciseTimer);
 

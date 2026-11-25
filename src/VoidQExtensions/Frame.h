@@ -82,6 +82,14 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 };
 
+class VOID_API HLine : public QWidget
+{
+public:
+    HLine(QWidget* parent = nullptr);
+protected:
+    void paintEvent(QPaintEvent* event) override;
+};
+
 
 /// Widget painted with base palette
 class VOID_API BaseWidget : public QWidget

@@ -37,6 +37,7 @@ public:
     std::string Name() const override { return m_Name; }
     std::string Extension() const override { return "SEQ"; }
 
+    void SetStartFrame(v_frame_t frame);
     void SetRange(int start, int end);
     MFrameRange FrameRange() const override { return MFrameRange(m_StartFrame, m_EndFrame, m_Framerate); }
 
@@ -131,6 +132,7 @@ signals: /* Signals denoting actions in the seqeuence */
     void itemsUpdated(const std::vector<SharedTrackItem>&);
     void nameChanged();
     void rangeChanged(int start, int end);
+    void startFrameChanged(v_frame_t updated, v_frame_t older);
     void maxTrackEffectsChanged(const SharedPlaybackTrack&);
 
 protected: /* Members */
@@ -153,6 +155,7 @@ private: /* Methods */
      * start and end frames respectively to ensure the range of the sequence is not messed up
      */
     void UpdateRange(int start, int end);
+    void OffsetRange(int offset);
     void ConnectVideoTrack(const SharedPlaybackTrack& track);
     void ConnectAudioTrack(const SharedPlaybackTrack& track);
     void ResizeBuffer(std::size_t size);

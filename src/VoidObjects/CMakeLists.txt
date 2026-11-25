@@ -13,13 +13,14 @@ set(SOURCES
     Media/Tag.cpp
 
     Models/EntityModel.cpp
+    Models/Framerate.cpp
     Models/ProjectModel.cpp
     Models/PlaylistModel.cpp
     Models/TagModel.cpp
     Models/TagMetadataModel.cpp
 
     Playlist/Playlist.cpp
-    
+
     Project/Project.cpp
 
     Preferences/Preferences.cpp
