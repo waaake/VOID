@@ -102,13 +102,12 @@ void WorkspaceManager::Init()
 
 void WorkspaceManager::Connect()
 {
-    connect(m_MediaLister, &VoidMediaLister::effectsEdited, this, static_cast<void (WorkspaceManager::*)(const SharedMediaClip&)>(&WorkspaceManager::EditEffects));
     connect(m_MediaLister, &VoidMediaLister::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(m_MediaLister, &VoidMediaLister::mediaInspected, this, &WorkspaceManager::EditMedia);
     connect(m_MediaLister, &VoidMediaLister::sequenceInspected, this, &WorkspaceManager::EditSequence);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
-    connect(m_Sequencer, &SequencerTimeline::editEffectRequested, this, static_cast<void (WorkspaceManager::*)(Effect*)>(&WorkspaceManager::EditEffects));
+    connect(m_Sequencer, &SequencerTimeline::editEffectRequested, this, &WorkspaceManager::EditEffects);
     connect(m_PropertiesEditor, &PropertiesPanel::mediaReceivedUpdate, this, [this](const SharedMediaClip& media, bool needsRecache) -> void
     {
         _PlayerBridge.RefreshMedia(media, needsRecache);
@@ -224,17 +223,6 @@ void WorkspaceManager::EditMedia(const SharedMediaClip& media)
 void WorkspaceManager::EditSequence(const SharedPlaybackSequence& sequence)
 {
     m_PropertiesEditor->EditSequence(sequence);
-    ShowComponent(Component::Properties);
-}
-
-void WorkspaceManager::EditEffects(const SharedMediaClip& media)
-{
-    // Also connect the media for removing effects
-    connect(media.get(), &MediaClip::effectAboutToBeRemoved, m_PropertiesEditor, &PropertiesPanel::Remove);
-
-    for (auto effect : media->Effects())
-        m_PropertiesEditor->EditEffect(effect);
-
     ShowComponent(Component::Properties);
 }
 

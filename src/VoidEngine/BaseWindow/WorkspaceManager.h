@@ -98,7 +98,6 @@ private: /* Members */
     void UpdateMediaQueue(Playlist* playlist);
     void EditMedia(const SharedMediaClip& media);
     void EditSequence(const SharedPlaybackSequence& sequence);
-    void EditEffects(const SharedMediaClip& media);
     void EditEffects(Effect* effect);
     void ShowComponent(const Component& component) const;
     bool ShowIfDocked(const QString& name) const;
