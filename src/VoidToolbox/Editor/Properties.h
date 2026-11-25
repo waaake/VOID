@@ -25,7 +25,7 @@ public:
     explicit PropertiesPanel(QWidget* parent = nullptr);
     ~PropertiesPanel();
 
-    QSize sizeHint() const override { return QSize(300, 720); }
+    QSize sizeHint() const override { return QSize(500, 720); }
 
     void Show(QWidget* panel);
     void EditEffect(Effect* effect);
@@ -33,7 +33,7 @@ public:
     void EditSequence(const SharedPlaybackSequence& sequence);
 
     void Clear();
-    void Remove(const std::string& name);
+    void Remove(const Effect* effect);
     void ClearAdditionalPanels(int limit);
 
 signals:

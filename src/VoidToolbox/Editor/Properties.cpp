@@ -41,8 +41,11 @@ void PropertiesPanel::Show(QWidget* panel)
 void PropertiesPanel::EditEffect(Effect* effect)
 {
     // Remove any existing Editors for the same Effect before adding this again
-    for (auto* w : findChildren<EffectEditor*>(effect->Name().c_str()))
-        w->Close();
+    for (auto* w : findChildren<EffectEditor*>())
+    {
+        if (w->HasSameEffect(effect))
+            w->Close();
+    }
 
     // Ensure we have only panels till the limit
     // Going one lesser here as we are also adding another widget
@@ -58,6 +61,10 @@ void PropertiesPanel::EditMedia(const SharedMediaClip& media)
             w->Close();
     }
 
+    // Ensure we have only panels till the limit
+    // Going one lesser here as we are also adding another widget
+    ClearAdditionalPanels(m_PanelCounter->CurrentValue() - 1);
+
     auto* editor = new MediaEditor(media, this);
     connect(editor, &MediaEditor::mediaUpdated, this, &PropertiesPanel::mediaReceivedUpdate);
     m_ScrollLayout->insertWidget(0, editor);
@@ -71,25 +78,32 @@ void PropertiesPanel::EditSequence(const SharedPlaybackSequence& sequence)
             w->Close();
     }
 
+    // Ensure we have only panels till the limit
+    // Going one lesser here as we are also adding another widget
+    ClearAdditionalPanels(m_PanelCounter->CurrentValue() - 1);
+
     auto* editor = new SequenceEditor(sequence, this);
     m_ScrollLayout->insertWidget(0, editor);
 }
 
 void PropertiesPanel::Clear()
 {
-    for (auto w : findChildren<EffectEditor*>())
+    for (auto w : findChildren<BaseEditor*>())
         w->Close();
 }
 
-void PropertiesPanel::Remove(const std::string& name)
+void PropertiesPanel::Remove(const Effect* effect)
 {
-    if (auto w = findChild<EffectEditor*>(name.c_str()))
-        w->Close();
+    if (auto w = findChild<EffectEditor*>())
+    {
+        if (w->HasSameEffect(effect))
+            w->Close();
+    }
 }
 
 void PropertiesPanel::ClearAdditionalPanels(int limit)
 {
-    QList<EffectEditor*> panels = findChildren<EffectEditor*>();
+    QList<BaseEditor*> panels = findChildren<BaseEditor*>();
     if (panels.size() >= limit)
     {
         for (int i = 0; i < panels.size() - limit; ++i)
