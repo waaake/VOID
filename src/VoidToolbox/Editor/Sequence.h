@@ -22,20 +22,13 @@ class SequenceEditor : public BaseEditor
     Q_OBJECT
 public:
     explicit SequenceEditor(const SharedPlaybackSequence& sequence, QWidget* parent = nullptr);
-    ~SequenceEditor();
 
     bool HasSameSequence(const SharedPlaybackSequence& sequence) const { return m_Sequence.get() == sequence.get(); }
-
-// signals:
-//     void mediaUpdated(const SharedPlaybackSequence& media, bool needsRecache = false);
 
 private:
     FramerateBox* m_FramerateCtrl;
     IntField* m_FrameStartEdit;
-    // QComboBox* m_TimeDisplayCombo;
-    // DoubleField* m_PixelAspectEdit;
-    
-    // QLineEdit* m_
+
     SharedPlaybackSequence m_Sequence;
 
 private:

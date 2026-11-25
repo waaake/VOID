@@ -17,20 +17,13 @@ SequenceEditor::SequenceEditor(const SharedPlaybackSequence& sequence, QWidget* 
     Setup();
 }
 
-SequenceEditor::~SequenceEditor()
-{
-}
-
 void SequenceEditor::Build()
 {
     m_FramerateCtrl = new FramerateBox(this);
     m_FrameStartEdit = new IntField(0, std::numeric_limits<int>::max(), this);
-    // m_TimeDisplayCombo = new QComboBox(this);
-    // m_LayerCombo = new QComboBox();
-    // m_PixelAspectEdit = new DoubleField(this);
 
-    AddProperty("Framerate", m_FramerateCtrl, 1, -1);
-    AddProperty("Start Frame", m_FrameStartEdit, 1, 1);
+    AddControl("Framerate", m_FramerateCtrl);
+    AddControl("Start Frame", m_FrameStartEdit, 1, 1);
 
     AddSeparator();
 }
