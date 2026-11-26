@@ -20,6 +20,9 @@ public:
 
     bool HasSameEffect(const Effect* effect) const { return effect == m_Effect; }
 
+protected:
+    void Refresh() override;
+
 private:
     Effect* m_Effect;
 

@@ -23,6 +23,54 @@ EffectEditor::EffectEditor(Effect* effect, QWidget* parent)
     Setup();
 }
 
+void EffectEditor::Refresh()
+{
+    QWidget* w = nullptr;
+    for (const auto& param : m_Effect->Params())
+    {
+        switch (param->type)
+        {
+            case Param::TypeDesc::Boolean:
+            {
+                w = Control(param->name.c_str());
+                QCheckBox* editor = static_cast<QCheckBox*>(w);
+                editor->setChecked(param->GetBool());
+                break;
+            }
+            case Param::TypeDesc::Float:
+            {
+                w = Control(param->name.c_str());
+                if (param->range)
+                {
+                    QuickDoubleSlider* editor = static_cast<QuickDoubleSlider*>(w);
+                    editor->SetValue(param->GetFloat());
+                }
+                else
+                {
+                    QDoubleSpinBox* editor = static_cast<QDoubleSpinBox*>(w);
+                    editor->setValue(param->GetFloat());
+                }
+                break;
+            }
+            case Param::TypeDesc::Int:
+            {
+                w = Control(param->name.c_str());
+                QSpinBox* editor = static_cast<QSpinBox*>(w);
+                editor->setValue(param->GetInt());
+                break;
+            }
+            case Param::TypeDesc::String:
+            default:
+            {
+                w = Control(param->name.c_str());
+                QLineEdit* editor = static_cast<QLineEdit*>(w);
+                editor->setText(param->GetString().c_str());
+                break;
+            }
+        }
+    }
+}
+
 void EffectEditor::Build()
 {
     for (const auto& param : m_Effect->Params())
