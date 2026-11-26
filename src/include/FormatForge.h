@@ -23,7 +23,7 @@ VOID_NAMESPACE_OPEN
 /* Type defs */
 using PixForge = std::function<std::unique_ptr<VoidPixReader>(const std::string&, v_frame_t)>;
 using MPixForge = std::function<std::unique_ptr<VoidMPixReader>(const std::string&, v_frame_t)>;
-using IOpForge = std::function<std::unique_ptr<ImageOp>()>;
+using OperatorForge = std::function<std::unique_ptr<BaseOp>()>;
 using PixWriterForge = std::function<std::unique_ptr<PixWriter>(const EncodeSpec&)>;
 using MediaReaderForge = std::function<std::unique_ptr<MediaReader>(const std::string&)>;
 
@@ -60,10 +60,10 @@ struct WriterRegistry
     std::vector<std::string> extensions;
 };
 
-struct IOpRegistry
+struct OperatorRegistry
 {
     std::string name;
-    IOpForge iop;
+    OperatorForge op;
 };
 
 class VOID_API Forge
@@ -92,7 +92,7 @@ public:
      */
     bool Register(const FormatRegistry<PixForge>& registry);
     bool Register(const FormatRegistry<MPixForge>& registry);
-    bool Register(const IOpRegistry& registry);
+    bool Register(const OperatorRegistry& registry);
     bool Register(const WriterRegistry& registry);
     bool Register(const ReaderRegistry& registry);
     bool Register(ConformRule* rule);
@@ -108,7 +108,7 @@ public:
     std::unique_ptr<VoidPixReader> ImageReaderAt(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> GetMovieReader(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
     std::unique_ptr<VoidMPixReader> MovieReaderAt(const std::string& extension, const std::string& path, v_frame_t framenumber = 0) const;
-    std::unique_ptr<ImageOp> GetImageOp(const std::string& name) const;
+    std::unique_ptr<BaseOp> GetOperator(const std::string& name) const;
     std::unique_ptr<MediaReader> GetMediaReader(const std::string& extension, const std::string& path) const;
     std::unique_ptr<PixWriter> GetImageWriter(const std::string& extension, const EncodeSpec& spec) const;
     std::unique_ptr<PixWriter> GetMovieWriter(const std::string& extension, const EncodeSpec& spec) const;
@@ -119,12 +119,12 @@ public:
 
     bool IsRegistered(const std::string& extension) const;
 
-    const std::unordered_map<std::string, IOpForge>& Operators() const { return m_IOpForger; }
+    const std::unordered_map<std::string, OperatorForge>& Operators() const { return m_OpForger; }
 
 private: /* Members */
     std::unordered_map<std::string, PixForge> m_ImageForger;
     std::unordered_map<std::string, MPixForge> m_MovieForger;
-    std::unordered_map<std::string, IOpForge> m_IOpForger;
+    std::unordered_map<std::string, OperatorForge> m_OpForger;
     std::unordered_map<std::string, PixWriterForge> m_ImageWriters;
     std::unordered_map<std::string, PixWriterForge> m_MovieWriters;
     std::unordered_map<std::string, MediaReaderForge> m_MediaReaders;
