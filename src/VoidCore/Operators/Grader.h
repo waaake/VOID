@@ -10,12 +10,12 @@
 
 VOID_NAMESPACE_OPEN
 
-class VOID_API GradeOp : public ImageOp
+class VOID_API GradeOp : public ImageRowOp
 {
 public:
     GradeOp();
     bool Evaluate(ImageRow& row) override;
-    std::string Type() const override { return "ColorGrade"; }
+    std::string Typename() const override { return "ColorGrade"; }
 
 private:
     Param* m_RedGain;
@@ -23,12 +23,12 @@ private:
     Param* m_BlueGain;
 };
 
-class VOID_API Grade2 : public ImageOp
+class VOID_API Grade2 : public ImageRowOp
 {
 public:
     Grade2();
     bool Evaluate(ImageRow& row) override;
-    std::string Type() const override { return "Grade2"; }
+    std::string Typename() const override { return "Grade2"; }
 
 private:
     Param* m_ChannelRed;

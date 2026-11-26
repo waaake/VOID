@@ -10,11 +10,11 @@
 
 VOID_NAMESPACE_OPEN
 
-class VOID_API InvertOp : public ImageOp
+class VOID_API InvertOp : public ImageRowOp
 {
 public:
     bool Evaluate(ImageRow& row) override;
-    std::string Type() const override { return "Invert"; }
+    std::string Typename() const override { return "Invert"; }
 };
 
 VOID_NAMESPACE_CLOSE

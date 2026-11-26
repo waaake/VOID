@@ -15,9 +15,9 @@ namespace Internal {
 
     bool RegisterInvertOp()
     {
-        IOpRegistry r;
+        OperatorRegistry r;
         r.name = "Invert";
-        r.iop = []() -> std::unique_ptr<ImageOp> { return std::make_unique<InvertOp>(); };
+        r.op = []() -> std::unique_ptr<BaseOp> { return std::make_unique<InvertOp>(); };
 
         return Forge::Instance().Register(r);
     }
@@ -29,18 +29,18 @@ namespace Internal {
     
     bool RegisterColorGradeOp()
     {
-        IOpRegistry r;
+        OperatorRegistry r;
         r.name = "ColorGrade";
-        r.iop = []() -> std::unique_ptr<ImageOp> { return std::make_unique<GradeOp>(); };
+        r.op = []() -> std::unique_ptr<BaseOp> { return std::make_unique<GradeOp>(); };
     
         return Forge::Instance().Register(r);
     }
 
     bool RegisterGrade2()
     {
-        IOpRegistry r;
+        OperatorRegistry r;
         r.name = "Grade2";
-        r.iop = []() -> std::unique_ptr<ImageOp> { return std::make_unique<Grade2>(); };
+        r.op = []() -> std::unique_ptr<BaseOp> { return std::make_unique<Grade2>(); };
     
         return Forge::Instance().Register(r);
     }
