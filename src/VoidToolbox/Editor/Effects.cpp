@@ -74,7 +74,7 @@ void EffectEditor::SetupIntParam(const Param* param)
     }
     editor->setValue(param->GetInt());
 
-    AddControl({ param->name.c_str(), param->label.c_str(), editor });
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this, param](int i) -> void
     {
         m_Effect->SetValue(param->name, i);
@@ -91,7 +91,7 @@ void EffectEditor::SetupFloatRangedParam(const Param* param)
 
     editor->SetValue(param->GetFloat());
 
-    AddControl({ param->name.c_str(), param->label.c_str(), editor });
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, &QuickDoubleSlider::valueChanged, this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
@@ -105,7 +105,7 @@ void EffectEditor::SetupFloatParam(const Param* param)
     editor->setSingleStep(0.1);
     editor->setValue(param->GetFloat());
 
-    AddControl({ param->name.c_str(), param->label.c_str(), editor });
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
@@ -118,7 +118,7 @@ void EffectEditor::SetupBoolParam(const Param* param)
     QCheckBox* editor = new QCheckBox;
     editor->setChecked(param->GetBool());
 
-    AddControl({ param->name.c_str(), param->label.c_str(), editor });
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, &QCheckBox::toggled, this, [this, param](bool b) -> void
     {
         m_Effect->SetValue(param->name, b);
@@ -131,7 +131,7 @@ void EffectEditor::SetupStringParam(const Param* param)
     QLineEdit* editor = new QLineEdit;
     editor->setText(param->GetString().c_str());
 
-    AddControl({ param->name.c_str(), param->label.c_str(), editor });
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, &QLineEdit::editingFinished, this, [this, param, editor]() -> void
     {
         m_Effect->SetValue(param->name, editor->text().toStdString());
