@@ -50,6 +50,7 @@ enum class IconType : char16_t
     icon_photo_library      = 0xe413,
     icon_play_arrow         = 0xe037,
     icon_playlist_play      = 0xe05f,
+    icon_refresh            = 0xe5d5,
     icon_remove             = 0xe15b,
     icon_repeat             = 0xe040,
     icon_repeat_one         = 0xe041,
