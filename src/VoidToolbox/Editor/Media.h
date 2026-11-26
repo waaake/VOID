@@ -28,6 +28,9 @@ public:
 signals:
     void mediaUpdated(const SharedMediaClip& media, bool needsRecache = false);
 
+protected:
+    void Refresh() override;
+
 private:
     QLineEdit* m_PathEdit;
     IntField* m_RangeStartEdit;

@@ -25,6 +25,22 @@ MediaEditor::~MediaEditor()
     m_LayerCombo = nullptr;
 }
 
+void MediaEditor::Refresh()
+{
+    m_PathEdit->setText(m_Clip->TemplatedPath().c_str());
+
+    // Item Range
+    m_RangeStartEdit->SetValue(m_Clip->FirstFrame());
+    m_RangeEndEdit->SetValue(m_Clip->LastFrame());
+
+    // Current layer
+    m_LayerCombo->setCurrentText(m_Clip->CurrentLayer().c_str());
+
+    // Current input transform
+    m_ColorspaceCombo->setCurrentText(m_Clip->InputColorTransform().c_str());
+    m_PixelAspectEdit->SetValue(m_Clip->PixelAspect());
+}
+
 void MediaEditor::Build()
 {
     m_PathEdit = new QLineEdit(this);
