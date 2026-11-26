@@ -9,6 +9,7 @@
 #include "Editor.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Frame.h"
+#include "VoidQExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -66,7 +67,7 @@ void BaseEditor::Enable(bool enabled)
     // m_EnableButton->toggle
 }
 
-void BaseEditor::AddControl(const QString& label, QWidget* editor, bool newline)
+void BaseEditor::AddControl(const EditorControl& editor, bool newline)
 {
     if (newline)
     {
@@ -74,11 +75,13 @@ void BaseEditor::AddControl(const QString& label, QWidget* editor, bool newline)
         m_Column = -1;
     }
 
-    m_Grid->addWidget(new QLabel(label, this), m_Row, ++m_Column, Qt::AlignRight);
-    m_Grid->addWidget(editor, m_Row, ++m_Column, 1, -1); // Occupy full width
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(new QLabel(editor.label, this), m_Row, ++m_Column, Qt::AlignRight);
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column, 1, -1); // Occupy full width
 }
 
-void BaseEditor::AddControl(const QString& label, QWidget* editor, int rspan, int cspan, bool newline)
+void BaseEditor::AddControl(const EditorControl& editor, int rspan, int cspan, bool newline)
 {
     if (newline)
     {
@@ -86,11 +89,13 @@ void BaseEditor::AddControl(const QString& label, QWidget* editor, int rspan, in
         m_Column = -1;
     }
 
-    m_Grid->addWidget(new QLabel(label, this), m_Row, ++m_Column, Qt::AlignRight);
-    m_Grid->addWidget(editor, m_Row, ++m_Column, rspan, cspan);
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(new QLabel(editor.label, this), m_Row, ++m_Column, Qt::AlignRight);
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column, rspan, cspan);
 }
 
-void BaseEditor::AddWidget(QWidget* widget, bool newline)
+void BaseEditor::AddWidget(const EditorControl& editor, bool newline)
 {
     if (newline)
     {
@@ -98,10 +103,12 @@ void BaseEditor::AddWidget(QWidget* widget, bool newline)
         m_Column = -1;
     }
 
-    m_Grid->addWidget(widget, m_Row, ++m_Column);
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column);
 }
 
-void BaseEditor::AddWidget(QWidget* widget, int rspan, int cspan, bool newline)
+void BaseEditor::AddWidget(const EditorControl& editor, int rspan, int cspan, bool newline)
 {
     if (newline)
     {
@@ -109,7 +116,9 @@ void BaseEditor::AddWidget(QWidget* widget, int rspan, int cspan, bool newline)
         m_Column = -1;
     }
 
-    m_Grid->addWidget(widget, m_Row, ++m_Column, rspan, cspan);
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column, rspan, cspan);
 }
 
 void BaseEditor::BeginSection(const QString& label)

@@ -16,6 +16,20 @@
 
 VOID_NAMESPACE_OPEN
 
+struct EditorControl
+{
+    QString name;
+    QString label;
+    QString description;
+    QWidget* widget;
+
+    EditorControl(const QString& name, QWidget* w) : name(name), widget(w) {}
+    EditorControl(const QString& name, const QString& label, QWidget* w)
+        : name(name), label(label), widget(w) {}
+    EditorControl(const QString& name, const QString& label, const QString& description, QWidget* w)
+        : name(name), label(label), description(description), widget(w) {}
+};
+
 class BaseEditor : public QWidget
 {
     Q_OBJECT
@@ -38,10 +52,10 @@ protected:
     void SetName(const QString& name);
     void SetColor(const QColor& color);
     void Enable(bool enabled);
-    void AddControl(const QString& label, QWidget* editor, bool newline = true);
-    void AddControl(const QString& label, QWidget* editor, int rspan, int cspan, bool newline = true);
-    void AddWidget(QWidget* editor, bool newline = true);
-    void AddWidget(QWidget* editor, int rspan, int cspan, bool newline = true);
+    void AddControl(const EditorControl& editor, bool newline = true);
+    void AddControl(const EditorControl& editor, int rspan, int cspan, bool newline = true);
+    void AddWidget(const EditorControl& editor, bool newline = true);
+    void AddWidget(const EditorControl& editor, int rspan, int cspan, bool newline = true);
     void BeginSection(const QString& name);
     void EndSection() { AddSeparator(); }
     void AddSeparator();
