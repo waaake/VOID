@@ -608,7 +608,7 @@ const FloatImage MediaClip::Evaluate(v_frame_t frame)
             if (effect->Enabled())
             {
                 VOID_LOG_INFO("Processing {}", effect->Name());
-                ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
+                // ImageProcessor::Instance().ProcessImage(image, effect->ImageOperator());
             }
         }
 
