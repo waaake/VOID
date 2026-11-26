@@ -66,44 +66,44 @@ void Timeline::Build()
 	/* Forwards */
 	m_ForwardButton = new QPushButton;
 	m_ForwardButton->setIcon(IconForge::GetIcon(IconType::icon_play_arrow, _DARK_COLOR(QPalette::Text, 100)));
-	m_ForwardButton->setToolTip(ToolTipString("Play Forwards", "Starts Playing in forward direction.").c_str());
+	m_ForwardButton->setToolTip(ToolTipString("Play Forwards", "Starts Playing in forward direction."));
 
 	m_NextFrameButton = new QPushButton;
 	m_NextFrameButton->setIcon(IconForge::GetIcon(IconType::icon_fast_forward, _DARK_COLOR(QPalette::Text, 100)));
-	m_NextFrameButton->setToolTip(ToolTipString("Next Frame", "Moves to the next frame.").c_str());
+	m_NextFrameButton->setToolTip(ToolTipString("Next Frame", "Moves to the next frame."));
 
 	m_EndFrameButton = new QPushButton;
 	m_EndFrameButton->setIcon(IconForge::GetIcon(IconType::icon_skip_next, _DARK_COLOR(QPalette::Text, 100)));
-	m_EndFrameButton->setToolTip(ToolTipString("End Frame", "Moves to the last frame.").c_str());
+	m_EndFrameButton->setToolTip(ToolTipString("End Frame", "Moves to the last frame."));
 
 	/* Backwards */
 	m_BackwardButton = new QPushButton;
 	m_BackwardButton->setIcon(IconForge::GetIcon(IconType::icon_arrow_back, _DARK_COLOR(QPalette::Text, 100)));
-	m_BackwardButton->setToolTip(ToolTipString("Play Backwards", "Starts Playing in reverse direction.").c_str());
+	m_BackwardButton->setToolTip(ToolTipString("Play Backwards", "Starts Playing in reverse direction."));
 
 	m_PrevFrameButton = new QPushButton;
 	m_PrevFrameButton->setIcon(IconForge::GetIcon(IconType::icon_fast_rewind,  _DARK_COLOR(QPalette::Text, 100)));
-	m_PrevFrameButton->setToolTip(ToolTipString("Previous Frame", "Moves to the previous frame.").c_str());
+	m_PrevFrameButton->setToolTip(ToolTipString("Previous Frame", "Moves to the previous frame."));
 
 	m_StartFrameButton = new QPushButton;
 	m_StartFrameButton->setIcon(IconForge::GetIcon(IconType::icon_skip_previous,  _DARK_COLOR(QPalette::Text, 100)));
-	m_StartFrameButton->setToolTip(ToolTipString("Start Frame", "Moves to the first frame.").c_str());
+	m_StartFrameButton->setToolTip(ToolTipString("Start Frame", "Moves to the first frame."));
 
 	/* Stop and others */
 	m_StopButton = new QPushButton;
 	m_StopButton->setIcon(IconForge::GetIcon(IconType::icon_pause, _DARK_COLOR(QPalette::Text, 100)));
-	m_StopButton->setToolTip(ToolTipString("Stop", "Stops playing the media.").c_str());
+	m_StopButton->setToolTip(ToolTipString("Stop", "Stops playing the media."));
 
 	/* In - Out Framing */
 	m_InFrameButton = new ToggleStatePushButton("I");
-	m_InFrameButton->setToolTip(ToolTipString("Set In frame", "Sets the current frame as the new inframe for playing.").c_str());
+	m_InFrameButton->setToolTip(ToolTipString("Set In frame", "Sets the current frame as the new inframe for playing."));
 
 	m_OutFrameButton = new ToggleStatePushButton("O");
-	m_OutFrameButton->setToolTip(ToolTipString("Set Out frame", "Sets the current frame as the out inframe for playing.").c_str());
+	m_OutFrameButton->setToolTip(ToolTipString("Set Out frame", "Sets the current frame as the out inframe for playing."));
 
 	/* Loop Type Button */
 	m_LoopTypeButton = new LoopTypeButton;
-	m_LoopTypeButton->setToolTip(ToolTipString("Playback Loop", "Sets the loop for playback.").c_str());
+	m_LoopTypeButton->setToolTip(ToolTipString("Playback Loop", "Sets the loop for playback."));
 
 	m_VolumeButton = new VolumeButton;
 
@@ -111,7 +111,7 @@ void Timeline::Build()
 	m_FullscreenButton = new QPushButton;
 	m_FullscreenButton->setIcon(IconForge::GetIcon(IconType::icon_pageless, _DARK_COLOR(QPalette::Text, 100)));
 	m_FullscreenButton->setFlat(true);
-	m_FullscreenButton->setToolTip(ToolTipString("Fullscreen", "Plays media in fullscreen.").c_str());
+	m_FullscreenButton->setToolTip(ToolTipString("Fullscreen", "Plays media in fullscreen."));
 
 	/* Timing */
 	m_TimeDisplay = new TimeEdit;
@@ -247,11 +247,11 @@ void Timeline::Setup()
 	m_VolumeButton->setEnabled(_EngineBridge.AudioEnabled());
 	if (_EngineBridge.AudioEnabled())
 		m_VolumeButton->setToolTip(
-			ToolTipString("Adjust Volume", "Controls the player volume levels.").c_str()
+			ToolTipString("Adjust Volume", "Controls the player volume levels.")
 		);
 	else
 		m_VolumeButton->setToolTip(
-			ToolTipString("Volume control disabled", "Launch VOID with '--audio' to enable audio.").c_str()
+			ToolTipString("Volume control disabled", "Launch VOID with '--audio' to enable audio.")
 		);
 }
 
