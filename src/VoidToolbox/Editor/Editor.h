@@ -59,6 +59,8 @@ protected:
     void BeginSection(const QString& name);
     void EndSection() { AddSeparator(); }
     void AddSeparator();
+    QWidget* Control(const QString& name);
+    virtual void Refresh() {}
 
 private:
     QVBoxLayout* m_Layout;
@@ -66,6 +68,7 @@ private:
     QLineEdit* m_NameEdit;
     ColorSelectionButton* m_ColorButton;
     QToolButton* m_EnableButton;
+    QToolButton* m_RefreshButton;
     CloseButton* m_CloseButton;
 
     int m_Row;

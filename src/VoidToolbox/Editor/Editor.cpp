@@ -142,6 +142,11 @@ void BaseEditor::AddSeparator()
     m_Grid->addWidget(new HLine(this), ++m_Row, 0, 1, -1);
 }
 
+QWidget* BaseEditor::Control(const QString& name)
+{
+    return findChild<QWidget*>(name);
+}
+
 void BaseEditor::Build()
 {
     m_Layout = new QVBoxLayout(this);
@@ -152,13 +157,15 @@ void BaseEditor::Build()
 
     m_NameEdit = new QLineEdit;
 
-    m_ColorButton = new ColorSelectionButton;
-    m_EnableButton = new QToolButton;
-    m_CloseButton = new CloseButton;
+    m_ColorButton = new ColorSelectionButton(this);
+    m_EnableButton = new QToolButton(this);
+    m_RefreshButton = new QToolButton(this);
+    m_CloseButton = new CloseButton(this);
 
     title->addWidget(m_NameEdit);
     title->addWidget(m_ColorButton);
     title->addWidget(m_EnableButton);
+    title->addWidget(m_RefreshButton);
     title->addWidget(m_CloseButton);
 
     m_Layout->addLayout(title);
@@ -183,13 +190,24 @@ void BaseEditor::Setup()
     m_EnableButton->setCheckable(true);
     m_EnableButton->setAutoRaise(true);
 
+    m_RefreshButton->setIcon(IconForge::GetIcon(IconType::icon_refresh, _DARK_COLOR(QPalette::Text, 100)));
+    m_RefreshButton->setAutoRaise(true);
+
     m_EnableButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
+    m_RefreshButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
     m_CloseButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
     m_ColorButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
     
     // Signals
     connect(m_NameEdit, &QLineEdit::editingFinished, this, [this]() -> void { emit nameChangeRequested(m_NameEdit->text()); });
     connect(m_EnableButton, &QToolButton::toggled, this, &BaseEditor::stateChangeRequested);
+    connect(m_RefreshButton, &QToolButton::clicked, this, [this]() -> void 
+    {
+        bool blocked = blockSignals(true);
+        // Ensure that refresh doesn't trigger whole range of updates to the actual node...
+        Refresh();
+        blockSignals(blocked);
+    });
     connect(m_CloseButton, &CloseButton::clicked, this, &BaseEditor::Close);
     connect(m_ColorButton, &ColorSelectionButton::colorChanged, this, [this](const QColor& color) -> void
     {
