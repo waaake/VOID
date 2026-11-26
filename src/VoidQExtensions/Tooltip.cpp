@@ -6,33 +6,56 @@
 
 VOID_NAMESPACE_OPEN
 
-std::string ToolTipString(const std::string& name, const std::string& description)
+// std::string ToolTipString(const std::string& name, const std::string& description)
+// {
+//     if (description.empty())
+//     {
+//         constexpr std::string_view boldStart = "<b>";
+//         constexpr std::string_view boldEnd = "</b>";
+//         std::string result;
+//         result.reserve(boldStart.size() + name.size() + boldEnd.size());
+
+//         result.append(boldStart);
+//         result.append(name);
+//         result.append(boldEnd);
+
+//         return result;
+//     }
+
+//     constexpr std::string_view boldStart = "<b>";
+//     constexpr std::string_view boldBreak = "</b><br>";
+
+//     std::string result;
+//     result.reserve(boldStart.size() + name.size() + boldBreak.size() + description.size());
+//     result.append(boldStart);
+//     result.append(name);
+//     result.append(boldBreak);
+//     result.append(description);
+
+//     return result;
+// }
+
+QString ToolTipString(const QString& name, const QString& description)
 {
-    if (description.empty())
+    QString s;
+    if (description.isEmpty())
     {
-        std::string boldStart = "<b>";
-        std::string boldEnd = "</b>";
-        std::string result;
-        result.reserve(boldStart.size() + name.size() + boldEnd.size());
+        s.reserve(name.size() + 9);
 
-        result.append(boldStart);
-        result.append(name);
-        result.append(boldEnd);
-
-        return result;
+        s += "<b>";
+        s += name;
+        s += "</b>";
+        return s;
     }
 
-    std::string boldStart = "<b>";
-    std::string boldBreak = "</b><br>";
+    s.reserve(name.size() + description.size() + 13);
 
-    std::string result;
-    result.reserve(boldStart.size() + name.size() + boldBreak.size() + description.size());
-    result.append(boldStart);
-    result.append(name);
-    result.append(boldBreak);
-    result.append(description);
+    s += "<b>";
+    s += name;
+    s += "</b><br>";
+    s += description;
 
-    return result;
+    return s;
 }
 
 VOID_NAMESPACE_CLOSE
