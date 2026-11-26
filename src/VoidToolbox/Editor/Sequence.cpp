@@ -17,6 +17,15 @@ SequenceEditor::SequenceEditor(const SharedPlaybackSequence& sequence, QWidget* 
     Setup();
 }
 
+void SequenceEditor::Refresh()
+{
+    SetName(m_Sequence->Name().c_str());
+    SetColor(m_Sequence->Color());
+
+    m_FramerateCtrl->SetFramerate(m_Sequence->Framerate());
+    m_FrameStartEdit->SetValue(m_Sequence->StartFrame());
+}
+
 void SequenceEditor::Build()
 {
     m_FramerateCtrl = new FramerateBox(this);
