@@ -1,24 +1,24 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
-/* TBB */
-#include <tbb/parallel_for.h>
 
+/* Internal */
 #include "Effects.h"
-#include "VoidCore/Profiler.h"
+#include "VoidCore/Logging.h"
+#include "VoidCore/Processors/ImageProcessor.h"
 #include "VoidObjects/Sequence/Track.h"
 #include "VoidObjects/Sequence/TrackItem.h"
 
 VOID_NAMESPACE_OPEN
 
-Effect::Effect(ImageOp* iop, const std::string& name, Effect* parent)
-    : Effect(iop, name, 0, 0, parent)
+Effect::Effect(BaseOp* op, const std::string& name, Effect* parent)
+    : Effect(op, name, 0, 0, parent)
 {
 }
 
-Effect::Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent)
+Effect::Effect(BaseOp* op, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent)
     : VoidObject()
-    , m_Operator(iop)
+    , m_Operator(op)
     , m_Parent(parent)
     , m_TrackItem(nullptr)
     , m_Track(nullptr)
@@ -320,23 +320,7 @@ void Effect::Evaluate_(FloatImage& image)
     if (!image || !m_Enabled) return;
 
     VOID_LOG_INFO("Processing Effect: {0}", m_Name);
-    Tools::VoidProfiler<std::chrono::duration<double>> p("Effect::Evaluate_");
-
-    // #pragma omp parallel for
-    // for (int i = 0; i < image->height; ++i)
-    // {
-    //     ImageRow row = image->EditableRow(i);
-    //     m_Operator->Evaluate(row);
-    // }
-
-    tbb::parallel_for(tbb::blocked_range<int>(0, image->height), [&](const tbb::blocked_range<int>& r) -> void
-    {
-        for (int i = r.begin(); i != r.end(); ++i)
-        {
-            ImageRow row = image->EditableRow(i);
-            m_Operator->Evaluate(row);
-        }
-    });
+    ImageProcessor::Process(image, m_Operator);
 }
 
 VOID_NAMESPACE_CLOSE

@@ -29,8 +29,8 @@ public:
     };
 
 public:
-    Effect(ImageOp* iop, const std::string& name, Effect* parent = nullptr);
-    Effect(ImageOp* iop, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
+    Effect(BaseOp* op, const std::string& name, Effect* parent = nullptr);
+    Effect(BaseOp* op, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent = nullptr);
     ~Effect();
 
     void ResetParent(Effect* effect);
@@ -78,7 +78,7 @@ public:
     void SetEnabled(bool enable);
 
     Param* GetParam(const std::string& name) const { return m_Operator->GetParam(name); }
-    ImageOp* ImageOperator() { return m_Operator; }
+    // ImageOp* ImageOperator() { return m_Operator; }
 
     const std::vector<Param*>& Params() const { return m_Operator->Params(); }
 
@@ -98,7 +98,7 @@ public:
     void Serialize(std::ostream& out) const;
     void Deserialize(const rapidjson::Value& in);
     void Deserialize(std::istream& in);
-    std::string Type() const { return m_Operator->Type(); }
+    std::string Type() const { return m_Operator->Typename(); }
     const char* TypeName() const { return "Effect"; }
 
 signals:
@@ -107,7 +107,7 @@ signals:
     void rangeChanged(v_frame_t, v_frame_t);
 
 private:
-    ImageOp* m_Operator;
+    BaseOp* m_Operator;
     Effect* m_Parent;
     TrackItem* m_TrackItem;
     PlaybackTrack* m_Track;
