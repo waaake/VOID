@@ -58,26 +58,26 @@ void AnnotationsController::Build()
 
     m_BrushButton = new HighlightToggleButton;
     m_BrushButton->setIcon(IconForge::GetIcon(IconType::icon_brush, _DARK_COLOR(QPalette::Text, 100)));
-    m_BrushButton->setToolTip(ToolTipString("Brush Tool", "Annotate free hand using the Brush tool.").c_str());
+    m_BrushButton->setToolTip(ToolTipString("Brush Tool", "Annotate free hand using the Brush tool."));
 
     m_TextButton = new HighlightToggleButton;
     m_TextButton->setIcon(IconForge::GetIcon(IconType::icon_title, _DARK_COLOR(QPalette::Text, 100)));
-    m_TextButton->setToolTip(ToolTipString("Text Tool", "Annotate by typing where clicked.").c_str());
+    m_TextButton->setToolTip(ToolTipString("Text Tool", "Annotate by typing where clicked."));
 
     m_EraserButton = new HighlightToggleButton;
     m_EraserButton->setIcon(IconForge::GetIcon(IconType::icon_ink_eraser, _DARK_COLOR(QPalette::Text, 100)));
-    m_EraserButton->setToolTip(ToolTipString("Eraser Tool", "Erase Text Characters or Annotation Stroke by dragging over.").c_str());
+    m_EraserButton->setToolTip(ToolTipString("Eraser Tool", "Erase Text Characters or Annotation Stroke by dragging over."));
 
     m_ClearButton = new QPushButton;
     m_ClearButton->setIcon(IconForge::GetIcon(IconType::icon_delete, _DARK_COLOR(QPalette::Text, 100)));
-    m_ClearButton->setToolTip(ToolTipString("Delete Annotation", "Deletes the annotation from the current frame.").c_str());
+    m_ClearButton->setToolTip(ToolTipString("Delete Annotation", "Deletes the annotation from the current frame."));
 
     m_ColorButton = new ColorSelectionButton({255, 255, 255}, this);
-    m_ColorButton->setToolTip(ToolTipString("Color Selector", "Selects Color for Annotation.").c_str());
+    m_ColorButton->setToolTip(ToolTipString("Color Selector", "Selects Color for Annotation."));
 
     m_SizeAdjuster = new QPushButton;
     m_SizeAdjuster->setIcon(IconForge::GetIcon(IconType::icon_adjust, _DARK_COLOR(QPalette::Text, 100)));
-    m_SizeAdjuster->setToolTip(ToolTipString("Adjust Size", "Adjust size of the Brush/Eraser.").c_str());
+    m_SizeAdjuster->setToolTip(ToolTipString("Adjust Size", "Adjust size of the Brush/Eraser."));
 
     /* Add to the button group */
     m_AnnotationGroup->addButton(m_PointerButton, 0);
