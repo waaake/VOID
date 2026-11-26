@@ -101,14 +101,14 @@ void ControlBar::Build()
     m_AnnotationButton = new HighlightToggleButton;
     m_AnnotationButton->setIcon(IconForge::GetIcon(IconType::icon_draw, _DARK_COLOR(QPalette::Text, 100)));
     m_AnnotationButton->setFixedWidth(26);
-    m_AnnotationButton->setToolTip(ToolTipString("Annotations Toolkit", "Toggles Annotation tools for the Viewer.").c_str());
+    m_AnnotationButton->setToolTip(ToolTipString("Annotations Toolkit", "Toggles Annotation tools for the Viewer."));
 
     /* Viewer Display Controller */
     m_ColorDisplayController = new ColorController;
 
     /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
-    m_Zoomer->setToolTip(ToolTipString("Zoom Controller", "Adjust viewer image zoom.").c_str());
+    m_Zoomer->setToolTip(ToolTipString("Zoom Controller", "Adjust viewer image zoom."));
 
     m_ViewerController = new ViewerController;
 

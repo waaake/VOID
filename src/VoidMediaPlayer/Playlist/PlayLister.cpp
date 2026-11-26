@@ -77,29 +77,18 @@ void VoidPlayLister::Build()
     // View Toggle Buttons
     m_ListViewToggle = new HighlightToggleButton(this);
     m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 100)));
-    m_ListViewToggle->setToolTip(
-        ToolTipString(
-            "List View",
-            "Shows items in a Vertical List."
-        ).c_str()
-    );
+    m_ListViewToggle->setToolTip(ToolTipString("List View", "Shows items in a Vertical List."));
 
     m_DetailedListViewToggle = new HighlightToggleButton(this);
     m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 100)));
     m_DetailedListViewToggle->setToolTip(
-        ToolTipString(
-            "Detailed List View",
-            "Shows items in a Vertical List with details."
-        ).c_str()
+        ToolTipString("Detailed List View", "Shows items in a Vertical List with details.")
     );
 
     m_ThumbnailViewToggle = new HighlightToggleButton(this);
     m_ThumbnailViewToggle->setIcon(IconForge::GetIcon(IconType::icon_grid_view, _DARK_COLOR(QPalette::Text, 100)));
     m_ThumbnailViewToggle->setToolTip(
-        ToolTipString(
-            "Thumbnail View",
-            "Shows items in a dynamic Thumbnail Grid."
-        ).c_str()
+        ToolTipString("Thumbnail View", "Shows items in a dynamic Thumbnail Grid.")
     );
 
     m_ViewButtonGroup->addButton(m_ListViewToggle, 0);
@@ -108,10 +97,7 @@ void VoidPlayLister::Build()
 
     m_SearchBar = new MediaSearchBar(this);
     m_SearchBar->setToolTip(
-        ToolTipString(
-            "Search Media",
-            "Searches and filters media in the Media View as per the provided Text."
-        ).c_str()
+        ToolTipString("Search Media", "Searches and filters media in the Media View as per the provided Text.")
     );
 
     m_OptionsLayout->addWidget(m_ListViewToggle);

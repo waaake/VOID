@@ -25,6 +25,9 @@ public:
 
     bool HasSameSequence(const SharedPlaybackSequence& sequence) const { return m_Sequence.get() == sequence.get(); }
 
+protected:
+    void Refresh() override;
+
 private:
     FramerateBox* m_FramerateCtrl;
     IntField* m_FrameStartEdit;

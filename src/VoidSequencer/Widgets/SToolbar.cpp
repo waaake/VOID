@@ -31,32 +31,32 @@ void SToolbar::Build()
     m_PointerButton = new HighlightToggleButton(this);
     m_PointerButton->setIcon(IconForge::GetIcon(IconType::icon_arrow_selector, _DARK_COLOR(QPalette::Text, 100), 28));
     m_PointerButton->setFixedSize({32, 32});
-    m_PointerButton->setToolTip(ToolTipString("Pointer Context", "Resets the current action on the Sequencer Timeline.").c_str());
+    m_PointerButton->setToolTip(ToolTipString("Pointer Context", "Resets the current action on the Sequencer Timeline."));
 
     m_SlipClipButton = new HighlightToggleButton(this);
     m_SlipClipButton->setIcon(IconForge::GetIcon(IconType::icon_arrow_range, _DARK_COLOR(QPalette::Text, 100), 28));
     m_SlipClipButton->setFixedSize({32, 32});
-    m_SlipClipButton->setToolTip(ToolTipString("Slip Clip", "Slip media content over the track item range.").c_str());
+    m_SlipClipButton->setToolTip(ToolTipString("Slip Clip", "Slip media content over the track item range."));
 
     m_TrimButton = new HighlightToggleButton(this);
     m_TrimButton->setIcon(IconForge::GetIcon(IconType::icon_format_overflow, _DARK_COLOR(QPalette::Text, 100), 28));
     m_TrimButton->setFixedSize({32, 32});
-    m_TrimButton->setToolTip(ToolTipString("Trim", "Trim item ranges (timeline in/out) through head and tail handle markers on track items.").c_str());
+    m_TrimButton->setToolTip(ToolTipString("Trim", "Trim item ranges (timeline in/out) through head and tail handle markers on track items."));
 
     m_RazorButton = new HighlightToggleButton(this);
     m_RazorButton->setIcon(IconForge::GetIcon(IconType::icon_bolt, _DARK_COLOR(QPalette::Text, 100), 28));
     m_RazorButton->setFixedSize({32, 32});
-    m_RazorButton->setToolTip(ToolTipString("Razor", "Cut track item on a given track at the frame.").c_str());
+    m_RazorButton->setToolTip(ToolTipString("Razor", "Cut track item on a given track at the frame."));
 
     m_RazorAllButton = new HighlightToggleButton(this);
     m_RazorAllButton->setIcon(IconForge::GetIcon(IconType::icon_carpenter, _DARK_COLOR(QPalette::Text, 100), 28));
     m_RazorAllButton->setFixedSize({32, 32});
-    m_RazorAllButton->setToolTip(ToolTipString("Razor All", "Cut track items on all the tracks in the sequence at the frame.").c_str());
+    m_RazorAllButton->setToolTip(ToolTipString("Razor All", "Cut track items on all the tracks in the sequence at the frame."));
 
     m_MergeButton = new HighlightToggleButton(this);
     m_MergeButton->setIcon(IconForge::GetIcon(IconType::icon_cell_merge, _DARK_COLOR(QPalette::Text, 100), 28));
     m_MergeButton->setFixedSize({32, 32});
-    m_MergeButton->setToolTip(ToolTipString("Merge Cut", "Merge cuts created by the Razor tool.").c_str());
+    m_MergeButton->setToolTip(ToolTipString("Merge Cut", "Merge cuts created by the Razor tool."));
 
     m_ActionGroup.addButton(m_PointerButton, static_cast<int>(SequencerAction::NONE));
     m_ActionGroup.addButton(m_SlipClipButton, static_cast<int>(SequencerAction::SLIP_CLIP));

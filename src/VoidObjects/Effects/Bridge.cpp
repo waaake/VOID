@@ -18,7 +18,7 @@ EffectsBridge& EffectsBridge::Instance()
 
 Effect* EffectsBridge::CreateEffect(const std::string& type, Effect* parent)
 {
-    if (std::unique_ptr<ImageOp> creator = Forge::Instance().GetImageOp(type))
+    if (std::unique_ptr<BaseOp> creator = Forge::Instance().GetOperator(type))
     {
         /**
          * We want to transfer the ownership of the created operator to the effect
@@ -31,7 +31,7 @@ Effect* EffectsBridge::CreateEffect(const std::string& type, Effect* parent)
 
 Effect* EffectsBridge::CreateEffect(const std::string& type, const std::string& name, Effect* parent)
 {
-    if (std::unique_ptr<ImageOp> creator = Forge::Instance().GetImageOp(type))
+    if (std::unique_ptr<BaseOp> creator = Forge::Instance().GetOperator(type))
     {
         /**
          * We want to transfer the ownership of the created operator to the effect
@@ -44,7 +44,7 @@ Effect* EffectsBridge::CreateEffect(const std::string& type, const std::string& 
 
 Effect* EffectsBridge::CreateEffect(const std::string& type, v_frame_t in, v_frame_t out, Effect* parent)
 {
-    if (std::unique_ptr<ImageOp> creator = Forge::Instance().GetImageOp(type))
+    if (std::unique_ptr<BaseOp> creator = Forge::Instance().GetOperator(type))
     {
         /**
          * We want to transfer the ownership of the created operator to the effect
@@ -57,7 +57,7 @@ Effect* EffectsBridge::CreateEffect(const std::string& type, v_frame_t in, v_fra
 
 Effect* EffectsBridge::CreateEffect(const std::string& type, const std::string& name, v_frame_t in, v_frame_t out, Effect* parent)
 {
-    if (std::unique_ptr<ImageOp> creator = Forge::Instance().GetImageOp(type))
+    if (std::unique_ptr<BaseOp> creator = Forge::Instance().GetOperator(type))
     {
         /**
          * We want to transfer the ownership of the created operator to the effect
@@ -70,7 +70,7 @@ Effect* EffectsBridge::CreateEffect(const std::string& type, const std::string& 
 
 Effect* EffectsBridge::Copy(const Effect* effect)
 {
-    Effect* copied = new Effect(Forge::Instance().GetImageOp(effect->Type()).release(), "copy");
+    Effect* copied = new Effect(Forge::Instance().GetOperator(effect->Type()).release(), "copy");
 
     // Copy internals and values
     std::ostringstream out(std::ios::binary);

@@ -17,13 +17,22 @@ SequenceEditor::SequenceEditor(const SharedPlaybackSequence& sequence, QWidget* 
     Setup();
 }
 
+void SequenceEditor::Refresh()
+{
+    SetName(m_Sequence->Name().c_str());
+    SetColor(m_Sequence->Color());
+
+    m_FramerateCtrl->SetFramerate(m_Sequence->Framerate());
+    m_FrameStartEdit->SetValue(m_Sequence->StartFrame());
+}
+
 void SequenceEditor::Build()
 {
     m_FramerateCtrl = new FramerateBox(this);
     m_FrameStartEdit = new IntField(0, std::numeric_limits<int>::max(), this);
 
-    AddControl("Framerate", m_FramerateCtrl);
-    AddControl("Start Frame", m_FrameStartEdit, 1, 1);
+    AddControl({ "framerate", "Framerate", m_FramerateCtrl });
+    AddControl({ "start_frame", "Start Frame", m_FrameStartEdit }, 1, 1);
 
     AddSeparator();
 }

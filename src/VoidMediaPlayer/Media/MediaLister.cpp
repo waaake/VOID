@@ -120,29 +120,16 @@ void VoidMediaLister::Build()
     m_DetailedListViewToggle = new HighlightToggleButton(this);
     m_DetailedListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_view_stream, _DARK_COLOR(QPalette::Text, 100)));
     m_DetailedListViewToggle->setToolTip(
-        ToolTipString(
-            "Detailed List View",
-            "Shows items in a Vertical List with details."
-        ).c_str()
+        ToolTipString("Detailed List View", "Shows items in a Vertical List with details.")
     );
 
     m_ListViewToggle = new HighlightToggleButton(this);
     m_ListViewToggle->setIcon(IconForge::GetIcon(IconType::icon_lists, _DARK_COLOR(QPalette::Text, 100)));
-    m_ListViewToggle->setToolTip(
-        ToolTipString(
-            "List View",
-            "Shows items in a Vertical List."
-        ).c_str()
-    );
+    m_ListViewToggle->setToolTip(ToolTipString("List View", "Shows items in a Vertical List."));
 
     m_ThumbnailViewToggle = new HighlightToggleButton(this);
     m_ThumbnailViewToggle->setIcon(IconForge::GetIcon(IconType::icon_grid_view, _DARK_COLOR(QPalette::Text, 100)));
-    m_ThumbnailViewToggle->setToolTip(
-        ToolTipString(
-            "Thumbnail View",
-            "Shows items in a dynamic Thumbnail Grid."
-        ).c_str()
-    );
+    m_ThumbnailViewToggle->setToolTip(ToolTipString("Thumbnail View", "Shows items in a dynamic Thumbnail Grid."));
 
     m_ViewButtonGroup->addButton(m_DetailedListViewToggle, 0);
     m_ViewButtonGroup->addButton(m_ListViewToggle, 1);
@@ -151,19 +138,11 @@ void VoidMediaLister::Build()
     m_SortButton = new HighlightToggleButton(this);
     m_SortButton->setIcon(IconForge::GetIcon(IconType::icon_sort_by_alpha, _DARK_COLOR(QPalette::Text, 100)));
     m_SortButton->setFixedWidth(26);
-    m_SortButton->setToolTip(
-        ToolTipString(
-            "Sort Media",
-            "Sorts Media in an Alphebetical order based on the name."
-        ).c_str()
-    );
+    m_SortButton->setToolTip(ToolTipString("Sort Media", "Sorts Media in an Alphebetical order based on the name."));
 
     m_SearchBar = new MediaSearchBar(this);
     m_SearchBar->setToolTip(
-        ToolTipString(
-            "Search Media",
-            "Searches and filters media in the Media View as per the provided Text."
-        ).c_str()
+        ToolTipString("Search Media", "Searches and filters media in the Media View as per the provided Text.")
     );
 
     m_ScaleSlider = new QSlider(Qt::Horizontal, this);

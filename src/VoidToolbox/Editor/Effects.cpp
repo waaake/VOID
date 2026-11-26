@@ -12,7 +12,6 @@
 #include "Effects.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Slider.h"
-#include "VoidQExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -22,6 +21,54 @@ EffectEditor::EffectEditor(Effect* effect, QWidget* parent)
 {
     Build();
     Setup();
+}
+
+void EffectEditor::Refresh()
+{
+    QWidget* w = nullptr;
+    for (const auto& param : m_Effect->Params())
+    {
+        switch (param->type)
+        {
+            case Param::TypeDesc::Boolean:
+            {
+                w = Control(param->name.c_str());
+                QCheckBox* editor = static_cast<QCheckBox*>(w);
+                editor->setChecked(param->GetBool());
+                break;
+            }
+            case Param::TypeDesc::Float:
+            {
+                w = Control(param->name.c_str());
+                if (param->range)
+                {
+                    QuickDoubleSlider* editor = static_cast<QuickDoubleSlider*>(w);
+                    editor->SetValue(param->GetFloat());
+                }
+                else
+                {
+                    QDoubleSpinBox* editor = static_cast<QDoubleSpinBox*>(w);
+                    editor->setValue(param->GetFloat());
+                }
+                break;
+            }
+            case Param::TypeDesc::Int:
+            {
+                w = Control(param->name.c_str());
+                QSpinBox* editor = static_cast<QSpinBox*>(w);
+                editor->setValue(param->GetInt());
+                break;
+            }
+            case Param::TypeDesc::String:
+            default:
+            {
+                w = Control(param->name.c_str());
+                QLineEdit* editor = static_cast<QLineEdit*>(w);
+                editor->setText(param->GetString().c_str());
+                break;
+            }
+        }
+    }
 }
 
 void EffectEditor::Build()
@@ -74,9 +121,8 @@ void EffectEditor::SetupIntParam(const Param* param)
         editor->setSingleStep(static_cast<int>(param->range.step));
     }
     editor->setValue(param->GetInt());
-    editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    AddControl(param->label.c_str(), editor);
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, [this, param](int i) -> void
     {
         m_Effect->SetValue(param->name, i);
@@ -92,9 +138,8 @@ void EffectEditor::SetupFloatRangedParam(const Param* param)
     editor->SetSingleStep(param->range.step);
 
     editor->SetValue(param->GetFloat());
-    editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    AddControl(param->label.c_str(), editor);
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, &QuickDoubleSlider::valueChanged, this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
@@ -107,9 +152,8 @@ void EffectEditor::SetupFloatParam(const Param* param)
     QDoubleSpinBox* editor = new QDoubleSpinBox;
     editor->setSingleStep(0.1);
     editor->setValue(param->GetFloat());
-    editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    AddControl(param->label.c_str(), editor);
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, [this, param](double d) -> void
     {
         m_Effect->SetValue(param->name, static_cast<float>(d));
@@ -121,9 +165,8 @@ void EffectEditor::SetupBoolParam(const Param* param)
 {
     QCheckBox* editor = new QCheckBox;
     editor->setChecked(param->GetBool());
-    editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    AddControl(param->label.c_str(), editor);
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, &QCheckBox::toggled, this, [this, param](bool b) -> void
     {
         m_Effect->SetValue(param->name, b);
@@ -135,9 +178,8 @@ void EffectEditor::SetupStringParam(const Param* param)
 {
     QLineEdit* editor = new QLineEdit;
     editor->setText(param->GetString().c_str());
-    editor->setToolTip(ToolTipString(param->name, param->description).c_str());
 
-    AddControl(param->label.c_str(), editor);
+    AddControl({ param->name.c_str(), param->label.c_str(), param->description.c_str(), editor });
     connect(editor, &QLineEdit::editingFinished, this, [this, param, editor]() -> void
     {
         m_Effect->SetValue(param->name, editor->text().toStdString());

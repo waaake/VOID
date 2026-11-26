@@ -25,6 +25,22 @@ MediaEditor::~MediaEditor()
     m_LayerCombo = nullptr;
 }
 
+void MediaEditor::Refresh()
+{
+    m_PathEdit->setText(m_Clip->TemplatedPath().c_str());
+
+    // Item Range
+    m_RangeStartEdit->SetValue(m_Clip->FirstFrame());
+    m_RangeEndEdit->SetValue(m_Clip->LastFrame());
+
+    // Current layer
+    m_LayerCombo->setCurrentText(m_Clip->CurrentLayer().c_str());
+
+    // Current input transform
+    m_ColorspaceCombo->setCurrentText(m_Clip->InputColorTransform().c_str());
+    m_PixelAspectEdit->SetValue(m_Clip->PixelAspect());
+}
+
 void MediaEditor::Build()
 {
     m_PathEdit = new QLineEdit(this);
@@ -36,17 +52,17 @@ void MediaEditor::Build()
     m_LayerCombo = new QComboBox();
     m_PixelAspectEdit = new DoubleField(this);
 
-    AddControl("File", m_PathEdit);
-    AddControl("Frame Range", m_RangeStartEdit, 1, 1);
-    AddWidget(m_RangeEndEdit, false);
-    AddControl("Pixel Aspect", m_PixelAspectEdit, 1, 1);
-    AddControl("Input Color Transform", m_ColorspaceCombo);
+    AddControl({ "file", "File", m_PathEdit });
+    AddControl({ "frame_start", "Frame Range", m_RangeStartEdit }, 1, 1);
+    AddWidget({ "frame_end", m_RangeEndEdit }, false);
+    AddControl({ "pixel_aspect", "Pixel Aspect", m_PixelAspectEdit }, 1, 1);
+    AddControl({ "input_transform", "Input Color Transform", m_ColorspaceCombo });
 
     AddSeparator();
 
     /// Only the media that have multiple layers, gets this property added
     if (m_Clip->MultiLayered())
-        AddControl("Layer", m_LayerCombo);
+        AddControl( { "layer", "Layer", m_LayerCombo });
 }
 
 void MediaEditor::Setup()

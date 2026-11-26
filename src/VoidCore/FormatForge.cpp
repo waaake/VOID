@@ -35,10 +35,10 @@ bool Forge::Register(const FormatRegistry<MPixForge>& registry)
     return true;
 }
 
-bool Forge::Register(const IOpRegistry& registry)
+bool Forge::Register(const OperatorRegistry& registry)
 {
-    VOID_LOG_INFO("Registering Image Operator: {0}", registry.name);
-    auto it = m_IOpForger.emplace(registry.name, std::move(registry.iop));
+    VOID_LOG_INFO("Register Operator: {0}", registry.name);
+    auto it = m_OpForger.emplace(registry.name, std::move(registry.op));
     return it.second;
 }
 
@@ -77,7 +77,7 @@ void Forge::UnregisterPlugins()
     /* Clear All of underlying structs */
     m_ImageForger.clear();
     m_MovieForger.clear();
-    m_IOpForger.clear();
+    m_OpForger.clear();
 
     m_MediaReaders.clear();
 
@@ -174,10 +174,10 @@ std::unique_ptr<VoidMPixReader> Forge::MovieReaderAt(const std::string& extensio
     return m_MovieForger.at(extension)(path, framenumber);
 }
 
-std::unique_ptr<ImageOp> Forge::GetImageOp(const std::string& name) const
+std::unique_ptr<BaseOp> Forge::GetOperator(const std::string& name) const
 {
-    const auto it = m_IOpForger.find(name);
-    return it == m_IOpForger.end() ? nullptr : it->second();
+    const auto it = m_OpForger.find(name);
+    return it == m_OpForger.end() ? nullptr : it->second();
 }
 
 std::unique_ptr<MediaReader> Forge::GetMediaReader(const std::string& extension, const std::string& path) const

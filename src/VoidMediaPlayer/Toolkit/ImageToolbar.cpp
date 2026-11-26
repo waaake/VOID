@@ -52,7 +52,7 @@ void ImageToolbar::Build()
         ToolTipString(
             "Quick Exposure Adjustment Tool",
             "Adjust image brightness based on exposure values. Switches between last and the default value when the label is clicked."
-        ).c_str()
+        )
     );
 
     m_GammaSpinner = new QuickSpinner;
@@ -60,7 +60,7 @@ void ImageToolbar::Build()
         ToolTipString(
             "Quick Gamma Adjustment Tool",
             "Tweaks midtone luminance. Switches between last and the default value when the label is clicked."
-        ).c_str()
+        )
     );
 
     m_GainSpinner = new QuickSpinner;
@@ -68,7 +68,7 @@ void ImageToolbar::Build()
         ToolTipString(
             "Quick Gain Adjustment Tool",
             "Amplifies image signal intensity. Switches between last and the default value when the label is clicked."
-        ).c_str()
+        )
     );
     
     m_Layout->addWidget(m_ExposureSpinner);

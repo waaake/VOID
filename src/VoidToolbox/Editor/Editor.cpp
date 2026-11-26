@@ -9,6 +9,7 @@
 #include "Editor.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Frame.h"
+#include "VoidQExtensions/Tooltip.h"
 
 VOID_NAMESPACE_OPEN
 
@@ -66,7 +67,7 @@ void BaseEditor::Enable(bool enabled)
     // m_EnableButton->toggle
 }
 
-void BaseEditor::AddControl(const QString& label, QWidget* editor, bool newline)
+void BaseEditor::AddControl(const EditorControl& editor, bool newline)
 {
     if (newline)
     {
@@ -74,11 +75,13 @@ void BaseEditor::AddControl(const QString& label, QWidget* editor, bool newline)
         m_Column = -1;
     }
 
-    m_Grid->addWidget(new QLabel(label, this), m_Row, ++m_Column, Qt::AlignRight);
-    m_Grid->addWidget(editor, m_Row, ++m_Column, 1, -1); // Occupy full width
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(new QLabel(editor.label, this), m_Row, ++m_Column, Qt::AlignRight);
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column, 1, -1); // Occupy full width
 }
 
-void BaseEditor::AddControl(const QString& label, QWidget* editor, int rspan, int cspan, bool newline)
+void BaseEditor::AddControl(const EditorControl& editor, int rspan, int cspan, bool newline)
 {
     if (newline)
     {
@@ -86,11 +89,13 @@ void BaseEditor::AddControl(const QString& label, QWidget* editor, int rspan, in
         m_Column = -1;
     }
 
-    m_Grid->addWidget(new QLabel(label, this), m_Row, ++m_Column, Qt::AlignRight);
-    m_Grid->addWidget(editor, m_Row, ++m_Column, rspan, cspan);
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(new QLabel(editor.label, this), m_Row, ++m_Column, Qt::AlignRight);
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column, rspan, cspan);
 }
 
-void BaseEditor::AddWidget(QWidget* widget, bool newline)
+void BaseEditor::AddWidget(const EditorControl& editor, bool newline)
 {
     if (newline)
     {
@@ -98,10 +103,12 @@ void BaseEditor::AddWidget(QWidget* widget, bool newline)
         m_Column = -1;
     }
 
-    m_Grid->addWidget(widget, m_Row, ++m_Column);
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column);
 }
 
-void BaseEditor::AddWidget(QWidget* widget, int rspan, int cspan, bool newline)
+void BaseEditor::AddWidget(const EditorControl& editor, int rspan, int cspan, bool newline)
 {
     if (newline)
     {
@@ -109,7 +116,9 @@ void BaseEditor::AddWidget(QWidget* widget, int rspan, int cspan, bool newline)
         m_Column = -1;
     }
 
-    m_Grid->addWidget(widget, m_Row, ++m_Column, rspan, cspan);
+    editor.widget->setObjectName(editor.name);
+    editor.widget->setToolTip(ToolTipString(editor.name, editor.description));
+    m_Grid->addWidget(editor.widget, m_Row, ++m_Column, rspan, cspan);
 }
 
 void BaseEditor::BeginSection(const QString& label)
@@ -133,6 +142,11 @@ void BaseEditor::AddSeparator()
     m_Grid->addWidget(new HLine(this), ++m_Row, 0, 1, -1);
 }
 
+QWidget* BaseEditor::Control(const QString& name)
+{
+    return findChild<QWidget*>(name);
+}
+
 void BaseEditor::Build()
 {
     m_Layout = new QVBoxLayout(this);
@@ -143,13 +157,15 @@ void BaseEditor::Build()
 
     m_NameEdit = new QLineEdit;
 
-    m_ColorButton = new ColorSelectionButton;
-    m_EnableButton = new QToolButton;
-    m_CloseButton = new CloseButton;
+    m_ColorButton = new ColorSelectionButton(this);
+    m_EnableButton = new QToolButton(this);
+    m_RefreshButton = new QToolButton(this);
+    m_CloseButton = new CloseButton(this);
 
     title->addWidget(m_NameEdit);
     title->addWidget(m_ColorButton);
     title->addWidget(m_EnableButton);
+    title->addWidget(m_RefreshButton);
     title->addWidget(m_CloseButton);
 
     m_Layout->addLayout(title);
@@ -174,13 +190,24 @@ void BaseEditor::Setup()
     m_EnableButton->setCheckable(true);
     m_EnableButton->setAutoRaise(true);
 
+    m_RefreshButton->setIcon(IconForge::GetIcon(IconType::icon_refresh, _DARK_COLOR(QPalette::Text, 100)));
+    m_RefreshButton->setAutoRaise(true);
+
     m_EnableButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
+    m_RefreshButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
     m_CloseButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
     m_ColorButton->setFixedSize(BUTTON_SIZE, BUTTON_SIZE);
     
     // Signals
     connect(m_NameEdit, &QLineEdit::editingFinished, this, [this]() -> void { emit nameChangeRequested(m_NameEdit->text()); });
     connect(m_EnableButton, &QToolButton::toggled, this, &BaseEditor::stateChangeRequested);
+    connect(m_RefreshButton, &QToolButton::clicked, this, [this]() -> void 
+    {
+        bool blocked = blockSignals(true);
+        // Ensure that refresh doesn't trigger whole range of updates to the actual node...
+        Refresh();
+        blockSignals(blocked);
+    });
     connect(m_CloseButton, &CloseButton::clicked, this, &BaseEditor::Close);
     connect(m_ColorButton, &ColorSelectionButton::colorChanged, this, [this](const QColor& color) -> void
     {
