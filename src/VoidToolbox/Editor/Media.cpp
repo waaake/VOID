@@ -36,17 +36,17 @@ void MediaEditor::Build()
     m_LayerCombo = new QComboBox();
     m_PixelAspectEdit = new DoubleField(this);
 
-    AddControl("File", m_PathEdit);
-    AddControl("Frame Range", m_RangeStartEdit, 1, 1);
-    AddWidget(m_RangeEndEdit, false);
-    AddControl("Pixel Aspect", m_PixelAspectEdit, 1, 1);
-    AddControl("Input Color Transform", m_ColorspaceCombo);
+    AddControl({ "file", "File", m_PathEdit });
+    AddControl({ "frame_start", "Frame Range", m_RangeStartEdit }, 1, 1);
+    AddWidget({ "frame_end", m_RangeEndEdit }, false);
+    AddControl({ "pixel_aspect", "Pixel Aspect", m_PixelAspectEdit }, 1, 1);
+    AddControl({ "input_transform", "Input Color Transform", m_ColorspaceCombo });
 
     AddSeparator();
 
     /// Only the media that have multiple layers, gets this property added
     if (m_Clip->MultiLayered())
-        AddControl("Layer", m_LayerCombo);
+        AddControl( { "layer", "Layer", m_LayerCombo });
 }
 
 void MediaEditor::Setup()

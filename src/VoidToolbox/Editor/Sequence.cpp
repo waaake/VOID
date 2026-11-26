@@ -22,8 +22,8 @@ void SequenceEditor::Build()
     m_FramerateCtrl = new FramerateBox(this);
     m_FrameStartEdit = new IntField(0, std::numeric_limits<int>::max(), this);
 
-    AddControl("Framerate", m_FramerateCtrl);
-    AddControl("Start Frame", m_FrameStartEdit, 1, 1);
+    AddControl({ "framerate", "Framerate", m_FramerateCtrl });
+    AddControl({ "start_frame", "Start Frame", m_FrameStartEdit }, 1, 1);
 
     AddSeparator();
 }
