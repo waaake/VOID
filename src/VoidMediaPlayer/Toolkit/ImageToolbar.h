@@ -29,6 +29,7 @@ public:
         m_LayerController->SetLayers(layers, current);
     }
     void ResetImageLayers() { m_LayerController->clear(); }
+    void SetupColor(ColorEngine* engine) { m_ColorViews->Setup(engine); }
 
 signals:
     void exposureChanged(const float exposure);
@@ -39,6 +40,7 @@ signals:
 private:
     QHBoxLayout* m_Layout;
     ImageLayerController* m_LayerController;
+    ColorController2* m_ColorViews;
 
     QuickSpinner* m_ExposureSpinner;
     QuickSpinner* m_GammaSpinner;

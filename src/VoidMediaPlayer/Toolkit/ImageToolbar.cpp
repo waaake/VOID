@@ -37,6 +37,10 @@ ImageToolbar::~ImageToolbar()
     delete m_GammaSpinner;
     m_GammaSpinner = nullptr;
 
+    m_ColorViews->deleteLater();
+    delete m_ColorViews;
+    m_ColorViews = nullptr;
+
     m_Layout->deleteLater();
     delete m_Layout;
     m_Layout = nullptr;
@@ -70,7 +74,9 @@ void ImageToolbar::Build()
             "Amplifies image signal intensity. Switches between last and the default value when the label is clicked."
         )
     );
-    
+
+    m_ColorViews = new ColorController2;
+
     m_Layout->addWidget(m_ExposureSpinner);
     m_Layout->addWidget(new VLine(this));
     m_Layout->addWidget(m_GammaSpinner);
@@ -80,7 +86,8 @@ void ImageToolbar::Build()
     
     m_Layout->addStretch(1);
 
-    // m_Layout->addWidget(new VLine(this));
+    m_Layout->addWidget(new VLine(this));
+    m_Layout->addWidget(m_ColorViews);
     // m_Layout->addWidget(m_LayerController);
 }
 
