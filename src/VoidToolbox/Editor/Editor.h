@@ -52,6 +52,7 @@ protected:
     void SetName(const QString& name, bool readonly = false);
     void SetColor(const QColor& color);
     void Enable(bool enabled);
+    void AddLabel(const QString& label);
     void AddControl(const EditorControl& editor, bool newline = true);
     void AddControl(const EditorControl& editor, int rspan, int cspan, bool newline = true);
     void AddWidget(const EditorControl& editor, bool newline = true);

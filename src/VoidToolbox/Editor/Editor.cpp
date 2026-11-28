@@ -68,6 +68,11 @@ void BaseEditor::Enable(bool enabled)
     // m_EnableButton->toggle
 }
 
+void BaseEditor::AddLabel(const QString& label)
+{
+    m_Grid->addWidget(new QLabel(label, this), ++m_Row, 0, 1, -1);
+}
+
 void BaseEditor::AddControl(const EditorControl& editor, bool newline)
 {
     if (newline)
