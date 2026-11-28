@@ -59,6 +59,9 @@ void ColorConfigEditor::Build()
     AddControl({ "display", "Display", m_DisplayCombo });
     AddControl({ "view", "View", m_ViewCombo });
     AddControl({ "inverse", m_InverseCheckBox });
+
+    AddSeparator();
+    AddLabel(m_Engine->VersionDescription());
 }
 
 void ColorConfigEditor::Setup()
