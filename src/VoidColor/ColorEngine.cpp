@@ -134,4 +134,9 @@ void ColorEngine::SetView(const QString& view)
     emit updated();
 }
 
+QString ColorEngine::VersionDescription() const
+{
+    return QString("OpenColorIO v%1").arg(OCIO_VERSION_FULL_STR);
+}
+
 VOID_NAMESPACE_CLOSE

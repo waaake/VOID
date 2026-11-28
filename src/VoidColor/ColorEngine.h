@@ -32,6 +32,8 @@ public:
     void SetDisplay(const QString& display);
     void SetView(const QString& view);
 
+    QString VersionDescription() const;
+
 signals:
     void displayChanged();
     void viewChanged();
