@@ -38,6 +38,7 @@ public:
 
     /// Temp
     void SetDisplay(const std::string& display);
+    ColorEngine* ColorController() { return m_ColorEngine; }
 
     void InitMenu(MenuSystem* menuSystem);
     inline void Clear() { m_Player->Clear(); }

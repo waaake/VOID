@@ -68,7 +68,7 @@ int VoidEngine::Exec(int argc, char** argv)
     /* Load Plugins etc. */
     PostInit();
 
-    m_Imager->showMaximized();
+    m_Imager->show();
 
     /* Color Theme change based on the preference */
     m_Imager->connect(&VoidPreferences::Instance(), &VoidPreferences::updated, m_Imager, [&]()
