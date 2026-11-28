@@ -99,6 +99,7 @@ private: /* Members */
     void EditMedia(const SharedMediaClip& media);
     void EditSequence(const SharedPlaybackSequence& sequence);
     void EditEffects(Effect* effect);
+    void EditColorSettings(ColorEngine* engine);
     void ShowComponent(const Component& component) const;
     bool ShowIfDocked(const QString& name) const;
     void DeleteRequested();

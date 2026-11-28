@@ -107,6 +107,7 @@ void WorkspaceManager::Connect()
     connect(m_MediaLister, &VoidMediaLister::sequenceInspected, this, &WorkspaceManager::EditSequence);
     connect(_PlayerBridge.ActivePlayer(), &Player::metadataInspected, this, &WorkspaceManager::InspectMetadata);
     connect(_PlayerBridge.ActivePlayer(), &Player::playlistUpdated, this, &WorkspaceManager::UpdateMediaQueue);
+    connect(_PlayerBridge.ActivePlayer(), &Player::editColorSettingsRequested, this, &WorkspaceManager::EditColorSettings);
     connect(m_Sequencer, &SequencerTimeline::editEffectRequested, this, &WorkspaceManager::EditEffects);
     connect(m_PropertiesEditor, &PropertiesPanel::mediaReceivedUpdate, this, [this](const SharedMediaClip& media, bool needsRecache) -> void
     {
@@ -229,6 +230,12 @@ void WorkspaceManager::EditSequence(const SharedPlaybackSequence& sequence)
 void WorkspaceManager::EditEffects(Effect* effect)
 {
     m_PropertiesEditor->EditEffect(effect);
+    ShowComponent(Component::Properties);
+}
+
+void WorkspaceManager::EditColorSettings(ColorEngine* engine)
+{
+    m_PropertiesEditor->Inspect(engine);
     ShowComponent(Component::Properties);
 }
 
