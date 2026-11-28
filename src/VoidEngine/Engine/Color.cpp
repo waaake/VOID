@@ -17,6 +17,7 @@ VOID_NAMESPACE_OPEN
 
 void ColorConfig::Init()
 {
+    return;
     VOID_LOG_INFO("Initializing Color Config");
     ColorProcessor& proc = ColorProcessor::Instance();
 
