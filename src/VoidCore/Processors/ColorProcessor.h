@@ -48,6 +48,7 @@ public:
      */
     inline std::string DefaultDisplay() const { return m_Config->getDefaultDisplay(); }
     inline std::string DefaultView(const std::string& display) const { return m_Config->getDefaultView(display.c_str()); }
+    std::string WorkingSpace() const;
 
     /**
      * Setup Processor Config
