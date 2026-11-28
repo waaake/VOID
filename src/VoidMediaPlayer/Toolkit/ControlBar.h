@@ -78,9 +78,6 @@ private: /* Members */
     /* Zoom Controls */
     ControlSpinner* m_Zoomer;
 
-    /* The current Dsiplays to be selected for Color */
-    ColorController* m_ColorDisplayController;
-
     /* Annotation Controller */
     HighlightToggleButton* m_AnnotationButton;
 

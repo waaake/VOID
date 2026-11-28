@@ -103,8 +103,8 @@ void ControlBar::Build()
     m_AnnotationButton->setFixedWidth(26);
     m_AnnotationButton->setToolTip(ToolTipString("Annotations Toolkit", "Toggles Annotation tools for the Viewer."));
 
-    /* Viewer Display Controller */
-    m_ColorDisplayController = new ColorController;
+    // /* Viewer Display Controller */
+    // m_ColorDisplayController = new ColorController;
 
     /* Zoom Controls */
     m_Zoomer = new ControlSpinner();
@@ -133,7 +133,7 @@ void ControlBar::Build()
     /* Spacer from the left side */
     m_RightLayout->addWidget(m_ViewerController);
     m_RightLayout->addStretch(1);
-    m_RightLayout->addWidget(m_ColorDisplayController);
+    // m_RightLayout->addWidget(m_ColorDisplayController);
     m_RightLayout->addWidget(m_Zoomer);
     m_RightLayout->addWidget(new VLine(this));
     m_RightLayout->addWidget(m_AnnotationButton);
@@ -179,8 +179,8 @@ void ControlBar::Connect()
     /* Annotations */
     connect(m_AnnotationButton, &QPushButton::toggled, this, &ControlBar::annotationsToggled);
 
-    /* Color Display */
-    connect(m_ColorDisplayController, &ColorController::colorDisplayChanged, this, &ControlBar::colorDisplayChanged);
+    // /* Color Display */
+    // connect(m_ColorDisplayController, &ColorController::colorDisplayChanged, this, &ControlBar::colorDisplayChanged);
 }
 
 void ControlBar::SetZoom(float zoom)
