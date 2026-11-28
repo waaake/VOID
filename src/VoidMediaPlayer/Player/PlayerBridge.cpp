@@ -3,13 +3,18 @@
 
 /* Internal */
 #include "PlayerBridge.h"
+#include "VoidColor/ColorEngine.h"
 
 VOID_NAMESPACE_OPEN
 
 PlayerBridge::PlayerBridge()
 {
     m_TimelineController = new TimelineController(this);
+    m_ColorEngine = new ColorEngine;
+
     m_Player = new Player(m_TimelineController);
+    m_Player->SetupColor(m_ColorEngine);
+
     m_Playlist = new Playlist();
 }
 
@@ -24,6 +29,10 @@ PlayerBridge::~PlayerBridge()
     // delete m_Player;
     // m_Player = nullptr;
 
+    m_ColorEngine->deleteLater();
+    delete m_ColorEngine;
+    m_ColorEngine = nullptr;
+
     m_TimelineController->deleteLater();
     delete m_TimelineController;
     m_TimelineController = nullptr;
@@ -37,6 +46,11 @@ PlayerBridge& PlayerBridge::Instance()
 {
     static PlayerBridge instance;
     return instance;
+}
+
+void PlayerBridge::SetDisplay(const std::string& display)
+{
+    m_ColorEngine->SetDisplay(display.c_str());
 }
 
 void PlayerBridge::SetMedia(const SharedMediaClip& media)

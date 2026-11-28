@@ -15,6 +15,8 @@
 
 VOID_NAMESPACE_OPEN
 
+class ColorEngine;
+
 class VOID_API PlayerBridge : public QObject
 {
     Q_OBJECT
@@ -33,6 +35,9 @@ public:
     inline Player* ActivePlayer() const { return m_Player; }
     inline ViewerBuffer* ActiveViewer() const { return m_Player->ActiveViewer(); }
     TimelineController* TimeController() { return m_TimelineController; }
+
+    /// Temp
+    void SetDisplay(const std::string& display);
 
     void InitMenu(MenuSystem* menuSystem);
     inline void Clear() { m_Player->Clear(); }
@@ -104,6 +109,7 @@ private: /* Members */
     Player* m_Player;
     Playlist* m_Playlist;
     TimelineController* m_TimelineController;
+    ColorEngine* m_ColorEngine;
 };
 
 #define _PlayerBridge PlayerBridge::Instance()
