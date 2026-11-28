@@ -11,6 +11,9 @@ add_subdirectory(VoidAudio)
 # Application bridge
 add_subdirectory(VoidBridge)
 
+# Color Library
+add_subdirectory(VoidColor)
+
 # Build Core Library
 add_subdirectory(VoidCore)
 
@@ -199,6 +202,7 @@ endif()
 install(TARGETS
     VoidAudio
     VoidBridge
+    VoidColor
     VoidCore
     VoidConformer
     VoidDocker

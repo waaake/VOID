@@ -120,6 +120,7 @@ target_link_libraries(
     PUBLIC
     VoidAudio
     VoidBridge
+    VoidColor
     VoidCore
     VoidExporter
     VoidIconForge

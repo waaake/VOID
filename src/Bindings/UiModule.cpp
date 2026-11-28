@@ -87,7 +87,8 @@ void BindUi(py::module_& m)
         .def("set_grid_columns", &PlayerBridge::SetGridColumns, py::arg("columns"))
         .def("active_viewer", &PlayerBridge::ActiveViewer, py::return_value_policy::reference)
         .def("set_volume", &PlayerBridge::SetVolume, py::arg("volume"))
-        .def("reset_media_layer", &PlayerBridge::ResetMediaLayer, py::arg("layer"));
+        .def("reset_media_layer", &PlayerBridge::ResetMediaLayer, py::arg("layer"))
+        .def("set_color_display", &PlayerBridge::SetDisplay, py::arg("display"));
 
     /* Viewer Buffer */
     py::class_<ViewerBuffer>(m, "Viewer")
