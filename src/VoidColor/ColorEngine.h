@@ -21,9 +21,11 @@ public:
     explicit ColorEngine(QObject* parent = nullptr);
     void Init();
 
+    QStringList Roles() const;
     QStringList Views() const;
     QStringList Displays() const;
 
+    QString WorkingSpace() const;
     QString ActiveView() const { return m_View; };
     QString ActiveDisplay() const { return m_Display; }
 

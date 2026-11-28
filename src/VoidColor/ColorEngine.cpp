@@ -64,17 +64,31 @@ void ColorEngine::Init()
     m_Display = display.c_str();
 }
 
+QStringList ColorEngine::Roles() const
+{
+    QStringList r;
+    const OCIO::ConstConfigRcPtr& config = m_Processor.OCIOConfig();
+
+    const int num = config->getNumRoles();
+    r.reserve(num);
+
+    for (int i = 0; i < num; ++i)
+        r.append(config->getRoleName(i));
+
+    return r;
+}
+
 QStringList ColorEngine::Views() const
 {
     QStringList v;
     const OCIO::ConstConfigRcPtr& config = m_Processor.OCIOConfig();
     
-    const char* display = m_Display.toStdString().c_str();
-    const int num = config->getNumViews(display);
+    const std::string& display = m_Display.toStdString();
+    const int num = config->getNumViews(display.c_str());
     v.reserve(num);
 
     for (int i = 0; i < num; ++i)
-        v.append(config->getView(display, i));
+        v.append(config->getView(display.c_str(), i));
 
     return v;
 }
@@ -91,6 +105,11 @@ QStringList ColorEngine::Displays() const
         d.append(config->getDisplay(i));
 
     return d;
+}
+
+QString ColorEngine::WorkingSpace() const
+{
+    return m_Processor.WorkingSpace().c_str();
 }
 
 void ColorEngine::SetDisplay(const QString& display)
