@@ -567,6 +567,17 @@ void VoidRenderer::SetColorDisplay(const std::string& display)
     update();
 }
 
+void VoidRenderer::ColorUpdated()
+{
+    m_ImageRenderer.ReinitShaderProgram();
+    m_ImageComparisonRenderer.ReinitShaderProgram();
+    m_GridRenderer.ReinitShaderProgram();
+
+    update();
+
+    VOID_LOG_INFO("Color UPdated::Renderer...");
+}
+
 void VoidRenderer::CalculateModelViewProjection()
 {
     if (!m_ImageA || m_ImageA->Empty())

@@ -116,6 +116,7 @@ public:
      * The color display to be set for the OCIO Color Process
      */
     void SetColorDisplay(const std::string& display);
+    void ColorUpdated();
 
 signals:
     /* Emitted when a new annotation is just created */
