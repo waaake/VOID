@@ -18,6 +18,8 @@
 
 VOID_NAMESPACE_OPEN
 
+class ColorEngine;
+
 class VOID_API PropertiesPanel : public QWidget
 {
     Q_OBJECT
@@ -31,6 +33,7 @@ public:
     void EditEffect(Effect* effect);
     void EditMedia(const SharedMediaClip& media);
     void EditSequence(const SharedPlaybackSequence& sequence);
+    void Inspect(ColorEngine* engine);
 
     void Clear();
     void Remove(const Effect* effect);

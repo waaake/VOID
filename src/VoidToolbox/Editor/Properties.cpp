@@ -8,6 +8,7 @@
 
 /* Internal */
 #include "Properties.h"
+#include "Color.h"
 #include "Sequence.h"
 #include "VoidIconForge/IconForge.h"
 #include "VoidQExtensions/Frame.h"
@@ -83,6 +84,22 @@ void PropertiesPanel::EditSequence(const SharedPlaybackSequence& sequence)
     ClearAdditionalPanels(m_PanelCounter->CurrentValue() - 1);
 
     auto* editor = new SequenceEditor(sequence, this);
+    m_ScrollLayout->insertWidget(0, editor);
+}
+
+void PropertiesPanel::Inspect(ColorEngine* engine)
+{
+    for (auto* w : findChildren<ColorConfigEditor*>())
+    {
+        if (w->HasSameEngine(engine))
+            w->Close();
+    }
+
+    // Ensure we have only panels till the limit
+    // Going one lesser here as we are also adding another widget
+    ClearAdditionalPanels(m_PanelCounter->CurrentValue() - 1);
+
+    auto* editor = new ColorConfigEditor(engine, this);
     m_ScrollLayout->insertWidget(0, editor);
 }
 
