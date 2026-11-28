@@ -10,6 +10,7 @@
 #include "Internal/Descriptors.h"
 #include "VoidAudio/Core/Engine.h"
 #include "VoidBridge/Engine.h"
+#include "VoidColor/ColorEngine.h"
 #include "VoidCore/Timekeeper.h"
 #include "VoidCore/Media/Renderer.h"
 #include "VoidQExtensions/MessageBox.h"
@@ -588,6 +589,12 @@ void Player::SetComparisonMode(int mode)
 void Player::SetVolume(int volume)
 {
     m_AudioEngine->SetVolume(volume);
+}
+
+void Player::SetupColor(ColorEngine* engine)
+{
+    m_ImageToolbar->SetupColor(engine);
+    connect(engine, &ColorEngine::updated, m_Renderer, &VoidRenderer::ColorUpdated);
 }
 
 void Player::RenderCurrentFrame()

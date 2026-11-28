@@ -12,6 +12,7 @@ VOID_NAMESPACE_OPEN
 // Forward decl
 class ExportAnnotatedFramesTask;
 class AudioEngine;
+class ColorEngine;
 
 class VOID_API Player : public PlayerWidget
 {
@@ -46,6 +47,7 @@ public:
     void ResetLayer(const std::string& layer);
 
     void SetVolume(int volume);
+    void SetupColor(ColorEngine* engine);
 
     void RenderCurrentFrame();
     void RenderAnnotatedFrames();
