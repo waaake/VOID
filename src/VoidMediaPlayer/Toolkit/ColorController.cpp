@@ -1,11 +1,13 @@
 // Copyright (c) 2025 waaake
 // Licensed under the MIT License
 
+/* Qt */
+#include <QSignalBlocker>
+
 /* Internal */
 #include "ColorController.h"
 #include "VoidCore/Processors/ColorProcessor.h"
 #include "VoidIconForge/IconForge.h"
-#include "VoidCore/Logging.h"
 #include "VoidColor/ColorEngine.h"
 
 VOID_NAMESPACE_OPEN
@@ -44,8 +46,18 @@ void ColorController2::Setup(ColorEngine* engine)
     m_Engine = engine;
     Reset();
 
-    connect(m_Engine, &ColorEngine::displayChanged, this, &ColorController2::Reset);
     connect(m_ViewController, &QComboBox::currentTextChanged, engine, &ColorEngine::SetView);
+    connect(m_SettingsButton, &QToolButton::clicked, this, [this]() -> void
+    {
+        emit editColorSettingsRequested(m_Engine);
+    });
+    
+    connect(m_Engine, &ColorEngine::displayChanged, this, &ColorController2::Reset);
+    connect(m_Engine, &ColorEngine::viewChanged, this, [this]() -> void
+    {
+        const QSignalBlocker blocker(m_ViewController);
+        m_ViewController->setCurrentText(m_Engine->ActiveView());
+    });
 }
 
 void ColorController2::Build()
@@ -64,15 +76,11 @@ void ColorController2::Build()
 
 void ColorController2::Reset()
 {
-    bool b = m_ViewController->blockSignals(true);
+    const QSignalBlocker blocker(m_ViewController);
 
     m_ViewController->clear();
     m_ViewController->addItems(m_Engine->Views());
     m_ViewController->setCurrentText(m_Engine->ActiveView());
-
-    m_ViewController->blockSignals(b);
-
-    VOID_LOG_INFO("Reset Color Views");
 }
 
 VOID_NAMESPACE_CLOSE
