@@ -49,7 +49,7 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 protected:
-    void SetName(const QString& name);
+    void SetName(const QString& name, bool readonly = false);
     void SetColor(const QColor& color);
     void Enable(bool enabled);
     void AddControl(const EditorControl& editor, bool newline = true);

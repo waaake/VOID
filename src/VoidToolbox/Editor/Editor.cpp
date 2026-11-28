@@ -49,12 +49,13 @@ void BaseEditor::paintEvent(QPaintEvent* event)
     // Node color on the bottom as well
     painter.fillRect(QRect(0, r.height() - 2, r.width() - 1, 2), m_ColorButton->Color());
 
-    QWidget::paintEvent(event);
+    QWidget::paintEvent(event); 
 }
 
-void BaseEditor::SetName(const QString& name)
+void BaseEditor::SetName(const QString& name, bool readonly)
 {
     m_NameEdit->setText(name);
+    m_NameEdit->setReadOnly(readonly);
 }
 
 void BaseEditor::SetColor(const QColor& color)
