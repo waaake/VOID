@@ -17,6 +17,7 @@
 #include "Operator.h"
 #include "FrameRange.h"
 #include "Timecode.h"
+#include "VoidColor/ColorEngine.h"
 #include "VoidCore/Media/Filesystem.h"
 #include "VoidCore/VoidTools.h"
 #include "VoidObjects/Effects/Effects.h"
@@ -407,6 +408,37 @@ void BindCore(py::module_& m)
         .def("available_versions", &Core::Project::AvailableVersions, py::arg("name"), py::return_value_policy::reference_internal)
         .def("media_clips", &Core::Project::MediaClips, py::return_value_policy::reference_internal)
         .def("sequences", &Core::Project::Sequences, py::return_value_policy::reference_internal);
+
+    /// ColorEngine
+    py::class_<ColorEngine>(m, "ColorEngine")
+        .def("active_view", &ColorEngine::ActiveView)
+        .def("active_display", &ColorEngine::ActiveDisplay)
+        .def("set_view",
+        [](ColorEngine* e, const std::string& view) -> bool
+        {
+            QString v(view.c_str());
+            if (e->Views().contains(v))
+            {
+                e->SetView(v);
+                return true;
+            }
+            
+            return false;
+        },
+        py::arg("view"))
+        .def("set_display",
+        [](ColorEngine* e, const std::string& display) -> bool
+        {
+            QString d(display.c_str());
+            if (e->Displays().contains(d))
+            {
+                e->SetDisplay(d);
+                return true;
+            }
+
+            return false;
+        },
+        py::arg("display"));
 }
 
 } // namespace bindings

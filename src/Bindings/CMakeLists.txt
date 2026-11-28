@@ -15,6 +15,7 @@ pybind11_add_module(vortex "${SOURCES}")
 target_link_libraries(
     vortex
     PRIVATE
+    VoidColor
     VoidCore
     VoidMediaPlayer
     VoidObjects
