@@ -19,6 +19,7 @@ VOID_NAMESPACE_OPEN
 
 class VOID_API ColorProcessor
 {
+protected:
     ColorProcessor();
 
 public: /* Enum */
@@ -72,8 +73,9 @@ public:
     // CPU processing for the image from the source to destination colorspace
     void ProcessImage(float* pixels, int width, int height, int channels, const std::string& outcolorspace) const;
     // void ProcessImage(float* pixels, int width, int height, int channels, const ColorSpace& colorspace, const std::string& outcolorspace) const;
+    const OCIO_NAMESPACE::ConstConfigRcPtr& OCIOConfig() const { return m_Config; }
 
-private:
+protected:
     OCIO_NAMESPACE::ConstConfigRcPtr m_Config;
     OCIO_NAMESPACE::ConstGPUProcessorRcPtr m_GProcessor;
 };
