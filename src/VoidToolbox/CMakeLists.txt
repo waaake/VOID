@@ -3,6 +3,7 @@ set(SOURCES
     Editor/Controls/Field.cpp
 
     # Editors
+    Editor/Color.cpp
     Editor/Editor.cpp
     Editor/Effects.cpp
     Editor/Media.cpp
@@ -56,6 +57,7 @@ target_include_directories(
 target_link_libraries(
     VoidToolbox
     PUBLIC
+    VoidColor
     VoidCore
     VoidObjects
     VoidQExtensions
