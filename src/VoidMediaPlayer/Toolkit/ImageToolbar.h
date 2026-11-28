@@ -36,6 +36,7 @@ signals:
     void gammaChanged(const float gamma);
     void gainChanged(const float gain);
     void imageLayerChangeRequested(const QString&);
+    void editColorSettingsRequested(ColorEngine*);
 
 private:
     QHBoxLayout* m_Layout;

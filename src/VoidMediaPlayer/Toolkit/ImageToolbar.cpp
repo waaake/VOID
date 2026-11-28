@@ -124,6 +124,7 @@ void ImageToolbar::Setup()
     connect(m_GammaSpinner, &QuickSpinner::valueChanged, this, &ImageToolbar::gammaChanged);
     connect(m_GainSpinner, &QuickSpinner::valueChanged, this, &ImageToolbar::gainChanged);
     // connect(m_LayerController, &ImageLayerController::layerChanged, this, &ImageToolbar::imageLayerChangeRequested);
+    connect(m_ColorViews, &ColorController2::editColorSettingsRequested, this, &ImageToolbar::editColorSettingsRequested);
 }
 
 VOID_NAMESPACE_CLOSE
