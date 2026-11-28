@@ -331,6 +331,7 @@ void Player::Connect()
     {
         ResetLayer(layer.toStdString());
     });
+    connect(m_ImageToolbar, &ImageToolbar::editColorSettingsRequested, this, &Player::editColorSettingsRequested);
 
     // ViewerBuffer
     connect(m_ViewBufferA, &ViewerBuffer::playlistUpdated, this, &Player::playlistUpdated);

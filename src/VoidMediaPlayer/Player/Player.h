@@ -79,6 +79,7 @@ signals:
      */
     void metadataInspected(const SharedMediaClip&);
     void playlistUpdated(Playlist*);
+    void editColorSettingsRequested(ColorEngine*);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
